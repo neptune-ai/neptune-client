@@ -1,0 +1,6 @@
+oauthlib
+PyJWT
+requests>=2.20.0
+requests-oauthlib>=1.0.0
+pandas
+bravado

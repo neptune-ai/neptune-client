@@ -1,0 +1,22 @@
+sudo: false
+language: python
+python:
+- '2.7'
+- '3.5'
+- '3.6'
+install:
+- pip install -r requirements.txt
+- pip install -r test_requirements.txt
+- pip install tox-travis
+script:
+- python -m pylint -j 0 -f parseable neptune tests
+- tox
+deploy:
+  distributions: git_version sdist
+  provider: pypi
+  user: neptune-deployer
+  password:
+    secure: B/rIF+1xgZpaVoARMwemftIcPhSPAttxNI0xNw4hvvjlQ7OVd4zi8xqqCyVzsn6sPWYYKa+iLhBbcu2fN3aQtDnyK0Lo6iJZwAdtmnk4oKixWnSfV3BaZrDTev23Hl5Zlua1HR7CFdmi5NqsMceongV4Hf+IsMb721w9R7zV/kKofyDcjoA0HWEQxfX4AFfwsoetN6ggVwU5yKheNPj14qdXI9Xm8gSfT7EmPbM+/RqIORrl58F3xel9YsZ3/QfPis79z7EMXmfEX2gNsoGXdkeo/nYsIwIdm8qzX4aVw7XAwUVJhofdKCk6McH203sUWweNk76K5R5BKYAti10Vnlt2xp3ccyetm2zYwv8XdwEBZKtQs3hl2Cc8wZ5a83nG1YjhjCD9Nu2Ck3iIziW6B55xASLEk3IxplHp0quI88sWuQzj+3BDuIIwQcNchXI8xQw5zZ05v6m0ODGMMOeu1RlvaHdonLRqli3/wFSJzyDoDcbowNqbDfxGfn2EaD0XhIJvxUAS9Yds57XoAqNHP7m62yhKwgn2MwLrNlwbY20NbTVt/gHkByuZ679EW5tMskcDYziaHM2UQN3q1+rXjLFMP28cA23fNQwhGPNhzVqeUxXxofJLF2HCOxbEzlCw7msOGdKp7Kpsqcdt2liX96l64MWpyQyHTNO6li0xpbk=
+  on:
+    tags: true
+  skip_existing: true

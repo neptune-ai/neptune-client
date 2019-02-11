@@ -42,7 +42,8 @@ htmlcov/
 .coverage.*
 .cache
 nosetests.xml
-coverage.xml
+coverage-*.xml
+results-*.xml
 *.cover
 .hypothesis/
 .pytest_cache/
@@ -102,3 +103,6 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+# Pycharm
+.idea/
