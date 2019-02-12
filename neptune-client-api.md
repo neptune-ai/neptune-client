@@ -1,29 +1,25 @@
 
 
 ```python
-from neptune.session import Session
-
-session = Session("token=")
+import neptune
 ```
 
 
 ```python
-project = session.get_project("neptune-ml/Ships")
+project = neptune.init("wajcha/sandbox", api_token="fQo=")
 ```
 
 
 ```python
-exp = project.create_experiment( # create experiment, with params and tags
+exp = neptune.create_experiment(
     params={
     "lr__C": 1000,
     "epochs": 10,
-    "shuffle": true
-}, 
+    "shuffle": 1
+},
+    properties={"prop1": "val1"},
     tags=["solution-6", "stacking"],
-    send_hardware_metrics=False, # default = True
-    run_monitoring_thread=False, # default = True
-    upload_sources_files=["main.py"], # default = this file
-    handle_uncaught_exceptions=False # default = True
+    upload_source_files=["neptune-client-api.ipynb"]
 )
 ```
 
@@ -42,7 +38,7 @@ exp.set_tags(exp.get_tags().append("new-tag")) # update tags
 
 
 ```python
-exp.send_artifact("model.file")
+exp.send_artifact("/tmp/model.file")
 ```
 
 
