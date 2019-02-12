@@ -49,6 +49,14 @@ class Client(object):
         http_client.authenticator = NeptuneAuthenticator(
             self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result)
 
+    def get_project(self, organization_name, project_name):
+        r = self.backend_swagger_client.api.getProjectByName(
+            organizationName=organization_name,
+            projectName=project_name
+        ).response()
+
+        return r.result
+
     def get_projects(self, namespace):
         r = self.backend_swagger_client.api.listProjectsInOrganization(
             organizationName=namespace
