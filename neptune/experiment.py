@@ -151,7 +151,6 @@ class Experiment(object):
         )
 
     def send_metric(self, name, x, y=None):
-
         if x is None:
             raise ValueError("No value provided")
         elif not is_float(x):
@@ -165,6 +164,16 @@ class Experiment(object):
             raise ValueError("Invalid y value provided")
 
         self._send_channel_value(name, "numeric", x, dict(numeric_value=y))
+
+    def send_text(self, name, x, y=None):
+        if x is None:
+            raise ValueError("No value provided")
+
+        if y is None:
+            y = x
+            x = None
+
+        self._send_channel_value(name, "text", x, dict(text_value=y))
 
     @property
     def parameters(self):
