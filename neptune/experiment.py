@@ -13,11 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import base64
+import io
+import os
 
 import pandas as pd
+import six
+from PIL import Image
 from pandas.errors import EmptyDataError
 
-from neptune.utils import map_values, align_channels_on_x, is_float
+from neptune.utils import align_channels_on_x, is_float, map_values
 
 
 class Experiment(object):
@@ -150,20 +155,20 @@ class Experiment(object):
             (ch.name, ch.type) for ch in self._leaderboard_entry.channels
         )
 
-    def send_metric(self, name, x, y=None):
+    def send_metric(self, channel_name, x, y=None):
         if x is None:
             raise ValueError("No value provided")
         elif not is_float(x):
-            raise ValueError("Invalid x value provided")
+            raise ValueError("Invalid value={} provided".format(x))
 
         if y is None:
             y = x
             x = None
 
         if not is_float(y):
-            raise ValueError("Invalid y value provided")
+            raise ValueError("Invalid value={} provided".format(y))
 
-        self._send_channel_value(name, "numeric", x, dict(numeric_value=y))
+        self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y))
 
     def send_text(self, name, x, y=None):
         if x is None:
@@ -172,8 +177,28 @@ class Experiment(object):
         if y is None:
             y = x
             x = None
+        elif not is_float(x):
+            raise ValueError("Invalid value={} provided".format(x))
 
-        self._send_channel_value(name, "text", x, dict(text_value=y))
+        self._send_channel_value(name, 'text', x, dict(text_value=y))
+
+    def send_image(self, channel_name, x, y=None, name=None, description=None):
+        if x is None:
+            raise ValueError("No image provided")
+
+        if y is None:
+            y = x
+            x = None
+        elif not is_float(x):
+            raise ValueError("Invalid x value provided")
+
+        input_image = dict(
+            name=name,
+            description=description,
+            data=base64.b64encode(self._get_image_content(y)).decode('utf-8')
+        )
+
+        self._send_channel_value(channel_name, 'image', x, dict(image_value=input_image))
 
     @property
     def parameters(self):
@@ -358,8 +383,8 @@ class Experiment(object):
     def _simple_dict_to_dataframe(d):
         return pd.DataFrame.from_dict(map_values(lambda x: [x], d))
 
-    def _send_channel_value(self, name, channel_type, x, y):
-        channel = self._get_channel(name, channel_type)
+    def _send_channel_value(self, channel_name, channel_type, x, y):
+        channel = self._get_channel(channel_name, channel_type)
 
         if x is None:
             if channel.x is None:
@@ -367,7 +392,7 @@ class Experiment(object):
             x = channel.x + 1
         elif x <= channel.x:
             raise ValueError("ValueError: X-coordinates must be strictly increasing. "
-                             "Invalid Point({}, {}) for channel \"{}\"".format(x, y, name))
+                             "Invalid Point({}, {:100.100}) for channel \"{}\"".format(x, y, channel_name))
 
         self._client.send_channel_value(self.internal_id, channel.id, x, y)
 
@@ -376,16 +401,30 @@ class Experiment(object):
 
         return channel
 
-    def _get_channel(self, name, channel_type):
-        channel = self._find_channel(name)
+    def _get_channel(self, channel_name, channel_type):
+        channel = self._find_channel(channel_name)
         if channel is None:
-            channel = self._create_channel(name, channel_type)
+            channel = self._create_channel(channel_name, channel_type)
         return channel
 
-    def _find_channel(self, name):
-        return next((channel for channel in self._leaderboard_entry.channels if channel.name == name), None)
+    def _find_channel(self, channel_name):
+        return next((channel for channel in self._leaderboard_entry.channels if channel.name == channel_name), None)
 
-    def _create_channel(self, name, channel_type):
-        channel = self._client.create_channel(self.internal_id, name, channel_type)
+    def _create_channel(self, channel_name, channel_type):
+        channel = self._client.create_channel(self.internal_id, channel_name, channel_type)
         self._leaderboard_entry.add_channel(channel)
         return channel
+
+    def _get_image_content(self, image):
+        if isinstance(image, six.string_types):
+            if not os.path.exists(image):
+                raise ValueError("File {} doesn't exist".format(image))
+            with open(image, 'r') as image_file:
+                return image_file.read()
+
+        elif isinstance(image, Image.Image):
+            with io.BytesIO() as image_buffer:
+                image.save(image_buffer, format='PNG')
+                return image_buffer.getvalue()
+
+        raise ValueError("Unsupported image value")

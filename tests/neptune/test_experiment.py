@@ -17,8 +17,8 @@
 import unittest
 from io import StringIO
 
-from mock import MagicMock
 import pandas as pd
+from mock import MagicMock
 from pandas.util.testing import assert_frame_equal
 
 from neptune.experiment import Experiment

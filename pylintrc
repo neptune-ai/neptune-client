@@ -41,7 +41,8 @@ load-plugins=pylintfileheader
 # W0511 Allow TODO/FIXME comments.
 # W0703 Allow too broad except clause (Exception).
 # I0011 Do not show Locally disabled warnings in report
-disable=R,C0103,C0111,W0401,W0511,W0614,W0703,I0011
+# C0412 Disable checking imports from package %s are not grouped
+disable=R,C0103,C0111,W0401,W0511,W0614,W0703,I0011,C0412
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
