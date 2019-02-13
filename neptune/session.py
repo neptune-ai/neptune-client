@@ -54,6 +54,16 @@ class Session(object):
         self.credentials = credentials
         self._client = Client(self.credentials.api_address, self.credentials.api_token)
 
+    def get_project(self, project_qualified_name):
+        namespace, project_name = project_qualified_name.split("/", 1)
+        project = self._client.get_project(namespace, project_name)
+        return Project(
+            client=self._client,
+            internal_id=project.id,
+            namespace=namespace,
+            name=project.name
+        )
+
     def get_projects(self, namespace):
         """It gets all project and full project names for given namespace
 

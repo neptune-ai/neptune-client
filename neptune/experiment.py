@@ -84,6 +84,10 @@ class Experiment(object):
         return self._leaderboard_entry.id
 
     @property
+    def internal_id(self):
+        return self._leaderboard_entry.internal_id
+
+    @property
     def system_properties(self):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 
