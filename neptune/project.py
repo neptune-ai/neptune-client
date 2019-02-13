@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
+import sys
 
 import pandas as pd
 
@@ -253,6 +255,62 @@ class Project(object):
                                                             project_name=self.name,
                                                             entry_types=['group'])
         return [entry.id for entry in group_entries]
+
+    # pylint:disable=unused-argument
+    def create_experiment(self,
+                          name,
+                          description=None,
+                          params=None,
+                          properties=None,
+                          tags=None,
+                          upload_source_files=None,
+                          send_hardware_metrics=True,
+                          run_monitoring_thread=True,
+                          handle_uncaught_exceptions=True):
+
+        if description is None:
+            description = ""
+
+        if params is None:
+            params = {}
+
+        if properties is None:
+            properties = {}
+
+        if tags is None:
+            tags = []
+
+        if upload_source_files is None:
+            main_file = sys.argv[0]
+            main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
+            if os.path.isfile(main_abs_path):
+                upload_source_files = [main_abs_path]
+            else:
+                upload_source_files = []
+
+
+        # TODO implement upload_source_files
+
+        # TODO implement send_hardware_metrics
+
+        # TODO implement run_monitoring_thread
+
+        # TODO implement handle_uncaught_exceptions
+
+        experiment = self.client.create_experiment(
+            project_id=self.internal_id,
+            name=name,
+            description=description,
+            params=params,
+            properties=properties,
+            tags=tags
+        )
+
+        # FIXME delete all of these transitions
+        experiment = self.client.mark_waiting(experiment_id=experiment.internal_id)
+        experiment = self.client.mark_initializing(experiment_id=experiment.internal_id)
+        return self.client.mark_running(experiment_id=experiment.internal_id)
+
 
     @property
     def full_id(self):

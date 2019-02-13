@@ -13,13 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import uuid
 from io import StringIO
 
 from bravado.client import SwaggerClient
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 
+from neptune.experiment import Experiment
 from neptune.model import LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
 
@@ -109,6 +110,49 @@ class Client(object):
         csv.seek(0)
         return csv
 
+    def create_experiment(self, project_id, name, description, params, properties, tags):
+        ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
+
+        params = ExperimentCreationParams(
+            projectId=project_id,
+            name=name,
+            description=description,
+            parameters=self._convert_to_api_parameters(params),
+            properties=self._convert_to_api_properties(properties),
+            tags=tags,
+            enqueueCommand="command",  # FIXME
+            entrypoint="",  # FIXME
+            execArgsTemplate=""  # FIXME
+        )
+
+        experiment = self.backend_swagger_client.api.createExperiment(experimentCreationParams=params).response().result
+
+        return self._convert_experiment_to_leaderboard_entry(experiment)
+
+    def mark_waiting(self, experiment_id):
+        return self._convert_experiment_to_leaderboard_entry(
+            self.backend_swagger_client.api.markExperimentWaiting(experimentId=experiment_id).response().result
+        )
+
+    def mark_initializing(self, experiment_id):
+        return self._convert_experiment_to_leaderboard_entry(
+            self.backend_swagger_client.api.markExperimentInitializing(experimentId=experiment_id).response().result
+        )
+
+    def mark_running(self, experiment_id):
+        RunningExperimentParams = self.backend_swagger_client.get_model('RunningExperimentParams')
+
+        params = RunningExperimentParams(
+            runCommand=""  # FIXME
+        )
+
+        experiment = self.backend_swagger_client.api.markExperimentRunning(
+            experimentId=experiment_id,
+            runningExperimentParams=params
+        ).response().result
+
+        return self._convert_experiment_to_leaderboard_entry(experiment)
+
     @staticmethod
     def _get_all_items(get_portion, step):
         items = []
@@ -119,6 +163,75 @@ class Client(object):
             items += previous_items
 
         return items
+
+    def _convert_to_api_parameters(self, raw_params):
+        Parameter = self.backend_swagger_client.get_model('Parameter')
+
+        params = []
+        for name, value in raw_params.items():
+            parameter_type = 'double' if self._is_float(value) else 'string'
+
+            params.append(
+                Parameter(
+                    id=str(uuid.uuid4()),
+                    name=name,
+                    parameterType=parameter_type,
+                    value=str(value)
+                )
+            )
+
+        return params
+
+    def _convert_to_api_properties(self, raw_properties):
+        KeyValueProperty = self.backend_swagger_client.get_model('KeyValueProperty')
+
+        return [
+            KeyValueProperty(
+                key=key,
+                value=value
+            ) for key, value in raw_properties.items()
+        ]
+
+    def _convert_experiment_to_leaderboard_entry(self, experiment):
+        LeaderboardEntryDTO = self.leaderboard_swagger_client.get_model('LeaderboardEntryDTO')
+
+        experiment_states = {"creating": 0, "waiting": 0, "initializing": 0, "running": 0, "cleaning": 0,
+                             "succeeded": 0, "aborted": 0, "failed": 0, "crashed": 0, "preempted": 0,
+                             experiment.state: 1}
+
+        return Experiment(
+            client=self,
+            leaderboard_entry=LeaderboardEntry(
+                LeaderboardEntryDTO(
+                    id=experiment.id,
+                    shortId=experiment.shortId,
+                    name=experiment.name,
+                    organizationId=experiment.organizationId,
+                    organizationName=experiment.organizationName,
+                    projectId=experiment.projectId,
+                    projectName=experiment.projectName,
+                    timeOfCreation=experiment.timeOfCreation,
+                    description=experiment.description,
+                    entryType="experiment",
+                    state=experiment.state,
+                    tags=experiment.tags,
+                    channelsLastValues=experiment.channelsLastValues,
+                    experimentStates=experiment_states,
+                    owner=experiment.owner,
+                    parameters=experiment.parameters,
+                    properties=experiment.properties
+                )
+            )
+        )
+
+    @staticmethod
+    def _is_float(value):
+        try:
+            _ = float(value)
+        except ValueError:
+            return False
+        else:
+            return True
 
 
 uuid_format = SwaggerFormat(
