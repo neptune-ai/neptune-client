@@ -15,9 +15,13 @@
 #
 
 import functools
+import sys
 
 import numpy as np
 import pandas as pd
+
+# http://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python
+IS_WINDOWS = hasattr(sys, 'getwindowsversion')
 
 
 def map_values(f_value, dictionary):
