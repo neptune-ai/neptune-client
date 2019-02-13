@@ -21,8 +21,9 @@ from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 
 from neptune.experiment import Experiment
-from neptune.model import LeaderboardEntry
+from neptune.model import LeaderboardEntry, ChannelWithLastValue
 from neptune.oauth import NeptuneAuthenticator
+from neptune.utils import is_float
 
 
 class Client(object):
@@ -153,6 +154,46 @@ class Client(object):
 
         return self._convert_experiment_to_leaderboard_entry(experiment)
 
+    def create_channel(self, experiment_id, name, channel_type):
+        ChannelParams = self.backend_swagger_client.get_model('ChannelParams')
+
+        params = ChannelParams(
+            name=name,
+            channelType=channel_type
+        )
+
+        channel = self.backend_swagger_client.api.createChannel(
+            experimentId=experiment_id,
+            channelToCreate=params
+        ).response().result
+
+        return self._convert_channel_to_channel_with_last_value(channel, last_value=None)
+
+    def send_channel_value(self, experiment_id, channel_id, x, y):
+        InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
+        Point = self.backend_swagger_client.get_model('Point')
+        Y = self.backend_swagger_client.get_model('Y')
+
+        values = InputChannelValues(
+            channelId=channel_id,
+            values=[Point(
+                x=x,
+                y=Y(
+                    numericValue=y.get('numeric_value'),
+                    textValue=y.get('text_value'),
+                    inputImageValue=y.get('image_value')
+                )
+            )]
+        )
+
+        batch_errors = self.backend_swagger_client.api.postChannelValues(
+            experimentId=experiment_id,
+            channelsValues=[values]
+        ).response().result
+
+        if batch_errors:
+            raise ValueError(batch_errors[0].error.message)
+
     @staticmethod
     def _get_all_items(get_portion, step):
         items = []
@@ -169,7 +210,7 @@ class Client(object):
 
         params = []
         for name, value in raw_params.items():
-            parameter_type = 'double' if self._is_float(value) else 'string'
+            parameter_type = 'double' if is_float(value) else 'string'
 
             params.append(
                 Parameter(
@@ -224,14 +265,28 @@ class Client(object):
             )
         )
 
-    @staticmethod
-    def _is_float(value):
-        try:
-            _ = float(value)
-        except ValueError:
-            return False
+    def _convert_channel_to_channel_with_last_value(self, channel, last_value):
+        ChannelWithValueDTO = self.leaderboard_swagger_client.get_model('ChannelWithValueDTO')
+        if last_value is not None:
+            return ChannelWithLastValue(
+                ChannelWithValueDTO(
+                    channelId=channel.id,
+                    channelName=channel.name,
+                    channelType=channel.channelType,
+                    x=last_value.x,
+                    y=last_value.y
+                )
+            )
         else:
-            return True
+            return ChannelWithLastValue(
+                ChannelWithValueDTO(
+                    channelId=channel.id,
+                    channelName=channel.name,
+                    channelType=channel.channelType,
+                    x=None,
+                    y=None
+                )
+            )
 
 
 uuid_format = SwaggerFormat(

@@ -34,6 +34,10 @@ class ChannelWithLastValue(object):
     def x(self):
         return self.channel_with_value_dto.x
 
+    @x.setter
+    def x(self, x):
+        self.channel_with_value_dto.x = x
+
     @property
     def trimmed_y(self):
         return self.y[:255] if self.type == 'text' else self.y
@@ -41,6 +45,10 @@ class ChannelWithLastValue(object):
     @property
     def y(self):
         return self.channel_with_value_dto.y
+
+    @y.setter
+    def y(self, y):
+        self.channel_with_value_dto.y = y
 
 
 class LeaderboardEntry(object):
@@ -77,6 +85,9 @@ class LeaderboardEntry(object):
     @property
     def channels(self):
         return [ChannelWithLastValue(ch) for ch in self.project_leaderboard_entry_dto.channelsLastValues]
+
+    def add_channel(self, channel):
+        self.project_leaderboard_entry_dto.channelsLastValues.append(channel.channel_with_value_dto)
 
     @property
     def channels_dict_by_name(self):

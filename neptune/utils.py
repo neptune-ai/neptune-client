@@ -54,6 +54,14 @@ def merge_dataframes(dataframes, on, how='outer'):
     return merged_df
 
 
+def is_float(value):
+    try:
+        _ = float(value)
+    except ValueError:
+        return False
+    else:
+        return True
+
 def _split_df_by_stems(df):
     channel_dfs, x_vals = [], []
     for stem in get_channel_name_stems(df.columns):

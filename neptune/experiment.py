@@ -17,7 +17,7 @@
 import pandas as pd
 from pandas.errors import EmptyDataError
 
-from neptune.utils import map_values, align_channels_on_x
+from neptune.utils import map_values, align_channels_on_x, is_float
 
 
 class Experiment(object):
@@ -149,6 +149,22 @@ class Experiment(object):
         return dict(
             (ch.name, ch.type) for ch in self._leaderboard_entry.channels
         )
+
+    def send_metric(self, name, x, y=None):
+
+        if x is None:
+            raise ValueError("No value provided")
+        elif not is_float(x):
+            raise ValueError("Invalid x value provided")
+
+        if y is None:
+            y = x
+            x = None
+
+        if not is_float(y):
+            raise ValueError("Invalid y value provided")
+
+        self._send_channel_value(name, "numeric", x, dict(numeric_value=y))
 
     @property
     def parameters(self):
@@ -332,3 +348,35 @@ class Experiment(object):
     @staticmethod
     def _simple_dict_to_dataframe(d):
         return pd.DataFrame.from_dict(map_values(lambda x: [x], d))
+
+    def _send_channel_value(self, name, channel_type, x, y):
+        channel = self._get_channel(name, channel_type)
+
+        if x is None:
+            if channel.x is None:
+                channel.x = 0
+            x = channel.x + 1
+        elif x <= channel.x:
+            raise ValueError("ValueError: X-coordinates must be strictly increasing. "
+                             "Invalid Point({}, {}) for channel \"{}\"".format(x, y, name))
+
+        self._client.send_channel_value(self.internal_id, channel.id, x, y)
+
+        channel.x = x
+        channel.y = y
+
+        return channel
+
+    def _get_channel(self, name, channel_type):
+        channel = self._find_channel(name)
+        if channel is None:
+            channel = self._create_channel(name, channel_type)
+        return channel
+
+    def _find_channel(self, name):
+        return next((channel for channel in self._leaderboard_entry.channels if channel.name == name), None)
+
+    def _create_channel(self, name, channel_type):
+        channel = self._client.create_channel(self.internal_id, name, channel_type)
+        self._leaderboard_entry.add_channel(channel)
+        return channel
