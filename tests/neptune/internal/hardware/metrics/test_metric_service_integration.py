@@ -43,6 +43,11 @@ class TestMetricServiceIntegration(unittest.TestCase):
         # and
         experiment_id = str(uuid.uuid4())
 
+        # and
+        cpu_metric_id = str(uuid.uuid4())
+        ram_metric_id = str(uuid.uuid4())
+        self.client.create_hardware_metric.side_effect = [cpu_metric_id, ram_metric_id]
+
         # when
         self.metric_service_factory.create(
             gauge_mode=GaugeMode.SYSTEM, experiment_id=experiment_id, reference_timestamp=time.time())
@@ -52,6 +57,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
             call(
                 experiment_id,
                 Metric(
+                    internal_id=cpu_metric_id,
                     name=u'CPU - usage',
                     description=u'average of all cores',
                     resource_type=MetricResourceType.CPU,
@@ -64,6 +70,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
             call(
                 experiment_id,
                 Metric(
+                    internal_id=ram_metric_id,
                     name=u'RAM',
                     description=u'',
                     resource_type=MetricResourceType.RAM,

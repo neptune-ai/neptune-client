@@ -16,6 +16,8 @@
 import logging
 import time
 
+from bravado.exception import HTTPError
+
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
 
@@ -30,7 +32,12 @@ class HardwareMetricReportingThread(NeptuneThread):
         try:
             while not self.is_interrupted():
                 before = time.time()
-                self.__metric_service.report_and_send(timestamp=time.time())
+
+                try:
+                    self.__metric_service.report_and_send(timestamp=time.time())
+                except HTTPError as e:
+                    self.__logger.warning('Failed to send hardware metrics. Cause: %s', str(e.message))
+
                 reporting_duration = time.time() - before
 
                 time.sleep(max(0, self.__metric_sending_interval_seconds - reporting_duration))
