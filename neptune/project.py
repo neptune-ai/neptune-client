@@ -293,8 +293,6 @@ class Project(object):
 
         # TODO implement send_hardware_metrics
 
-        # TODO implement run_monitoring_thread
-
         # TODO implement handle_uncaught_exceptions
 
         experiment = self.client.create_experiment(
@@ -312,7 +310,9 @@ class Project(object):
         experiment = self.client.mark_running(experiment_id=experiment.internal_id)
 
         if run_monitoring_thread:
-            PingThread(client=self.client, experiment_id=experiment.internal_id).start()
+            # pylint:disable=protected-access
+            experiment._ping_thread = PingThread(client=self.client, experiment_id=experiment.internal_id)
+            experiment._ping_thread.start()
 
         return experiment
 

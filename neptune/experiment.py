@@ -17,10 +17,10 @@ import base64
 import io
 import os
 
-import pandas as pd
-import six
 from PIL import Image
+import pandas as pd
 from pandas.errors import EmptyDataError
+import six
 
 from neptune.utils import align_channels_on_x, is_float, map_values
 
@@ -60,6 +60,7 @@ class Experiment(object):
     def __init__(self, client, leaderboard_entry):
         self._client = client
         self._leaderboard_entry = leaderboard_entry
+        self._ping_thread = None
 
     @property
     def id(self):
@@ -354,6 +355,10 @@ class Experiment(object):
             self._client.mark_succeeded(self.internal_id)
         else:
             self._client.mark_failed(self.internal_id, traceback)
+
+        if self._ping_thread:
+            self._ping_thread.interrupt()
+            self._ping_thread = None
 
     def __str__(self):
         return 'Experiment({})'.format(self.id)
