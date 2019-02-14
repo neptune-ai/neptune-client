@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-import psutil
-
 from neptune.internal.hardware.cgroup.cgroup_monitor import CGroupMonitor
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.resources.gpu_card_indices_provider import GPUCardIndicesProvider
@@ -23,7 +21,8 @@ from neptune.internal.hardware.resources.system_resource_info import SystemResou
 
 
 class SystemResourceInfoFactory(object):
-    def __init__(self, gpu_monitor, os_environ):
+    def __init__(self, system_monitor, gpu_monitor, os_environ):
+        self.__system_monitor = system_monitor
         self.__gpu_monitor = gpu_monitor
         self.__gpu_card_indices_provider = GPUCardIndicesProvider(
             cuda_visible_devices=os_environ.get(u'CUDA_VISIBLE_DEVICES'),
@@ -39,8 +38,8 @@ class SystemResourceInfoFactory(object):
 
     def __create_whole_system_resource_info(self):
         return SystemResourceInfo(
-            cpu_core_count=float(psutil.cpu_count()),
-            memory_amount_bytes=psutil.virtual_memory().total,
+            cpu_core_count=float(self.__system_monitor.cpu_count()),
+            memory_amount_bytes=self.__system_monitor.virtual_memory().total,
             gpu_card_indices=self.__gpu_card_indices_provider.get(),
             gpu_memory_amount_bytes=self.__gpu_monitor.get_top_card_memory_in_bytes()
         )

@@ -20,6 +20,7 @@ import time
 import pandas as pd
 
 from neptune.experiment import Experiment
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 from neptune.internal.threads.ping_thread import PingThread
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
@@ -317,7 +318,7 @@ class Project(object):
             experiment._ping_thread = PingThread(client=self.client, experiment_id=experiment.internal_id)
             experiment._ping_thread.start()
 
-        if send_hardware_metrics:
+        if send_hardware_metrics and SystemMonitor.requirements_installed():
             # pylint:disable=protected-access
             metric_service = MetricServiceFactory(self.client, os.environ).create(
                 gauge_mode=GaugeMode.SYSTEM, experiment_id=experiment.internal_id, reference_timestamp=time.time())

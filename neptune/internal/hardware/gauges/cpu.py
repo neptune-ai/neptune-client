@@ -14,18 +14,20 @@
 # limitations under the License.
 #
 
-import psutil
-
 from neptune.internal.hardware.cgroup.cgroup_monitor import CGroupMonitor
 from neptune.internal.hardware.gauges.gauge import Gauge
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
 class SystemCpuUsageGauge(Gauge):
+    def __init__(self):
+        self.__system_monitor = SystemMonitor()
+
     def name(self):
         return u'cpu'
 
     def value(self):
-        return psutil.cpu_percent()
+        return self.__system_monitor.cpu_percent()
 
     def __eq__(self, other):
         return self.__class__ == other.__class__

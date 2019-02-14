@@ -19,6 +19,7 @@ from neptune.internal.hardware.metrics.metrics_factory import MetricsFactory
 from neptune.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
 from neptune.internal.hardware.metrics.service.metric_service import MetricService
 from neptune.internal.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
 class MetricServiceFactory(object):
@@ -28,7 +29,7 @@ class MetricServiceFactory(object):
 
     def create(self, gauge_mode, experiment_id, reference_timestamp):
         system_resource_info = SystemResourceInfoFactory(
-            gpu_monitor=GPUMonitor(), os_environ=self.__os_environ
+            system_monitor=SystemMonitor(), gpu_monitor=GPUMonitor(), os_environ=self.__os_environ
         ).create(gauge_mode=gauge_mode)
 
         gauge_factory = GaugeFactory(gauge_mode=gauge_mode)

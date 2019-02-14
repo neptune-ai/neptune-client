@@ -1,4 +1,5 @@
 mock==2.0.0
+psutil==5.5.0
 pylint==1.9.4
 pylintfileheader==0.0.2
 pytest==4.1.0

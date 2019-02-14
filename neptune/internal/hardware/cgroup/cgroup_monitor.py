@@ -16,21 +16,21 @@
 
 import time
 
-import psutil
-
 from neptune.internal.hardware.cgroup.cgroup_filesystem_reader import CGroupFilesystemReader
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
 class CGroupMonitor(object):
-    def __init__(self, cgroup_filesystem_reader):
+    def __init__(self, cgroup_filesystem_reader, system_monitor):
         self.__cgroup_filesystem_reader = cgroup_filesystem_reader
+        self.__system_monitor = system_monitor
 
         self.__last_cpu_usage_measurement_timestamp_nanos = None
         self.__last_cpu_cumulative_usage_nanos = None
 
     @staticmethod
     def create():
-        return CGroupMonitor(CGroupFilesystemReader())
+        return CGroupMonitor(CGroupFilesystemReader(), SystemMonitor())
 
     def get_memory_usage_in_bytes(self):
         return self.__cgroup_filesystem_reader.get_memory_usage_in_bytes()
@@ -42,7 +42,7 @@ class CGroupMonitor(object):
         cpu_quota_micros = self.__cgroup_filesystem_reader.get_cpu_quota_micros()
 
         if cpu_quota_micros == -1:
-            return float(psutil.cpu_count())
+            return float(self.__system_monitor.cpu_count())
         else:
             cpu_period_micros = self.__cgroup_filesystem_reader.get_cpu_period_micros()
             return float(cpu_quota_micros) / float(cpu_period_micros)

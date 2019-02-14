@@ -14,19 +14,21 @@
 # limitations under the License.
 #
 
-import psutil
-
 from neptune.internal.hardware.cgroup.cgroup_monitor import CGroupMonitor
 from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
 from neptune.internal.hardware.gauges.gauge import Gauge
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
 class SystemMemoryUsageGauge(Gauge):
+    def __init__(self):
+        self.__system_monitor = SystemMonitor()
+
     def name(self):
         return u'ram'
 
     def value(self):
-        virtual_mem = psutil.virtual_memory()
+        virtual_mem = self.__system_monitor.virtual_memory()
         return (virtual_mem.total - virtual_mem.available) / float(BYTES_IN_ONE_GB)
 
     def __eq__(self, other):
