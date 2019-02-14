@@ -156,14 +156,7 @@ class Experiment(object):
         )
 
     def send_metric(self, channel_name, x, y=None):
-        if x is None:
-            raise ValueError("No value provided")
-        elif not is_float(x):
-            raise ValueError("Invalid value={} provided".format(x))
-
-        if y is None:
-            y = x
-            x = None
+        x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
             raise ValueError("Invalid value={} provided".format(y))
@@ -171,26 +164,15 @@ class Experiment(object):
         self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y))
 
     def send_text(self, name, x, y=None):
-        if x is None:
-            raise ValueError("No value provided")
+        x, y = self._get_valid_x_y(x, y)
 
-        if y is None:
-            y = x
-            x = None
-        elif not is_float(x):
-            raise ValueError("Invalid value={} provided".format(x))
+        if isinstance(y, six.string_types):
+            return ValueError("Invalid value={:100.100} provided".format(y))
 
         self._send_channel_value(name, 'text', x, dict(text_value=y))
 
     def send_image(self, channel_name, x, y=None, name=None, description=None):
-        if x is None:
-            raise ValueError("No image provided")
-
-        if y is None:
-            y = x
-            x = None
-        elif not is_float(x):
-            raise ValueError("Invalid x value provided")
+        x, y = self._get_valid_x_y(x, y)
 
         input_image = dict(
             name=name,
@@ -382,6 +364,18 @@ class Experiment(object):
     @staticmethod
     def _simple_dict_to_dataframe(d):
         return pd.DataFrame.from_dict(map_values(lambda x: [x], d))
+
+    def _get_valid_x_y(self, x, y):
+        if x is None:
+            raise ValueError("No value provided")
+
+        if y is None:
+            y = x
+            x = None
+        elif not is_float(x):
+            raise ValueError("Invalid value={} provided".format(x))
+
+        return x, y
 
     def _send_channel_value(self, channel_name, channel_type, x, y):
         channel = self._get_channel(channel_name, channel_type)
