@@ -16,8 +16,8 @@
 
 
 class Metric(object):
-    def __init__(self, name, description, resource_type, unit, min_value, max_value, gauges):
-        self.__internal_id = None
+    def __init__(self, name, description, resource_type, unit, min_value, max_value, gauges, internal_id=None):
+        self.__internal_id = internal_id
         self.__name = name
         self.__description = description
         self.__resource_type = resource_type

@@ -318,6 +318,7 @@ class Project(object):
             experiment._ping_thread.start()
 
         if send_hardware_metrics:
+            # pylint:disable=protected-access
             metric_service = MetricServiceFactory(self.client, os.environ).create(
                 gauge_mode=GaugeMode.SYSTEM, experiment_id=experiment.internal_id, reference_timestamp=time.time())
             experiment._hardware_metric_thread = HardwareMetricReportingThread(
