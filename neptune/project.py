@@ -19,6 +19,7 @@ import sys
 import pandas as pd
 
 from neptune.experiment import Experiment
+from neptune.internal.threads.ping_thread import PingThread
 from neptune.utils import as_list, map_keys
 
 
@@ -288,12 +289,9 @@ class Project(object):
             else:
                 upload_source_files = []
 
-
         # TODO implement upload_source_files
 
         # TODO implement send_hardware_metrics
-
-        # TODO implement run_monitoring_thread
 
         # TODO implement handle_uncaught_exceptions
 
@@ -309,8 +307,14 @@ class Project(object):
         # FIXME delete all of these transitions
         experiment = self.client.mark_waiting(experiment_id=experiment.internal_id)
         experiment = self.client.mark_initializing(experiment_id=experiment.internal_id)
-        return self.client.mark_running(experiment_id=experiment.internal_id)
+        experiment = self.client.mark_running(experiment_id=experiment.internal_id)
 
+        if run_monitoring_thread:
+            # pylint:disable=protected-access
+            experiment._ping_thread = PingThread(client=self.client, experiment_id=experiment.internal_id)
+            experiment._ping_thread.start()
+
+        return experiment
 
     @property
     def full_id(self):
