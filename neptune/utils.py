@@ -15,12 +15,12 @@
 #
 
 import functools
+import os
 import sys
 
 import numpy as np
 import pandas as pd
 
-# http://stackoverflow.com/questions/1325581/how-do-i-check-if-im-running-on-windows-in-python
 IS_WINDOWS = hasattr(sys, 'getwindowsversion')
 
 
@@ -65,6 +65,19 @@ def is_float(value):
         return False
     else:
         return True
+
+
+def file_contains(filename, text):
+    for line in open(filename):
+        if text in line:
+            return True
+    return False
+
+
+def in_docker():
+    cgroup_file = '/proc/self/cgroup'
+    return os.path.exists('./dockerenv') or (os.path.exists(cgroup_file) and file_contains(cgroup_file, text='docker'))
+
 
 def _split_df_by_stems(df):
     channel_dfs, x_vals = [], []
