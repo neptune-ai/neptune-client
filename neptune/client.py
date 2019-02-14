@@ -220,6 +220,9 @@ class Client(object):
 
         return self._convert_experiment_to_leaderboard_entry(experiment)
 
+    def ping_experiment(self, experiment_id):
+        self.backend_swagger_client.api.pingExperiment(experimentId=experiment_id).response()
+
     @staticmethod
     def _get_all_items(get_portion, step):
         items = []
