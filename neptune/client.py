@@ -167,7 +167,7 @@ class Client(object):
             channelToCreate=params
         ).response().result
 
-        return self._convert_channel_to_channel_with_last_value(channel, last_value=None)
+        return self._convert_channel_to_channel_with_last_value(channel)
 
     def send_channel_value(self, experiment_id, channel_id, x, y):
         InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
@@ -193,6 +193,32 @@ class Client(object):
 
         if batch_errors:
             raise ValueError(batch_errors[0].error.message)
+
+    def mark_succeeded(self, experiment_id):
+        CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
+
+        experiment = self.backend_swagger_client.api.markExperimentCompleted(
+            experimentId=experiment_id,
+            completedExperimentParams=CompletedExperimentParams(
+                state='succeeded',
+                traceback=''  # FIXME
+            )
+        ).response().result
+
+        return self._convert_experiment_to_leaderboard_entry(experiment)
+
+    def mark_failed(self, experiment_id, traceback):
+        CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
+
+        experiment = self.backend_swagger_client.api.markExperimentCompleted(
+            experimentId=experiment_id,
+            completedExperimentParams=CompletedExperimentParams(
+                state='failed',
+                traceback=traceback
+            )
+        ).response().result
+
+        return self._convert_experiment_to_leaderboard_entry(experiment)
 
     @staticmethod
     def _get_all_items(get_portion, step):
@@ -265,28 +291,17 @@ class Client(object):
             )
         )
 
-    def _convert_channel_to_channel_with_last_value(self, channel, last_value):
+    def _convert_channel_to_channel_with_last_value(self, channel):
         ChannelWithValueDTO = self.leaderboard_swagger_client.get_model('ChannelWithValueDTO')
-        if last_value is not None:
-            return ChannelWithLastValue(
-                ChannelWithValueDTO(
-                    channelId=channel.id,
-                    channelName=channel.name,
-                    channelType=channel.channelType,
-                    x=last_value.x,
-                    y=last_value.y
-                )
+        return ChannelWithLastValue(
+            ChannelWithValueDTO(
+                channelId=channel.id,
+                channelName=channel.name,
+                channelType=channel.channelType,
+                x=None,
+                y=None
             )
-        else:
-            return ChannelWithLastValue(
-                ChannelWithValueDTO(
-                    channelId=channel.id,
-                    channelName=channel.name,
-                    channelType=channel.channelType,
-                    x=None,
-                    y=None
-                )
-            )
+        )
 
 
 uuid_format = SwaggerFormat(

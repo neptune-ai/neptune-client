@@ -342,6 +342,12 @@ class Experiment(object):
 
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
+    def stop(self, traceback=None):
+        if traceback is None:
+            self._client.mark_succeeded(self.internal_id)
+        else:
+            self._client.mark_failed(self.internal_id, traceback)
+
     def __str__(self):
         return 'Experiment({})'.format(self.id)
 
