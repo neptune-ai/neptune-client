@@ -61,6 +61,7 @@ class Experiment(object):
         self._client = client
         self._leaderboard_entry = leaderboard_entry
         self._ping_thread = None
+        self._hardware_metric_thread = None
 
     @property
     def id(self):
@@ -359,6 +360,10 @@ class Experiment(object):
         if self._ping_thread:
             self._ping_thread.interrupt()
             self._ping_thread = None
+
+        if self._hardware_metric_thread:
+            self._hardware_metric_thread.interrupt()
+            self._hardware_metric_thread = None
 
     def __str__(self):
         return 'Experiment({})'.format(self.id)

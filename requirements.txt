@@ -1,3 +1,4 @@
+nvidia-ml-py3
 oauthlib
 PyJWT
 requests>=2.20.0

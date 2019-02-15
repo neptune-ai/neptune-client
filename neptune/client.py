@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import uuid
 from io import StringIO
+from itertools import groupby
+import uuid
 
 from bravado.client import SwaggerClient
 from bravado.requests_client import RequestsClient
@@ -222,6 +223,44 @@ class Client(object):
 
     def ping_experiment(self, experiment_id):
         self.backend_swagger_client.api.pingExperiment(experimentId=experiment_id).response()
+
+    def create_hardware_metric(self, experiment_id, metric):
+        SystemMetricParams = self.backend_swagger_client.get_model('SystemMetricParams')
+
+        series = [gauge.name() for gauge in metric.gauges]
+        system_metric_params = SystemMetricParams(
+            name=metric.name, description=metric.description, resourceType=metric.resource_type,
+            unit=metric.unit, min=metric.min_value, max=metric.max_value, series=series)
+
+        metric_dto = self.backend_swagger_client.api.createSystemMetric(
+            experimentId=experiment_id, metricToCreate=system_metric_params
+        ).response().result
+
+        return metric_dto.id
+
+    def send_hardware_metric_reports(self, experiment_id, metrics, metric_reports):
+        SystemMetricValues = self.backend_swagger_client.get_model('SystemMetricValues')
+        SystemMetricPoint = self.backend_swagger_client.get_model('SystemMetricPoint')
+
+        metrics_by_name = {metric.name: metric for metric in metrics}
+
+        system_metric_values = [
+            SystemMetricValues(
+                metricId=metrics_by_name.get(report.metric.name).internal_id,
+                seriesName=gauge_name,
+                values=[
+                    SystemMetricPoint(x=int(metric_value.timestamp * 1000.0), y=metric_value.value)
+                    for metric_value in metric_values
+                ]
+            )
+            for report in metric_reports
+            for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name)
+        ]
+
+        response = self.backend_swagger_client.api.postSystemMetricValues(
+            experimentId=experiment_id, metricValues=system_metric_values).response()
+
+        return response
 
     @staticmethod
     def _get_all_items(get_portion, step):

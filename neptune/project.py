@@ -15,12 +15,17 @@
 #
 import os
 import sys
+import time
 
 import pandas as pd
 
 from neptune.experiment import Experiment
+from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
+from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
+from neptune.internal.hardware.system.system_monitor import SystemMonitor
+from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
-from neptune.utils import as_list, map_keys
+from neptune.utils import as_list, in_docker, map_keys
 
 
 class Project(object):
@@ -291,8 +296,6 @@ class Project(object):
 
         # TODO implement upload_source_files
 
-        # TODO implement send_hardware_metrics
-
         # TODO implement handle_uncaught_exceptions
 
         experiment = self.client.create_experiment(
@@ -313,6 +316,16 @@ class Project(object):
             # pylint:disable=protected-access
             experiment._ping_thread = PingThread(client=self.client, experiment_id=experiment.internal_id)
             experiment._ping_thread.start()
+
+        if send_hardware_metrics and SystemMonitor.requirements_installed():
+            # pylint:disable=protected-access
+            gauge_mode = GaugeMode.CGROUP if in_docker() else GaugeMode.SYSTEM
+            metric_service = MetricServiceFactory(self.client, os.environ).create(
+                gauge_mode=gauge_mode, experiment_id=experiment.internal_id, reference_timestamp=time.time())
+
+            experiment._hardware_metric_thread = HardwareMetricReportingThread(
+                metric_service=metric_service, metric_sending_interval_seconds=3)
+            experiment._hardware_metric_thread.start()
 
         return experiment
 
