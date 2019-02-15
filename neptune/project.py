@@ -273,7 +273,7 @@ class Project(object):
                           properties=None,
                           tags=None,
                           upload_source_files=None,
-                          custom_abort_callback=None,
+                          abort_callback=None,
                           send_hardware_metrics=True,
                           run_monitoring_thread=True,
                           handle_uncaught_exceptions=True):
@@ -302,7 +302,7 @@ class Project(object):
 
         # TODO implement handle_uncaught_exceptions
 
-        abortable = custom_abort_callback is not None or DefaultAbortImpl.requirements_installed()
+        abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         experiment = self.client.create_experiment(
             project_id=self.internal_id,
@@ -321,8 +321,8 @@ class Project(object):
 
         if abortable:
             # pylint:disable=protected-access
-            if custom_abort_callback:
-                abort_impl = CustomAbortImpl(custom_abort_callback)
+            if abort_callback:
+                abort_impl = CustomAbortImpl(abort_callback)
             else:
                 abort_impl = DefaultAbortImpl(pid=os.getpid())
             websocket_factory = ReconnectingWebsocketFactory(client=self.client, experiment_id=experiment.internal_id)
