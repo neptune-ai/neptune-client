@@ -320,6 +320,7 @@ class Project(object):
         experiment = self.client.mark_running(experiment_id=experiment.internal_id)
 
         if abortable:
+            # pylint:disable=protected-access
             if custom_abort_callback:
                 abort_impl = CustomAbortImpl(custom_abort_callback)
             else:

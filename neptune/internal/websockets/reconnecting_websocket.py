@@ -80,7 +80,7 @@ class ReconnectingWebsocket(object):
             if self.client.connected:
                 self.client.shutdown()
             self.client.connect(url=self.url, token=self._token)
-        except Exception as e:
+        except Exception:
             self._shutdown_event.wait(self._reconnect_counter.calculate_delay())
 
     def _handle_lost_connection(self):

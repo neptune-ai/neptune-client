@@ -41,15 +41,12 @@ class Message(object):
 
 
 class AbortMessage(Message):
-    def __init__(self):
-        super(AbortMessage, self).__init__()
-
     @classmethod
     def get_type(cls):
         return MessageType.ABORT
 
     @classmethod
-    def from_json(cls, _):
+    def from_json(cls, json_value):
         return AbortMessage()
 
     def body_to_json(self):
@@ -72,12 +69,12 @@ class ActionInvocationMessage(Message):
         return MessageType.ACTION_INVOCATION
 
     @classmethod
-    def from_json(cls, message_body):
+    def from_json(cls, json_value):
         field_names = [
             cls._ACTION_ID_JSON_KEY,
             cls._ACTION_INVOCATION_ID_JSON_KEY,
             cls._ARGUMENT_JSON_KEY]
-        return ActionInvocationMessage(*[message_body[field] for field in field_names])
+        return ActionInvocationMessage(*[json_value[field] for field in field_names])
 
     def body_to_json(self):
         return {

@@ -17,11 +17,11 @@ import logging
 
 
 class CustomAbortImpl(object):
-    def __init__(self, callable):
-        self.__callable = callable
+    def __init__(self, runnable):
+        self.__runnable = runnable
 
     def abort(self):
-        self.__callable()
+        self.__runnable()
 
 
 class DefaultAbortImpl(object):
