@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import threading
 
 from websocket import WebSocketConnectionClosedException
@@ -26,7 +25,6 @@ from neptune.internal.websockets.websocket_message_processor import WebsocketMes
 class AbortingThread(NeptuneThread):
     def __init__(self, websocket_factory, abort_impl, experiment_id):
         super(AbortingThread, self).__init__(is_daemon=True)
-        self.__logger = logging.getLogger(__name__)
         self._abort_message_processor = AbortMessageProcessor(abort_impl, experiment_id)
         self._ws_client = websocket_factory.create(shutdown_condition=threading.Event())
 
@@ -46,7 +44,6 @@ class AbortingThread(NeptuneThread):
 class AbortMessageProcessor(WebsocketMessageProcessor):
     def __init__(self, abort_impl, experiment_id):
         super(AbortMessageProcessor, self).__init__()
-        self._logger = logging.getLogger(__name__)
         self._abort_impl = abort_impl
         self._experiment_id = experiment_id
         self.received_abort_message = False
@@ -56,6 +53,5 @@ class AbortMessageProcessor(WebsocketMessageProcessor):
             self._abort()
 
     def _abort(self):
-        self._logger.debug(u'Aborting experiment %s...', self._experiment_id)
         self.received_abort_message = True
         self._abort_impl.abort()

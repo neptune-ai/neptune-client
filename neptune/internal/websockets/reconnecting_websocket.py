@@ -14,9 +14,6 @@
 # limitations under the License.
 #
 
-from __future__ import print_function
-
-import logging
 import random
 
 from websocket import WebSocketConnectionClosedException, WebSocketTimeoutException
@@ -31,7 +28,6 @@ class ReconnectingWebsocket(object):
     def __init__(self, url, oauth2_session, shutdown_event):
         self.url = url
         self.client = WebsocketClientAdapter()
-        self._logger = logging.getLogger(__name__)
         self._shutdown_event = shutdown_event
         self._oauth2_session = oauth2_session
         self._reconnect_counter = ReconnectCounter()
@@ -68,10 +64,6 @@ class ReconnectingWebsocket(object):
         return not self._shutdown_event.is_set()
 
     def _on_successful_connect(self):
-        if self._reconnect_counter.retries >= 1:
-            print(CONNECTION_RESTORED_MESSAGE)
-            self._logger.info("Established connection to %s in #%d attempt.",
-                              self.url, self._reconnect_counter.retries)
         self._reconnect_counter.clear()
 
     def _try_to_establish_connection(self):
@@ -84,7 +76,6 @@ class ReconnectingWebsocket(object):
             self._shutdown_event.wait(self._reconnect_counter.calculate_delay())
 
     def _handle_lost_connection(self):
-        print(CONNECTION_LOST_MESSAGE)
         self._reconnect_counter.increment()
         self._try_to_establish_connection()
 

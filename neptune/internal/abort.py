@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 
 
 class CustomAbortImpl(object):
@@ -29,7 +28,6 @@ class DefaultAbortImpl(object):
 
     def __init__(self, pid):
         self._pid = pid
-        self._logger = logging.getLogger(__name__)
 
     @staticmethod
     def requirements_installed():
@@ -47,7 +45,7 @@ class DefaultAbortImpl(object):
         try:
             process = psutil.Process(self._pid)
         except psutil.NoSuchProcess:
-            self._logger.debug('Received an abort message, but the job is already finished.')
+            pass
 
         if process is not None:
             processes = self._get_processes(process)
@@ -70,11 +68,9 @@ class DefaultAbortImpl(object):
         import psutil
 
         try:
-            if process.is_running():
-                self._logger.debug("Sending SIGTERM to %s", process.pid)
-                process.terminate()
+            process.terminate()
         except psutil.NoSuchProcess:
-            self._logger.info("Process %s already finished...", process.pid)
+            pass
 
     def _kill(self, process):
         import psutil
@@ -82,7 +78,6 @@ class DefaultAbortImpl(object):
         for process in self._get_processes(process):
             try:
                 if process.is_running():
-                    self._logger.debug("Sending SIGKILL to %s", process.pid)
                     process.kill()
             except psutil.NoSuchProcess:
-                self._logger.info("Process %s already finished...", process.pid)
+                pass
