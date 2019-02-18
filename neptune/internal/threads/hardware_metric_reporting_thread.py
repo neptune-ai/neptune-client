@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import time
 
 from bravado.exception import HTTPError
@@ -24,7 +23,6 @@ from neptune.internal.threads.neptune_thread import NeptuneThread
 class HardwareMetricReportingThread(NeptuneThread):
     def __init__(self, metric_service, metric_sending_interval_seconds):
         super(HardwareMetricReportingThread, self).__init__(is_daemon=True)
-        self.__logger = logging.getLogger(__name__)
         self.__metric_service = metric_service
         self.__metric_sending_interval_seconds = metric_sending_interval_seconds
 
@@ -35,11 +33,11 @@ class HardwareMetricReportingThread(NeptuneThread):
 
                 try:
                     self.__metric_service.report_and_send(timestamp=time.time())
-                except HTTPError as e:
-                    self.__logger.warning('Failed to send hardware metrics. Cause: %s', str(e.message))
+                except HTTPError:
+                    pass
 
                 reporting_duration = time.time() - before
 
                 time.sleep(max(0, self.__metric_sending_interval_seconds - reporting_duration))
-        except Exception as e:
-            self.__logger.error(e)
+        except Exception:
+            pass

@@ -62,6 +62,7 @@ class Experiment(object):
         self._leaderboard_entry = leaderboard_entry
         self._ping_thread = None
         self._hardware_metric_thread = None
+        self._aborting_thread = None
 
     @property
     def id(self):
@@ -364,6 +365,10 @@ class Experiment(object):
         if self._hardware_metric_thread:
             self._hardware_metric_thread.interrupt()
             self._hardware_metric_thread = None
+
+        if self._aborting_thread:
+            self._aborting_thread.interrupt()
+            self._aborting_thread = None
 
     def __str__(self):
         return 'Experiment({})'.format(self.id)

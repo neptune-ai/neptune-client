@@ -20,11 +20,14 @@ import time
 import pandas as pd
 
 from neptune.experiment import Experiment
+from neptune.internal.abort import CustomAbortImpl, DefaultAbortImpl
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
+from neptune.internal.threads.aborting_thread import AbortingThread
 from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
+from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
 from neptune.utils import as_list, in_docker, map_keys
 
 
@@ -270,6 +273,7 @@ class Project(object):
                           properties=None,
                           tags=None,
                           upload_source_files=None,
+                          abort_callback=None,
                           send_hardware_metrics=True,
                           run_monitoring_thread=True,
                           handle_uncaught_exceptions=True):
@@ -298,19 +302,33 @@ class Project(object):
 
         # TODO implement handle_uncaught_exceptions
 
+        abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
+
         experiment = self.client.create_experiment(
             project_id=self.internal_id,
             name=name,
             description=description,
             params=params,
             properties=properties,
-            tags=tags
+            tags=tags,
+            abortable=abortable
         )
 
         # FIXME delete all of these transitions
         experiment = self.client.mark_waiting(experiment_id=experiment.internal_id)
         experiment = self.client.mark_initializing(experiment_id=experiment.internal_id)
         experiment = self.client.mark_running(experiment_id=experiment.internal_id)
+
+        if abortable:
+            # pylint:disable=protected-access
+            if abort_callback:
+                abort_impl = CustomAbortImpl(abort_callback)
+            else:
+                abort_impl = DefaultAbortImpl(pid=os.getpid())
+            websocket_factory = ReconnectingWebsocketFactory(client=self.client, experiment_id=experiment.internal_id)
+            experiment._aborting_thread = AbortingThread(
+                websocket_factory=websocket_factory, abort_impl=abort_impl, experiment_id=experiment.internal_id)
+            experiment._aborting_thread.start()
 
         if run_monitoring_thread:
             # pylint:disable=protected-access

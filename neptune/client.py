@@ -22,7 +22,7 @@ from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 
 from neptune.experiment import Experiment
-from neptune.model import LeaderboardEntry, ChannelWithLastValue
+from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
 from neptune.utils import is_float
 
@@ -49,8 +49,9 @@ class Client(object):
                 formats=[uuid_format]),
             http_client=http_client)
 
-        http_client.authenticator = NeptuneAuthenticator(
+        self.authenticator = NeptuneAuthenticator(
             self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result)
+        http_client.authenticator = self.authenticator
 
     def get_project(self, organization_name, project_name):
         r = self.backend_swagger_client.api.getProjectByName(
@@ -112,7 +113,7 @@ class Client(object):
         csv.seek(0)
         return csv
 
-    def create_experiment(self, project_id, name, description, params, properties, tags):
+    def create_experiment(self, project_id, name, description, params, properties, tags, abortable):
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
 
         params = ExperimentCreationParams(
@@ -124,7 +125,8 @@ class Client(object):
             tags=tags,
             enqueueCommand="command",  # FIXME
             entrypoint="",  # FIXME
-            execArgsTemplate=""  # FIXME
+            execArgsTemplate="",  # FIXME,
+            abortable=abortable
         )
 
         experiment = self.backend_swagger_client.api.createExperiment(experimentCreationParams=params).response().result
