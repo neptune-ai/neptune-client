@@ -22,8 +22,10 @@ import tarfile
 
 from future.builtins import object
 
+from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 
-class FileChunkWithCallback(object):
+
+class FileChunk(object):
     def __init__(self, fobj, start, end):
         self.fobj = fobj
         self.start = start
@@ -67,15 +69,15 @@ class FileChunkStream(object):
             return self.__dict__ == fs.__dict__
         return False
 
-    def generate(self, chunk_size=1 * 1024 * 1024):
+    def generate(self, chunk_size=BYTES_IN_ONE_MB):
         num_chunks = (self.length + chunk_size - 1) // chunk_size
         if num_chunks == 0:
-            yield FileChunkWithCallback(self.fobj, 0, 0)
+            yield FileChunk(self.fobj, 0, 0)
 
         for i in range(num_chunks):
             start = i * chunk_size
             end = min(self.length, (i + 1) * chunk_size)
-            yield FileChunkWithCallback(self.fobj, start, end)
+            yield FileChunk(self.fobj, start, end)
 
     def close(self):
         self.fobj.close()

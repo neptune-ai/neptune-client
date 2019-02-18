@@ -20,8 +20,8 @@ import pandas as pd
 import six
 from pandas.errors import EmptyDataError
 
-from neptune.internal.image_utils import get_image_content
 from neptune.internal.storage.storage_utils import upload_to_storage
+from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, map_values
 
 
