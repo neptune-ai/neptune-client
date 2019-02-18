@@ -13,10 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import io
+import uuid
 from io import StringIO
 from itertools import groupby
-import uuid
 
+import requests
 from bravado.client import SwaggerClient
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
@@ -32,14 +34,14 @@ class Client(object):
         self.api_address = api_address
         self.api_token = api_token
 
-        http_client = RequestsClient()
+        self._http_client = RequestsClient()
 
         self.backend_swagger_client = SwaggerClient.from_url(
             '{}/api/backend/swagger.json'.format(self.api_address),
             config=dict(
                 validate_swagger_spec=False,
                 formats=[uuid_format]),
-            http_client=http_client)
+            http_client=self._http_client)
 
         self.leaderboard_swagger_client = SwaggerClient.from_url(
             '{}/api/leaderboard/swagger.json'.format(self.api_address),
@@ -47,11 +49,12 @@ class Client(object):
                 validate_swagger_spec=False,
                 validate_responses=False,  # TODO!!!
                 formats=[uuid_format]),
-            http_client=http_client)
+            http_client=self._http_client)
 
-        self.authenticator = NeptuneAuthenticator(
-            self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result)
-        http_client.authenticator = self.authenticator
+        self._authenticator = NeptuneAuthenticator(
+            self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
+        )
+        self._http_client.authenticator = self._authenticator
 
     def get_project(self, organization_name, project_name):
         r = self.backend_swagger_client.api.getProjectByName(
@@ -264,6 +267,30 @@ class Client(object):
 
         return response
 
+    def upload_experiment_output(self, experiment_id, data):
+        return self._upload_loop(self._upload_experiment_output,
+                                 data=data,
+                                 experiment_id=experiment_id)
+
+    def extract_experiment_output(self, experiment_id, data):
+        url = self.api_address + self.backend_swagger_client.api.uploadExperimentOutputAsTarstream.operation.path_name
+        url = url.replace("{experimentId}", experiment_id)
+
+        session = self._http_client.session
+
+        request = self._authenticator.apply(
+            requests.Request(
+                method='POST',
+                url=url,
+                data=io.BytesIO(data),
+                headers={
+                    "Content-Type": "application/octet-stream"
+                },
+            )
+        )
+
+        return session.send(session.prepare_request(request))
+
     @staticmethod
     def _get_all_items(get_portion, step):
         items = []
@@ -346,6 +373,52 @@ class Client(object):
                 y=None
             )
         )
+
+    def _upload_loop(self, fun, data, checksums=None, **kwargs):
+        ret = None
+        for part in data.generate():
+            skip = False
+            if checksums and part.start in checksums:
+                skip = checksums[part.start].checksum == part.md5()
+
+            if not skip:
+                ret = self._upload_loop_chunk(fun, part, data, **kwargs)
+            else:
+                part.skip()
+        data.close()
+        return ret
+
+    def _upload_loop_chunk(self, fun, part, data, **kwargs):
+        part_to_send = part.get_data()
+        if part.end:
+            binary_range = "bytes=%d-%d/%d" % (part.start, part.end - 1, data.length)
+        else:
+            binary_range = "bytes=%d-/%d" % (part.start, data.length)
+        return fun(data=part_to_send,
+                   headers={
+                       "Content-Type": "application/octet-stream",
+                       "Content-Filename": data.filename,
+                       "Range": binary_range,
+                       "X-File-Permissions": data.permissions
+                   },
+                   **kwargs)
+
+    def _upload_experiment_output(self, experiment_id, data, headers):
+        url = self.api_address + self.backend_swagger_client.api.uploadExperimentOutput.operation.path_name
+        url = url.replace("{experimentId}", experiment_id)
+
+        session = self._http_client.session
+
+        request = self._authenticator.apply(
+            requests.Request(
+                method='POST',
+                url=url,
+                data=data,
+                headers=headers
+            )
+        )
+
+        return session.send(session.prepare_request(request))
 
 
 uuid_format = SwaggerFormat(

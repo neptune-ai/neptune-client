@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 import base64
-import io
 import os
 
-from PIL import Image
 import pandas as pd
-from pandas.errors import EmptyDataError
 import six
+from pandas.errors import EmptyDataError
 
+from neptune.internal.image_utils import get_image_content
+from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.utils import align_channels_on_x, is_float, map_values
 
 
@@ -180,10 +180,20 @@ class Experiment(object):
         input_image = dict(
             name=name,
             description=description,
-            data=base64.b64encode(self._get_image_content(y)).decode('utf-8')
+            data=base64.b64encode(get_image_content(y)).decode('utf-8')
         )
 
         self._send_channel_value(channel_name, 'image', x, dict(image_value=input_image))
+
+    def send_artifact(self, artifact):
+
+        if not os.path.exists(artifact):
+            raise ValueError("File {} doesn't exist")
+
+        upload_to_storage(files_list=[(os.path.abspath(artifact), artifact)],
+                          upload_api_fun=self._client.upload_experiment_output,
+                          upload_tar_api_fun=self._client.extract_experiment_output,
+                          experiment_id=self.internal_id)
 
     @property
     def parameters(self):
@@ -429,17 +439,3 @@ class Experiment(object):
         channel = self._client.create_channel(self.internal_id, channel_name, channel_type)
         self._leaderboard_entry.add_channel(channel)
         return channel
-
-    def _get_image_content(self, image):
-        if isinstance(image, six.string_types):
-            if not os.path.exists(image):
-                raise ValueError("File {} doesn't exist".format(image))
-            with open(image, 'r') as image_file:
-                return image_file.read()
-
-        elif isinstance(image, Image.Image):
-            with io.BytesIO() as image_buffer:
-                image.save(image_buffer, format='PNG')
-                return image_buffer.getvalue()
-
-        raise ValueError("Unsupported image value")
