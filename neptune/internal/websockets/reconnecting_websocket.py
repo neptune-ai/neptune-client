@@ -20,9 +20,6 @@ from websocket import WebSocketConnectionClosedException, WebSocketTimeoutExcept
 
 from neptune.internal.websockets.websocket_client_adapter import WebsocketClientAdapter, WebsocketNotConnectedException
 
-CONNECTION_LOST_MESSAGE = u"Websocket connection lost. Retrying..."
-CONNECTION_RESTORED_MESSAGE = u"Websocket connection restored!"
-
 
 class ReconnectingWebsocket(object):
     def __init__(self, url, oauth2_session, shutdown_event):
