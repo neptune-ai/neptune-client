@@ -311,7 +311,8 @@ class Project(object):
             params=params,
             properties=properties,
             tags=tags,
-            abortable=abortable
+            abortable=abortable,
+            monitored=run_monitoring_thread
         )
 
         # FIXME delete all of these transitions
