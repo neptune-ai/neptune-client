@@ -13,6 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import io
+import os
 
-BYTES_IN_ONE_MB = 2 ** 20
-BYTES_IN_ONE_GB = 2 ** 30
+import six
+from PIL import Image
+
+
+def get_image_content(image):
+    if isinstance(image, six.string_types):
+        if not os.path.exists(image):
+            raise ValueError("File {} doesn't exist".format(image))
+        with open(image, 'r') as image_file:
+            return image_file.read()
+
+    elif isinstance(image, Image.Image):
+        with io.BytesIO() as image_buffer:
+            image.save(image_buffer, format='PNG')
+            return image_buffer.getvalue()
+
+    raise ValueError("Unsupported image value")
