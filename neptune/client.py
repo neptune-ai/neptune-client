@@ -52,10 +52,10 @@ class Client(object):
                 formats=[uuid_format]),
             http_client=self._http_client)
 
-        self._authenticator = NeptuneAuthenticator(
+        self.authenticator = NeptuneAuthenticator(
             self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
         )
-        self._http_client.authenticator = self._authenticator
+        self._http_client.authenticator = self.authenticator
 
     def get_project(self, organization_name, project_name):
         r = self.backend_swagger_client.api.getProjectByName(
@@ -413,7 +413,7 @@ class Client(object):
 
         session = self._http_client.session
 
-        request = self._authenticator.apply(
+        request = self.authenticator.apply(
             requests.Request(
                 method='POST',
                 url=url,
@@ -430,7 +430,7 @@ class Client(object):
 
         session = self._http_client.session
 
-        request = self._authenticator.apply(
+        request = self.authenticator.apply(
             requests.Request(
                 method='POST',
                 url=url,
