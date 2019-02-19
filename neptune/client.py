@@ -116,7 +116,7 @@ class Client(object):
         csv.seek(0)
         return csv
 
-    def create_experiment(self, project_id, name, description, params, properties, tags, abortable):
+    def create_experiment(self, project_id, name, description, params, properties, tags, abortable, monitored):
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
 
         params = ExperimentCreationParams(
@@ -129,7 +129,8 @@ class Client(object):
             enqueueCommand="command",  # FIXME
             entrypoint="",  # FIXME
             execArgsTemplate="",  # FIXME,
-            abortable=abortable
+            abortable=abortable,
+            monitored=monitored
         )
 
         experiment = self.backend_swagger_client.api.createExperiment(experimentCreationParams=params).response().result
