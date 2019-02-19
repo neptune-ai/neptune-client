@@ -21,7 +21,7 @@ import pandas as pd
 from mock import MagicMock
 from pandas.util.testing import assert_frame_equal
 
-from neptune.experiment import Experiment
+from neptune.experiments import Experiment
 from tests.neptune.random_utils import sort_df_by_columns
 
 

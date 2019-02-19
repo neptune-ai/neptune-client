@@ -20,7 +20,7 @@ import traceback
 
 import pandas as pd
 
-from neptune.experiment import Experiment
+from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import CustomAbortImpl, DefaultAbortImpl
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
@@ -58,7 +58,7 @@ class Project(object):
         Instantiate a session.
 
         >>> from neptune.session import Session
-        >>> session = Session()
+        >>> current_session = Session()
 
         Fetch a project.
 
@@ -122,7 +122,7 @@ class Project(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project.
 
@@ -185,7 +185,7 @@ class Project(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project.
 
@@ -236,7 +236,7 @@ class Project(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project.
 
@@ -268,7 +268,7 @@ class Project(object):
 
     # pylint:disable=unused-argument
     def create_experiment(self,
-                          name,
+                          name="Untitled",
                           description=None,
                           params=None,
                           properties=None,
@@ -351,6 +351,8 @@ class Project(object):
             experiment._hardware_metric_thread = HardwareMetricReportingThread(
                 metric_service=metric_service, metric_sending_interval_seconds=3)
             experiment._hardware_metric_thread.start()
+
+        push_new_experiment(experiment)
 
         return experiment
 

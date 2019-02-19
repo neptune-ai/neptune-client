@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from collections import OrderedDict
 
 from neptune.client import Client
 from neptune.credentials import Credentials
-from neptune.project import Project
+from neptune.projects import Project
 
 
 class Session(object):
@@ -37,7 +38,7 @@ class Session(object):
         to use the function.
 
         >>> from neptune.session import Session
-        >>> session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
+        >>> current_session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
 
         or assuming you have created an environment variable by running:
 
@@ -45,7 +46,7 @@ class Session(object):
 
         and simply go:
 
-        >>> session = Session()
+        >>> current_session = Session()
     """
 
     def __init__(self, api_token=None):
@@ -61,6 +62,15 @@ class Session(object):
             client=self._client,
             internal_id=project.id,
             namespace=namespace,
+            name=project.name
+        )
+
+    def get_default_project(self, organization_name=None):
+        project = self._client.get_default_project(organization_name)
+        return Project(
+            client=self._client,
+            internal_id=project.id,
+            namespace=project.organizationName,
             name=project.name
         )
 
@@ -85,13 +95,13 @@ class Session(object):
             First, you need to create a Session instance:
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Now, you can list all the projects available for a selected namespace. You can use `YOUR_NAMESPACE` which
             is your organization or user name. You can also list public projects created by other organizations.
             For example you can use the `neptune-ml` namespace.
 
-            >>> session.get_projects('neptune-ml')
+            >>> current_session.get_projects('neptune-ml')
             {'neptune-ml/Sandbox': Project(neptune-ml/Sandbox),
             'neptune-ml/Home-Credit-Default-Risk': Project(neptune-ml/Home-Credit-Default-Risk),
             'neptune-ml/Mapping-Challenge': Project(neptune-ml/Mapping-Challenge),
@@ -102,4 +112,4 @@ class Session(object):
         """
 
         projects = [Project(self._client, p.id, namespace, p.name) for p in self._client.get_projects(namespace)]
-        return dict((p.full_id, p) for p in projects)
+        return OrderedDict((p.full_id, p) for p in projects)

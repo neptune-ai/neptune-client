@@ -23,6 +23,7 @@ import six
 from neptune.api_exceptions import ExperimentAlreadyFinished
 from neptune.exceptions import FileNotFound, InvalidChannelValue, InvalidChannelX, NoChannelValue
 from neptune.internal.storage.storage_utils import upload_to_storage
+from neptune.internal.structs.stack import Stack
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, map_values
 
@@ -42,7 +43,7 @@ class Experiment(object):
         Instantiate a session.
 
         >>> from neptune.session import Session
-        >>> session = Session()
+        >>> current_session = Session()
 
         Fetch a project and a list of experiments.
 
@@ -51,8 +52,8 @@ class Experiment(object):
 
         Get an experiment instance.
 
-        >>> experiment = experiments[0]
-        >>> experiment
+        >>> current_experiment = experiments[0]
+        >>> current_experiment
         Experiment(SAL-1609)
 
     Todo:
@@ -74,7 +75,7 @@ class Experiment(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -83,11 +84,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> experiment = experiments[0]
+            >>> current_experiment = experiments[0]
 
             Get experiment short id.
 
-            >>> experiment.id
+            >>> current_experiment.id
             'SAL-1609'
 
         """
@@ -112,7 +113,7 @@ class Experiment(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -121,11 +122,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> experiment = experiments[0]
+            >>> current_experiment = experiments[0]
 
             Get experiment system properties.
 
-            >>> experiment.system_properties
+            >>> current_experiment.system_properties
 
         Note:
             The list of supported system properties may change over time.
@@ -144,7 +145,7 @@ class Experiment(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -153,11 +154,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> experiment = experiments[0]
+            >>> current_experiment = experiments[0]
 
             Get experiment channels.
 
-            >>> experiment.channels
+            >>> current_experiment.channels
 
         """
         return dict(
@@ -185,13 +186,13 @@ class Experiment(object):
 
         self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y))
 
-    def send_text(self, name, x, y=None):
+    def send_text(self, channel_name, x, y=None):
         x, y = self._get_valid_x_y(x, y)
 
         if isinstance(y, six.string_types):
             return InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
-        self._send_channel_value(name, 'text', x, dict(text_value=y))
+        self._send_channel_value(channel_name, 'text', x, dict(text_value=y))
 
     def send_image(self, channel_name, x, y=None, name=None, description=None):
         x, y = self._get_valid_x_y(x, y)
@@ -225,7 +226,7 @@ class Experiment(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -234,11 +235,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> experiment = experiments[0]
+            >>> current_experiment = experiments[0]
 
             Get experiment parameters.
 
-            >>> experiment.parameters
+            >>> current_experiment.parameters
 
         """
         return self._simple_dict_to_dataframe(self._leaderboard_entry.parameters)
@@ -254,7 +255,7 @@ class Experiment(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -263,11 +264,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> experiment = experiments[0]
+            >>> current_experiment = experiments[0]
 
             Get experiment properties.
 
-            >>> experiment.properties
+            >>> current_experiment.properties
 
         """
         return self._simple_dict_to_dataframe(self._leaderboard_entry.properties)
@@ -299,7 +300,7 @@ class Experiment(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -308,11 +309,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> experiment = experiments[0]
+            >>> current_experiment = experiments[0]
 
             Get hardware utilization channels.
 
-            >>> experiment.get_hardware_utilization
+            >>> current_experiment.get_hardware_utilization
 
         """
         metrics_csv = self._client.get_metrics_csv(self)
@@ -342,7 +343,7 @@ class Experiment(object):
             Instantiate a session.
 
             >>> from neptune.session import Session
-            >>> session = Session()
+            >>> current_session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -402,6 +403,8 @@ class Experiment(object):
             self._aborting_thread.interrupt()
             self._aborting_thread = None
 
+        pop_stopped_experiment()
+
     def __str__(self):
         return 'Experiment({})'.format(self.id)
 
@@ -460,3 +463,26 @@ class Experiment(object):
         channel = self._client.create_channel(self.internal_id, channel_name, channel_type)
         self._leaderboard_entry.add_channel(channel)
         return channel
+
+
+current_experiment = None
+
+_run_stack = Stack()
+
+
+def push_new_experiment(new_experiment):
+    # pylint: disable=global-statement
+    global current_experiment
+    current_experiment = new_experiment
+    _run_stack.push(new_experiment)
+    return new_experiment
+
+
+def pop_stopped_experiment():
+    # pylint: disable=global-statement
+    global current_experiment
+    if not _run_stack.is_empty():
+        current_experiment = _run_stack.pop()
+    else:
+        current_experiment = None
+    return current_experiment

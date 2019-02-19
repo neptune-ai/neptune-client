@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from functools import partial
 import io
+import uuid
+from functools import partial
 from io import StringIO
 from itertools import groupby
-import uuid
 
+import requests
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, HTTPInternalServerError, \
     HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
-import requests
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentNotFound, Forbidden, \
     OrganizationNotFound, ProjectNotFound, ServerError, Unauthorized
-from neptune.experiment import Experiment
+from neptune.experiments import Experiment
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
 from neptune.utils import is_float
@@ -92,16 +92,24 @@ class Client(object):
         self._http_client.authenticator = self.authenticator
 
     @with_api_exceptions_handler
-    def get_project(self, organization_name, project_name):
+    def get_project(self, organization_name=None, project_name=None):
         try:
-            r = self.backend_swagger_client.api.getProjectByName(
+            return self.backend_swagger_client.api.getProject(
                 organizationName=organization_name,
                 projectName=project_name
-            ).response()
-
-            return r.result
+            ).response().result
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier='{org}/{prj}'.format(org=organization_name, prj=project_name))
+
+    @with_api_exceptions_handler
+    def get_default_project(self, organization_name=None):
+        try:
+            return self.backend_swagger_client.api.guessProject(
+                organizationName=organization_name,
+                projectKey="SAN"
+            ).response().result
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier='{org}/{prj}'.format(org=organization_name, prj="SAN"))
 
     @with_api_exceptions_handler
     def get_projects(self, namespace):
