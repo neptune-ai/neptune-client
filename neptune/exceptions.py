@@ -15,21 +15,30 @@
 #
 
 
-class ConnectionLost(Exception):
+class NeptuneApiException(Exception):
+    pass
+
+
+class ConnectionLost(NeptuneApiException):
     def __init__(self):
         super(ConnectionLost, self).__init__('Connection lost. Please try again.')
 
 
-class ServerError(Exception):
+class ServerError(NeptuneApiException):
     def __init__(self):
         super(ServerError, self).__init__('Server error. Please try again later.')
 
 
-class Unauthorized(Exception):
+class Unauthorized(NeptuneApiException):
     def __init__(self):
         super(Unauthorized, self).__init__('You have no permissions to access this resource.')
 
 
-class InvalidApiKey(Exception):
+class Forbidden(NeptuneApiException):
+    def __init__(self):
+        super(Forbidden, self).__init__('You have no permissions to access this resource.')
+
+
+class InvalidApiKey(NeptuneApiException):
     def __init__(self):
         super(InvalidApiKey, self).__init__('The provided API key is invalid.')
