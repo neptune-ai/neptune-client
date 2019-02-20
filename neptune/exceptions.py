@@ -21,15 +21,22 @@ class NeptuneException(Exception):
 
 class FileNotFound(NeptuneException):
     def __init__(self, path):
-        super(FileNotFound, self).__init__("File {} doesn't exist".format(path))
+        super(FileNotFound, self).__init__("File {} doesn't exist.".format(path))
 
 
 class InvalidChannelX(NeptuneException):
-    def __init__(self):
+    def __init__(self, x):
         super(InvalidChannelX, self).__init__(
-            'Invalid channel X-coordinate. The sequence of X-coordinates must be strictly increasing.')
+            "Invalid channel X-coordinate: '{}'. The sequence of X-coordinates must be strictly increasing.".format(x))
+
+
+class NoChannelValue(NeptuneException):
+    def __init__(self):
+        super(NoChannelValue, self).__init__('No channel value provided.')
 
 
 class InvalidChannelValue(NeptuneException):
-    def __init__(self, expected_type):
-        super(InvalidChannelValue, self).__init__('Invalid channel value type. Expected: {}.'.format(expected_type))
+    def __init__(self, expected_type, actual_type):
+        super(InvalidChannelValue, self).__init__(
+            'Invalid channel value type. Expected: {expected}, actual: {actual}.'.format(
+                expected=expected_type, actual=actual_type))
