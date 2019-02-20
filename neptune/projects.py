@@ -57,8 +57,8 @@ class Project(object):
     Examples:
         Instantiate a session.
 
-        >>> from neptune.session import Session
-        >>> current_session = Session()
+        >>> from neptune.sessions import Session
+        >>> session = Session()
 
         Fetch a project.
 
@@ -121,8 +121,8 @@ class Project(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project.
 
@@ -184,8 +184,8 @@ class Project(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project.
 
@@ -235,8 +235,8 @@ class Project(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project.
 
@@ -268,7 +268,7 @@ class Project(object):
 
     # pylint:disable=unused-argument
     def create_experiment(self,
-                          name="Untitled",
+                          name=None,
                           description=None,
                           params=None,
                           properties=None,
@@ -278,6 +278,9 @@ class Project(object):
                           send_hardware_metrics=True,
                           run_monitoring_thread=True,
                           handle_uncaught_exceptions=True):
+
+        if name is None:
+            name = "Untitled"
 
         if description is None:
             description = ""

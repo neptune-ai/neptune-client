@@ -37,8 +37,8 @@ class Session(object):
         Examples should be written in doctest format, and should illustrate how
         to use the function.
 
-        >>> from neptune.session import Session
-        >>> current_session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
+        >>> from neptune.sessions import Session
+        >>> session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
 
         or assuming you have created an environment variable by running:
 
@@ -46,7 +46,7 @@ class Session(object):
 
         and simply go:
 
-        >>> current_session = Session()
+        >>> session = Session()
     """
 
     def __init__(self, api_token=None):
@@ -94,14 +94,14 @@ class Session(object):
         Examples:
             First, you need to create a Session instance:
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Now, you can list all the projects available for a selected namespace. You can use `YOUR_NAMESPACE` which
             is your organization or user name. You can also list public projects created by other organizations.
             For example you can use the `neptune-ml` namespace.
 
-            >>> current_session.get_projects('neptune-ml')
+            >>> session.get_projects('neptune-ml')
             {'neptune-ml/Sandbox': Project(neptune-ml/Sandbox),
             'neptune-ml/Home-Credit-Default-Risk': Project(neptune-ml/Home-Credit-Default-Risk),
             'neptune-ml/Mapping-Challenge': Project(neptune-ml/Mapping-Challenge),

@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import threading
+
 from neptune import projects, experiments
 from neptune.internal.structs.stack import Stack
 from neptune.sessions import Session
@@ -20,34 +22,38 @@ from neptune.sessions import Session
 session = None
 project = None
 
+__lock = threading.RLock()
+
 
 def init(api_token=None, project_qualified_name=None):
     # pylint: disable=global-statement
-    global session, project
+    with __lock:
+        global session, project
 
-    session = Session(api_token=api_token)
+        session = Session(api_token=api_token)
 
-    if project_qualified_name is not None:
-        project = session.get_project(project_qualified_name)
-    else:
-        project = session.get_default_project()
+        if project_qualified_name is not None:
+            project = session.get_project(project_qualified_name)
+        else:
+            project = session.get_default_project()
 
-    return session
+        return session
 
 
 def set_project(project_qualified_name):
     # pylint: disable=global-statement
-    global session, project
+    with __lock:
+        global session, project
 
-    if session is None:
-        session = init(project_qualified_name=project_qualified_name)
-    else:
-        project = session.get_project(project_qualified_name)
+        if session is None:
+            session = init(project_qualified_name=project_qualified_name)
+        else:
+            project = session.get_project(project_qualified_name)
 
-    return project
+        return project
 
 
-def create_experiment(name="Untitled",
+def create_experiment(name=None,
                       description=None,
                       params=None,
                       properties=None,
@@ -59,24 +65,21 @@ def create_experiment(name="Untitled",
                       handle_uncaught_exceptions=True):
     # pylint: disable=global-statement
     global project
-    return experiments.push_new_experiment(
-        project.create_experiment(
-            name=name,
-            description=description,
-            params=params,
-            properties=properties,
-            tags=tags,
-            upload_source_files=upload_source_files,
-            abort_callback=abort_callback,
-            send_hardware_metrics=send_hardware_metrics,
-            run_monitoring_thread=run_monitoring_thread,
-            handle_uncaught_exceptions=handle_uncaught_exceptions
-        )
+    return project.create_experiment(
+        name=name,
+        description=description,
+        params=params,
+        properties=properties,
+        tags=tags,
+        upload_source_files=upload_source_files,
+        abort_callback=abort_callback,
+        send_hardware_metrics=send_hardware_metrics,
+        run_monitoring_thread=run_monitoring_thread,
+        handle_uncaught_exceptions=handle_uncaught_exceptions
     )
 
 
-def get_experiment():
-    return experiments.current_experiment
+get_experiment = experiments.get_current_experiment
 
 
 def send_metric(channel_name, x, y=None):

@@ -15,6 +15,7 @@
 #
 import base64
 import os
+import threading
 
 import pandas as pd
 from pandas.errors import EmptyDataError
@@ -42,8 +43,8 @@ class Experiment(object):
     Examples:
         Instantiate a session.
 
-        >>> from neptune.session import Session
-        >>> current_session = Session()
+        >>> from neptune.sessions import Session
+        >>> session = Session()
 
         Fetch a project and a list of experiments.
 
@@ -52,8 +53,8 @@ class Experiment(object):
 
         Get an experiment instance.
 
-        >>> current_experiment = experiments[0]
-        >>> current_experiment
+        >>> experiment = experiments[0]
+        >>> experiment
         Experiment(SAL-1609)
 
     Todo:
@@ -74,8 +75,8 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -84,11 +85,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> current_experiment = experiments[0]
+            >>> experiment = experiments[0]
 
             Get experiment short id.
 
-            >>> current_experiment.id
+            >>> experiment.id
             'SAL-1609'
 
         """
@@ -112,8 +113,8 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -122,11 +123,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> current_experiment = experiments[0]
+            >>> experiment = experiments[0]
 
             Get experiment system properties.
 
-            >>> current_experiment.system_properties
+            >>> experiment.system_properties
 
         Note:
             The list of supported system properties may change over time.
@@ -144,8 +145,8 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -154,11 +155,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> current_experiment = experiments[0]
+            >>> experiment = experiments[0]
 
             Get experiment channels.
 
-            >>> current_experiment.channels
+            >>> experiment.channels
 
         """
         return dict(
@@ -225,8 +226,8 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -235,11 +236,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> current_experiment = experiments[0]
+            >>> experiment = experiments[0]
 
             Get experiment parameters.
 
-            >>> current_experiment.parameters
+            >>> experiment.parameters
 
         """
         return self._simple_dict_to_dataframe(self._leaderboard_entry.parameters)
@@ -254,8 +255,8 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -264,11 +265,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> current_experiment = experiments[0]
+            >>> experiment = experiments[0]
 
             Get experiment properties.
 
-            >>> current_experiment.properties
+            >>> experiment.properties
 
         """
         return self._simple_dict_to_dataframe(self._leaderboard_entry.properties)
@@ -299,8 +300,8 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -309,11 +310,11 @@ class Experiment(object):
 
             Get an experiment instance.
 
-            >>> current_experiment = experiments[0]
+            >>> experiment = experiments[0]
 
             Get hardware utilization channels.
 
-            >>> current_experiment.get_hardware_utilization
+            >>> experiment.get_hardware_utilization
 
         """
         metrics_csv = self._client.get_metrics_csv(self)
@@ -342,8 +343,8 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
-            >>> current_session = Session()
+            >>> from neptune.sessions import Session
+            >>> session = Session()
 
             Fetch a project and a list of experiments.
 
@@ -465,24 +466,35 @@ class Experiment(object):
         return channel
 
 
-current_experiment = None
+_experiments_stack = Stack()
 
-_run_stack = Stack()
+__lock = threading.RLock()
+
+
+def get_current_experiment():
+    # pylint: disable=global-statement
+    global _experiments_stack
+    with __lock:
+        experiment = _experiments_stack.peek()
+        if experiment is None:
+            raise ValueError("No running experiment")
+        return experiment
 
 
 def push_new_experiment(new_experiment):
     # pylint: disable=global-statement
-    global current_experiment
-    current_experiment = new_experiment
-    _run_stack.push(new_experiment)
-    return new_experiment
+    global _experiments_stack, __lock
+    with __lock:
+        _experiments_stack.push(new_experiment)
+        return new_experiment
 
 
 def pop_stopped_experiment():
     # pylint: disable=global-statement
-    global current_experiment
-    if not _run_stack.is_empty():
-        current_experiment = _run_stack.pop()
-    else:
-        current_experiment = None
-    return current_experiment
+    global _experiments_stack, __lock
+    with __lock:
+        if not _experiments_stack.is_empty():
+            current_experiment = _experiments_stack.pop()
+        else:
+            current_experiment = None
+        return current_experiment

@@ -30,7 +30,7 @@ class Stack(object):
 
     def peek(self):
         if self.is_empty():
-            raise IndexError("Empty stack")
+            return None
         return self.items[self.size() - 1]
 
     def size(self):
