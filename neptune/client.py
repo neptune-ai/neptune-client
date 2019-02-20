@@ -430,7 +430,7 @@ class Client(object):
 
         session = self._http_client.session
 
-        request = self._authenticator.apply(
+        request = self.authenticator.apply(
             requests.Request(
                 method='POST',
                 url=url,
