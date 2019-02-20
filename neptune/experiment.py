@@ -96,6 +96,10 @@ class Experiment(object):
         return self._leaderboard_entry.internal_id
 
     @property
+    def project_full_id(self):
+        return self._leaderboard_entry.project_full_id
+
+    @property
     def system_properties(self):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 
@@ -169,7 +173,7 @@ class Experiment(object):
         upload_to_storage(files_list=files_list,
                           upload_api_fun=self._client.upload_experiment_source,
                           upload_tar_api_fun=self._client.extract_experiment_source,
-                          experiment_id=self.internal_id)
+                          experiment=self)
 
     def send_metric(self, channel_name, x, y=None):
         x, y = self._get_valid_x_y(x, y)
@@ -206,7 +210,7 @@ class Experiment(object):
         upload_to_storage(files_list=[(os.path.abspath(artifact), artifact)],
                           upload_api_fun=self._client.upload_experiment_output,
                           upload_tar_api_fun=self._client.extract_experiment_output,
-                          experiment_id=self.internal_id)
+                          experiment=self)
 
     @property
     def parameters(self):
@@ -309,7 +313,7 @@ class Experiment(object):
             >>> experiment.get_hardware_utilization
 
         """
-        metrics_csv = self._client.get_metrics_csv(self._leaderboard_entry.internal_id)
+        metrics_csv = self._client.get_metrics_csv(self)
         try:
             return pd.read_csv(metrics_csv)
         except EmptyDataError:
@@ -362,7 +366,7 @@ class Experiment(object):
             channel_id = self._leaderboard_entry.channels_dict_by_name[channel_name].id
             try:
                 channels_data[channel_name] = pd.read_csv(
-                    self._client.get_channel_points_csv(self._leaderboard_entry.internal_id, channel_id),
+                    self._client.get_channel_points_csv(self, channel_id),
                     header=None,
                     names=['x_{}'.format(channel_name), 'y_{}'.format(channel_name)],
                     dtype=float
@@ -377,9 +381,9 @@ class Experiment(object):
 
     def stop(self, traceback=None):
         if traceback is None:
-            self._client.mark_succeeded(self.internal_id)
+            self._client.mark_succeeded(self)
         else:
-            self._client.mark_failed(self.internal_id, traceback)
+            self._client.mark_failed(self, traceback)
 
         if self._ping_thread:
             self._ping_thread.interrupt()
@@ -432,7 +436,7 @@ class Experiment(object):
             raise ValueError("ValueError: X-coordinates must be strictly increasing. "
                              "Invalid Point({}, {:100.100}) for channel \"{}\"".format(x, y, channel_name))
 
-        self._client.send_channel_value(self.internal_id, channel.id, x, y)
+        self._client.send_channel_value(self, channel.id, x, y)
 
         channel.x = x
         channel.y = y
