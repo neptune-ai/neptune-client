@@ -17,9 +17,10 @@ import base64
 import os
 
 import pandas as pd
-import six
 from pandas.errors import EmptyDataError
+import six
 
+from neptune.exceptions import FileNotFound, InvalidChannelValue, InvalidChannelX, NoChannelValue
 from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, map_values
@@ -167,7 +168,7 @@ class Experiment(object):
         files_list = []
         for source_file in source_files:
             if not os.path.exists(source_file):
-                raise ValueError("File {} doesn't exist".format(source_file))
+                raise FileNotFound(source_file)
             files_list.append((os.path.abspath(source_file), source_file))
 
         upload_to_storage(files_list=files_list,
@@ -179,7 +180,7 @@ class Experiment(object):
         x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
-            raise ValueError("Invalid value={} provided".format(y))
+            raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
         self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y))
 
@@ -187,7 +188,7 @@ class Experiment(object):
         x, y = self._get_valid_x_y(x, y)
 
         if isinstance(y, six.string_types):
-            return ValueError("Invalid value={:100.100} provided".format(y))
+            return InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
         self._send_channel_value(name, 'text', x, dict(text_value=y))
 
@@ -205,7 +206,7 @@ class Experiment(object):
     def send_artifact(self, artifact):
 
         if not os.path.exists(artifact):
-            raise ValueError("File {} doesn't exist".format(artifact))
+            raise FileNotFound(artifact)
 
         upload_to_storage(files_list=[(os.path.abspath(artifact), artifact)],
                           upload_api_fun=self._client.upload_experiment_output,
@@ -415,13 +416,13 @@ class Experiment(object):
 
     def _get_valid_x_y(self, x, y):
         if x is None:
-            raise ValueError("No value provided")
+            raise NoChannelValue()
 
         if y is None:
             y = x
             x = None
         elif not is_float(x):
-            raise ValueError("Invalid value={} provided".format(x))
+            raise InvalidChannelValue(expected_type='float', actual_type=type(x).__name__)
 
         return x, y
 
@@ -433,8 +434,7 @@ class Experiment(object):
                 channel.x = 0
             x = channel.x + 1
         elif x <= channel.x:
-            raise ValueError("ValueError: X-coordinates must be strictly increasing. "
-                             "Invalid Point({}, {:100.100}) for channel \"{}\"".format(x, y, channel_name))
+            raise InvalidChannelX(x)
 
         self._client.send_channel_value(self, channel.id, x, y)
 
