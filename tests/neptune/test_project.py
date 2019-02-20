@@ -153,7 +153,7 @@ class TestProject(unittest.TestCase):
     def test_sort_leaderboard_columns(self):
         # given
         columns_in_expected_order = [
-            'id', 'name', 'created', 'finished', 'owner', 'worker_type', 'environment',
+            'id', 'name', 'created', 'finished', 'owner',
             'git_hash', 'notes', 'size', 'source_code_size', 'tags',
             'channel_abc', 'channel_def',
             'parameter_abc', 'parameter_def',

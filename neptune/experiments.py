@@ -216,6 +216,36 @@ class Experiment(object):
                           upload_tar_api_fun=self._client.extract_experiment_output,
                           experiment=self)
 
+    def send_graph(self, graph_id, value):
+        """Upload a tensorflow graph for this experiment.
+
+        Args:
+            graph_id: a string UUID identifying the graph (managed by user)
+            value: a string representation of Tensorflow graph
+
+        Examples:
+            Instantiate a session.
+
+            >>> from neptune.sessions import Session
+            >>> session = Session()
+
+            Fetch a project and a list of experiments.
+
+            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
+
+            Get an experiment instance.
+
+            >>> experiment = experiments[0]
+
+            Send graph to experiment.
+            >>> import uuid
+            >>> experiment.send_graph(str(uuid.uuid4()), str("tf.GraphDef instance"))
+
+        """
+
+        self._client.put_tensorflow_graph(self, graph_id, value)
+
     @property
     def parameters(self):
         """Retrieve parameters for this experiment.
@@ -450,8 +480,11 @@ class Experiment(object):
             if channel.x is None:
                 channel.x = 0
             x = channel.x + 1
-        elif x <= channel.x:
-            raise InvalidChannelX(x)
+        else:
+            if channel.x is None:
+                channel.x = x
+            elif x <= channel.x:
+                raise InvalidChannelX(x)
 
         self._client.send_channel_value(self, channel.id, x, y)
 
@@ -470,7 +503,7 @@ class Experiment(object):
         return next((channel for channel in self._leaderboard_entry.channels if channel.name == channel_name), None)
 
     def _create_channel(self, channel_name, channel_type):
-        channel = self._client.create_channel(self.internal_id, channel_name, channel_type)
+        channel = self._client.create_channel(self, channel_name, channel_type)
         self._leaderboard_entry.add_channel(channel)
         return channel
 

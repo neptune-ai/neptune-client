@@ -35,6 +35,11 @@ class NoChannelValue(NeptuneException):
         super(NoChannelValue, self).__init__('No channel value provided.')
 
 
+class LibraryNotInstalled(NeptuneException):
+    def __init__(self, library):
+        super(LibraryNotInstalled, self).__init__("Library {} is not installed".format(library))
+
+
 class InvalidChannelValue(NeptuneException):
     def __init__(self, expected_type, actual_type):
         super(InvalidChannelValue, self).__init__(

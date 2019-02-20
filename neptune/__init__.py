@@ -96,3 +96,13 @@ def send_artifact(artifact):
 
 def stop(traceback=None):
     get_experiment().stop(traceback)
+
+
+def integrate_with_tensorflow():
+    from neptune.internal.integration.tensorflow_integration import integrate_with_tensorflow as integration
+    integration(get_experiment)
+
+
+def integrate_with_keras():
+    from neptune.internal.integration.keras_integration import integrate_with_keras as integration
+    integration(get_experiment)

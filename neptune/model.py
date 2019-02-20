@@ -78,8 +78,6 @@ class LeaderboardEntry(object):
             'created': entry.timeOfCreation,
             'finished': entry.timeOfCompletion,
             'running_time': entry.runningTime,
-            'worker_type': entry.workerType,
-            'environment': entry.environment,
             'source_code_size': entry.sourceSize,
             'owner': entry.owner,
             'size': entry.size,
