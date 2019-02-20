@@ -437,7 +437,7 @@ class Client(object):
                 data=io.BytesIO(data),
                 headers={
                     "Content-Type": "application/octet-stream"
-                },
+                }
             )
         )
 
