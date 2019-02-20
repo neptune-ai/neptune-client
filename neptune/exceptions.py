@@ -14,5 +14,22 @@
 # limitations under the License.
 #
 
-class InvalidApiToken(Exception):
-    pass
+
+class ConnectionLost(Exception):
+    def __init__(self):
+        super(ConnectionLost, self).__init__('Connection lost. Please try again.')
+
+
+class ServerError(Exception):
+    def __init__(self):
+        super(ServerError, self).__init__('Server error. Please try again later.')
+
+
+class Unauthorized(Exception):
+    def __init__(self):
+        super(Unauthorized, self).__init__('You have no permissions to access this resource.')
+
+
+class InvalidApiKey(Exception):
+    def __init__(self):
+        super(InvalidApiKey, self).__init__('The provided API key is invalid.')

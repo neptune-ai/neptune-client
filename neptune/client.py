@@ -13,24 +13,53 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import io
-import uuid
 from functools import partial
+import io
 from io import StringIO
 from itertools import groupby
+import uuid
 
-import requests
 from bravado.client import SwaggerClient
+from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, HTTPInternalServerError, \
+    HTTPServerError, HTTPUnauthorized
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
+import requests
 
+from neptune.exceptions import ConnectionLost, ServerError, Unauthorized
 from neptune.experiment import Experiment
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
 from neptune.utils import is_float
 
 
+def wrap_api_generic_exceptions(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except (BravadoConnectionError, BravadoTimeoutError,
+                requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+            raise ConnectionLost()
+        except HTTPServerError:
+            raise ServerError()
+        except (HTTPUnauthorized, HTTPForbidden):
+            raise Unauthorized()
+        except requests.exceptions.RequestException as e:
+            if e.response is None:
+                raise
+            status_code = e.response.status_code
+            if status_code >= HTTPInternalServerError.status_code:
+                raise ServerError()
+            elif status_code == HTTPUnauthorized.status_code or status_code == HTTPForbidden.status_code:
+                raise Unauthorized()
+            else:
+                raise
+
+    return wrapper
+
+
 class Client(object):
+    @wrap_api_generic_exceptions
     def __init__(self, api_address, api_token):
         self.api_address = api_address
         self.api_token = api_token
@@ -57,6 +86,7 @@ class Client(object):
         )
         self._http_client.authenticator = self.authenticator
 
+    @wrap_api_generic_exceptions
     def get_project(self, organization_name, project_name):
         r = self.backend_swagger_client.api.getProjectByName(
             organizationName=organization_name,
@@ -65,12 +95,14 @@ class Client(object):
 
         return r.result
 
+    @wrap_api_generic_exceptions
     def get_projects(self, namespace):
         r = self.backend_swagger_client.api.listProjectsInOrganization(
             organizationName=namespace
         ).response()
         return r.result.entries
 
+    @wrap_api_generic_exceptions
     def get_project_members(self, project_identifier):
         r = self.backend_swagger_client.api.listProjectMembers(
             projectIdentifier=project_identifier
@@ -78,6 +110,7 @@ class Client(object):
 
         return r.result
 
+    @wrap_api_generic_exceptions
     def get_leaderboard_entries(self, namespace, project_name,
                                 entry_types=None, ids=None, group_ids=None,
                                 states=None, owners=None, tags=None,
@@ -97,6 +130,7 @@ class Client(object):
 
         return [LeaderboardEntry(e) for e in self._get_all_items(get_portion, step=100)]
 
+    @wrap_api_generic_exceptions
     def get_channel_points_csv(self, experiment_internal_id, channel_internal_id):
         csv = StringIO()
         csv.write(
@@ -107,6 +141,7 @@ class Client(object):
         csv.seek(0)
         return csv
 
+    @wrap_api_generic_exceptions
     def get_metrics_csv(self, experiment_internal_id):
         csv = StringIO()
         csv.write(
@@ -117,6 +152,7 @@ class Client(object):
         csv.seek(0)
         return csv
 
+    @wrap_api_generic_exceptions
     def create_experiment(self, project_id, name, description, params, properties, tags, abortable, monitored):
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
 
@@ -138,12 +174,14 @@ class Client(object):
 
         return self._convert_experiment_to_leaderboard_entry(experiment)
 
+    @wrap_api_generic_exceptions
     def upload_experiment_source(self, experiment_id, data):
         return self._upload_loop(
             partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentSource),
             data=data,
             experiment_id=experiment_id)
 
+    @wrap_api_generic_exceptions
     def extract_experiment_source(self, experiment_id, data):
         return self._upload_tar_data(
             experiment_id=experiment_id,
@@ -151,16 +189,19 @@ class Client(object):
             data=data
         )
 
+    @wrap_api_generic_exceptions
     def mark_waiting(self, experiment_id):
         return self._convert_experiment_to_leaderboard_entry(
             self.backend_swagger_client.api.markExperimentWaiting(experimentId=experiment_id).response().result
         )
 
+    @wrap_api_generic_exceptions
     def mark_initializing(self, experiment_id):
         return self._convert_experiment_to_leaderboard_entry(
             self.backend_swagger_client.api.markExperimentInitializing(experimentId=experiment_id).response().result
         )
 
+    @wrap_api_generic_exceptions
     def mark_running(self, experiment_id):
         RunningExperimentParams = self.backend_swagger_client.get_model('RunningExperimentParams')
 
@@ -175,6 +216,7 @@ class Client(object):
 
         return self._convert_experiment_to_leaderboard_entry(experiment)
 
+    @wrap_api_generic_exceptions
     def create_channel(self, experiment_id, name, channel_type):
         ChannelParams = self.backend_swagger_client.get_model('ChannelParams')
 
@@ -190,6 +232,7 @@ class Client(object):
 
         return self._convert_channel_to_channel_with_last_value(channel)
 
+    @wrap_api_generic_exceptions
     def send_channel_value(self, experiment_id, channel_id, x, y):
         InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
         Point = self.backend_swagger_client.get_model('Point')
@@ -215,6 +258,7 @@ class Client(object):
         if batch_errors:
             raise ValueError(batch_errors[0].error.message)
 
+    @wrap_api_generic_exceptions
     def mark_succeeded(self, experiment_id):
         CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
 
@@ -228,6 +272,7 @@ class Client(object):
 
         return self._convert_experiment_to_leaderboard_entry(experiment)
 
+    @wrap_api_generic_exceptions
     def mark_failed(self, experiment_id, traceback):
         CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
 
@@ -241,9 +286,11 @@ class Client(object):
 
         return self._convert_experiment_to_leaderboard_entry(experiment)
 
+    @wrap_api_generic_exceptions
     def ping_experiment(self, experiment_id):
         self.backend_swagger_client.api.pingExperiment(experimentId=experiment_id).response()
 
+    @wrap_api_generic_exceptions
     def create_hardware_metric(self, experiment_id, metric):
         SystemMetricParams = self.backend_swagger_client.get_model('SystemMetricParams')
 
@@ -258,6 +305,7 @@ class Client(object):
 
         return metric_dto.id
 
+    @wrap_api_generic_exceptions
     def send_hardware_metric_reports(self, experiment_id, metrics, metric_reports):
         SystemMetricValues = self.backend_swagger_client.get_model('SystemMetricValues')
         SystemMetricPoint = self.backend_swagger_client.get_model('SystemMetricPoint')
@@ -282,12 +330,14 @@ class Client(object):
 
         return response
 
+    @wrap_api_generic_exceptions
     def upload_experiment_output(self, experiment_id, data):
         return self._upload_loop(
             partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentOutput),
             data=data,
             experiment_id=experiment_id)
 
+    @wrap_api_generic_exceptions
     def extract_experiment_output(self, experiment_id, data):
         return self._upload_tar_data(
             experiment_id=experiment_id,
@@ -430,7 +480,7 @@ class Client(object):
 
         session = self._http_client.session
 
-        request = self._authenticator.apply(
+        request = self.authenticator.apply(
             requests.Request(
                 method='POST',
                 url=url,

@@ -316,6 +316,7 @@ class Project(object):
 
         def exception_handler(exc_type, value, tb):
             experiment.stop("\n".join(traceback.format_tb(tb)))
+
             sys.__excepthook__(exc_type, value, tb)
 
         if handle_uncaught_exceptions:

@@ -18,7 +18,7 @@ import base64
 import json
 import os
 
-from neptune.exceptions import InvalidApiToken
+from neptune.exceptions import InvalidApiKey
 
 
 class Credentials(object):
@@ -111,4 +111,4 @@ class Credentials(object):
         try:
             return json.loads(base64.b64decode(api_token.encode()).decode("utf-8"))
         except Exception:
-            raise InvalidApiToken("Failed to deserialize API token: {}".format(api_token))
+            raise InvalidApiKey()
