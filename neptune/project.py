@@ -16,6 +16,7 @@
 import os
 import sys
 import time
+import traceback
 
 import pandas as pd
 
@@ -290,16 +291,6 @@ class Project(object):
         if tags is None:
             tags = []
 
-        if upload_source_files is None:
-            main_file = sys.argv[0]
-            main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
-            if os.path.isfile(main_abs_path):
-                upload_source_files = [os.path.relpath(main_abs_path, os.getcwd())]
-            else:
-                upload_source_files = []
-
-        # TODO implement handle_uncaught_exceptions
-
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         experiment = self.client.create_experiment(
@@ -313,9 +304,23 @@ class Project(object):
             monitored=run_monitoring_thread
         )
 
+        if upload_source_files is None:
+            main_file = sys.argv[0]
+            main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
+            if os.path.isfile(main_abs_path):
+                upload_source_files = [os.path.relpath(main_abs_path, os.getcwd())]
+            else:
+                upload_source_files = []
+
         experiment.upload_source_files(upload_source_files)
 
-        # FIXME delete all of these transitions
+        def exception_handler(exc_type, value, tb):
+            experiment.stop("\n".join(traceback.format_tb(tb)))
+            sys.__excepthook__(exc_type, value, tb)
+
+        if handle_uncaught_exceptions:
+            sys.excepthook = exception_handler
+
         experiment = self.client.mark_waiting(experiment_id=experiment.internal_id)
         experiment = self.client.mark_initializing(experiment_id=experiment.internal_id)
         experiment = self.client.mark_running(experiment_id=experiment.internal_id)
