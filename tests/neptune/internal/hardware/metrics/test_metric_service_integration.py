@@ -41,7 +41,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
         memory_amount_gb = psutil.virtual_memory().total / float(BYTES_IN_ONE_GB)
 
         # and
-        experiment_id = str(uuid.uuid4())
+        experiment = MagicMock()
 
         # and
         cpu_metric_id = str(uuid.uuid4())
@@ -50,12 +50,12 @@ class TestMetricServiceIntegration(unittest.TestCase):
 
         # when
         self.metric_service_factory.create(
-            gauge_mode=GaugeMode.SYSTEM, experiment_id=experiment_id, reference_timestamp=time.time())
+            gauge_mode=GaugeMode.SYSTEM, experiment=experiment, reference_timestamp=time.time())
 
         # then
         self.client.create_hardware_metric.assert_has_calls([
             call(
-                experiment_id,
+                experiment,
                 Metric(
                     internal_id=cpu_metric_id,
                     name=u'CPU - usage',
@@ -68,7 +68,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
                 )
             ),
             call(
-                experiment_id,
+                experiment,
                 Metric(
                     internal_id=ram_metric_id,
                     name=u'RAM',
@@ -88,11 +88,11 @@ class TestMetricServiceIntegration(unittest.TestCase):
         second_after_start = experiment_start + 1.0
 
         # and
-        experiment_id = str(uuid.uuid4())
+        experiment = MagicMock()
 
         # and
         metric_service = self.metric_service_factory.create(
-            gauge_mode=GaugeMode.SYSTEM, experiment_id=experiment_id, reference_timestamp=experiment_start)
+            gauge_mode=GaugeMode.SYSTEM, experiment=experiment, reference_timestamp=experiment_start)
         metrics_container = metric_service.metrics_container
 
         # when
@@ -100,7 +100,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
 
         # then
         self.client.send_hardware_metric_reports.assert_called_once_with(
-            experiment_id,
+            experiment,
             metrics_container.metrics(),
             [
                 MetricReport(

@@ -294,7 +294,7 @@ class Project(object):
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         experiment = self.client.create_experiment(
-            project_id=self.internal_id,
+            project=self,
             name=name,
             description=description,
             params=params,
@@ -322,9 +322,9 @@ class Project(object):
         if handle_uncaught_exceptions:
             sys.excepthook = exception_handler
 
-        experiment = self.client.mark_waiting(experiment_id=experiment.internal_id)
-        experiment = self.client.mark_initializing(experiment_id=experiment.internal_id)
-        experiment = self.client.mark_running(experiment_id=experiment.internal_id)
+        experiment = self.client.mark_waiting(experiment)
+        experiment = self.client.mark_initializing(experiment)
+        experiment = self.client.mark_running(experiment)
 
         if abortable:
             # pylint:disable=protected-access
@@ -339,14 +339,14 @@ class Project(object):
 
         if run_monitoring_thread:
             # pylint:disable=protected-access
-            experiment._ping_thread = PingThread(client=self.client, experiment_id=experiment.internal_id)
+            experiment._ping_thread = PingThread(client=self.client, experiment=experiment)
             experiment._ping_thread.start()
 
         if send_hardware_metrics and SystemMonitor.requirements_installed():
             # pylint:disable=protected-access
             gauge_mode = GaugeMode.CGROUP if in_docker() else GaugeMode.SYSTEM
             metric_service = MetricServiceFactory(self.client, os.environ).create(
-                gauge_mode=gauge_mode, experiment_id=experiment.internal_id, reference_timestamp=time.time())
+                gauge_mode=gauge_mode, experiment=experiment, reference_timestamp=time.time())
 
             experiment._hardware_metric_thread = HardwareMetricReportingThread(
                 metric_service=metric_service, metric_sending_interval_seconds=3)
@@ -374,8 +374,7 @@ class Project(object):
 
     def _fetch_leaderboard(self, id, group, state, owner, tag, min_running_time):
         return self.client.get_leaderboard_entries(
-            namespace=self.namespace, project_name=self.name,
-            ids=as_list(id), group_ids=as_list(group), states=as_list(state),
+            project=self, ids=as_list(id), group_ids=as_list(group), states=as_list(state),
             owners=as_list(owner), tags=as_list(tag),
             min_running_time=min_running_time)
 

@@ -63,7 +63,7 @@ class TestProject(unittest.TestCase):
 
         # then
         self.client.get_leaderboard_entries.assert_called_once_with(
-            namespace=self.project.namespace, project_name=self.project.name,
+            project=self.project,
             ids=None, group_ids=None,
             states=None, owners=None, tags=None,
             min_running_time=None)
@@ -88,7 +88,7 @@ class TestProject(unittest.TestCase):
 
         # then
         expected_params = dict(
-            namespace=self.project.namespace, project_name=self.project.name,
+            project=self.project,
             ids=[params['id']], group_ids=[params['group']],
             states=[params['state']], owners=[params['owner']], tags=[params['tag']],
             min_running_time=params['min_running_time']
@@ -115,7 +115,7 @@ class TestProject(unittest.TestCase):
 
         # then
         expected_params = dict(
-            namespace=self.project.namespace, project_name=self.project.name,
+            project=self.project,
             ids=params['id'], group_ids=params['group'],
             states=params['state'], owners=params['owner'], tags=params['tag'],
             min_running_time=params['min_running_time']
@@ -136,7 +136,7 @@ class TestProject(unittest.TestCase):
 
         # then
         self.client.get_leaderboard_entries.assert_called_once_with(
-            namespace=self.project.namespace, project_name=self.project.name,
+            project=self.project,
             ids=None, group_ids=None,
             states=None, owners=None, tags=None,
             min_running_time=None)

@@ -64,6 +64,12 @@ class LeaderboardEntry(object):
         return self.project_leaderboard_entry_dto.id
 
     @property
+    def project_full_id(self):
+        return '{org_name}/{project_name}'.format(
+            org_name=self.project_leaderboard_entry_dto.organizationName,
+            project_name=self.project_leaderboard_entry_dto.projectName)
+
+    @property
     def system_properties(self):
         entry = self.project_leaderboard_entry_dto
         return {

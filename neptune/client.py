@@ -21,12 +21,13 @@ import uuid
 
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, HTTPInternalServerError, \
-    HTTPServerError, HTTPUnauthorized
+    HTTPNotFound, HTTPServerError, HTTPUnauthorized
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 import requests
 
-from neptune.exceptions import ConnectionLost, Forbidden, ServerError, Unauthorized
+from neptune.exceptions import ConnectionLost, ExperimentNotFound, Forbidden, OrganizationNotFound, ProjectNotFound, \
+    ServerError, Unauthorized
 from neptune.experiment import Experiment
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
@@ -92,262 +93,341 @@ class Client(object):
 
     @with_api_exceptions_handler
     def get_project(self, organization_name, project_name):
-        r = self.backend_swagger_client.api.getProjectByName(
-            organizationName=organization_name,
-            projectName=project_name
-        ).response()
+        try:
+            r = self.backend_swagger_client.api.getProjectByName(
+                organizationName=organization_name,
+                projectName=project_name
+            ).response()
 
-        return r.result
+            return r.result
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier='{org}/{prj}'.format(org=organization_name, prj=project_name))
 
     @with_api_exceptions_handler
     def get_projects(self, namespace):
-        r = self.backend_swagger_client.api.listProjectsInOrganization(
-            organizationName=namespace
-        ).response()
-        return r.result.entries
+        try:
+            r = self.backend_swagger_client.api.listProjectsInOrganization(
+                organizationName=namespace
+            ).response()
+            return r.result.entries
+        except HTTPNotFound:
+            raise OrganizationNotFound(organization_name=namespace)
 
     @with_api_exceptions_handler
     def get_project_members(self, project_identifier):
-        r = self.backend_swagger_client.api.listProjectMembers(
-            projectIdentifier=project_identifier
-        ).response()
-
-        return r.result
+        try:
+            r = self.backend_swagger_client.api.listProjectMembers(projectIdentifier=project_identifier).response()
+            return r.result
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier)
 
     @with_api_exceptions_handler
-    def get_leaderboard_entries(self, namespace, project_name,
+    def get_leaderboard_entries(self, project,
                                 entry_types=None, ids=None, group_ids=None,
                                 states=None, owners=None, tags=None,
                                 min_running_time=None):
-        if entry_types is None:
-            entry_types = ['experiment', 'notebook']
+        try:
+            if entry_types is None:
+                entry_types = ['experiment', 'notebook']
 
-        def get_portion(limit, offset):
-            return self.leaderboard_swagger_client.api.getLeaderboard(
-                projectIdentifier="{}/{}".format(namespace, project_name),
-                entryType=entry_types,
-                shortId=ids, groupShortId=group_ids, state=states, owner=owners, tags=tags,
-                minRunningTimeSeconds=min_running_time,
-                sortBy=['shortId'], sortFieldType=['native'], sortDirection=['ascending'],
-                limit=limit, offset=offset
-            ).response().result.entries
+            def get_portion(limit, offset):
+                return self.leaderboard_swagger_client.api.getLeaderboard(
+                    projectIdentifier=project.full_id,
+                    entryType=entry_types,
+                    shortId=ids, groupShortId=group_ids, state=states, owner=owners, tags=tags,
+                    minRunningTimeSeconds=min_running_time,
+                    sortBy=['shortId'], sortFieldType=['native'], sortDirection=['ascending'],
+                    limit=limit, offset=offset
+                ).response().result.entries
 
-        return [LeaderboardEntry(e) for e in self._get_all_items(get_portion, step=100)]
-
-    @with_api_exceptions_handler
-    def get_channel_points_csv(self, experiment_internal_id, channel_internal_id):
-        csv = StringIO()
-        csv.write(
-            self.backend_swagger_client.api.getChannelValuesCSV(
-                experimentId=experiment_internal_id, channelId=channel_internal_id
-            ).response().incoming_response.text
-        )
-        csv.seek(0)
-        return csv
+            return [LeaderboardEntry(e) for e in self._get_all_items(get_portion, step=100)]
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier=project.full_id)
 
     @with_api_exceptions_handler
-    def get_metrics_csv(self, experiment_internal_id):
-        csv = StringIO()
-        csv.write(
-            self.backend_swagger_client.api.getSystemMetricsCSV(
-                experimentId=experiment_internal_id
-            ).response().incoming_response.text
-        )
-        csv.seek(0)
-        return csv
+    def get_channel_points_csv(self, experiment, channel_internal_id):
+        try:
+            csv = StringIO()
+            csv.write(
+                self.backend_swagger_client.api.getChannelValuesCSV(
+                    experimentId=experiment.internal_id, channelId=channel_internal_id
+                ).response().incoming_response.text
+            )
+            csv.seek(0)
+            return csv
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def create_experiment(self, project_id, name, description, params, properties, tags, abortable, monitored):
+    def get_metrics_csv(self, experiment):
+        try:
+            csv = StringIO()
+            csv.write(
+                self.backend_swagger_client.api.getSystemMetricsCSV(
+                    experimentId=experiment.internal_id
+                ).response().incoming_response.text
+            )
+            csv.seek(0)
+            return csv
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+
+    @with_api_exceptions_handler
+    def create_experiment(self, project, name, description, params, properties, tags, abortable, monitored):
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
 
-        params = ExperimentCreationParams(
-            projectId=project_id,
-            name=name,
-            description=description,
-            parameters=self._convert_to_api_parameters(params),
-            properties=self._convert_to_api_properties(properties),
-            tags=tags,
-            enqueueCommand="command",  # FIXME
-            entrypoint="",  # FIXME
-            execArgsTemplate="",  # FIXME,
-            abortable=abortable,
-            monitored=monitored
-        )
+        try:
+            params = ExperimentCreationParams(
+                projectId=project.internal_id,
+                name=name,
+                description=description,
+                parameters=self._convert_to_api_parameters(params),
+                properties=self._convert_to_api_properties(properties),
+                tags=tags,
+                enqueueCommand="command",  # FIXME
+                entrypoint="",  # FIXME
+                execArgsTemplate="",  # FIXME,
+                abortable=abortable,
+                monitored=monitored
+            )
 
-        experiment = self.backend_swagger_client.api.createExperiment(experimentCreationParams=params).response().result
+            experiment = self.backend_swagger_client.api.createExperiment(
+                experimentCreationParams=params).response().result
 
-        return self._convert_experiment_to_leaderboard_entry(experiment)
-
-    @with_api_exceptions_handler
-    def upload_experiment_source(self, experiment_id, data):
-        return self._upload_loop(
-            partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentSource),
-            data=data,
-            experiment_id=experiment_id)
+            return self._convert_experiment_to_leaderboard_entry(experiment)
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier=project.full_id)
 
     @with_api_exceptions_handler
-    def extract_experiment_source(self, experiment_id, data):
-        return self._upload_tar_data(
-            experiment_id=experiment_id,
-            api_method=self.backend_swagger_client.api.uploadExperimentSourceAsTarstream,
-            data=data
-        )
+    def upload_experiment_source(self, experiment, data):
+        try:
+            return self._upload_loop(
+                partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentSource),
+                data=data,
+                experiment=experiment)
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def mark_waiting(self, experiment_id):
-        return self._convert_experiment_to_leaderboard_entry(
-            self.backend_swagger_client.api.markExperimentWaiting(experimentId=experiment_id).response().result
-        )
+    def extract_experiment_source(self, experiment, data):
+        try:
+            return self._upload_tar_data(
+                experiment=experiment,
+                api_method=self.backend_swagger_client.api.uploadExperimentSourceAsTarstream,
+                data=data
+            )
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def mark_initializing(self, experiment_id):
-        return self._convert_experiment_to_leaderboard_entry(
-            self.backend_swagger_client.api.markExperimentInitializing(experimentId=experiment_id).response().result
-        )
+    def mark_waiting(self, experiment):
+        try:
+            return self._convert_experiment_to_leaderboard_entry(
+                self.backend_swagger_client.api.markExperimentWaiting(
+                    experimentId=experiment.internal_id).response().result
+            )
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def mark_running(self, experiment_id):
+    def mark_initializing(self, experiment):
+        try:
+            return self._convert_experiment_to_leaderboard_entry(
+                self.backend_swagger_client.api.markExperimentInitializing(
+                    experimentId=experiment.internal_id).response().result
+            )
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+
+    @with_api_exceptions_handler
+    def mark_running(self, experiment):
         RunningExperimentParams = self.backend_swagger_client.get_model('RunningExperimentParams')
 
-        params = RunningExperimentParams(
-            runCommand=""  # FIXME
-        )
+        try:
+            params = RunningExperimentParams(
+                runCommand=""  # FIXME
+            )
 
-        experiment = self.backend_swagger_client.api.markExperimentRunning(
-            experimentId=experiment_id,
-            runningExperimentParams=params
-        ).response().result
+            experiment = self.backend_swagger_client.api.markExperimentRunning(
+                experimentId=experiment.internal_id,
+                runningExperimentParams=params
+            ).response().result
 
-        return self._convert_experiment_to_leaderboard_entry(experiment)
+            return self._convert_experiment_to_leaderboard_entry(experiment)
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def create_channel(self, experiment_id, name, channel_type):
+    def create_channel(self, experiment, name, channel_type):
         ChannelParams = self.backend_swagger_client.get_model('ChannelParams')
 
-        params = ChannelParams(
-            name=name,
-            channelType=channel_type
-        )
+        try:
+            params = ChannelParams(
+                name=name,
+                channelType=channel_type
+            )
 
-        channel = self.backend_swagger_client.api.createChannel(
-            experimentId=experiment_id,
-            channelToCreate=params
-        ).response().result
+            channel = self.backend_swagger_client.api.createChannel(
+                experimentId=experiment.internal_id,
+                channelToCreate=params
+            ).response().result
 
-        return self._convert_channel_to_channel_with_last_value(channel)
+            return self._convert_channel_to_channel_with_last_value(channel)
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def send_channel_value(self, experiment_id, channel_id, x, y):
+    def send_channel_value(self, experiment, channel_id, x, y):
         InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
         Point = self.backend_swagger_client.get_model('Point')
         Y = self.backend_swagger_client.get_model('Y')
 
-        values = InputChannelValues(
-            channelId=channel_id,
-            values=[Point(
-                x=x,
-                y=Y(
-                    numericValue=y.get('numeric_value'),
-                    textValue=y.get('text_value'),
-                    inputImageValue=y.get('image_value')
+        try:
+            values = InputChannelValues(
+                channelId=channel_id,
+                values=[Point(
+                    x=x,
+                    y=Y(
+                        numericValue=y.get('numeric_value'),
+                        textValue=y.get('text_value'),
+                        inputImageValue=y.get('image_value')
+                    )
+                )]
+            )
+
+            batch_errors = self.backend_swagger_client.api.postChannelValues(
+                experimentId=experiment.internal_id,
+                channelsValues=[values]
+            ).response().result
+
+            if batch_errors:
+                raise ValueError(batch_errors[0].error.message)
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+
+    @with_api_exceptions_handler
+    def mark_succeeded(self, experiment):
+        CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
+
+        try:
+            experiment = self.backend_swagger_client.api.markExperimentCompleted(
+                experimentId=experiment.internal_id,
+                completedExperimentParams=CompletedExperimentParams(
+                    state='succeeded',
+                    traceback=''  # FIXME
                 )
-            )]
-        )
+            ).response().result
 
-        batch_errors = self.backend_swagger_client.api.postChannelValues(
-            experimentId=experiment_id,
-            channelsValues=[values]
-        ).response().result
-
-        if batch_errors:
-            raise ValueError(batch_errors[0].error.message)
+            return self._convert_experiment_to_leaderboard_entry(experiment)
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def mark_succeeded(self, experiment_id):
+    def mark_failed(self, experiment, traceback):
         CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
 
-        experiment = self.backend_swagger_client.api.markExperimentCompleted(
-            experimentId=experiment_id,
-            completedExperimentParams=CompletedExperimentParams(
-                state='succeeded',
-                traceback=''  # FIXME
-            )
-        ).response().result
+        try:
+            experiment = self.backend_swagger_client.api.markExperimentCompleted(
+                experimentId=experiment.internal_id,
+                completedExperimentParams=CompletedExperimentParams(
+                    state='failed',
+                    traceback=traceback
+                )
+            ).response().result
 
-        return self._convert_experiment_to_leaderboard_entry(experiment)
-
-    @with_api_exceptions_handler
-    def mark_failed(self, experiment_id, traceback):
-        CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
-
-        experiment = self.backend_swagger_client.api.markExperimentCompleted(
-            experimentId=experiment_id,
-            completedExperimentParams=CompletedExperimentParams(
-                state='failed',
-                traceback=traceback
-            )
-        ).response().result
-
-        return self._convert_experiment_to_leaderboard_entry(experiment)
+            return self._convert_experiment_to_leaderboard_entry(experiment)
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def ping_experiment(self, experiment_id):
-        self.backend_swagger_client.api.pingExperiment(experimentId=experiment_id).response()
+    def ping_experiment(self, experiment):
+        try:
+            self.backend_swagger_client.api.pingExperiment(experimentId=experiment.internal_id).response()
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def create_hardware_metric(self, experiment_id, metric):
+    def create_hardware_metric(self, experiment, metric):
         SystemMetricParams = self.backend_swagger_client.get_model('SystemMetricParams')
 
-        series = [gauge.name() for gauge in metric.gauges]
-        system_metric_params = SystemMetricParams(
-            name=metric.name, description=metric.description, resourceType=metric.resource_type,
-            unit=metric.unit, min=metric.min_value, max=metric.max_value, series=series)
+        try:
+            series = [gauge.name() for gauge in metric.gauges]
+            system_metric_params = SystemMetricParams(
+                name=metric.name, description=metric.description, resourceType=metric.resource_type,
+                unit=metric.unit, min=metric.min_value, max=metric.max_value, series=series)
 
-        metric_dto = self.backend_swagger_client.api.createSystemMetric(
-            experimentId=experiment_id, metricToCreate=system_metric_params
-        ).response().result
+            metric_dto = self.backend_swagger_client.api.createSystemMetric(
+                experimentId=experiment.internal_id, metricToCreate=system_metric_params
+            ).response().result
 
-        return metric_dto.id
+            return metric_dto.id
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
-    def send_hardware_metric_reports(self, experiment_id, metrics, metric_reports):
+    def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
         SystemMetricValues = self.backend_swagger_client.get_model('SystemMetricValues')
         SystemMetricPoint = self.backend_swagger_client.get_model('SystemMetricPoint')
 
-        metrics_by_name = {metric.name: metric for metric in metrics}
+        try:
+            metrics_by_name = {metric.name: metric for metric in metrics}
 
-        system_metric_values = [
-            SystemMetricValues(
-                metricId=metrics_by_name.get(report.metric.name).internal_id,
-                seriesName=gauge_name,
-                values=[
-                    SystemMetricPoint(x=int(metric_value.timestamp * 1000.0), y=metric_value.value)
-                    for metric_value in metric_values
-                ]
+            system_metric_values = [
+                SystemMetricValues(
+                    metricId=metrics_by_name.get(report.metric.name).internal_id,
+                    seriesName=gauge_name,
+                    values=[
+                        SystemMetricPoint(x=int(metric_value.timestamp * 1000.0), y=metric_value.value)
+                        for metric_value in metric_values
+                    ]
+                )
+                for report in metric_reports
+                for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name)
+            ]
+
+            response = self.backend_swagger_client.api.postSystemMetricValues(
+                experimentId=experiment.internal_id, metricValues=system_metric_values).response()
+
+            return response
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+
+    @with_api_exceptions_handler
+    def upload_experiment_output(self, experiment, data):
+        try:
+            return self._upload_loop(
+                partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+                data=data,
+                experiment=experiment)
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+
+    @with_api_exceptions_handler
+    def extract_experiment_output(self, experiment, data):
+        try:
+            return self._upload_tar_data(
+                experiment=experiment,
+                api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
+                data=data
             )
-            for report in metric_reports
-            for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name)
-        ]
-
-        response = self.backend_swagger_client.api.postSystemMetricValues(
-            experimentId=experiment_id, metricValues=system_metric_values).response()
-
-        return response
-
-    @with_api_exceptions_handler
-    def upload_experiment_output(self, experiment_id, data):
-        return self._upload_loop(
-            partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentOutput),
-            data=data,
-            experiment_id=experiment_id)
-
-    @with_api_exceptions_handler
-    def extract_experiment_output(self, experiment_id, data):
-        return self._upload_tar_data(
-            experiment_id=experiment_id,
-            api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
-            data=data
-        )
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @staticmethod
     def _get_all_items(get_portion, step):
@@ -461,9 +541,9 @@ class Client(object):
                    },
                    **kwargs)
 
-    def _upload_raw_data(self, experiment_id, api_method, data, headers):
+    def _upload_raw_data(self, experiment, api_method, data, headers):
         url = self.api_address + api_method.operation.path_name
-        url = url.replace("{experimentId}", experiment_id)
+        url = url.replace("{experimentId}", experiment.internal_id)
 
         session = self._http_client.session
 
@@ -478,9 +558,9 @@ class Client(object):
 
         return session.send(session.prepare_request(request))
 
-    def _upload_tar_data(self, experiment_id, api_method, data):
+    def _upload_tar_data(self, experiment, api_method, data):
         url = self.api_address + api_method.operation.path_name
-        url = url.replace("{experimentId}", experiment_id)
+        url = url.replace("{experimentId}", experiment.internal_id)
 
         session = self._http_client.session
 

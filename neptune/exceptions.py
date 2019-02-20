@@ -42,3 +42,19 @@ class Forbidden(NeptuneApiException):
 class InvalidApiKey(NeptuneApiException):
     def __init__(self):
         super(InvalidApiKey, self).__init__('The provided API key is invalid.')
+
+
+class OrganizationNotFound(NeptuneApiException):
+    def __init__(self, organization_name):
+        super(OrganizationNotFound, self).__init__("Organization '{}' not found.".format(organization_name))
+
+
+class ProjectNotFound(NeptuneApiException):
+    def __init__(self, project_identifier):
+        super(ProjectNotFound, self).__init__("Project '{}' not found.".format(project_identifier))
+
+
+class ExperimentNotFound(NeptuneApiException):
+    def __init__(self, experiment_short_id, project_qualified_name):
+        super(ExperimentNotFound, self).__init__("Experiment '{exp}' not found in '{project}'.".format(
+            exp=experiment_short_id, project=project_qualified_name))

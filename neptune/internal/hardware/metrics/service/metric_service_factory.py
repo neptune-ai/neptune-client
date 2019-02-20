@@ -27,7 +27,7 @@ class MetricServiceFactory(object):
         self.__client = client
         self.__os_environ = os_environ
 
-    def create(self, gauge_mode, experiment_id, reference_timestamp):
+    def create(self, gauge_mode, experiment, reference_timestamp):
         system_resource_info = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(), gpu_monitor=GPUMonitor(), os_environ=self.__os_environ
         ).create(gauge_mode=gauge_mode)
@@ -37,13 +37,13 @@ class MetricServiceFactory(object):
         metrics_container = metrics_factory.create_metrics_container()
 
         for metric in metrics_container.metrics():
-            metric.internal_id = self.__client.create_hardware_metric(experiment_id, metric)
+            metric.internal_id = self.__client.create_hardware_metric(experiment, metric)
 
         metric_reporter = MetricReporterFactory(reference_timestamp).create(metrics=metrics_container.metrics())
 
         return MetricService(
             client=self.__client,
             metric_reporter=metric_reporter,
-            experiment_id=experiment_id,
+            experiment=experiment,
             metrics_container=metrics_container
         )
