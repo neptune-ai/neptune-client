@@ -16,6 +16,7 @@
 import base64
 import os
 import threading
+import traceback
 
 import pandas as pd
 from pandas.errors import EmptyDataError
@@ -383,12 +384,12 @@ class Experiment(object):
 
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
-    def stop(self, traceback=None):
+    def stop(self, exc_tb=None):
         try:
-            if traceback is None:
+            if exc_tb is None:
                 self._client.mark_succeeded(self)
             else:
-                self._client.mark_failed(self, traceback)
+                self._client.mark_failed(self, exc_tb)
         except ExperimentAlreadyFinished:
             pass
 
@@ -405,6 +406,15 @@ class Experiment(object):
             self._aborting_thread = None
 
         pop_stopped_experiment()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_tb is None:
+            self.stop()
+        else:
+            self.stop("\n".join(traceback.format_tb(exc_tb)))
 
     def __str__(self):
         return 'Experiment({})'.format(self.id)
