@@ -17,9 +17,10 @@ import base64
 import os
 
 import pandas as pd
-import six
 from pandas.errors import EmptyDataError
+import six
 
+from neptune.api_exceptions import InvalidChannelX, InvalidChannelValue
 from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, map_values
@@ -179,7 +180,7 @@ class Experiment(object):
         x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
-            raise ValueError("Invalid value={} provided".format(y))
+            raise InvalidChannelValue(expected_type='float')
 
         self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y))
 
@@ -187,7 +188,7 @@ class Experiment(object):
         x, y = self._get_valid_x_y(x, y)
 
         if isinstance(y, six.string_types):
-            return ValueError("Invalid value={:100.100} provided".format(y))
+            return InvalidChannelValue(expected_type='str')
 
         self._send_channel_value(name, 'text', x, dict(text_value=y))
 
@@ -433,8 +434,7 @@ class Experiment(object):
                 channel.x = 0
             x = channel.x + 1
         elif x <= channel.x:
-            raise ValueError("ValueError: X-coordinates must be strictly increasing. "
-                             "Invalid Point({}, {:100.100}) for channel \"{}\"".format(x, y, channel_name))
+            raise InvalidChannelX()
 
         self._client.send_channel_value(self, channel.id, x, y)
 

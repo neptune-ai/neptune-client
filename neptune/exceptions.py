@@ -15,46 +15,21 @@
 #
 
 
-class NeptuneApiException(Exception):
+class NeptuneException(Exception):
     pass
 
 
-class ConnectionLost(NeptuneApiException):
+class FileNotFound(NeptuneException):
+    def __init__(self, path):
+        super(FileNotFound, self).__init__("File {} doesn't exist".format(path))
+
+
+class InvalidChannelX(NeptuneException):
     def __init__(self):
-        super(ConnectionLost, self).__init__('Connection lost. Please try again.')
+        super(InvalidChannelX, self).__init__(
+            'Invalid channel X-coordinate. The sequence of X-coordinates must be strictly increasing.')
 
 
-class ServerError(NeptuneApiException):
-    def __init__(self):
-        super(ServerError, self).__init__('Server error. Please try again later.')
-
-
-class Unauthorized(NeptuneApiException):
-    def __init__(self):
-        super(Unauthorized, self).__init__('You have no permissions to access this resource.')
-
-
-class Forbidden(NeptuneApiException):
-    def __init__(self):
-        super(Forbidden, self).__init__('You have no permissions to access this resource.')
-
-
-class InvalidApiKey(NeptuneApiException):
-    def __init__(self):
-        super(InvalidApiKey, self).__init__('The provided API key is invalid.')
-
-
-class OrganizationNotFound(NeptuneApiException):
-    def __init__(self, organization_name):
-        super(OrganizationNotFound, self).__init__("Organization '{}' not found.".format(organization_name))
-
-
-class ProjectNotFound(NeptuneApiException):
-    def __init__(self, project_identifier):
-        super(ProjectNotFound, self).__init__("Project '{}' not found.".format(project_identifier))
-
-
-class ExperimentNotFound(NeptuneApiException):
-    def __init__(self, experiment_short_id, project_qualified_name):
-        super(ExperimentNotFound, self).__init__("Experiment '{exp}' not found in '{project}'.".format(
-            exp=experiment_short_id, project=project_qualified_name))
+class InvalidChannelValue(NeptuneException):
+    def __init__(self, expected_type):
+        super(InvalidChannelValue, self).__init__('Invalid channel value type. Expected: {}.'.format(expected_type))

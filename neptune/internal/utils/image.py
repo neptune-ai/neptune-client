@@ -16,14 +16,17 @@
 import io
 import os
 
-import six
 from PIL import Image
+import six
+
+from neptune.api_exceptions import InvalidChannelValue
+from neptune.exceptions import FileNotFound
 
 
 def get_image_content(image):
     if isinstance(image, six.string_types):
         if not os.path.exists(image):
-            raise ValueError("File {} doesn't exist".format(image))
+            raise FileNotFound(image)
         with open(image, 'r') as image_file:
             return image_file.read()
 
@@ -32,4 +35,4 @@ def get_image_content(image):
             image.save(image_buffer, format='PNG')
             return image_buffer.getvalue()
 
-    raise ValueError("Unsupported image value")
+    raise InvalidChannelValue(expected_type='image')

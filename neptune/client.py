@@ -26,7 +26,7 @@ from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 import requests
 
-from neptune.exceptions import ConnectionLost, ExperimentNotFound, Forbidden, OrganizationNotFound, ProjectNotFound, \
+from neptune.api_exceptions import ConnectionLost, ExperimentNotFound, Forbidden, OrganizationNotFound, ProjectNotFound, \
     ServerError, Unauthorized
 from neptune.experiment import Experiment
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
