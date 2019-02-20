@@ -294,11 +294,9 @@ class Project(object):
             main_file = sys.argv[0]
             main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
             if os.path.isfile(main_abs_path):
-                upload_source_files = [main_abs_path]
+                upload_source_files = [os.path.relpath(main_abs_path, os.getcwd())]
             else:
                 upload_source_files = []
-
-        # TODO implement upload_source_files
 
         # TODO implement handle_uncaught_exceptions
 
@@ -314,6 +312,8 @@ class Project(object):
             abortable=abortable,
             monitored=run_monitoring_thread
         )
+
+        experiment.upload_source_files(upload_source_files)
 
         # FIXME delete all of these transitions
         experiment = self.client.mark_waiting(experiment_id=experiment.internal_id)

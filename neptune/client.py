@@ -15,6 +15,7 @@
 #
 import io
 import uuid
+from functools import partial
 from io import StringIO
 from itertools import groupby
 
@@ -136,6 +137,19 @@ class Client(object):
         experiment = self.backend_swagger_client.api.createExperiment(experimentCreationParams=params).response().result
 
         return self._convert_experiment_to_leaderboard_entry(experiment)
+
+    def upload_experiment_source(self, experiment_id, data):
+        return self._upload_loop(
+            partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentSource),
+            data=data,
+            experiment_id=experiment_id)
+
+    def extract_experiment_source(self, experiment_id, data):
+        return self._upload_tar_data(
+            experiment_id=experiment_id,
+            api_method=self.backend_swagger_client.api.uploadExperimentSourceAsTarstream,
+            data=data
+        )
 
     def mark_waiting(self, experiment_id):
         return self._convert_experiment_to_leaderboard_entry(
@@ -269,28 +283,17 @@ class Client(object):
         return response
 
     def upload_experiment_output(self, experiment_id, data):
-        return self._upload_loop(self._upload_experiment_output,
-                                 data=data,
-                                 experiment_id=experiment_id)
+        return self._upload_loop(
+            partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+            data=data,
+            experiment_id=experiment_id)
 
     def extract_experiment_output(self, experiment_id, data):
-        url = self.api_address + self.backend_swagger_client.api.uploadExperimentOutputAsTarstream.operation.path_name
-        url = url.replace("{experimentId}", experiment_id)
-
-        session = self._http_client.session
-
-        request = self._authenticator.apply(
-            requests.Request(
-                method='POST',
-                url=url,
-                data=io.BytesIO(data),
-                headers={
-                    "Content-Type": "application/octet-stream"
-                },
-            )
+        return self._upload_tar_data(
+            experiment_id=experiment_id,
+            api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
+            data=data
         )
-
-        return session.send(session.prepare_request(request))
 
     @staticmethod
     def _get_all_items(get_portion, step):
@@ -404,8 +407,8 @@ class Client(object):
                    },
                    **kwargs)
 
-    def _upload_experiment_output(self, experiment_id, data, headers):
-        url = self.api_address + self.backend_swagger_client.api.uploadExperimentOutput.operation.path_name
+    def _upload_raw_data(self, experiment_id, api_method, data, headers):
+        url = self.api_address + api_method.operation.path_name
         url = url.replace("{experimentId}", experiment_id)
 
         session = self._http_client.session
@@ -416,6 +419,25 @@ class Client(object):
                 url=url,
                 data=data,
                 headers=headers
+            )
+        )
+
+        return session.send(session.prepare_request(request))
+
+    def _upload_tar_data(self, experiment_id, api_method, data):
+        url = self.api_address + api_method.operation.path_name
+        url = url.replace("{experimentId}", experiment_id)
+
+        session = self._http_client.session
+
+        request = self._authenticator.apply(
+            requests.Request(
+                method='POST',
+                url=url,
+                data=io.BytesIO(data),
+                headers={
+                    "Content-Type": "application/octet-stream"
+                }
             )
         )
 

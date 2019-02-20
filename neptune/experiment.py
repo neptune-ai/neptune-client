@@ -158,6 +158,19 @@ class Experiment(object):
             (ch.name, ch.type) for ch in self._leaderboard_entry.channels
         )
 
+    def upload_source_files(self, source_files):
+
+        files_list = []
+        for source_file in source_files:
+            if not os.path.exists(source_file):
+                raise ValueError("File {} doesn't exist".format(source_file))
+            files_list.append((os.path.abspath(source_file), source_file))
+
+        upload_to_storage(files_list=files_list,
+                          upload_api_fun=self._client.upload_experiment_source,
+                          upload_tar_api_fun=self._client.extract_experiment_source,
+                          experiment_id=self.internal_id)
+
     def send_metric(self, channel_name, x, y=None):
         x, y = self._get_valid_x_y(x, y)
 
@@ -188,7 +201,7 @@ class Experiment(object):
     def send_artifact(self, artifact):
 
         if not os.path.exists(artifact):
-            raise ValueError("File {} doesn't exist")
+            raise ValueError("File {} doesn't exist".format(artifact))
 
         upload_to_storage(files_list=[(os.path.abspath(artifact), artifact)],
                           upload_api_fun=self._client.upload_experiment_output,
