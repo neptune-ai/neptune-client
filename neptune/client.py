@@ -13,21 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import io
-import uuid
 from functools import partial
+import io
 from io import StringIO
 from itertools import groupby
+import uuid
 
-import requests
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, HTTPInternalServerError, \
     HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
+import requests
 
-from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentNotFound, Forbidden, \
-    OrganizationNotFound, ProjectNotFound, ServerError, Unauthorized
+from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
+    ExperimentNotFound, Forbidden, OrganizationNotFound, ProjectNotFound, ServerError, StorageLimitReached, Unauthorized
 from neptune.experiments import Experiment
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
@@ -195,6 +195,11 @@ class Client(object):
             return self._convert_experiment_to_leaderboard_entry(experiment)
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
+        except HTTPUnprocessableEntity as e:
+            if e.response.json()['type'] == 'LIMIT_OF_EXPERIMENTS_IN_PROJECT_REACHED':
+                raise ExperimentLimitReached()
+            else:
+                raise
 
     @with_api_exceptions_handler
     def upload_experiment_source(self, experiment, data):
@@ -206,6 +211,11 @@ class Client(object):
         except HTTPNotFound:
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+        except HTTPUnprocessableEntity as e:
+            if e.response.json()['type'] == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+                raise StorageLimitReached()
+            else:
+                raise
 
     @with_api_exceptions_handler
     def extract_experiment_source(self, experiment, data):
@@ -218,6 +228,11 @@ class Client(object):
         except HTTPNotFound:
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+        except HTTPUnprocessableEntity as e:
+            if e.response.json()['type'] == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+                raise StorageLimitReached()
+            else:
+                raise
 
     @with_api_exceptions_handler
     def mark_waiting(self, experiment):
@@ -416,6 +431,11 @@ class Client(object):
         except HTTPNotFound:
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+        except HTTPUnprocessableEntity as e:
+            if e.response.json()['type'] == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+                raise StorageLimitReached()
+            else:
+                raise
 
     @with_api_exceptions_handler
     def extract_experiment_output(self, experiment, data):
@@ -428,6 +448,11 @@ class Client(object):
         except HTTPNotFound:
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+        except HTTPUnprocessableEntity as e:
+            if e.response.json()['type'] == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+                raise StorageLimitReached()
+            else:
+                raise
 
     @staticmethod
     def _get_all_items(get_portion, step):
