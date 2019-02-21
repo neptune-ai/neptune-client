@@ -65,3 +65,13 @@ class ExperimentAlreadyFinished(NeptuneApiException):
     def __init__(self, experiment_short_id):
         super(ExperimentAlreadyFinished, self).__init__(
             "Experiment '{}' is already finished.".format(experiment_short_id))
+
+
+class ExperimentLimitReached(NeptuneApiException):
+    def __init__(self):
+        super(ExperimentLimitReached, self).__init__('Experiment limit reached.')
+
+
+class StorageLimitReached(NeptuneApiException):
+    def __init__(self):
+        super(StorageLimitReached, self).__init__('Storage limit reached.')
