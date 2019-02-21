@@ -91,25 +91,13 @@ class Client(object):
         )
         self._http_client.authenticator = self.authenticator
 
-    @with_api_exceptions_handler
-    def get_project(self, organization_name=None, project_name=None):
+    def get_project(self, project_qualified_name):
         try:
             return self.backend_swagger_client.api.getProject(
-                organizationName=organization_name,
-                projectName=project_name
+                projectIdentifier=project_qualified_name
             ).response().result
         except HTTPNotFound:
-            raise ProjectNotFound(project_identifier='{org}/{prj}'.format(org=organization_name, prj=project_name))
-
-    @with_api_exceptions_handler
-    def get_default_project(self, organization_name=None):
-        try:
-            return self.backend_swagger_client.api.guessProject(
-                organizationName=organization_name,
-                projectKey="SAN"
-            ).response().result
-        except HTTPNotFound:
-            raise ProjectNotFound(project_identifier='{org}/{prj}'.format(org=organization_name, prj="SAN"))
+            raise ProjectNotFound(project_qualified_name)
 
     @with_api_exceptions_handler
     def get_projects(self, namespace):

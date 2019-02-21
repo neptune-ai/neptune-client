@@ -56,17 +56,7 @@ class Session(object):
         self._client = Client(self.credentials.api_address, self.credentials.api_token)
 
     def get_project(self, project_qualified_name):
-        namespace, project_name = project_qualified_name.split("/", 1)
-        project = self._client.get_project(namespace, project_name)
-        return Project(
-            client=self._client,
-            internal_id=project.id,
-            namespace=namespace,
-            name=project.name
-        )
-
-    def get_default_project(self, organization_name=None):
-        project = self._client.get_default_project(organization_name)
+        project = self._client.get_project(project_qualified_name)
         return Project(
             client=self._client,
             internal_id=project.id,

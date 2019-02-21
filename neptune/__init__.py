@@ -16,7 +16,6 @@
 import threading
 
 from neptune import projects, experiments
-from neptune.internal.structs.stack import Stack
 from neptune.sessions import Session
 
 session = None
@@ -25,17 +24,14 @@ project = None
 __lock = threading.RLock()
 
 
-def init(api_token=None, project_qualified_name=None):
+def init(project_qualified_name, api_token=None):
     # pylint: disable=global-statement
     with __lock:
         global session, project
 
         session = Session(api_token=api_token)
 
-        if project_qualified_name is not None:
-            project = session.get_project(project_qualified_name)
-        else:
-            project = session.get_default_project()
+        project = session.get_project(project_qualified_name)
 
         return session
 

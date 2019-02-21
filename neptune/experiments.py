@@ -25,7 +25,6 @@ import six
 from neptune.api_exceptions import ExperimentAlreadyFinished
 from neptune.exceptions import FileNotFound, InvalidChannelValue, InvalidChannelX, NoChannelValue
 from neptune.internal.storage.storage_utils import upload_to_storage
-from neptune.internal.structs.stack import Stack
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, map_values
 
@@ -476,7 +475,7 @@ class Experiment(object):
         return channel
 
 
-_experiments_stack = Stack()
+_experiments_stack = []
 
 __lock = threading.RLock()
 
@@ -485,7 +484,7 @@ def get_current_experiment():
     # pylint: disable=global-statement
     global _experiments_stack
     with __lock:
-        experiment = _experiments_stack.peek()
+        experiment = _experiments_stack[len(_experiments_stack) - 1]
         if experiment is None:
             raise ValueError("No running experiment")
         return experiment
@@ -495,7 +494,7 @@ def push_new_experiment(new_experiment):
     # pylint: disable=global-statement
     global _experiments_stack, __lock
     with __lock:
-        _experiments_stack.push(new_experiment)
+        _experiments_stack.append(new_experiment)
         return new_experiment
 
 
@@ -503,7 +502,7 @@ def pop_stopped_experiment():
     # pylint: disable=global-statement
     global _experiments_stack, __lock
     with __lock:
-        if not _experiments_stack.is_empty():
+        if _experiments_stack:
             current_experiment = _experiments_stack.pop()
         else:
             current_experiment = None
