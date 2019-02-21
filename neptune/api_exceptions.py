@@ -75,3 +75,13 @@ class ExperimentLimitReached(NeptuneApiException):
 class StorageLimitReached(NeptuneApiException):
     def __init__(self):
         super(StorageLimitReached, self).__init__('Storage limit reached.')
+
+
+class InvalidTag(NeptuneApiException):
+    def __init__(self, message):
+        super(InvalidTag, self).__init__(message)
+
+
+class DuplicateParameter(NeptuneApiException):
+    def __init__(self):
+        super(DuplicateParameter, self).__init__('Parameter list contains duplicates.')

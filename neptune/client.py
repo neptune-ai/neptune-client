@@ -21,13 +21,14 @@ import uuid
 
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, HTTPInternalServerError, \
-    HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity
+    HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity, HTTPBadRequest
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 import requests
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
-    ExperimentNotFound, Forbidden, OrganizationNotFound, ProjectNotFound, ServerError, StorageLimitReached, Unauthorized
+    ExperimentNotFound, Forbidden, OrganizationNotFound, ProjectNotFound, ServerError, StorageLimitReached, \
+    Unauthorized, DuplicateParameter, InvalidTag
 from neptune.experiments import Experiment
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
@@ -195,8 +196,17 @@ class Client(object):
             return self._convert_experiment_to_leaderboard_entry(experiment)
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
+        except HTTPBadRequest as e:
+            error_response = e.response.json()
+            error_type = error_response.get('type')
+            if error_type == 'DUPLICATE_PARAMETER':
+                raise DuplicateParameter()
+            elif error_type == 'INVALID_TAG':
+                raise InvalidTag(message=error_response.get('message'))
+            else:
+                raise
         except HTTPUnprocessableEntity as e:
-            if e.response.json()['type'] == 'LIMIT_OF_EXPERIMENTS_IN_PROJECT_REACHED':
+            if e.response.json().get('type') == 'LIMIT_OF_EXPERIMENTS_IN_PROJECT_REACHED':
                 raise ExperimentLimitReached()
             else:
                 raise
@@ -212,7 +222,7 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
         except HTTPUnprocessableEntity as e:
-            if e.response.json()['type'] == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+            if e.response.json().get('type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
             else:
                 raise
@@ -229,7 +239,7 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
         except HTTPUnprocessableEntity as e:
-            if e.response.json()['type'] == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+            if e.response.json().get('type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
             else:
                 raise
@@ -432,7 +442,7 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
         except HTTPUnprocessableEntity as e:
-            if e.response.json()['type'] == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+            if e.response.json().get('type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
             else:
                 raise
@@ -449,7 +459,7 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
         except HTTPUnprocessableEntity as e:
-            if e.response.json()['type'] == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+            if e.response.json().get('type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
             else:
                 raise
