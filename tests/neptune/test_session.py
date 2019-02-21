@@ -18,8 +18,8 @@ import unittest
 
 from mock import MagicMock, patch
 
-from neptune.project import Project
-from neptune.session import Session
+from neptune.projects import Project
+from neptune.sessions import Session
 from tests.neptune.api_objects_factory import a_project
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
@@ -50,7 +50,7 @@ class TestSession(unittest.TestCase):
         # and
         os_getenv.assert_not_called()
 
-    @patch('neptune.session.Client')
+    @patch('neptune.sessions.Client')
     def test_get_projects_with_given_namespace(self, _):
         # given
         session = Session(API_TOKEN)

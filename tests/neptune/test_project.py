@@ -20,9 +20,9 @@ from random import randint
 import pandas as pd
 from mock import MagicMock
 
-from neptune.experiment import Experiment
+from neptune.experiments import Experiment
 from neptune.model import LeaderboardEntry
-from neptune.project import Project
+from neptune.projects import Project
 from tests.neptune.api_objects_factory import a_group_leaderboard_entry_dto, a_registered_project_member, \
     an_invited_project_member
 from tests.neptune.project_test_fixture import some_exp_entry_dto, some_exp_entry_row, some_grp_entry_dto, \

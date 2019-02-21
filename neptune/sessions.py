@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from collections import OrderedDict
 
 from neptune.client import Client
 from neptune.credentials import Credentials
-from neptune.project import Project
+from neptune.projects import Project
 
 
 class Session(object):
@@ -36,7 +37,7 @@ class Session(object):
         Examples should be written in doctest format, and should illustrate how
         to use the function.
 
-        >>> from neptune.session import Session
+        >>> from neptune.sessions import Session
         >>> session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
 
         or assuming you have created an environment variable by running:
@@ -55,12 +56,11 @@ class Session(object):
         self._client = Client(self.credentials.api_address, self.credentials.api_token)
 
     def get_project(self, project_qualified_name):
-        namespace, project_name = project_qualified_name.split("/", 1)
-        project = self._client.get_project(namespace, project_name)
+        project = self._client.get_project(project_qualified_name)
         return Project(
             client=self._client,
             internal_id=project.id,
-            namespace=namespace,
+            namespace=project.organizationName,
             name=project.name
         )
 
@@ -84,7 +84,7 @@ class Session(object):
         Examples:
             First, you need to create a Session instance:
 
-            >>> from neptune.session import Session
+            >>> from neptune.sessions import Session
             >>> session = Session()
 
             Now, you can list all the projects available for a selected namespace. You can use `YOUR_NAMESPACE` which
@@ -102,4 +102,4 @@ class Session(object):
         """
 
         projects = [Project(self._client, p.id, namespace, p.name) for p in self._client.get_projects(namespace)]
-        return dict((p.full_id, p) for p in projects)
+        return OrderedDict((p.full_id, p) for p in projects)

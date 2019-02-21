@@ -15,6 +15,8 @@
 #
 import base64
 import os
+import threading
+import traceback
 
 import pandas as pd
 from pandas.errors import EmptyDataError
@@ -41,7 +43,7 @@ class Experiment(object):
     Examples:
         Instantiate a session.
 
-        >>> from neptune.session import Session
+        >>> from neptune.sessions import Session
         >>> session = Session()
 
         Fetch a project and a list of experiments.
@@ -73,7 +75,7 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
+            >>> from neptune.sessions import Session
             >>> session = Session()
 
             Fetch a project and a list of experiments.
@@ -111,7 +113,7 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
+            >>> from neptune.sessions import Session
             >>> session = Session()
 
             Fetch a project and a list of experiments.
@@ -143,7 +145,7 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
+            >>> from neptune.sessions import Session
             >>> session = Session()
 
             Fetch a project and a list of experiments.
@@ -185,13 +187,13 @@ class Experiment(object):
 
         self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y))
 
-    def send_text(self, name, x, y=None):
+    def send_text(self, channel_name, x, y=None):
         x, y = self._get_valid_x_y(x, y)
 
         if isinstance(y, six.string_types):
             return InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
-        self._send_channel_value(name, 'text', x, dict(text_value=y))
+        self._send_channel_value(channel_name, 'text', x, dict(text_value=y))
 
     def send_image(self, channel_name, x, y=None, name=None, description=None):
         x, y = self._get_valid_x_y(x, y)
@@ -224,7 +226,7 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
+            >>> from neptune.sessions import Session
             >>> session = Session()
 
             Fetch a project and a list of experiments.
@@ -253,7 +255,7 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
+            >>> from neptune.sessions import Session
             >>> session = Session()
 
             Fetch a project and a list of experiments.
@@ -298,7 +300,7 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
+            >>> from neptune.sessions import Session
             >>> session = Session()
 
             Fetch a project and a list of experiments.
@@ -341,7 +343,7 @@ class Experiment(object):
         Examples:
             Instantiate a session.
 
-            >>> from neptune.session import Session
+            >>> from neptune.sessions import Session
             >>> session = Session()
 
             Fetch a project and a list of experiments.
@@ -381,12 +383,12 @@ class Experiment(object):
 
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
-    def stop(self, traceback=None):
+    def stop(self, exc_tb=None):
         try:
-            if traceback is None:
+            if exc_tb is None:
                 self._client.mark_succeeded(self)
             else:
-                self._client.mark_failed(self, traceback)
+                self._client.mark_failed(self, exc_tb)
         except ExperimentAlreadyFinished:
             pass
 
@@ -401,6 +403,17 @@ class Experiment(object):
         if self._aborting_thread:
             self._aborting_thread.interrupt()
             self._aborting_thread = None
+
+        pop_stopped_experiment()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        if exc_tb is None:
+            self.stop()
+        else:
+            self.stop("\n".join(traceback.format_tb(exc_tb)))
 
     def __str__(self):
         return 'Experiment({})'.format(self.id)
@@ -460,3 +473,37 @@ class Experiment(object):
         channel = self._client.create_channel(self.internal_id, channel_name, channel_type)
         self._leaderboard_entry.add_channel(channel)
         return channel
+
+
+_experiments_stack = []
+
+__lock = threading.RLock()
+
+
+def get_current_experiment():
+    # pylint: disable=global-statement
+    global _experiments_stack
+    with __lock:
+        experiment = _experiments_stack[len(_experiments_stack) - 1]
+        if experiment is None:
+            raise ValueError("No running experiment")
+        return experiment
+
+
+def push_new_experiment(new_experiment):
+    # pylint: disable=global-statement
+    global _experiments_stack, __lock
+    with __lock:
+        _experiments_stack.append(new_experiment)
+        return new_experiment
+
+
+def pop_stopped_experiment():
+    # pylint: disable=global-statement
+    global _experiments_stack, __lock
+    with __lock:
+        if _experiments_stack:
+            current_experiment = _experiments_stack.pop()
+        else:
+            current_experiment = None
+        return current_experiment
