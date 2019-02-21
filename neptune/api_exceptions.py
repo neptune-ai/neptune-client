@@ -45,9 +45,9 @@ class InvalidApiKey(NeptuneApiException):
         super(InvalidApiKey, self).__init__('The provided API key is invalid.')
 
 
-class OrganizationNotFound(NeptuneApiException):
-    def __init__(self, organization_name):
-        super(OrganizationNotFound, self).__init__("Organization '{}' not found.".format(organization_name))
+class NamespaceNotFound(NeptuneApiException):
+    def __init__(self, namespace_name):
+        super(NamespaceNotFound, self).__init__("Namespace '{}' not found.".format(namespace_name))
 
 
 class ProjectNotFound(NeptuneApiException):
@@ -75,3 +75,12 @@ class ExperimentLimitReached(NeptuneApiException):
 class StorageLimitReached(NeptuneApiException):
     def __init__(self):
         super(StorageLimitReached, self).__init__('Storage limit reached.')
+
+
+class InvalidTag(NeptuneApiException):
+    pass
+
+
+class DuplicateParameter(NeptuneApiException):
+    def __init__(self):
+        super(DuplicateParameter, self).__init__('Parameter list contains duplicates.')
