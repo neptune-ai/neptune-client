@@ -21,13 +21,13 @@ import uuid
 
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, HTTPInternalServerError, \
-    HTTPNotFound, HTTPServerError, HTTPUnauthorized
+    HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 import requests
 
-from neptune.api_exceptions import ConnectionLost, ExperimentNotFound, Forbidden, OrganizationNotFound, \
-    ProjectNotFound, ServerError, Unauthorized
+from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentNotFound, Forbidden, \
+    OrganizationNotFound, ProjectNotFound, ServerError, Unauthorized
 from neptune.experiment import Experiment
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
@@ -331,6 +331,8 @@ class Client(object):
         except HTTPNotFound:
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+        except HTTPUnprocessableEntity:
+            raise ExperimentAlreadyFinished(experiment.id)
 
     @with_api_exceptions_handler
     def mark_failed(self, experiment, traceback):
@@ -349,6 +351,8 @@ class Client(object):
         except HTTPNotFound:
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+        except HTTPUnprocessableEntity:
+            raise ExperimentAlreadyFinished(experiment.id)
 
     @with_api_exceptions_handler
     def ping_experiment(self, experiment):
