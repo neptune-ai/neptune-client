@@ -27,7 +27,7 @@ from bravado_core.formatter import SwaggerFormat
 import requests
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
-    ExperimentNotFound, Forbidden, OrganizationNotFound, ProjectNotFound, ServerError, StorageLimitReached, \
+    ExperimentNotFound, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, StorageLimitReached, \
     Unauthorized, DuplicateParameter, InvalidTag
 from neptune.experiments import Experiment
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -108,7 +108,7 @@ class Client(object):
             ).response()
             return r.result.entries
         except HTTPNotFound:
-            raise OrganizationNotFound(organization_name=namespace)
+            raise NamespaceNotFound(namespace_name=namespace)
 
     @with_api_exceptions_handler
     def get_project_members(self, project_identifier):
