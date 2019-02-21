@@ -59,3 +59,9 @@ class ExperimentNotFound(NeptuneApiException):
     def __init__(self, experiment_short_id, project_qualified_name):
         super(ExperimentNotFound, self).__init__("Experiment '{exp}' not found in '{project}'.".format(
             exp=experiment_short_id, project=project_qualified_name))
+
+
+class ExperimentAlreadyFinished(NeptuneApiException):
+    def __init__(self, experiment_short_id):
+        super(ExperimentAlreadyFinished, self).__init__(
+            "Experiment '{}' is already finished.".format(experiment_short_id))

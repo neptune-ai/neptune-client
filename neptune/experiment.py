@@ -20,6 +20,7 @@ import pandas as pd
 from pandas.errors import EmptyDataError
 import six
 
+from neptune.api_exceptions import ExperimentAlreadyFinished
 from neptune.exceptions import FileNotFound, InvalidChannelValue, InvalidChannelX, NoChannelValue
 from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
@@ -381,10 +382,13 @@ class Experiment(object):
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
     def stop(self, traceback=None):
-        if traceback is None:
-            self._client.mark_succeeded(self)
-        else:
-            self._client.mark_failed(self, traceback)
+        try:
+            if traceback is None:
+                self._client.mark_succeeded(self)
+            else:
+                self._client.mark_failed(self, traceback)
+        except ExperimentAlreadyFinished:
+            pass
 
         if self._ping_thread:
             self._ping_thread.interrupt()
