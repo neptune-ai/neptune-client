@@ -202,7 +202,7 @@ class Client(object):
             if error_type == 'DUPLICATE_PARAMETER':
                 raise DuplicateParameter()
             elif error_type == 'INVALID_TAG':
-                raise InvalidTag(message=error_response.get('message'))
+                raise InvalidTag(error_response.get('message'))
             else:
                 raise
         except HTTPUnprocessableEntity as e:

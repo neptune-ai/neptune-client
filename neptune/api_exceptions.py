@@ -78,8 +78,7 @@ class StorageLimitReached(NeptuneApiException):
 
 
 class InvalidTag(NeptuneApiException):
-    def __init__(self, message):
-        super(InvalidTag, self).__init__(message)
+    pass
 
 
 class DuplicateParameter(NeptuneApiException):
