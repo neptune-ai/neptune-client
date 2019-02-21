@@ -30,6 +30,7 @@ from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, Ex
     ExperimentNotFound, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, StorageLimitReached, \
     Unauthorized, DuplicateParameter, InvalidTag
 from neptune.experiments import Experiment
+from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.oauth import NeptuneAuthenticator
 from neptune.utils import is_float
@@ -197,16 +198,15 @@ class Client(object):
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
         except HTTPBadRequest as e:
-            error_response = e.response.json()
-            error_type = error_response.get('type')
+            error_type = extract_response_field(e.response, 'type')
             if error_type == 'DUPLICATE_PARAMETER':
                 raise DuplicateParameter()
             elif error_type == 'INVALID_TAG':
-                raise InvalidTag(error_response.get('message'))
+                raise InvalidTag(extract_response_field(e.response, 'message'))
             else:
                 raise
         except HTTPUnprocessableEntity as e:
-            if e.response.json().get('type') == 'LIMIT_OF_EXPERIMENTS_IN_PROJECT_REACHED':
+            if extract_response_field(e.response, 'type') == 'LIMIT_OF_EXPERIMENTS_IN_PROJECT_REACHED':
                 raise ExperimentLimitReached()
             else:
                 raise
@@ -222,7 +222,7 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
         except HTTPUnprocessableEntity as e:
-            if e.response.json().get('type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+            if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
             else:
                 raise
@@ -239,7 +239,7 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
         except HTTPUnprocessableEntity as e:
-            if e.response.json().get('type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+            if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
             else:
                 raise
@@ -442,7 +442,7 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
         except HTTPUnprocessableEntity as e:
-            if e.response.json().get('type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+            if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
             else:
                 raise
@@ -459,7 +459,7 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
         except HTTPUnprocessableEntity as e:
-            if e.response.json().get('type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+            if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
             else:
                 raise
