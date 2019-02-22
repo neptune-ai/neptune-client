@@ -35,8 +35,18 @@ class NoChannelValue(NeptuneException):
         super(NoChannelValue, self).__init__('No channel value provided.')
 
 
+class LibraryNotInstalled(NeptuneException):
+    def __init__(self, library):
+        super(LibraryNotInstalled, self).__init__("Library {} is not installed".format(library))
+
+
 class InvalidChannelValue(NeptuneException):
     def __init__(self, expected_type, actual_type):
         super(InvalidChannelValue, self).__init__(
             'Invalid channel value type. Expected: {expected}, actual: {actual}.'.format(
                 expected=expected_type, actual=actual_type))
+
+
+class NoExperimentContext(NeptuneException):
+    def __init__(self):
+        super(NoExperimentContext, self).__init__('Unable to find current active experiment')
