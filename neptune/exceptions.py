@@ -49,4 +49,4 @@ class InvalidChannelValue(NeptuneException):
 
 class NoExperimentContext(NeptuneException):
     def __init__(self):
-        super(NeptuneException, self).__init__('Unable to find current active experiment')
+        super(NoExperimentContext, self).__init__('Unable to find current active experiment')
