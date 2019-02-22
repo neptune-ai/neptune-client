@@ -56,6 +56,10 @@ class Session(object):
         self._client = Client(self.credentials.api_address, self.credentials.api_token)
 
     def get_project(self, project_qualified_name):
+        """
+        Raises:
+            `ProjectNotFound`: When a project with given name does not exist.
+        """
         project = self._client.get_project(project_qualified_name)
         return Project(
             client=self._client,
@@ -80,6 +84,9 @@ class Session(object):
         Returns:
             dict: Dictionary of "NAMESPACE/PROJECT_NAME" and `neptune.project.Project` object pairs that contains
             all the projects that belong to the selected namespace.
+
+        Raises:
+            `NamespaceNotFound`: When the given namespace does not exist.
 
         Examples:
             First, you need to create a Session instance:

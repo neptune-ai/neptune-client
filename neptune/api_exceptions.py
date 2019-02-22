@@ -32,7 +32,7 @@ class ServerError(NeptuneApiException):
 
 class Unauthorized(NeptuneApiException):
     def __init__(self):
-        super(Unauthorized, self).__init__('You have no permissions to access this resource.')
+        super(Unauthorized, self).__init__('Your API token is invalid.')
 
 
 class Forbidden(NeptuneApiException):
@@ -77,10 +77,5 @@ class StorageLimitReached(NeptuneApiException):
         super(StorageLimitReached, self).__init__('Storage limit reached.')
 
 
-class InvalidTag(NeptuneApiException):
+class ExperimentValidationError(NeptuneApiException):
     pass
-
-
-class DuplicateParameter(NeptuneApiException):
-    def __init__(self):
-        super(DuplicateParameter, self).__init__('Parameter list contains duplicates.')

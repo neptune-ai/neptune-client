@@ -22,15 +22,15 @@ from itertools import groupby
 import uuid
 
 from bravado.client import SwaggerClient
-from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, HTTPInternalServerError, \
-    HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity, HTTPBadRequest
+from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
+    HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 import requests
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
-    ExperimentNotFound, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, StorageLimitReached, \
-    Unauthorized, DuplicateParameter, InvalidTag
+    ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
+    StorageLimitReached, Unauthorized
 from neptune.experiments import Experiment
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -202,9 +202,9 @@ class Client(object):
         except HTTPBadRequest as e:
             error_type = extract_response_field(e.response, 'type')
             if error_type == 'DUPLICATE_PARAMETER':
-                raise DuplicateParameter()
+                raise ExperimentValidationError('Parameter list contains duplicates.')
             elif error_type == 'INVALID_TAG':
-                raise InvalidTag(extract_response_field(e.response, 'message'))
+                raise ExperimentValidationError(extract_response_field(e.response, 'message'))
             else:
                 raise
         except HTTPUnprocessableEntity as e:
