@@ -45,3 +45,8 @@ class InvalidChannelValue(NeptuneException):
         super(InvalidChannelValue, self).__init__(
             'Invalid channel value type. Expected: {expected}, actual: {actual}.'.format(
                 expected=expected_type, actual=actual_type))
+
+
+class NoExperimentContext(NeptuneException):
+    def __init__(self):
+        super(NeptuneException, self).__init__('Unable to find current active experiment')

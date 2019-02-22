@@ -23,7 +23,7 @@ from pandas.errors import EmptyDataError
 import six
 
 from neptune.api_exceptions import ExperimentAlreadyFinished
-from neptune.exceptions import FileNotFound, InvalidChannelValue, InvalidChannelX, NoChannelValue
+from neptune.exceptions import FileNotFound, InvalidChannelValue, InvalidChannelX, NoChannelValue, NoExperimentContext
 from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, map_values
@@ -519,7 +519,7 @@ def get_current_experiment():
     with __lock:
         experiment = _experiments_stack[len(_experiments_stack) - 1]
         if experiment is None:
-            raise ValueError("No running experiment")
+            raise NoExperimentContext()
         return experiment
 
 
