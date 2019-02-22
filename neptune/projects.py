@@ -278,6 +278,11 @@ class Project(object):
                           send_hardware_metrics=True,
                           run_monitoring_thread=True,
                           handle_uncaught_exceptions=True):
+        """
+        Raises:
+            `ExperimentValidationError`: When provided arguments are invalid.
+            `ExperimentLimitReached`: When experiment limit in the project has been reached.
+        """
 
         if name is None:
             name = "Untitled"

@@ -167,7 +167,10 @@ class Experiment(object):
         )
 
     def upload_source_files(self, source_files):
-
+        """
+        Raises:
+            `StorageLimitReached`: When storage limit in the project has been reached.
+        """
         files_list = []
         for source_file in source_files:
             if not os.path.exists(source_file):
@@ -207,7 +210,10 @@ class Experiment(object):
         self._send_channel_value(channel_name, 'image', x, dict(image_value=input_image))
 
     def send_artifact(self, artifact):
-
+        """
+        Raises:
+            `StorageLimitReached`: When storage limit in the project has been reached.
+        """
         if not os.path.exists(artifact):
             raise FileNotFound(artifact)
 
