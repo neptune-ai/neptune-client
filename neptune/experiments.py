@@ -19,8 +19,8 @@ import threading
 import traceback
 
 import pandas as pd
-from pandas.errors import EmptyDataError
 import six
+from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ExperimentAlreadyFinished
 from neptune.exceptions import FileNotFound, InvalidChannelValue, InvalidChannelX, NoChannelValue, NoExperimentContext
@@ -67,6 +67,8 @@ class Experiment(object):
         self._ping_thread = None
         self._hardware_metric_thread = None
         self._aborting_thread = None
+        self._stdout_uploader = None
+        self._stderr_uploader = None
 
     @property
     def id(self):
@@ -193,7 +195,7 @@ class Experiment(object):
     def send_text(self, channel_name, x, y=None):
         x, y = self._get_valid_x_y(x, y)
 
-        if isinstance(y, six.string_types):
+        if not isinstance(y, six.string_types):
             return InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
         self._send_channel_value(channel_name, 'text', x, dict(text_value=y))
@@ -439,6 +441,12 @@ class Experiment(object):
         if self._aborting_thread:
             self._aborting_thread.interrupt()
             self._aborting_thread = None
+
+        if self._stdout_uploader:
+            self._stdout_uploader.close()
+
+        if self._stderr_uploader:
+            self._stderr_uploader.close()
 
         pop_stopped_experiment()
 
