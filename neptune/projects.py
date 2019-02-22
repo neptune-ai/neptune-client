@@ -25,7 +25,7 @@ from neptune.internal.abort import CustomAbortImpl, DefaultAbortImpl
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
-from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErrUploader
+from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErrWithUpload
 from neptune.internal.threads.aborting_thread import AbortingThread
 from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
@@ -354,7 +354,7 @@ class Project(object):
 
         if upload_stderr:
             # pylint:disable=protected-access
-            experiment._stderr_uploader = StdErrUploader(experiment)
+            experiment._stderr_uploader = StdErrWithUpload(experiment)
 
         if run_monitoring_thread:
             # pylint:disable=protected-access

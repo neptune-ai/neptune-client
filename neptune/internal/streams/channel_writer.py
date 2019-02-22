@@ -18,10 +18,10 @@ import time
 
 
 class ChannelWriter(object):
-    __SPLIT_PATTERN = re.compile(r'[\n\r]')
+    __SPLIT_PATTERN = re.compile(r'[\n\r]{1,2}')
 
     def __init__(self, experiment, channel_name):
-        self.time_started = time.time() * 1000
+        self.time_started_ms = time.time() * 1000
         self._experiment = experiment
         self._channel_name = channel_name
         self._data = b''
@@ -29,11 +29,11 @@ class ChannelWriter(object):
     def write(self, data):
         self._data += data
         lines = self.__SPLIT_PATTERN.split(self._data)
-        for i in range(0, len(lines) - 1):
+        for line in lines[:-1]:
             self._experiment.send_text(
                 channel_name=self._channel_name,
-                x=time.time() * 1000 - self.time_started,
-                y=lines[i].encode('utf-8')
+                x=time.time() * 1000 - self.time_started_ms,
+                y=line.encode('utf-8')
             )
 
         self._data = lines[-1]

@@ -18,7 +18,7 @@ import sys
 from neptune.internal.streams.channel_writer import ChannelWriter
 
 
-class StdStreamUpload(object):
+class StdStreamWithUpload(object):
 
     def __init__(self, experiment, channel_name, stream):
         # pylint:disable=protected-access
@@ -31,10 +31,10 @@ class StdStreamUpload(object):
         self._channel_writer.write(data)
 
     def flush(self):
-        pass
+        self._stream.flush()
 
 
-class StdOutWithUpload(StdStreamUpload):
+class StdOutWithUpload(StdStreamWithUpload):
 
     def __init__(self, experiment):
         super(StdOutWithUpload, self).__init__(experiment, 'stdout', sys.__stdout__)
@@ -44,10 +44,10 @@ class StdOutWithUpload(StdStreamUpload):
         sys.stdout = sys.__stdout__
 
 
-class StdErrUploader(StdStreamUpload):
+class StdErrWithUpload(StdStreamWithUpload):
 
     def __init__(self, experiment):
-        super(StdErrUploader, self).__init__(experiment, 'stderr', sys.__stderr__)
+        super(StdErrWithUpload, self).__init__(experiment, 'stderr', sys.__stderr__)
         sys.stderr = self
 
     def close(self):
