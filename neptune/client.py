@@ -15,18 +15,18 @@
 #
 import base64
 import gzip
-from functools import partial
 import io
+import uuid
+from functools import partial
 from io import StringIO
 from itertools import groupby
-import uuid
 
+import requests
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
     HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
-import requests
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
@@ -213,6 +213,24 @@ class Client(object):
                 raise ExperimentLimitReached()
             else:
                 raise
+
+    @with_api_exceptions_handler
+    def update_tags(self, experiment, tags_to_add, tags_to_delete):
+        UpdateTagsParams = self.backend_swagger_client.get_model('UpdateTagsParams')
+        try:
+            self.backend_swagger_client.api.updateTags(
+                updateTagsParams=UpdateTagsParams(
+                    experimentIds=[experiment.internal_id],
+                    groupsIds=[],
+                    tagsToAdd=tags_to_add,
+                    tagsToDelete=tags_to_delete
+                )
+            ).response().result
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id,
+                project_qualified_name=experiment.project_full_id
+            )
 
     @with_api_exceptions_handler
     def upload_experiment_source(self, experiment, data):
