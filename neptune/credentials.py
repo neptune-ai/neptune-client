@@ -24,9 +24,7 @@ from neptune.api_exceptions import InvalidApiKey
 class Credentials(object):
     """It formats your Neptune api token to the format that can be understood by the Neptune Client.
 
-    A constructor allowing you to pass the Neptune API key explicitly.
-    Use this method only if you're certain that your code will stay private.
-    Otherwise, refer to the more secure `from_env` method.
+    A constructor allowing you to pass the Neptune API token.
 
     Args:
         api_token(str): This is a secret API key that you can retrieve by running
@@ -44,51 +42,23 @@ class Credentials(object):
 
         $ export NEPTUNE_API_TOKEN=YOUR_API_TOKEN
 
-        which will allow you to use the `.from_env()` method.
+        which will allow you to use the same method without `api_token` parameter provided.
 
-        >>> credentials=Credentials.from_env()
+        >>> credentials=Credentials()
 
     Note:
-        For security reasons it is recommended to use the `.from_env()` method to create a instantiate Credentials.
-        You can create an environment variable that stores your api token.
+        For security reasons it is recommended to provide api_token through environment variable `NEPTUNE_API_TOKEN`.
         You can do that by going to your console and running:
 
         $ export NEPTUNE_API_TOKEN=YOUR_API_TOKEN`
+
+        Token provided through environment variable takes precedence over `api_token` parameter.
     """
 
     API_TOKEN_ENV_NAME = 'NEPTUNE_API_TOKEN'
 
-    @classmethod
-    def from_env(cls):
-        """Secure method for creating the Credentials object.
-
-        This is the preferred, more secure, method of building the `Credentials` object.
-        This method expects Neptune API key to be present in the `NEPTUNE_API_TOKEN`
-        environment variable.
-
-        Returns:
-            `neptune.credentials.Credentials`: Neptune Credentials object.
-
-        Note:
-            You can retrieve a valid Neptune API key with `neptune account api-key get`.
-
-            When running your code in Neptune's Jupyter notebook, or via `neptune send`,
-            this variable is set to a valid API key.
-
-        Examples:
-
-            >>> from neptune.credentials import Credentials
-            >>> credentials=Credentials.from_env()
-
-        Todo:
-            API token should contain (url, api_key and namespace)
-        """
-
-        api_token = os.getenv(cls.API_TOKEN_ENV_NAME)
-        return cls(api_token)
-
-    def __init__(self, api_token):
-        self.api_token = api_token
+    def __init__(self, api_token=None):
+        self.api_token = os.getenv(Credentials.API_TOKEN_ENV_NAME, api_token)
 
     @property
     def api_address(self):
@@ -100,7 +70,7 @@ class Credentials(object):
         Examples:
 
             >>> from neptune.credentials import Credentials
-            >>> credentials=Credentials.from_env()
+            >>> credentials=Credentials()
             >>> credentials.api_address
             'https://app.neptune.ml'
         """

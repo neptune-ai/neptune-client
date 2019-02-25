@@ -50,7 +50,7 @@ class Session(object):
     """
 
     def __init__(self, api_token=None):
-        credentials = Credentials(api_token) if api_token else Credentials.from_env()
+        credentials = Credentials(api_token)
 
         self.credentials = credentials
         self._client = Client(self.credentials.api_address, self.credentials.api_token)
