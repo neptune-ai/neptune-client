@@ -231,6 +231,12 @@ class Client(object):
                 experiment_short_id=experiment.id,
                 project_qualified_name=experiment.project_full_id
             )
+        except HTTPBadRequest as e:
+            error_type = extract_response_field(e.response, 'type')
+            if error_type == 'INVALID_TAG':
+                raise ExperimentValidationError(extract_response_field(e.response, 'message'))
+            else:
+                raise
 
     @with_api_exceptions_handler
     def upload_experiment_source(self, experiment, data):
