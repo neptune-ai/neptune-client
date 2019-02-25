@@ -111,6 +111,10 @@ class LeaderboardEntry(object):
             (p.key, p.value) for p in self.project_leaderboard_entry_dto.properties
         )
 
+    @property
+    def tags(self):
+        return self.project_leaderboard_entry_dto.tags
+
 
 class Point(object):
     def __init__(self, point_dto):

@@ -138,6 +138,10 @@ class Experiment(object):
         return self._simple_dict_to_dataframe(self._leaderboard_entry.system_properties)
 
     @property
+    def tags(self):
+        return self._leaderboard_entry.tags
+
+    @property
     def channels(self):
         """Retrieve all channel names along with their types for this experiment.
 
@@ -183,6 +187,16 @@ class Experiment(object):
                           upload_api_fun=self._client.upload_experiment_source,
                           upload_tar_api_fun=self._client.extract_experiment_source,
                           experiment=self)
+
+    def update_tags(self, tags):
+        tags_to_add = list(set(tags) - set(self.tags))
+        tags_to_delete = list(set(self.tags) - set(tags))
+
+        self._client.update_tags(
+            experiment=self,
+            tags_to_add=tags_to_add,
+            tags_to_delete=tags_to_delete
+        )
 
     def send_metric(self, channel_name, x, y=None):
         x, y = self._get_valid_x_y(x, y)
