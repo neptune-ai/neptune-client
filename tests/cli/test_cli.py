@@ -24,19 +24,19 @@ class TestCLI(unittest.TestCase):
     runner = CliRunner()
 
     def test_cli(self):
-        result = self.runner.invoke(main.main)
+        result = self.runner.invoke(main.hello)
         self.assertEqual(result.exit_code, 0)
         self.assertIsNone(result.exception)
         self.assertEqual(result.output.strip(), 'Hello, world.')
 
     def test_cli_with_option(self):
-        result = self.runner.invoke(main.main, ['--as-cowboy'])
+        result = self.runner.invoke(main.hello, ['--as-cowboy'])
         self.assertIsNone(result.exception)
         self.assertEqual(result.exit_code, 0)
         self.assertEqual(result.output.strip(), 'Howdy, world.')
 
     def test_cli_with_arg(self):
-        result = self.runner.invoke(main.main, ['Neptune'])
+        result = self.runner.invoke(main.hello, ['Neptune'])
         self.assertEqual(result.exit_code, 0)
         self.assertIsNone(result.exception)
         self.assertEqual(result.output.strip(), 'Hello, Neptune.')
