@@ -86,6 +86,7 @@ class Client(object):
             '{}/api/leaderboard/swagger.json'.format(self.api_address),
             config=dict(
                 validate_swagger_spec=False,
+                validate_responses=False,  # TODO!!!
                 formats=[uuid_format]
             ),
             http_client=self._http_client
