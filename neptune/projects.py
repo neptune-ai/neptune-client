@@ -333,10 +333,6 @@ class Project(object):
         if handle_uncaught_exceptions:
             sys.excepthook = exception_handler
 
-        experiment = self.client.mark_waiting(experiment)
-        experiment = self.client.mark_initializing(experiment)
-        experiment = self.client.mark_running(experiment)
-
         if abortable:
             # pylint:disable=protected-access
             if abort_callback:
