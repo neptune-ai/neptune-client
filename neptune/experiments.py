@@ -471,7 +471,7 @@ class Experiment(object):
         if exc_tb is None:
             self.stop()
         else:
-            self.stop("\n".join(traceback.format_tb(exc_tb)))
+            self.stop("\n".join(traceback.format_tb(exc_tb)) + "\n" + repr(exc_val))
 
     def __str__(self):
         return 'Experiment({})'.format(self.id)
