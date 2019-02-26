@@ -60,10 +60,11 @@ class TensorflowDataLoader(object):
                                              handle_uncaught_exceptions=True) as exp:
             for root, _, run_files in os.walk(path):
                 for run_file in run_files:
-                    self.__load_single_file(exp, os.path.join(root, run_file), tf)
+                    self._load_single_file(exp, os.path.join(root, run_file), tf)
             click.echo("{} was saved as {}".format(path, exp.id))
 
-    def __load_single_file(self, exp, path, tf):
+    @staticmethod
+    def _load_single_file(exp, path, tf):
         for record in tf.train.summary_iterator(path):
             if hasattr(record, 'summary'):
                 summary = record.summary

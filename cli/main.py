@@ -34,18 +34,21 @@ def hello(name, as_cowboy):
     click.echo('{0}, {1}.'.format(greet, name))
 
 
-@main.group('load')
-def load():
-    pass
-
-
-@load.command('tf')
-@click.argument('path', required=True)
+@main.group('sync')
 @click.option('--api-token', '-a', help='Neptune Authorization Token')
 @click.option('--project', '-p', required=True, help='Project name')
-def load_tensorflow_data(path, api_token, project):
-    session = Session(api_token)
-    project = session.get_project(project)
+@click.pass_context
+def sync(ctx, api_token, project):
+    ctx.obj['api_token'] = api_token
+    ctx.obj['project'] = project
+
+
+@sync.command('tf')
+@click.argument('path', required=True)
+@click.pass_context
+def load_tensorflow_data(ctx, path):
+    session = Session(ctx.obj['api_token'])
+    project = session.get_project(ctx.obj['project'])
 
     if not TensorflowDataLoader.requirements_installed():
         click.echo("ERROR: Package `tensorflow` is missing", err=True)
