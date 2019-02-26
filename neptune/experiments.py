@@ -141,6 +141,18 @@ class Experiment(object):
     def tags(self):
         return self._leaderboard_entry.tags
 
+    def append_tag(self, tag):
+        self._client.update_tags(experiment=self,
+                                 tags_to_add=[tag],
+                                 tags_to_delete=[])
+        self._leaderboard_entry.tags.append(tag)
+
+    def remove_tag(self, tag):
+        self._client.update_tags(experiment=self,
+                                 tags_to_add=[],
+                                 tags_to_delete=[tag])
+        self._leaderboard_entry.tags.remove(tag)
+
     @property
     def channels(self):
         """Retrieve all channel names along with their types for this experiment.
@@ -187,16 +199,6 @@ class Experiment(object):
                           upload_api_fun=self._client.upload_experiment_source,
                           upload_tar_api_fun=self._client.extract_experiment_source,
                           experiment=self)
-
-    def update_tags(self, tags):
-        tags_to_add = list(set(tags) - set(self.tags))
-        tags_to_delete = list(set(self.tags) - set(tags))
-
-        self._client.update_tags(
-            experiment=self,
-            tags_to_add=tags_to_add,
-            tags_to_delete=tags_to_delete
-        )
 
     def send_metric(self, channel_name, x, y=None):
         x, y = self._get_valid_x_y(x, y)
@@ -325,6 +327,22 @@ class Experiment(object):
 
         """
         return self._simple_dict_to_dataframe(self._leaderboard_entry.properties)
+
+    def set_property(self, key, value):
+        properties = self._leaderboard_entry.properties
+        properties[key] = value
+        return self._client.update_experiment(
+            experiment=self,
+            properties=properties
+        )
+
+    def remove_property(self, key):
+        properties = self._leaderboard_entry.properties
+        del properties[key]
+        return self._client.update_experiment(
+            experiment=self,
+            properties=properties
+        )
 
     def get_hardware_utilization(self):
         """Retrieve RAM, CPU and GPU utilization throughout the experiment.

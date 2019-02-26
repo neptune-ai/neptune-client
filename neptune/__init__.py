@@ -78,6 +78,22 @@ def create_experiment(name=None,
 get_experiment = experiments.get_current_experiment
 
 
+def append_tag(tag):
+    get_experiment().append_tag(tag)
+
+
+def remove_tag(tag):
+    get_experiment().remove_tag(tag)
+
+
+def set_property(key, value):
+    get_experiment().set_property(key, value)
+
+
+def remove_property(key):
+    get_experiment().remove_property(key)
+
+
 def send_metric(channel_name, x, y=None):
     return get_experiment().send_metric(channel_name, x, y)
 

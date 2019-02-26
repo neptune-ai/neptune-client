@@ -197,7 +197,7 @@ class Client(object):
             experiment = self.backend_swagger_client.api.createExperiment(
                 experimentCreationParams=params).response().result
 
-            return self._convert_experiment_to_leaderboard_entry(experiment)
+            return self._convert_to_experiment(experiment)
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
         except HTTPBadRequest as e:
@@ -213,6 +213,31 @@ class Client(object):
                 raise ExperimentLimitReached()
             else:
                 raise
+
+    @with_api_exceptions_handler
+    def update_experiment(self, experiment, properties):
+        EditExperimentParams = self.backend_swagger_client.get_model('EditExperimentParams')
+        KeyValueProperty = self.backend_swagger_client.get_model('KeyValueProperty')
+        try:
+            leaderboard_entry = self._convert_to_leaderboard_entry(
+                self.backend_swagger_client.api.updateExperiment(
+                    experimentId=experiment.internal_id,
+                    editExperimentParams=EditExperimentParams(
+                        properties=[KeyValueProperty(
+                            key=key,
+                            value=properties[key]
+                        ) for key in properties]
+                    )
+                ).response().result
+            )
+            # pylint: disable=protected-access
+            experiment._leaderboard_entry = leaderboard_entry
+            return experiment
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id,
+                project_qualified_name=experiment.project_full_id
+            )
 
     @with_api_exceptions_handler
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
@@ -270,47 +295,6 @@ class Client(object):
                 raise StorageLimitReached()
             else:
                 raise
-
-    @with_api_exceptions_handler
-    def mark_waiting(self, experiment):
-        try:
-            return self._convert_experiment_to_leaderboard_entry(
-                self.backend_swagger_client.api.markExperimentWaiting(
-                    experimentId=experiment.internal_id).response().result
-            )
-        except HTTPNotFound:
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
-
-    @with_api_exceptions_handler
-    def mark_initializing(self, experiment):
-        try:
-            return self._convert_experiment_to_leaderboard_entry(
-                self.backend_swagger_client.api.markExperimentInitializing(
-                    experimentId=experiment.internal_id).response().result
-            )
-        except HTTPNotFound:
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
-
-    @with_api_exceptions_handler
-    def mark_running(self, experiment):
-        RunningExperimentParams = self.backend_swagger_client.get_model('RunningExperimentParams')
-
-        try:
-            params = RunningExperimentParams(
-                runCommand=""  # FIXME
-            )
-
-            experiment = self.backend_swagger_client.api.markExperimentRunning(
-                experimentId=experiment.internal_id,
-                runningExperimentParams=params
-            ).response().result
-
-            return self._convert_experiment_to_leaderboard_entry(experiment)
-        except HTTPNotFound:
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
     def create_channel(self, experiment, name, channel_type):
@@ -403,7 +387,10 @@ class Client(object):
                 )
             ).response().result
 
-            return self._convert_experiment_to_leaderboard_entry(experiment)
+            leaderboard_entry = self._convert_to_leaderboard_entry(experiment)
+            # pylint: disable=protected-access
+            experiment._leaderboard_entry = leaderboard_entry
+            return experiment
         except HTTPNotFound:
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
@@ -423,7 +410,10 @@ class Client(object):
                 )
             ).response().result
 
-            return self._convert_experiment_to_leaderboard_entry(experiment)
+            leaderboard_entry = self._convert_to_leaderboard_entry(experiment)
+            # pylint: disable=protected-access
+            experiment._leaderboard_entry = leaderboard_entry
+            return experiment
         except HTTPNotFound:
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
@@ -558,35 +548,36 @@ class Client(object):
             ) for key, value in raw_properties.items()
         ]
 
-    def _convert_experiment_to_leaderboard_entry(self, experiment):
+    def _convert_to_experiment(self, experiment):
+        return Experiment(client=self,
+                          leaderboard_entry=self._convert_to_leaderboard_entry(experiment))
+
+    def _convert_to_leaderboard_entry(self, experiment):
         LeaderboardEntryDTO = self.leaderboard_swagger_client.get_model('LeaderboardEntryDTO')
 
         experiment_states = {"creating": 0, "waiting": 0, "initializing": 0, "running": 0, "cleaning": 0,
                              "succeeded": 0, "aborted": 0, "failed": 0, "crashed": 0, "preempted": 0,
                              experiment.state: 1}
 
-        return Experiment(
-            client=self,
-            leaderboard_entry=LeaderboardEntry(
-                LeaderboardEntryDTO(
-                    id=experiment.id,
-                    shortId=experiment.shortId,
-                    name=experiment.name,
-                    organizationId=experiment.organizationId,
-                    organizationName=experiment.organizationName,
-                    projectId=experiment.projectId,
-                    projectName=experiment.projectName,
-                    timeOfCreation=experiment.timeOfCreation,
-                    description=experiment.description,
-                    entryType="experiment",
-                    state=experiment.state,
-                    tags=experiment.tags,
-                    channelsLastValues=experiment.channelsLastValues,
-                    experimentStates=experiment_states,
-                    owner=experiment.owner,
-                    parameters=experiment.parameters,
-                    properties=experiment.properties
-                )
+        return LeaderboardEntry(
+            LeaderboardEntryDTO(
+                id=experiment.id,
+                shortId=experiment.shortId,
+                name=experiment.name,
+                organizationId=experiment.organizationId,
+                organizationName=experiment.organizationName,
+                projectId=experiment.projectId,
+                projectName=experiment.projectName,
+                timeOfCreation=experiment.timeOfCreation,
+                description=experiment.description,
+                entryType="experiment",
+                state=experiment.state,
+                tags=experiment.tags,
+                channelsLastValues=experiment.channelsLastValues,
+                experimentStates=experiment_states,
+                owner=experiment.owner,
+                parameters=experiment.parameters,
+                properties=experiment.properties
             )
         )
 
