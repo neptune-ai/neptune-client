@@ -194,10 +194,10 @@ class Client(object):
                 monitored=monitored
             )
 
-            experiment = self.backend_swagger_client.api.createExperiment(
+            api_experiment = self.backend_swagger_client.api.createExperiment(
                 experimentCreationParams=params).response().result
 
-            return self._convert_to_experiment(experiment)
+            return self._convert_to_experiment(api_experiment)
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
         except HTTPBadRequest as e:
@@ -548,9 +548,9 @@ class Client(object):
             ) for key, value in raw_properties.items()
         ]
 
-    def _convert_to_experiment(self, experiment):
+    def _convert_to_experiment(self, api_experiment):
         return Experiment(client=self,
-                          leaderboard_entry=self._convert_to_leaderboard_entry(experiment))
+                          leaderboard_entry=self._convert_to_leaderboard_entry(api_experiment))
 
     def _convert_to_leaderboard_entry(self, experiment):
         LeaderboardEntryDTO = self.leaderboard_swagger_client.get_model('LeaderboardEntryDTO')
