@@ -325,10 +325,10 @@ class Project(object):
 
         experiment.upload_source_files(upload_source_files)
 
-        def exception_handler(exc_type, value, tb):
-            experiment.stop("\n".join(traceback.format_tb(tb)))
+        def exception_handler(exc_type, exc_val, exc_tb):
+            experiment.stop("\n".join(traceback.format_tb(exc_tb)) + "\n" + repr(exc_val))
 
-            sys.__excepthook__(exc_type, value, tb)
+            sys.__excepthook__(exc_type, exc_val, exc_tb)
 
         if handle_uncaught_exceptions:
             sys.excepthook = exception_handler
