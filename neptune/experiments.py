@@ -98,6 +98,14 @@ class Experiment(object):
         return self._leaderboard_entry.id
 
     @property
+    def name(self):
+        return self._leaderboard_entry.name
+
+    @property
+    def state(self):
+        return self._leaderboard_entry.state
+
+    @property
     def internal_id(self):
         return self._leaderboard_entry.internal_id
 

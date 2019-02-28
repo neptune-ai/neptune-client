@@ -70,18 +70,19 @@ class TensorflowDataLoader(object):
                                                  handle_uncaught_exceptions=True) as exp:
                 tf_integrator = TensorflowIntegrator(lambda *args: exp)
                 self._load_single_file(path, tf, tf_integrator)
-                click.echo("{} was saved as {}".format(path, exp.id))
+                click.echo("{} was saved as {}".format(run_path, exp.id))
+        else:
+            click.echo("{} is already synced".format(run_path))
 
     def _experiment_exists(self, run_name):
         existing_experiments = self._project.get_experiments(tag=run_name)
-        return any(exp.name == run_name for exp in existing_experiments)
+        return any(exp.name == run_name and exp.state == 'succeeded' for exp in existing_experiments)
 
     @staticmethod
     def _load_single_file(path, tf, tf_integrator):
-        # tmp
-        i = 0
         for record in tf.train.summary_iterator(path):
-            if i > 10:
-                break
+            if record.graph_def != "":
+                graph_def = tf.GraphDef()
+                graph_def.ParseFromString(record.graph_def)
+                tf_integrator.add_graph_def(graph_def, path)
             tf_integrator.add_summary(path, record.summary, record.step)
-            i += 1
