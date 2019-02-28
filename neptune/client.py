@@ -347,6 +347,39 @@ class Client(object):
                 experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
 
     @with_api_exceptions_handler
+    def batch_send_channels_values(self, experiment, channels_values):
+        InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
+        Point = self.backend_swagger_client.get_model('Point')
+        Y = self.backend_swagger_client.get_model('Y')
+
+        input_channels_values = []
+        for channel_id in channels_values:
+            input_values = InputChannelValues(
+                channelId=channel_id,
+                values=[]
+            )
+            for channel_value in channels_values[channel_id]:
+                input_values.values.append(Point(
+                    x=channel_value.x,
+                    y=Y(numericValue=channel_value.get('numeric_value'),
+                        textValue=channel_value.get('text_value'),
+                        inputImageValue=channel_value.get('image_value'))
+                ))
+            input_channels_values.append(input_values)
+
+        try:
+            batch_errors = self.backend_swagger_client.api.postChannelValues(
+                experimentId=experiment.internal_id,
+                channelsValues=input_channels_values
+            ).response().result
+
+            if batch_errors:
+                raise ValueError(batch_errors[0].error.message)
+        except HTTPNotFound:
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+
+    @with_api_exceptions_handler
     def put_tensorflow_graph(self, experiment, graph_id, graph):
 
         TensorflowGraph = self.backend_swagger_client.get_model('TensorflowGraph')

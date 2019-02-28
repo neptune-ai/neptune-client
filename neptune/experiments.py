@@ -212,7 +212,7 @@ class Experiment(object):
         x, y = self._get_valid_x_y(x, y)
 
         if not isinstance(y, six.string_types):
-            return InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
+            raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
         self._send_channel_value(channel_name, 'text', x, dict(text_value=y))
 
@@ -538,6 +538,41 @@ class Experiment(object):
         channel.y = y
 
         return channel
+
+    def _batch_send_channels_values(self, channels, channels_values):
+        channels_by_name = dict((channel.name, channel) for channel in channels)
+        output_channels_values = {}
+        for channel_name in channels_values:
+            channel = channels_by_name[channel_name]
+            output_channel_values = []
+            for channel_value in channels_values[channel_name]:
+                x, y = self._get_valid_x_y(channel_value.x, channel_value.y)
+
+                if channel.type == 'numeric':
+
+                    if not is_float(y):
+                        raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
+
+                    output_channel_values.append(dict(x=x, numeric_value=y))
+
+                elif channel.type == 'text':
+                    if not isinstance(y, six.string_types):
+                        raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
+
+                    output_channel_values.append(dict(x=x, text_value=y))
+
+                elif channel.type == 'image':
+                    input_image = dict(
+                        name=y.name,
+                        description=y.description,
+                        data=base64.b64encode(get_image_content(y)).decode('utf-8')
+                    )
+
+                    output_channel_values.append(dict(x=x, image_value=input_image))
+
+            output_channels_values[channel.id] = output_channel_values
+
+        self._client.batch_send_channels_values(experiment=self, channels_values=output_channels_values)
 
     def _get_channel(self, channel_name, channel_type):
         channel = self._find_channel(channel_name)

@@ -39,8 +39,7 @@ def hello(name, as_cowboy):
 @click.option('--project', '-p', required=True, help='Project name')
 @click.pass_context
 def sync(ctx, api_token, project):
-    ctx.obj['api_token'] = api_token
-    ctx.obj['project'] = project
+    ctx.obj = {'api_token': api_token, 'project': project}
 
 
 @sync.command('tf')

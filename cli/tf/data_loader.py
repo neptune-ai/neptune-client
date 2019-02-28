@@ -15,13 +15,18 @@
 #
 from __future__ import print_function
 
+import collections
 import os
+import re
 import sys
 
 import click
 
+from neptune.internal.integration.tensorflow_integration import TensorflowIntegrator
+
 
 class TensorflowDataLoader(object):
+    _RECORD = collections.namedtuple('Record', 'summary step')
 
     def __init__(self, project, path):
         self._project = project
@@ -38,42 +43,45 @@ class TensorflowDataLoader(object):
 
     def run(self):
         import tensorflow as tf
-        runs = os.listdir(self._path)
-        if all(os.path.isdir(os.path.join(self._path, run)) for run in runs):  # multiple runs
-            for run_dir in runs:
+        for root, _, run_files in os.walk(self._path):
+            for run_file in run_files:
                 try:
-                    self._load_single_run(os.path.join(self._path, run_dir), tf)
+                    self._load_single_run(os.path.join(root, run_file), tf)
                 except Exception as e:
-                    print("Cannot load run from directory '{}'. ".format(run_dir) + e.message, file=sys.stderr)
-        else:  # single run
-            self._load_single_run(self._path, tf)
+                    print("Cannot load run from file '{}'. ".format(run_file) + e.message, file=sys.stderr)
 
     def _load_single_run(self, path, tf):
         click.echo("Loading {}...".format(path))
-        with self._project.create_experiment(name=path,
-                                             upload_source_files=[],
-                                             abort_callback=lambda *args: None,
-                                             upload_stdout=False,
-                                             upload_stderr=False,
-                                             send_hardware_metrics=False,
-                                             run_monitoring_thread=False,
-                                             handle_uncaught_exceptions=True) as exp:
-            for root, _, run_files in os.walk(path):
-                for run_file in run_files:
-                    self._load_single_file(exp, os.path.join(root, run_file), tf)
-            click.echo("{} was saved as {}".format(path, exp.id))
+        run_path = os.path.relpath(path, self._path)
+        run_name = re.sub(r'[^0-9A-Za-z_\-]', '_', run_path)
+        if not self._experiment_exists(run_name):
+            with self._project.create_experiment(name=run_name,
+                                                 properties={
+                                                     'tf/run/name': run_name,
+                                                     'tf/run/path': run_path
+                                                 },
+                                                 tags=[run_name],
+                                                 upload_source_files=[],
+                                                 abort_callback=lambda *args: None,
+                                                 upload_stdout=False,
+                                                 upload_stderr=False,
+                                                 send_hardware_metrics=False,
+                                                 run_monitoring_thread=False,
+                                                 handle_uncaught_exceptions=True) as exp:
+                tf_integrator = TensorflowIntegrator(lambda *args: exp)
+                self._load_single_file(path, tf, tf_integrator)
+                click.echo("{} was saved as {}".format(path, exp.id))
+
+    def _experiment_exists(self, run_name):
+        existing_experiments = self._project.get_experiments(tag=run_name)
+        return any(exp.name == run_name for exp in existing_experiments)
 
     @staticmethod
-    def _load_single_file(exp, path, tf):
+    def _load_single_file(path, tf, tf_integrator):
+        # tmp
+        i = 0
         for record in tf.train.summary_iterator(path):
-            if hasattr(record, 'summary'):
-                summary = record.summary
-                if hasattr(summary, 'value'):
-                    values = summary.value
-                    for value in values:
-                        if hasattr(value, 'tag') and hasattr(value, 'simple_value'):
-                            exp.send_metric(
-                                channel_name=value.tag,
-                                x=record.step,
-                                y=value.simple_value
-                            )
+            if i > 10:
+                break
+            tf_integrator.add_summary(path, record.summary, record.step)
+            i += 1

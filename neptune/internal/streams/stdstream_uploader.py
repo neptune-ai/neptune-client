@@ -28,7 +28,10 @@ class StdStreamWithUpload(object):
 
     def write(self, data):
         self._stream.write(data)
-        self._channel_writer.write(data)
+        try:
+            self._channel_writer.write(data)
+        except:
+            pass
 
     def flush(self):
         self._stream.flush()
