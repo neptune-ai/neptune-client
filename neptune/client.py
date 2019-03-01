@@ -68,6 +68,7 @@ def with_api_exceptions_handler(func):
 
 
 class Client(object):
+
     @with_api_exceptions_handler
     def __init__(self, api_address, api_token):
         self.api_address = api_address
@@ -96,6 +97,7 @@ class Client(object):
         )
         self._http_client.authenticator = self.authenticator
 
+    @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
             return self.backend_swagger_client.api.getProject(
@@ -195,7 +197,8 @@ class Client(object):
             )
 
             api_experiment = self.backend_swagger_client.api.createExperiment(
-                experimentCreationParams=params).response().result
+                experimentCreationParams=params
+            ).response().result
 
             return self._convert_to_experiment(api_experiment)
         except HTTPNotFound:
@@ -215,23 +218,23 @@ class Client(object):
                 raise
 
     @with_api_exceptions_handler
+    def get_experiment(self, experiment_id):
+        return self.backend_swagger_client.api.getExperiment(experimentId=experiment_id).response().result
+
+    @with_api_exceptions_handler
     def update_experiment(self, experiment, properties):
         EditExperimentParams = self.backend_swagger_client.get_model('EditExperimentParams')
         KeyValueProperty = self.backend_swagger_client.get_model('KeyValueProperty')
         try:
-            leaderboard_entry = self._convert_to_leaderboard_entry(
-                self.backend_swagger_client.api.updateExperiment(
-                    experimentId=experiment.internal_id,
-                    editExperimentParams=EditExperimentParams(
-                        properties=[KeyValueProperty(
-                            key=key,
-                            value=properties[key]
-                        ) for key in properties]
-                    )
-                ).response().result
-            )
-            # pylint: disable=protected-access
-            experiment._leaderboard_entry = leaderboard_entry
+            self.backend_swagger_client.api.updateExperiment(
+                experimentId=experiment.internal_id,
+                editExperimentParams=EditExperimentParams(
+                    properties=[KeyValueProperty(
+                        key=key,
+                        value=properties[key]
+                    ) for key in properties]
+                )
+            ).response()
             return experiment
         except HTTPNotFound:
             raise ExperimentNotFound(
@@ -379,17 +382,14 @@ class Client(object):
         CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
 
         try:
-            experiment = self.backend_swagger_client.api.markExperimentCompleted(
+            self.backend_swagger_client.api.markExperimentCompleted(
                 experimentId=experiment.internal_id,
                 completedExperimentParams=CompletedExperimentParams(
                     state='succeeded',
                     traceback=''  # FIXME
                 )
-            ).response().result
+            ).response()
 
-            leaderboard_entry = self._convert_to_leaderboard_entry(experiment)
-            # pylint: disable=protected-access
-            experiment._leaderboard_entry = leaderboard_entry
             return experiment
         except HTTPNotFound:
             raise ExperimentNotFound(
@@ -402,17 +402,14 @@ class Client(object):
         CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
 
         try:
-            experiment = self.backend_swagger_client.api.markExperimentCompleted(
+            self.backend_swagger_client.api.markExperimentCompleted(
                 experimentId=experiment.internal_id,
                 completedExperimentParams=CompletedExperimentParams(
                     state='failed',
                     traceback=traceback
                 )
-            ).response().result
+            ).response()
 
-            leaderboard_entry = self._convert_to_leaderboard_entry(experiment)
-            # pylint: disable=protected-access
-            experiment._leaderboard_entry = leaderboard_entry
             return experiment
         except HTTPNotFound:
             raise ExperimentNotFound(
@@ -550,36 +547,9 @@ class Client(object):
 
     def _convert_to_experiment(self, api_experiment):
         return Experiment(client=self,
-                          leaderboard_entry=self._convert_to_leaderboard_entry(api_experiment))
-
-    def _convert_to_leaderboard_entry(self, experiment):
-        LeaderboardEntryDTO = self.leaderboard_swagger_client.get_model('LeaderboardEntryDTO')
-
-        experiment_states = {"creating": 0, "waiting": 0, "initializing": 0, "running": 0, "cleaning": 0,
-                             "succeeded": 0, "aborted": 0, "failed": 0, "crashed": 0, "preempted": 0,
-                             experiment.state: 1}
-
-        return LeaderboardEntry(
-            LeaderboardEntryDTO(
-                id=experiment.id,
-                shortId=experiment.shortId,
-                name=experiment.name,
-                organizationId=experiment.organizationId,
-                organizationName=experiment.organizationName,
-                projectId=experiment.projectId,
-                projectName=experiment.projectName,
-                timeOfCreation=experiment.timeOfCreation,
-                description=experiment.description,
-                entryType="experiment",
-                state=experiment.state,
-                tags=experiment.tags,
-                channelsLastValues=experiment.channelsLastValues,
-                experimentStates=experiment_states,
-                owner=experiment.owner,
-                parameters=experiment.parameters,
-                properties=experiment.properties
-            )
-        )
+                          _id=api_experiment.shortId,
+                          internal_id=api_experiment.id,
+                          project_full_id='{}/{}'.format(api_experiment.organizationName, api_experiment.projectName))
 
     def _convert_channel_to_channel_with_last_value(self, channel):
         ChannelWithValueDTO = self.leaderboard_swagger_client.get_model('ChannelWithValueDTO')

@@ -18,11 +18,12 @@ import unittest
 from io import StringIO
 
 import pandas as pd
+from bunch import Bunch
 from mock import MagicMock
 from pandas.util.testing import assert_frame_equal
 
 from neptune.experiments import Experiment
-from tests.neptune.random_utils import sort_df_by_columns
+from tests.neptune.random_utils import sort_df_by_columns, a_string, a_uuid_string
 
 
 class TestExperiment(unittest.TestCase):
@@ -32,14 +33,21 @@ class TestExperiment(unittest.TestCase):
         client = MagicMock()
         client.get_channel_points_csv.return_value = StringIO(u'\n'.join(['0.3,2.5', '1,2']))
 
-        leaderboard_entry = MagicMock()
-        dict_value = MagicMock()
-        dict_value.id = 0
-        leaderboard_entry.channels_dict_by_name = {'epoch_loss': dict_value}
-        leaderboard_entry.internal_id = 0
+        experiment = MagicMock()
+        experiment.id = a_string()
+        experiment.internal_id = a_uuid_string()
+        experiment.channels = [Bunch(id=a_uuid_string(), name='epoch_loss')]
+        experiment.channelsLastValues = [Bunch(channelName='epoch_loss', x=2.5, y=2)]
+
+        client.get_experiment.return_value = experiment
 
         # then
-        experiment = Experiment(client, leaderboard_entry)
+        experiment = Experiment(
+            client=client,
+            _id=a_string(),
+            internal_id=a_uuid_string(),
+            project_full_id="test/sandbox"
+        )
         result = experiment.get_numeric_channels_values('epoch_loss')
 
         expected_result = pd.DataFrame({'x': [0.3, 1.0],

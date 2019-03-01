@@ -61,9 +61,11 @@ class Experiment(object):
         Column sorting
     """
 
-    def __init__(self, client, leaderboard_entry):
+    def __init__(self, client, _id, internal_id, project_full_id):
         self._client = client
-        self._leaderboard_entry = leaderboard_entry
+        self._id = _id
+        self._internal_id = internal_id
+        self._project_full_id = project_full_id
         self._ping_thread = None
         self._hardware_metric_thread = None
         self._aborting_thread = None
@@ -95,18 +97,17 @@ class Experiment(object):
             'SAL-1609'
 
         """
-        return self._leaderboard_entry.id
+        return self._id
 
     @property
     def internal_id(self):
-        return self._leaderboard_entry.internal_id
+        return self._internal_id
 
     @property
     def project_full_id(self):
-        return self._leaderboard_entry.project_full_id
+        return self._project_full_id
 
-    @property
-    def system_properties(self):
+    def get_system_properties(self):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 
         Returns:
@@ -129,36 +130,43 @@ class Experiment(object):
 
             Get experiment system properties.
 
-            >>> experiment.system_properties
+            >>> experiment.get_system_properties
 
         Note:
             The list of supported system properties may change over time.
 
         """
-        return self._simple_dict_to_dataframe(self._leaderboard_entry.system_properties)
+        experiment = self._client.get_experiment(self._internal_id)
+        return self._simple_dict_to_dataframe({
+            'id': experiment.shortId,
+            'name': experiment.name,
+            'created': experiment.timeOfCreation,
+            'finished': experiment.timeOfCompletion,
+            'running_time': experiment.runningTime,
+            'owner': experiment.owner,
+            'size': experiment.storageSize,
+            'tags': experiment.tags,
+            'notes': experiment.description
+        })
 
-    @property
-    def tags(self):
-        return self._leaderboard_entry.tags
+    def get_tags(self):
+        return self._client.get_experiment(self._internal_id).tags
 
     def append_tag(self, tag):
         self._client.update_tags(experiment=self,
                                  tags_to_add=[tag],
                                  tags_to_delete=[])
-        self._leaderboard_entry.tags.append(tag)
 
     def remove_tag(self, tag):
         self._client.update_tags(experiment=self,
                                  tags_to_add=[],
                                  tags_to_delete=[tag])
-        self._leaderboard_entry.tags.remove(tag)
 
-    @property
-    def channels(self):
-        """Retrieve all channel names along with their types for this experiment.
+    def get_channels(self):
+        """Retrieve all channel names along with their representations for this experiment.
 
         Returns:
-            dict: A dictionary mapping a channel name to its type.
+            dict: A dictionary mapping a channel name to channel.
 
         Examples:
             Instantiate a session.
@@ -177,12 +185,22 @@ class Experiment(object):
 
             Get experiment channels.
 
-            >>> experiment.channels
+            >>> experiment.get_channels()
 
         """
-        return dict(
-            (ch.name, ch.type) for ch in self._leaderboard_entry.channels
-        )
+        experiment = self._client.get_experiment(self.internal_id)
+        channels_last_values_by_name = dict((ch.channelName, ch) for ch in experiment.channelsLastValues)
+        channels = dict()
+        for ch in experiment.channels:
+            last_value = channels_last_values_by_name.get(ch.name, None)
+            if last_value:
+                ch.x = last_value.x
+                ch.y = last_value.y
+            else:
+                ch.x = None
+                ch.y = None
+            channels[ch.name] = ch
+        return channels
 
     def upload_source_files(self, source_files):
         """
@@ -270,8 +288,7 @@ class Experiment(object):
 
         self._client.put_tensorflow_graph(self, graph_id, value)
 
-    @property
-    def parameters(self):
+    def get_parameters(self):
         """Retrieve parameters for this experiment.
 
         Returns:
@@ -294,13 +311,15 @@ class Experiment(object):
 
             Get experiment parameters.
 
-            >>> experiment.parameters
+            >>> experiment.get_parameters()
 
         """
-        return self._simple_dict_to_dataframe(self._leaderboard_entry.parameters)
+        experiment = self._client.get_experiment(self.internal_id)
+        return dict(
+            (p.name, p.value) for p in experiment.parameters
+        )
 
-    @property
-    def properties(self):
+    def get_properties(self):
         """Retrieve user-defined properties for this experiment.
 
         Returns:
@@ -323,13 +342,16 @@ class Experiment(object):
 
             Get experiment properties.
 
-            >>> experiment.properties
+            >>> experiment.get_properties
 
         """
-        return self._simple_dict_to_dataframe(self._leaderboard_entry.properties)
+        experiment = self._client.get_experiment(self.internal_id)
+        return dict(
+            (p.key, p.value) for p in experiment.properties
+        )
 
     def set_property(self, key, value):
-        properties = self._leaderboard_entry.properties
+        properties = self.get_properties()
         properties[key] = value
         return self._client.update_experiment(
             experiment=self,
@@ -337,7 +359,7 @@ class Experiment(object):
         )
 
     def remove_property(self, key):
-        properties = self._leaderboard_entry.properties
+        properties = self.get_properties()
         del properties[key]
         return self._client.update_experiment(
             experiment=self,
@@ -436,8 +458,9 @@ class Experiment(object):
         """
 
         channels_data = {}
+        channels_by_name = self.get_channels()
         for channel_name in channel_names:
-            channel_id = self._leaderboard_entry.channels_dict_by_name[channel_name].id
+            channel_id = channels_by_name[channel_name].id
             try:
                 channels_data[channel_name] = pd.read_csv(
                     self._client.get_channel_points_csv(self, channel_id),
@@ -546,12 +569,10 @@ class Experiment(object):
         return channel
 
     def _find_channel(self, channel_name):
-        return next((channel for channel in self._leaderboard_entry.channels if channel.name == channel_name), None)
+        return self.get_channels().get(channel_name, None)
 
     def _create_channel(self, channel_name, channel_type):
-        channel = self._client.create_channel(self, channel_name, channel_type)
-        self._leaderboard_entry.add_channel(channel)
-        return channel
+        return self._client.create_channel(self, channel_name, channel_type)
 
 
 _experiments_stack = []

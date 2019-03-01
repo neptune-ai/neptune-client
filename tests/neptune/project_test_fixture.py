@@ -25,11 +25,9 @@ some_exp_entry_row = {
     'created': some_exp_entry_dto.timeOfCreation,
     'finished': some_exp_entry_dto.timeOfCompletion,
     'owner': some_exp_entry_dto.owner,
-    'git_hash': some_exp_entry_dto.commitId,
     'notes': some_exp_entry_dto.description,
     'running_time': some_exp_entry_dto.runningTime,
     'size': some_exp_entry_dto.size,
-    'source_code_size': some_exp_entry_dto.sourceSize,
     'tags': some_exp_entry_dto.tags
 }
 some_exp_entry_row.update({'property_' + p.key: p.value for p in some_exp_entry_dto.properties})
@@ -42,11 +40,9 @@ some_grp_entry_row = {
     'created': some_grp_entry_dto.timeOfCreation,
     'finished': some_grp_entry_dto.timeOfCompletion,
     'owner': some_grp_entry_dto.owner,
-    'git_hash': some_grp_entry_dto.commitId,
     'notes': some_grp_entry_dto.description,
     'running_time': some_grp_entry_dto.runningTime,
     'size': some_grp_entry_dto.size,
-    'source_code_size': some_grp_entry_dto.sourceSize,
     'tags': some_grp_entry_dto.tags
 }
 some_grp_entry_row.update({'property_' + p.key: p.value for p in some_grp_entry_dto.properties})

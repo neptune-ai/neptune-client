@@ -1,4 +1,5 @@
 astroid==1.6.1
+bunch==1.0.1
 mock==2.0.0
 psutil==5.5.0
 pylint==1.9.3

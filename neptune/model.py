@@ -78,12 +78,10 @@ class LeaderboardEntry(object):
             'created': entry.timeOfCreation,
             'finished': entry.timeOfCompletion,
             'running_time': entry.runningTime,
-            'source_code_size': entry.sourceSize,
             'owner': entry.owner,
             'size': entry.size,
             'tags': entry.tags,
-            'notes': entry.description,
-            'git_hash': entry.commitId
+            'notes': entry.description
         }
 
     @property
