@@ -24,13 +24,13 @@ from itertools import groupby
 import requests
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
-    HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity
+    HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity, HTTPConflict
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
-    StorageLimitReached, Unauthorized
+    StorageLimitReached, Unauthorized, ChannelAlreadyExists
 from neptune.experiments import Experiment
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -325,6 +325,8 @@ class Client(object):
             # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
+        except HTTPConflict:
+            raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
 
     @with_api_exceptions_handler
     def send_channel_value(self, experiment, channel_id, x, y, timestamp):
