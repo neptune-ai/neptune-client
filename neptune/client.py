@@ -327,7 +327,7 @@ class Client(object):
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
-    def send_channel_value(self, experiment, channel_id, x, y):
+    def send_channel_value(self, experiment, channel_id, x, y, timestamp):
         InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
         Point = self.backend_swagger_client.get_model('Point')
         Y = self.backend_swagger_client.get_model('Y')
@@ -336,6 +336,7 @@ class Client(object):
             values = InputChannelValues(
                 channelId=channel_id,
                 values=[Point(
+                    timestampMillis=int(timestamp * 1000.0),
                     x=x,
                     y=Y(
                         numericValue=y.get('numeric_value'),
@@ -470,7 +471,11 @@ class Client(object):
                     metricId=metrics_by_name.get(report.metric.name).internal_id,
                     seriesName=gauge_name,
                     values=[
-                        SystemMetricPoint(x=int(metric_value.timestamp * 1000.0), y=metric_value.value)
+                        SystemMetricPoint(
+                            timestamp=int(metric_value.timestamp * 1000.0),
+                            x=int(metric_value.running_time * 1000.0),
+                            y=metric_value.value
+                        )
                         for metric_value in metric_values
                     ]
                 )

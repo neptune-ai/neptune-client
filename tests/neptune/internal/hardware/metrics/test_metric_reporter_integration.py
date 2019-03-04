@@ -56,24 +56,54 @@ class TestMetricReporterIntegration(unittest.TestCase):
         expected_reports = [
             MetricReport(
                 metric=self.metrics_container.cpu_usage_metric,
-                values=[MetricValue(timestamp=expected_time, gauge_name=u'cpu', value=self.fixture.cpu_gauge_value)]
+                values=[MetricValue(
+                    timestamp=measurement_timestamp,
+                    running_time=expected_time,
+                    gauge_name=u'cpu',
+                    value=self.fixture.cpu_gauge_value
+                )]
             ),
             MetricReport(
                 metric=self.metrics_container.memory_metric,
-                values=[MetricValue(timestamp=expected_time, gauge_name=u'ram', value=self.fixture.memory_gauge_value)]
+                values=[MetricValue(
+                    timestamp=measurement_timestamp,
+                    running_time=expected_time,
+                    gauge_name=u'ram',
+                    value=self.fixture.memory_gauge_value
+                )]
             ),
             MetricReport(
                 metric=self.metrics_container.gpu_usage_metric,
                 values=[
-                    MetricValue(timestamp=expected_time, gauge_name=u'0', value=self.fixture.gpu0_usage_gauge_value),
-                    MetricValue(timestamp=expected_time, gauge_name=u'2', value=self.fixture.gpu1_usage_gauge_value)
+                    MetricValue(
+                        timestamp=measurement_timestamp,
+                        running_time=expected_time,
+                        gauge_name=u'0',
+                        value=self.fixture.gpu0_usage_gauge_value
+                    ),
+                    MetricValue(
+                        timestamp=measurement_timestamp,
+                        running_time=expected_time,
+                        gauge_name=u'2',
+                        value=self.fixture.gpu1_usage_gauge_value
+                    )
                 ]
             ),
             MetricReport(
                 metric=self.metrics_container.gpu_memory_metric,
                 values=[
-                    MetricValue(timestamp=expected_time, gauge_name=u'0', value=self.fixture.gpu0_memory_gauge_value),
-                    MetricValue(timestamp=expected_time, gauge_name=u'2', value=self.fixture.gpu1_memory_gauge_value)
+                    MetricValue(
+                        timestamp=measurement_timestamp,
+                        running_time=expected_time,
+                        gauge_name=u'0',
+                        value=self.fixture.gpu0_memory_gauge_value
+                    ),
+                    MetricValue(
+                        timestamp=measurement_timestamp,
+                        running_time=expected_time,
+                        gauge_name=u'2',
+                        value=self.fixture.gpu1_memory_gauge_value
+                    )
                 ]
             )
         ]

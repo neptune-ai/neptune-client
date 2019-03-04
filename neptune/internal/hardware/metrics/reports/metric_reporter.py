@@ -36,7 +36,8 @@ class MetricReporter(object):
 
     def __metric_value_for_gauge(self, gauge, timestamp):
         return MetricValue(
-            timestamp=timestamp - self.__reference_timestamp,
+            timestamp=timestamp,
+            running_time=timestamp - self.__reference_timestamp,
             gauge_name=gauge.name(),
             value=gauge.value()
         )

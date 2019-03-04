@@ -16,6 +16,7 @@
 import base64
 import os
 import threading
+import time
 import traceback
 
 import pandas as pd
@@ -214,23 +215,23 @@ class Experiment(object):
                           upload_tar_api_fun=self._client.extract_experiment_source,
                           experiment=self)
 
-    def send_metric(self, channel_name, x, y=None):
+    def send_metric(self, channel_name, x, y=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
-        self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y))
+        self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y), timestamp)
 
-    def send_text(self, channel_name, x, y=None):
+    def send_text(self, channel_name, x, y=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
 
         if not isinstance(y, six.string_types):
             return InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
-        self._send_channel_value(channel_name, 'text', x, dict(text_value=y))
+        self._send_channel_value(channel_name, 'text', x, dict(text_value=y), timestamp)
 
-    def send_image(self, channel_name, x, y=None, name=None, description=None):
+    def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
 
         input_image = dict(
@@ -239,7 +240,7 @@ class Experiment(object):
             data=base64.b64encode(get_image_content(y)).decode('utf-8')
         )
 
-        self._send_channel_value(channel_name, 'image', x, dict(image_value=input_image))
+        self._send_channel_value(channel_name, 'image', x, dict(image_value=input_image), timestamp)
 
     def send_artifact(self, artifact):
         """
@@ -538,7 +539,8 @@ class Experiment(object):
 
         return x, y
 
-    def _send_channel_value(self, channel_name, channel_type, x, y):
+    def _send_channel_value(self, channel_name, channel_type, x, y, timestamp=None):
+        timestamp = timestamp or time.time()
         channel = self._get_channel(channel_name, channel_type)
 
         if x is None:
@@ -551,7 +553,7 @@ class Experiment(object):
             elif x <= channel.x:
                 raise InvalidChannelX(x)
 
-        self._client.send_channel_value(self, channel.id, x, y)
+        self._client.send_channel_value(self, channel.id, x, y, timestamp)
 
         channel.x = x
         channel.y = y

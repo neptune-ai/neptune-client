@@ -105,11 +105,11 @@ class TestMetricServiceIntegration(unittest.TestCase):
             [
                 MetricReport(
                     metric=metrics_container.cpu_usage_metric,
-                    values=[MetricValue(timestamp=1.0, gauge_name=u'cpu', value=ANY)]
+                    values=[MetricValue(timestamp=second_after_start, running_time=1.0, gauge_name=u'cpu', value=ANY)]
                 ),
                 MetricReport(
                     metric=metrics_container.memory_metric,
-                    values=[MetricValue(timestamp=1.0, gauge_name=u'ram', value=ANY)]
+                    values=[MetricValue(timestamp=second_after_start, running_time=1.0, gauge_name=u'ram', value=ANY)]
                 )
             ]
         )

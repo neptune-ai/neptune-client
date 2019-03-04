@@ -94,16 +94,16 @@ def remove_property(key):
     get_experiment().remove_property(key)
 
 
-def send_metric(channel_name, x, y=None):
-    return get_experiment().send_metric(channel_name, x, y)
+def send_metric(channel_name, x, y=None, timestamp=None):
+    return get_experiment().send_metric(channel_name, x, y, timestamp)
 
 
-def send_text(channel_name, x, y=None):
-    return get_experiment().send_text(channel_name, x, y)
+def send_text(channel_name, x, y=None, timestamp=None):
+    return get_experiment().send_text(channel_name, x, y, timestamp)
 
 
-def send_image(channel_name, x, y=None, name=None, description=None):
-    return get_experiment().send_image(channel_name, x, y, name, description)
+def send_image(channel_name, x, y=None, name=None, description=None, timestamp=None):
+    return get_experiment().send_image(channel_name, x, y, name, description, timestamp)
 
 
 def send_artifact(artifact):
