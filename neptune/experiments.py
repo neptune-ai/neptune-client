@@ -103,10 +103,6 @@ class Experiment(object):
     def internal_id(self):
         return self._internal_id
 
-    @property
-    def project_full_id(self):
-        return self._project_full_id
-
     def get_system_properties(self):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 

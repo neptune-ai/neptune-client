@@ -159,8 +159,9 @@ class Client(object):
             csv.seek(0)
             return csv
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def get_metrics_csv(self, experiment):
@@ -174,8 +175,9 @@ class Client(object):
             csv.seek(0)
             return csv
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def create_experiment(self, project, name, description, params, properties, tags, abortable, monitored):
@@ -237,9 +239,10 @@ class Client(object):
             ).response()
             return experiment
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
-                project_qualified_name=experiment.project_full_id
+                project_qualified_name=experiment._project_full_id
             )
 
     @with_api_exceptions_handler
@@ -255,9 +258,10 @@ class Client(object):
                 )
             ).response().result
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
-                project_qualified_name=experiment.project_full_id
+                project_qualified_name=experiment._project_full_id
             )
         except HTTPBadRequest as e:
             error_type = extract_response_field(e.response, 'type')
@@ -274,8 +278,9 @@ class Client(object):
                 data=data,
                 experiment=experiment)
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity as e:
             if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
@@ -291,8 +296,9 @@ class Client(object):
                 data=data
             )
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity as e:
             if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
@@ -316,8 +322,9 @@ class Client(object):
 
             return self._convert_channel_to_channel_with_last_value(channel)
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def send_channel_value(self, experiment, channel_id, x, y):
@@ -346,8 +353,9 @@ class Client(object):
             if batch_errors:
                 raise ValueError(batch_errors[0].error.message)
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def put_tensorflow_graph(self, experiment, graph_id, graph):
@@ -374,8 +382,9 @@ class Client(object):
             ).response()
             return r.result
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def mark_succeeded(self, experiment):
@@ -392,8 +401,9 @@ class Client(object):
 
             return experiment
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity:
             raise ExperimentAlreadyFinished(experiment.id)
 
@@ -412,8 +422,9 @@ class Client(object):
 
             return experiment
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity:
             raise ExperimentAlreadyFinished(experiment.id)
 
@@ -422,8 +433,9 @@ class Client(object):
         try:
             self.backend_swagger_client.api.pingExperiment(experimentId=experiment.internal_id).response()
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def create_hardware_metric(self, experiment, metric):
@@ -441,8 +453,9 @@ class Client(object):
 
             return metric_dto.id
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
@@ -470,8 +483,9 @@ class Client(object):
 
             return response
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def upload_experiment_output(self, experiment, data):
@@ -481,8 +495,9 @@ class Client(object):
                 data=data,
                 experiment=experiment)
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity as e:
             if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
@@ -498,8 +513,9 @@ class Client(object):
                 data=data
             )
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity as e:
             if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
