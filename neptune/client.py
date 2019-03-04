@@ -336,7 +336,7 @@ class Client(object):
             values = InputChannelValues(
                 channelId=channel_id,
                 values=[Point(
-                    timestampMillis=long(timestamp * 1000),
+                    timestampMillis=int(timestamp * 1000.0),
                     x=x,
                     y=Y(
                         numericValue=y.get('numeric_value'),
@@ -471,7 +471,11 @@ class Client(object):
                     metricId=metrics_by_name.get(report.metric.name).internal_id,
                     seriesName=gauge_name,
                     values=[
-                        SystemMetricPoint(x=int(metric_value.timestamp * 1000.0), y=metric_value.value)
+                        SystemMetricPoint(
+                            timestamp=int(metric_value.timestamp * 1000.0),
+                            x=int(metric_value.running_time * 1000.0),
+                            y=metric_value.value
+                        )
                         for metric_value in metric_values
                     ]
                 )
