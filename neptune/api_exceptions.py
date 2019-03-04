@@ -79,3 +79,9 @@ class StorageLimitReached(NeptuneApiException):
 
 class ExperimentValidationError(NeptuneApiException):
     pass
+
+
+class ChannelAlreadyExists(NeptuneApiException):
+    def __init__(self, experiment_short_id, channel_name):
+        super(ChannelAlreadyExists, self).__init__(
+            "Channel with name '{}' already exists in experiment '{}'.".format(channel_name, experiment_short_id))
