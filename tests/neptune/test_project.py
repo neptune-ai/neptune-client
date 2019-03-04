@@ -69,7 +69,8 @@ class TestProject(unittest.TestCase):
             min_running_time=None)
 
         # and
-        expected_experiments = [Experiment(self.client, entry) for entry in leaderboard_entries]
+        expected_experiments = [Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id)
+                                for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_experiments_with_scalar_params(self):
@@ -96,7 +97,8 @@ class TestProject(unittest.TestCase):
         self.client.get_leaderboard_entries.assert_called_once_with(**expected_params)
 
         # and
-        expected_experiments = [Experiment(self.client, entry) for entry in leaderboard_entries]
+        expected_experiments = [Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id)
+                                for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_experiments_with_list_params(self):
@@ -123,7 +125,8 @@ class TestProject(unittest.TestCase):
         self.client.get_leaderboard_entries.assert_called_once_with(**expected_params)
 
         # and
-        expected_experiments = [Experiment(self.client, entry) for entry in leaderboard_entries]
+        expected_experiments = [Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id)
+                                for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_leaderboard(self):
@@ -154,7 +157,7 @@ class TestProject(unittest.TestCase):
         # given
         columns_in_expected_order = [
             'id', 'name', 'created', 'finished', 'owner',
-            'git_hash', 'notes', 'size', 'source_code_size', 'tags',
+            'notes', 'size', 'tags',
             'channel_abc', 'channel_def',
             'parameter_abc', 'parameter_def',
             'property_abc', 'property_def'
@@ -178,8 +181,7 @@ class TestProject(unittest.TestCase):
         group_short_ids = self.project.get_experiment_groups()
 
         # then
-        self.client.get_leaderboard_entries.assert_called_once_with(
-            namespace=self.project.namespace, project_name=self.project.name, entry_types=['group'])
+        self.client.get_leaderboard_entries.assert_called_once_with(project=self.project, entry_types=['group'])
 
         # and
         self.assertEqual([entry.id for entry in group_entries], group_short_ids)

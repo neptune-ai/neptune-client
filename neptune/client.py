@@ -68,6 +68,7 @@ def with_api_exceptions_handler(func):
 
 
 class Client(object):
+
     @with_api_exceptions_handler
     def __init__(self, api_address, api_token):
         self.api_address = api_address
@@ -96,6 +97,7 @@ class Client(object):
         )
         self._http_client.authenticator = self.authenticator
 
+    @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
             return self.backend_swagger_client.api.getProject(
@@ -157,8 +159,9 @@ class Client(object):
             csv.seek(0)
             return csv
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def get_metrics_csv(self, experiment):
@@ -172,8 +175,9 @@ class Client(object):
             csv.seek(0)
             return csv
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def create_experiment(self, project, name, description, params, properties, tags, abortable, monitored):
@@ -195,7 +199,8 @@ class Client(object):
             )
 
             api_experiment = self.backend_swagger_client.api.createExperiment(
-                experimentCreationParams=params).response().result
+                experimentCreationParams=params
+            ).response().result
 
             return self._convert_to_experiment(api_experiment)
         except HTTPNotFound:
@@ -215,28 +220,29 @@ class Client(object):
                 raise
 
     @with_api_exceptions_handler
+    def get_experiment(self, experiment_id):
+        return self.backend_swagger_client.api.getExperiment(experimentId=experiment_id).response().result
+
+    @with_api_exceptions_handler
     def update_experiment(self, experiment, properties):
         EditExperimentParams = self.backend_swagger_client.get_model('EditExperimentParams')
         KeyValueProperty = self.backend_swagger_client.get_model('KeyValueProperty')
         try:
-            leaderboard_entry = self._convert_to_leaderboard_entry(
-                self.backend_swagger_client.api.updateExperiment(
-                    experimentId=experiment.internal_id,
-                    editExperimentParams=EditExperimentParams(
-                        properties=[KeyValueProperty(
-                            key=key,
-                            value=properties[key]
-                        ) for key in properties]
-                    )
-                ).response().result
-            )
-            # pylint: disable=protected-access
-            experiment._leaderboard_entry = leaderboard_entry
+            self.backend_swagger_client.api.updateExperiment(
+                experimentId=experiment.internal_id,
+                editExperimentParams=EditExperimentParams(
+                    properties=[KeyValueProperty(
+                        key=key,
+                        value=properties[key]
+                    ) for key in properties]
+                )
+            ).response()
             return experiment
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
-                project_qualified_name=experiment.project_full_id
+                project_qualified_name=experiment._project_full_id
             )
 
     @with_api_exceptions_handler
@@ -252,9 +258,10 @@ class Client(object):
                 )
             ).response().result
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
-                project_qualified_name=experiment.project_full_id
+                project_qualified_name=experiment._project_full_id
             )
         except HTTPBadRequest as e:
             error_type = extract_response_field(e.response, 'type')
@@ -271,8 +278,9 @@ class Client(object):
                 data=data,
                 experiment=experiment)
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity as e:
             if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
@@ -288,8 +296,9 @@ class Client(object):
                 data=data
             )
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity as e:
             if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
@@ -313,8 +322,9 @@ class Client(object):
 
             return self._convert_channel_to_channel_with_last_value(channel)
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def send_channel_value(self, experiment, channel_id, x, y):
@@ -343,8 +353,9 @@ class Client(object):
             if batch_errors:
                 raise ValueError(batch_errors[0].error.message)
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def put_tensorflow_graph(self, experiment, graph_id, graph):
@@ -371,29 +382,28 @@ class Client(object):
             ).response()
             return r.result
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def mark_succeeded(self, experiment):
         CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
 
         try:
-            experiment = self.backend_swagger_client.api.markExperimentCompleted(
+            self.backend_swagger_client.api.markExperimentCompleted(
                 experimentId=experiment.internal_id,
                 completedExperimentParams=CompletedExperimentParams(
                     state='succeeded',
                     traceback=''  # FIXME
                 )
-            ).response().result
+            ).response()
 
-            leaderboard_entry = self._convert_to_leaderboard_entry(experiment)
-            # pylint: disable=protected-access
-            experiment._leaderboard_entry = leaderboard_entry
             return experiment
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity:
             raise ExperimentAlreadyFinished(experiment.id)
 
@@ -402,21 +412,19 @@ class Client(object):
         CompletedExperimentParams = self.backend_swagger_client.get_model('CompletedExperimentParams')
 
         try:
-            experiment = self.backend_swagger_client.api.markExperimentCompleted(
+            self.backend_swagger_client.api.markExperimentCompleted(
                 experimentId=experiment.internal_id,
                 completedExperimentParams=CompletedExperimentParams(
                     state='failed',
                     traceback=traceback
                 )
-            ).response().result
+            ).response()
 
-            leaderboard_entry = self._convert_to_leaderboard_entry(experiment)
-            # pylint: disable=protected-access
-            experiment._leaderboard_entry = leaderboard_entry
             return experiment
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity:
             raise ExperimentAlreadyFinished(experiment.id)
 
@@ -425,8 +433,9 @@ class Client(object):
         try:
             self.backend_swagger_client.api.pingExperiment(experimentId=experiment.internal_id).response()
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def create_hardware_metric(self, experiment, metric):
@@ -444,8 +453,9 @@ class Client(object):
 
             return metric_dto.id
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
@@ -473,8 +483,9 @@ class Client(object):
 
             return response
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
     def upload_experiment_output(self, experiment, data):
@@ -484,8 +495,9 @@ class Client(object):
                 data=data,
                 experiment=experiment)
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity as e:
             if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
@@ -501,8 +513,9 @@ class Client(object):
                 data=data
             )
         except HTTPNotFound:
+            # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment.project_full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
         except HTTPUnprocessableEntity as e:
             if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
                 raise StorageLimitReached()
@@ -550,36 +563,9 @@ class Client(object):
 
     def _convert_to_experiment(self, api_experiment):
         return Experiment(client=self,
-                          leaderboard_entry=self._convert_to_leaderboard_entry(api_experiment))
-
-    def _convert_to_leaderboard_entry(self, experiment):
-        LeaderboardEntryDTO = self.leaderboard_swagger_client.get_model('LeaderboardEntryDTO')
-
-        experiment_states = {"creating": 0, "waiting": 0, "initializing": 0, "running": 0, "cleaning": 0,
-                             "succeeded": 0, "aborted": 0, "failed": 0, "crashed": 0, "preempted": 0,
-                             experiment.state: 1}
-
-        return LeaderboardEntry(
-            LeaderboardEntryDTO(
-                id=experiment.id,
-                shortId=experiment.shortId,
-                name=experiment.name,
-                organizationId=experiment.organizationId,
-                organizationName=experiment.organizationName,
-                projectId=experiment.projectId,
-                projectName=experiment.projectName,
-                timeOfCreation=experiment.timeOfCreation,
-                description=experiment.description,
-                entryType="experiment",
-                state=experiment.state,
-                tags=experiment.tags,
-                channelsLastValues=experiment.channelsLastValues,
-                experimentStates=experiment_states,
-                owner=experiment.owner,
-                parameters=experiment.parameters,
-                properties=experiment.properties
-            )
-        )
+                          _id=api_experiment.shortId,
+                          internal_id=api_experiment.id,
+                          project_full_id='{}/{}'.format(api_experiment.organizationName, api_experiment.projectName))
 
     def _convert_channel_to_channel_with_last_value(self, channel):
         ChannelWithValueDTO = self.leaderboard_swagger_client.get_model('ChannelWithValueDTO')

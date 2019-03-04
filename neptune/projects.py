@@ -141,7 +141,7 @@ class Project(object):
         """
         leaderboard_entries = self._fetch_leaderboard(id, group, state, owner, tag, min_running_time)
         return [
-            Experiment(self.client, entry) for entry in leaderboard_entries
+            Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id) for entry in leaderboard_entries
         ]
 
     def get_leaderboard(self, id=None, group=None, state=None, owner=None, tag=None, min_running_time=None):
@@ -262,8 +262,7 @@ class Project(object):
              'SAL-GRP-20',
              'SAL-GRP-23']
         """
-        group_entries = self.client.get_leaderboard_entries(namespace=self.namespace,
-                                                            project_name=self.name,
+        group_entries = self.client.get_leaderboard_entries(project=self,
                                                             entry_types=['group'])
         return [entry.id for entry in group_entries]
 
