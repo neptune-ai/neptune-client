@@ -181,8 +181,7 @@ class TestProject(unittest.TestCase):
         group_short_ids = self.project.get_experiment_groups()
 
         # then
-        self.client.get_leaderboard_entries.assert_called_once_with(
-            namespace=self.project.namespace, project_name=self.project.name, entry_types=['group'])
+        self.client.get_leaderboard_entries.assert_called_once_with(project=self.project, entry_types=['group'])
 
         # and
         self.assertEqual([entry.id for entry in group_entries], group_short_ids)

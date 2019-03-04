@@ -315,9 +315,9 @@ class Experiment(object):
 
         """
         experiment = self._client.get_experiment(self.internal_id)
-        return dict(
+        return self._simple_dict_to_dataframe(dict(
             (p.name, p.value) for p in experiment.parameters
-        )
+        ))
 
     def get_properties(self):
         """Retrieve user-defined properties for this experiment.
@@ -346,9 +346,9 @@ class Experiment(object):
 
         """
         experiment = self._client.get_experiment(self.internal_id)
-        return dict(
+        return self._simple_dict_to_dataframe(dict(
             (p.key, p.value) for p in experiment.properties
-        )
+        ))
 
     def set_property(self, key, value):
         properties = self.get_properties()
