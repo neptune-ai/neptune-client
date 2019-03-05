@@ -19,6 +19,7 @@ import time
 import traceback
 
 import pandas as pd
+from future.moves import queue
 
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import CustomAbortImpl, DefaultAbortImpl
@@ -27,6 +28,7 @@ from neptune.internal.hardware.metrics.service.metric_service_factory import Met
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
 from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErrWithUpload
 from neptune.internal.threads.aborting_thread import AbortingThread
+from neptune.internal.threads.channels_values_sending_thread import ChannelsValuesSendingThread
 from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
 from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
@@ -284,6 +286,14 @@ class Project(object):
 
         if handle_uncaught_exceptions:
             sys.excepthook = exception_handler
+
+        # pylint:disable=protected-access
+        experiment._channels_values_queue = queue.Queue()
+        # pylint:disable=protected-access
+        experiment._channels_values_sending_thread = ChannelsValuesSendingThread(
+            experiment, experiment._channels_values_queue)
+        # pylint:disable=protected-access
+        experiment._channels_values_sending_thread.start()
 
         if abortable:
             # pylint:disable=protected-access
