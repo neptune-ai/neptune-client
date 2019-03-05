@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import threading
 
-from neptune import projects, experiments
+from neptune import envs, projects, experiments
 from neptune.sessions import Session
 
 session = None
@@ -24,7 +25,10 @@ project = None
 __lock = threading.RLock()
 
 
-def init(project_qualified_name, api_token=None):
+def init(api_token=None, project_qualified_name=None):
+    if project_qualified_name is None:
+        project_qualified_name = os.getenv(envs.PROJECT_ENV_NAME)
+
     # pylint: disable=global-statement
     with __lock:
         global session, project
@@ -33,7 +37,7 @@ def init(project_qualified_name, api_token=None):
 
         project = session.get_project(project_qualified_name)
 
-        return session
+        return project
 
 
 def set_project(project_qualified_name):

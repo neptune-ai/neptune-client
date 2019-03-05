@@ -18,6 +18,7 @@ import base64
 import json
 import os
 
+from neptune import envs
 from neptune.api_exceptions import InvalidApiKey
 
 
@@ -55,10 +56,10 @@ class Credentials(object):
         Token provided through environment variable takes precedence over `api_token` parameter.
     """
 
-    API_TOKEN_ENV_NAME = 'NEPTUNE_API_TOKEN'
-
     def __init__(self, api_token=None):
-        self.api_token = os.getenv(Credentials.API_TOKEN_ENV_NAME, api_token)
+        if api_token is None:
+            api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
+        self.api_token = api_token
 
     @property
     def api_address(self):
