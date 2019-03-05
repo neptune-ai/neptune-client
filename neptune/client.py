@@ -126,7 +126,7 @@ class Client(object):
 
     @with_api_exceptions_handler
     def get_leaderboard_entries(self, project,
-                                entry_types=None, ids=None, group_ids=None,
+                                entry_types=None, ids=None,
                                 states=None, owners=None, tags=None,
                                 min_running_time=None):
         try:
@@ -137,7 +137,7 @@ class Client(object):
                 return self.leaderboard_swagger_client.api.getLeaderboard(
                     projectIdentifier=project.full_id,
                     entryType=entry_types,
-                    shortId=ids, groupShortId=group_ids, state=states, owner=owners, tags=tags,
+                    shortId=ids, groupShortId=None, state=states, owner=owners, tags=tags,
                     minRunningTimeSeconds=min_running_time,
                     sortBy=['shortId'], sortFieldType=['native'], sortDirection=['ascending'],
                     limit=limit, offset=offset
