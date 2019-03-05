@@ -94,7 +94,7 @@ class Project(object):
         project_members = self.client.get_project_members(self.internal_id)
         return [member.registeredMemberInfo.username for member in project_members if member.registeredMemberInfo]
 
-    def get_experiments(self, id=None, group=None, state=None, owner=None, tag=None, min_running_time=None):
+    def get_experiments(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
         """Retrieve a list of experiments matching the specified criteria.
 
         All of the parameters of this method are optional, each of them specifies a single criterion.
@@ -106,8 +106,6 @@ class Project(object):
 
         Args:
             id(list): An ID or list of experiment IDs (rowo.g. 'SAN-1' or ['SAN-1', 'SAN-2'])
-            group(list): A group or list of groups the returned experiments have to be in.
-                E.g. 'SAN-GRP-1', ['SAN-GRP-1', 'SAN-GRP-2']
             state(list): A state or list of experiment states.
                 E.g. 'succeeded' or ['succeeded', 'preempted'].
                 Possible states: 'creating', 'waiting', 'initializing', 'running', 'cleaning',
@@ -139,12 +137,12 @@ class Project(object):
              Experiment(SAL-2025)]
 
         """
-        leaderboard_entries = self._fetch_leaderboard(id, group, state, owner, tag, min_running_time)
+        leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
         return [
             Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id) for entry in leaderboard_entries
         ]
 
-    def get_leaderboard(self, id=None, group=None, state=None, owner=None, tag=None, min_running_time=None):
+    def get_leaderboard(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
         """Fetches Neptune experiment view to pandas DataFrame
 
         Retrieve experiments matching the specified criteria and present them in a form of a DataFrame
@@ -169,8 +167,6 @@ class Project(object):
 
         Args:
             id(list): An ID or list of experiment IDs (rowo.g. 'SAN-1' or ['SAN-1', 'SAN-2'])
-            group(list): A group or list of groups the returned experiments have to be in.
-                E.g. 'SAN-GRP-1', ['SAN-GRP-1', 'SAN-GRP-2']
             state(list): A state or list of experiment states.
                 E.g. 'succeeded' or ['succeeded', 'preempted']
                 Possible states: 'creating', 'waiting', 'initializing', 'running',
@@ -201,7 +197,7 @@ class Project(object):
             tags - is it ok now?
         """
 
-        leaderboard_entries = self._fetch_leaderboard(id, group, state, owner, tag, min_running_time)
+        leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
 
         def make_row(entry):
             channels = dict(
@@ -223,48 +219,6 @@ class Project(object):
         df = pd.DataFrame.from_dict(data=dict(rows), orient='index')
         df = df.reindex(self._sort_leaderboard_columns(df.columns), axis='columns')
         return df
-
-    def get_experiment_groups(self):
-        """Retrieve a list of groups in the project.
-
-        Groups are created when one runs a grid search over hyperparameters.
-        By using this method you can quickly get all those experiment ids.
-
-        Returns:
-            list: A list of group IDs, e.g. ['SAN-GRP-1', 'SAN-GRP-2'].
-
-        Examples:
-            Instantiate a session.
-
-            >>> from neptune.sessions import Session
-            >>> session = Session()
-
-            Fetch a project.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-
-            Finally, get experiment groups from the project.
-
-            >>> project.get_experiment_groups()
-            ['SAL-GRP-1',
-             'SAL-GRP-2',
-             'SAL-GRP-4',
-             'SAL-GRP-6',
-             'SAL-GRP-7',
-             'SAL-GRP-8',
-             'SAL-GRP-9',
-             'SAL-GRP-10',
-             'SAL-GRP-12',
-             'SAL-GRP-13',
-             'SAL-GRP-15',
-             'SAL-GRP-17',
-             'SAL-GRP-19',
-             'SAL-GRP-20',
-             'SAL-GRP-23']
-        """
-        group_entries = self.client.get_leaderboard_entries(project=self,
-                                                            entry_types=['group'])
-        return [entry.id for entry in group_entries]
 
     # pylint:disable=unused-argument
     def create_experiment(self,
@@ -388,9 +342,9 @@ class Project(object):
     def __ne__(self, o):
         return not self.__eq__(o)
 
-    def _fetch_leaderboard(self, id, group, state, owner, tag, min_running_time):
+    def _fetch_leaderboard(self, id, state, owner, tag, min_running_time):
         return self.client.get_leaderboard_entries(
-            project=self, ids=as_list(id), group_ids=as_list(group), states=as_list(state),
+            project=self, ids=as_list(id), states=as_list(state),
             owners=as_list(owner), tags=as_list(tag),
             min_running_time=min_running_time)
 

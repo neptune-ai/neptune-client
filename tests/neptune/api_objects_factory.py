@@ -136,37 +136,3 @@ def an_experiment_leaderboard_entry_dto():
     entry.deleted = False
     entry.isBestExperiment = False
     return entry
-
-
-def a_group_leaderboard_entry_dto():
-    entry = MagicMock()
-    entry.entryType = 'group'
-    entry.id = a_uuid_string()
-    entry.shortId = a_string()
-    entry.projectId = a_uuid_string()
-    entry.state = 'succeeded'
-    entry.experimentStates = an_experiment_states()
-    entry.responding = True
-    entry.name = a_string()
-    entry.organizationName = a_string()
-    entry.projectName = a_string()
-    entry.description = a_string()
-    entry.timeOfCreation = a_timestamp()
-    entry.timeOfCompletion = a_timestamp()
-    entry.runningTime = randint(1, 1000)
-    entry.owner = a_string()
-    entry.size = randint(1, 1000)
-    entry.tags = [a_string(), a_string()]
-    entry.environment = a_string()
-    entry.workerType = a_string()
-    entry.hostname = a_string()
-    entry.sourceSize = randint(1, 1000)
-    entry.sourceMd5 = a_string()
-    entry.commitId = a_string()
-    entry.properties = [a_property(), a_property()]
-    entry.parameters = [a_parameter(), a_parameter()]
-    entry.channelsLastValues = [a_channel_value(), a_channel_value()]
-    entry.trashed = False
-    entry.deleted = False
-    entry.isBestExperiment = False
-    return entry

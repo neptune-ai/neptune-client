@@ -23,10 +23,9 @@ from mock import MagicMock
 from neptune.experiments import Experiment
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
-from tests.neptune.api_objects_factory import a_group_leaderboard_entry_dto, a_registered_project_member, \
+from tests.neptune.api_objects_factory import a_registered_project_member, \
     an_invited_project_member
-from tests.neptune.project_test_fixture import some_exp_entry_dto, some_exp_entry_row, some_grp_entry_dto, \
-    some_grp_entry_row
+from tests.neptune.project_test_fixture import some_exp_entry_dto, some_exp_entry_row
 from tests.neptune.random_utils import a_string, a_string_list, a_uuid_string
 
 
@@ -64,7 +63,7 @@ class TestProject(unittest.TestCase):
         # then
         self.client.get_leaderboard_entries.assert_called_once_with(
             project=self.project,
-            ids=None, group_ids=None,
+            ids=None,
             states=None, owners=None, tags=None,
             min_running_time=None)
 
@@ -80,7 +79,7 @@ class TestProject(unittest.TestCase):
 
         # and
         params = dict(
-            id=a_string(), group=a_string(),
+            id=a_string(),
             state='succeeded', owner=a_string(), tag=a_string(),
             min_running_time=randint(1, 100))
 
@@ -90,7 +89,7 @@ class TestProject(unittest.TestCase):
         # then
         expected_params = dict(
             project=self.project,
-            ids=[params['id']], group_ids=[params['group']],
+            ids=[params['id']],
             states=[params['state']], owners=[params['owner']], tags=[params['tag']],
             min_running_time=params['min_running_time']
         )
@@ -108,7 +107,7 @@ class TestProject(unittest.TestCase):
 
         # and
         params = dict(
-            id=a_string_list(), group=a_string_list(),
+            id=a_string_list(),
             state=['succeeded', 'failed'], owner=a_string_list(), tag=a_string_list(),
             min_running_time=randint(1, 100))
 
@@ -118,7 +117,7 @@ class TestProject(unittest.TestCase):
         # then
         expected_params = dict(
             project=self.project,
-            ids=params['id'], group_ids=params['group'],
+            ids=params['id'],
             states=params['state'], owners=params['owner'], tags=params['tag'],
             min_running_time=params['min_running_time']
         )
@@ -131,8 +130,7 @@ class TestProject(unittest.TestCase):
 
     def test_get_leaderboard(self):
         # given
-        self.client.get_leaderboard_entries.return_value = [
-            LeaderboardEntry(some_exp_entry_dto), LeaderboardEntry(some_grp_entry_dto)]
+        self.client.get_leaderboard_entries.return_value = [LeaderboardEntry(some_exp_entry_dto)]
 
         # when
         leaderboard = self.project.get_leaderboard()
@@ -140,12 +138,12 @@ class TestProject(unittest.TestCase):
         # then
         self.client.get_leaderboard_entries.assert_called_once_with(
             project=self.project,
-            ids=None, group_ids=None,
+            ids=None,
             states=None, owners=None, tags=None,
             min_running_time=None)
 
         # and
-        expected_data = {0: some_exp_entry_row, 1: some_grp_entry_row}
+        expected_data = {0: some_exp_entry_row}
         expected_leaderboard = pd.DataFrame.from_dict(data=expected_data, orient='index')
         expected_leaderboard = expected_leaderboard.reindex(
             # pylint: disable=protected-access
@@ -169,22 +167,6 @@ class TestProject(unittest.TestCase):
 
         # then
         self.assertEqual(columns_in_expected_order, sorted_columns)
-
-    def test_get_experiment_groups(self):
-        # given
-        group_entries = [
-            LeaderboardEntry(a_group_leaderboard_entry_dto()) for _ in range(0, 2)
-        ]
-        self.client.get_leaderboard_entries.return_value = group_entries
-
-        # when
-        group_short_ids = self.project.get_experiment_groups()
-
-        # then
-        self.client.get_leaderboard_entries.assert_called_once_with(project=self.project, entry_types=['group'])
-
-        # and
-        self.assertEqual([entry.id for entry in group_entries], group_short_ids)
 
     def test_full_id(self):
         # expect

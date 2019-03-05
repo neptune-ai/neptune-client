@@ -21,7 +21,6 @@ from mock import MagicMock, patch
 from neptune.projects import Project
 from neptune.sessions import Session
 from tests.neptune.api_objects_factory import a_project
-from tests.neptune.random_utils import a_string
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
@@ -44,17 +43,6 @@ class TestSession(unittest.TestCase):
     def test_should_accept_given_api_token(self, _):
         # when
         session = Session(API_TOKEN)
-
-        # then
-        self.assertEqual(API_TOKEN, session.credentials.api_token)
-
-    @patch('neptune.credentials.os.getenv', return_value=API_TOKEN)
-    def test_os_env_should_take_precedence_over_api_token_parameter(self, _):
-        # given
-        invalid_token = a_string()
-
-        # when
-        session = Session(api_token=invalid_token)
 
         # then
         self.assertEqual(API_TOKEN, session.credentials.api_token)
