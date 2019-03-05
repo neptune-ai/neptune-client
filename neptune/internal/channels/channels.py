@@ -16,63 +16,33 @@
 import time
 
 
-class ChannelWithValue(object):
+class ChannelIdWithValues(object):
 
-    def __init__(self, channel_name, channel_type, x, y, t):
-        self._channel_name = channel_name
-        self._channel_type = channel_type
-        self._x = x
-        self._y = y
-        if t is None:
-            t = time.time()
-        self._t = t
+    def __init__(self, channel_id, channel_values):
+        self._channel_id = channel_id
+        self._channel_values = channel_values
 
     @property
-    def channel_name(self):
-        return self._channel_name
+    def channel_id(self):
+        return self._channel_id
 
     @property
-    def channel_type(self):
-        return self._channel_type
-
-    @property
-    def x(self):
-        return self._x
-
-    @property
-    def y(self):
-        return self._y
-
-    @property
-    def t(self):
-        return self._t
-
-
-class ChannelWithValues(object):
-
-    def __init__(self, _id, values):
-        self._id = _id
-        self._values = values
-
-    @property
-    def id(self):
-        return self._id
-
-    @property
-    def values(self):
-        return self._values
+    def channel_values(self):
+        return self._channel_values
 
 
 class ChannelValue(object):
 
-    def __init__(self, t, x, y):
-        self._t = t
+    def __init__(self, x, y, ts):
         self._x = x
         self._y = y
+        if ts is None:
+            ts = time.time()
+        self._ts = ts
 
     @property
-    def t(self):
-        return self._t
+    def ts(self):
+        return self._ts
 
     @property
     def x(self):

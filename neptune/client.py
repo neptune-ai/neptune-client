@@ -337,15 +337,15 @@ class Client(object):
         input_channels_values = []
         for channel_with_values in channels_with_values:
             points = [Point(
-                timestampMillis=int(value.t * 1000.0),
+                timestampMillis=int(value.ts * 1000.0),
                 x=value.x,
                 y=Y(numericValue=value.y.get('numeric_value'),
                     textValue=value.y.get('text_value'),
                     inputImageValue=value.y.get('image_value'))
-            ) for value in channel_with_values.values]
+            ) for value in channel_with_values.channel_values]
 
             input_channels_values.append(InputChannelValues(
-                channelId=channel_with_values.id,
+                channelId=channel_with_values.channel_id,
                 values=points
             ))
 

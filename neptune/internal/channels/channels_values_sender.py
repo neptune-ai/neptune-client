@@ -14,13 +14,48 @@
 # limitations under the License.
 #
 import time
+from collections import namedtuple
 from itertools import groupby
 
 from future.moves import queue
 
 from neptune.api_exceptions import NeptuneApiException
-from neptune.internal.channels.channels import ChannelValue, ChannelWithValues
+from neptune.internal.channels.channels import ChannelValue, ChannelIdWithValues
 from neptune.internal.threads.neptune_thread import NeptuneThread
+
+
+class ChannelsValuesSender(object):
+    _QUEUED_CHANNEL_VALUE = namedtuple("QueuedChannelValue", ['channel_name', 'channel_type', 'channel_value'])
+
+    def __init__(self, experiment):
+        self._experiment = experiment
+        self._values_queue = None
+        self._sending_thread = None
+
+    def send(self, channel_name, channel_type, channel_value):
+        if not self._is_running():
+            self._start()
+
+        self._values_queue.put(self._QUEUED_CHANNEL_VALUE(
+            channel_name=channel_name,
+            channel_type=channel_type,
+            channel_value=channel_value
+        ))
+
+    def join(self):
+        if self._is_running():
+            self._sending_thread.interrupt()
+            self._sending_thread.join()
+            self._sending_thread = None
+            self._values_queue = None
+
+    def _is_running(self):
+        return self._values_queue is not None and self._sending_thread is not None and self._sending_thread.is_alive()
+
+    def _start(self):
+        self._values_queue = queue.Queue()
+        self._sending_thread = ChannelsValuesSendingThread(self._experiment, self._values_queue)
+        self._sending_thread.start()
 
 
 class ChannelsValuesSendingThread(NeptuneThread):
@@ -49,9 +84,10 @@ class ChannelsValuesSendingThread(NeptuneThread):
                 self._process_batch()
                 sleep_time = self._SLEEP_TIME
 
-        self._join()
+        self.join()
 
-    def _join(self):
+    def join(self, timeout=None):
+        self.interrupt()
         while not self._values_queue.empty():
             self._values_batch.append(self._values_queue.get())
             self._values_queue.task_done()
@@ -64,26 +100,25 @@ class ChannelsValuesSendingThread(NeptuneThread):
             self._values_batch = []
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
-    def _send_values(self, values_with_channel):
-        values_grouped_by_channel = {channel: list(values)
+    def _send_values(self, queued_channels_values):
+        queued_grouped_by_channel = {channel: list(values)
                                      for channel, values
-                                     in groupby(values_with_channel,
+                                     in groupby(queued_channels_values,
                                                 lambda value: (value.channel_name, value.channel_type))}
         channels_with_values = []
-
-        for (channel_name, channel_type) in values_grouped_by_channel:
+        for (channel_name, channel_type) in queued_grouped_by_channel:
             # pylint: disable=protected-access
             channel = self._experiment._get_channel(channel_name, channel_type)
             last_x = channel.x if channel.x else 0
             channel_values = []
-            for channel_with_value in values_grouped_by_channel[(channel_name, channel_type)]:
-                x = channel_with_value.x if channel_with_value.x is not None else last_x + 1
-                channel_values.append(ChannelValue(t=channel_with_value.t,
+            for queued_value in queued_grouped_by_channel[(channel_name, channel_type)]:
+                x = queued_value.channel_value.x if queued_value.channel_value.x is not None else last_x + 1
+                channel_values.append(ChannelValue(ts=queued_value.channel_value.ts,
                                                    x=x,
-                                                   y=channel_with_value.y))
+                                                   y=queued_value.channel_value.y))
                 last_x = x
 
-            channels_with_values.append(ChannelWithValues(channel.id, channel_values))
+            channels_with_values.append(ChannelIdWithValues(channel.id, channel_values))
 
         # pylint: disable=protected-access
         try:
