@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from __future__ import unicode_literals
+
 import re
 import time
-from six import PY2
+from builtins import str
 
 
 class ChannelWriter(object):
@@ -37,7 +40,7 @@ class ChannelWriter(object):
             self._experiment.send_text(
                 channel_name=self._channel_name,
                 x=time.time() * 1000 - self.time_started_ms,
-                y=line.encode('utf-8') if PY2 else line
+                y=str(line)
             )
 
         self._data = lines[-1]
