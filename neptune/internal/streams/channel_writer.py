@@ -18,7 +18,6 @@ from __future__ import unicode_literals
 
 import re
 import time
-from builtins import str
 
 
 class ChannelWriter(object):
