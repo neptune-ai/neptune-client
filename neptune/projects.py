@@ -30,7 +30,7 @@ from neptune.internal.threads.aborting_thread import AbortingThread
 from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
 from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
-from neptune.utils import as_list, in_docker, map_keys
+from neptune.utils import as_list, in_docker, map_keys, is_notebook
 
 
 class Project(object):
@@ -220,7 +220,6 @@ class Project(object):
         df = df.reindex(self._sort_leaderboard_columns(df.columns), axis='columns')
         return df
 
-    # pylint:disable=unused-argument
     def create_experiment(self,
                           name=None,
                           description=None,
@@ -297,11 +296,11 @@ class Project(object):
                 websocket_factory=websocket_factory, abort_impl=abort_impl, experiment_id=experiment.internal_id)
             experiment._aborting_thread.start()
 
-        if upload_stdout:
+        if upload_stdout and not is_notebook():
             # pylint:disable=protected-access
             experiment._stdout_uploader = StdOutWithUpload(experiment)
 
-        if upload_stderr:
+        if upload_stderr and not is_notebook():
             # pylint:disable=protected-access
             experiment._stderr_uploader = StdErrWithUpload(experiment)
 
