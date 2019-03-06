@@ -78,6 +78,13 @@ def in_docker():
     cgroup_file = '/proc/self/cgroup'
     return os.path.exists('./dockerenv') or (os.path.exists(cgroup_file) and file_contains(cgroup_file, text='docker'))
 
+def is_notebook():
+    try:
+        # pylint: disable=pointless-statement,undefined-variable
+        get_ipython
+        return True
+    except Exception:
+        return False
 
 def _split_df_by_stems(df):
     channel_dfs, x_vals = [], []
