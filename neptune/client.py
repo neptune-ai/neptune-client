@@ -329,28 +329,30 @@ class Client(object):
             raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
 
     @with_api_exceptions_handler
-    def send_channel_value(self, experiment, channel_id, x, y, timestamp):
+    def send_channels_values(self, experiment, channels_with_values):
         InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
         Point = self.backend_swagger_client.get_model('Point')
         Y = self.backend_swagger_client.get_model('Y')
 
-        try:
-            values = InputChannelValues(
-                channelId=channel_id,
-                values=[Point(
-                    timestampMillis=int(timestamp * 1000.0),
-                    x=x,
-                    y=Y(
-                        numericValue=y.get('numeric_value'),
-                        textValue=y.get('text_value'),
-                        inputImageValue=y.get('image_value')
-                    )
-                )]
-            )
+        input_channels_values = []
+        for channel_with_values in channels_with_values:
+            points = [Point(
+                timestampMillis=int(value.ts * 1000.0),
+                x=value.x,
+                y=Y(numericValue=value.y.get('numeric_value'),
+                    textValue=value.y.get('text_value'),
+                    inputImageValue=value.y.get('image_value'))
+            ) for value in channel_with_values.channel_values]
 
+            input_channels_values.append(InputChannelValues(
+                channelId=channel_with_values.channel_id,
+                values=points
+            ))
+
+        try:
             batch_errors = self.backend_swagger_client.api.postChannelValues(
                 experimentId=experiment.internal_id,
-                channelsValues=[values]
+                channelsValues=input_channels_values
             ).response().result
 
             if batch_errors:

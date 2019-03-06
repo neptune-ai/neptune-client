@@ -15,8 +15,8 @@
 #
 import base64
 import os
+import sys
 import threading
-import time
 import traceback
 
 import pandas as pd
@@ -24,7 +24,9 @@ import six
 from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ExperimentAlreadyFinished
-from neptune.exceptions import FileNotFound, InvalidChannelValue, InvalidChannelX, NoChannelValue, NoExperimentContext
+from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext
+from neptune.internal.channels.channels import ChannelValue
+from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, map_values
@@ -67,11 +69,13 @@ class Experiment(object):
         self._id = _id
         self._internal_id = internal_id
         self._project_full_id = project_full_id
+        self._channels_values_sender = ChannelsValuesSender(self)
         self._ping_thread = None
         self._hardware_metric_thread = None
         self._aborting_thread = None
         self._stdout_uploader = None
         self._stderr_uploader = None
+        self._uncaught_exception_handler = sys.__excepthook__
 
     @property
     def id(self):
@@ -221,7 +225,8 @@ class Experiment(object):
         if not is_float(y):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
-        self._send_channel_value(channel_name, 'numeric', x, dict(numeric_value=y), timestamp)
+        value = ChannelValue(x, dict(numeric_value=y), timestamp)
+        self._channels_values_sender.send(channel_name, 'numeric', value)
 
     def send_text(self, channel_name, x, y=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
@@ -229,7 +234,8 @@ class Experiment(object):
         if not isinstance(y, six.string_types):
             return InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
-        self._send_channel_value(channel_name, 'text', x, dict(text_value=y), timestamp)
+        value = ChannelValue(x, dict(text_value=y), timestamp)
+        self._channels_values_sender.send(channel_name, 'text', value)
 
     def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
@@ -240,7 +246,8 @@ class Experiment(object):
             data=base64.b64encode(get_image_content(y)).decode('utf-8')
         )
 
-        self._send_channel_value(channel_name, 'image', x, dict(image_value=input_image), timestamp)
+        value = ChannelValue(x, dict(image_value=input_image), timestamp)
+        self._channels_values_sender.send(channel_name, 'image', value)
 
     def send_artifact(self, artifact):
         """
@@ -348,7 +355,7 @@ class Experiment(object):
         ))
 
     def set_property(self, key, value):
-        properties = self.get_properties()
+        properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         properties[key] = value
         return self._client.update_experiment(
             experiment=self,
@@ -356,7 +363,7 @@ class Experiment(object):
         )
 
     def remove_property(self, key):
-        properties = self.get_properties()
+        properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         del properties[key]
         return self._client.update_experiment(
             experiment=self,
@@ -474,6 +481,9 @@ class Experiment(object):
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
     def stop(self, exc_tb=None):
+
+        self._channels_values_sender.join()
+
         try:
             if exc_tb is None:
                 self._client.mark_succeeded(self)
@@ -518,7 +528,8 @@ class Experiment(object):
         return str(self)
 
     def __eq__(self, o):
-        return self.__dict__ == o.__dict__
+        # pylint: disable=protected-access
+        return self._id == o._id and self._internal_id == o._internal_id and self._project_full_id == o._project_full_id
 
     def __ne__(self, o):
         return not self.__eq__(o)
@@ -527,7 +538,8 @@ class Experiment(object):
     def _simple_dict_to_dataframe(d):
         return pd.DataFrame.from_dict(map_values(lambda x: [x], d))
 
-    def _get_valid_x_y(self, x, y):
+    @staticmethod
+    def _get_valid_x_y(x, y):
         if x is None:
             raise NoChannelValue()
 
@@ -539,26 +551,8 @@ class Experiment(object):
 
         return x, y
 
-    def _send_channel_value(self, channel_name, channel_type, x, y, timestamp=None):
-        timestamp = timestamp or time.time()
-        channel = self._get_channel(channel_name, channel_type)
-
-        if x is None:
-            if channel.x is None:
-                channel.x = 0
-            x = channel.x + 1
-        else:
-            if channel.x is None:
-                channel.x = x
-            elif x <= channel.x:
-                raise InvalidChannelX(x)
-
-        self._client.send_channel_value(self, channel.id, x, y, timestamp)
-
-        channel.x = x
-        channel.y = y
-
-        return channel
+    def _send_channels_values(self, channels_with_values):
+        self._client.send_channels_values(self, channels_with_values)
 
     def _get_channel(self, channel_name, channel_type):
         channel = self._find_channel(channel_name)
@@ -602,6 +596,9 @@ def pop_stopped_experiment():
     with __lock:
         if _experiments_stack:
             current_experiment = _experiments_stack.pop()
+            # pylint: disable=protected-access
+            sys.excepthook = current_experiment._uncaught_exception_handler
         else:
             current_experiment = None
+            sys.excepthook = sys.__excepthook__
         return current_experiment

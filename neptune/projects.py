@@ -22,6 +22,7 @@ import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import CustomAbortImpl, DefaultAbortImpl
+from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
@@ -283,7 +284,12 @@ class Project(object):
             sys.__excepthook__(exc_type, exc_val, exc_tb)
 
         if handle_uncaught_exceptions:
+            # pylint:disable=protected-access
+            experiment._uncaught_exception_handler = exception_handler
             sys.excepthook = exception_handler
+
+        # pylint:disable=protected-access
+        experiment._channels_values_sender = ChannelsValuesSender(experiment)
 
         if abortable:
             # pylint:disable=protected-access
