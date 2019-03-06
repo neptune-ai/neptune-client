@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from __future__ import unicode_literals
+
 import re
 import time
 
@@ -24,16 +27,19 @@ class ChannelWriter(object):
         self.time_started_ms = time.time() * 1000
         self._experiment = experiment
         self._channel_name = channel_name
-        self._data = b''
+        self._data = None
 
     def write(self, data):
-        self._data += data
+        if self._data is None:
+            self._data = data
+        else:
+            self._data += data
         lines = self.__SPLIT_PATTERN.split(self._data)
         for line in lines[:-1]:
             self._experiment.send_text(
                 channel_name=self._channel_name,
                 x=time.time() * 1000 - self.time_started_ms,
-                y=line.encode('utf-8')
+                y=str(line)
             )
 
         self._data = lines[-1]
