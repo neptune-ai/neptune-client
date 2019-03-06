@@ -474,7 +474,7 @@ class Client(object):
                     seriesName=gauge_name,
                     values=[
                         SystemMetricPoint(
-                            timestamp=int(metric_value.timestamp * 1000.0),
+                            timestampMillis=int(metric_value.timestamp * 1000.0),
                             x=int(metric_value.running_time * 1000.0),
                             y=metric_value.value
                         )
