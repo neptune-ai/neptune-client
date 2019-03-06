@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import threading
 import time
 from collections import namedtuple
 from itertools import groupby
@@ -27,14 +28,17 @@ from neptune.internal.threads.neptune_thread import NeptuneThread
 class ChannelsValuesSender(object):
     _QUEUED_CHANNEL_VALUE = namedtuple("QueuedChannelValue", ['channel_name', 'channel_type', 'channel_value'])
 
+    __LOCK = threading.RLock()
+
     def __init__(self, experiment):
         self._experiment = experiment
         self._values_queue = None
         self._sending_thread = None
 
     def send(self, channel_name, channel_type, channel_value):
-        if not self._is_running():
-            self._start()
+        with self.__LOCK:
+            if not self._is_running():
+                self._start()
 
         self._values_queue.put(self._QUEUED_CHANNEL_VALUE(
             channel_name=channel_name,
@@ -43,11 +47,12 @@ class ChannelsValuesSender(object):
         ))
 
     def join(self):
-        if self._is_running():
-            self._sending_thread.interrupt()
-            self._sending_thread.join()
-            self._sending_thread = None
-            self._values_queue = None
+        with self.__LOCK:
+            if self._is_running():
+                self._sending_thread.interrupt()
+                self._sending_thread.join()
+                self._sending_thread = None
+                self._values_queue = None
 
     def _is_running(self):
         return self._values_queue is not None and self._sending_thread is not None and self._sending_thread.is_alive()
@@ -70,7 +75,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
         self._values_batch = []
 
     def run(self):
-        sleep_time = 5
+        sleep_time = self._SLEEP_TIME
         while not self.is_interrupted():
             sleep_start = time.time()
             try:

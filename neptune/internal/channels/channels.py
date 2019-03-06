@@ -14,21 +14,9 @@
 # limitations under the License.
 #
 import time
+from collections import namedtuple
 
-
-class ChannelIdWithValues(object):
-
-    def __init__(self, channel_id, channel_values):
-        self._channel_id = channel_id
-        self._channel_values = channel_values
-
-    @property
-    def channel_id(self):
-        return self._channel_id
-
-    @property
-    def channel_values(self):
-        return self._channel_values
+ChannelIdWithValues = namedtuple('ChannelIdWithValues', ['channel_id', 'channel_values'])
 
 
 class ChannelValue(object):
