@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune import envs
 
 
 class NeptuneException(Exception):
@@ -54,4 +55,13 @@ class NoExperimentContext(NeptuneException):
 
 class NoApiKey(NeptuneException):
     def __init__(self):
-        super(NoApiKey, self).__init__('No API key was provided.')
+        super(NoApiKey, self).__init__('No API key was provided. Use "{}" environment '
+                                       'variable or pass it as an argument'
+                                       .format(envs.API_TOKEN_ENV_NAME))
+
+
+class InvalidProjectIdentifier(NeptuneException):
+    def __init__(self):
+        super(InvalidProjectIdentifier, self).__init__('Missing project identifier, Use "{}" environment '
+                                                       'variable or pass it as an argument'
+                                                       .format(envs.PROJECT_ENV_NAME))
