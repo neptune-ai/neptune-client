@@ -85,3 +85,10 @@ class ChannelAlreadyExists(NeptuneApiException):
     def __init__(self, experiment_short_id, channel_name):
         super(ChannelAlreadyExists, self).__init__(
             "Channel with name '{}' already exists in experiment '{}'.".format(channel_name, experiment_short_id))
+
+
+class ChannelsValuesSendBatchError(NeptuneApiException):
+    def __init__(self, experiment_short_id, batch_errors):
+        super(ChannelsValuesSendBatchError, self) \
+            .__init__("Received batch errors sending channels' values to experiment {}. "
+                      "Skipping {} values.".format(experiment_short_id, len(batch_errors)))

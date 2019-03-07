@@ -30,7 +30,7 @@ from bravado_core.formatter import SwaggerFormat
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
-    StorageLimitReached, Unauthorized, ChannelAlreadyExists
+    StorageLimitReached, Unauthorized, ChannelAlreadyExists, ChannelsValuesSendBatchError
 from neptune.experiments import Experiment
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -360,7 +360,7 @@ class Client(object):
             ).response().result
 
             if batch_errors:
-                raise ValueError(batch_errors[0].error.message)
+                raise ChannelsValuesSendBatchError(experiment.id, batch_errors)
         except HTTPNotFound:
             # pylint: disable=protected-access
             raise ExperimentNotFound(

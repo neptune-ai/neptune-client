@@ -76,27 +76,24 @@ class ChannelsValuesSendingThread(NeptuneThread):
 
     def run(self):
         sleep_time = self._SLEEP_TIME
-        while not self.is_interrupted():
+        while not self.is_interrupted() or not self._values_queue.empty():
             sleep_start = time.time()
             try:
                 self._values_batch.append(self._values_queue.get(timeout=sleep_time))
                 self._values_queue.task_done()
-                sleep_time = time.time() - sleep_start
+                sleep_time -= time.time() - sleep_start
             except queue.Empty:
                 sleep_time = 0
 
-            if sleep_time <= 0 or len(self._values_batch) > self._MAX_VALUES_BATCH_LENGTH:
+            if sleep_time <= 0 or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH:
                 self._process_batch()
                 sleep_time = self._SLEEP_TIME
 
-        self.join()
+        self._process_batch()
 
     def join(self, timeout=None):
         self.interrupt()
-        while not self._values_queue.empty():
-            self._values_batch.append(self._values_queue.get())
-            self._values_queue.task_done()
-        self._process_batch()
+        super(ChannelsValuesSendingThread, self).join(timeout)
 
     def _process_batch(self):
         send_start = time.time()
@@ -128,7 +125,5 @@ class ChannelsValuesSendingThread(NeptuneThread):
         # pylint: disable=protected-access
         try:
             self._experiment._send_channels_values(channels_with_values)
-        except NeptuneApiException:
-            pass
-        except IOError:
+        except (NeptuneApiException, IOError):
             pass
