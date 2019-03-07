@@ -29,7 +29,7 @@ from neptune.internal.channels.channels import ChannelValue
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
-from neptune.utils import align_channels_on_x, is_float, map_values
+from neptune.utils import align_channels_on_x, is_float
 
 
 class Experiment(object):
@@ -529,10 +529,6 @@ class Experiment(object):
 
     def __ne__(self, o):
         return not self.__eq__(o)
-
-    @staticmethod
-    def _simple_dict_to_dataframe(d):
-        return pd.DataFrame.from_dict(map_values(lambda x: [x], d))
 
     @staticmethod
     def _get_valid_x_y(x, y):
