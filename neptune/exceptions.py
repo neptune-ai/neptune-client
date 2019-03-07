@@ -60,8 +60,8 @@ class MissingApiToken(NeptuneException):
                                               .format(envs.API_TOKEN_ENV_NAME))
 
 
-class MissingProjectIdentifier(NeptuneException):
+class MissingProjectQualifiedName(NeptuneException):
     def __init__(self):
-        super(MissingProjectIdentifier, self).__init__('Missing project identifier. Use "{}" environment '
+        super(MissingProjectQualifiedName, self).__init__('Missing project qualified name. Use "{}" environment '
                                                        'variable or pass it as an argument'
-                                                       .format(envs.PROJECT_ENV_NAME))
+                                                          .format(envs.PROJECT_ENV_NAME))
