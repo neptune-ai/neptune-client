@@ -17,6 +17,7 @@ import os
 import threading
 
 from neptune import envs, projects, experiments
+from neptune.exceptions import MissingProjectQualifiedName
 from neptune.sessions import Session
 
 session = None
@@ -34,6 +35,9 @@ def init(api_token=None, project_qualified_name=None):
         global session, project
 
         session = Session(api_token=api_token)
+
+        if project_qualified_name is None:
+            raise MissingProjectQualifiedName()
 
         project = session.get_project(project_qualified_name)
 

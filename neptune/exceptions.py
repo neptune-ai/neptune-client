@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune import envs
 
 
 class NeptuneException(Exception):
@@ -50,3 +51,17 @@ class InvalidChannelValue(NeptuneException):
 class NoExperimentContext(NeptuneException):
     def __init__(self):
         super(NoExperimentContext, self).__init__('Unable to find current active experiment')
+
+
+class MissingApiToken(NeptuneException):
+    def __init__(self):
+        super(MissingApiToken, self).__init__('Missing API token. Use "{}" environment '
+                                              'variable or pass it as an argument'
+                                              .format(envs.API_TOKEN_ENV_NAME))
+
+
+class MissingProjectQualifiedName(NeptuneException):
+    def __init__(self):
+        super(MissingProjectQualifiedName, self).__init__('Missing project qualified name. Use "{}" environment '
+                                                          'variable or pass it as an argument'
+                                                          .format(envs.PROJECT_ENV_NAME))
