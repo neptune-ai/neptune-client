@@ -103,10 +103,11 @@ class ChannelsValuesSendingThread(NeptuneThread):
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
     def _send_values(self, queued_channels_values):
+        channel_key = lambda value: (value.channel_name, value.channel_type)
         queued_grouped_by_channel = {channel: list(values)
                                      for channel, values
-                                     in groupby(queued_channels_values,
-                                                lambda value: (value.channel_name, value.channel_type))}
+                                     in groupby(sorted(queued_channels_values, key=channel_key),
+                                                channel_key)}
         channels_with_values = []
         for (channel_name, channel_type) in queued_grouped_by_channel:
             # pylint: disable=protected-access
