@@ -112,7 +112,7 @@ class Experiment(object):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 
         Returns:
-            `pandas.DataFrame`: Dataframe that has 1 row containing a column for every property.
+            dict: A dictionary mapping a property name to value.
 
         Examples:
             Instantiate a session.
@@ -296,7 +296,7 @@ class Experiment(object):
         """Retrieve parameters for this experiment.
 
         Returns:
-            `pandas.DataFrame`: Dataframe that has 1 row containing a column for every parameter.
+            dict: A dictionary mapping a parameter name to value.
 
         Examples:
             Instantiate a session.
@@ -325,7 +325,7 @@ class Experiment(object):
         """Retrieve user-defined properties for this experiment.
 
         Returns:
-            `pandas.DataFrame`: Dataframe that has 1 row containing a column for every property.
+            dict: A dictionary mapping a property key to value.
 
         Examples:
             Instantiate a session.
