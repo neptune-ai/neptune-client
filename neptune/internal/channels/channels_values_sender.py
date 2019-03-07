@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import threading
 import time
 from collections import namedtuple
@@ -21,11 +20,9 @@ from itertools import groupby
 
 from future.moves import queue
 
-from neptune.api_exceptions import NeptuneApiException, ChannelsValuesSendBatchError
+from neptune.api_exceptions import NeptuneApiException
 from neptune.internal.channels.channels import ChannelValue, ChannelIdWithValues
 from neptune.internal.threads.neptune_thread import NeptuneThread
-
-log = logging.getLogger(__name__)
 
 
 class ChannelsValuesSender(object):
@@ -128,8 +125,5 @@ class ChannelsValuesSendingThread(NeptuneThread):
         # pylint: disable=protected-access
         try:
             self._experiment._send_channels_values(channels_with_values)
-        except ChannelsValuesSendBatchError as e:
-            log.debug(e)
-        except (NeptuneApiException, IOError) as e:
-            log.debug("Received batch errors sending channels' values to experiment {}. "
-                      "Skipping {} values. Cause: ".format(self._experiment.id, len(queued_channels_values)) + e)
+        except (NeptuneApiException, IOError):
+            pass
