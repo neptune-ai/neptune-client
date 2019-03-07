@@ -20,7 +20,7 @@ import os
 
 from neptune import envs
 from neptune.api_exceptions import InvalidApiKey
-from neptune.exceptions import NoApiKey
+from neptune.exceptions import MissingApiToken
 
 
 class Credentials(object):
@@ -62,7 +62,7 @@ class Credentials(object):
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
         self.api_token = api_token
         if self.api_token is None:
-            raise NoApiKey()
+            raise MissingApiToken()
 
     @property
     def api_address(self):

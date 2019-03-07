@@ -53,15 +53,15 @@ class NoExperimentContext(NeptuneException):
         super(NoExperimentContext, self).__init__('Unable to find current active experiment')
 
 
-class NoApiKey(NeptuneException):
+class MissingApiToken(NeptuneException):
     def __init__(self):
-        super(NoApiKey, self).__init__('No API key was provided. Use "{}" environment '
-                                       'variable or pass it as an argument'
-                                       .format(envs.API_TOKEN_ENV_NAME))
+        super(MissingApiToken, self).__init__('Missing API token. Use "{}" environment '
+                                              'variable or pass it as an argument'
+                                              .format(envs.API_TOKEN_ENV_NAME))
 
 
-class InvalidProjectIdentifier(NeptuneException):
+class MissingProjectIdentifier(NeptuneException):
     def __init__(self):
-        super(InvalidProjectIdentifier, self).__init__('Missing project identifier, Use "{}" environment '
+        super(MissingProjectIdentifier, self).__init__('Missing project identifier. Use "{}" environment '
                                                        'variable or pass it as an argument'
                                                        .format(envs.PROJECT_ENV_NAME))
