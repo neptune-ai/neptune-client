@@ -50,3 +50,8 @@ class InvalidChannelValue(NeptuneException):
 class NoExperimentContext(NeptuneException):
     def __init__(self):
         super(NoExperimentContext, self).__init__('Unable to find current active experiment')
+
+
+class NoApiKey(NeptuneException):
+    def __init__(self):
+        super(NoApiKey, self).__init__('No API key was provided.')
