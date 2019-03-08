@@ -105,6 +105,14 @@ class Experiment(object):
         return self._id
 
     @property
+    def name(self):
+        return self._client.get_experiment(self._internal_id).name
+
+    @property
+    def state(self):
+        return self._client.get_experiment(self._internal_id).state
+
+    @property
     def internal_id(self):
         return self._internal_id
 
@@ -232,7 +240,7 @@ class Experiment(object):
         x, y = self._get_valid_x_y(x, y)
 
         if not isinstance(y, six.string_types):
-            return InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
+            raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
         value = ChannelValue(x, dict(text_value=y), timestamp)
         self._channels_values_sender.send(channel_name, 'text', value)
