@@ -60,6 +60,14 @@ class LeaderboardEntry(object):
         return self.project_leaderboard_entry_dto.shortId
 
     @property
+    def name(self):
+        return self.project_leaderboard_entry_dto.name
+
+    @property
+    def state(self):
+        return self.project_leaderboard_entry_dto.state
+
+    @property
     def internal_id(self):
         return self.project_leaderboard_entry_dto.id
 
