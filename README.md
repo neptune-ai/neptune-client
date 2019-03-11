@@ -64,18 +64,12 @@ neptune.init(api_token='YOUR_API_TOKEN',
 You can treat every piece of work that you want to record as an experiment.
 For example when training a model you would:
 
-**step1**
-
 Create an experiment.
-
 ```python
 neptune.create_experiment()
 ```
-**step2**
 Train models, save hyperparameters, images, model weights.
 Do whatever you want and record it here!
-
-**step3**
 Stop the experiment.
 
 ```python
