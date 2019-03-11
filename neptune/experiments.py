@@ -116,6 +116,17 @@ class Experiment(object):
     def internal_id(self):
         return self._internal_id
 
+    @property
+    def limits(self):
+        # TODO: get limit from server
+        return {
+            'channels': {
+                'numeric': 1000,
+                'text': 100,
+                'image': 100
+            }
+        }
+
     def get_system_properties(self):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 

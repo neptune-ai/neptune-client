@@ -79,7 +79,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
         while not self.is_interrupted() or not self._values_queue.empty():
             sleep_start = time.time()
             try:
-                self._values_batch.append(self._values_queue.get(timeout=sleep_time))
+                self._values_batch.append(self._values_queue.get(timeout=max(sleep_time, 0)))
                 self._values_queue.task_done()
                 sleep_time -= time.time() - sleep_start
             except queue.Empty:
@@ -87,7 +87,6 @@ class ChannelsValuesSendingThread(NeptuneThread):
 
             if sleep_time <= 0 or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH:
                 self._process_batch()
-                sleep_time = self._SLEEP_TIME
 
         self._process_batch()
 
