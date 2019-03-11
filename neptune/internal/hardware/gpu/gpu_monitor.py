@@ -30,10 +30,16 @@ class GPUMonitor(object):
         return self.__nvml_get_or_else(lambda: nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).used)
 
     def get_top_card_memory_in_bytes(self):
-        return self.__nvml_get_or_else(lambda: max([
-            nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).total
-            for card_index in range(nvmlDeviceGetCount())
-        ]), default=0)
+        def read_top_card_memory_in_bytes():
+            return self.__nvml_get_or_else(lambda: [
+                nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).total
+                for card_index in range(nvmlDeviceGetCount())
+            ], default=0)
+
+        memory_per_card = read_top_card_memory_in_bytes()
+        if not memory_per_card:
+            return 0
+        return max(memory_per_card)
 
     def __nvml_get_or_else(self, getter, default=None):
         try:
