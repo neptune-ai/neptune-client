@@ -81,7 +81,7 @@ neptune.stop()
 Making sure that all your hyperparameters are recorded is very important.
 With Neptune, you can do that easily by passing `params` dictionary when creating the experiment.
 
-```python
+```pythonhttps://docs.neptune.ml/how-to-guides/keep-the-code-private/
 params = {'n_estimators':10,
           'criterion': 'gini',
           'max_depth': 2,
@@ -151,6 +151,7 @@ neptune.create_experiment(upload_source_files=['utils.py',
 If you get stuck, don't worry we are here to help.
 The best order of communication is:
 
+ * [neptune documentation](https://docs.neptune.ml)
  * [neptune community forum](https://community.neptune.ml/)
  * [neptune community slack](https://neptune-community.slack.com) (join by going [here](https://join.slack.com/t/neptune-community/shared_invite/enQtNTI4Mjg3ODk2MjQwLWE5YjI0YThiODViNDY4MDBlNmRmZTkwNTE3YzNiMjQ5MGM2ZTFhNzhjN2YzMTIwNDM3NjQyZThmMDk1Y2Q1ZjY))
  * Github issues
