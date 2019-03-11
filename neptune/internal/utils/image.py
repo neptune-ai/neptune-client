@@ -26,7 +26,7 @@ def get_image_content(image):
     if isinstance(image, six.string_types):
         if not os.path.exists(image):
             raise FileNotFound(image)
-        with open(image, 'r') as image_file:
+        with open(image, 'rb') as image_file:
             return image_file.read()
 
     elif isinstance(image, Image.Image):
