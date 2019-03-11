@@ -2,11 +2,21 @@
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
 [![Build Status](https://travis-ci.org/neptune-ml/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-client)
 
-## Installation
+## Overview
 
-```bash
-pip install neptune-client
-```
+Neptune is a ...
+
+It lets you track your work, organize it and share it with others.
+
+Y
+
+
+
+### Invite others
+Go to your project, click `Settings` and send invites!
+
+![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/invite.png)
+
 
 ## Getting started
 
@@ -19,20 +29,24 @@ It is completely free for individuals and non-organizations, and you can invite 
 In order to start working with Neptune you need to get the API token first.
 To do that, click on the `Get API Token` button on the top left.
 
-![image]()
+![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/get_api_token.png)
 
-**TIP**
-Asign your the api token to the `NEPTUNE_API_TOKEN` environmental variable. 
-By doing so, you will never have to explicitly pass this token to Neptune.
 
 ### Create your first project
 Click on `Projects` and the `New project`. Choose a name for it and whether you want it public or private.
 
-![image]()
+![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/new_project.png)
+
 
 ### Start tracking your work
 
-#### Initialize Neptune
+### Install Neptune client
+
+```bash
+pip install neptune-client
+```
+
+### Initialize Neptune
 
 ```python
 import neptune
@@ -41,15 +55,7 @@ neptune.init(api_token='YOUR_API_TOKEN',
              project_qualified_name='USERNAME/PROJECT_NAME')
 ```
 
-or if you asigned it to the environment variable you can simply run
-
-```python
-
-neptune.init(project_qualified_name='USERNAME/PROJECT_NAME')
-
-```
-
-#### Create and stop the experiment
+### Create and stop the experiment
 You can treat every piece of work that you want to record as an experiment.
 For example when training a model you would:
 
@@ -78,7 +84,7 @@ with neptune.create_experiment():
     ...
 ```
 
-#### Track hyperparameters
+### Track hyperparameters
 Making sure that all your hyperparameters are recorded is very important.
 With Neptune, you can do that easily by passing `params` dictionary when creating the experiment.
 
@@ -94,7 +100,7 @@ neptune.create_experiment(params=params)
 
 ![image]()
 
-#### Track metrics
+### Track metrics
 It is super easy. Just log your metric to Neptune.
 
 ```python
@@ -110,7 +116,7 @@ for i in range(100):
      neptune.send_metric('learning_rate_schedule', 0.01 *1.05 ** i) 
 ```
 
-#### Track result diagnostics
+### Track result diagnostics
 You can even log images to Neptune. Just save to the 
 
 ```python
@@ -119,10 +125,7 @@ plt.savefig('roc_curve.png')
 neptune.send_image('roc_curve', 'roc_curve.png')
 ```
 
-**Tip**
-You can create temporary files if you don't want to trash your project space.
-
-with 
+![image]()
 
 ### Track artifacts
 You can save model weights and any other artifact that you created during your experiment.
@@ -133,16 +136,16 @@ joblib.dump(clf, 'rf_model.pkl')
 neptune.send_artifact('rf_model.pkl')
 ```
 
-#### Track data versions
+### Track data versions
 
+```python
+from hashlib import sha1
 
-#### Track code
+data_version = sha1(X).hexdigest()
+neptune.send_text('data_version', data_version)
+```
+
+### Track code
 
 
 You can go and check the example project [here]().
-
-
-### Invite others
-Go to your project, click `Settings` and send invites!
-
-![image]()
