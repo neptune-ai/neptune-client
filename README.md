@@ -46,7 +46,7 @@ Go to your project, click `Settings` and send invites!
 ### Start tracking your work
 Neptune let's you track any information important to your experimentation process.
 
-#### Install Neptune client
+#### *Install Neptune client*
 Just run:
 
 ```bash
