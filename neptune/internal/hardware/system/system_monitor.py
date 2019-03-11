@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from logging import Logger
+import logging
 
-_logger = Logger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class SystemMonitor(object):

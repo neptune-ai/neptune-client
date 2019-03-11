@@ -15,7 +15,7 @@
 #
 from collections import namedtuple
 from itertools import groupby
-from logging import Logger
+import logging
 import threading
 import time
 
@@ -25,7 +25,7 @@ from neptune.api_exceptions import NeptuneApiException
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
-_logger = Logger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 class ChannelsValuesSender(object):
