@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from logging import Logger
 
 from bravado.exception import HTTPUnprocessableEntity
 
 from neptune.internal.threads.neptune_thread import NeptuneThread
+
+_logger = Logger(__name__)
 
 
 class PingThread(NeptuneThread):
@@ -36,6 +39,6 @@ class PingThread(NeptuneThread):
                 # A 422 error means that we tried to ping the job after marking it as completed.
                 # In this case, this thread is not needed anymore.
                 break
-            except Exception:
-                pass
+            except Exception as e:
+                _logger.debug('Unexpected error in ping thread: %s', e)
             self._interrupted.wait(self.PING_INTERVAL_SECS)

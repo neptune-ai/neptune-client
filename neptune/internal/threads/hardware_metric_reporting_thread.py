@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from logging import Logger
 import time
 
 from bravado.exception import HTTPError
 
 from neptune.internal.threads.neptune_thread import NeptuneThread
+
+_logger = Logger(__name__)
 
 
 class HardwareMetricReportingThread(NeptuneThread):
@@ -33,11 +36,11 @@ class HardwareMetricReportingThread(NeptuneThread):
 
                 try:
                     self.__metric_service.report_and_send(timestamp=time.time())
-                except HTTPError:
-                    pass
+                except HTTPError as e:
+                    _logger.debug('Unexpected HTTP error in hardware metric reporting thread: %s', e)
 
                 reporting_duration = time.time() - before
 
                 time.sleep(max(0, self.__metric_sending_interval_seconds - reporting_duration))
-        except Exception:
-            pass
+        except Exception as e:
+            _logger.debug('Unexpected error in hardware metric reporting thread: %s', e)

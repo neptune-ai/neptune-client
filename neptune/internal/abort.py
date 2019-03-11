@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from logging import Logger
+
+_logger = Logger(__name__)
 
 
 class CustomAbortImpl(object):
@@ -36,6 +39,7 @@ class DefaultAbortImpl(object):
             import psutil
             return True
         except ImportError:
+            _logger.warning('psutil is not installed. The experiment will not be abortable.')
             return False
 
     def abort(self):
