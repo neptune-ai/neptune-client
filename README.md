@@ -4,19 +4,16 @@
 
 ## Overview
 
-Neptune is a ...
+Neptune is an experiment tracking hub that brings organization and collaboration to your data science team. 
 
-It lets you track your work, organize it and share it with others.
+It works with any:
+* infrastructure setup
+* framework
+* working style
 
-Y
+**Keep the knowledge in one place, organized and ready to be shared with anyone.**
 
-
-
-### Invite others
-Go to your project, click `Settings` and send invites!
-
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/invite.png)
-
+![image]()
 
 ## Getting started
 
@@ -38,15 +35,23 @@ Click on `Projects` and the `New project`. Choose a name for it and whether you 
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/new_project.png)
 
 
-### Start tracking your work
+### Invite others
+Go to your project, click `Settings` and send invites!
 
-### Install Neptune client
+![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/invite.png)
+
+### Start tracking your work
+Neptune let's you track any information important to your experimentation process.
+
+#### Install Neptune client
+Just run:
 
 ```bash
 pip install neptune-client
 ```
 
-### Initialize Neptune
+#### Initialize Neptune
+Toward the top of your script insert the following snippet.
 
 ```python
 import neptune
@@ -55,7 +60,7 @@ neptune.init(api_token='YOUR_API_TOKEN',
              project_qualified_name='USERNAME/PROJECT_NAME')
 ```
 
-### Create and stop the experiment
+#### Create and stop the experiment
 You can treat every piece of work that you want to record as an experiment.
 For example when training a model you would:
 
@@ -68,6 +73,7 @@ neptune.create_experiment()
 ```
 **step2**
 Train models, save hyperparameters, images, model weights.
+Do whatever you want and record it here!
 
 **step3**
 Stop the experiment.
@@ -76,15 +82,7 @@ Stop the experiment.
 neptune.stop()
 ```
 
-**Note**
-You can get rid of the `neptune.stop()` by using the `with` statements.
-
-```python
-with neptune.create_experiment():
-    ...
-```
-
-### Track hyperparameters
+#### Track hyperparameters
 Making sure that all your hyperparameters are recorded is very important.
 With Neptune, you can do that easily by passing `params` dictionary when creating the experiment.
 
@@ -100,7 +98,7 @@ neptune.create_experiment(params=params)
 
 ![image]()
 
-### Track metrics
+#### Track metrics
 It is super easy. Just log your metric to Neptune.
 
 ```python
@@ -116,7 +114,7 @@ for i in range(100):
      neptune.send_metric('learning_rate_schedule', 0.01 *1.05 ** i) 
 ```
 
-### Track result diagnostics
+#### Track result diagnostics
 You can even log images to Neptune. Just save to the 
 
 ```python
@@ -125,9 +123,7 @@ plt.savefig('roc_curve.png')
 neptune.send_image('roc_curve', 'roc_curve.png')
 ```
 
-![image]()
-
-### Track artifacts
+#### Track artifacts
 You can save model weights and any other artifact that you created during your experiment.
 
 ```python
@@ -136,7 +132,7 @@ joblib.dump(clf, 'rf_model.pkl')
 neptune.send_artifact('rf_model.pkl')
 ```
 
-### Track data versions
+#### Track data versions
 
 ```python
 from hashlib import sha1
@@ -145,7 +141,14 @@ data_version = sha1(X).hexdigest()
 neptune.send_text('data_version', data_version)
 ```
 
-### Track code
+#### Track code
+You can track your codebase too.
+Just choose the files that you want to send to Neptune.
 
+```python
 
-You can go and check the example project [here]().
+neptune.create_experiment(upload_source_files=['utils.py', 
+                                               'main.py'])
+```
+
+**[Check the example project here](https://ui.neptune.ml/jakub-czakon/quick-start/experiments)**
