@@ -32,8 +32,8 @@ class DefaultAbortImpl(object):
     def __init__(self, pid):
         self._pid = pid
 
-    @classmethod
-    def requirements_installed(cls):
+    @staticmethod
+    def requirements_installed():
         # pylint:disable=unused-variable
         try:
             import psutil
