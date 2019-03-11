@@ -46,7 +46,7 @@ Go to your project, click `Settings` and send invites!
 ### Start tracking your work
 Neptune let's you track any information important to your experimentation process.
 
-#### *Install Neptune client*
+#### Install Neptune client
 Just run:
 
 ```bash
@@ -65,13 +65,11 @@ neptune.init(api_token='YOUR_API_TOKEN',
 
 #### Create and stop the experiment
 You can treat every piece of work that you want to record as an experiment.
-For example when training a model you would:
+Just create an experiment:
 
-Create an experiment.
 ```python
 neptune.create_experiment()
 ```
-Train models, save hyperparameters, images, model weights.
 Do whatever you want and record it here!
 Stop the experiment.
 
