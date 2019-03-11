@@ -2,7 +2,7 @@
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
 [![Build Status](https://travis-ci.org/neptune-ml/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-client)
 
-## Overview
+# Overview
 
 Neptune is an experiment tracking hub that brings organization and collaboration to your data science team. 
 
@@ -18,7 +18,7 @@ It works with any:
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/8aa4f35e29a2a5177e89a8ed5d1daa233b04b0b9/clf_report.png)
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/8aa4f35e29a2a5177e89a8ed5d1daa233b04b0b9/ship_predictions.png)
 
-## Getting started
+# Getting started
 
 ### Register
 Go to https://neptune.ml/ and sign up.
@@ -145,3 +145,12 @@ neptune.create_experiment(upload_source_files=['utils.py',
 ```
 
 **[Check the example project here](https://ui.neptune.ml/jakub-czakon/quick-start/experiments)**
+
+
+# Getting help
+If you get stuck, don't worry we are here to help.
+The best order of communication is:
+
+ * [neptune community forum](https://community.neptune.ml/)
+ * [neptune community slack](https://neptune-community.slack.com) (join by going [here](https://join.slack.com/t/neptune-community/shared_invite/enQtNTI4Mjg3ODk2MjQwLWE5YjI0YThiODViNDY4MDBlNmRmZTkwNTE3YzNiMjQ5MGM2ZTFhNzhjN2YzMTIwNDM3NjQyZThmMDk1Y2Q1ZjY))
+ * Github issues
