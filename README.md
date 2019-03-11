@@ -15,8 +15,8 @@ It works with any:
 
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/2f3a5577ac55595e8b9241d81a2de43a0fc663db/wiki.png)
 ![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/2a67f6ed1017d3f6a3dec6fe85d1727f3b41f533/neptune_quick_start.png)
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/2a67f6ed1017d3f6a3dec6fe85d1727f3b41f533/tut-2-image-log.png)
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/2a67f6ed1017d3f6a3dec6fe85d1727f3b41f533/clf_report1.png)
+![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/8aa4f35e29a2a5177e89a8ed5d1daa233b04b0b9/clf_report.png)
+![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/8aa4f35e29a2a5177e89a8ed5d1daa233b04b0b9/ship_predictions.png)
 
 ## Getting started
 
