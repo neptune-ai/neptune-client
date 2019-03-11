@@ -13,16 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import threading
-import time
 from collections import namedtuple
 from itertools import groupby
+import logging
+import threading
+import time
 
 from future.moves import queue
 
 from neptune.api_exceptions import NeptuneApiException
-from neptune.internal.channels.channels import ChannelValue, ChannelIdWithValues
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
 from neptune.internal.threads.neptune_thread import NeptuneThread
+
+_logger = logging.getLogger(__name__)
 
 
 class ChannelsValuesSender(object):
@@ -119,11 +122,10 @@ class ChannelsValuesSendingThread(NeptuneThread):
                                                    x=x,
                                                    y=queued_value.channel_value.y))
                 last_x = x
-
             channels_with_values.append(ChannelIdWithValues(channel.id, channel_values))
 
-        # pylint: disable=protected-access
         try:
+            # pylint:disable=protected-access
             self._experiment._send_channels_values(channels_with_values)
-        except (NeptuneApiException, IOError):
-            pass
+        except (NeptuneApiException, IOError) as e:
+            _logger.warning('Failed to send channel value: %s', e)

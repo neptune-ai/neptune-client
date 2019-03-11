@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 def extract_response_field(response, field_name):
@@ -24,6 +27,8 @@ def extract_response_field(response, field_name):
         if isinstance(response_json, dict):
             return response_json.get(field_name)
         else:
+            _logger.debug('HTTP response is not a dict: %s', str(response_json))
             return None
-    except ValueError:
+    except ValueError as e:
+        _logger.debug('Failed to parse HTTP response: %s', e)
         return None

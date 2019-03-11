@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 class SystemMonitor(object):
@@ -23,6 +26,7 @@ class SystemMonitor(object):
             import psutil
             return True
         except ImportError:
+            _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
             return False
 
     def cpu_count(self):
