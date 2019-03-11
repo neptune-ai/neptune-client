@@ -34,6 +34,9 @@ class StdStreamWithUpload(object):
         except:
             pass
 
+    def isatty(self):
+        return hasattr(self._stream, 'isatty') and self._stream.isatty()
+
     def flush(self):
         self._stream.flush()
 
