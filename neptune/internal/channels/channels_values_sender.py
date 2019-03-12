@@ -13,16 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from collections import namedtuple
-from itertools import groupby
 import logging
 import threading
 import time
+from collections import namedtuple
+from itertools import groupby
 
 from future.moves import queue
 
 from neptune.api_exceptions import NeptuneApiException
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNameWithType, ChannelValue
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
 _logger = logging.getLogger(__name__)
@@ -78,17 +78,16 @@ class ChannelsValuesSendingThread(NeptuneThread):
         self._values_batch = []
 
     def run(self):
-        sleep_time = self._SLEEP_TIME
         while not self.is_interrupted() or not self._values_queue.empty():
-            sleep_start = time.time()
             try:
-                self._values_batch.append(self._values_queue.get(timeout=max(sleep_time, 0)))
+                sleep_start = time.time()
+                self._values_batch.append(self._values_queue.get(timeout=max(self._sleep_time, 0)))
                 self._values_queue.task_done()
-                sleep_time -= time.time() - sleep_start
+                self._sleep_time -= time.time() - sleep_start
             except queue.Empty:
-                sleep_time = 0
+                self._sleep_time = 0
 
-            if sleep_time <= 0 or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH:
+            if self._sleep_time <= 0 or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH:
                 self._process_batch()
 
         self._process_batch()
@@ -105,18 +104,20 @@ class ChannelsValuesSendingThread(NeptuneThread):
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
     def _send_values(self, queued_channels_values):
-        channel_key = lambda value: (value.channel_name, value.channel_type)
+        channel_key = lambda value: ChannelNameWithType(value.channel_name, value.channel_type)
         queued_grouped_by_channel = {channel: list(values)
                                      for channel, values
                                      in groupby(sorted(queued_channels_values, key=channel_key),
                                                 channel_key)}
         channels_with_values = []
-        for (channel_name, channel_type) in queued_grouped_by_channel:
-            # pylint: disable=protected-access
-            channel = self._experiment._get_channel(channel_name, channel_type)
+        # pylint: disable=protected-access
+        channels_by_name = self._experiment._get_channels(list(queued_grouped_by_channel.keys()))
+
+        for channel_key in queued_grouped_by_channel:
+            channel = channels_by_name[channel_key.channel_name]
             last_x = channel.x if channel.x else 0
             channel_values = []
-            for queued_value in queued_grouped_by_channel[(channel_name, channel_type)]:
+            for queued_value in queued_grouped_by_channel[channel_key]:
                 x = queued_value.channel_value.x if queued_value.channel_value.x is not None else last_x + 1
                 channel_values.append(ChannelValue(ts=queued_value.channel_value.ts,
                                                    x=x,

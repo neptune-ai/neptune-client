@@ -16,6 +16,7 @@
 import time
 from collections import namedtuple
 
+ChannelNameWithType = namedtuple("ChannelNameWithType", ['channel_name', 'channel_type'])
 ChannelIdWithValues = namedtuple('ChannelIdWithValues', ['channel_id', 'channel_values'])
 
 
