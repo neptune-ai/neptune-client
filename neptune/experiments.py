@@ -565,6 +565,16 @@ class Experiment(object):
     def _send_channels_values(self, channels_with_values):
         self._client.send_channels_values(self, channels_with_values)
 
+    def _get_channels(self, channels_names_with_types):
+        existing_channels = self.get_channels()
+        channels_by_name = {}
+        for (channel_name, channel_type) in channels_names_with_types:
+            channel = existing_channels.get(channel_name, None)
+            if channel is None:
+                channel = self._create_channel(channel_name, channel_type)
+            channels_by_name[channel.name] = channel
+        return channels_by_name
+
     def _get_channel(self, channel_name, channel_type):
         channel = self._find_channel(channel_name)
         if channel is None:
