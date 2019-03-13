@@ -50,11 +50,11 @@ class Session(object):
         >>> session = Session()
     """
 
-    def __init__(self, api_token=None):
+    def __init__(self, api_token=None, verify_ssl=False):
         credentials = Credentials(api_token)
 
         self.credentials = credentials
-        self._client = Client(self.credentials.api_address, self.credentials.api_token)
+        self._client = Client(self.credentials.api_address, self.credentials.api_token, verify_ssl)
 
     def get_project(self, project_qualified_name):
         """

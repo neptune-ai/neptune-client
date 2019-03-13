@@ -70,11 +70,11 @@ def with_api_exceptions_handler(func):
 class Client(object):
 
     @with_api_exceptions_handler
-    def __init__(self, api_address, api_token):
+    def __init__(self, api_address, api_token, verify_ssl):
         self.api_address = api_address
         self.api_token = api_token
 
-        self._http_client = RequestsClient()
+        self._http_client = RequestsClient(ssl_verify = verify_ssl)
 
         self.backend_swagger_client = SwaggerClient.from_url(
             '{}/api/backend/swagger.json'.format(self.api_address),
