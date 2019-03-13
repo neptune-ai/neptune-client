@@ -213,9 +213,12 @@ class Experiment(object):
         channels = dict()
         for ch in experiment.channels:
             last_value = channels_last_values_by_name.get(ch.name, None)
-            if last_value:
+            if last_value is not None:
                 ch.x = last_value.x
                 ch.y = last_value.y
+            elif ch.lastX is not None:
+                ch.x = ch.lastX
+                ch.y = None
             else:
                 ch.x = None
                 ch.y = None
