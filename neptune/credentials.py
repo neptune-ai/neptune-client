@@ -14,14 +14,16 @@
 # limitations under the License.
 #
 
-import click
 import base64
 import json
+import logging
 import os
 
 from neptune import envs
 from neptune.api_exceptions import InvalidApiKey
 from neptune.exceptions import MissingApiToken
+
+_logger = logging.getLogger(__name__)
 
 
 class Credentials(object):
@@ -62,13 +64,12 @@ class Credentials(object):
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
         else:
-            click.echo(
-                "\033[1;33mWARNING: It is not secure to place API token in your source code. "
-                "It is highly recommended to use {} environment variable instead. "
-                "Remember not to upload source file with API token to any public repository.\033[0m"
-                    .format(envs.API_TOKEN_ENV_NAME),
-                err=True
-            )
+            _logger.warning(
+                "WARNING: It is not secure to place API token in your source code. "
+                "You should treat it as a password to your account. "
+                "It is strongly recommended to use %s environment variable instead. "
+                "Remember not to upload source file with API token to any public repository.",
+                envs.API_TOKEN_ENV_NAME)
 
         self.api_token = api_token
         if self.api_token is None:
