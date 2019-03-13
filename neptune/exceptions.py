@@ -20,6 +20,13 @@ class NeptuneException(Exception):
     pass
 
 
+class Uninitialized(NeptuneException):
+    def __init__(self):
+        super(Uninitialized, self).__init__(
+            "You must initialize neptune-client first. "
+            "For more information, please visit: https://github.com/neptune-ml/neptune-client#initialize-neptune")
+
+
 class FileNotFound(NeptuneException):
     def __init__(self, path):
         super(FileNotFound, self).__init__("File {} doesn't exist.".format(path))

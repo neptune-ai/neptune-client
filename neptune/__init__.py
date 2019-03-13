@@ -17,7 +17,7 @@ import os
 import threading
 
 from neptune import envs, projects, experiments
-from neptune.exceptions import MissingProjectQualifiedName
+from neptune.exceptions import MissingProjectQualifiedName, Uninitialized
 from neptune.sessions import Session
 
 session = None
@@ -71,6 +71,8 @@ def create_experiment(name=None,
                       handle_uncaught_exceptions=True):
     # pylint: disable=global-statement
     global project
+    if project is None:
+        raise Uninitialized()
     return project.create_experiment(
         name=name,
         description=description,
