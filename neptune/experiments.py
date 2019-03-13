@@ -597,10 +597,10 @@ def get_current_experiment():
     # pylint: disable=global-statement
     global _experiments_stack
     with __lock:
-        experiment = _experiments_stack[len(_experiments_stack) - 1]
-        if experiment is None:
+        if _experiments_stack:
+            return _experiments_stack[len(_experiments_stack) - 1]
+        else:
             raise NoExperimentContext()
-        return experiment
 
 
 def push_new_experiment(new_experiment):
