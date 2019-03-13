@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import click
 import base64
 import json
 import os
@@ -60,6 +61,15 @@ class Credentials(object):
     def __init__(self, api_token=None):
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
+        else:
+            click.echo(
+                "\033[1;33mWARNING: It is not secure to place API token in your source code. "
+                "It is highly recommended to use {} environment variable instead. "
+                "Remember not to upload source file with API token to any public repository.\033[0m"
+                    .format(envs.API_TOKEN_ENV_NAME),
+                err=True
+            )
+
         self.api_token = api_token
         if self.api_token is None:
             raise MissingApiToken()
