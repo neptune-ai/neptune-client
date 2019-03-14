@@ -15,9 +15,16 @@
 #
 import time
 from collections import namedtuple
+from enum import Enum
 
 ChannelNameWithType = namedtuple("ChannelNameWithType", ['channel_name', 'channel_type'])
 ChannelIdWithValues = namedtuple('ChannelIdWithValues', ['channel_id', 'channel_values'])
+
+
+class ChannelType(Enum):
+    TEXT = 'text'
+    NUMERIC = 'numeric'
+    IMAGE = 'image'
 
 
 class ChannelValue(object):
@@ -40,3 +47,15 @@ class ChannelValue(object):
     @property
     def y(self):
         return self._y
+
+    def __str__(self):
+        return 'ChannelValue(x={},y={},ts={})'.format(self.x, self.y, self.ts)
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, o):
+        return self.__dict__ == o.__dict__
+
+    def __ne__(self, o):
+        return not self.__eq__(o)
