@@ -13,25 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-import sys
-import time
-import traceback
 
 import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
-from neptune.internal.abort import CustomAbortImpl, DefaultAbortImpl
-from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
-from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
-from neptune.internal.hardware.system.system_monitor import SystemMonitor
-from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErrWithUpload
-from neptune.internal.threads.aborting_thread import AbortingThread
-from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
-from neptune.internal.threads.ping_thread import PingThread
-from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
-from neptune.utils import as_list, in_docker, map_keys, is_notebook
+from neptune.internal.abort import DefaultAbortImpl
+from neptune.utils import as_list, map_keys
 
 
 class Project(object):
@@ -268,62 +255,15 @@ class Project(object):
             monitored=run_monitoring_thread
         )
 
-        if upload_source_files is None:
-            main_file = sys.argv[0]
-            main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
-            if os.path.isfile(main_abs_path):
-                upload_source_files = [os.path.relpath(main_abs_path, os.getcwd())]
-            else:
-                upload_source_files = []
-
-        experiment.upload_source_files(upload_source_files)
-
-        def exception_handler(exc_type, exc_val, exc_tb):
-            experiment.stop("\n".join(traceback.format_tb(exc_tb)) + "\n" + repr(exc_val))
-
-            sys.__excepthook__(exc_type, exc_val, exc_tb)
-
-        if handle_uncaught_exceptions:
-            # pylint:disable=protected-access
-            experiment._uncaught_exception_handler = exception_handler
-            sys.excepthook = exception_handler
-
-        # pylint:disable=protected-access
-        experiment._channels_values_sender = ChannelsValuesSender(experiment)
-
-        if abortable:
-            # pylint:disable=protected-access
-            if abort_callback:
-                abort_impl = CustomAbortImpl(abort_callback)
-            else:
-                abort_impl = DefaultAbortImpl(pid=os.getpid())
-            websocket_factory = ReconnectingWebsocketFactory(client=self.client, experiment_id=experiment.internal_id)
-            experiment._aborting_thread = AbortingThread(
-                websocket_factory=websocket_factory, abort_impl=abort_impl, experiment_id=experiment.internal_id)
-            experiment._aborting_thread.start()
-
-        if upload_stdout and not is_notebook():
-            # pylint:disable=protected-access
-            experiment._stdout_uploader = StdOutWithUpload(experiment)
-
-        if upload_stderr and not is_notebook():
-            # pylint:disable=protected-access
-            experiment._stderr_uploader = StdErrWithUpload(experiment)
-
-        if run_monitoring_thread:
-            # pylint:disable=protected-access
-            experiment._ping_thread = PingThread(client=self.client, experiment=experiment)
-            experiment._ping_thread.start()
-
-        if send_hardware_metrics and SystemMonitor.requirements_installed():
-            # pylint:disable=protected-access
-            gauge_mode = GaugeMode.CGROUP if in_docker() else GaugeMode.SYSTEM
-            metric_service = MetricServiceFactory(self.client, os.environ).create(
-                gauge_mode=gauge_mode, experiment=experiment, reference_timestamp=time.time())
-
-            experiment._hardware_metric_thread = HardwareMetricReportingThread(
-                metric_service=metric_service, metric_sending_interval_seconds=3)
-            experiment._hardware_metric_thread.start()
+        experiment.start(
+            upload_source_files=upload_source_files,
+            abort_callback=abort_callback,
+            upload_stdout=upload_stdout,
+            upload_stderr=upload_stderr,
+            send_hardware_metrics=send_hardware_metrics,
+            run_monitoring_thread=run_monitoring_thread,
+            handle_uncaught_exceptions=handle_uncaught_exceptions
+        )
 
         push_new_experiment(experiment)
 

@@ -27,6 +27,7 @@ from neptune.api_exceptions import ExperimentAlreadyFinished
 from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext
 from neptune.internal.channels.channels import ChannelValue
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
+from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float
@@ -70,12 +71,7 @@ class Experiment(object):
         self._internal_id = internal_id
         self._project_full_id = project_full_id
         self._channels_values_sender = ChannelsValuesSender(self)
-        self._ping_thread = None
-        self._hardware_metric_thread = None
-        self._aborting_thread = None
-        self._stdout_uploader = None
-        self._stderr_uploader = None
-        self._uncaught_exception_handler = sys.__excepthook__
+        self._execution_context = ExecutionContext(client, self)
 
     @property
     def id(self):
@@ -498,6 +494,34 @@ class Experiment(object):
 
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
+    def start(self,
+              upload_source_files=None,
+              abort_callback=None,
+              upload_stdout=True,
+              upload_stderr=True,
+              send_hardware_metrics=True,
+              run_monitoring_thread=True,
+              handle_uncaught_exceptions=True):
+
+        if upload_source_files is None:
+            main_file = sys.argv[0]
+            main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
+            if os.path.isfile(main_abs_path):
+                upload_source_files = [os.path.relpath(main_abs_path, os.getcwd())]
+            else:
+                upload_source_files = []
+
+        self.upload_source_files(upload_source_files)
+
+        self._execution_context.start(
+            abort_callback=abort_callback,
+            upload_stdout=upload_stdout,
+            upload_stderr=upload_stderr,
+            send_hardware_metrics=send_hardware_metrics,
+            run_monitoring_thread=run_monitoring_thread,
+            handle_uncaught_exceptions=handle_uncaught_exceptions
+        )
+
     def stop(self, exc_tb=None):
 
         self._channels_values_sender.join()
@@ -510,23 +534,7 @@ class Experiment(object):
         except ExperimentAlreadyFinished:
             pass
 
-        if self._ping_thread:
-            self._ping_thread.interrupt()
-            self._ping_thread = None
-
-        if self._hardware_metric_thread:
-            self._hardware_metric_thread.interrupt()
-            self._hardware_metric_thread = None
-
-        if self._aborting_thread:
-            self._aborting_thread.interrupt()
-            self._aborting_thread = None
-
-        if self._stdout_uploader:
-            self._stdout_uploader.close()
-
-        if self._stderr_uploader:
-            self._stderr_uploader.close()
+        self._execution_context.stop()
 
         pop_stopped_experiment()
 
@@ -619,10 +627,7 @@ def pop_stopped_experiment():
     global _experiments_stack, __lock
     with __lock:
         if _experiments_stack:
-            current_experiment = _experiments_stack.pop()
-            # pylint: disable=protected-access
-            sys.excepthook = current_experiment._uncaught_exception_handler
+            stopped_experiment = _experiments_stack.pop()
         else:
-            current_experiment = None
-            sys.excepthook = sys.__excepthook__
-        return current_experiment
+            stopped_experiment = None
+        return stopped_experiment
