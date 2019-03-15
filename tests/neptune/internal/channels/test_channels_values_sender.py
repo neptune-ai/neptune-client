@@ -54,17 +54,17 @@ class TestChannelsValuesSender(unittest.TestCase):
         self._EXPERIMENT.reset_mock()
 
     def test_send_values_on_join(self):
-        # GIVEN
+        # given
         channel_value = ChannelValue(x=1, y="value", ts=self._TS)
-        # AND
+        # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
 
-        # WHEN
+        # when
         channels_values_sender.send(self._TEXT_CHANNEL.name, self._TEXT_CHANNEL.channelType, channel_value)
-        # AND
+        # and
         channels_values_sender.join()
 
-        # THEN
+        # then
         # pylint: disable=protected-access
         self._EXPERIMENT._send_channels_values.assert_called_with([ChannelIdWithValues(
             channel_id=self._TEXT_CHANNEL.id,
@@ -72,19 +72,19 @@ class TestChannelsValuesSender(unittest.TestCase):
         )])
 
     def test_send_values_in_multiple_batches(self):
-        # GIVEN
+        # given
         channels_values = [ChannelValue(x=i, y="value{}".format(i), ts=self._TS + i)
                            for i in range(0, self._BATCH_SIZE * 3)]
-        # AND
+        # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
 
-        # WHEN
+        # when
         for channel_value in channels_values:
             channels_values_sender.send(self._TEXT_CHANNEL.name, self._TEXT_CHANNEL.channelType, channel_value)
-        # AND
+        # and
         channels_values_sender.join()
 
-        # THEN
+        # then
         # pylint: disable=protected-access
         self.assertEqual(self._EXPERIMENT._send_channels_values.mock_calls, [
             mock.call._send_channels_values([ChannelIdWithValues(
@@ -102,19 +102,19 @@ class TestChannelsValuesSender(unittest.TestCase):
         ])
 
     def test_send_images_in_smaller_batches(self):
-        # AND
+        # and
         channels_values = [ChannelValue(x=i, y="base64Image==", ts=self._TS + i)
                            for i in range(0, self._IMAGES_BATCH_SIZE * 3)]
-        # AND
+        # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
 
-        # WHEN
+        # when
         for channel_value in channels_values:
             channels_values_sender.send(self._IMAGE_CHANNEL.name, self._IMAGE_CHANNEL.channelType, channel_value)
-        # AND
+        # and
         channels_values_sender.join()
 
-        # THEN
+        # then
         # pylint: disable=protected-access
         self.assertEqual(self._EXPERIMENT._send_channels_values.mock_calls, [
             mock.call._send_channels_values([ChannelIdWithValues(
@@ -132,7 +132,7 @@ class TestChannelsValuesSender(unittest.TestCase):
         ])
 
     def test_send_values_from_multiple_channels(self):
-        # GIVEN
+        # given
         numeric_values = [ChannelValue(x=i, y=i, ts=self._TS + i)
                           for i in range(0, 3)]
 
@@ -141,10 +141,10 @@ class TestChannelsValuesSender(unittest.TestCase):
 
         image_values = [ChannelValue(x=i, y="base64Image==", ts=self._TS + i)
                         for i in range(0, 3)]
-        # AND
+        # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
 
-        # WHEN
+        # when
         for channel_value in numeric_values:
             channels_values_sender.send(self._NUMERIC_CHANNEL.name, self._NUMERIC_CHANNEL.channelType, channel_value)
 
@@ -154,10 +154,10 @@ class TestChannelsValuesSender(unittest.TestCase):
         for channel_value in image_values:
             channels_values_sender.send(self._IMAGE_CHANNEL.name, self._IMAGE_CHANNEL.channelType, channel_value)
 
-        # AND
+        # and
         channels_values_sender.join()
 
-        # THEN
+        # then
         # pylint: disable=protected-access
         (args, _) = self._EXPERIMENT._send_channels_values.call_args
         self.assertEqual(len(args), 1)
@@ -179,29 +179,29 @@ class TestChannelsValuesSender(unittest.TestCase):
 
     @mock.patch('neptune.internal.channels.channels_values_sender.ChannelsValuesSendingThread._SLEEP_TIME', __TIMEOUT)
     def test_send_when_waiting_for_next_value_timed_out(self):
-        # GIVEN
+        # given
         numeric_values = [ChannelValue(x=i, y=i, ts=self._TS + i)
                           for i in range(0, 3)]
 
-        # AND
+        # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
 
-        # WHEN
+        # when
         for channel_value in numeric_values:
             channels_values_sender.send(self._NUMERIC_CHANNEL.name, self._NUMERIC_CHANNEL.channelType, channel_value)
 
-        # AND
-        time.sleep(self.__TIMEOUT)
+        # and
+        time.sleep(self.__TIMEOUT * 2)
 
-        # THEN
+        # then
         # pylint: disable=protected-access
         self._EXPERIMENT._send_channels_values.assert_called_with([ChannelIdWithValues(
             channel_id=self._NUMERIC_CHANNEL.id,
             channel_values=numeric_values
         )])
 
-        # AND
+        # and
         self._EXPERIMENT._send_channels_values.reset_mock()
         channels_values_sender.join()
-        # AND
+        # and
         self._EXPERIMENT._send_channels_values.assert_not_called()
