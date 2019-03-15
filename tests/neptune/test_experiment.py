@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import base64
+import random
+import time
 import unittest
 from io import StringIO
 
+import mock
 import pandas as pd
 from mock import MagicMock
 from munch import Munch
@@ -24,10 +27,79 @@ from pandas.util.testing import assert_frame_equal
 
 from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment, push_new_experiment, get_current_experiment, pop_stopped_experiment
-from tests.neptune.random_utils import sort_df_by_columns, a_string, a_uuid_string
+from neptune.internal.channels.channels import ChannelType, ChannelValue
+from tests.neptune.random_utils import sort_df_by_columns, a_string, a_uuid_string, an_experiment_id, \
+    a_project_qualified_name
 
 
 class TestExperiment(unittest.TestCase):
+
+    @mock.patch('neptune.experiments.ChannelsValuesSender', return_value=mock.MagicMock())
+    @mock.patch('neptune.experiments.ExecutionContext', new=mock.MagicMock)
+    def test_send_metric(self, ChannelsValuesSender):
+        # given
+        channels_values_sender = ChannelsValuesSender.return_value
+        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        channel_value = ChannelValue(
+            x=random.randint(0, 100),
+            y=dict(numeric_value=random.randint(0, 100)),
+            ts=time.time()
+        )
+
+        # when
+        experiment.send_metric('loss', channel_value.x, channel_value.y['numeric_value'], channel_value.ts)
+
+        # then
+        channels_values_sender.send.assert_called_with('loss', ChannelType.NUMERIC.value, channel_value)
+
+    @mock.patch('neptune.experiments.ChannelsValuesSender', return_value=mock.MagicMock())
+    @mock.patch('neptune.experiments.ExecutionContext', new=mock.MagicMock)
+    def test_send_text(self, ChannelsValuesSender):
+        # given
+        channels_values_sender = ChannelsValuesSender.return_value
+        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        channel_value = ChannelValue(
+            x=random.randint(0, 100),
+            y=dict(text_value=a_string()),
+            ts=time.time()
+        )
+
+        # when
+        experiment.send_text('stdout', channel_value.x, channel_value.y['text_value'], channel_value.ts)
+
+        # then
+        channels_values_sender.send.assert_called_with('stdout', ChannelType.TEXT.value, channel_value)
+
+    @mock.patch('neptune.experiments.get_image_content', return_value=b'content')
+    @mock.patch('neptune.experiments.ChannelsValuesSender', return_value=mock.MagicMock())
+    @mock.patch('neptune.experiments.ExecutionContext', new=mock.MagicMock)
+    def test_send_image(self, ChannelsValuesSender, content):
+        # given
+        channels_values_sender = ChannelsValuesSender.return_value
+        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        image_value = dict(
+            name=a_string(),
+            description=a_string(),
+            data=base64.b64encode(content()).decode('utf-8')
+        )
+        channel_value = ChannelValue(
+            x=random.randint(0, 100),
+            y=dict(image_value=image_value),
+            ts=time.time()
+        )
+
+        # when
+        experiment.send_image(
+            'errors',
+            channel_value.x,
+            '/tmp/img.png',
+            image_value['name'],
+            image_value['description'],
+            channel_value.ts
+        )
+
+        # then
+        channels_values_sender.send.assert_called_with('errors', ChannelType.IMAGE.value, channel_value)
 
     def test_get_numeric_channels_values(self):
         # when

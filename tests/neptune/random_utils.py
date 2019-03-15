@@ -39,3 +39,13 @@ def a_timestamp():
 def sort_df_by_columns(df):
     df = df.reindex(sorted(df.columns), axis=1)
     return df
+
+
+def an_experiment_id():
+    prefix = ''.join(random.choice(string.ascii_uppercase) for _ in range(3))
+    number = random.randint(0, 100)
+    return "{}-{}".format(prefix, number)
+
+
+def a_project_qualified_name():
+    return "{}/{}".format(a_string(), a_string())

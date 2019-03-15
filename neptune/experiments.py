@@ -25,7 +25,7 @@ from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ExperimentAlreadyFinished
 from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext
-from neptune.internal.channels.channels import ChannelValue
+from neptune.internal.channels.channels import ChannelValue, ChannelType
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.storage.storage_utils import upload_to_storage
@@ -244,7 +244,7 @@ class Experiment(object):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
         value = ChannelValue(x, dict(numeric_value=y), timestamp)
-        self._channels_values_sender.send(channel_name, 'numeric', value)
+        self._channels_values_sender.send(channel_name, ChannelType.NUMERIC.value, value)
 
     def send_text(self, channel_name, x, y=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
@@ -253,7 +253,7 @@ class Experiment(object):
             raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
         value = ChannelValue(x, dict(text_value=y), timestamp)
-        self._channels_values_sender.send(channel_name, 'text', value)
+        self._channels_values_sender.send(channel_name, ChannelType.TEXT.value, value)
 
     def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
@@ -265,7 +265,7 @@ class Experiment(object):
         )
 
         value = ChannelValue(x, dict(image_value=input_image), timestamp)
-        self._channels_values_sender.send(channel_name, 'image', value)
+        self._channels_values_sender.send(channel_name, ChannelType.IMAGE.value, value)
 
     def send_artifact(self, artifact):
         """
