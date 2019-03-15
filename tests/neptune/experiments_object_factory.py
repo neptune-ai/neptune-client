@@ -15,14 +15,14 @@
 #
 import random
 
-from bunch import Bunch
+from munch import Munch
 
 from tests.neptune.random_utils import a_uuid_string, a_string
 
 
 def a_channel():
     x = random.randint(0, 100)
-    return Bunch(
+    return Munch(
         id=a_uuid_string(),
         name=a_string(),
         channelType='text',
