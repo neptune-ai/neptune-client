@@ -22,7 +22,7 @@ from itertools import groupby
 from future.moves import queue
 
 from neptune.api_exceptions import NeptuneApiException
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNameWithType, ChannelValue
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNameWithType, ChannelValue, ChannelType
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
 _logger = logging.getLogger(__name__)
@@ -91,7 +91,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
             if self._sleep_time <= 0 \
                     or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH \
                     or len([v for v in self._values_batch if
-                            v.channel_type == 'image']) >= self._MAX_IMAGE_VALUES_BATCH_LENGTH:  # pylint:disable=line-too-long
+                            v.channel_type == ChannelType.IMAGE.value]) >= self._MAX_IMAGE_VALUES_BATCH_LENGTH:  # pylint:disable=line-too-long
                 self._process_batch()
 
         self._process_batch()
