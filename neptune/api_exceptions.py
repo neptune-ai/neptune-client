@@ -20,6 +20,12 @@ class NeptuneApiException(NeptuneException):
     pass
 
 
+class SSLError(NeptuneException):
+    def __init__(self):
+        super(SSLError, self).__init__('SSL certificate validation failed. To allow connecting to server with '
+                                       'self-signed, set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE environment variable')
+
+
 class ConnectionLost(NeptuneApiException):
     def __init__(self):
         super(ConnectionLost, self).__init__('Connection lost. Please try again.')

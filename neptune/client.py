@@ -16,11 +16,13 @@
 import base64
 import gzip
 import io
+import os
 import uuid
 from functools import partial
 from io import StringIO
 from itertools import groupby
 
+import urllib3
 import requests
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
@@ -30,7 +32,7 @@ from bravado_core.formatter import SwaggerFormat
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
-    StorageLimitReached, Unauthorized, ChannelAlreadyExists, ChannelsValuesSendBatchError
+    StorageLimitReached, Unauthorized, ChannelAlreadyExists, ChannelsValuesSendBatchError, SSLError
 from neptune.experiments import Experiment
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -42,6 +44,8 @@ def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
         try:
             return func(*args, **kwargs)
+        except requests.exceptions.SSLError:
+            raise SSLError()
         except (BravadoConnectionError, BravadoTimeoutError,
                 requests.exceptions.ConnectionError, requests.exceptions.Timeout):
             raise ConnectionLost()
@@ -74,7 +78,12 @@ class Client(object):
         self.api_address = api_address
         self.api_token = api_token
 
-        self._http_client = RequestsClient()
+        ssl_verify = True
+        if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
+            urllib3.disable_warnings()
+            ssl_verify = False
+
+        self._http_client = RequestsClient(ssl_verify=ssl_verify)
 
         self.backend_swagger_client = SwaggerClient.from_url(
             '{}/api/backend/swagger.json'.format(self.api_address),
