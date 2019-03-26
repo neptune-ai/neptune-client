@@ -14,10 +14,13 @@
 # limitations under the License.
 #
 from collections import OrderedDict
+import re
 
 from neptune.api_exceptions import ProjectNotFound
 from neptune.client import Client
 from neptune.credentials import Credentials
+from neptune.exceptions import IncorrectProjectQualifiedName
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
 
 
@@ -63,6 +66,10 @@ class Session(object):
         """
         if not project_qualified_name:
             raise ProjectNotFound(project_qualified_name)
+
+        if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project_qualified_name):
+            raise IncorrectProjectQualifiedName(project_qualified_name)
+
         project = self._client.get_project(project_qualified_name)
         return Project(
             client=self._client,
