@@ -158,7 +158,7 @@ class TestExperiment(unittest.TestCase):
         # and
         self.assertEqual(get_current_experiment(), first_experiment)
 
-    def test_emtpy_stack(self):
+    def test_empty_stack(self):
         # when
         self.assertIsNone(pop_stopped_experiment())
         # and
