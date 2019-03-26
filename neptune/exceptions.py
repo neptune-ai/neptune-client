@@ -72,3 +72,10 @@ class MissingProjectQualifiedName(NeptuneException):
         super(MissingProjectQualifiedName, self).__init__('Missing project qualified name. Use "{}" environment '
                                                           'variable or pass it as an argument'
                                                           .format(envs.PROJECT_ENV_NAME))
+
+
+class IncorrectProjectQualifiedName(NeptuneException):
+    def __init__(self, project_qualified_name):
+        super(IncorrectProjectQualifiedName, self).__init__('Incorrect project qualified name "{}". '
+                                                            'Should be in format "namespace/project_name".'
+                                                            .format(project_qualified_name))
