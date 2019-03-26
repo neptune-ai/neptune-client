@@ -74,16 +74,15 @@ def with_api_exceptions_handler(func):
 class Client(object):
 
     @with_api_exceptions_handler
-    def __init__(self, api_address, api_token):
+    def __init__(self, api_address, api_token, proxies={}):
         self.api_address = api_address
         self.api_token = api_token
-
         ssl_verify = True
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             urllib3.disable_warnings()
             ssl_verify = False
 
-        self._http_client = RequestsClient(ssl_verify=ssl_verify)
+        self._http_client = RequestsClient(ssl_verify=ssl_verify, proxies=proxies)
 
         self.backend_swagger_client = SwaggerClient.from_url(
             '{}/api/backend/swagger.json'.format(self.api_address),

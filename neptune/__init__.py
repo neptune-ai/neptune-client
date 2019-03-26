@@ -26,7 +26,7 @@ project = None
 __lock = threading.RLock()
 
 
-def init(project_qualified_name=None, api_token=None):
+def init(project_qualified_name=None, api_token=None, proxies={}):
     if project_qualified_name is None:
         project_qualified_name = os.getenv(envs.PROJECT_ENV_NAME)
 
@@ -34,7 +34,7 @@ def init(project_qualified_name=None, api_token=None):
     with __lock:
         global session, project
 
-        session = Session(api_token=api_token)
+        session = Session(api_token=api_token, proxies=proxies)
 
         if project_qualified_name is None:
             raise MissingProjectQualifiedName()
