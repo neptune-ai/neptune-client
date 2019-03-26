@@ -84,7 +84,7 @@ class Client(object):
             ssl_verify = False
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
-        self._http_client.session.proxies.update(proxies)
+        self.update_proxies()
 
         self.backend_swagger_client = SwaggerClient.from_url(
             '{}/api/backend/swagger.json'.format(self.api_address),
@@ -110,6 +110,15 @@ class Client(object):
             self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
         )
         self._http_client.authenticator = self.authenticator
+
+    @with_api_exceptions_handler
+    def update_proxies(self):
+        try:
+            self._http_client.session.proxies.update(self.proxies)
+        except:
+            # TODO: change error type and info
+            raise ValueError(f"Error when using this proxies {proxies}")
+
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
