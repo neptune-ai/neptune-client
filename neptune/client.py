@@ -117,7 +117,7 @@ class Client(object):
             self._http_client.session.proxies.update(self.proxies)
         except:
             # TODO: change error type and info
-            raise ValueError(f"Error when using this proxies {proxies}")
+            raise ValueError("Error when using proxies {}".format(self.proxies))
 
 
     @with_api_exceptions_handler
