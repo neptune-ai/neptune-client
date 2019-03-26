@@ -1,6 +1,6 @@
 astroid==1.6.1
-bunch==1.0.1
 mock==2.0.0
+munch==2.3.2
 psutil==5.5.0
 pylint==1.9.3
 pylintfileheader==0.0.2
