@@ -84,7 +84,7 @@ class Client(object):
             ssl_verify = False
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
-        if proxies is not None:
+        if self.proxies is not None:
             self._update_proxies()
 
         self.backend_swagger_client = SwaggerClient.from_url(
