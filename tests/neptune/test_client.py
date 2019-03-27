@@ -42,16 +42,31 @@ class TestClient(unittest.TestCase):
         # and
         client = Client(api_address='some address', api_token='some token')
 
+        # and
+        some_object = SomeClass()
+
         # when
-        api_params = client._convert_to_api_parameters({'a': 'text', 'b': False, 'c': 1.23})
+        api_params = client._convert_to_api_parameters({
+            'a': 'text',
+            'b': False,
+            'c': 1.23,
+            'd': [123, 'abc', ['def']],
+            'e': some_object
+        })
 
         # then
         expected_api_params = {
             ApiParameter(id=some_uuid, name='a', parameterType='string', value='text'),
             ApiParameter(id=some_uuid, name='b', parameterType='string', value='False'),
-            ApiParameter(id=some_uuid, name='c', parameterType='double', value='1.23')
+            ApiParameter(id=some_uuid, name='c', parameterType='double', value='1.23'),
+            ApiParameter(id=some_uuid, name='d', parameterType='string', value="[123, 'abc', ['def']]"),
+            ApiParameter(id=some_uuid, name='e', parameterType='string', value=str(some_object))
         }
         self.assertEqual(expected_api_params, set(api_params))
+
+
+class SomeClass(object):
+    pass
 
 
 if __name__ == '__main__':
