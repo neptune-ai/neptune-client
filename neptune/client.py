@@ -74,16 +74,18 @@ def with_api_exceptions_handler(func):
 class Client(object):
 
     @with_api_exceptions_handler
-    def __init__(self, api_address, api_token):
+    def __init__(self, api_address, api_token, proxies=None):
         self.api_address = api_address
         self.api_token = api_token
-
+        self.proxies = proxies
         ssl_verify = True
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             urllib3.disable_warnings()
             ssl_verify = False
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
+        if self.proxies is not None:
+            self._update_proxies()
 
         self.backend_swagger_client = SwaggerClient.from_url(
             '{}/api/backend/swagger.json'.format(self.api_address),
@@ -665,6 +667,14 @@ class Client(object):
         )
 
         return session.send(session.prepare_request(request))
+
+
+    def _update_proxies(self):
+        try:
+            self._http_client.session.proxies.update(self.proxies)
+        except:
+            # TODO: change error type and info
+            raise ValueError("Error when using proxies {}".format(self.proxies))
 
 
 uuid_format = SwaggerFormat(

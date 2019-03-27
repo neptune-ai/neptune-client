@@ -53,11 +53,13 @@ class Session(object):
         >>> session = Session()
     """
 
-    def __init__(self, api_token=None):
+    def __init__(self, api_token=None, proxies=None):
         credentials = Credentials(api_token)
 
         self.credentials = credentials
-        self._client = Client(self.credentials.api_address, self.credentials.api_token)
+        self.proxies = proxies
+
+        self._client = Client(self.credentials.api_address, self.credentials.api_token, proxies)
 
     def get_project(self, project_qualified_name):
         """
