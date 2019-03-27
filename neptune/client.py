@@ -560,7 +560,7 @@ class Client(object):
 
         params = []
         for name, value in raw_params.items():
-            parameter_type = 'double' if is_float(value) else 'string'
+            parameter_type = 'double' if is_float(str(value)) else 'string'
 
             params.append(
                 Parameter(
