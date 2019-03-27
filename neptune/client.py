@@ -74,7 +74,7 @@ def with_api_exceptions_handler(func):
 class Client(object):
 
     @with_api_exceptions_handler
-    def __init__(self, api_address, api_token, proxies={}):
+    def __init__(self, api_address, api_token, proxies=None):
         self.api_address = api_address
         self.api_token = api_token
         self.proxies = proxies
@@ -84,7 +84,8 @@ class Client(object):
             ssl_verify = False
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
-        self.update_proxies()
+        if proxies is not None:
+            self._update_proxies()
 
         self.backend_swagger_client = SwaggerClient.from_url(
             '{}/api/backend/swagger.json'.format(self.api_address),
@@ -110,15 +111,6 @@ class Client(object):
             self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
         )
         self._http_client.authenticator = self.authenticator
-
-    @with_api_exceptions_handler
-    def update_proxies(self):
-        try:
-            self._http_client.session.proxies.update(self.proxies)
-        except:
-            # TODO: change error type and info
-            raise ValueError("Error when using proxies {}".format(self.proxies))
-
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
@@ -675,6 +667,14 @@ class Client(object):
         )
 
         return session.send(session.prepare_request(request))
+
+
+    def _update_proxies(self):
+        try:
+            self._http_client.session.proxies.update(self.proxies)
+        except:
+            # TODO: change error type and info
+            raise ValueError("Error when using proxies {}".format(self.proxies))
 
 
 uuid_format = SwaggerFormat(

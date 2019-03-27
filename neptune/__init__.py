@@ -26,7 +26,7 @@ project = None
 __lock = threading.RLock()
 
 
-def init(project_qualified_name=None, api_token=None, proxies={}):
+def init(project_qualified_name=None, api_token=None, proxies=None):
     if project_qualified_name is None:
         project_qualified_name = os.getenv(envs.PROJECT_ENV_NAME)
 

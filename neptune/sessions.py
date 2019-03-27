@@ -50,7 +50,7 @@ class Session(object):
         >>> session = Session()
     """
 
-    def __init__(self, api_token=None, proxies={}):
+    def __init__(self, api_token=None, proxies=None):
         credentials = Credentials(api_token)
 
         self.credentials = credentials
