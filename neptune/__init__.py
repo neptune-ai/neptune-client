@@ -18,6 +18,7 @@ import threading
 
 from neptune import envs, projects, experiments
 from neptune.exceptions import MissingProjectQualifiedName, Uninitialized
+from neptune.internal.utils.git_info import get_git_info
 from neptune.sessions import Session
 
 session = None
@@ -62,6 +63,7 @@ def create_experiment(name=None,
                       params=None,
                       properties=None,
                       tags=None,
+                      git_info=None,
                       upload_source_files=None,
                       abort_callback=None,
                       upload_stdout=True,
@@ -73,12 +75,21 @@ def create_experiment(name=None,
     global project
     if project is None:
         raise Uninitialized()
+
+    # pylint: disable=bare-except
+    if git_info is None:
+        try:
+            git_info = get_git_info()
+        except:
+            pass
+
     return project.create_experiment(
         name=name,
         description=description,
         params=params,
         properties=properties,
         tags=tags,
+        git_info=git_info,
         upload_source_files=upload_source_files,
         abort_callback=abort_callback,
         upload_stdout=upload_stdout,

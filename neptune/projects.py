@@ -18,6 +18,7 @@ import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
+from neptune.internal.utils.git_info import get_git_info
 from neptune.utils import as_list, map_keys
 
 
@@ -214,6 +215,7 @@ class Project(object):
                           params=None,
                           properties=None,
                           tags=None,
+                          git_info=None,
                           upload_source_files=None,
                           abort_callback=None,
                           upload_stdout=True,
@@ -242,6 +244,12 @@ class Project(object):
         if tags is None:
             tags = []
 
+        if git_info is None:
+            try:
+                git_info = get_git_info()
+            except: # pylint: disable=bare-except
+                pass
+
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         experiment = self.client.create_experiment(
@@ -251,6 +259,7 @@ class Project(object):
             params=params,
             properties=properties,
             tags=tags,
+            git_info=git_info,
             abortable=abortable,
             monitored=run_monitoring_thread
         )

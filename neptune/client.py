@@ -24,6 +24,7 @@ from itertools import groupby
 
 import urllib3
 import requests
+
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
     HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity, HTTPConflict
@@ -193,8 +194,28 @@ class Client(object):
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
-    def create_experiment(self, project, name, description, params, properties, tags, abortable, monitored):
+    def create_experiment(self, project, name, description, params, properties, tags, git_info, abortable, monitored):
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
+        GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
+        GitCommitDTO = self.backend_swagger_client.get_model('GitCommitDTO')
+
+        # pylint: disable=bare-except
+        git_info_data = None
+        try:
+            if git_info is not None:
+                git_info_data = GitInfoDTO(
+                    commit=GitCommitDTO(
+                        commitId=git_info.commit_id,
+                        message=git_info.message,
+                        authorName=git_info.author_name,
+                        authorEmail=git_info.author_email,
+                        commitDate=git_info.commit_date
+                    ),
+                    repositoryDirty=git_info.repository_dirty
+
+                )
+        except:
+            pass
 
         try:
             params = ExperimentCreationParams(
@@ -204,6 +225,7 @@ class Client(object):
                 parameters=self._convert_to_api_parameters(params),
                 properties=self._convert_to_api_properties(properties),
                 tags=tags,
+                gitInfo=git_info_data,
                 enqueueCommand="command",  # FIXME
                 entrypoint="",  # FIXME
                 execArgsTemplate="",  # FIXME,
