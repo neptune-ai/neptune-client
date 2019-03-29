@@ -33,8 +33,8 @@ class GitInfo(object):
 
 def get_git_info():
     try:
-        from dulwich.repo import Repo  # pylint:disable=wrong-import-position
-        from dulwich import porcelain  # pylint:disable=wrong-import-position
+        from dulwich.repo import Repo  # pylint:disable=wrong-import-position,import-error
+        from dulwich import porcelain  # pylint:disable=wrong-import-position,import-error
 
         def get_git_version():
             try:

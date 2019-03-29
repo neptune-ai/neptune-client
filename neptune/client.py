@@ -199,23 +199,18 @@ class Client(object):
         GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
         GitCommitDTO = self.backend_swagger_client.get_model('GitCommitDTO')
 
-        # pylint: disable=bare-except
         git_info_data = None
-        try:
-            if git_info is not None:
-                git_info_data = GitInfoDTO(
-                    commit=GitCommitDTO(
-                        commitId=git_info.commit_id,
-                        message=git_info.message,
-                        authorName=git_info.author_name,
-                        authorEmail=git_info.author_email,
-                        commitDate=git_info.commit_date
-                    ),
-                    repositoryDirty=git_info.repository_dirty
-
-                )
-        except:
-            pass
+        if git_info is not None:
+            git_info_data = GitInfoDTO(
+                commit=GitCommitDTO(
+                    commitId=git_info.commit_id,
+                    message=git_info.message,
+                    authorName=git_info.author_name,
+                    authorEmail=git_info.author_email,
+                    commitDate=git_info.commit_date
+                ),
+                repositoryDirty=git_info.repository_dirty
+            )
 
         try:
             params = ExperimentCreationParams(
