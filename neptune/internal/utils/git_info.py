@@ -18,6 +18,8 @@ import os
 import sys
 import subprocess
 
+from datetime import datetime
+
 
 class GitInfo(object):
     def __init__(self, commit_id, message, author_name, author_email, commit_date, repository_dirty):
@@ -31,11 +33,14 @@ class GitInfo(object):
 
 def get_git_info():
     try:
+        from dulwich.repo import Repo  # pylint:disable=wrong-import-position
+        from dulwich import porcelain  # pylint:disable=wrong-import-position
+
         def get_git_version():
             try:
                 with open(os.devnull, 'w') as devnull:
                     return subprocess.check_output(['git', '--version'], stderr=devnull).decode("utf-8").strip()
-            except: # pylint: disable=bare-except
+            except:  # pylint: disable=bare-except
                 return None
 
         if not get_git_version():
@@ -44,30 +49,30 @@ def get_git_info():
         if hasattr(sys, 'getwindowsversion') and r'GIT_PYTHON_GIT_EXECUTABLE' not in os.environ:
             os.environ[r'GIT_PYTHON_GIT_EXECUTABLE'] = os.popen("where git").read().strip()
 
-        try:
-            # pylint:disable=wrong-import-position,import-error
-            from dulwich.repo import Repo
-        except ImportError:
-            # pylint:disable=wrong-import-position,import-error
-            from git import Repo
+        repo = Repo.discover()
+        commit = repo[repo.head()]
 
+        status = porcelain.status()
+        dirty = bool([entry for k in status.staged for entry in status.staged[k]]
+                     + [entry for entry in status.unstaged])
 
-        repository_path = os.getcwd()
-
-        try:
-            repo = Repo(repository_path, search_parent_directories=True)
-        except: # pylint: disable=bare-except
-            return None
-
-        commit = repo.head.commit
+        author = commit.author
+        author_name = b''
+        author_email = b''
+        if author:
+            split = author.split(b'<')
+            if len(split) == 2:
+                author_name = split[0]
+                author_email = split[1][:-1]
 
         return GitInfo(
-            commit_id=commit.hexsha,
+            commit_id=commit.sha().hexdigest(),
             message=commit.message,
-            author_name=commit.author.name,
-            author_email=commit.author.email,
-            commit_date=commit.committed_datetime,
-            repository_dirty=repo.is_dirty()
+            author_name=author_name,
+            author_email=author_email,
+            commit_date=datetime.fromtimestamp(commit.commit_time + commit.commit_timezone),
+            repository_dirty=dirty
         )
-    except: # pylint: disable=bare-except
+
+    except:  # pylint: disable=bare-except
         return None

@@ -53,6 +53,11 @@ Just run:
 pip install neptune-client
 ```
 
+Optionaly, install additional dependencies to enable git integration
+```bash
+pip install dulwich>=0.19.11 --global-option="--pure"
+```
+
 #### Initialize Neptune
 Toward the top of your script insert the following snippet.
 
