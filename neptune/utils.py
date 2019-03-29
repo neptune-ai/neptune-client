@@ -102,6 +102,19 @@ def _split_df_by_stems(df):
     return channel_dfs, common_x
 
 
+def discover_git_repo_location():
+    """ Attempts to retrieve git repository location.
+
+    Returns:
+        string: path, that should be the best candidate to find git repository, or None
+    """
+    import __main__
+
+    if hasattr(__main__, '__file__'):
+        return os.path.dirname(os.path.abspath(__main__.__file__))
+    return None
+
+
 def get_git_info(repo_path=None):
     """ Attempts to retrieve git info from repository.
 
@@ -109,7 +122,7 @@ def get_git_info(repo_path=None):
 
     Args:
         repo_path(str): an optional path to the repository, from which to extract information.
-                Passing None will resolve the same repository as calling:
+                Passing None will resolve the same repository as calling git.Repo():
 
     Returns:
         neptune.GitInfo: An object representing information about chosen git repository

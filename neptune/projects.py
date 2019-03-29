@@ -14,12 +14,11 @@
 # limitations under the License.
 #
 
-import os
 import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
-from neptune.utils import as_list, map_keys, get_git_info
+from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
 
 
 class Project(object):
@@ -245,13 +244,7 @@ class Project(object):
             tags = []
 
         if git_info is None:
-            repo_path = None
-
-            import __main__
-            if hasattr(__main__, '__file__'):
-                repo_path = os.path.dirname(os.path.abspath(__main__.__file__))
-
-            git_info = get_git_info(repo_path)
+            git_info = get_git_info(discover_git_repo_location())
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
