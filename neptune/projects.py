@@ -18,7 +18,7 @@ import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
-from neptune.utils import as_list, map_keys
+from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
 
 
 class Project(object):
@@ -220,7 +220,8 @@ class Project(object):
                           upload_stderr=True,
                           send_hardware_metrics=True,
                           run_monitoring_thread=True,
-                          handle_uncaught_exceptions=True):
+                          handle_uncaught_exceptions=True,
+                          git_info=None):
         """
         Raises:
             `ExperimentValidationError`: When provided arguments are invalid.
@@ -242,6 +243,9 @@ class Project(object):
         if tags is None:
             tags = []
 
+        if git_info is None:
+            git_info = get_git_info(discover_git_repo_location())
+
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         experiment = self.client.create_experiment(
@@ -252,7 +256,8 @@ class Project(object):
             properties=properties,
             tags=tags,
             abortable=abortable,
-            monitored=run_monitoring_thread
+            monitored=run_monitoring_thread,
+            git_info=git_info
         )
 
         experiment.start(
