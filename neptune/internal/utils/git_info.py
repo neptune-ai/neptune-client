@@ -18,8 +18,6 @@ import os
 import sys
 import subprocess
 
-from datetime import datetime
-
 
 class GitInfo(object):
     def __init__(self, commit_id, message, author_name, author_email, commit_date, repository_dirty):
@@ -33,8 +31,7 @@ class GitInfo(object):
 
 def get_git_info():
     try:
-        from dulwich.repo import Repo  # pylint:disable=wrong-import-position,import-error
-        from dulwich import porcelain  # pylint:disable=wrong-import-position,import-error
+        import git
 
         def get_git_version():
             try:
@@ -49,29 +46,22 @@ def get_git_info():
         if hasattr(sys, 'getwindowsversion') and r'GIT_PYTHON_GIT_EXECUTABLE' not in os.environ:
             os.environ[r'GIT_PYTHON_GIT_EXECUTABLE'] = os.popen("where git").read().strip()
 
-        repo = Repo.discover()
-        commit = repo[repo.head()]
+        repository_path = os.getcwd()
 
-        status = porcelain.status()
-        dirty = bool([entry for k in status.staged for entry in status.staged[k]]
-                     + [entry for entry in status.unstaged])
+        try:
+            repo = git.Repo(repository_path, search_parent_directories=True)
+        except:  # pylint: disable=bare-except
+            return None
 
-        author = commit.author
-        author_name = b''
-        author_email = b''
-        if author:
-            split = author.split(b'<')
-            if len(split) == 2:
-                author_name = split[0]
-                author_email = split[1][:-1]
+        commit = repo.head.commit
 
         return GitInfo(
-            commit_id=commit.sha().hexdigest(),
+            commit_id=commit.hexsha,
             message=commit.message,
-            author_name=author_name,
-            author_email=author_email,
-            commit_date=datetime.fromtimestamp(commit.commit_time + commit.commit_timezone),
-            repository_dirty=dirty
+            author_name=commit.author.name,
+            author_email=commit.author.email,
+            commit_date=commit.committed_datetime,
+            repository_dirty=repo.is_dirty()
         )
 
     except:  # pylint: disable=bare-except

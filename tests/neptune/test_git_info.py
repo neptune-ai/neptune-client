@@ -22,21 +22,11 @@ from neptune.internal.utils.git_info import get_git_info
 class TestGitInfo(unittest.TestCase):
     def test_git_info(self):
         """This test gets current repository info, which is impossible to predict, but not null"""
-        # given
-        try:
-            from dulwich.repo import Repo # pylint:disable=unused-variable
-            supports_git_info = True
-        except ImportError:
-            supports_git_info = False
-
         # when
         git_info = get_git_info()
 
         # then
-        if supports_git_info:
-            self.assertNotEqual(git_info, None)
-        else:
-            self.assertEqual(git_info, None)
+        self.assertNotEqual(git_info, None)
 
 
 if __name__ == '__main__':
