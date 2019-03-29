@@ -16,7 +16,7 @@
 
 
 class GitInfo(object):
-    """ Holds information about a git repository and its state"""
+    """ Holds information about a git repository"""
     def __init__(self,
                  commit_id,
                  message="",
