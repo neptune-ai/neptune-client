@@ -21,6 +21,8 @@ import sys
 import numpy as np
 import pandas as pd
 
+from neptune.git_info import GitInfo
+
 IS_WINDOWS = hasattr(sys, 'getwindowsversion')
 
 
@@ -78,6 +80,7 @@ def in_docker():
     cgroup_file = '/proc/self/cgroup'
     return os.path.exists('./dockerenv') or (os.path.exists(cgroup_file) and file_contains(cgroup_file, text='docker'))
 
+
 def is_notebook():
     try:
         # pylint: disable=pointless-statement,undefined-variable
@@ -85,6 +88,7 @@ def is_notebook():
         return True
     except Exception:
         return False
+
 
 def _split_df_by_stems(df):
     channel_dfs, x_vals = [], []
@@ -96,3 +100,47 @@ def _split_df_by_stems(df):
         x_vals.extend(channel_df['x'].tolist())
     common_x = pd.DataFrame({'x': np.unique(x_vals)}, dtype=float)
     return channel_dfs, common_x
+
+
+def get_git_info(repo_path=None):
+    """ Attempts to retrieve git info from repository.
+
+    In case of failure, None will be returned
+
+    Args:
+        repo_path(str): an optional path to the repository, from which to extract information.
+                Passing None will resolve the same repository as calling:
+
+    Returns:
+        neptune.GitInfo: An object representing information about chosen git repository
+
+    Examples:
+        Get git info from current directory
+
+        >>> from neptune.utils import get_git_info
+        >>> git_info = get_git_info('.')
+
+        Create an experiment with git history
+
+        >>> from neptune.sessions import Session
+        >>> session = Session()
+        >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+        >>> experiment = project.create_experiment(git_info=git_info)
+    """
+    try:
+        import git
+
+        repo = git.Repo(repo_path, search_parent_directories=True)
+
+        commit = repo.head.commit
+
+        return GitInfo(
+            commit_id=commit.hexsha,
+            message=commit.message,
+            author_name=commit.author.name,
+            author_email=commit.author.email,
+            commit_date=commit.committed_datetime,
+            repository_dirty=repo.is_dirty()
+        )
+    except:  # pylint: disable=bare-except
+        return None

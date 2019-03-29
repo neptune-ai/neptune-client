@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 
+import os
 import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
-from neptune.internal.utils.git_info import get_git_info
-from neptune.utils import as_list, map_keys
+from neptune.utils import as_list, map_keys, get_git_info
 
 
 class Project(object):
@@ -215,14 +215,14 @@ class Project(object):
                           params=None,
                           properties=None,
                           tags=None,
-                          git_info=None,
                           upload_source_files=None,
                           abort_callback=None,
                           upload_stdout=True,
                           upload_stderr=True,
                           send_hardware_metrics=True,
                           run_monitoring_thread=True,
-                          handle_uncaught_exceptions=True):
+                          handle_uncaught_exceptions=True,
+                          git_info=None):
         """
         Raises:
             `ExperimentValidationError`: When provided arguments are invalid.
@@ -245,10 +245,13 @@ class Project(object):
             tags = []
 
         if git_info is None:
-            try:
-                git_info = get_git_info()
-            except: # pylint: disable=bare-except
-                pass
+            repo_path = None
+
+            import __main__
+            if hasattr(__main__, '__file__'):
+                repo_path = os.path.dirname(os.path.abspath(__main__.__file__))
+
+            git_info = get_git_info(repo_path)
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
@@ -259,9 +262,9 @@ class Project(object):
             params=params,
             properties=properties,
             tags=tags,
-            git_info=git_info,
             abortable=abortable,
-            monitored=run_monitoring_thread
+            monitored=run_monitoring_thread,
+            git_info=git_info
         )
 
         experiment.start(
