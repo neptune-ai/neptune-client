@@ -196,7 +196,17 @@ class Client(object):
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
 
     @with_api_exceptions_handler
-    def create_experiment(self, project, name, description, params, properties, tags, abortable, monitored, git_info):
+    def create_experiment(self,
+                          project,
+                          name,
+                          description,
+                          params,
+                          properties,
+                          tags,
+                          abortable,
+                          monitored,
+                          git_info,
+                          hostname):
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
         GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
         GitCommitDTO = self.backend_swagger_client.get_model('GitCommitDTO')
@@ -227,7 +237,8 @@ class Client(object):
                 entrypoint="",  # FIXME
                 execArgsTemplate="",  # FIXME,
                 abortable=abortable,
-                monitored=monitored
+                monitored=monitored,
+                hostname=hostname
             )
 
             api_experiment = self.backend_swagger_client.api.createExperiment(
