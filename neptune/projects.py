@@ -221,7 +221,8 @@ class Project(object):
                           send_hardware_metrics=True,
                           run_monitoring_thread=True,
                           handle_uncaught_exceptions=True,
-                          git_info=None):
+                          git_info=None,
+                          hostname=None):
         """
         Raises:
             `ExperimentValidationError`: When provided arguments are invalid.
@@ -257,7 +258,8 @@ class Project(object):
             tags=tags,
             abortable=abortable,
             monitored=run_monitoring_thread,
-            git_info=git_info
+            git_info=git_info,
+            hostname=hostname
         )
 
         experiment.start(
