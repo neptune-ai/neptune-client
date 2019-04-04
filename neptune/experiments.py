@@ -337,7 +337,7 @@ class Experiment(object):
 
         """
         experiment = self._client.get_experiment(self.internal_id)
-        return dict((p.name, p.value) for p in experiment.parameters)
+        return dict((p.name, self._convert_parameter_value(p.value, p.parameterType)) for p in experiment.parameters)
 
     def get_properties(self):
         """Retrieve user-defined properties for this experiment.
@@ -559,6 +559,13 @@ class Experiment(object):
 
     def __ne__(self, o):
         return not self.__eq__(o)
+
+    @staticmethod
+    def _convert_parameter_value(value, parameter_type):
+        if parameter_type == 'double':
+            return int(value)
+        else:
+            return value
 
     @staticmethod
     def _get_valid_x_y(x, y):

@@ -22,8 +22,9 @@ from functools import partial
 from io import StringIO
 from itertools import groupby
 
-import urllib3
 import requests
+import six
+import urllib3
 
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
@@ -590,7 +591,7 @@ class Client(object):
 
         params = []
         for name, value in raw_params.items():
-            parameter_type = 'double' if is_float(str(value)) else 'string'
+            parameter_type = 'double' if is_float(str(value)) and not isinstance(value, six.string_types) else 'string'
 
             params.append(
                 Parameter(
