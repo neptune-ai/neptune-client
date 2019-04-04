@@ -563,7 +563,7 @@ class Experiment(object):
     @staticmethod
     def _convert_parameter_value(value, parameter_type):
         if parameter_type == 'double':
-            return int(value)
+            return float(value)
         else:
             return value
 
