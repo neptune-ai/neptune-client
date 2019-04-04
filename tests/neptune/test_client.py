@@ -47,20 +47,22 @@ class TestClient(unittest.TestCase):
 
         # when
         api_params = client._convert_to_api_parameters({
-            'a': 'text',
-            'b': False,
-            'c': 1.23,
-            'd': [123, 'abc', ['def']],
-            'e': some_object
+            'str': 'text',
+            'bool': False,
+            'float': 1.23,
+            'int': int(12),
+            'list': [123, 'abc', ['def']],
+            'obj': some_object
         })
 
         # then
         expected_api_params = {
-            ApiParameter(id=some_uuid, name='a', parameterType='string', value='text'),
-            ApiParameter(id=some_uuid, name='b', parameterType='string', value='False'),
-            ApiParameter(id=some_uuid, name='c', parameterType='double', value='1.23'),
-            ApiParameter(id=some_uuid, name='d', parameterType='string', value="[123, 'abc', ['def']]"),
-            ApiParameter(id=some_uuid, name='e', parameterType='string', value=str(some_object))
+            ApiParameter(id=some_uuid, name='str', parameterType='string', value='text'),
+            ApiParameter(id=some_uuid, name='bool', parameterType='string', value='False'),
+            ApiParameter(id=some_uuid, name='float', parameterType='double', value='1.23'),
+            ApiParameter(id=some_uuid, name='int', parameterType='double', value='12'),
+            ApiParameter(id=some_uuid, name='list', parameterType='string', value="[123, 'abc', ['def']]"),
+            ApiParameter(id=some_uuid, name='obj', parameterType='string', value=str(some_object))
         }
         self.assertEqual(expected_api_params, set(api_params))
 
