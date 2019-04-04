@@ -275,7 +275,7 @@ class Experiment(object):
         if not os.path.exists(artifact):
             raise FileNotFound(artifact)
 
-        upload_to_storage(files_list=[(os.path.abspath(artifact), artifact)],
+        upload_to_storage(files_list=[(os.path.abspath(artifact), os.path.basename(artifact))],
                           upload_api_fun=self._client.upload_experiment_output,
                           upload_tar_api_fun=self._client.extract_experiment_output,
                           experiment=self)
