@@ -168,10 +168,17 @@ class Experiment(object):
     def get_tags(self):
         return self._client.get_experiment(self._internal_id).tags
 
-    def append_tag(self, tag):
+    def append_tag(self, tag, *tags):
+        if isinstance(tag, list):
+            tags_list = tag
+        else:
+            tags_list = [tag] + list(tags)
         self._client.update_tags(experiment=self,
-                                 tags_to_add=[tag],
+                                 tags_to_add=tags_list,
                                  tags_to_delete=[])
+
+    def append_tags(self, tag, *tags):
+        self.append_tag(tag, *tags)
 
     def remove_tag(self, tag):
         self._client.update_tags(experiment=self,

@@ -21,7 +21,7 @@ from io import StringIO
 
 import mock
 import pandas as pd
-from mock import MagicMock
+from mock import call, MagicMock
 from munch import Munch
 from pandas.util.testing import assert_frame_equal
 
@@ -100,6 +100,37 @@ class TestExperiment(unittest.TestCase):
 
         # then
         channels_values_sender.send.assert_called_with('errors', ChannelType.IMAGE.value, channel_value)
+
+    def test_append_tags(self):
+        # given
+        client = mock.MagicMock()
+        experiment = Experiment(client, an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+
+        #and
+        def build_call(tags_list):
+            return call(
+                experiment=experiment,
+                tags_to_add=tags_list,
+                tags_to_delete=[]
+            )
+
+        # when
+        experiment.append_tag('tag')
+        experiment.append_tag(['tag1', 'tag2', 'tag3'])
+        experiment.append_tag('tag1', 'tag2', 'tag3')
+        experiment.append_tags('tag')
+        experiment.append_tags(['tag1', 'tag2', 'tag3'])
+        experiment.append_tags('tag1', 'tag2', 'tag3')
+
+        # then
+        client.update_tags.assert_has_calls([
+            build_call(['tag']),
+            build_call(['tag1', 'tag2', 'tag3']),
+            build_call(['tag1', 'tag2', 'tag3']),
+            build_call(['tag']),
+            build_call(['tag1', 'tag2', 'tag3']),
+            build_call(['tag1', 'tag2', 'tag3'])
+        ])
 
     def test_get_numeric_channels_values(self):
         # when
