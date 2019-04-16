@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+from platform import node as get_hostname
+
 import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
@@ -246,6 +248,9 @@ class Project(object):
 
         if git_info is None:
             git_info = get_git_info(discover_git_repo_location())
+
+        if hostname is None:
+            hostname = get_hostname()
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
