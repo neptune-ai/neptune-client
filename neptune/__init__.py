@@ -19,11 +19,16 @@ import threading
 from neptune import envs, projects, experiments
 from neptune.exceptions import MissingProjectQualifiedName, Uninitialized
 from neptune.sessions import Session
+from ._version import get_versions
+
+__version__ = get_versions()['version']
+del get_versions
 
 session = None
 project = None
 
 __lock = threading.RLock()
+
 
 
 def init(project_qualified_name=None, api_token=None, proxies=None):

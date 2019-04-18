@@ -12,7 +12,6 @@ script:
 - python -m pylint -j 0 -f parseable neptune tests
 - tox
 deploy:
-  distributions: git_version sdist
   provider: pypi
   user: neptune-deployer
   password:
