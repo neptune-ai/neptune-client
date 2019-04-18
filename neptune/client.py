@@ -114,6 +114,10 @@ class Client(object):
         )
         self._http_client.authenticator = self.authenticator
 
+        # This is not a top-level import because of circular dependencies
+        from neptune import __version__
+        self.client_lib_version = __version__
+
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
@@ -242,9 +246,11 @@ class Client(object):
                 hostname=hostname
             )
 
-            api_experiment = self.backend_swagger_client.api.createExperiment(
-                experimentCreationParams=params
-            ).response().result
+            kwargs = {
+                'experimentCreationParams': params,
+                'X-Neptune-CliVersion': self.client_lib_version
+            }
+            api_experiment = self.backend_swagger_client.api.createExperiment(**kwargs).response().result
 
             return self._convert_to_experiment(api_experiment)
         except HTTPNotFound:
