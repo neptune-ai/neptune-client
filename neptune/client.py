@@ -126,8 +126,8 @@ class Client(object):
     @with_api_exceptions_handler
     def get_projects(self, namespace):
         try:
-            r = self.backend_swagger_client.api.listProjectsInOrganization(
-                organizationName=namespace
+            r = self.backend_swagger_client.api.listProjects(
+                organizationIdentifier=namespace
             ).response()
             return r.result.entries
         except HTTPNotFound:
