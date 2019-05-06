@@ -16,15 +16,13 @@
 
 from platform import node as get_hostname
 
-import os
-
 import click
 
 import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
-from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
+from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, validate_notebook_path
 
 
 class Project(object):
@@ -297,14 +295,7 @@ class Project(object):
         )
 
     def create_notebook(self, file_path):
-        if not file_path.endswith(".ipynb"):
-            raise RuntimeError("'{}' is not a correct notebook file. Should end with '.ipynb'.".format(file_path))
-
-        if not os.path.exists(file_path):
-            raise RuntimeError("File '{}' does not exist.".format(file_path))
-
-        if not os.path.isfile(file_path):
-            raise RuntimeError("'{}' is not a file.".format(file_path))
+        validate_notebook_path(file_path)
 
         notebook = self.client.create_notebook(self)
         notebook.add_checkpoint(file_path)

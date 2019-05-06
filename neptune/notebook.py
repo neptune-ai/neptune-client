@@ -16,6 +16,8 @@
 
 import os
 
+from neptune.utils import validate_notebook_path
+
 
 class Notebook(object):
     """It contains all the information about a Neptune Notebook
@@ -68,14 +70,7 @@ class Notebook(object):
         return self._owner
 
     def add_checkpoint(self, file_path):
-        if not file_path.endswith(".ipynb"):
-            raise RuntimeError("'{}' is not a correct notebook file. Should end with '.ipynb'.".format(file_path))
-
-        if not os.path.exists(file_path):
-            raise RuntimeError("File '{}' does not exist.".format(file_path))
-
-        if not os.path.isfile(file_path):
-            raise RuntimeError("'{}' is not a file.".format(file_path))
+        validate_notebook_path(file_path)
 
         with open(file_path) as f:
             return self._client.create_checkpoint(self.id, os.path.abspath(file_path), f)

@@ -45,6 +45,17 @@ def as_list(value):
         return [value]
 
 
+def validate_notebook_path(path):
+    if not path.endswith(".ipynb"):
+        raise RuntimeError("'{}' is not a correct notebook file. Should end with '.ipynb'.".format(path))
+
+    if not os.path.exists(path):
+        raise RuntimeError("File '{}' does not exist.".format(path))
+
+    if not os.path.isfile(path):
+        raise RuntimeError("'{}' is not a file.".format(path))
+
+
 def align_channels_on_x(dataframe):
     channel_dfs, common_x = _split_df_by_stems(dataframe)
     return merge_dataframes([common_x] + channel_dfs, on='x', how='outer')
