@@ -42,7 +42,10 @@ class Experiment(object):
 
     Args:
         client(`neptune.Client'): Client object
-        leaderboard_entry(`neptune.model.LeaderboardEntry`): LeaderboardEntry object
+        _id(`str`)
+        internal_id(`str`): UUID
+        project_full_id(`str`)
+
 
     Examples:
         Instantiate a session.

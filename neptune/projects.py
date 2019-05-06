@@ -16,6 +16,8 @@
 
 from platform import node as get_hostname
 
+import os
+
 import click
 
 import pandas as pd
@@ -293,6 +295,20 @@ class Project(object):
             project=self.name,
             exp_id=experiment.id
         )
+
+    def create_notebook(self, file_path):
+        if not file_path.endswith(".ipynb"):
+            raise RuntimeError("'{}' is not a correct notebook file. Should end with '.ipynb'.".format(file_path))
+
+        if not os.path.exists(file_path):
+            raise RuntimeError("File '{}' does not exist.".format(file_path))
+
+        if not os.path.isfile(file_path):
+            raise RuntimeError("'{}' is not a file.".format(file_path))
+
+        notebook = self.client.create_notebook(self)
+        notebook.add_checkpoint(file_path)
+        return notebook
 
     @property
     def full_id(self):
