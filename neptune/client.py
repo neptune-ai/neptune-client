@@ -273,6 +273,43 @@ class Client(object):
                 raise
 
     @with_api_exceptions_handler
+    def get_notebook(self, project, notebook_id):
+        try:
+            api_notebook_list = self.leaderboard_swagger_client.api.listNotebooks(
+                projectIdentifier=project.internal_id,
+                id=[notebook_id]
+            ).response().result
+
+            if not api_notebook_list.entries:
+                raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+            api_notebook = api_notebook_list.entries[0]
+
+            return Notebook(
+                client=self,
+                project=project,
+                _id=api_notebook.id,
+                owner=api_notebook.owner
+            )
+        except HTTPNotFound:
+            raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+    def get_last_checkpoint(self, project, notebook_id):
+        try:
+            api_checkpoint_list = self.leaderboard_swagger_client.api.listCheckpoints(
+                notebookId=notebook_id,
+                offset=0,
+                limit=1
+            ).response().result
+
+            if not api_checkpoint_list.entries:
+                raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+            return api_checkpoint_list.entries[0]
+        except HTTPNotFound:
+            raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+    @with_api_exceptions_handler
     def create_notebook(self, project):
         try:
             api_notebook = self.leaderboard_swagger_client.api.createNotebook(
@@ -281,6 +318,7 @@ class Client(object):
 
             return Notebook(
                 client=self,
+                project=project,
                 _id=api_notebook.id,
                 owner=api_notebook.owner
             )

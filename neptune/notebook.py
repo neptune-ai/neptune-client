@@ -23,7 +23,8 @@ class Notebook(object):
     """It contains all the information about a Neptune Notebook
 
     Args:
-        client(`neptune.Client'): Client object
+        client(`neptune.Client`): Client object
+        project(`neptune.Project`):
         _id(`str`): Notebook uuid
         owner(`str`):
 
@@ -39,8 +40,9 @@ class Notebook(object):
         >>> notebook = project.create_notebook('file.ipynb')
     """
 
-    def __init__(self, client, _id, owner):
+    def __init__(self, client, project, _id, owner):
         self._client = client
+        self._project = project
         self._id = _id
         self._owner = owner
 
@@ -74,3 +76,9 @@ class Notebook(object):
 
         with open(file_path) as f:
             return self._client.create_checkpoint(self.id, os.path.abspath(file_path), f)
+
+    def get_path(self):
+        return self._client.get_last_checkpoint(self._project, self._id).path
+
+    def get_name(self):
+        return self._client.get_last_checkpoint(self._project, self._id).name

@@ -22,7 +22,7 @@ import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
-from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, validate_notebook_path
+from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
 
 
 class Project(object):
@@ -294,12 +294,12 @@ class Project(object):
             exp_id=experiment.id
         )
 
-    def create_notebook(self, file_path):
-        validate_notebook_path(file_path)
-
+    def create_notebook(self):
         notebook = self.client.create_notebook(self)
-        notebook.add_checkpoint(file_path)
         return notebook
+
+    def get_notebook(self, notebook_id):
+        return self.client.get_notebook(project=self, notebook_id=notebook_id)
 
     @property
     def full_id(self):

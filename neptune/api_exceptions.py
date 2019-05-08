@@ -62,8 +62,13 @@ class ProjectNotFound(NeptuneApiException):
 
 
 class NotebookNotFound(NeptuneApiException):
-    def __init__(self, notebook_id):
-        super(NotebookNotFound, self).__init__("Notebook '{}' not found.".format(notebook_id))
+    def __init__(self, notebook_id, project=None):
+        if project:
+            super(NotebookNotFound, self).__init__(
+                "Notebook '{}' not found in project '{}'.".format(notebook_id, project))
+        else:
+            super(NotebookNotFound, self).__init__(
+                "Notebook '{}' not found.".format(notebook_id))
 
 
 class ExperimentNotFound(NeptuneApiException):
