@@ -25,7 +25,7 @@ from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ExperimentAlreadyFinished
 from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext
-from neptune.internal.channels.channels import ChannelValue, ChannelType
+from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.storage.storage_utils import upload_to_storage
@@ -227,6 +227,35 @@ class Experiment(object):
                 ch.y = None
             channels[ch.name] = ch
         return channels
+
+    def get_system_channels(self):
+        """Retrieve all system channel names along with their representations for this experiment.
+
+        Returns:
+            dict: A dictionary mapping a channel name to channel.
+
+        Examples:
+            Instantiate a session.
+
+            >>> from neptune.sessions import Session
+            >>> session = Session()
+
+            Fetch a project and a list of experiments.
+
+            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
+
+            Get an experiment instance.
+
+            >>> experiment = experiments[0]
+
+            Get experiment channels.
+
+            >>> experiment.get_system_channels()
+
+        """
+        channels = self._client.get_system_channels(self)
+        return dict((ch.name, ch) for ch in channels)
 
     def upload_source_files(self, source_files):
         """
@@ -600,17 +629,27 @@ class Experiment(object):
             channels_by_name[channel.name] = channel
         return channels_by_name
 
-    def _get_channel(self, channel_name, channel_type):
-        channel = self._find_channel(channel_name)
+    def _get_channel(self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
+        channel = self._find_channel(channel_name, channel_namespace)
         if channel is None:
-            channel = self._create_channel(channel_name, channel_type)
+            channel = self._create_channel(channel_name, channel_type, channel_namespace)
         return channel
 
-    def _find_channel(self, channel_name):
-        return self.get_channels().get(channel_name, None)
+    def _find_channel(self, channel_name, channel_namespace):
+        if channel_namespace == ChannelNamespace.USER:
+            return self.get_channels().get(channel_name, None)
+        elif channel_namespace == ChannelNamespace.SYSTEM:
+            return self.get_system_channels().get(channel_name, None)
+        else:
+            raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
 
-    def _create_channel(self, channel_name, channel_type):
-        return self._client.create_channel(self, channel_name, channel_type)
+    def _create_channel(self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
+        if channel_namespace == ChannelNamespace.USER:
+            return self._client.create_channel(self, channel_name, channel_type)
+        elif channel_namespace == ChannelNamespace.SYSTEM:
+            return self._client.create_system_channel(self, channel_name, channel_type)
+        else:
+            raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
 
 
 _experiments_stack = []

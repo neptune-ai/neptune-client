@@ -379,6 +379,42 @@ class Client(object):
             raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
 
     @with_api_exceptions_handler
+    def create_system_channel(self, experiment, name, channel_type):
+        ChannelParams = self.backend_swagger_client.get_model('ChannelParams')
+
+        try:
+            params = ChannelParams(
+                name=name,
+                channelType=channel_type
+            )
+
+            channel = self.backend_swagger_client.api.createSystemChannel(
+                experimentId=experiment.internal_id,
+                channelToCreate=params
+            ).response().result
+
+            return self._convert_channel_to_channel_with_last_value(channel)
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
+        except HTTPConflict:
+            raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
+
+    @with_api_exceptions_handler
+    def get_system_channels(self, experiment):
+        try:
+            channels = self.backend_swagger_client.api.getSystemChannels(
+                experimentId=experiment.internal_id,
+            ).response().result
+
+            return channels
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
+
+    @with_api_exceptions_handler
     def send_channels_values(self, experiment, channels_with_values):
         InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
         Point = self.backend_swagger_client.get_model('Point')
