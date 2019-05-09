@@ -17,7 +17,7 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'neptune-client-docs'
+project = 'Neptune client'
 copyright = '2019, team neptune.ml'
 author = 'team neptune.ml'
 
