@@ -16,6 +16,8 @@
 
 from platform import node as get_hostname
 
+import click
+
 import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
@@ -279,7 +281,8 @@ class Project(object):
 
         push_new_experiment(experiment)
 
-        print("{short_id}\n{link}".format(short_id=experiment.id, link=self._get_experiment_link(experiment)))
+        click.echo(str(experiment.id))
+        click.echo(self._get_experiment_link(experiment))
 
         return experiment
 
