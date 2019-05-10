@@ -279,7 +279,17 @@ class Project(object):
 
         push_new_experiment(experiment)
 
+        print("{short_id}\n{link}".format(short_id=experiment.id, link=self._get_experiment_link(experiment)))
+
         return experiment
+
+    def _get_experiment_link(self, experiment):
+        return "{base_url}/{namespace}/{project}/e/{exp_id}".format(
+            base_url=self.client.api_address,
+            namespace=self.namespace,
+            project=self.name,
+            exp_id=experiment.id
+        )
 
     @property
     def full_id(self):
