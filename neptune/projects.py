@@ -16,6 +16,8 @@
 
 from platform import node as get_hostname
 
+import click
+
 import pandas as pd
 
 from neptune.experiments import Experiment, push_new_experiment
@@ -279,7 +281,18 @@ class Project(object):
 
         push_new_experiment(experiment)
 
+        click.echo(str(experiment.id))
+        click.echo(self._get_experiment_link(experiment))
+
         return experiment
+
+    def _get_experiment_link(self, experiment):
+        return "{base_url}/{namespace}/{project}/e/{exp_id}".format(
+            base_url=self.client.api_address,
+            namespace=self.namespace,
+            project=self.name,
+            exp_id=experiment.id
+        )
 
     @property
     def full_id(self):
