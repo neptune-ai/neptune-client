@@ -42,6 +42,7 @@ class Experiment(object):
 
     Args:
         client(`neptune.Client'): Client object
+        project(`neptune.Project`)
         _id(`str`)
         internal_id(`str`): UUID
         project_full_id(`str`)
@@ -68,8 +69,9 @@ class Experiment(object):
         Column sorting
     """
 
-    def __init__(self, client, _id, internal_id, project_full_id):
+    def __init__(self, client, project, _id, internal_id, project_full_id):
         self._client = client
+        self._project = project
         self._id = _id
         self._internal_id = internal_id
         self._project_full_id = project_full_id
@@ -318,6 +320,12 @@ class Experiment(object):
                           upload_api_fun=self._client.upload_experiment_output,
                           upload_tar_api_fun=self._client.extract_experiment_output,
                           experiment=self)
+
+    def download_artifact(self, filename, destination_dir):
+        path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=filename)
+        destination_path = "{dir}/{file}".format(dir=destination_dir, file=filename)
+        os.makedirs(destination_dir)
+        self._client.download_data(self._project, path, destination_path)
 
     def send_graph(self, graph_id, value):
         """Upload a tensorflow graph for this experiment.

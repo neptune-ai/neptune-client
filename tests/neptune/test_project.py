@@ -68,7 +68,7 @@ class TestProject(unittest.TestCase):
             min_running_time=None)
 
         # and
-        expected_experiments = [Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id)
+        expected_experiments = [Experiment(self.client, MagicMock(), entry.id, entry.internal_id, entry.project_full_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
@@ -96,7 +96,7 @@ class TestProject(unittest.TestCase):
         self.client.get_leaderboard_entries.assert_called_once_with(**expected_params)
 
         # and
-        expected_experiments = [Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id)
+        expected_experiments = [Experiment(self.client, MagicMock(), entry.id, entry.internal_id, entry.project_full_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
@@ -124,7 +124,7 @@ class TestProject(unittest.TestCase):
         self.client.get_leaderboard_entries.assert_called_once_with(**expected_params)
 
         # and
-        expected_experiments = [Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id)
+        expected_experiments = [Experiment(self.client, MagicMock(), entry.id, entry.internal_id, entry.project_full_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 

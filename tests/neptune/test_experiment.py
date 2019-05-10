@@ -39,7 +39,13 @@ class TestExperiment(unittest.TestCase):
     def test_send_metric(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        experiment = Experiment(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            an_experiment_id(),
+            a_uuid_string(),
+            a_project_qualified_name()
+        )
         channel_value = ChannelValue(
             x=random.randint(0, 100),
             y=dict(numeric_value=random.randint(0, 100)),
@@ -57,7 +63,13 @@ class TestExperiment(unittest.TestCase):
     def test_send_text(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        experiment = Experiment(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            an_experiment_id(),
+            a_uuid_string(),
+            a_project_qualified_name()
+        )
         channel_value = ChannelValue(
             x=random.randint(0, 100),
             y=dict(text_value=a_string()),
@@ -76,7 +88,13 @@ class TestExperiment(unittest.TestCase):
     def test_send_image(self, ChannelsValuesSender, content):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        experiment = Experiment(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            an_experiment_id(),
+            a_uuid_string(),
+            a_project_qualified_name()
+        )
         image_value = dict(
             name=a_string(),
             description=a_string(),
@@ -104,7 +122,13 @@ class TestExperiment(unittest.TestCase):
     def test_append_tags(self):
         # given
         client = mock.MagicMock()
-        experiment = Experiment(client, an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        experiment = Experiment(
+            client,
+            mock.MagicMock(),
+            an_experiment_id(),
+            a_uuid_string(),
+            a_project_qualified_name()
+        )
 
         #and
         def build_call(tags_list):
@@ -148,6 +172,7 @@ class TestExperiment(unittest.TestCase):
         # then
         experiment = Experiment(
             client=client,
+            project=mock.MagicMock(),
             _id=a_string(),
             internal_id=a_uuid_string(),
             project_full_id="test/sandbox"

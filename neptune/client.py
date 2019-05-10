@@ -256,7 +256,7 @@ class Client(object):
             }
             api_experiment = self.backend_swagger_client.api.createExperiment(**kwargs).response().result
 
-            return self._convert_to_experiment(api_experiment)
+            return self._convert_to_experiment(api_experiment, project)
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
         except HTTPBadRequest as e:
@@ -698,6 +698,27 @@ class Client(object):
             else:
                 raise
 
+    @with_api_exceptions_handler
+    def download_data(self, project, path, destination):
+        with self._download_raw_data(
+            api_method=self.backend_swagger_client.api.downloadData,
+            headers={"Accept": "application/octet-stream"},
+            path_params={},
+            query_params={
+                "projectId": project.internal_id,
+                "path": path
+            }
+        ) as response:
+            if response.status_code == NOT_FOUND:
+                raise ProjectNotFound(project_identifier=project.full_id)
+            elif response.status_code != OK:
+                raise RuntimeError("Http status code {}: {}".format(response.status_code, response.reason))
+
+            with open(destination, "wb") as f:
+                for chunk in response.iter_content(chunk_size=10*1024*1024):
+                    if chunk:
+                        f.write(chunk)
+
     @staticmethod
     def _get_all_items(get_portion, step):
         items = []
@@ -737,8 +758,9 @@ class Client(object):
             ) for key, value in raw_properties.items()
         ]
 
-    def _convert_to_experiment(self, api_experiment):
+    def _convert_to_experiment(self, api_experiment, project):
         return Experiment(client=self,
+                          project=project,
                           _id=api_experiment.shortId,
                           internal_id=api_experiment.id,
                           project_full_id='{}/{}'.format(api_experiment.organizationName, api_experiment.projectName))
@@ -805,6 +827,27 @@ class Client(object):
         )
 
         return session.send(session.prepare_request(request))
+
+    def _download_raw_data(self, api_method, headers, path_params, query_params):
+        url = self.api_address + api_method.operation.path_name + "?"
+
+        for key, val in path_params.iteritems():
+            url = url.replace("{" + key + "}", val)
+
+        for key, val in query_params.iteritems():
+            url = url + key + "=" + val + "&"
+
+        session = self._http_client.session
+
+        request = self.authenticator.apply(
+            requests.Request(
+                method='GET',
+                url=url,
+                headers=headers
+            )
+        )
+
+        return session.send(session.prepare_request(request), stream=True)
 
     def _upload_tar_data(self, experiment, api_method, data):
         url = self.api_address + api_method.operation.path_name
