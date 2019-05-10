@@ -31,7 +31,8 @@ class TestChannelWriter(unittest.TestCase):
 
         writer.write('some\ndata')
 
-        experiment.send_text.assert_called_once()
+        # pylint: disable=protected-access
+        experiment._channels_values_sender.send.assert_called_once()
 
 
 if __name__ == '__main__':

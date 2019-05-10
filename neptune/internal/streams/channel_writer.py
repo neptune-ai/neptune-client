@@ -19,14 +19,17 @@ from __future__ import unicode_literals
 import re
 import time
 
+from neptune.internal.channels.channels import ChannelNamespace, ChannelValue, ChannelType
+
 
 class ChannelWriter(object):
     __SPLIT_PATTERN = re.compile(r'[\n\r]{1,2}')
 
-    def __init__(self, experiment, channel_name):
+    def __init__(self, experiment, channel_name, channel_namespace=ChannelNamespace.USER):
         self.time_started_ms = time.time() * 1000
         self._experiment = experiment
         self._channel_name = channel_name
+        self._channel_namespace = channel_namespace
         self._data = None
 
     def write(self, data):
@@ -36,10 +39,17 @@ class ChannelWriter(object):
             self._data += data
         lines = self.__SPLIT_PATTERN.split(self._data)
         for line in lines[:-1]:
-            self._experiment.send_text(
-                channel_name=self._channel_name,
+            value = ChannelValue(
                 x=time.time() * 1000 - self.time_started_ms,
-                y=str(line)
+                y=dict(text_value=str(line)),
+                ts=None
+            )
+            # pylint: disable=protected-access
+            self._experiment._channels_values_sender.send(
+                channel_name=self._channel_name,
+                channel_type=ChannelType.TEXT.value,
+                channel_value=value,
+                channel_namespace=self._channel_namespace
             )
 
         self._data = lines[-1]
