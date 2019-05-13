@@ -10,8 +10,8 @@ Before we start
 * Install `psutil <https://psutil.readthedocs.io/en/latest/>`_ to see hardware monitoring charts (they are pretty useful)
 * It this example we train simple `Keras <https://keras.io/>`_ model (with `TensorFlow <https://www.tensorflow.org/>`_ backend) on `MNIST dataset <http://yann.lecun.com/exdb/mnist/>`_. Install these libraries, instructions are here: https://www.tensorflow.org/install
 
-Python code
------------
+Code example
+------------
 
 This example uses `Get Started with TensorFlow <https://www.tensorflow.org/tutorials#get-started-with-tensorflow>`_ as a base. Run it as regular Python code (in terminal: ``python example.py``) and see your experiment at the top of `experiments view <https://ui.neptune.ml/o/shared/org/onboarding/experiments>`_. Like in the previous tutorial, we use *API token* of the public (yet anonymous) user `Neptuner <https://ui.neptune.ml/o/shared/neptuner>`_.
 
@@ -119,10 +119,10 @@ This example uses `Get Started with TensorFlow <https://www.tensorflow.org/tutor
 
 Run this code and observe results `online <https://ui.neptune.ml/o/shared/org/onboarding/experiments>`_.
 
-Neptune Session
+Session
 ---------------
 
-Neptune experiment
+Experiment
 ------------------
 
 Sending logs
