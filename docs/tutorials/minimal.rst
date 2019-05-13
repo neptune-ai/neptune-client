@@ -61,9 +61,14 @@ Run script below as regular Python code (in terminal: ``python start.py``) and s
 
     neptune.stop()
 
-You just tracked your first Neptune experiment and checked results online.
+Congrats! You just ran your first Neptune experiment and checked results online.
+
+.. note:: What did you just learn? Few concepts:
+
+    * how to run Neptune experiment
+    * how to track it online
+    * how to use basic Neptune client features, like *create_experiment()* and *send_metric()*
 
 What next?
 ----------
-
 Go to Larger-example to learn more about `Neptune client <https://github.com/neptune-ml/neptune-client>`_ and its capabilities.
