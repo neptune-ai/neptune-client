@@ -15,7 +15,7 @@ What is Neptune?
 What is Neptune client?
 =======================
 
-`Neptune client <https://github.com/neptune-ml/neptune-client>`_ is open-source, Python library that allows you to communicate with Neptune platform directly from your code.
+`Neptune client <https://github.com/neptune-ml/neptune-client>`_ is open source Python library that allows Users to integrate their Python scripts with Neptune.
 
 .. note:: Make sure to `register to Neptune <https://neptune.ml/register>`_, to use it.
 
