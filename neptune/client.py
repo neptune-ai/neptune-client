@@ -20,7 +20,7 @@ import os
 import uuid
 from functools import partial
 
-from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY, OK
+from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY
 from io import StringIO
 from itertools import groupby
 
@@ -37,6 +37,7 @@ from bravado_core.formatter import SwaggerFormat
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
     StorageLimitReached, Unauthorized, ChannelAlreadyExists, ChannelsValuesSendBatchError, SSLError, NotebookNotFound
+from neptune.checkpoint import Checkpoint
 from neptune.experiments import Experiment
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -305,7 +306,8 @@ class Client(object):
             if not api_checkpoint_list.entries:
                 raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
 
-            return api_checkpoint_list.entries[0]
+            checkpoint = api_checkpoint_list.entries[0]
+            return Checkpoint(checkpoint.id, checkpoint.name, checkpoint.path)
         except HTTPNotFound:
             raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
 
@@ -327,24 +329,22 @@ class Client(object):
 
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id, jupyter_path, _file):
-        response = self._upload_raw_data(
-            api_method=self.leaderboard_swagger_client.api.createCheckpoint,
-            data=_file,
-            headers={"Content-Type": "application/octet-stream"},
-            path_params={
-                "notebookId": notebook_id
-            },
-            query_params={
-                "jupyterPath": jupyter_path
-            }
-        )
-
-        if response.status_code == NOT_FOUND:
-            raise NotebookNotFound(notebook_id=notebook_id)
-        elif response.status_code != OK:
-            raise RuntimeError("Http status code {}: {}".format(response.status_code, response.reason))
-
-        response.close()
+        with self._upload_raw_data(
+                # pylint: disable=bad-continuation
+                api_method=self.leaderboard_swagger_client.api.createCheckpoint,
+                data=_file,
+                headers={"Content-Type": "application/octet-stream"},
+                path_params={
+                    "notebookId": notebook_id
+                },
+                query_params={
+                    "jupyterPath": jupyter_path
+                }
+        ) as response:
+            if response.status_code == NOT_FOUND:
+                raise NotebookNotFound(notebook_id=notebook_id)
+            else:
+                response.raise_for_status()
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
@@ -399,23 +399,22 @@ class Client(object):
 
     @with_api_exceptions_handler
     def upload_experiment_source(self, experiment, data):
-        response = self._upload_loop(
-            partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentSource),
-            data=data,
-            path_params={'experimentId': experiment.internal_id},
-            query_params={}
-        )
-        if response.status_code == NOT_FOUND:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
-        elif (response.status_code == UNPROCESSABLE_ENTITY
-              and extract_response_field(response.content, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-            raise StorageLimitReached()
-        elif response.status_code != OK:
-            raise RuntimeError("Http status code {}: {}".format(response.status_code, response.reason))
-
-        response.close()
+        with self._upload_loop(
+                # pylint: disable=bad-continuation
+                partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentSource),
+                data=data,
+                path_params={'experimentId': experiment.internal_id},
+                query_params={}
+        ) as response:
+            if response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
+            elif (response.status_code == UNPROCESSABLE_ENTITY
+                  and extract_response_field(response.content, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+                raise StorageLimitReached()
+            else:
+                response.raise_for_status()
 
     @with_api_exceptions_handler
     def extract_experiment_source(self, experiment, data):
@@ -664,24 +663,22 @@ class Client(object):
 
     @with_api_exceptions_handler
     def upload_experiment_output(self, experiment, data):
-        response = self._upload_loop(
-            partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentOutput),
-            data=data,
-            path_params={'experimentId': experiment.internal_id},
-            query_params={}
-        )
-
-        if response.status_code == NOT_FOUND:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
-        elif (response.status_code == UNPROCESSABLE_ENTITY
-              and extract_response_field(response.content, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-            raise StorageLimitReached()
-        elif response.status_code != OK:
-            raise RuntimeError("Http status code {}: {}".format(response.status_code, response.reason))
-
-        response.close()
+        with self._upload_loop(
+                # pylint: disable=bad-continuation
+                partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+                data=data,
+                path_params={'experimentId': experiment.internal_id},
+                query_params={}
+        ) as response:
+            if response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
+            elif (response.status_code == UNPROCESSABLE_ENTITY
+                  and extract_response_field(response.content, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+                raise StorageLimitReached()
+            else:
+                response.raise_for_status()
 
     @with_api_exceptions_handler
     def extract_experiment_output(self, experiment, data):

@@ -32,6 +32,17 @@ class FileNotFound(NeptuneException):
         super(FileNotFound, self).__init__("File {} doesn't exist.".format(path))
 
 
+class NotAFile(NeptuneException):
+    def __init__(self, path):
+        super(NotAFile, self).__init__("Path {} is not a file.".format(path))
+
+
+class InvalidNotebookPath(NeptuneException):
+    def __init__(self, path):
+        super(InvalidNotebookPath, self).__init__(
+            "File {} is not a valid notebook. Should end with .ipynb.".format(path))
+
+
 class InvalidChannelX(NeptuneException):
     def __init__(self, x):
         super(InvalidChannelX, self).__init__(

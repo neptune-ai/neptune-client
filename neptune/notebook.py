@@ -48,23 +48,6 @@ class Notebook(object):
 
     @property
     def id(self):
-        """ Notebook id
-
-        Examples:
-            Instantiate a session and fetch a project.
-
-            >>> import neptune
-            >>> project = neptune.init()
-
-            Create a notebook.
-
-            >>> notebook = project.create_notebook('file.ipynb')
-
-            Get notebook uuid.
-
-            >>> notebook.id
-            '8ae60b26-6fe9-11e9-acf8-637723906e21'
-        """
         return self._id
 
     @property
