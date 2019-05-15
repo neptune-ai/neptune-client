@@ -19,6 +19,8 @@ import io
 import os
 import uuid
 from functools import partial
+
+from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY
 from io import StringIO
 from itertools import groupby
 
@@ -34,10 +36,12 @@ from bravado_core.formatter import SwaggerFormat
 
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
-    StorageLimitReached, Unauthorized, ChannelAlreadyExists, ChannelsValuesSendBatchError, SSLError
+    StorageLimitReached, Unauthorized, ChannelAlreadyExists, ChannelsValuesSendBatchError, SSLError, NotebookNotFound
+from neptune.checkpoint import Checkpoint
 from neptune.experiments import Experiment
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
+from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
 from neptune.utils import is_float
 
@@ -270,6 +274,79 @@ class Client(object):
                 raise
 
     @with_api_exceptions_handler
+    def get_notebook(self, project, notebook_id):
+        try:
+            api_notebook_list = self.leaderboard_swagger_client.api.listNotebooks(
+                projectIdentifier=project.internal_id,
+                id=[notebook_id]
+            ).response().result
+
+            if not api_notebook_list.entries:
+                raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+            api_notebook = api_notebook_list.entries[0]
+
+            return Notebook(
+                client=self,
+                project=project,
+                _id=api_notebook.id,
+                owner=api_notebook.owner
+            )
+        except HTTPNotFound:
+            raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+    def get_last_checkpoint(self, project, notebook_id):
+        try:
+            api_checkpoint_list = self.leaderboard_swagger_client.api.listCheckpoints(
+                notebookId=notebook_id,
+                offset=0,
+                limit=1
+            ).response().result
+
+            if not api_checkpoint_list.entries:
+                raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+            checkpoint = api_checkpoint_list.entries[0]
+            return Checkpoint(checkpoint.id, checkpoint.name, checkpoint.path)
+        except HTTPNotFound:
+            raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+    @with_api_exceptions_handler
+    def create_notebook(self, project):
+        try:
+            api_notebook = self.leaderboard_swagger_client.api.createNotebook(
+                projectIdentifier=project.internal_id
+            ).response().result
+
+            return Notebook(
+                client=self,
+                project=project,
+                _id=api_notebook.id,
+                owner=api_notebook.owner
+            )
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier=project.full_id)
+
+    @with_api_exceptions_handler
+    def create_checkpoint(self, notebook_id, jupyter_path, _file):
+        with self._upload_raw_data(
+                # pylint: disable=bad-continuation
+                api_method=self.leaderboard_swagger_client.api.createCheckpoint,
+                data=_file,
+                headers={"Content-Type": "application/octet-stream"},
+                path_params={
+                    "notebookId": notebook_id
+                },
+                query_params={
+                    "jupyterPath": jupyter_path
+                }
+        ) as response:
+            if response.status_code == NOT_FOUND:
+                raise NotebookNotFound(notebook_id=notebook_id)
+            else:
+                response.raise_for_status()
+
+    @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
         return self.backend_swagger_client.api.getExperiment(experimentId=experiment_id).response().result
 
@@ -322,20 +399,22 @@ class Client(object):
 
     @with_api_exceptions_handler
     def upload_experiment_source(self, experiment, data):
-        try:
-            return self._upload_loop(
+        with self._upload_loop(
+                # pylint: disable=bad-continuation
                 partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentSource),
                 data=data,
-                experiment=experiment)
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
-        except HTTPUnprocessableEntity as e:
-            if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+                path_params={'experimentId': experiment.internal_id},
+                query_params={}
+        ) as response:
+            if response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
+            elif (response.status_code == UNPROCESSABLE_ENTITY
+                  and extract_response_field(response.content, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
                 raise StorageLimitReached()
             else:
-                raise
+                response.raise_for_status()
 
     @with_api_exceptions_handler
     def extract_experiment_source(self, experiment, data):
@@ -584,20 +663,22 @@ class Client(object):
 
     @with_api_exceptions_handler
     def upload_experiment_output(self, experiment, data):
-        try:
-            return self._upload_loop(
+        with self._upload_loop(
+                # pylint: disable=bad-continuation
                 partial(self._upload_raw_data, api_method=self.backend_swagger_client.api.uploadExperimentOutput),
                 data=data,
-                experiment=experiment)
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
-        except HTTPUnprocessableEntity as e:
-            if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+                path_params={'experimentId': experiment.internal_id},
+                query_params={}
+        ) as response:
+            if response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project_full_id)
+            elif (response.status_code == UNPROCESSABLE_ENTITY
+                  and extract_response_field(response.content, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
                 raise StorageLimitReached()
             else:
-                raise
+                response.raise_for_status()
 
     @with_api_exceptions_handler
     def extract_experiment_output(self, experiment, data):
@@ -703,9 +784,14 @@ class Client(object):
                    },
                    **kwargs)
 
-    def _upload_raw_data(self, experiment, api_method, data, headers):
-        url = self.api_address + api_method.operation.path_name
-        url = url.replace("{experimentId}", experiment.internal_id)
+    def _upload_raw_data(self, api_method, data, headers, path_params, query_params):
+        url = self.api_address + api_method.operation.path_name + "?"
+
+        for key, val in path_params.iteritems():
+            url = url.replace("{" + key + "}", val)
+
+        for key, val in query_params.iteritems():
+            url = url + key + "=" + val + "&"
 
         session = self._http_client.session
 

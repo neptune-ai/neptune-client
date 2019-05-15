@@ -294,6 +294,13 @@ class Project(object):
             exp_id=experiment.id
         )
 
+    def create_notebook(self):
+        notebook = self.client.create_notebook(self)
+        return notebook
+
+    def get_notebook(self, notebook_id):
+        return self.client.get_notebook(project=self, notebook_id=notebook_id)
+
     @property
     def full_id(self):
         """Creates a full project id by combining the namespace and project name.
