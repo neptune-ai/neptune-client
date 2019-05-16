@@ -16,10 +16,13 @@
 
 from platform import node as get_hostname
 
+import os
+
 import click
 
 import pandas as pd
 
+from neptune.envs import NEPTUNE_NOTEBOOK_ID
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
@@ -226,7 +229,8 @@ class Project(object):
                           run_monitoring_thread=True,
                           handle_uncaught_exceptions=True,
                           git_info=None,
-                          hostname=None):
+                          hostname=None,
+                          notebook_id=None):
         """
         Raises:
             `ExperimentValidationError`: When provided arguments are invalid.
@@ -254,6 +258,11 @@ class Project(object):
         if hostname is None:
             hostname = get_hostname()
 
+        print("Hello2" + os.environ[NEPTUNE_NOTEBOOK_ID])
+        if notebook_id is None and os.getenv(NEPTUNE_NOTEBOOK_ID, None) is not None:
+            print("Hello" + os.environ[NEPTUNE_NOTEBOOK_ID])
+            notebook_id = os.environ[NEPTUNE_NOTEBOOK_ID]
+
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         experiment = self.client.create_experiment(
@@ -266,7 +275,8 @@ class Project(object):
             abortable=abortable,
             monitored=run_monitoring_thread,
             git_info=git_info,
-            hostname=hostname
+            hostname=hostname,
+            notebook_id=notebook_id
         )
 
         experiment.start(

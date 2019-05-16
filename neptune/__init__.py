@@ -75,7 +75,8 @@ def create_experiment(name=None,
                       run_monitoring_thread=True,
                       handle_uncaught_exceptions=True,
                       git_info=None,
-                      hostname=None):
+                      hostname=None,
+                      notebook_id=None):
     # pylint: disable=global-statement
     global project
     if project is None:
@@ -95,7 +96,8 @@ def create_experiment(name=None,
         run_monitoring_thread=run_monitoring_thread,
         handle_uncaught_exceptions=handle_uncaught_exceptions,
         git_info=git_info,
-        hostname=hostname
+        hostname=hostname,
+        notebook_id=notebook_id
     )
 
 
