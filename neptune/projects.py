@@ -22,7 +22,7 @@ import click
 
 import pandas as pd
 
-from neptune.envs import NEPTUNE_NOTEBOOK_ID
+from neptune.envs import NOTEBOOK_ID_ENV_NAME
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
@@ -258,8 +258,8 @@ class Project(object):
         if hostname is None:
             hostname = get_hostname()
 
-        if notebook_id is None and os.getenv(NEPTUNE_NOTEBOOK_ID, None) is not None:
-            notebook_id = os.environ[NEPTUNE_NOTEBOOK_ID]
+        if notebook_id is None and os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
+            notebook_id = os.environ[NOTEBOOK_ID_ENV_NAME]
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
