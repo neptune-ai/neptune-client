@@ -258,9 +258,7 @@ class Project(object):
         if hostname is None:
             hostname = get_hostname()
 
-        print("Hello2" + os.environ[NEPTUNE_NOTEBOOK_ID])
         if notebook_id is None and os.getenv(NEPTUNE_NOTEBOOK_ID, None) is not None:
-            print("Hello" + os.environ[NEPTUNE_NOTEBOOK_ID])
             notebook_id = os.environ[NEPTUNE_NOTEBOOK_ID]
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
