@@ -18,6 +18,10 @@ import random
 import string
 import uuid
 
+import mock
+
+from neptune.projects import Project
+
 
 def a_string():
     char_set = string.ascii_letters
@@ -49,3 +53,12 @@ def an_experiment_id():
 
 def a_project_qualified_name():
     return "{}/{}".format(a_string(), a_string())
+
+
+def a_project():
+    return Project(
+        client=mock.MagicMock(),
+        internal_id=a_uuid_string(),
+        name=a_string(),
+        namespace=a_string()
+    )

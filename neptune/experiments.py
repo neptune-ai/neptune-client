@@ -24,7 +24,7 @@ import six
 from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ExperimentAlreadyFinished
-from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext
+from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext, NotADirectory
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
@@ -42,10 +42,9 @@ class Experiment(object):
 
     Args:
         client(`neptune.Client'): Client object
+        project(`neptune.Project`)
         _id(`str`)
         internal_id(`str`): UUID
-        project_full_id(`str`)
-
 
     Examples:
         Instantiate a session.
@@ -68,11 +67,11 @@ class Experiment(object):
         Column sorting
     """
 
-    def __init__(self, client, _id, internal_id, project_full_id):
+    def __init__(self, client, project, _id, internal_id):
         self._client = client
+        self._project = project
         self._id = _id
         self._internal_id = internal_id
-        self._project_full_id = project_full_id
         self._channels_values_sender = ChannelsValuesSender(self)
         self._execution_context = ExecutionContext(client, self)
 
@@ -318,6 +317,17 @@ class Experiment(object):
                           upload_api_fun=self._client.upload_experiment_output,
                           upload_tar_api_fun=self._client.extract_experiment_output,
                           experiment=self)
+
+    def download_artifact(self, filename, destination_dir):
+        path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=filename)
+        destination_path = "{dir}/{file}".format(dir=destination_dir, file=filename)
+
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        elif not os.path.isdir(destination_dir):
+            raise NotADirectory(destination_dir)
+
+        self._client.download_data(self._project, path, destination_path)
 
     def send_graph(self, graph_id, value):
         """Upload a tensorflow graph for this experiment.
@@ -594,7 +604,7 @@ class Experiment(object):
 
     def __eq__(self, o):
         # pylint: disable=protected-access
-        return self._id == o._id and self._internal_id == o._internal_id and self._project_full_id == o._project_full_id
+        return self._id == o._id and self._internal_id == o._internal_id and self._project == o._project
 
     def __ne__(self, o):
         return not self.__eq__(o)
