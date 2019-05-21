@@ -28,8 +28,7 @@ from pandas.util.testing import assert_frame_equal
 from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment, push_new_experiment, get_current_experiment, pop_stopped_experiment
 from neptune.internal.channels.channels import ChannelType, ChannelValue
-from tests.neptune.random_utils import sort_df_by_columns, a_string, a_uuid_string, an_experiment_id, \
-    a_project_qualified_name
+from tests.neptune.random_utils import sort_df_by_columns, a_string, a_uuid_string, an_experiment_id, a_project
 
 
 class TestExperiment(unittest.TestCase):
@@ -43,8 +42,7 @@ class TestExperiment(unittest.TestCase):
             mock.MagicMock(),
             mock.MagicMock(),
             an_experiment_id(),
-            a_uuid_string(),
-            a_project_qualified_name()
+            a_uuid_string()
         )
         channel_value = ChannelValue(
             x=random.randint(0, 100),
@@ -65,10 +63,9 @@ class TestExperiment(unittest.TestCase):
         channels_values_sender = ChannelsValuesSender.return_value
         experiment = Experiment(
             mock.MagicMock(),
-            mock.MagicMock(),
+            a_project(),
             an_experiment_id(),
-            a_uuid_string(),
-            a_project_qualified_name()
+            a_uuid_string()
         )
         channel_value = ChannelValue(
             x=random.randint(0, 100),
@@ -90,10 +87,9 @@ class TestExperiment(unittest.TestCase):
         channels_values_sender = ChannelsValuesSender.return_value
         experiment = Experiment(
             mock.MagicMock(),
-            mock.MagicMock(),
+            a_project(),
             an_experiment_id(),
-            a_uuid_string(),
-            a_project_qualified_name()
+            a_uuid_string()
         )
         image_value = dict(
             name=a_string(),
@@ -124,10 +120,9 @@ class TestExperiment(unittest.TestCase):
         client = mock.MagicMock()
         experiment = Experiment(
             client,
-            mock.MagicMock(),
+            a_project(),
             an_experiment_id(),
-            a_uuid_string(),
-            a_project_qualified_name()
+            a_uuid_string()
         )
 
         #and
@@ -172,10 +167,9 @@ class TestExperiment(unittest.TestCase):
         # then
         experiment = Experiment(
             client=client,
-            project=mock.MagicMock(),
+            project=a_project(),
             _id=a_string(),
-            internal_id=a_uuid_string(),
-            project_full_id="test/sandbox"
+            internal_id=a_uuid_string()
         )
         result = experiment.get_numeric_channels_values('epoch_loss')
 

@@ -131,7 +131,7 @@ class Project(object):
         """
         leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
         return [
-            Experiment(self.client, self, entry.id, entry.internal_id, entry.project_full_id)
+            Experiment(self.client, self, entry.id, entry.internal_id)
             for entry in leaderboard_entries
         ]
 

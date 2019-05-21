@@ -37,6 +37,11 @@ class NotAFile(NeptuneException):
         super(NotAFile, self).__init__("Path {} is not a file.".format(path))
 
 
+class NotADirectory(NeptuneException):
+    def __init__(self, path):
+        super(NotADirectory, self).__init__("Path {} is not a directory.".format(path))
+
+
 class InvalidNotebookPath(NeptuneException):
     def __init__(self, path):
         super(InvalidNotebookPath, self).__init__(
