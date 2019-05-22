@@ -10,8 +10,97 @@ Before we start
 * Install `psutil <https://psutil.readthedocs.io/en/latest/>`_ to see hardware monitoring charts (they are pretty useful)
 * It this example we train simple `Keras <https://keras.io/>`_ model (with `TensorFlow <https://www.tensorflow.org/>`_ backend) on `MNIST dataset <http://yann.lecun.com/exdb/mnist/>`_. Install these libraries, instructions are here: https://www.tensorflow.org/install
 
-Code example
-------------
+
+Session
+---------------
+In the first tutorial, as you remember, we initialized Neptune using *neptune.init*:
+
+.. code:: Python
+
+    import neptune
+    
+    neptune.init('shared/onboarding',
+                 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5tbCIsImFwaV9rZXkiOiJiNzA2YmM4Zi03NmY5LTRjMmUtOTM5ZC00YmEwMzZmOTMyZTQifQ==')
+                 
+    neptune.create_experiment()
+
+What we actually did, was to specify our *USER_NAME/PROJET_NAME* to **project_qualified_name** and *NEPTUNE_API_TOKEN* to **api_token** arguments.
+
+Explicitly it would read:
+
+.. code:: Python
+
+    neptune.init(project_qualified_name='shared/onboarding',
+                 api_token='eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5tbCIsImFwaV9rZXkiOiJiNzA2YmM4Zi03NmY5LTRjMmUtOTM5ZC00YmEwMzZmOTMyZTQifQ==')
+                 
+.. note:: If you have your API token stored in the **NEPTUNE_API_TOKEN** environment variable you can leave the **api_token** argument empty.
+
+That is not the only way of doing it but does make things simpler.
+If you want to have more control you can explicitly start neptune session:
+
+.. code:: Python
+
+    from neptune.sessions import Session
+    
+    session = Session(api_token='eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5tbCIsImFwaV9rZXkiOiJiNzA2YmM4Zi03NmY5LTRjMmUtOTM5ZC00YmEwMzZmOTMyZTQifQ==')
+
+The session object lazily contains all of the projects that you have access too. 
+You can fetch the project on which you want to work on by running:
+
+.. code:: Python
+
+    project = session.get_project(project_qualified_name='shared/onboarding')
+
+And create a new experiment in that project. 
+
+.. code:: Python
+
+    experiment = project.create_experiment()
+
+You can also programatically get other experiments from the project but it is a story for another day.
+Read about it **here**.
+
+
+Experiment
+------------------
+
+Let's dive into the **create_experiment** method and what you can track with it.
+As you remember in the minimal example we started and experiment logged something to it and stopped it:
+
+.. code:: Python
+
+    neptune.create_experiment()
+    neptune.send_metric('auc', 0.93)
+    neptune.stop()
+    
+You can make it cleaner and create your experiments in **with statement** blocks:
+
+.. code:: Python
+
+    with neptune.create_experiment() as exp:
+        exp.send_metric('auc', 0.93)
+
+By doing that you will never forget to stop your experiments. We recommend you use this option.
+Also, if you are creating more than one experiment, this approach keeps things civil. 
+
+Ok, now that we know how to start and stop experiments let's see what happens in the app when you actually run it.
+
+.. image:: ../_images/create_experiment_basic.gif
+
+With every **create_experiment** a new record is added to Neptune with a state *running*. 
+When you run **stop** on your experiment, either explicitly or implicitly, the state is changed to *succeeded*.
+
+
+
+I will start with a complicated example and explain it step by step:
+
+
+
+Sending logs
+------------------
+
+Advanced example
+------------------
 
 This example uses `Get Started with TensorFlow <https://www.tensorflow.org/tutorials#get-started-with-tensorflow>`_ as a base. Run it as regular Python code (in terminal: ``python example.py``) and see your experiment at the top of `experiments view <https://ui.neptune.ml/o/shared/org/onboarding/experiments>`_. Like in the previous tutorial, we use *API token* of the public (yet anonymous) user `Neptuner <https://ui.neptune.ml/o/shared/neptuner>`_.
 
@@ -119,13 +208,6 @@ This example uses `Get Started with TensorFlow <https://www.tensorflow.org/tutor
 
 Run this code and observe results `online <https://ui.neptune.ml/o/shared/org/onboarding/experiments>`_.
 
-Session
----------------
-
-Experiment
-------------------
-
-Sending logs
 ------------
 
 What next?
