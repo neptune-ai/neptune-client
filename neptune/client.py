@@ -216,7 +216,8 @@ class Client(object):
                           abortable,
                           monitored,
                           git_info,
-                          hostname):
+                          hostname,
+                          notebook_id):
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
         GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
         GitCommitDTO = self.backend_swagger_client.get_model('GitCommitDTO')
@@ -248,7 +249,8 @@ class Client(object):
                 execArgsTemplate="",  # FIXME,
                 abortable=abortable,
                 monitored=monitored,
-                hostname=hostname
+                hostname=hostname,
+                notebookId=notebook_id
             )
 
             kwargs = {
