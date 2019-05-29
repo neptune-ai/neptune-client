@@ -108,8 +108,11 @@ class ChannelsValuesSendingThread(NeptuneThread):
     def _process_batch(self):
         send_start = time.time()
         if self._values_batch:
-            self._send_values(self._values_batch)
-            self._values_batch = []
+            try:
+                self._send_values(self._values_batch)
+                self._values_batch = []
+            except (NeptuneApiException, IOError) as e:
+                _logger.warning('Failed to send channel value: %s', e)
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
     def _send_values(self, queued_channels_values):
