@@ -824,10 +824,10 @@ class Client(object):
     def _download_raw_data(self, api_method, headers, path_params, query_params):
         url = self.api_address + api_method.operation.path_name + "?"
 
-        for key, val in path_params.iteritems():
+        for key, val in path_params.items():
             url = url.replace("{" + key + "}", val)
 
-        for key, val in query_params.iteritems():
+        for key, val in query_params.items():
             url = url + key + "=" + val + "&"
 
         session = self._http_client.session
