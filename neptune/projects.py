@@ -19,7 +19,6 @@ from platform import node as get_hostname
 import os
 
 import click
-
 import pandas as pd
 
 from neptune.envs import NOTEBOOK_ID_ENV_NAME
@@ -224,6 +223,7 @@ class Project(object):
                           tags=None,
                           upload_source_files=None,
                           abort_callback=None,
+                          logger=None,
                           upload_stdout=True,
                           upload_stderr=True,
                           send_hardware_metrics=True,
@@ -281,6 +281,7 @@ class Project(object):
         experiment.start(
             upload_source_files=upload_source_files,
             abort_callback=abort_callback,
+            logger=logger,
             upload_stdout=upload_stdout,
             upload_stderr=upload_stderr,
             send_hardware_metrics=send_hardware_metrics,

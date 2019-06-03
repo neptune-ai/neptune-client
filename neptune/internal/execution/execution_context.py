@@ -17,11 +17,14 @@ import os
 import sys
 import time
 import traceback
+from logging import StreamHandler
 
 from neptune.internal.abort import DefaultAbortImpl, CustomAbortImpl
+from neptune.internal.channels.channels import ChannelNamespace
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
+from neptune.internal.streams.channel_writer import ChannelWriter
 from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErrWithUpload
 from neptune.internal.threads.aborting_thread import AbortingThread
 from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
@@ -38,6 +41,8 @@ class ExecutionContext(object):
         self._ping_thread = None
         self._hardware_metric_thread = None
         self._aborting_thread = None
+        self._logger = None
+        self._logger_handler = None
         self._stdout_uploader = None
         self._stderr_uploader = None
         self._uncaught_exception_handler = sys.__excepthook__
@@ -46,6 +51,7 @@ class ExecutionContext(object):
 
     def start(self,
               abort_callback=None,
+              logger=None,
               upload_stdout=True,
               upload_stderr=True,
               send_hardware_metrics=True,
@@ -59,6 +65,14 @@ class ExecutionContext(object):
 
         if abortable:
             self._run_aborting_thread(abort_callback)
+
+        if logger:
+            # pylint: disable=protected-access
+            channel = self._experiment._get_channel('logger', 'text', ChannelNamespace.SYSTEM)
+            channel_writer = ChannelWriter(self._experiment, channel.name, ChannelNamespace.SYSTEM)
+            self._logger_handler = StreamHandler(channel_writer)
+            self._logger = logger
+            logger.addHandler(self._logger_handler)
 
         if upload_stdout and not is_notebook():
             self._stdout_uploader = StdOutWithUpload(self._experiment)
@@ -90,6 +104,9 @@ class ExecutionContext(object):
 
         if self._stderr_uploader:
             self._stderr_uploader.close()
+
+        if self._logger and self._logger_handler:
+            self._logger.removeHandler(self._logger_handler)
 
         sys.excepthook = self._previous_uncaught_exception_handler
 

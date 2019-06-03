@@ -546,6 +546,7 @@ class Experiment(object):
     def start(self,
               upload_source_files=None,
               abort_callback=None,
+              logger=None,
               upload_stdout=True,
               upload_stderr=True,
               send_hardware_metrics=True,
@@ -564,6 +565,7 @@ class Experiment(object):
 
         self._execution_context.start(
             abort_callback=abort_callback,
+            logger=logger,
             upload_stdout=upload_stdout,
             upload_stderr=upload_stderr,
             send_hardware_metrics=send_hardware_metrics,
