@@ -17,7 +17,10 @@ import time
 from collections import namedtuple
 from enum import Enum
 
-ChannelNameWithType = namedtuple("ChannelNameWithType", ['channel_name', 'channel_type'])
+ChannelNameWithTypeAndNamespace = namedtuple(
+    "ChannelNameWithType",
+    ['channel_name', 'channel_type', 'channel_namespace']
+)
 ChannelIdWithValues = namedtuple('ChannelIdWithValues', ['channel_id', 'channel_values'])
 
 
@@ -25,6 +28,11 @@ class ChannelType(Enum):
     TEXT = 'text'
     NUMERIC = 'numeric'
     IMAGE = 'image'
+
+
+class ChannelNamespace(Enum):
+    USER = 'user'
+    SYSTEM = 'system'
 
 
 class ChannelValue(object):

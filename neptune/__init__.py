@@ -19,11 +19,16 @@ import threading
 from neptune import envs, projects, experiments
 from neptune.exceptions import MissingProjectQualifiedName, Uninitialized
 from neptune.sessions import Session
+from ._version import get_versions
+
+__version__ = get_versions()['version']
+del get_versions
 
 session = None
 project = None
 
 __lock = threading.RLock()
+
 
 
 def init(project_qualified_name=None, api_token=None, proxies=None):
@@ -64,13 +69,15 @@ def create_experiment(name=None,
                       tags=None,
                       upload_source_files=None,
                       abort_callback=None,
+                      logger=None,
                       upload_stdout=True,
                       upload_stderr=True,
                       send_hardware_metrics=True,
                       run_monitoring_thread=True,
                       handle_uncaught_exceptions=True,
                       git_info=None,
-                      hostname=None):
+                      hostname=None,
+                      notebook_id=None):
     # pylint: disable=global-statement
     global project
     if project is None:
@@ -84,13 +91,15 @@ def create_experiment(name=None,
         tags=tags,
         upload_source_files=upload_source_files,
         abort_callback=abort_callback,
+        logger=logger,
         upload_stdout=upload_stdout,
         upload_stderr=upload_stderr,
         send_hardware_metrics=send_hardware_metrics,
         run_monitoring_thread=run_monitoring_thread,
         handle_uncaught_exceptions=handle_uncaught_exceptions,
         git_info=git_info,
-        hostname=hostname
+        hostname=hostname,
+        notebook_id=notebook_id
     )
 
 

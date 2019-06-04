@@ -28,8 +28,7 @@ from pandas.util.testing import assert_frame_equal
 from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment, push_new_experiment, get_current_experiment, pop_stopped_experiment
 from neptune.internal.channels.channels import ChannelType, ChannelValue
-from tests.neptune.random_utils import sort_df_by_columns, a_string, a_uuid_string, an_experiment_id, \
-    a_project_qualified_name
+from tests.neptune.random_utils import sort_df_by_columns, a_string, a_uuid_string, an_experiment_id, a_project
 
 
 class TestExperiment(unittest.TestCase):
@@ -39,7 +38,12 @@ class TestExperiment(unittest.TestCase):
     def test_send_metric(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        experiment = Experiment(
+            mock.MagicMock(),
+            mock.MagicMock(),
+            an_experiment_id(),
+            a_uuid_string()
+        )
         channel_value = ChannelValue(
             x=random.randint(0, 100),
             y=dict(numeric_value=random.randint(0, 100)),
@@ -57,7 +61,12 @@ class TestExperiment(unittest.TestCase):
     def test_send_text(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        experiment = Experiment(
+            mock.MagicMock(),
+            a_project(),
+            an_experiment_id(),
+            a_uuid_string()
+        )
         channel_value = ChannelValue(
             x=random.randint(0, 100),
             y=dict(text_value=a_string()),
@@ -76,7 +85,12 @@ class TestExperiment(unittest.TestCase):
     def test_send_image(self, ChannelsValuesSender, content):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(mock.MagicMock(), an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        experiment = Experiment(
+            mock.MagicMock(),
+            a_project(),
+            an_experiment_id(),
+            a_uuid_string()
+        )
         image_value = dict(
             name=a_string(),
             description=a_string(),
@@ -104,7 +118,12 @@ class TestExperiment(unittest.TestCase):
     def test_append_tags(self):
         # given
         client = mock.MagicMock()
-        experiment = Experiment(client, an_experiment_id(), a_uuid_string(), a_project_qualified_name())
+        experiment = Experiment(
+            client,
+            a_project(),
+            an_experiment_id(),
+            a_uuid_string()
+        )
 
         #and
         def build_call(tags_list):
@@ -148,9 +167,9 @@ class TestExperiment(unittest.TestCase):
         # then
         experiment = Experiment(
             client=client,
+            project=a_project(),
             _id=a_string(),
-            internal_id=a_uuid_string(),
-            project_full_id="test/sandbox"
+            internal_id=a_uuid_string()
         )
         result = experiment.get_numeric_channels_values('epoch_loss')
 

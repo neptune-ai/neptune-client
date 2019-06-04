@@ -24,8 +24,8 @@ import six
 from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ExperimentAlreadyFinished
-from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext
-from neptune.internal.channels.channels import ChannelValue, ChannelType
+from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext, NotADirectory
+from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.storage.storage_utils import upload_to_storage
@@ -41,8 +41,10 @@ class Experiment(object):
     information about the hardware utilization during the experiment
 
     Args:
-        client(`neptune.Client`): Client object
-        leaderboard_entry(`neptune.model.LeaderboardEntry`): LeaderboardEntry object
+        client(`neptune.Client'): Client object
+        project(`neptune.Project`)
+        _id(`str`)
+        internal_id(`str`): UUID
 
     Examples:
         Instantiate a session.
@@ -62,11 +64,11 @@ class Experiment(object):
         Experiment(SAL-1609)
     """
 
-    def __init__(self, client, _id, internal_id, project_full_id):
+    def __init__(self, client, project, _id, internal_id):
         self._client = client
+        self._project = project
         self._id = _id
         self._internal_id = internal_id
-        self._project_full_id = project_full_id
         self._channels_values_sender = ChannelsValuesSender(self)
         self._execution_context = ExecutionContext(client, self)
 
@@ -225,6 +227,35 @@ class Experiment(object):
             channels[ch.name] = ch
         return channels
 
+    def get_system_channels(self):
+        """Retrieve all system channel names along with their representations for this experiment.
+
+        Returns:
+            dict: A dictionary mapping a channel name to channel.
+
+        Examples:
+            Instantiate a session.
+
+            >>> from neptune.sessions import Session
+            >>> session = Session()
+
+            Fetch a project and a list of experiments.
+
+            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
+
+            Get an experiment instance.
+
+            >>> experiment = experiments[0]
+
+            Get experiment channels.
+
+            >>> experiment.get_system_channels()
+
+        """
+        channels = self._client.get_system_channels(self)
+        return dict((ch.name, ch) for ch in channels)
+
     def upload_source_files(self, source_files):
         """
         Raises:
@@ -283,6 +314,17 @@ class Experiment(object):
                           upload_api_fun=self._client.upload_experiment_output,
                           upload_tar_api_fun=self._client.extract_experiment_output,
                           experiment=self)
+
+    def download_artifact(self, filename, destination_dir):
+        path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=filename)
+        destination_path = "{dir}/{file}".format(dir=destination_dir, file=filename)
+
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        elif not os.path.isdir(destination_dir):
+            raise NotADirectory(destination_dir)
+
+        self._client.download_data(self._project, path, destination_path)
 
     def send_graph(self, graph_id, value):
         """Upload a tensorflow graph for this experiment.
@@ -501,6 +543,7 @@ class Experiment(object):
     def start(self,
               upload_source_files=None,
               abort_callback=None,
+              logger=None,
               upload_stdout=True,
               upload_stderr=True,
               send_hardware_metrics=True,
@@ -519,6 +562,7 @@ class Experiment(object):
 
         self._execution_context.start(
             abort_callback=abort_callback,
+            logger=logger,
             upload_stdout=upload_stdout,
             upload_stderr=upload_stderr,
             send_hardware_metrics=send_hardware_metrics,
@@ -559,7 +603,7 @@ class Experiment(object):
 
     def __eq__(self, o):
         # pylint: disable=protected-access
-        return self._id == o._id and self._internal_id == o._internal_id and self._project_full_id == o._project_full_id
+        return self._id == o._id and self._internal_id == o._internal_id and self._project == o._project
 
     def __ne__(self, o):
         return not self.__eq__(o)
@@ -597,17 +641,27 @@ class Experiment(object):
             channels_by_name[channel.name] = channel
         return channels_by_name
 
-    def _get_channel(self, channel_name, channel_type):
-        channel = self._find_channel(channel_name)
+    def _get_channel(self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
+        channel = self._find_channel(channel_name, channel_namespace)
         if channel is None:
-            channel = self._create_channel(channel_name, channel_type)
+            channel = self._create_channel(channel_name, channel_type, channel_namespace)
         return channel
 
-    def _find_channel(self, channel_name):
-        return self.get_channels().get(channel_name, None)
+    def _find_channel(self, channel_name, channel_namespace):
+        if channel_namespace == ChannelNamespace.USER:
+            return self.get_channels().get(channel_name, None)
+        elif channel_namespace == ChannelNamespace.SYSTEM:
+            return self.get_system_channels().get(channel_name, None)
+        else:
+            raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
 
-    def _create_channel(self, channel_name, channel_type):
-        return self._client.create_channel(self, channel_name, channel_type)
+    def _create_channel(self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
+        if channel_namespace == ChannelNamespace.USER:
+            return self._client.create_channel(self, channel_name, channel_type)
+        elif channel_namespace == ChannelNamespace.SYSTEM:
+            return self._client.create_system_channel(self, channel_name, channel_type)
+        else:
+            raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
 
 
 _experiments_stack = []
