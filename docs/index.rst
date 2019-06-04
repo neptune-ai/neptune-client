@@ -45,23 +45,23 @@ Example above creates Neptune `experiment <https://ui.neptune.ml/o/shared/org/on
    :maxdepth: 1
    :caption: Tutorials
 
-   Get started (5 minutes read) <tutorials/get-started>
-   Larger example (15 minutes read) <tutorials/larger>
+   Get started (5 minutes read) <tutorials/get-started.rst>
+   Session and Experiment <tutorials/session-and-experiment.rst>
+   Advanced example <tutorials/advanced.rst>
 
 .. toctree::
    :maxdepth: 1
    :caption: API reference
 
-   Session <technical_reference/session>
-   Project <technical_reference/project>
-   Experiment <technical_reference/experiment>
+   Session <technical_reference/session.rst>
+   Project <technical_reference/project.rst>
+   Experiment <technical_reference/experiment.rst>
 
 .. toctree::
    :maxdepth: 1
    :caption: Cheat-sheets
 
-   Cheat-sheet <technical_reference/cheatsheet>
-
+   Cheat-sheet <technical_reference/cheatsheet.rst>
 
 Indices
 -------

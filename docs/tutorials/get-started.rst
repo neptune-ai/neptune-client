@@ -23,7 +23,7 @@ Assign it to the bash environment variable:
 
 or append this line to your ``~/.bashrc`` or ``~/.bash_profile`` files **(recommended)**.
 
-.. warning:: Always keep your API token secret - it is like password to the application. It is recommended to append "export" line to your ``~/.bashrc`` or ``~/.bash_profile`` files.
+.. warning:: Always keep your API token secret - it is like password to the application. It is recommended to append "export NEPTUNE_API_TOKEN='YOUR_LONG_API_TOKEN'" line to your ``~/.bashrc`` or ``~/.bash_profile`` files.
 
 Install neptune-client
 ----------------------
@@ -31,6 +31,14 @@ Install neptune-client
 .. code:: bash
 
     pip install neptune-client
+
+Install `psutil <https://psutil.readthedocs.io/en/latest/>`_ to see hardware monitoring charts:
+
+.. code-block:: bash
+
+    pip3 install psutil
+
+*(please check psutil* `documentation <https://psutil.readthedocs.io/en/latest/>`_ *in case of installation problems)*
 
 Run Python script
 -----------------
@@ -62,7 +70,3 @@ Congrats! You just ran your first Neptune experiment and checked results online.
     * how to run Neptune experiment
     * how to track it online
     * how to use basic Neptune client features, like *create_experiment()* and *send_metric()*
-
-What next?
-----------
-Go to Larger-example to learn more about `Neptune client <https://github.com/neptune-ml/neptune-client>`_ and its capabilities.

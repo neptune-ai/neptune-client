@@ -107,4 +107,3 @@ Organize your work
     with neptune.create_experiment() as npt_exp:
         exp_paramaters = npt_exp.get_parameters()
         print(exp_paramaters)
-
