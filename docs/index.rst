@@ -1,8 +1,3 @@
-.. neptune-client-docs documentation master file, created by
-   sphinx-quickstart on Thu Apr 18 15:45:30 2019.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 What is Neptune?
 ================
 
@@ -13,14 +8,13 @@ What is Neptune?
 * **Collaborate**: share, compare and discuss your work across data science project.
 
 What is Neptune client?
-=======================
-
+-----------------------
 `Neptune client <https://github.com/neptune-ml/neptune-client>`_ is open source Python library that allows Users to integrate their Python scripts with Neptune.
 
 .. note:: Make sure to `register to Neptune <https://neptune.ml/register>`_, to use it.
 
 Installation
-============
+------------
 
 .. code:: bash
 
@@ -28,25 +22,35 @@ Installation
 
 Once installed, ``import neptune`` in your code to use it.
 
-What next?
-==========
+Example
+-------
 
-There are three major options:
+.. code-block::
 
-#. **Tutorials** --> learn how to use Neptune client step-by-step.
-#. **Package reference** --> Learn how to use Python API.
-#. **Cheat-sheets** --> Take a look in case you need to quickly refresh some practical information.
+   import neptune
+
+   neptune.init('shared/onboarding')
+   with neptune.create_experiment(name='simple_example'):
+       neptune.append_tag('minimal-example')
+       n = 117
+       for i in range(1, n):
+           neptune.send_metric('iteration', i)
+           neptune.send_metric('loss', 1/i**0.5)
+       neptune.set_property('n_iterations', n)
+
+Example above creates Neptune `experiment <https://ui.neptune.ml/o/shared/org/onboarding/e/ON-26/charts>`_ in the project: *shared/onboarding* and logs *iteration* and *loss* metrics to Neptune in real time. It also presents common use case for Neptune client, that is tracking progress of machine learning experiments.
+
 
 .. toctree::
    :maxdepth: 1
    :caption: Tutorials
 
-   Minimal example (5 minutes read) <tutorials/minimal>
+   Get started (5 minutes read) <tutorials/get-started>
    Larger example (15 minutes read) <tutorials/larger>
 
 .. toctree::
    :maxdepth: 1
-   :caption: Package reference
+   :caption: API reference
 
    Session <technical_reference/session>
    Project <technical_reference/project>
@@ -59,9 +63,7 @@ There are three major options:
    Cheat-sheet <technical_reference/cheatsheet>
 
 
-Indices and tables
-==================
-
+Indices
+-------
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
