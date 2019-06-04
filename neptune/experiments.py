@@ -41,7 +41,7 @@ class Experiment(object):
     information about the hardware utilization during the experiment
 
     Args:
-        client(`neptune.Client'): Client object
+        client(`neptune.Client`): Client object
         project(`neptune.Project`)
         _id(`str`)
         internal_id(`str`): UUID
