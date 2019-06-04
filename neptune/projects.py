@@ -16,8 +16,12 @@
 
 from platform import node as get_hostname
 
+import os
+
+import click
 import pandas as pd
 
+from neptune.envs import NOTEBOOK_ID_ENV_NAME
 from neptune.experiments import Experiment, push_new_experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
@@ -124,7 +128,8 @@ class Project(object):
         """
         leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
         return [
-            Experiment(self.client, entry.id, entry.internal_id, entry.project_full_id) for entry in leaderboard_entries
+            Experiment(self.client, self, entry.id, entry.internal_id)
+            for entry in leaderboard_entries
         ]
 
     def get_leaderboard(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
@@ -209,13 +214,15 @@ class Project(object):
                           tags=None,
                           upload_source_files=None,
                           abort_callback=None,
+                          logger=None,
                           upload_stdout=True,
                           upload_stderr=True,
                           send_hardware_metrics=True,
                           run_monitoring_thread=True,
                           handle_uncaught_exceptions=True,
                           git_info=None,
-                          hostname=None):
+                          hostname=None,
+                          notebook_id=None):
         """
         Raises:
             `ExperimentValidationError`: When provided arguments are invalid.
@@ -243,6 +250,9 @@ class Project(object):
         if hostname is None:
             hostname = get_hostname()
 
+        if notebook_id is None and os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
+            notebook_id = os.environ[NOTEBOOK_ID_ENV_NAME]
+
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         experiment = self.client.create_experiment(
@@ -255,12 +265,14 @@ class Project(object):
             abortable=abortable,
             monitored=run_monitoring_thread,
             git_info=git_info,
-            hostname=hostname
+            hostname=hostname,
+            notebook_id=notebook_id
         )
 
         experiment.start(
             upload_source_files=upload_source_files,
             abort_callback=abort_callback,
+            logger=logger,
             upload_stdout=upload_stdout,
             upload_stderr=upload_stderr,
             send_hardware_metrics=send_hardware_metrics,
@@ -270,7 +282,25 @@ class Project(object):
 
         push_new_experiment(experiment)
 
+        click.echo(str(experiment.id))
+        click.echo(self._get_experiment_link(experiment))
+
         return experiment
+
+    def _get_experiment_link(self, experiment):
+        return "{base_url}/{namespace}/{project}/e/{exp_id}".format(
+            base_url=self.client.api_address,
+            namespace=self.namespace,
+            project=self.name,
+            exp_id=experiment.id
+        )
+
+    def create_notebook(self):
+        notebook = self.client.create_notebook(self)
+        return notebook
+
+    def get_notebook(self, notebook_id):
+        return self.client.get_notebook(project=self, notebook_id=notebook_id)
 
     @property
     def full_id(self):

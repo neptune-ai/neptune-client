@@ -2,15 +2,7 @@ import os
 
 from setuptools import find_packages, setup
 
-import git_version
-
-
-def version():
-    try:
-        with open('VERSION') as f:
-            return f.readline().strip()
-    except IOError:
-        return '0.0.0'
+import versioneer
 
 
 def main():
@@ -20,7 +12,7 @@ def main():
         requirements = [r.strip() for r in f]
         setup(
             name='neptune-client',
-            version=version(),
+            version=versioneer.get_version(),
             description='Neptune Client',
             author='neptune.ml',
             author_email='contact@neptune.ml',
@@ -29,9 +21,7 @@ def main():
             license='Apache License 2.0',
             install_requires=requirements,
             packages=find_packages(),
-            cmdclass={
-                'git_version': git_version.GitVersion,
-            },
+            cmdclass=versioneer.get_cmdclass(),
             entry_points={
                 'console_scripts': [
                     'neptune = cli.main:main',

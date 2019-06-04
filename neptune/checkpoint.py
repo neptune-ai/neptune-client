@@ -14,26 +14,10 @@
 # limitations under the License.
 #
 
-import unittest
 
-from mock import MagicMock
+class Checkpoint(object):
 
-from neptune.internal.streams.channel_writer import ChannelWriter
-
-
-class TestChannelWriter(unittest.TestCase):
-
-    def test_write_data_to_channel_writer(self):
-        # given
-        experiment = MagicMock()
-        channel_name = 'a channel name'
-        writer = ChannelWriter(experiment, channel_name)
-
-        writer.write('some\ndata')
-
-        # pylint: disable=protected-access
-        experiment._channels_values_sender.send.assert_called_once()
-
-
-if __name__ == '__main__':
-    unittest.main()
+    def __init__(self, _id, name, path):
+        self.id = _id
+        self.name = name
+        self.path = path

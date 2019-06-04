@@ -21,6 +21,7 @@ import sys
 import numpy as np
 import pandas as pd
 
+from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotAFile
 from neptune.git_info import GitInfo
 
 IS_WINDOWS = hasattr(sys, 'getwindowsversion')
@@ -43,6 +44,17 @@ def as_list(value):
         return value
     else:
         return [value]
+
+
+def validate_notebook_path(path):
+    if not path.endswith(".ipynb"):
+        raise InvalidNotebookPath(path)
+
+    if not os.path.exists(path):
+        raise FileNotFound(path)
+
+    if not os.path.isfile(path):
+        raise NotAFile(path)
 
 
 def align_channels_on_x(dataframe):

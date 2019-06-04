@@ -22,14 +22,18 @@ from itertools import groupby
 from future.moves import queue
 
 from neptune.api_exceptions import NeptuneApiException
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNameWithType, ChannelValue, ChannelType
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNameWithTypeAndNamespace, ChannelValue,\
+    ChannelType, ChannelNamespace
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
 _logger = logging.getLogger(__name__)
 
 
 class ChannelsValuesSender(object):
-    _QUEUED_CHANNEL_VALUE = namedtuple("QueuedChannelValue", ['channel_name', 'channel_type', 'channel_value'])
+    _QUEUED_CHANNEL_VALUE = namedtuple(
+        "QueuedChannelValue",
+        ['channel_name', 'channel_type', 'channel_value', 'channel_namespace']
+    )
 
     __LOCK = threading.RLock()
 
@@ -38,7 +42,7 @@ class ChannelsValuesSender(object):
         self._values_queue = None
         self._sending_thread = None
 
-    def send(self, channel_name, channel_type, channel_value):
+    def send(self, channel_name, channel_type, channel_value, channel_namespace=ChannelNamespace.USER):
         with self.__LOCK:
             if not self._is_running():
                 self._start()
@@ -46,7 +50,8 @@ class ChannelsValuesSender(object):
         self._values_queue.put(self._QUEUED_CHANNEL_VALUE(
             channel_name=channel_name,
             channel_type=channel_type,
-            channel_value=channel_value
+            channel_value=channel_value,
+            channel_namespace=channel_namespace
         ))
 
     def join(self):
@@ -103,23 +108,40 @@ class ChannelsValuesSendingThread(NeptuneThread):
     def _process_batch(self):
         send_start = time.time()
         if self._values_batch:
-            self._send_values(self._values_batch)
-            self._values_batch = []
+            try:
+                self._send_values(self._values_batch)
+                self._values_batch = []
+            except (NeptuneApiException, IOError) as e:
+                _logger.warning('Failed to send channel value: %s', e)
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
     def _send_values(self, queued_channels_values):
-        channel_key = lambda value: ChannelNameWithType(value.channel_name, value.channel_type)
+        def channel_key(value):
+            return ChannelNameWithTypeAndNamespace(
+                value.channel_name,
+                value.channel_type,
+                value.channel_namespace
+            )
+
         queued_grouped_by_channel = {channel: list(values)
                                      for channel, values
                                      in groupby(sorted(queued_channels_values, key=channel_key),
                                                 channel_key)}
         channels_with_values = []
         # pylint: disable=protected-access
-        channels_by_name = self._experiment._get_channels(list(queued_grouped_by_channel.keys()))
+        user_channels_by_name = self._experiment._get_channels([
+            (ch.channel_name, ch.channel_type)
+            for ch in queued_grouped_by_channel.keys()
+            if ch.channel_namespace == ChannelNamespace.USER
+        ])
+        system_channels_by_name = self._experiment.get_system_channels()
 
         for channel_key in queued_grouped_by_channel:
-            channel = channels_by_name[channel_key.channel_name]
-            last_x = channel.x if channel.x else 0
+            if channel_key.channel_namespace == ChannelNamespace.USER:
+                channel = user_channels_by_name[channel_key.channel_name]
+            else:
+                channel = system_channels_by_name[channel_key.channel_name]
+            last_x = channel.x if hasattr(channel, 'x') and channel.x else 0
             channel_values = []
             for queued_value in queued_grouped_by_channel[channel_key]:
                 x = queued_value.channel_value.x if queued_value.channel_value.x is not None else last_x + 1
