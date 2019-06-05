@@ -41,7 +41,7 @@ class Experiment(object):
     information about the hardware utilization during the experiment
 
     Args:
-        client(`neptune.Client'): Client object
+        client(`neptune.Client`): Client object
         project(`neptune.Project`)
         _id(`str`)
         internal_id(`str`): UUID
@@ -62,9 +62,6 @@ class Experiment(object):
         >>> experiment = experiments[0]
         >>> experiment
         Experiment(SAL-1609)
-
-    Todo:
-        Column sorting
     """
 
     def __init__(self, client, project, _id, internal_id):
@@ -437,8 +434,8 @@ class Experiment(object):
         """Retrieve RAM, CPU and GPU utilization throughout the experiment.
 
         The returned DataFrame contains 2 columns (x_*, y_*) for each of: RAM, CPU and each GPU.
-        The x_ column contains the time (in milliseconds) from the experiment start,
-        while the y_ column contains the value of the appropriate metric.
+        The ``x_`` column contains the time (in milliseconds) from the experiment start,
+        while the ``y_`` column contains the value of the appropriate metric.
 
         RAM and GPU memory usage is returned in gigabytes.
         CPU and GPU utilization is returned as a percentage (0-100).

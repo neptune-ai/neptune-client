@@ -60,11 +60,6 @@ class Project(object):
         >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
         >>> project
         Project(neptune-ml/Salt-Detection)
-
-    Todo:
-        Drop the pylint line.
-        Explain what internal_id is
-
     """
 
     def __init__(self, client, internal_id, namespace, name):
@@ -161,11 +156,10 @@ class Project(object):
         match this criterion.
 
         Args:
-            id(list): An ID or list of experiment IDs (rowo.g. 'SAN-1' or ['SAN-1', 'SAN-2'])
+            id(list): An ID or list of experiment IDs ('SAN-1' or ['SAN-1', 'SAN-2'])
             state(list): A state or list of experiment states.
                 E.g. 'succeeded' or ['succeeded', 'preempted']
-                Possible states: 'creating', 'waiting', 'initializing', 'running',
-                    'cleaning', 'crashed', 'failed', 'aborted', 'preempted', 'succeeded'
+                Possible states: 'running', 'failed', 'aborted', 'succeeded'.
             owner(list): The owner or list of owners of the experiments. This parameter expects usernames.
             tag(list): A tag or a list of experiment tags. E.g. 'solution-1' or ['solution-1', 'solution-2'].
             min_running_time(int): Minimum running time of an experiment in seconds.
@@ -187,9 +181,6 @@ class Project(object):
             experiments that satisfy your criteria:
 
             >>> project.get_leaderboard(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-        Todo:
-            tags - is it ok now?
         """
 
         leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
