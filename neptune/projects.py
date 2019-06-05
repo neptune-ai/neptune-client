@@ -156,10 +156,10 @@ class Project(object):
         match this criterion.
 
         Args:
-            id(list): An ID or list of experiment IDs (rowo.g. 'SAN-1' or ['SAN-1', 'SAN-2'])
+            id(list): An ID or list of experiment IDs ('SAN-1' or ['SAN-1', 'SAN-2'])
             state(list): A state or list of experiment states.
                 E.g. 'succeeded' or ['succeeded', 'preempted']
-                Possible states: 'creating', 'waiting', 'initializing', 'running', 'cleaning', 'crashed', 'failed', 'aborted', 'preempted', 'succeeded'
+                Possible states: 'running', 'failed', 'aborted', 'succeeded'.
             owner(list): The owner or list of owners of the experiments. This parameter expects usernames.
             tag(list): A tag or a list of experiment tags. E.g. 'solution-1' or ['solution-1', 'solution-2'].
             min_running_time(int): Minimum running time of an experiment in seconds.
