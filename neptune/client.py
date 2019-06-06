@@ -37,7 +37,7 @@ from bravado_core.formatter import SwaggerFormat
 from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
     StorageLimitReached, Unauthorized, ChannelAlreadyExists, ChannelsValuesSendBatchError, SSLError, NotebookNotFound, \
-    PathInProjectNotFound
+    PathInProjectNotFound, ChannelNotFound
 from neptune.checkpoint import Checkpoint
 from neptune.experiments import Experiment
 from neptune.internal.utils.http import extract_response_field
@@ -454,6 +454,17 @@ class Client(object):
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
         except HTTPConflict:
             raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
+
+    @with_api_exceptions_handler
+    def reset_channel(self, channel_id):
+
+        try:
+            self.backend_swagger_client.api.resetChannel(
+                id=channel_id
+            ).response()
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ChannelNotFound(channel_id)
 
     @with_api_exceptions_handler
     def create_system_channel(self, experiment, name, channel_type):

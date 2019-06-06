@@ -83,6 +83,11 @@ class ExperimentNotFound(NeptuneApiException):
             exp=experiment_short_id, project=project_qualified_name))
 
 
+class ChannelNotFound(NeptuneApiException):
+    def __init__(self, channel_id):
+        super(ChannelNotFound, self).__init__("Channel '{id}' not found.".format(id=channel_id))
+
+
 class ExperimentAlreadyFinished(NeptuneApiException):
     def __init__(self, experiment_short_id):
         super(ExperimentAlreadyFinished, self).__init__(
@@ -107,6 +112,12 @@ class ChannelAlreadyExists(NeptuneApiException):
     def __init__(self, experiment_short_id, channel_name):
         super(ChannelAlreadyExists, self).__init__(
             "Channel with name '{}' already exists in experiment '{}'.".format(channel_name, experiment_short_id))
+
+
+class ChannelDoesNotExist(NeptuneApiException):
+    def __init__(self, experiment_short_id, channel_name):
+        super(ChannelDoesNotExist, self).__init__(
+            "Channel with name '{}' does not exist in experiment '{}'.".format(channel_name, experiment_short_id))
 
 
 class ChannelsValuesSendBatchError(NeptuneApiException):

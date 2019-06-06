@@ -23,7 +23,7 @@ import pandas as pd
 import six
 from pandas.errors import EmptyDataError
 
-from neptune.api_exceptions import ExperimentAlreadyFinished
+from neptune.api_exceptions import ExperimentAlreadyFinished, ChannelDoesNotExist
 from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext, NotADirectory
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
@@ -273,36 +273,48 @@ class Experiment(object):
                           experiment=self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
+        return self.log_metric(channel_name, x, y, timestamp)
+
+    def log_metric(self, log_name, x, y=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
         value = ChannelValue(x, dict(numeric_value=y), timestamp)
-        self._channels_values_sender.send(channel_name, ChannelType.NUMERIC.value, value)
+        self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
 
     def send_text(self, channel_name, x, y=None, timestamp=None):
+        return self.log_text(channel_name, x, y, timestamp)
+
+    def log_text(self, log_name, x, y=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
 
         if not isinstance(y, six.string_types):
             raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
         value = ChannelValue(x, dict(text_value=y), timestamp)
-        self._channels_values_sender.send(channel_name, ChannelType.TEXT.value, value)
+        self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
 
     def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
+        return self.log_image(channel_name, x, y, name, description, timestamp)
+
+    def log_image(self, log_name, x, y=None, image_name=None, description=None, timestamp=None):
         x, y = self._get_valid_x_y(x, y)
 
         input_image = dict(
-            name=name,
+            name=image_name,
             description=description,
             data=base64.b64encode(get_image_content(y)).decode('utf-8')
         )
 
         value = ChannelValue(x, dict(image_value=input_image), timestamp)
-        self._channels_values_sender.send(channel_name, ChannelType.IMAGE.value, value)
+        self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
 
     def send_artifact(self, artifact):
+        return self.log_artifact(artifact)
+
+    def log_artifact(self, artifact):
         """
         Raises:
             `StorageLimitReached`: When storage limit in the project has been reached.
@@ -327,6 +339,9 @@ class Experiment(object):
         self._client.download_data(self._project, path, destination_path)
 
     def send_graph(self, graph_id, value):
+        return self.log_graph(graph_id, value)
+
+    def log_graph(self, graph_id, value):
         """Upload a tensorflow graph for this experiment.
 
         Args:
@@ -355,6 +370,12 @@ class Experiment(object):
         """
 
         self._client.put_tensorflow_graph(self, graph_id, value)
+
+    def reset_log(self, log_name):
+        channel = self._find_channel(log_name, ChannelNamespace.USER)
+        if channel is None:
+            raise ChannelDoesNotExist(self.id, log_name)
+        self._client.reset_channel(channel.id)
 
     def get_parameters(self):
         """Retrieve parameters for this experiment.
