@@ -170,16 +170,16 @@ class Experiment(object):
     def append_tag(self, tag, *tags):
         """Append tag(s) to the current experiment.
 
-        Alias: :meth:`~neptune.experiments.Experiment.append_tags`. Only ``[a-zA-Z0-9]`` and ``-`` (dash) are allowed.
+        Alias: :meth:`~neptune.experiments.Experiment.append_tags`. Only ``[a-zA-Z0-9]`` and ``-`` (dash) characters are allowed in tags.
 
         Args:
             tag (single :obj:`str` or multiple :obj:`str` or :obj:`list` of :obj:`str`): Tag(s) to add to the current experiment.
 
                 * If :obj:`str` is passed, singe tag is added.
-                * If multiple, comma separated, :obj:`str` are passed, all of them are added as tags.
+                * If multiple - comma separated - :obj:`str` are passed, all of them are added as tags.
                 * If :obj:`list` of :obj:`str` is passed, all elements of the :obj:`list` are added as tags.
 
-        Example:
+        Examples:
 
             .. code:: python3
 
@@ -197,6 +197,10 @@ class Experiment(object):
                                  tags_to_delete=[])
 
     def append_tags(self, tag, *tags):
+        """Append tag(s) to the current experiment.
+
+        Alias for: :meth:`~neptune.experiments.Experiment.append_tag`
+        """
         self.append_tag(tag, *tags)
 
     def remove_tag(self, tag):
