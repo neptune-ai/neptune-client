@@ -230,7 +230,7 @@ class Project(object):
 
         Args:
             name (:obj:`str`, optional): Default is ``'Untitled'``. Editable name of the experiment.
-                Name is displayed in the experiment's `Details` tab (`Metadata` section) and in `experiments view` as a column.
+                Name is displayed in the experiment's `Details` (`Metadata` section) and in `experiments view` as a column.
 
             description (:obj:`str`, optional): Default is ``''``. Editable description of the experiment.
                 Description is displayed in the experiment's `Details` (`Metadata` section) and can be displayed in the `experiments view` as a column.
