@@ -305,9 +305,34 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
 
     def send_text(self, channel_name, x, y=None, timestamp=None):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_text`
+        """
         return self.log_text(channel_name, x, y, timestamp)
 
     def log_text(self, log_name, x, y=None, timestamp=None):
+        """Log text data to Neptune experiment
+
+        Alias: :meth:`~neptune.experiments.Experiment.send_text`
+
+        If text log exists (determined by ``log_name``), then append new value to it. If does not, create new text log and send first value to it.
+
+        See :ref:`limits<limits-top>` for information about API and storage usage upper bounds.
+
+        Args:
+            log_name (:obj:`str`): name of the text log.
+            x (:obj:`double`): index of log entry being appended. Must be strictly increasing.
+            y (:obj:`str`): text to be appended to this log.
+            timestamp (:obj:`time`, optional): Default is ``None``. Timestamp to be associated with log entry. Must be Unix time. If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_ (Python 3.6 example) is invoked to obtain timestamp.
+
+        Example:
+
+            ..code:: python3
+
+                neptune.log_text()
+                ddsdsa
+                asdasdadas
+
+        """
         x, y = self._get_valid_x_y(x, y)
 
         if not isinstance(y, six.string_types):
