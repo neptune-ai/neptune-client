@@ -168,6 +168,26 @@ class Experiment(object):
         return self._client.get_experiment(self._internal_id).tags
 
     def append_tag(self, tag, *tags):
+        """Append tag(s) to the current experiment.
+
+        Alias: :meth:`~neptune.experiments.Experiment.append_tags`. Only ``[a-zA-Z0-9]`` and ``-`` (dash) are allowed.
+
+        Args:
+            tag (single :obj:`str` or multiple :obj:`str` or :obj:`list` of :obj:`str`): Tag(s) to add to the current experiment.
+
+                * If :obj:`str` is passed, singe tag is added.
+                * If multiple, comma separated, :obj:`str` are passed, all of them are added as tags.
+                * If :obj:`list` of :obj:`str` is passed, all elements of the :obj:`list` are added as tags.
+
+        Example:
+
+            .. code:: python3
+
+                neptune.append_tag('new-tag')  # single tag
+                neptune.append_tag('first-tag', 'second-tag', 'third-tag')  # few str
+                neptune.append_tag(['first-tag', 'second-tag', 'third-tag'])  # list of str
+
+        """
         if isinstance(tag, list):
             tags_list = tag
         else:
