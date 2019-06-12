@@ -223,10 +223,95 @@ class Project(object):
                           git_info=None,
                           hostname=None,
                           notebook_id=None):
-        """
+        """Create and start Neptune experiment.
+
+        Create experiment, set its status to `running` and append it to the top of the experiments view.
+        All parameters are optional, hence minimal invocation: ``neptune.create_experiment()``.
+
+        Args:
+            name (:obj:`str`, optional): Default is ``'Untitled'``. Editable name of the experiment.
+                Name is displayed in the experiment's `Details` tab (`Metadata` section) and in `experiments view` as a column.
+
+            description (:obj:`str`, optional): Default is ``''``. Editable description of the experiment.
+                Description is displayed in the experiment's `Details` (`Metadata` section) and can be displayed in the `experiments view` as a column.
+
+            params (:obj:`dict`, optional): Default is ``{}``. Parameters of the experiment.
+                After experiment creation ``params`` are read-only (see: :meth:`~neptune.experiments.Experiment.get_parameters`).
+                Parameters are displayed in the experiment's `Details` (`Parameters` section) and each key-value pair can be visible in `experiments view` as a column.
+
+            properties (:obj:`dict`, optional): Default is ``{}``. Properties of the experiment.
+                They are editable after experiment is created.
+                Properties are displayed in the experiment's `Details` (`Properties` section) and each key-value pair can be visible in `experiments view` as a column.
+
+            tags (:obj:`list`, optional): Default is ``[]``. Must be list of :obj:`str`. Tags of the experiment.
+                They are editable after experiment is created (see: :meth:`~neptune.experiments.Experiment.append_tag` and :meth:`~neptune.experiments.Experiment.remove_tag`).
+                Tags are displayed in the experiment's `Details` (`Metadata` section) and can be visible in `experiments view` as a column.
+
+            upload_source_files (:obj:`list`, optional): Default is ``['main.py']``, where `'main.py'` is Python file from which experiment was created - name `'main.py'` is just an example here. Must be list of :obj:`str`.
+                Uploaded sources are displayed in the experiment's `Source code` tab. Pass empty list (``[]``) to upload no files.
+
+            abort_callback (:obj:`callable`, optional): Callback that defines how `abort experiment` action in the Web application should work.
+                Actual behavior depends on your setup:
+
+                * (default) If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_ is installed, then current process and it's children are aborted by sending `SIGTERM`. If, after grace period, processes are not terminated, `SIGKILL` is sent.
+                * If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_ is **not** installed, then `abort experiment` action just marks experiment as *aborted* in the Web application. No action is performed on the current process.
+                * If ``abort_callback=callable``, then ``callable`` is executed when `abort experiment` action in the Web application is triggered.
+
+            logger (:obj:`logging.handlers` or `None`, optional): Default is ``None``.
+                If `handler <https://docs.python.org/3.6/library/logging.handlers.html>`_ to `Python logger` is passed, new text log with name "logger" (see: :meth:`~neptune.experiments.Experiment.log_text`) in this experiment is created. Each time `Python logger` logs new data, it is automatically sent to the "logger" in experiment.
+
+            upload_stdout (:obj:`Boolean`, optional): Default is ``True``. Whether to send stdout to experiment's *Monitoring*.
+
+            upload_stderr (:obj:`Boolean`, optional): Default is ``True``. Whether to send stderr to experiment's *Monitoring*.
+
+            send_hardware_metrics (:obj:`Boolean`, optional): Default is ``True``. Whether to send hardware monitoring logs (CPU, GPU, Memory utilization) to experiment's *Monitoring*.
+
+            run_monitoring_thread (:obj:`Boolean`, optional): Default is ``True``. Whether to run thread that pings Neptune server in order to determine if experiment is responsing.
+
+            handle_uncaught_exceptions (:obj:`Boolean`, optional): Default is ``True``.
+
+                * If set to ``True`` and uncaught exception occurs, then Neptune automatically place `Traceback` in the experiment's `Details` and change experiment status to `Failed`.
+                * If set to ``True`` and uncaught exception occurs, then no action is performed in the Web application. As a consequence, experiment's status is `running` or `not responding`.
+
+            hostname (:obj:`str`, optional): Default is ``None``. If ``None``, neptune automatically get `hostname` information. User can also set `hostname` directly by passing :obj:`str`.
+
+        Returns:
+            :class:`~neptune.experiments.Experiment` object that is used to manage experiment and log data to it.
+
         Raises:
             `ExperimentValidationError`: When provided arguments are invalid.
             `ExperimentLimitReached`: When experiment limit in the project has been reached.
+
+        Examples:
+
+            .. code:: python3
+
+                # minimal invoke
+                neptune.create_experiment()
+
+                # explicitly return experiment object
+                experiment = neptune.create_experiment()
+
+                # create experiment with name and two parameters
+                neptune.create_experiment(name='first-pytorch-ever',
+                                          params={'lr': 0.0005,
+                                                  'dropout': 0.2})
+
+                # create experiment with name and description, and no sources files uploaded
+                neptune.create_experiment(name='neural-net-mnist',
+                                          description='neural net trained on MNIST',
+                                          upload_source_files=[])
+
+                # larger example
+                neptune.create_experiment(name='first-pytorch-ever',
+                                          params={'lr': 0.0005,
+                                                  'dropout': 0.2},
+                                          properties={'key1': 'value1',
+                                                      'key2': 17,
+                                                      'key3': 'other-value'},
+                                          description='write longer description here',
+                                          tags=['list-of', 'tags', 'goes-here', 'as-list-of-strings'],
+                                          upload_source_files=['training_with_pytorch.py', 'net.py'])
         """
 
         if name is None:
