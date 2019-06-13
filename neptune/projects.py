@@ -229,36 +229,53 @@ class Project(object):
         All parameters are optional, hence minimal invocation: ``neptune.create_experiment()``.
 
         Args:
-            name (:obj:`str`, optional): Default is ``'Untitled'``. Editable name of the experiment.
-                Name is displayed in the experiment's `Details` (`Metadata` section) and in `experiments view` as a column.
+            name (:obj:`str`, optional, default is ``'Untitled'``):
+                Editable name of the experiment.
+                Name is displayed in the experiment's `Details` (`Metadata` section)
+                and in `experiments view` as a column.
 
-            description (:obj:`str`, optional): Default is ``''``. Editable description of the experiment.
-                Description is displayed in the experiment's `Details` (`Metadata` section) and can be displayed in the `experiments view` as a column.
+            description (:obj:`str`, optional, default is ``''``):
+                Editable description of the experiment.
+                Description is displayed in the experiment's `Details` (`Metadata` section)
+                and can be displayed in the `experiments view` as a column.
 
-            params (:obj:`dict`, optional): Default is ``{}``. Parameters of the experiment.
-                After experiment creation ``params`` are read-only (see: :meth:`~neptune.experiments.Experiment.get_parameters`).
-                Parameters are displayed in the experiment's `Details` (`Parameters` section) and each key-value pair can be visible in `experiments view` as a column.
+            params (:obj:`dict`, optional, default is ``{}``):
+                Parameters of the experiment.
+                After experiment creation ``params`` are read-only
+                (see: :meth:`~neptune.experiments.Experiment.get_parameters`).
+                Parameters are displayed in the experiment's `Details` (`Parameters` section)
+                and each key-value pair can be viewed in `experiments view` as a column.
 
-            properties (:obj:`dict`, optional): Default is ``{}``. Properties of the experiment.
+            properties (:obj:`dict`, optional, default is ``{}``):
+                Properties of the experiment.
                 They are editable after experiment is created.
-                Properties are displayed in the experiment's `Details` (`Properties` section) and each key-value pair can be visible in `experiments view` as a column.
+                Properties are displayed in the experiment's `Details` (`Properties` section)
+                and each key-value pair can be viewed in `experiments view` as a column.
 
-            tags (:obj:`list`, optional): Default is ``[]``. Must be list of :obj:`str`. Tags of the experiment.
-                They are editable after experiment is created (see: :meth:`~neptune.experiments.Experiment.append_tag` and :meth:`~neptune.experiments.Experiment.remove_tag`).
-                Tags are displayed in the experiment's `Details` (`Metadata` section) and can be visible in `experiments view` as a column.
+            tags (:obj:`list`, optional, default is ``[]``):
+                Must be list of :obj:`str`. Tags of the experiment.
+                They are editable after experiment is created
+                (see: :meth:`~neptune.experiments.Experiment.append_tag`
+                and :meth:`~neptune.experiments.Experiment.remove_tag`).
+                Tags are displayed in the experiment's `Details` (`Metadata` section)
+                and can be viewed in `experiments view` as a column.
 
-            upload_source_files (:obj:`list`, optional): Default is ``['main.py']``, where `'main.py'` is Python file from which experiment was created - name `'main.py'` is just an example here. Must be list of :obj:`str`.
-                Uploaded sources are displayed in the experiment's `Source code` tab. Pass empty list (``[]``) to upload no files.
+            upload_source_files (:obj:`list`, optional, default is ``['main.py']``):
+                | Where `'main.py'` is Python file from which experiment was created
+                  (name `'main.py'` is just an example here).
+                  Must be list of :obj:`str`.
+                  Uploaded sources are displayed in the experiment's `Source code` tab.
+                | Pass empty list (``[]``) to upload no files.
 
-            abort_callback (:obj:`callable`, optional): Callback that defines how `abort experiment` action in the Web application should work.
+            abort_callback (:obj:`callable`, optional, default is ``None``):
+                Callback that defines how `abort experiment` action in the Web application should work.
                 Actual behavior depends on your setup:
 
-                * (default) If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_ is installed, then current process and it's children are aborted by sending `SIGTERM`. If, after grace period, processes are not terminated, `SIGKILL` is sent.
-                * If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_ is **not** installed, then `abort experiment` action just marks experiment as *aborted* in the Web application. No action is performed on the current process.
-                * If ``abort_callback=callable``, then ``callable`` is executed when `abort experiment` action in the Web application is triggered.
+                    * (default) If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_ is installed, then current process and it's children are aborted by sending `SIGTERM`. If, after grace period, processes are not terminated, `SIGKILL` is sent.
+                    * If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_ is **not** installed, then `abort experiment` action just marks experiment as *aborted* in the Web application. No action is performed on the current process.
+                    * If ``abort_callback=callable``, then ``callable`` is executed when `abort experiment` action in the Web application is triggered.
 
-            logger (:obj:`logging.handlers` or `None`, optional): Default is ``None``.
-                If `handler <https://docs.python.org/3.6/library/logging.handlers.html>`_ to `Python logger` is passed, new text log with name "logger" (see: :meth:`~neptune.experiments.Experiment.log_text`) in this experiment is created. Each time `Python logger` logs new data, it is automatically sent to the "logger" in experiment.
+            logger (:obj:`logging.handlers` or `None`, optional): Default is ``None``. If `handler <https://docs.python.org/3.6/library/logging.handlers.html>`_ to `Python logger` is passed, new experiment's `text log` (see: :meth:`~neptune.experiments.Experiment.log_text`) with name `"logger"` is created. Each time `Python logger` logs new data, it is automatically sent to the `"logger"` in experiment. As a results all data from `Python logger` are in the `Logs` tab in the experiment.
 
             upload_stdout (:obj:`Boolean`, optional): Default is ``True``. Whether to send stdout to experiment's *Monitoring*.
 
@@ -266,7 +283,7 @@ class Project(object):
 
             send_hardware_metrics (:obj:`Boolean`, optional): Default is ``True``. Whether to send hardware monitoring logs (CPU, GPU, Memory utilization) to experiment's *Monitoring*.
 
-            run_monitoring_thread (:obj:`Boolean`, optional): Default is ``True``. Whether to run thread that pings Neptune server in order to determine if experiment is responsing.
+            run_monitoring_thread (:obj:`Boolean`, optional): Default is ``True``. Whether to run thread that pings Neptune server in order to determine if experiment is responsive.
 
             handle_uncaught_exceptions (:obj:`Boolean`, optional): Default is ``True``.
 
