@@ -59,7 +59,7 @@ Experiment
 ----------
 
 Let's dive into the **create_experiment** method and what you can track with it.
-As you remember in the minimal example we started and experiment logged something to it and stopped it:
+As you remember in the minimal example we started an experiment, logged something to it, and stopped it:
 
 .. code:: Python
 

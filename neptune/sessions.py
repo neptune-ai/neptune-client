@@ -38,8 +38,7 @@ class Session(object):
             calls to Neptune API.
 
     Examples:
-        Examples should be written in doctest format, and should illustrate how
-        to use the function.
+        Create session
 
         >>> from neptune.sessions import Session
         >>> session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
