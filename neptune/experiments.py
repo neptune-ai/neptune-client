@@ -170,14 +170,16 @@ class Experiment(object):
     def append_tag(self, tag, *tags):
         """Append tag(s) to the current experiment.
 
-        Alias: :meth:`~neptune.experiments.Experiment.append_tags`. Only ``[a-zA-Z0-9]`` and ``-`` (dash) characters are allowed in tags.
+        Alias: :meth:`~neptune.experiments.Experiment.append_tags`.
+        Only ``[a-zA-Z0-9]`` and ``-`` (dash) characters are allowed in tags.
 
         Args:
-            tag (single :obj:`str` or multiple :obj:`str` or :obj:`list` of :obj:`str`): Tag(s) to add to the current experiment.
+            tag (single :obj:`str` or multiple :obj:`str` or :obj:`list` of :obj:`str`):
+                Tag(s) to add to the current experiment.
 
-                * If :obj:`str` is passed, singe tag is added.
-                * If multiple - comma separated - :obj:`str` are passed, all of them are added as tags.
-                * If :obj:`list` of :obj:`str` is passed, all elements of the :obj:`list` are added as tags.
+                    * If :obj:`str` is passed, singe tag is added.
+                    * If multiple - comma separated - :obj:`str` are passed, all of them are added as tags.
+                    * If :obj:`list` of :obj:`str` is passed, all elements of the :obj:`list` are added as tags.
 
         Examples:
 
@@ -316,25 +318,29 @@ class Experiment(object):
     def log_text(self, log_name, x, y=None, timestamp=None):
         """Log text data to Neptune experiment
 
-        Alias: :meth:`~neptune.experiments.Experiment.send_text`
-
-        If text log exists (determined by ``log_name``), then append new value to it. If does not, create new text log and send first value to it.
-
-        See :ref:`limits<limits-top>` for information about API and storage usage upper bounds.
+        | Alias: :meth:`~neptune.experiments.Experiment.send_text`
+        | If text log exists (determined by ``log_name``), then append new value to it.
+          If does not, create new text log and send first value to it.
+        | See :ref:`limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
             log_name (:obj:`str`): name of the text log.
             x (:obj:`double`): index of log entry being appended. Must be strictly increasing.
             y (:obj:`str`): text to be appended to this log.
-            timestamp (:obj:`time`, optional): Default is ``None``. Timestamp to be associated with log entry. Must be Unix time. If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_ (Python 3.6 example) is invoked to obtain timestamp.
+            timestamp (:obj:`time`, optional, default is ``None``):
+                Timestamp to be associated with log entry. Must be Unix time.
+                If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_
+                (Python 3.6 example) is invoked to obtain timestamp.
 
-        Example:
+        Examples:
 
-            ..code:: python3
+            .. code:: python3
 
-                neptune.log_text()
-                ddsdsa
-                asdasdadas
+                # common case, where log name and data are passed
+                neptune.log_text('my_text_data', str(data_item))
+
+                # log_name, x and timestamp are passed
+                log_text(log_name='logging_losses_as_text', x=str(val_loss), timestamp=1560430912)
 
         """
         x, y = self._get_valid_x_y(x, y)
