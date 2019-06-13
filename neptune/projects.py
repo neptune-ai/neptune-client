@@ -271,26 +271,45 @@ class Project(object):
                 Callback that defines how `abort experiment` action in the Web application should work.
                 Actual behavior depends on your setup:
 
-                    * (default) If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_ is installed, then current process and it's children are aborted by sending `SIGTERM`. If, after grace period, processes are not terminated, `SIGKILL` is sent.
-                    * If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_ is **not** installed, then `abort experiment` action just marks experiment as *aborted* in the Web application. No action is performed on the current process.
-                    * If ``abort_callback=callable``, then ``callable`` is executed when `abort experiment` action in the Web application is triggered.
+                    * (default) If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_
+                      is installed, then current process and it's children are aborted by sending `SIGTERM`.
+                      If, after grace period, processes are not terminated, `SIGKILL` is sent.
+                    * If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_
+                      is **not** installed, then `abort experiment` action just marks experiment as *aborted*
+                      in the Web application. No action is performed on the current process.
+                    * If ``abort_callback=callable``, then ``callable`` is executed when `abort experiment` action
+                      in the Web application is triggered.
 
-            logger (:obj:`logging.handlers` or `None`, optional): Default is ``None``. If `handler <https://docs.python.org/3.6/library/logging.handlers.html>`_ to `Python logger` is passed, new experiment's `text log` (see: :meth:`~neptune.experiments.Experiment.log_text`) with name `"logger"` is created. Each time `Python logger` logs new data, it is automatically sent to the `"logger"` in experiment. As a results all data from `Python logger` are in the `Logs` tab in the experiment.
+            logger (:obj:`logging.handlers` or `None`, optional, default is ``None``):
+                If `handler <https://docs.python.org/3.6/library/logging.handlers.html>`_
+                to `Python logger` is passed, new experiment's `text log`
+                (see: :meth:`~neptune.experiments.Experiment.log_text`) with name `"logger"` is created.
+                Each time `Python logger` logs new data, it is automatically sent to the `"logger"` in experiment.
+                As a results all data from `Python logger` are in the `Logs` tab in the experiment.
 
-            upload_stdout (:obj:`Boolean`, optional): Default is ``True``. Whether to send stdout to experiment's *Monitoring*.
+            upload_stdout (:obj:`Boolean`, optional, default is ``True``):
+                Whether to send stdout to experiment's *Monitoring*.
 
-            upload_stderr (:obj:`Boolean`, optional): Default is ``True``. Whether to send stderr to experiment's *Monitoring*.
+            upload_stderr (:obj:`Boolean`, optional, default is ``True``):
+                Whether to send stderr to experiment's *Monitoring*.
 
-            send_hardware_metrics (:obj:`Boolean`, optional): Default is ``True``. Whether to send hardware monitoring logs (CPU, GPU, Memory utilization) to experiment's *Monitoring*.
+            send_hardware_metrics (:obj:`Boolean`, optional, default is ``True``):
+                Whether to send hardware monitoring logs (CPU, GPU, Memory utilization) to experiment's *Monitoring*.
 
-            run_monitoring_thread (:obj:`Boolean`, optional): Default is ``True``. Whether to run thread that pings Neptune server in order to determine if experiment is responsive.
+            run_monitoring_thread (:obj:`Boolean`, optional, default is ``True``):
+                Whether to run thread that pings Neptune server in order to determine if experiment is responsive.
 
-            handle_uncaught_exceptions (:obj:`Boolean`, optional): Default is ``True``.
+            handle_uncaught_exceptions (:obj:`Boolean`, optional, default is ``True``):
+                Two options ``True`` and ``False`` are possible:
 
-                * If set to ``True`` and uncaught exception occurs, then Neptune automatically place `Traceback` in the experiment's `Details` and change experiment status to `Failed`.
-                * If set to ``True`` and uncaught exception occurs, then no action is performed in the Web application. As a consequence, experiment's status is `running` or `not responding`.
+                    * If set to ``True`` and uncaught exception occurs, then Neptune automatically place
+                      `Traceback` in the experiment's `Details` and change experiment status to `Failed`.
+                    * If set to ``False`` and uncaught exception occurs, then no action is performed
+                      in the Web application. As a consequence, experiment's status is `running` or `not responding`.
 
-            hostname (:obj:`str`, optional): Default is ``None``. If ``None``, neptune automatically get `hostname` information. User can also set `hostname` directly by passing :obj:`str`.
+            hostname (:obj:`str`, optional, default is ``None``):
+                If ``None``, neptune automatically get `hostname` information.
+                User can also set `hostname` directly by passing :obj:`str`.
 
         Returns:
             :class:`~neptune.experiments.Experiment` object that is used to manage experiment and log data to it.
