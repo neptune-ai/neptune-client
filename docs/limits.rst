@@ -23,7 +23,7 @@ If you hit the limit, you can: start new project, or contact us directly at `con
 
 Experiment's logs limit
 -----------------------
-Each log in Neptune (metric, text, image) is limited to the 10k latest values. Beyond that value, only latest 10k values are displayed in the Web application. However, entire series is available to download in the `Logs` section of the experiment.
+Each log type in Neptune (metric, text, image) is limited to 10k data points.
 
 API calls rate limits
 ---------------------
