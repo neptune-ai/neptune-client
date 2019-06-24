@@ -302,6 +302,31 @@ class Experiment(object):
         return self.log_metric(channel_name, x, y, timestamp)
 
     def log_metric(self, log_name, x, y=None, timestamp=None):
+        """Uploads numerical metric value to Neptune
+
+        If a log with provided name does not exist, it is created automatically.
+
+        If `y` parameter is not provided, parameter `x` is translated to log value (`y` parameter) and
+        substituted with auto-incremented value stored locally.
+
+        For example (assuming 'log' does not exist):
+        >>> experiment.log_metric('log', 5)
+        >>> experiment.log_metric('log', 10)
+        >>> experiment.log_metric('log', 8)
+
+        Is equivalent to:
+        >>> experiment.log_metric('log', 0, 5)
+        >>> experiment.log_metric('log', 1, 10)
+        >>> experiment.log_metric('log', 2, 8)
+
+        Logs are uploaded in batches via a queue due to performance reasons
+
+        Args:
+            log_name(`str`): The name of log to upload, required
+            x(`double`): The X coordinate of your log. Subsequent calls require incremental values
+            y(`double`): The value of the log - image, str or double, depending on channel type
+
+        """
         x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
@@ -355,6 +380,31 @@ class Experiment(object):
         return self.log_image(channel_name, x, y, name, description, timestamp)
 
     def log_image(self, log_name, x, y=None, image_name=None, description=None, timestamp=None):
+        """Uploads an image value to Neptune
+
+        If a log with provided name does not exist, it is created automatically.
+
+        If `y` parameter is not provided, parameter `x` is translated to log value (`y` parameter) and
+        substituted with auto-incremented value stored locally.
+
+        For example (assuming 'log' does not exist):
+        >>> experiment.log_metric('log', '<PIL image 1>')
+        >>> experiment.log_metric('log', '<PIL image 2>')
+        >>> experiment.log_metric('log', '<PIL image 3>')
+
+        Is equivalent to:
+        >>> experiment.log_metric('log', 0, '<PIL image 1>')
+        >>> experiment.log_metric('log', 1, '<PIL image 2>')
+        >>> experiment.log_metric('log', 2, '<PIL image 3>')
+
+        Logs are uploaded in batches via a queue due to performance reasons
+
+        Args:
+            log_name(`str`): The name of log to upload, required
+            x(`double`): The X coordinate of your log. Subsequent calls require incremental values
+            y(`PIL image`): The value of the log - image, str or double, depending on channel type
+
+        """
         x, y = self._get_valid_x_y(x, y)
 
         input_image = dict(
