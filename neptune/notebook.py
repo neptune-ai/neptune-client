@@ -24,9 +24,9 @@ class Notebook(object):
 
     Args:
         client(`neptune.Client`): Client object
-        project(`neptune.Project`):
+        project(`neptune.Project`): Project object
         _id(`str`): Notebook uuid
-        owner(`str`):
+        owner(`str`): Notebook owner - original creator
 
 
     Examples:
@@ -55,13 +55,44 @@ class Notebook(object):
         return self._owner
 
     def add_checkpoint(self, file_path):
+        """Uploads a new version of notebook to Neptune
+
+        Args:
+            file_path(`str`): File path containing notebook contents (.ipynb)
+
+        Examples:
+        Instantiate a session and fetch a project.
+
+        >>> import neptune
+        >>> project = neptune.init()
+
+        Create a notebook.
+
+        >>> notebook = project.create_notebook('file.ipynb')
+
+        Change content in your notebook
+
+        Upload new checkpoint
+
+        >>> notebook.add_checkpoint('file.ipynb')
+        """
         validate_notebook_path(file_path)
 
         with open(file_path) as f:
             return self._client.create_checkpoint(self.id, os.path.abspath(file_path), f)
 
     def get_path(self):
+        """Returns the path used to upload the current checkpoint of this notebook
+
+        Returns:
+            str: the path of current checkpoint
+        """
         return self._client.get_last_checkpoint(self._project, self._id).path
 
     def get_name(self):
+        """Returns the name used to upload the current checkpoint of this notebook
+
+        Returns:
+            str: the name of current checkpoint
+        """
         return self._client.get_last_checkpoint(self._project, self._id).name
