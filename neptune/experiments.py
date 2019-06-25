@@ -165,6 +165,11 @@ class Experiment(object):
         }
 
     def get_tags(self):
+        """Returns the current list of tags for this experiment
+
+        Returns:
+            An :obj:`list` of :obj:`str` of all current tags for this experiment
+        """
         return self._client.get_experiment(self._internal_id).tags
 
     def append_tag(self, tag, *tags):
@@ -206,15 +211,24 @@ class Experiment(object):
         self.append_tag(tag, *tags)
 
     def remove_tag(self, tag):
+        """Removes a single tag from this experiment
+
+        Removing a tag that is not assigned to this experiment is silently ignored
+        """
         self._client.update_tags(experiment=self,
                                  tags_to_add=[],
                                  tags_to_delete=[tag])
 
     def get_channels(self):
-        """Retrieve all channel names along with their representations for this experiment.
+        """Alias for :meth:`~neptune.experiments.Experiment.get_logs`
+        """
+        return self.get_logs()
+
+    def get_logs(self):
+        """Retrieve all log names along with their representations for this experiment.
 
         Returns:
-            dict: A dictionary mapping a channel name to channel.
+            dict: A dictionary mapping a log name to log.
 
         Examples:
             Instantiate a session.
@@ -233,7 +247,7 @@ class Experiment(object):
 
             Get experiment channels.
 
-            >>> experiment.get_channels()
+            >>> experiment.get_logs()
 
         """
         experiment = self._client.get_experiment(self.internal_id)
@@ -299,6 +313,8 @@ class Experiment(object):
                           experiment=self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_metric`
+        """
         return self.log_metric(channel_name, x, y, timestamp)
 
     def log_metric(self, log_name, x, y=None, timestamp=None):
@@ -309,15 +325,16 @@ class Experiment(object):
         If `y` parameter is not provided, parameter `x` is translated to log value (`y` parameter) and
         substituted with auto-incremented value stored locally.
 
-        For example (assuming 'log' does not exist):
-        >>> experiment.log_metric('log', 5)
-        >>> experiment.log_metric('log', 10)
-        >>> experiment.log_metric('log', 8)
+        Examples:
+            Assuming 'log' does not exists:
+            >>> experiment.log_metric('log', 5)
+            >>> experiment.log_metric('log', 10)
+            >>> experiment.log_metric('log', 8)
 
-        Is equivalent to:
-        >>> experiment.log_metric('log', 0, 5)
-        >>> experiment.log_metric('log', 1, 10)
-        >>> experiment.log_metric('log', 2, 8)
+            Is equivalent to:
+            >>> experiment.log_metric('log', 0, 5)
+            >>> experiment.log_metric('log', 1, 10)
+            >>> experiment.log_metric('log', 2, 8)
 
         Logs are uploaded in batches via a queue due to performance reasons
 
@@ -377,6 +394,8 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
 
     def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_image`
+        """
         return self.log_image(channel_name, x, y, name, description, timestamp)
 
     def log_image(self, log_name, x, y=None, image_name=None, description=None, timestamp=None):
@@ -387,15 +406,16 @@ class Experiment(object):
         If `y` parameter is not provided, parameter `x` is translated to log value (`y` parameter) and
         substituted with auto-incremented value stored locally.
 
-        For example (assuming 'log' does not exist):
-        >>> experiment.log_metric('log', '<PIL image 1>')
-        >>> experiment.log_metric('log', '<PIL image 2>')
-        >>> experiment.log_metric('log', '<PIL image 3>')
+        Examples:
+            Assuming 'log' does not exists:
+            >>> experiment.log_metric('log', '<PIL image 1>')
+            >>> experiment.log_metric('log', '<PIL image 2>')
+            >>> experiment.log_metric('log', '<PIL image 3>')
 
-        Is equivalent to:
-        >>> experiment.log_metric('log', 0, '<PIL image 1>')
-        >>> experiment.log_metric('log', 1, '<PIL image 2>')
-        >>> experiment.log_metric('log', 2, '<PIL image 3>')
+            Is equivalent to:
+            >>> experiment.log_metric('log', 0, '<PIL image 1>')
+            >>> experiment.log_metric('log', 1, '<PIL image 2>')
+            >>> experiment.log_metric('log', 2, '<PIL image 3>')
 
         Logs are uploaded in batches via a queue due to performance reasons
 
@@ -417,6 +437,8 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
 
     def send_artifact(self, artifact):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
+        """
         return self.log_artifact(artifact)
 
     def log_artifact(self, artifact):
@@ -444,6 +466,8 @@ class Experiment(object):
         self._client.download_data(self._project, path, destination_path)
 
     def send_graph(self, graph_id, value):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_graph`
+        """
         return self.log_graph(graph_id, value)
 
     def log_graph(self, graph_id, value):
@@ -477,6 +501,24 @@ class Experiment(object):
         self._client.put_tensorflow_graph(self, graph_id, value)
 
     def reset_log(self, log_name):
+        """Resets the log.
+
+        Removes all data and offsets from the log and enables it to be reused from scratch
+
+        Examples:
+            >>> experiment.log_metric('metric', 1)
+            >>> experiment.reset_log('metric')
+            >>> experiment.log_metric('metric', 2)
+
+            Check the frontend to see charts, log 'metric' will have only one value - 2
+
+        Args:
+            log_name(`str`): The name of log to reset
+
+        Raises:
+            `ChannelDoesNotExist`: When the log `log_name` does not exist on the server
+
+        """
         channel = self._find_channel(log_name, ChannelNamespace.USER)
         if channel is None:
             raise ChannelDoesNotExist(self.id, log_name)
