@@ -55,7 +55,7 @@ def set_project(project_qualified_name):
         global session, project
 
         if session is None:
-            session = init(project_qualified_name=project_qualified_name)
+            init(project_qualified_name=project_qualified_name)
         else:
             project = session.get_project(project_qualified_name)
 
