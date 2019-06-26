@@ -30,7 +30,6 @@ project = None
 __lock = threading.RLock()
 
 
-
 def init(project_qualified_name=None, api_token=None, proxies=None):
     if project_qualified_name is None:
         project_qualified_name = os.getenv(envs.PROJECT_ENV_NAME)
@@ -78,6 +77,11 @@ def create_experiment(name=None,
                       git_info=None,
                       hostname=None,
                       notebook_id=None):
+    """Create and start Neptune experiment.
+
+    Alias for: :meth:`~neptune.project.create_experiment()`
+    """
+
     # pylint: disable=global-statement
     global project
     if project is None:
@@ -106,8 +110,20 @@ def create_experiment(name=None,
 get_experiment = experiments.get_current_experiment
 
 
-def append_tag(tag):
-    get_experiment().append_tag(tag)
+def append_tag(tag, *tags):
+    """Append tag(s) to the experiment on the top of experiments view.
+
+    Alias for: :meth:`~neptune.get_experiment().append_tag`
+    """
+    get_experiment().append_tag(tag, *tags)
+
+
+def append_tags(tag, *tags):
+    """Append tag(s) to the experiment on the top of experiments view.
+
+    Alias for: :meth:`~neptune.get_experiment().append_tag`
+    """
+    get_experiment().append_tag(tag, *tags)
 
 
 def remove_tag(tag):
