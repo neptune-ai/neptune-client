@@ -165,10 +165,17 @@ class Experiment(object):
         }
 
     def get_tags(self):
-        """Returns the current list of tags for this experiment
+        """Get tags associated with experiment.
 
         Returns:
-            An :obj:`list` of :obj:`str` of all current tags for this experiment
+            :obj:`list` of :obj:`str` with all tags for this experiment.
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.get_tags()
         """
         return self._client.get_experiment(self._internal_id).tags
 
@@ -211,9 +218,21 @@ class Experiment(object):
         self.append_tag(tag, *tags)
 
     def remove_tag(self, tag):
-        """Removes a single tag from this experiment
+        """Removes single tag from experiment.
 
-        Removing a tag that is not assigned to this experiment is silently ignored
+        Args:
+            tag (:obj:`str`): Tag to be removed
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                # assuming experiment has tags: `['tag-1', 'tag-2']`.
+                experiment.remove_tag('tag-1')
+
+        Note:
+            Removing a tag that is not assigned to this experiment is silently ignored.
         """
         self._client.update_tags(experiment=self,
                                  tags_to_add=[],
