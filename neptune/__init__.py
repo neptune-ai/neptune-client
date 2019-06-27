@@ -30,46 +30,51 @@ project = None
 __lock = threading.RLock()
 
 
-
 def init(project_qualified_name=None, api_token=None, proxies=None):
-    """Initialize neptune-client library to work with specific project.
+    """Initialize `Neptune client library <https://github.com/neptune-ml/neptune-client>`_ to work with
+    specific project.
 
-            Authorize user, sets value of global variable ``project`` to an object that can be use to create or list
-            experiments and notebooks, etc.
+    Authorize user, sets value of global variable ``project`` to :class:`~neptune.projects.Project` object
+    that can be use to create or list experiments and notebooks, etc.
 
-            Args:
-                project_qualified_name (:obj:`str`, optional, default is ``None``):
-                    Qualified name of a project in a form of ``namespace/project_name``.
-                    If ``None``, the value of ``NEPTUNE_PROJECT`` environment variable will be taken.
+    Args:
+        project_qualified_name (:obj:`str`, optional, default is ``None``):
+            Qualified name of a project in a form of ``namespace/project_name``.
+            If ``None``, the value of ``NEPTUNE_PROJECT`` environment variable will be taken.
 
-                api_token (:obj:`str`, optional, default is ``None``):
-                    User's API token.
-                    If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
-                    NOTICE: It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
-                    placing your API token in plain text in your source code.
+        api_token (:obj:`str`, optional, default is ``None``):
+            User's API token.
+            If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
 
-                proxies (:obj:`str`, optional, default is ``None``):
+        proxies (:obj:`str`, optional, default is ``None``):
 
-            Returns:
-                :class:`~neptune.projects.Project` object that is used to create or list experiments and notebooks, etc.
+    Note:
+        It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
+        placing your API token in plain text in your source code.
 
-            Raises:
-                `MissingApiToken`: When ``api_token`` is None
-                    and ``NEPTUNE_API_TOKEN`` environment variable was not set.
-                `MissingProjectQualifiedName`: When ``project_qualified_name`` is None and ``NEPTUNE_PROJECT``
-                    environment variable was not set.
-                `InvalidApiKey`: When given api_token is malformed.
-                `Unauthorized`: When given api_token is invalid.
+    Returns:
+        :class:`~neptune.projects.Project` object that is used to create or list experiments and notebooks, etc.
 
-            Examples:
+    Raises:
+        `MissingApiToken`: When ``api_token`` is None
+            and ``NEPTUNE_API_TOKEN`` environment variable was not set.
 
-                .. code:: python3
+        `MissingProjectQualifiedName`: When ``project_qualified_name`` is None and ``NEPTUNE_PROJECT``
+            environment variable was not set.
 
-                    # minimal invoke
-                    neptune.init()
+        `InvalidApiKey`: When given ``api_token`` is malformed.
 
-                    # specifying project name
-                    neptune.init('jack/sandbox')
+        `Unauthorized`: When given ``api_token`` is invalid.
+
+    Examples:
+
+        .. code:: python3
+
+            # minimal invoke
+            neptune.init()
+
+            # specifying project name
+            neptune.init('jack/sandbox')
     """
     # TODO: Document `proxies` argument.
 
@@ -91,30 +96,30 @@ def init(project_qualified_name=None, api_token=None, proxies=None):
 
 
 def set_project(project_qualified_name):
-    """Setups neptune-client library to work with specific project.
+    """Setups `Neptune client library <https://github.com/neptune-ml/neptune-client>`_ to work with specific project.
 
-            Sets value of global variable ``project`` to an object that can be use to create or list
-            experiments and notebooks, etc.
-            If library was not initialized previously via ``init`` call it will be initialized with API token taken
-            from ``NEPTUNE_API_TOKEN`` environment variable.
+    | Sets value of global variable ``project`` to :class:`~neptune.projects.Project` object
+      that can be use to create or list experiments and notebooks, etc.
+    | If Neptune client library was not previously initialized via :meth:`~neptune.init` call
+      it will be initialized with API token taken from ``NEPTUNE_API_TOKEN`` environment variable.
 
-            Args:
-                project_qualified_name (:obj:`str`):
-                    Qualified name of a project in a form of ``namespace/project_name``.
+    Args:
+        project_qualified_name (:obj:`str`):
+            Qualified name of a project in a form of ``namespace/project_name``.
 
-            Returns:
-                :class:`~neptune.projects.Project` object that is used to create or list experiments and notebooks, etc.
+    Returns:
+        :class:`~neptune.projects.Project` object that is used to create or list experiments and notebooks, etc.
 
-            Raises:
-                `MissingApiToken`: When library was not initialized previously by ``init`` call and
-                    ``NEPTUNE_API_TOKEN`` environment variable is not set
+    Raises:
+        `MissingApiToken`: When library was not initialized previously by ``init`` call and
+            ``NEPTUNE_API_TOKEN`` environment variable is not set
 
-            Examples:
+    Examples:
 
-                .. code:: python3
+        .. code:: python3
 
-                    # minimal invoke
-                    neptune.set_project('jack/sandbox')
+            # minimal invoke
+            neptune.set_project('jack/sandbox')
     """
 
     # pylint: disable=global-statement
