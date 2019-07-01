@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from collections import OrderedDict
 import re
+from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
 from neptune.client import Client
@@ -61,9 +61,31 @@ class Session(object):
         self._client = Client(self.credentials.api_address, self.credentials.api_token, proxies)
 
     def get_project(self, project_qualified_name):
-        """
+        """Get a project with given project qualified name.
+
+        In order to access experiment data one needs to get a `Project` object first.
+        This method gives you the ability to obtain a `Project` object for a project with given project qualified name,
+        ie. project name preceded by the namespace to which this project belongs.
+
+        Args:
+            project_qualified_name(str): A full, qualified project name.
+
+        Returns:
+            `neptune.project.Project` object.
+
         Raises:
             `ProjectNotFound`: When a project with given name does not exist.
+
+        Examples:
+            First, you need to create a Session instance:
+
+            >>> from neptune.sessions import Session
+            >>> session = Session()
+
+            Now, you can get a project by it's full name, for example:
+
+            >>> session.get_project('neptune-ml/Home-Credit-Default-Risk')
+            Project(neptune-ml/Home-Credit-Default-Risk)
         """
         if not project_qualified_name:
             raise ProjectNotFound(project_qualified_name)
