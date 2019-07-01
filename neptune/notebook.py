@@ -31,13 +31,12 @@ class Notebook(object):
 
     Examples:
         Instantiate a session and fetch a project.
+        .. code:: python3
+            import neptune
+            project = neptune.init()
 
-        >>> import neptune
-        >>> project = neptune.init()
-
-        Create a notebook.
-
-        >>> notebook = project.create_notebook('file.ipynb')
+            # Create a notebook.
+            notebook = project.create_notebook('file.ipynb')
     """
 
     def __init__(self, client, project, _id, owner):
@@ -55,26 +54,24 @@ class Notebook(object):
         return self._owner
 
     def add_checkpoint(self, file_path):
-        """Uploads a new version of notebook to Neptune
+        """Uploads new version of notebook to Neptune
 
         Args:
             file_path(`str`): File path containing notebook contents (.ipynb)
 
-        Examples:
-        Instantiate a session and fetch a project.
+        Example:
+            Instantiate a session and fetch a project.
+            .. code:: python3
+                import neptune
+                project = neptune.init()
 
-        >>> import neptune
-        >>> project = neptune.init()
+                # Create a notebook.
+                notebook = project.create_notebook('file.ipynb')
 
-        Create a notebook.
+                # Change content in your notebook & save it
 
-        >>> notebook = project.create_notebook('file.ipynb')
-
-        Change content in your notebook
-
-        Upload new checkpoint
-
-        >>> notebook.add_checkpoint('file.ipynb')
+                # Upload new checkpoint
+                notebook.add_checkpoint('file.ipynb')
         """
         validate_notebook_path(file_path)
 

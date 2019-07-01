@@ -249,24 +249,21 @@ class Experiment(object):
         Returns:
             dict: A dictionary mapping a log name to log.
 
-        Examples:
-            Instantiate a session.
+        Example:
+            .. code:: python3
+                # Instantiate a session.
+                from neptune.sessions import Session
+                session = Session()
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+                # Fetch a project and a list of experiments.
+                project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+                experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
 
-            Fetch a project and a list of experiments.
+                # Get an experiment instance.
+                experiment = experiments[0]
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment channels.
-
-            >>> experiment.get_logs()
+                # Get experiment logs.
+                experiment.get_logs()
 
         """
         experiment = self._client.get_experiment(self.internal_id)
@@ -344,24 +341,25 @@ class Experiment(object):
         If `y` parameter is not provided, parameter `x` is translated to log value (`y` parameter) and
         substituted with auto-incremented value stored locally.
 
-        Examples:
-            Assuming 'log' does not exists:
-            >>> experiment.log_metric('log', 5)
-            >>> experiment.log_metric('log', 10)
-            >>> experiment.log_metric('log', 8)
-
-            Is equivalent to:
-            >>> experiment.log_metric('log', 0, 5)
-            >>> experiment.log_metric('log', 1, 10)
-            >>> experiment.log_metric('log', 2, 8)
-
-        Logs are uploaded in batches via a queue due to performance reasons
-
         Args:
             log_name(`str`): The name of log to upload, required
             x(`double`): The X coordinate of your log. Subsequent calls require incremental values
             y(`double`): The value of the log - image, str or double, depending on channel type
 
+        Example:
+            Assuming 'log' does not exists:
+            .. code:: python3
+                experiment.log_metric('log', 5)
+                experiment.log_metric('log', 10)
+                experiment.log_metric('log', 8)
+
+                # Is equivalent to:
+                experiment.log_metric('log', 0, 5)
+                experiment.log_metric('log', 1, 10)
+                experiment.log_metric('log', 2, 8)
+
+        Note:
+            Logs are uploaded in batches via a queue due to performance reasons
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -379,10 +377,9 @@ class Experiment(object):
     def log_text(self, log_name, x, y=None, timestamp=None):
         """Log text data to Neptune experiment
 
-        | Alias: :meth:`~neptune.experiments.Experiment.send_text`
-        | If text log exists (determined by ``log_name``), then append new value to it.
-          If does not, create new text log and send first value to it.
-        | See :ref:`limits<limits-top>` for information about API and storage usage upper bounds.
+        If text log exists (determined by ``log_name``), then append new value to it.
+        If does not, create new text log and send first value to it.
+        See :ref:`limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
             log_name (:obj:`str`): name of the text log.
@@ -393,7 +390,7 @@ class Experiment(object):
                 If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_
                 (Python 3.6 example) is invoked to obtain timestamp.
 
-        Examples:
+        Example:
 
             .. code:: python3
 
@@ -418,30 +415,32 @@ class Experiment(object):
         return self.log_image(channel_name, x, y, name, description, timestamp)
 
     def log_image(self, log_name, x, y=None, image_name=None, description=None, timestamp=None):
-        """Uploads an image value to Neptune
+        """Uploads the image value to Neptune
 
         If a log with provided name does not exist, it is created automatically.
 
         If `y` parameter is not provided, parameter `x` is translated to log value (`y` parameter) and
         substituted with auto-incremented value stored locally.
 
-        Examples:
-            Assuming 'log' does not exists:
-            >>> experiment.log_metric('log', '<PIL image 1>')
-            >>> experiment.log_metric('log', '<PIL image 2>')
-            >>> experiment.log_metric('log', '<PIL image 3>')
-
-            Is equivalent to:
-            >>> experiment.log_metric('log', 0, '<PIL image 1>')
-            >>> experiment.log_metric('log', 1, '<PIL image 2>')
-            >>> experiment.log_metric('log', 2, '<PIL image 3>')
-
-        Logs are uploaded in batches via a queue due to performance reasons
-
         Args:
             log_name(`str`): The name of log to upload, required
             x(`double`): The X coordinate of your log. Subsequent calls require incremental values
             y(`PIL image`): The value of the log - image, str or double, depending on channel type
+
+        Example:
+            Assuming 'log' does not exists:
+            .. code:: python3
+                experiment.log_metric('log', '<PIL image 1>')
+                experiment.log_metric('log', '<PIL image 2>')
+                experiment.log_metric('log', '<PIL image 3>')
+
+                # Is equivalent to:
+                experiment.log_metric('log', 0, '<PIL image 1>')
+                experiment.log_metric('log', 1, '<PIL image 2>')
+                experiment.log_metric('log', 2, '<PIL image 3>')
+
+        Note:
+            Logs are uploaded in batches via a queue due to performance reasons
 
         """
         x, y = self._get_valid_x_y(x, y)
@@ -524,18 +523,21 @@ class Experiment(object):
 
         Removes all data and offsets from the log and enables it to be reused from scratch
 
-        Examples:
-            >>> experiment.log_metric('metric', 1)
-            >>> experiment.reset_log('metric')
-            >>> experiment.log_metric('metric', 2)
-
-            Check the frontend to see charts, log 'metric' will have only one value - 2
-
         Args:
             log_name(`str`): The name of log to reset
 
         Raises:
             `ChannelDoesNotExist`: When the log `log_name` does not exist on the server
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+                experiment.log_metric('metric', 1)
+                experiment.reset_log('metric')
+                experiment.log_metric('metric', 2)
+
+                # Check the frontend to see charts, log 'metric' will have only one value - 2
 
         """
         channel = self._find_channel(log_name, ChannelNamespace.USER)
