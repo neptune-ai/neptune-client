@@ -47,8 +47,9 @@ def init(project_qualified_name=None, api_token=None, proxies=None):
             If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
 
         proxies (:obj:`str`, optional, default is ``None``):
-            `proxies` argument passed to HTTP calls made via `requests` library.
-            For more information see `https://2.python-requests.org/en/master/user/advanced/#proxies`.
+            Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
+            For more information see their proxies
+            `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
 
     Note:
         It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
