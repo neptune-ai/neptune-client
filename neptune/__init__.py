@@ -47,6 +47,8 @@ def init(project_qualified_name=None, api_token=None, proxies=None):
             If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
 
         proxies (:obj:`str`, optional, default is ``None``):
+            `proxies` argument passed to HTTP calls made via `requests` library.
+            For more information see `https://2.python-requests.org/en/master/user/advanced/#proxies`.
 
     Note:
         It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
@@ -76,7 +78,6 @@ def init(project_qualified_name=None, api_token=None, proxies=None):
             # specifying project name
             neptune.init('jack/sandbox')
     """
-    # TODO: Document `proxies` argument.
 
     if project_qualified_name is None:
         project_qualified_name = os.getenv(envs.PROJECT_ENV_NAME)
