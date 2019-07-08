@@ -35,7 +35,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None):
     specific project.
 
     Authorize user, sets value of global variable ``project`` to :class:`~neptune.projects.Project` object
-    that can be use to create or list experiments and notebooks, etc.
+    that can be used to create or list experiments, notebooks, etc.
 
     Args:
         project_qualified_name (:obj:`str`, optional, default is ``None``):
@@ -56,17 +56,13 @@ def init(project_qualified_name=None, api_token=None, proxies=None):
         placing your API token in plain text in your source code.
 
     Returns:
-        :class:`~neptune.projects.Project` object that is used to create or list experiments and notebooks, etc.
+        :class:`~neptune.projects.Project` object that is used to create or list experiments, notebooks, etc.
 
     Raises:
-        `MissingApiToken`: When ``api_token`` is None
-            and ``NEPTUNE_API_TOKEN`` environment variable was not set.
-
-        `MissingProjectQualifiedName`: When ``project_qualified_name`` is None and ``NEPTUNE_PROJECT``
-            environment variable was not set.
-
+        `MissingApiToken`: When ``api_token`` is None and ``NEPTUNE_API_TOKEN`` environment variable was not set.
+        `MissingProjectQualifiedName`: When ``project_qualified_name`` is None
+            and ``NEPTUNE_PROJECT`` environment variable was not set.
         `InvalidApiKey`: When given ``api_token`` is malformed.
-
         `Unauthorized`: When given ``api_token`` is invalid.
 
     Examples:
@@ -101,7 +97,7 @@ def set_project(project_qualified_name):
     """Setups `Neptune client library <https://github.com/neptune-ml/neptune-client>`_ to work with specific project.
 
     | Sets value of global variable ``project`` to :class:`~neptune.projects.Project` object
-      that can be use to create or list experiments and notebooks, etc.
+      that can be used to create or list experiments, notebooks, etc.
     | If Neptune client library was not previously initialized via :meth:`~neptune.init` call
       it will be initialized with API token taken from ``NEPTUNE_API_TOKEN`` environment variable.
 
@@ -110,11 +106,11 @@ def set_project(project_qualified_name):
             Qualified name of a project in a form of ``namespace/project_name``.
 
     Returns:
-        :class:`~neptune.projects.Project` object that is used to create or list experiments and notebooks, etc.
+        :class:`~neptune.projects.Project` object that is used to create or list experiments, notebooks, etc.
 
     Raises:
         `MissingApiToken`: When library was not initialized previously by ``init`` call and
-            ``NEPTUNE_API_TOKEN`` environment variable is not set
+            ``NEPTUNE_API_TOKEN`` environment variable is not set.
 
     Examples:
 
