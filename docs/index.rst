@@ -56,6 +56,7 @@ Example above creates Neptune `experiment <https://ui.neptune.ml/o/shared/org/on
    Session <technical_reference/session.rst>
    Project <technical_reference/project.rst>
    Experiment <technical_reference/experiment.rst>
+   Notebook <technical_reference/notebook.rst>
 
 .. toctree::
    :maxdepth: 1

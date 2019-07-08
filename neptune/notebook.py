@@ -20,21 +20,22 @@ from neptune.utils import validate_notebook_path
 
 
 class Notebook(object):
+    """It contains all the information about a Neptune Notebook
+
+        Args:
+            client (:class:`~neptune.client.Client`): Client object
+            project (:class:`~neptune.projects.Project`): Project object
+            _id (:obj:`str`): Notebook uuid
+            owner (:obj:`str`): Creator of the notebook is the Notebook owner
+
+        Examples:
+            .. code:: python3
+
+                # Create a notebook in Neptune.
+                notebook = project.create_notebook('data_exploration.ipynb')
+
+    """
     def __init__(self, client, project, _id, owner):
-        """It contains all the information about a Neptune Notebook
-
-                Args:
-                    client (:class:`~neptune.client.Client`): Client object
-                    project (:class:`~neptune.projects.Project`): Project object
-                    _id (:obj:`str`): Notebook uuid
-                    owner (:obj:`str`): Creator of the notebook is the Notebook owner
-
-                Examples:
-                    .. code:: python3
-
-                        # Create a notebook in Neptune.
-                        notebook = project.create_notebook('data_exploration.ipynb')
-                """
         self._client = client
         self._project = project
         self._id = _id
