@@ -53,6 +53,7 @@ Example above creates Neptune `experiment <https://ui.neptune.ml/o/shared/org/on
    :maxdepth: 1
    :caption: API reference
 
+   Neptune <technical_reference/neptune.rst>
    Session <technical_reference/session.rst>
    Project <technical_reference/project.rst>
    Experiment <technical_reference/experiment.rst>
