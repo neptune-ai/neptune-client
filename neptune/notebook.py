@@ -20,26 +20,21 @@ from neptune.utils import validate_notebook_path
 
 
 class Notebook(object):
-    """It contains all the information about a Neptune Notebook
-
-    Args:
-        client(`neptune.Client`): Client object
-        project(`neptune.Project`): Project object
-        _id(`str`): Notebook uuid
-        owner(`str`): Notebook owner - original creator
-
-
-    Examples:
-        Instantiate a session and fetch a project.
-        .. code:: python3
-            import neptune
-            project = neptune.init()
-
-            # Create a notebook.
-            notebook = project.create_notebook('file.ipynb')
-    """
-
     def __init__(self, client, project, _id, owner):
+        """It contains all the information about a Neptune Notebook
+
+                Args:
+                    client (:class:`~neptune.client.Client`): Client object
+                    project (:class:`~neptune.projects.Project`): Project object
+                    _id (:obj:`str`): Notebook uuid
+                    owner (:obj:`str`): Creator of the notebook is the Notebook owner
+
+                Examples:
+                    .. code:: python3
+
+                        # Create a notebook in Neptune.
+                        notebook = project.create_notebook('data_exploration.ipynb')
+                """
         self._client = client
         self._project = project
         self._id = _id
@@ -54,16 +49,14 @@ class Notebook(object):
         return self._owner
 
     def add_checkpoint(self, file_path):
-        """Uploads new version of notebook to Neptune
+        """Uploads new checkpoint of the notebook to Neptune
 
         Args:
-            file_path(`str`): File path containing notebook contents (.ipynb)
+            file_path (:obj:`str`): File path containing notebook contents
 
         Example:
-            Instantiate a session and fetch a project.
+
             .. code:: python3
-                import neptune
-                project = neptune.init()
 
                 # Create a notebook.
                 notebook = project.create_notebook('file.ipynb')
@@ -82,7 +75,7 @@ class Notebook(object):
         """Returns the path used to upload the current checkpoint of this notebook
 
         Returns:
-            str: the path of current checkpoint
+            :obj:`str`: path of the current checkpoint
         """
         return self._client.get_last_checkpoint(self._project, self._id).path
 
@@ -90,6 +83,6 @@ class Notebook(object):
         """Returns the name used to upload the current checkpoint of this notebook
 
         Returns:
-            str: the name of current checkpoint
+            :obj:`str`: the name of current checkpoint
         """
         return self._client.get_last_checkpoint(self._project, self._id).name
