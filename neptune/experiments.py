@@ -218,7 +218,7 @@ class Experiment(object):
         self.append_tag(tag, *tags)
 
     def remove_tag(self, tag):
-        """Removes single tag from experiment.
+        """Removes single tag from the experiment.
 
         Args:
             tag (:obj:`str`): Tag to be removed
@@ -244,26 +244,17 @@ class Experiment(object):
         return self.get_logs()
 
     def get_logs(self):
-        """Retrieve all log names along with their representations for this experiment.
+        """Retrieve all log names along with their last values for this experiment.
 
         Returns:
-            dict: A dictionary mapping a log name to log.
+            ``dict`` - A dictionary mapping a log names to the log's last value.
 
         Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
             .. code:: python3
-                # Instantiate a session.
-                from neptune.sessions import Session
-                session = Session()
 
-                # Fetch a project and a list of experiments.
-                project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-                experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-                # Get an experiment instance.
-                experiment = experiments[0]
-
-                # Get experiment logs.
-                experiment.get_logs()
+                exp_logs = experiment.get_logs()
 
         """
         experiment = self._client.get_experiment(self.internal_id)
@@ -334,32 +325,46 @@ class Experiment(object):
         return self.log_metric(channel_name, x, y, timestamp)
 
     def log_metric(self, log_name, x, y=None, timestamp=None):
-        """Uploads numerical metric value to Neptune
+        """Log metrics (numeric values) in Neptune
 
-        If a log with provided name does not exist, it is created automatically.
-
-        If `y` parameter is not provided, parameter `x` is translated to log value (`y` parameter) and
-        substituted with auto-incremented value stored locally.
+        | If a log with provided ``log_name`` does not exist, it is created automatically.
+        | If log exists (determined by ``log_name``), then new value is appended to it.
+        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
-            log_name(`str`): The name of log to upload, required
-            x(`double`): The X coordinate of your log. Subsequent calls require incremental values
-            y(`double`): The value of the log - image, str or double, depending on channel type
+            log_name (:obj:`str`): The name of log, i.e. `mse`, `loss`, `accuracy`.
+            x (:obj:`double`): Depending, whether ``y`` parameter is passed:
+
+                * ``y`` not passed: The value of the log (data-point).
+                * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
+
+            y (:obj:`double`, optional, default is ``None``): The value of the log (data-point).
+            timestamp (:obj:`time`, optional, default is ``None``):
+                Timestamp to be associated with log entry. Must be Unix time.
+                If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_
+                (Python 3.6 example) is invoked to obtain timestamp.
 
         Example:
-            Assuming 'log' does not exists:
-            .. code:: python3
-                experiment.log_metric('log', 5)
-                experiment.log_metric('log', 10)
-                experiment.log_metric('log', 8)
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment` and
+            'accuracy' log does not exists:
 
-                # Is equivalent to:
-                experiment.log_metric('log', 0, 5)
-                experiment.log_metric('log', 1, 10)
-                experiment.log_metric('log', 2, 8)
+            .. code:: python3
+
+                # Both calls below have the same effect
+
+                # Common invocation, providing log name and value
+                experiment.log_metric('accuracy', 0.5)
+                experiment.log_metric('accuracy', 0.65)
+                experiment.log_metric('accuracy', 0.8)
+
+                # Providing both x and y params
+                experiment.log_metric('accuracy', 0, 0.5)
+                experiment.log_metric('accuracy', 1, 0.65)
+                experiment.log_metric('accuracy', 2, 0.8)
 
         Note:
-            Logs are uploaded in batches via a queue due to performance reasons
+            For efficiency, logs are uploaded in batches via a queue.
+            Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -375,22 +380,27 @@ class Experiment(object):
         return self.log_text(channel_name, x, y, timestamp)
 
     def log_text(self, log_name, x, y=None, timestamp=None):
-        """Log text data to Neptune experiment
+        """Log text data in Neptune
 
-        If text log exists (determined by ``log_name``), then append new value to it.
-        If does not, create new text log and send first value to it.
-        See :ref:`limits<limits-top>` for information about API and storage usage upper bounds.
+        | If a log with provided ``log_name`` does not exist, it is created automatically.
+        | If log exists (determined by ``log_name``), then new value is appended to it.
+        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
-            log_name (:obj:`str`): name of the text log.
-            x (:obj:`double`): index of log entry being appended. Must be strictly increasing.
-            y (:obj:`str`): text to be appended to this log.
+            log_name (:obj:`str`): The name of log, i.e. `mse`, `my_text_data`, `timing_info`.
+            x (:obj:`double` or :obj:`str`): Depending, whether ``y`` parameter is passed:
+
+                * ``y`` not passed: The value of the log (data-point). Must be ``str``.
+                * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
+
+            y (:obj:`str`, optional, default is ``None``): The value of the log (data-point).
             timestamp (:obj:`time`, optional, default is ``None``):
                 Timestamp to be associated with log entry. Must be Unix time.
                 If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_
                 (Python 3.6 example) is invoked to obtain timestamp.
 
         Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
             .. code:: python3
 
@@ -400,6 +410,9 @@ class Experiment(object):
                 # log_name, x and timestamp are passed
                 log_text(log_name='logging_losses_as_text', x=str(val_loss), timestamp=1560430912)
 
+        Note:
+            For efficiency, logs are uploaded in batches via a queue.
+            Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -415,33 +428,40 @@ class Experiment(object):
         return self.log_image(channel_name, x, y, name, description, timestamp)
 
     def log_image(self, log_name, x, y=None, image_name=None, description=None, timestamp=None):
-        """Uploads the image value to Neptune
+        """Log image data in Neptune
 
-        If a log with provided name does not exist, it is created automatically.
-
-        If `y` parameter is not provided, parameter `x` is translated to log value (`y` parameter) and
-        substituted with auto-incremented value stored locally.
+        | If a log with provided ``log_name`` does not exist, it is created automatically.
+        | If log exists (determined by ``log_name``), then new value is appended to it.
+        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
-            log_name(`str`): The name of log to upload, required
-            x(`double`): The X coordinate of your log. Subsequent calls require incremental values
-            y(`PIL image`): The value of the log - image, str or double, depending on channel type
+            log_name (:obj:`str`): The name of log, i.e. `mse`, `loss`, `accuracy`.
+            x (:obj:`double` or :obj:`PIL image`): Depending, whether ``y`` parameter is passed:
+
+                * ``y`` not passed: The value of the log (data-point). Must be :obj:`PIL image`.
+                * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
+
+            y (:obj:`PIL image`, optional, default is ``None``): The value of the log (data-point).
+            image_name (:obj:`str`, optional, default is ``None``): Image name
+            description (:obj:`str`, optional, default is ``None``): Image description
+            timestamp (:obj:`time`, optional, default is ``None``):
+                Timestamp to be associated with log entry. Must be Unix time.
+                If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_
+                (Python 3.6 example) is invoked to obtain timestamp.
 
         Example:
-            Assuming 'log' does not exists:
-            .. code:: python3
-                experiment.log_metric('log', '<PIL image 1>')
-                experiment.log_metric('log', '<PIL image 2>')
-                experiment.log_metric('log', '<PIL image 3>')
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
-                # Is equivalent to:
-                experiment.log_metric('log', 0, '<PIL image 1>')
-                experiment.log_metric('log', 1, '<PIL image 2>')
-                experiment.log_metric('log', 2, '<PIL image 3>')
+            .. code:: python3
+
+                # simple use
+                experiment.log_metric('bbox_images', PIL_object_1)
+                experiment.log_metric('bbox_images', PIL_object_2)
+                experiment.log_metric('bbox_images', PIL_object_3, image_name='difficult_case')
 
         Note:
-            Logs are uploaded in batches via a queue due to performance reasons
-
+            For efficiency, logs are uploaded in batches via a queue.
+            Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -521,23 +541,23 @@ class Experiment(object):
     def reset_log(self, log_name):
         """Resets the log.
 
-        Removes all data and offsets from the log and enables it to be reused from scratch
+        Removes all data from the log and enables it to be reused from scratch.
 
         Args:
-            log_name(`str`): The name of log to reset
+            log_name (:obj:`str`): The name of log to reset.
 
         Raises:
-            `ChannelDoesNotExist`: When the log `log_name` does not exist on the server
+            `ChannelDoesNotExist`: When the log with name ``log_name`` does not exist on the server.
 
         Example:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
             .. code:: python3
-                experiment.log_metric('metric', 1)
-                experiment.reset_log('metric')
-                experiment.log_metric('metric', 2)
 
-                # Check the frontend to see charts, log 'metric' will have only one value - 2
+                experiment.reset_log('my_metric')
+
+        Note:
+            Check Neptune web application to see that reset charts have no data.
 
         """
         channel = self._find_channel(log_name, ChannelNamespace.USER)
