@@ -63,31 +63,29 @@ class Session(object):
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.
 
-        In order to access experiment data one needs to get a :class:`~neptune.projects.Project` object first.
+        In order to access experiments data one needs to get a :class:`~neptune.projects.Project` object first.
         This method gives you the ability to do that.
 
         Args:
-            project_qualified_name(:obj:`str`): A full, qualified project name.
+            project_qualified_name (:obj:`str`):
+                Qualified name of a project in a form of ``namespace/project_name``.
 
         Returns:
             :class:`~neptune.projects.Project` object.
 
-        Raises:
+        Raise:
             :class:`~neptune.api_exceptions.ProjectNotFound`: When a project with given name does not exist.
 
         Examples:
-            First, you need to create a Session instance:
 
             .. code:: python3
 
+                # Create a Session instance
                 from neptune.sessions import Session
                 session = Session()
 
-            Now, you can get a project by it's full name, for example:
-
-            .. code:: python3
-
-                session.get_project('neptune-ml/Home-Credit-Default-Risk')
+                # Get a project by it's ``project_qualified_name``:
+                my_project = session.get_project('namespace/project_name')
 
         """
         if not project_qualified_name:
