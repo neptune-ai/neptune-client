@@ -165,6 +165,18 @@ class Experiment(object):
         }
 
     def get_tags(self):
+        """Get tags associated with experiment.
+
+        Returns:
+            :obj:`list` of :obj:`str` with all tags for this experiment.
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.get_tags()
+        """
         return self._client.get_experiment(self._internal_id).tags
 
     def append_tag(self, tag, *tags):
@@ -206,34 +218,43 @@ class Experiment(object):
         self.append_tag(tag, *tags)
 
     def remove_tag(self, tag):
+        """Removes single tag from the experiment.
+
+        Args:
+            tag (:obj:`str`): Tag to be removed
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                # assuming experiment has tags: `['tag-1', 'tag-2']`.
+                experiment.remove_tag('tag-1')
+
+        Note:
+            Removing a tag that is not assigned to this experiment is silently ignored.
+        """
         self._client.update_tags(experiment=self,
                                  tags_to_add=[],
                                  tags_to_delete=[tag])
 
     def get_channels(self):
-        """Retrieve all channel names along with their representations for this experiment.
+        """Alias for :meth:`~neptune.experiments.Experiment.get_logs`
+        """
+        return self.get_logs()
+
+    def get_logs(self):
+        """Retrieve all log names along with their last values for this experiment.
 
         Returns:
-            dict: A dictionary mapping a channel name to channel.
+            :obj:`dict` - A dictionary mapping a log names to the log's last value.
 
-        Examples:
-            Instantiate a session.
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment channels.
-
-            >>> experiment.get_channels()
+                exp_logs = experiment.get_logs()
 
         """
         experiment = self._client.get_experiment(self.internal_id)
@@ -299,9 +320,52 @@ class Experiment(object):
                           experiment=self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_metric`
+        """
         return self.log_metric(channel_name, x, y, timestamp)
 
     def log_metric(self, log_name, x, y=None, timestamp=None):
+        """Log metrics (numeric values) in Neptune
+
+        | If a log with provided ``log_name`` does not exist, it is created automatically.
+        | If log exists (determined by ``log_name``), then new value is appended to it.
+        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
+
+        Args:
+            log_name (:obj:`str`): The name of log, i.e. `mse`, `loss`, `accuracy`.
+            x (:obj:`double`): Depending, whether ``y`` parameter is passed:
+
+                * ``y`` not passed: The value of the log (data-point).
+                * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
+
+            y (:obj:`double`, optional, default is ``None``): The value of the log (data-point).
+            timestamp (:obj:`time`, optional, default is ``None``):
+                Timestamp to be associated with log entry. Must be Unix time.
+                If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_
+                (Python 3.6 example) is invoked to obtain timestamp.
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment` and
+            'accuracy' log does not exists:
+
+            .. code:: python3
+
+                # Both calls below have the same effect
+
+                # Common invocation, providing log name and value
+                experiment.log_metric('accuracy', 0.5)
+                experiment.log_metric('accuracy', 0.65)
+                experiment.log_metric('accuracy', 0.8)
+
+                # Providing both x and y params
+                experiment.log_metric('accuracy', 0, 0.5)
+                experiment.log_metric('accuracy', 1, 0.65)
+                experiment.log_metric('accuracy', 2, 0.8)
+
+        Note:
+            For efficiency, logs are uploaded in batches via a queue.
+            Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
+        """
         x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
@@ -316,23 +380,27 @@ class Experiment(object):
         return self.log_text(channel_name, x, y, timestamp)
 
     def log_text(self, log_name, x, y=None, timestamp=None):
-        """Log text data to Neptune experiment
+        """Log text data in Neptune
 
-        | Alias: :meth:`~neptune.experiments.Experiment.send_text`
-        | If text log exists (determined by ``log_name``), then append new value to it.
-          If does not, create new text log and send first value to it.
-        | See :ref:`limits<limits-top>` for information about API and storage usage upper bounds.
+        | If a log with provided ``log_name`` does not exist, it is created automatically.
+        | If log exists (determined by ``log_name``), then new value is appended to it.
+        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
-            log_name (:obj:`str`): name of the text log.
-            x (:obj:`double`): index of log entry being appended. Must be strictly increasing.
-            y (:obj:`str`): text to be appended to this log.
+            log_name (:obj:`str`): The name of log, i.e. `mse`, `my_text_data`, `timing_info`.
+            x (:obj:`double` or :obj:`str`): Depending, whether ``y`` parameter is passed:
+
+                * ``y`` not passed: The value of the log (data-point). Must be ``str``.
+                * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
+
+            y (:obj:`str`, optional, default is ``None``): The value of the log (data-point).
             timestamp (:obj:`time`, optional, default is ``None``):
                 Timestamp to be associated with log entry. Must be Unix time.
                 If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_
                 (Python 3.6 example) is invoked to obtain timestamp.
 
-        Examples:
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
             .. code:: python3
 
@@ -340,8 +408,13 @@ class Experiment(object):
                 neptune.log_text('my_text_data', str(data_item))
 
                 # log_name, x and timestamp are passed
-                log_text(log_name='logging_losses_as_text', x=str(val_loss), timestamp=1560430912)
+                neptune.log_text(log_name='logging_losses_as_text',
+                                 x=str(val_loss),
+                                 timestamp=1560430912)
 
+        Note:
+            For efficiency, logs are uploaded in batches via a queue.
+            Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -352,9 +425,46 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
 
     def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_image`
+        """
         return self.log_image(channel_name, x, y, name, description, timestamp)
 
     def log_image(self, log_name, x, y=None, image_name=None, description=None, timestamp=None):
+        """Log image data in Neptune
+
+        | If a log with provided ``log_name`` does not exist, it is created automatically.
+        | If log exists (determined by ``log_name``), then new value is appended to it.
+        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
+
+        Args:
+            log_name (:obj:`str`): The name of log, i.e. `mse`, `loss`, `accuracy`.
+            x (:obj:`double` or :obj:`PIL image`): Depending, whether ``y`` parameter is passed:
+
+                * ``y`` not passed: The value of the log (data-point). Must be :obj:`PIL image`.
+                * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
+
+            y (:obj:`PIL image`, optional, default is ``None``): The value of the log (data-point).
+            image_name (:obj:`str`, optional, default is ``None``): Image name
+            description (:obj:`str`, optional, default is ``None``): Image description
+            timestamp (:obj:`time`, optional, default is ``None``):
+                Timestamp to be associated with log entry. Must be Unix time.
+                If ``None`` is passed, `time.time() <https://docs.python.org/3.6/library/time.html#time.time>`_
+                (Python 3.6 example) is invoked to obtain timestamp.
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
+
+            .. code:: python3
+
+                # simple use
+                experiment.log_image('bbox_images', PIL_object_1)
+                experiment.log_image('bbox_images', PIL_object_2)
+                experiment.log_image('bbox_images', PIL_object_3, image_name='difficult_case')
+
+        Note:
+            For efficiency, logs are uploaded in batches via a queue.
+            Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
+        """
         x, y = self._get_valid_x_y(x, y)
 
         input_image = dict(
@@ -367,6 +477,8 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
 
     def send_artifact(self, artifact):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
+        """
         return self.log_artifact(artifact)
 
     def log_artifact(self, artifact):
@@ -394,6 +506,8 @@ class Experiment(object):
         self._client.download_data(self._project, path, destination_path)
 
     def send_graph(self, graph_id, value):
+        """Alias for :meth:`~neptune.experiments.Experiment.log_graph`
+        """
         return self.log_graph(graph_id, value)
 
     def log_graph(self, graph_id, value):
@@ -427,6 +541,27 @@ class Experiment(object):
         self._client.put_tensorflow_graph(self, graph_id, value)
 
     def reset_log(self, log_name):
+        """Resets the log.
+
+        Removes all data from the log and enables it to be reused from scratch.
+
+        Args:
+            log_name (:obj:`str`): The name of log to reset.
+
+        Raises:
+            `ChannelDoesNotExist`: When the log with name ``log_name`` does not exist on the server.
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.reset_log('my_metric')
+
+        Note:
+            Check Neptune web application to see that reset charts have no data.
+
+        """
         channel = self._find_channel(log_name, ChannelNamespace.USER)
         if channel is None:
             raise ChannelDoesNotExist(self.id, log_name)
