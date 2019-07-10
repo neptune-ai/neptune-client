@@ -29,36 +29,22 @@ from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_loc
 class Project(object):
     # pylint: disable=redefined-builtin
 
-    """It contains all the information about a Neptune project
-
-    You can extract the experiment view in a form of a dataframe or a list of experiments.
-    Project lets you do filtering based on conditions not to fetch the entire, sometimes huge list of experiments.
+    """A class for storing information and managing Neptune project.
 
     Args:
-        client(`neptune.Client`): Client object
-        internal_id:
-        namespace(str): It can either be your organization or user name. You can list all the public projects for any
-               organization or user you want as long as you know their namespace.
-        name(str): short project name.
+        client (:class:`~neptune.client.Client`, required): Client object.
+        internal_id (:obj:`str`, required): UUID of the project.
+        namespace (:obj:`str`, required): It can either be your organization or user name.
+        name (:obj:`str`, required): project name.
 
     Attributes:
-        client(`neptune.Client`): Client object
-        internal_id:
-        namespace(str): It can either be your organization or user name. You can list all the public projects for any
-               organization or user you want as long as you know their namespace.
-        name(str): short project name.
+        client (:class:`~neptune.client.Client`, required): Client object.
+        internal_id (:obj:`str`, required): UUID of the project.
+        namespace (:obj:`str`, required): It can either be your organization or user name.
+        name (:obj:`str`, required): project name.
 
-    Examples:
-        Instantiate a session.
-
-        >>> from neptune.sessions import Session
-        >>> session = Session()
-
-        Fetch a project.
-
-        >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-        >>> project
-        Project(neptune-ml/Salt-Detection)
+    Note:
+        ``namespace`` and ``name`` joined together form ``project_qualified_name``.
     """
 
     def __init__(self, client, internal_id, namespace, name):
@@ -71,12 +57,14 @@ class Project(object):
         """Retrieve a list of project members.
 
         Returns:
-            list: A list of usernames of project members.
+            :obj:`list` of :obj:`str` - A list of usernames of project members.
 
         Examples:
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> project.get_members()
+            .. code:: python3
+
+                project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+                project.get_members()
 
         """
         project_members = self.client.get_project_members(self.internal_id)
