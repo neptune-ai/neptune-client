@@ -247,7 +247,7 @@ class Experiment(object):
         """Retrieve all log names along with their last values for this experiment.
 
         Returns:
-            ``dict`` - A dictionary mapping a log names to the log's last value.
+            :obj:`dict` - A dictionary mapping a log names to the log's last value.
 
         Example:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
@@ -408,7 +408,9 @@ class Experiment(object):
                 neptune.log_text('my_text_data', str(data_item))
 
                 # log_name, x and timestamp are passed
-                log_text(log_name='logging_losses_as_text', x=str(val_loss), timestamp=1560430912)
+                neptune.log_text(log_name='logging_losses_as_text',
+                                 x=str(val_loss),
+                                 timestamp=1560430912)
 
         Note:
             For efficiency, logs are uploaded in batches via a queue.
@@ -455,9 +457,9 @@ class Experiment(object):
             .. code:: python3
 
                 # simple use
-                experiment.log_metric('bbox_images', PIL_object_1)
-                experiment.log_metric('bbox_images', PIL_object_2)
-                experiment.log_metric('bbox_images', PIL_object_3, image_name='difficult_case')
+                experiment.log_image('bbox_images', PIL_object_1)
+                experiment.log_image('bbox_images', PIL_object_2)
+                experiment.log_image('bbox_images', PIL_object_3, image_name='difficult_case')
 
         Note:
             For efficiency, logs are uploaded in batches via a queue.
