@@ -25,33 +25,35 @@ from neptune.projects import Project
 
 
 class Session(object):
-    """It handles the communication with the Neptune experiment database.
+    """A class for running communication with Neptune.
 
-    In order to query Neptune experiment database in any way you have to instantiate this object first.
+    In order to query Neptune experiments you need to instantiate this object first.
 
     Args:
-        api_token(str): This is a secret API key that you can retrieve by running
-            `$ neptune account api-token get`.
-
-    Attributes:
-        credentials (`neptune.Credentials`): `Credentials` object instance that authenticates your
-            calls to Neptune API.
+        api_token (:obj:`str`, optional, default is ``None``):
+            User's API token.
+            If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
+        proxies (:obj:`str`, optional, default is ``None``):
+            Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
+            For more information see their proxies
+            `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
 
     Examples:
-        Create session
+        Create session and pass 'api_token'
 
-        >>> from neptune.sessions import Session
-        >>> session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
+        .. code:: python3
 
-        or assuming you have created an environment variable by running:
+            from neptune.sessions import Session
+            session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
 
-        `export NEPTUNE_API_TOKEN=YOUR_NEPTUNE_API_TOKEN`
+        Create session, assuming you have created an environment variable 'NEPTUNE_API_TOKEN'
 
-        and simply go:
+        .. code:: python3
 
-        >>> session = Session()
+            from neptune.sessions import Session
+            session = Session()
+
     """
-
     def __init__(self, api_token=None, proxies=None):
         credentials = Credentials(api_token)
 
