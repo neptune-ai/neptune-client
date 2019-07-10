@@ -416,7 +416,7 @@ class Project(object):
         )
 
     def create_notebook(self):
-        """Create a new notebook in Neptune and return corresponding :class:`~neptune.notebook.Notebook` object.
+        """Create a new notebook object and return corresponding :class:`~neptune.notebook.Notebook` instance.
 
         Returns:
             :class:`~neptune.notebook.Notebook` object.
@@ -434,7 +434,7 @@ class Project(object):
         return self.client.create_notebook(self)
 
     def get_notebook(self, notebook_id):
-        """Get a :class:`~neptune.notebook.Notebook` object for a Neptune notebook with given id.
+        """Get a :class:`~neptune.notebook.Notebook` object with given ``notebook_id``.
 
         Returns:
             :class:`~neptune.notebook.Notebook` object.
@@ -446,17 +446,17 @@ class Project(object):
                 # Instantiate a session and fetch a project
                 project = neptune.init()
 
-                # Get a notebook
+                # Get a notebook object
                 notebook = project.get_notebook('d1c1b494-0620-4e54-93d5-29f4e848a51a')
         """
         return self.client.get_notebook(project=self, notebook_id=notebook_id)
 
     @property
     def full_id(self):
-        """Create a full project id by combining project's namespace and name.
+        """Returns project qualified name.
 
         Returns:
-            str: Project's qualified name.
+            :obj:`str` - project qualified name.
         """
         return '{}/{}'.format(self.namespace, self.name)
 
