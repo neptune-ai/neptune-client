@@ -453,10 +453,7 @@ class Project(object):
 
     @property
     def full_id(self):
-        """Returns project qualified name.
-
-        Returns:
-            :obj:`str` - project qualified name.
+        """Project qualified name as :obj:`str`, for example `john/sandbox`.
         """
         return '{}/{}'.format(self.namespace, self.name)
 
