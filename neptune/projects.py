@@ -14,9 +14,8 @@
 # limitations under the License.
 #
 
-from platform import node as get_hostname
-
 import os
+from platform import node as get_hostname
 
 import click
 import pandas as pd
@@ -417,15 +416,44 @@ class Project(object):
         )
 
     def create_notebook(self):
-        notebook = self.client.create_notebook(self)
-        return notebook
+        """Create a new notebook object and return corresponding :class:`~neptune.notebook.Notebook` instance.
+
+        Returns:
+            :class:`~neptune.notebook.Notebook` object.
+
+        Examples:
+
+            .. code:: python3
+
+                # Instantiate a session and fetch a project
+                project = neptune.init()
+
+                # Create a notebook in Neptune
+                notebook = project.create_notebook()
+        """
+        return self.client.create_notebook(self)
 
     def get_notebook(self, notebook_id):
+        """Get a :class:`~neptune.notebook.Notebook` object with given ``notebook_id``.
+
+        Returns:
+            :class:`~neptune.notebook.Notebook` object.
+
+        Examples:
+
+            .. code:: python3
+
+                # Instantiate a session and fetch a project
+                project = neptune.init()
+
+                # Get a notebook object
+                notebook = project.get_notebook('d1c1b494-0620-4e54-93d5-29f4e848a51a')
+        """
         return self.client.get_notebook(project=self, notebook_id=notebook_id)
 
     @property
     def full_id(self):
-        """Creates a full project id by combining the namespace and project name.
+        """Project qualified name as :obj:`str`, for example `john/sandbox`.
         """
         return '{}/{}'.format(self.namespace, self.name)
 
