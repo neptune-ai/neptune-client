@@ -416,39 +416,39 @@ class Project(object):
         )
 
     def create_notebook(self):
-        """Create a new notebook in Neptune.
+        """Create a new notebook in Neptune and return corresponding :class:`~neptune.notebook.Notebook` object.
 
         Returns:
-            `neptune.notebook.Notebook` object.
+            :class:`~neptune.notebook.Notebook` object.
 
         Examples:
-            Instantiate a session and fetch a project.
 
-            >>> import neptune
-            >>> project = neptune.init()
+            .. code:: python3
 
-            Create a notebook.
+                # Instantiate a session and fetch a project
+                project = neptune.init()
 
-            >>> notebook = project.create_notebook()
-            """
+                # Create a notebook in Neptune
+                notebook = project.create_notebook()
+        """
         return self.client.create_notebook(self)
 
     def get_notebook(self, notebook_id):
-        """Get a notebook with given id.
+        """Get a :class:`~neptune.notebook.Notebook` object for a Neptune notebook with given id.
 
         Returns:
-            `neptune.notebook.Notebook` object.
+            :class:`~neptune.notebook.Notebook` object.
 
         Examples:
-            Instantiate a session and fetch a project.
 
-            >>> import neptune
-            >>> project = neptune.init()
+            .. code:: python3
 
-            Get a notebook.
+                # Instantiate a session and fetch a project
+                project = neptune.init()
 
-            >>> notebook = project.get_notebook('d1c1b494-0620-4e54-93d5-29f4e848a51a')
-            """
+                # Get a notebook
+                notebook = project.get_notebook('d1c1b494-0620-4e54-93d5-29f4e848a51a')
+        """
         return self.client.get_notebook(project=self, notebook_id=notebook_id)
 
     @property
