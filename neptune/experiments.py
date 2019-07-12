@@ -70,7 +70,7 @@ class Experiment(object):
         self._id = _id
         self._internal_id = internal_id
         self._channels_values_sender = ChannelsValuesSender(self)
-        self._execution_context = ExecutionContext(client, self)
+        eelf._execution_context = ExecutionContext(client, self)
 
     @property
     def id(self):
@@ -125,7 +125,7 @@ class Experiment(object):
     def get_system_properties(self):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 
-        Returns:
+        eeturns:
             dict: A dictionary mapping a property name to value.
 
         Examples:
@@ -320,7 +320,9 @@ class Experiment(object):
                           experiment=self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
-        """Alias for :meth:`~neptune.experiments.Experiment.log_metric`
+        """Log metrics (numeric values) in Neptune
+
+        Alias for :meth:`~neptune.experiments.Experiment.log_metric`
         """
         return self.log_metric(channel_name, x, y, timestamp)
 
@@ -375,7 +377,9 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
 
     def send_text(self, channel_name, x, y=None, timestamp=None):
-        """Alias for :meth:`~neptune.experiments.Experiment.log_text`
+        """Log text data in Neptune
+
+        Alias for :meth:`~neptune.experiments.Experiment.log_text`
         """
         return self.log_text(channel_name, x, y, timestamp)
 
@@ -425,7 +429,9 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
 
     def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
-        """Alias for :meth:`~neptune.experiments.Experiment.log_image`
+        """Log image data in Neptune
+
+        Alias for :meth:`~neptune.experiments.Experiment.log_image`
         """
         return self.log_image(channel_name, x, y, name, description, timestamp)
 
@@ -477,12 +483,18 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
 
     def send_artifact(self, artifact):
-        """Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
+        """Save an artifact (file) in experiment storage
+
+        Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
         """
         return self.log_artifact(artifact)
 
     def log_artifact(self, artifact):
-        """
+        """Save an artifact (file) in experiment storage
+
+        Args:
+            artifact (:obj:`str`): A path to the file in local filesystem.
+
         Raises:
             `StorageLimitReached`: When storage limit in the project has been reached.
         """
@@ -626,6 +638,21 @@ class Experiment(object):
         return dict((p.key, p.value) for p in experiment.properties)
 
     def set_property(self, key, value):
+        """Sets a value of an experiment property. If property with given key does not exist it adds a new one.
+
+        Args:
+            key (single :obj:`str`):
+                Property key.
+            value (single :obj:`str`):
+                New value of a property.
+
+        Examples:
+
+            .. code:: python3
+
+                neptune.set_property('host', 'slave03')
+
+        """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         properties[key] = value
         return self._client.update_experiment(
@@ -634,6 +661,19 @@ class Experiment(object):
         )
 
     def remove_property(self, key):
+        """Removes a property with given key.
+
+        Args:
+            key (single :obj:`str`):
+                Key of property to remove.
+
+        Examples:
+
+            .. code:: python3
+
+                neptune.remove_property('host')
+
+        """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         del properties[key]
         return self._client.update_experiment(
@@ -782,6 +822,14 @@ class Experiment(object):
         )
 
     def stop(self, exc_tb=None):
+        """Marks experiment as finished (succeeded or failed).
+
+        Args:
+            exc_tb (:obj:`str`, optional, default is ``None``): Additional traceback information
+                to be stored in experiment details in case of failure (stacktrace, etc).
+                If this argument is ``None`` the experiment will be marked as succeeded.
+                Otherwise, experiment will be marked as failed.
+        """
 
         self._channels_values_sender.join()
 
