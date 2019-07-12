@@ -16,7 +16,21 @@
 
 
 class GitInfo(object):
-    """ Holds information about a git repository"""
+    """Class that keeps information about a git repository in experiment.
+
+    When :meth:`~neptune.projects.Project.create_experiment` is invoked, instance of this class is created to
+    store information about git repository.
+    This information is later presented in the experiment details tab in the Neptune web application.
+
+    Args:
+        commit_id (:obj:`str`): commit id sha.
+        message (:obj:`str`, optional, default is ``""``): commit message.
+        author_name (:obj:`str`, optional, default is ``""``): commit author username.
+        author_email (:obj:`str`, optional, default is ``""``): commit author email.
+        commit_date (:obj:`datetime.datetime`, optional, default is ``""``): commit datetime.
+        repository_dirty (:obj:`bool`, optional, default is ``True``):
+            True, if the repository has uncommitted changes.
+    """
     def __init__(self,
                  commit_id,
                  message="",
@@ -24,16 +38,6 @@ class GitInfo(object):
                  author_email="",
                  commit_date="",
                  repository_dirty=True):
-        """Creates a new instance of a git repository info
-
-        Args:
-            commit_id(str): commit id sha
-            message(str): commit message
-            author_name(str): commit author username
-            author_email(str): commit author email
-            commit_date(datetime.datetime): commit datetime
-            repository_dirty(bool): True, if the repository has uncommitted changes
-        """
         if commit_id is None:
             raise TypeError("commit_id must not be None")
 
