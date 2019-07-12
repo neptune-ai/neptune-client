@@ -647,6 +647,7 @@ class Experiment(object):
 
     def set_property(self, key, value):
         """Sets a value of an experiment property.
+
         If property with given key does not exist it adds a new one.
 
         Args:
@@ -680,7 +681,7 @@ class Experiment(object):
 
             .. code:: python3
 
-                neptune.remove_property('host')
+                experiment.remove_property('host')
 
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
@@ -843,10 +844,12 @@ class Experiment(object):
 
             .. code:: python3
 
-                neptune.stop() # Marks experiment as succeeded
+                # Marks experiment as succeeded
+                experiment.stop()
 
-                # Assuming ``ex`` is some exception
-                neptune.stop(str(ex)) # Marks experiment as failed with exception info in experiment details.
+                # Assuming 'ex' is some exception,
+                # it marks experiment as failed with exception info in experiment details.
+                experiment.stop(str(ex))
         """
 
         self._channels_values_sender.join()

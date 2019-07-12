@@ -198,7 +198,7 @@ def append_tags(tag, *tags):
 
 
 def remove_tag(tag):
-    """Removes single tag from the experiment.
+    """Removes single tag from experiment.
 
     Alias for: :meth:`~neptune.experiments.Experiment.remove_tag`
     """
@@ -207,10 +207,10 @@ def remove_tag(tag):
 
 def set_property(key, value):
     """Sets a value of an experiment property.
+
     If property with given key does not exist it adds a new one.
 
     Alias for: :meth:`~neptune.experiments.Experiment.set_property`
-
     """
     get_experiment().set_property(key, value)
 
@@ -219,7 +219,6 @@ def remove_property(key):
     """Removes a property with given key.
 
     Alias for: :meth:`~neptune.experiments.Experiment.remove_property`
-
     """
     get_experiment().remove_property(key)
 
