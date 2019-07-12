@@ -208,7 +208,7 @@ def remove_tag(tag):
 def set_property(key, value):
     """Sets a value of an experiment property.
 
-    If property with given key does not exist it adds a new one.
+    If property with given ``key`` does not exist it adds a new one.
 
     Alias for: :meth:`~neptune.experiments.Experiment.set_property`
     """
@@ -224,7 +224,7 @@ def remove_property(key):
 
 
 def send_metric(channel_name, x, y=None, timestamp=None):
-    """Log metrics (numeric values) in Neptune
+    """Log metrics (numeric values) in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_metric`
     """
@@ -232,7 +232,7 @@ def send_metric(channel_name, x, y=None, timestamp=None):
 
 
 def log_metric(log_name, x, y=None, timestamp=None):
-    """Log metrics (numeric values) in Neptune
+    """Log metrics (numeric values) in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_metric`
     """
@@ -240,7 +240,7 @@ def log_metric(log_name, x, y=None, timestamp=None):
 
 
 def send_text(channel_name, x, y=None, timestamp=None):
-    """Log text data in Neptune
+    """Log text data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_text`
     """
@@ -248,7 +248,7 @@ def send_text(channel_name, x, y=None, timestamp=None):
 
 
 def log_text(log_name, x, y=None, timestamp=None):
-    """Log text data in Neptune
+    """Log text data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_text`
     """
@@ -256,7 +256,7 @@ def log_text(log_name, x, y=None, timestamp=None):
 
 
 def send_image(channel_name, x, y=None, name=None, description=None, timestamp=None):
-    """Log image data in Neptune
+    """Log image data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_image`
     """
@@ -264,7 +264,7 @@ def send_image(channel_name, x, y=None, name=None, description=None, timestamp=N
 
 
 def log_image(log_name, x, y=None, name=None, description=None, timestamp=None):
-    """Log image data in Neptune
+    """Log image data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_image`
     """
@@ -272,7 +272,7 @@ def log_image(log_name, x, y=None, name=None, description=None, timestamp=None):
 
 
 def send_artifact(artifact):
-    """Save an artifact (file) in experiment storage
+    """Save an artifact (file) in experiment storage.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
     """
@@ -280,7 +280,7 @@ def send_artifact(artifact):
 
 
 def log_artifact(artifact):
-    """Save an artifact (file) in experiment storage
+    """Save an artifact (file) in experiment storage.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
     """

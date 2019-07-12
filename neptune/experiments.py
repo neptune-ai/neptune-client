@@ -320,7 +320,7 @@ class Experiment(object):
                           experiment=self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
-        """Log metrics (numeric values) in Neptune
+        """Log metrics (numeric values) in Neptune.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_metric`
         """
@@ -377,7 +377,7 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
 
     def send_text(self, channel_name, x, y=None, timestamp=None):
-        """Log text data in Neptune
+        """Log text data in Neptune.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_text`
         """
@@ -429,7 +429,7 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
 
     def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
-        """Log image data in Neptune
+        """Log image data in Neptune.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_image`
         """
@@ -483,7 +483,7 @@ class Experiment(object):
         self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
 
     def send_artifact(self, artifact):
-        """Save an artifact (file) in experiment storage
+        """Save an artifact (file) in experiment storage.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
         """
@@ -648,7 +648,7 @@ class Experiment(object):
     def set_property(self, key, value):
         """Sets a value of an experiment property.
 
-        If property with given key does not exist it adds a new one.
+        If property with given ``key`` does not exist it adds a new one.
 
         Args:
             key (single :obj:`str`):
@@ -658,7 +658,6 @@ class Experiment(object):
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
-
 
             .. code:: python3
 
@@ -681,7 +680,6 @@ class Experiment(object):
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
-
 
             .. code:: python3
 
