@@ -490,7 +490,7 @@ class Experiment(object):
         return self.log_artifact(artifact)
 
     def log_artifact(self, artifact):
-        """Save an artifact (file) in experiment storage
+        """Save an artifact (file) in experiment storage.
 
         Args:
             artifact (:obj:`str`): A path to the file in local filesystem.
