@@ -29,7 +29,7 @@ class GitInfo(object):
         author_email (:obj:`str`, optional, default is ``""``): commit author email.
         commit_date (:obj:`datetime.datetime`, optional, default is ``""``): commit datetime.
         repository_dirty (:obj:`bool`, optional, default is ``True``):
-            True, if the repository has uncommitted changes.
+            ``True``, if the repository has uncommitted changes, ``False`` otherwise.
     """
     def __init__(self,
                  commit_id,
