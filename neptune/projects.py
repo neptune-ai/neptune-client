@@ -294,6 +294,19 @@ class Project(object):
                     * If set to ``False`` and uncaught exception occurs, then no action is performed
                       in the Web application. As a consequence, experiment's status is `running` or `not responding`.
 
+            git_info (:class:`~neptune.git_info.GitInfo`, optional, default is ``None``):
+
+                | Instance of the class :class:`~neptune.git_info.GitInfo` that provides information about
+                  the git repository from which experiment was started.
+                | If ``None`` is passed,
+                  system attempts to automatically extract information about git repository in the following way:
+
+                      * System looks for `.git` file in the current directory and, if not found,
+                        goes up recursively until `.git` file will be found
+                        (see: :meth:`~neptune.utils.get_git_info`).
+                      * If there is no git repository,
+                        then no information about git is displayed in experiment details in Neptune web application.
+
             hostname (:obj:`str`, optional, default is ``None``):
                 If ``None``, neptune automatically get `hostname` information.
                 User can also set `hostname` directly by passing :obj:`str`.

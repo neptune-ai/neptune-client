@@ -198,32 +198,98 @@ def append_tags(tag, *tags):
 
 
 def remove_tag(tag):
+    """Removes single tag from experiment.
+
+    Alias for: :meth:`~neptune.experiments.Experiment.remove_tag`
+    """
     get_experiment().remove_tag(tag)
 
 
 def set_property(key, value):
+    """Set `key-value` pair as an experiment property.
+
+    If property with given ``key`` does not exist, it adds a new one.
+
+    Alias for: :meth:`~neptune.experiments.Experiment.set_property`
+    """
     get_experiment().set_property(key, value)
 
 
 def remove_property(key):
+    """Removes a property with given key.
+
+    Alias for: :meth:`~neptune.experiments.Experiment.remove_property`
+    """
     get_experiment().remove_property(key)
 
 
 def send_metric(channel_name, x, y=None, timestamp=None):
+    """Log metrics (numeric values) in Neptune.
+
+    Alias for :meth:`~neptune.experiments.Experiment.log_metric`
+    """
     return get_experiment().send_metric(channel_name, x, y, timestamp)
 
 
+def log_metric(log_name, x, y=None, timestamp=None):
+    """Log metrics (numeric values) in Neptune.
+
+    Alias for :meth:`~neptune.experiments.Experiment.log_metric`
+    """
+    return get_experiment().log_metric(log_name, x, y, timestamp)
+
+
 def send_text(channel_name, x, y=None, timestamp=None):
+    """Log text data in Neptune.
+
+    Alias for :meth:`~neptune.experiments.Experiment.log_text`
+    """
     return get_experiment().send_text(channel_name, x, y, timestamp)
 
 
+def log_text(log_name, x, y=None, timestamp=None):
+    """Log text data in Neptune.
+
+    Alias for :meth:`~neptune.experiments.Experiment.log_text`
+    """
+    return get_experiment().send_text(log_name, x, y, timestamp)
+
+
 def send_image(channel_name, x, y=None, name=None, description=None, timestamp=None):
+    """Log image data in Neptune.
+
+    Alias for :meth:`~neptune.experiments.Experiment.log_image`
+    """
     return get_experiment().send_image(channel_name, x, y, name, description, timestamp)
 
 
+def log_image(log_name, x, y=None, name=None, description=None, timestamp=None):
+    """Log image data in Neptune.
+
+    Alias for :meth:`~neptune.experiments.Experiment.log_image`
+    """
+    return get_experiment().send_image(log_name, x, y, name, description, timestamp)
+
+
 def send_artifact(artifact):
+    """Save an artifact (file) in experiment storage.
+
+    Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
+    """
+    return get_experiment().send_artifact(artifact)
+
+
+def log_artifact(artifact):
+    """Save an artifact (file) in experiment storage.
+
+    Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
+    """
     return get_experiment().send_artifact(artifact)
 
 
 def stop(traceback=None):
+    """Marks experiment as finished (succeeded or failed).
+
+    Alias for :meth:`~neptune.experiments.Experiment.stop`
+    """
     get_experiment().stop(traceback)
