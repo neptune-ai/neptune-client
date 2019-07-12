@@ -657,10 +657,12 @@ class Experiment(object):
                 New value of a property.
 
         Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
+
 
             .. code:: python3
 
-                neptune.set_property('model', 'LightGBM')
+                experiment.set_property('model', 'LightGBM')
 
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
@@ -678,6 +680,8 @@ class Experiment(object):
                 Key of property to remove.
 
         Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
+
 
             .. code:: python3
 
@@ -841,6 +845,7 @@ class Experiment(object):
                 Otherwise, experiment will be marked as failed.
 
         Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
             .. code:: python3
 
