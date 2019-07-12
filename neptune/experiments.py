@@ -70,7 +70,7 @@ class Experiment(object):
         self._id = _id
         self._internal_id = internal_id
         self._channels_values_sender = ChannelsValuesSender(self)
-        eelf._execution_context = ExecutionContext(client, self)
+        self._execution_context = ExecutionContext(client, self)
 
     @property
     def id(self):
@@ -125,7 +125,7 @@ class Experiment(object):
     def get_system_properties(self):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 
-        eeturns:
+        Returns:
             dict: A dictionary mapping a property name to value.
 
         Examples:
@@ -497,6 +497,14 @@ class Experiment(object):
 
         Raises:
             `StorageLimitReached`: When storage limit in the project has been reached.
+
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
+
+            .. code:: python3
+
+                # simple use
+                experiment.log_artifact('images/wrong_prediction_1.png')
         """
         if not os.path.exists(artifact):
             raise FileNotFound(artifact)
@@ -638,7 +646,8 @@ class Experiment(object):
         return dict((p.key, p.value) for p in experiment.properties)
 
     def set_property(self, key, value):
-        """Sets a value of an experiment property. If property with given key does not exist it adds a new one.
+        """Sets a value of an experiment property.
+        If property with given key does not exist it adds a new one.
 
         Args:
             key (single :obj:`str`):
@@ -650,7 +659,7 @@ class Experiment(object):
 
             .. code:: python3
 
-                neptune.set_property('host', 'slave03')
+                neptune.set_property('model', 'LightGBM')
 
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
@@ -829,6 +838,15 @@ class Experiment(object):
                 to be stored in experiment details in case of failure (stacktrace, etc).
                 If this argument is ``None`` the experiment will be marked as succeeded.
                 Otherwise, experiment will be marked as failed.
+
+        Examples:
+
+            .. code:: python3
+
+                neptune.stop() # Marks experiment as succeeded
+
+                # Assuming ``ex`` is some exception
+                neptune.stop(str(ex)) # Marks experiment as failed with exception info in experiment details.
         """
 
         self._channels_values_sender.join()

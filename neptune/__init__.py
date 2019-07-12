@@ -206,7 +206,8 @@ def remove_tag(tag):
 
 
 def set_property(key, value):
-    """Sets a value of an experiment property. If property with given key does not exist it adds a new one.
+    """Sets a value of an experiment property.
+    If property with given key does not exist it adds a new one.
 
     Alias for: :meth:`~neptune.experiments.Experiment.set_property`
 
