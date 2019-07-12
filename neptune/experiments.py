@@ -646,15 +646,13 @@ class Experiment(object):
         return dict((p.key, p.value) for p in experiment.properties)
 
     def set_property(self, key, value):
-        """Sets a value of an experiment property.
+        """Set `key-value` pair as an experiment property.
 
-        If property with given ``key`` does not exist it adds a new one.
+        If property with given ``key`` does not exist, it adds a new one.
 
         Args:
-            key (single :obj:`str`):
-                Property key.
-            value (single :obj:`str`):
-                New value of a property.
+            key (:obj:`str`): Property key.
+            value (:obj:`obj`): New value of a property.
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
@@ -662,6 +660,7 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.set_property('model', 'LightGBM')
+                experiment.set_property('magic-number', 7)
 
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
