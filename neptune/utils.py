@@ -115,11 +115,6 @@ def _split_df_by_stems(df):
 
 
 def discover_git_repo_location():
-    """ Attempts to retrieve git repository location.
-
-    Returns:
-        string: path, that should be the best candidate to find git repository, or None
-    """
     import __main__
 
     if hasattr(__main__, '__file__'):
@@ -128,29 +123,29 @@ def discover_git_repo_location():
 
 
 def get_git_info(repo_path=None):
-    """ Attempts to retrieve git info from repository.
+    """Retrieve information about git repository.
 
-    In case of failure, None will be returned
+    If attempt fails, ``None`` will be returned.
 
     Args:
-        repo_path(str): an optional path to the repository, from which to extract information.
-                Passing None will resolve the same repository as calling git.Repo():
+        repo_path (:obj:`str`, optional, default is ``None``):
+
+            | Path to the repository from which extract information about git.
+            | If ``None`` is passed, calling ``get_git_info`` is equivalent to calling
+              ``git.Repo(search_parent_directories=True)``.
+              Check `GitPython <https://gitpython.readthedocs.io/en/stable/reference.html#git.repo.base.Repo>`_
+              docs for more information.
 
     Returns:
-        neptune.GitInfo: An object representing information about chosen git repository
+        :class:`~neptune.git_info.GitInfo` - An object representing information about git repository.
 
     Examples:
-        Get git info from current directory
 
-        >>> from neptune.utils import get_git_info
-        >>> git_info = get_git_info('.')
+        .. code:: python3
 
-        Create an experiment with git history
+            # Get git info from the current directory
+            git_info = get_git_info('.')
 
-        >>> from neptune.sessions import Session
-        >>> session = Session()
-        >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-        >>> experiment = project.create_experiment(git_info=git_info)
     """
     try:
         import git
