@@ -34,34 +34,32 @@ from neptune.utils import align_channels_on_x, is_float
 
 
 class Experiment(object):
-    """It contains all the information about a Neptune Experiment
+    """Representation of a Neptune Experiment
 
-    This class lets you extract experiment by, short experiment id, names of all the channels,
+    This class lets you extract and modify experiment data like names of all the channels,
     system properties and other properties, parameters, numerical channel values,
     information about the hardware utilization during the experiment
 
     Args:
-        client(`neptune.Client`): Client object
-        project(`neptune.Project`)
-        _id(`str`)
-        internal_id(`str`): UUID
+        client (:obj:`neptune.Client`):
+            API Client object
+        project (:obj:`neptune.Project`):
+            :class:`~neptune.projects.Project` instance
+        _id (:obj:`str`):
+            Experiment short id
+        internal_id (:obj:`str`):
+            internal Id UUID
 
     Examples:
-        Instantiate a session.
+        Assuming that `project` is an instance of :class:`~neptune.projects.Project`.
 
-        >>> from neptune.sessions import Session
-        >>> session = Session()
+        .. code:: python3
 
-        Fetch a project and a list of experiments.
+            experiment = project.create_experiment()
 
-        >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-        >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
+    Note:
+        User should never create instances of this class manually.
 
-        Get an experiment instance.
-
-        >>> experiment = experiments[0]
-        >>> experiment
-        Experiment(SAL-1609)
     """
 
     def __init__(self, client, project, _id, internal_id):
@@ -76,39 +74,84 @@ class Experiment(object):
     def id(self):
         """ Experiment short id
 
+        Experiment short id is a combination of project key and it's unique number in project
+        in format `<project_key>-<experiment_number>`
+
+        Returns:
+            :obj:`str` experiment short id
+
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment short id.
-
-            >>> experiment.id
-            'SAL-1609'
+                experiment.id
 
         """
         return self._id
 
     @property
     def name(self):
+        """ Current experiment name
+
+        Returns:
+            :obj:`str` experiment name
+
+        Examples:
+            Assuming that `project` is an instance of :class:`~neptune.projects.Project`.
+
+            .. code:: python3
+
+                experiment = project.create_experiment('exp_name')
+                experiment.name
+
+        Note:
+            Accessing this property queries the server to retrieve current version of experiment, and may fail due to
+            network issues or changing the underlying experiment externally
+        """
         return self._client.get_experiment(self._internal_id).name
 
     @property
     def state(self):
+        """ Current experiment state
+
+        Possible values:
+            'running', 'succeeded', 'failed', 'aborted'
+
+        Returns:
+            :obj:`str` current experiment state
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.state
+
+        Note:
+            Accessing this property queries the server to retrieve current version of experiment, and may fail due to
+            network issues or changing the underlying experiment externally
+        """
         return self._client.get_experiment(self._internal_id).state
 
     @property
     def internal_id(self):
+        """ Experiment internal id
+
+        Returns:
+            :obj:`str` experiment short id
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.internal_id
+
+        Note:
+            User should not need to use this attribute. It is used primarily for API calls
+
+        """
         return self._internal_id
 
     @property
@@ -126,29 +169,21 @@ class Experiment(object):
         """Retrieve system properties like owner, times of creation and completion, worker type, etc.
 
         Returns:
-            dict: A dictionary mapping a property name to value.
+            :obj:`dict` A dictionary mapping a property name to value.
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment system properties.
-
-            >>> experiment.get_system_properties
+                experiment.get_system_properties
 
         Note:
             The list of supported system properties may change over time.
+
+        Note:
+            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
+            network issues or changing the underlying experiment externally
 
         """
         experiment = self._client.get_experiment(self._internal_id)
@@ -176,6 +211,11 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.get_tags()
+
+        Note:
+            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
         return self._client.get_experiment(self._internal_id).tags
 
@@ -200,6 +240,10 @@ class Experiment(object):
                 neptune.append_tag('new-tag')  # single tag
                 neptune.append_tag('first-tag', 'second-tag', 'third-tag')  # few str
                 neptune.append_tag(['first-tag', 'second-tag', 'third-tag'])  # list of str
+
+        Note:
+            Calling this method queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
 
         """
         if isinstance(tag, list):
@@ -233,6 +277,11 @@ class Experiment(object):
 
         Note:
             Removing a tag that is not assigned to this experiment is silently ignored.
+
+        Note:
+            Calling this method queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
         self._client.update_tags(experiment=self,
                                  tags_to_add=[],
@@ -256,6 +305,10 @@ class Experiment(object):
 
                 exp_logs = experiment.get_logs()
 
+        Note:
+            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
         experiment = self._client.get_experiment(self.internal_id)
         channels_last_values_by_name = dict((ch.channelName, ch) for ch in experiment.channelsLastValues)
@@ -278,35 +331,48 @@ class Experiment(object):
         """Retrieve all system channel names along with their representations for this experiment.
 
         Returns:
-            dict: A dictionary mapping a channel name to channel.
+            :obj:`dict` - A dictionary mapping of system channel names to the channel's last value.
 
-        Examples:
-            Instantiate a session.
+        Example:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
+                exp_logs = experiment.get_system_channels()
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment channels.
-
-            >>> experiment.get_system_channels()
+        Note:
+            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
+            network issues or changing the underlying experiment externally
 
         """
         channels = self._client.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
 
     def upload_source_files(self, source_files):
-        """
+        """Upload a list of files to server storage as experiment source files
+
+        This method is normally called during experiment creation and user does not need to
+        call it manually in most cases
+
+        Args:
+            source_files (:obj:`list` of :obj:`str`):
+                List of locally accessible files that are to be uploaded to Neptune server
+
         Raises:
             `StorageLimitReached`: When storage limit in the project has been reached.
+            `FileNotFound`: When any of source_files does not exist
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.upload_source_files(['log.txt', 'main.py'])
+
+        Note:
+            Calling this method queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
         files_list = []
         for source_file in source_files:
@@ -505,6 +571,11 @@ class Experiment(object):
 
                 # simple use
                 experiment.log_artifact('images/wrong_prediction_1.png')
+
+        Note:
+            Calling this method queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
         if not os.path.exists(artifact):
             raise FileNotFound(artifact)
@@ -534,27 +605,22 @@ class Experiment(object):
         """Upload a tensorflow graph for this experiment.
 
         Args:
-            graph_id: a string UUID identifying the graph (managed by user)
-            value: a string representation of Tensorflow graph
+            graph_id (:obj:`str`):
+                A string UUID identifying the graph (managed by user)
+            value (:obj:`str`):
+                A string representation of Tensorflow graph
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
+                import uuid
+                experiment.send_graph(str(uuid.uuid4()), str("tf.GraphDef instance"))
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Send graph to experiment.
-            >>> import uuid
-            >>> experiment.send_graph(str(uuid.uuid4()), str("tf.GraphDef instance"))
+        Note:
+            Calling this method queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
 
         """
 
@@ -581,6 +647,10 @@ class Experiment(object):
         Note:
             Check Neptune web application to see that reset charts have no data.
 
+        Note:
+            Calling this method queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
         channel = self._find_channel(log_name, ChannelNamespace.USER)
         if channel is None:
@@ -594,23 +664,15 @@ class Experiment(object):
             dict: A dictionary mapping a parameter name to value.
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
+                experiment.get_parameters()
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment parameters.
-
-            >>> experiment.get_parameters()
+        Note:
+            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
+            network issues or changing the underlying experiment externally
 
         """
         experiment = self._client.get_experiment(self.internal_id)
@@ -623,23 +685,15 @@ class Experiment(object):
             dict: A dictionary mapping a property key to value.
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
+                experiment.get_properties()
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment properties.
-
-            >>> experiment.get_properties
+        Note:
+            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
+            network issues or changing the underlying experiment externally
 
         """
         experiment = self._client.get_experiment(self.internal_id)
@@ -662,6 +716,10 @@ class Experiment(object):
                 experiment.set_property('model', 'LightGBM')
                 experiment.set_property('magic-number', 7)
 
+        Note:
+            Calling this accessor queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         properties[key] = value
@@ -683,6 +741,10 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.remove_property('host')
+
+        Note:
+            Calling this accessor queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
 
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
@@ -713,26 +775,18 @@ class Experiment(object):
         The returned DataFrame may contain NaNs if one of the metrics has more values than others.
 
         Returns:
-            `pandas.DataFrame`: Dataframe containing the hardware utilization metrics throughout the experiment.
+            :obj:`pandas.DataFrame`: Dataframe containing the hardware utilization metrics throughout the experiment.
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
+                experiment.get_hardware_utilization
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get hardware utilization channels.
-
-            >>> experiment.get_hardware_utilization
+        Note:
+            Calling this accessor queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
 
         """
         metrics_csv = self._client.get_metrics_csv(self)
@@ -742,8 +796,7 @@ class Experiment(object):
             return pd.DataFrame()
 
     def get_numeric_channels_values(self, *channel_names):
-        """
-        Retrieve values of specified numeric channels.
+        """Retrieve values of specified numeric channels.
 
         The returned DataFrame contains 1 additional column x along with the requested channels.
 
@@ -759,28 +812,20 @@ class Experiment(object):
             `pandas.DataFrame`: Dataframe containing the values for the requested numerical channels.
 
         Examples:
-            Instantiate a session.
+           Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> exp = experiments[0]
-
-            Get numeric channel value for channels 'unet_0 batch sum loss' and 'unet_1 batch sum loss'.
-
-            >>> batch_channels = exp.get_numeric_channels_values('unet_0 batch sum loss', 'unet_1 batch sum loss')
-            >>> epoch_channels = exp.get_numeric_channels_values('unet_0 epoch_val sum loss', 'Learning Rate')
+                batch_channels = experiment.get_numeric_channels_values('unet_0 batch sum loss', 'unet_1 batch sum loss')
+                epoch_channels = experiment.get_numeric_channels_values('unet_0 epoch_val sum loss', 'Learning Rate')
 
         Note:
             Remember to fetch the dataframe for the channels that have a common temporal/iteration axis x.
             For example combine epoch channels to one dataframe and batch channels to the other
+        Note:
+            Calling this accessor queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
 
         channels_data = {}
@@ -811,6 +856,77 @@ class Experiment(object):
               send_hardware_metrics=True,
               run_monitoring_thread=True,
               handle_uncaught_exceptions=True):
+        """Marks the experiment as running
+
+        This method is normally called during experiment creation and in most cases
+        it is not needed to be called again
+
+        By passing correct flags, user can decide which Neptune features to use
+
+        Args:
+            upload_source_files (:obj:`list`, optional, default is ``['main.py']``):
+                | Where `'main.py'` is Python file from which experiment was created
+                  (name `'main.py'` is just an example here).
+                  Must be list of :obj:`str`.
+                  Uploaded sources are displayed in the experiment's `Source code` tab.
+                | Pass empty list (``[]``) to upload no files.
+
+            abort_callback (:obj:`callable`, optional, default is ``None``):
+                Callback that defines how `abort experiment` action in the Web application should work.
+                Actual behavior depends on your setup:
+
+                    * (default) If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_
+                      is installed, then current process and it's children are aborted by sending `SIGTERM`.
+                      If, after grace period, processes are not terminated, `SIGKILL` is sent.
+                    * If ``abort_callback=None`` and `psutil <https://psutil.readthedocs.io/en/latest/>`_
+                      is **not** installed, then `abort experiment` action just marks experiment as *aborted*
+                      in the Web application. No action is performed on the current process.
+                    * If ``abort_callback=callable``, then ``callable`` is executed when `abort experiment` action
+                      in the Web application is triggered.
+
+            logger (:obj:`logging.handlers` or `None`, optional, default is ``None``):
+                If `handler <https://docs.python.org/3.6/library/logging.handlers.html>`_
+                to `Python logger` is passed, new experiment's `text log`
+                (see: :meth:`~neptune.experiments.Experiment.log_text`) with name `"logger"` is created.
+                Each time `Python logger` logs new data, it is automatically sent to the `"logger"` in experiment.
+                As a results all data from `Python logger` are in the `Logs` tab in the experiment.
+
+            upload_stdout (:obj:`Boolean`, optional, default is ``True``):
+                Whether to send stdout to experiment's *Monitoring*.
+
+            upload_stderr (:obj:`Boolean`, optional, default is ``True``):
+                Whether to send stderr to experiment's *Monitoring*.
+
+            send_hardware_metrics (:obj:`Boolean`, optional, default is ``True``):
+                Whether to send hardware monitoring logs (CPU, GPU, Memory utilization) to experiment's *Monitoring*.
+
+            run_monitoring_thread (:obj:`Boolean`, optional, default is ``True``):
+                Whether to run thread that pings Neptune server in order to determine if experiment is responsive.
+
+            handle_uncaught_exceptions (:obj:`Boolean`, optional, default is ``True``):
+                Two options ``True`` and ``False`` are possible:
+
+                    * If set to ``True`` and uncaught exception occurs, then Neptune automatically place
+                      `Traceback` in the experiment's `Details` and change experiment status to `Failed`.
+                    * If set to ``False`` and uncaught exception occurs, then no action is performed
+                      in the Web application. As a consequence, experiment's status is `running` or `not responding`.
+
+        Examples:
+           Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
+
+            .. code:: python3
+
+                batch_channels = experiment.get_numeric_channels_values('unet_0 batch sum loss', 'unet_1 batch sum loss')
+                epoch_channels = experiment.get_numeric_channels_values('unet_0 epoch_val sum loss', 'Learning Rate')
+
+        Note:
+            Remember to fetch the dataframe for the channels that have a common temporal/iteration axis x.
+            For example combine epoch channels to one dataframe and batch channels to the other
+        Note:
+            Calling this accessor queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
+
+        """
 
         if upload_source_files is None:
             main_file = sys.argv[0]
@@ -852,6 +968,11 @@ class Experiment(object):
                 # Assuming 'ex' is some exception,
                 # it marks experiment as failed with exception info in experiment details.
                 experiment.stop(str(ex))
+
+        Note:
+            Calling this method queries the server, and may fail due to
+            network issues or changing the underlying experiment externally
+
         """
 
         self._channels_values_sender.join()
