@@ -72,7 +72,18 @@ Example above creates Neptune `experiment <https://ui.neptune.ml/o/shared/org/on
 
    API usage limits <limits.rst>
 
+Bugs, Feature requests and Questions
+-------------------------------------
+
+If you find yourself in any trouble drop an isse on `Git Issues`_, fire a feature request on
+`Git Feature Request`_ or ask us on the `Neptune community forum`_ or `Neptune community spectrum`_.
+
 Indices
 -------
 * :ref:`genindex`
 * :ref:`modindex`
+
+.. _Git Issues: https://github.com/neptune-ml/neptune-client/issues
+.. _Git Feature Request: https://github.com/neptune-ml/neptune-client/issues
+.. _Neptune community forum: https://community.neptune.ml/
+.. _Neptune community spectrum: https://spectrum.chat/neptune-community?tab=posts
