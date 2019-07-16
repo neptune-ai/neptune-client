@@ -32,7 +32,7 @@ from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float
 
-
+#pylint: disable=too-many-lines
 class Experiment(object):
     """Representation of a Neptune Experiment
 
@@ -816,8 +816,8 @@ class Experiment(object):
 
             .. code:: python3
 
-                batch_channels = experiment.get_numeric_channels_values('unet_0 batch sum loss', 'unet_1 batch sum loss')
-                epoch_channels = experiment.get_numeric_channels_values('unet_0 epoch_val sum loss', 'Learning Rate')
+                batch_channels = experiment.get_numeric_channels_values('batch 1 name', 'batch 2 name')
+                epoch_channels = experiment.get_numeric_channels_values('epoch 1 names', 'epoch 2 name')
 
         Note:
             Remember to fetch the dataframe for the channels that have a common temporal/iteration axis x.
@@ -916,8 +916,8 @@ class Experiment(object):
 
             .. code:: python3
 
-                batch_channels = experiment.get_numeric_channels_values('unet_0 batch sum loss', 'unet_1 batch sum loss')
-                epoch_channels = experiment.get_numeric_channels_values('unet_0 epoch_val sum loss', 'Learning Rate')
+                batch_channels = experiment.get_numeric_channels_values('batch 1 name', 'batch 2 name')
+                epoch_channels = experiment.get_numeric_channels_values('epoch 1 names', 'epoch 2 name')
 
         Note:
             Remember to fetch the dataframe for the channels that have a common temporal/iteration axis x.
