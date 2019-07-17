@@ -81,6 +81,11 @@ def is_float(value):
         return True
 
 
+def is_nan_or_inf(value):
+    inf = 1e5000
+    return (is_float(value) and value != value) or value == inf or value == -inf
+
+
 def file_contains(filename, text):
     for line in open(filename):
         if text in line:

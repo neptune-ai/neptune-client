@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import base64
+import logging
 import os
 import sys
 import threading
@@ -30,7 +31,11 @@ from neptune.internal.channels.channels_values_sender import ChannelsValuesSende
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
-from neptune.utils import align_channels_on_x, is_float
+from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
+
+_logger = logging.getLogger(__name__)
+
+_nan_warning_sent = False
 
 
 class Experiment(object):
@@ -373,8 +378,17 @@ class Experiment(object):
         if not is_float(y):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
-        value = ChannelValue(x, dict(numeric_value=y), timestamp)
-        self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
+        if is_nan_or_inf(y):
+            # pylint: disable=global-statement
+            global _nan_warning_sent
+            if not _nan_warning_sent:
+                _nan_warning_sent = True
+                _logger.warning(
+                    'Invalid metric value: %s. Metrics with nan and inf values will not be sent to server',
+                    y)
+        else:
+            value = ChannelValue(x, dict(numeric_value=y), timestamp)
+            self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
 
     def send_text(self, channel_name, x, y=None, timestamp=None):
         """Log text data in Neptune.
