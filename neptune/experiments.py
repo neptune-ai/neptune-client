@@ -142,7 +142,7 @@ class Experiment(object):
         }
 
     def get_system_properties(self):
-        """Retrieve experiment properties
+        """Retrieve experiment properties.
 
         | Experiment properties are for example: `owner`, `time of creation`, `time of completion`, `hostname`.
         | List of experiment properties may change over time.
@@ -279,18 +279,6 @@ class Experiment(object):
         return channels
 
     def get_system_channels(self):
-        """Retrieve all system channel names along with their representations for this experiment.
-
-        Returns:
-            :obj:`dict` - A dictionary mapping of system channel names to the channel's last value.
-
-        Example:
-            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
-
-            .. code:: python3
-
-                exp_logs = experiment.get_system_channels()
-        """
         channels = self._client.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
 
@@ -518,21 +506,21 @@ class Experiment(object):
         return self.log_graph(graph_id, value)
 
     def log_graph(self, graph_id, value):
-        """Upload a tensorflow graph for this experiment.
+        """Upload a TensorFlow graph for this experiment.
 
         Args:
-            graph_id (:obj:`str`):
-                A string UUID identifying the graph (managed by user)
-            value (:obj:`str`):
-                A string representation of Tensorflow graph
+            graph_id (:obj:`str`): A string UUID identifying the graph
+            value (:obj:`str`): A string representation of TensorFlow graph
 
-        Examples:
-            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+        Example:
+            | Assuming that:
+            | 1. `experiment` is an instance of :class:`~neptune.experiments.Experiment`,
+            | 2. `uuid` is string representation of `uuid.uuid4()`,
+            | 3. `value` is string representation of `tf.GraphDef` instance.
 
             .. code:: python3
 
-                import uuid
-                experiment.send_graph(str(uuid.uuid4()), str("tf.GraphDef instance"))
+                experiment.send_graph(uuid, value)
         """
 
         self._client.put_tensorflow_graph(self, graph_id, value)
@@ -567,14 +555,14 @@ class Experiment(object):
         """Retrieve parameters for this experiment.
 
         Returns:
-            dict: A dictionary mapping a parameter name to value.
+            :obj:`dict` - dictionary mapping a parameter name to value.
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
             .. code:: python3
 
-                experiment.get_parameters()
+                exp_params = experiment.get_parameters()
         """
         experiment = self._client.get_experiment(self.internal_id)
         return dict((p.name, self._convert_parameter_value(p.value, p.parameterType)) for p in experiment.parameters)
@@ -583,14 +571,14 @@ class Experiment(object):
         """Retrieve user-defined properties for this experiment.
 
         Returns:
-            dict: A dictionary mapping a property key to value.
+            :obj:`dict` - dictionary mapping a property key to value.
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
             .. code:: python3
 
-                experiment.get_properties()
+                exp_properties = experiment.get_properties()
         """
         experiment = self._client.get_experiment(self.internal_id)
         return dict((p.key, p.value) for p in experiment.properties)
