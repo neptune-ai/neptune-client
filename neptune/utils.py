@@ -15,6 +15,7 @@
 #
 
 import functools
+import math
 import os
 import sys
 
@@ -82,8 +83,7 @@ def is_float(value):
 
 
 def is_nan_or_inf(value):
-    inf = 1e5000
-    return (is_float(value) and value != value) or value == inf or value == -inf
+    return math.isnan(value) or math.isinf(value)
 
 
 def file_contains(filename, text):
