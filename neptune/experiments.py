@@ -87,7 +87,7 @@ class Experiment(object):
 
             .. code:: python3
 
-                experiment.id
+                exp_id = experiment.id
 
         """
         return self._id
@@ -105,11 +105,7 @@ class Experiment(object):
             .. code:: python3
 
                 experiment = project.create_experiment('exp_name')
-                experiment.name
-
-        Note:
-            Accessing this property queries the server to retrieve current version of experiment, and may fail due to
-            network issues or changing the underlying experiment externally
+                exp_name = experiment.name
         """
         return self._client.get_experiment(self._internal_id).name
 
@@ -127,7 +123,7 @@ class Experiment(object):
 
             .. code:: python3
 
-                experiment.state
+                state_str = experiment.state
         """
         return self._client.get_experiment(self._internal_id).state
 
@@ -159,7 +155,7 @@ class Experiment(object):
 
             .. code:: python3
 
-                experiment.get_system_properties
+                sys_properties = experiment.get_system_properties
         """
         experiment = self._client.get_experiment(self._internal_id)
         return {
