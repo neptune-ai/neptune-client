@@ -670,32 +670,35 @@ class Experiment(object):
             return pd.DataFrame()
 
     def get_numeric_channels_values(self, *channel_names):
-        """Retrieve values of specified numeric channels.
+        """Retrieve values of specified metrics (numeric logs).
 
-        The returned DataFrame contains 1 additional column x along with the requested channels.
-
-        E.g. get_numeric_channels_values('loss', 'auc') will return a DataFrame of the following structure:
-            x, loss, auc
-
-        The returned DataFrame may contain NaNs if one of the channels has more values than others.
+        The returned
+        `pandas.DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_
+        contains 1 additional column `x` along with the requested metrics.
 
         Args:
-            *channel_names: variable length list of names of the channels to retrieve values for.
+            *channel_names (one or more :obj:`str`): comma-separated metric names.
 
         Returns:
-            `pandas.DataFrame`: Dataframe containing the values for the requested numerical channels.
+            :obj:`pandas.DataFrame` - DataFrame containing values for the requested metrics.
 
-        Examples:
-           Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
+            | The returned DataFrame may contain ``NaN`` s if one of the metrics has more values than others.
+
+        Example:
+            Invoking ``get_numeric_channels_values('loss', 'auc')`` returns DataFrame with columns
+            `x`, `loss`, `auc`.
+
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
             .. code:: python3
 
-                batch_channels = experiment.get_numeric_channels_values('batch 1 name', 'batch 2 name')
-                epoch_channels = experiment.get_numeric_channels_values('epoch 1 names', 'epoch 2 name')
+                batch_channels = experiment.get_numeric_channels_values('batch-1-loss', 'batch-2-metric')
+                epoch_channels = experiment.get_numeric_channels_values('epoch-1-loss', 'epoch-2-metric')
 
         Note:
-            Remember to fetch the dataframe for the channels that have a common temporal/iteration axis x.
-            For example combine epoch channels to one dataframe and batch channels to the other
+            It's good idea to get metrics with common temporal pattern (like iteration or batch/epoch number).
+            Thanks to this each row of returned DataFrame has metrics from the same moment in experiment.
+            For example, combine epoch metrics to one DataFrame and batch metrics to the other.
         """
 
         channels_data = {}
