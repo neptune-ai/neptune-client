@@ -348,32 +348,7 @@ class Experiment(object):
         channels = self._client.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
 
-    def upload_source_files(self, source_files):
-        """Upload a list of files to server storage as experiment source files
-
-        This method is normally called during experiment creation and user does not need to
-        call it manually in most cases
-
-        Args:
-            source_files (:obj:`list` of :obj:`str`):
-                List of locally accessible files that are to be uploaded to Neptune server
-
-        Raises:
-            `StorageLimitReached`: When storage limit in the project has been reached.
-            `FileNotFound`: When any of source_files does not exist
-
-        Examples:
-            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
-
-            .. code:: python3
-
-                experiment.upload_source_files(['log.txt', 'main.py'])
-
-        Note:
-            Calling this method queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
-        """
+    def _upload_source_files(self, source_files):
         files_list = []
         for source_file in source_files:
             if not os.path.exists(source_file):
@@ -936,7 +911,7 @@ class Experiment(object):
             else:
                 upload_source_files = []
 
-        self.upload_source_files(upload_source_files)
+        self._upload_source_files(upload_source_files)
 
         self._execution_context.start(
             abort_callback=abort_callback,
