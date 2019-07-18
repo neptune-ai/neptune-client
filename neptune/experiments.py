@@ -32,33 +32,35 @@ from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float
 
+
 #pylint: disable=too-many-lines
 class Experiment(object):
-    """Representation of a Neptune Experiment
+    """A class for managing Neptune experiment.
 
-    This class lets you extract and modify experiment data like names of all the channels,
-    system properties and other properties, parameters, numerical channel values,
-    information about the hardware utilization during the experiment
+    Each time User creates new experiment instance of this class is created.
+    It lets you manage experiment, :meth:`~neptune.experiments.Experiment.log_metric`,
+    :meth:`~neptune.experiments.Experiment.log_text`,
+    :meth:`~neptune.experiments.Experiment.log_image`,
+    :meth:`~neptune.experiments.Experiment.set_property`,
+    and much more.
+
 
     Args:
-        client (:obj:`neptune.Client`):
-            API Client object
-        project (:obj:`neptune.Project`):
-            :class:`~neptune.projects.Project` instance
-        _id (:obj:`str`):
-            Experiment short id
-        internal_id (:obj:`str`):
-            internal Id UUID
+        client (:obj:`neptune.Client`): API Client object
+        project (:obj:`neptune.Project`): :class:`~neptune.projects.Project` instance
+        _id (:obj:`str`): Experiment short id
+        internal_id (:obj:`str`): internal UUID
 
-    Examples:
+    Example:
         Assuming that `project` is an instance of :class:`~neptune.projects.Project`.
 
         .. code:: python3
 
             experiment = project.create_experiment()
 
-    Note:
+    Warning:
         User should never create instances of this class manually.
+        Always use: :meth:`~neptune.projects.Project.create_experiment`.
 
     """
 
@@ -72,13 +74,13 @@ class Experiment(object):
 
     @property
     def id(self):
-        """ Experiment short id
+        """Experiment short id
 
-        Experiment short id is a combination of project key and it's unique number in project
-        in format `<project_key>-<experiment_number>`
+        | Combination of project key and unique experiment number.
+        | Format is ``<project_key>-<experiment_number>``, for example: ``MPI-142``.
 
         Returns:
-            :obj:`str` experiment short id
+            :obj:`str` - experiment short id
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
@@ -92,7 +94,7 @@ class Experiment(object):
 
     @property
     def name(self):
-        """ Current experiment name
+        """Experiment name
 
         Returns:
             :obj:`str` experiment name
@@ -113,13 +115,12 @@ class Experiment(object):
 
     @property
     def state(self):
-        """ Current experiment state
+        """Current experiment state
 
-        Possible values:
-            'running', 'succeeded', 'failed', 'aborted'
+        Possible values: `'running'`, `'succeeded'`, `'failed'`, `'aborted'`.
 
         Returns:
-            :obj:`str` current experiment state
+            :obj:`str` - current experiment state
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
@@ -127,36 +128,15 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.state
-
-        Note:
-            Accessing this property queries the server to retrieve current version of experiment, and may fail due to
-            network issues or changing the underlying experiment externally
         """
         return self._client.get_experiment(self._internal_id).state
 
     @property
     def internal_id(self):
-        """ Experiment internal id
-
-        Returns:
-            :obj:`str` experiment short id
-
-        Examples:
-            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
-
-            .. code:: python3
-
-                experiment.internal_id
-
-        Note:
-            User should not need to use this attribute. It is used primarily for API calls
-
-        """
         return self._internal_id
 
     @property
     def limits(self):
-        # TODO: get limit from server
         return {
             'channels': {
                 'numeric': 1000,
@@ -166,25 +146,20 @@ class Experiment(object):
         }
 
     def get_system_properties(self):
-        """Retrieve system properties like owner, times of creation and completion, worker type, etc.
+        """Retrieve experiment properties
+
+        | Experiment properties are for example: `owner`, `time of creation`, `time of completion`, `hostname`.
+        | List of experiment properties may change over time.
 
         Returns:
-            :obj:`dict` A dictionary mapping a property name to value.
+            :obj:`dict` - dictionary mapping a property name to value.
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            .. code: python3
+            .. code:: python3
 
                 experiment.get_system_properties
-
-        Note:
-            The list of supported system properties may change over time.
-
-        Note:
-            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         experiment = self._client.get_experiment(self._internal_id)
         return {
@@ -211,11 +186,6 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.get_tags()
-
-        Note:
-            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         return self._client.get_experiment(self._internal_id).tags
 
@@ -240,11 +210,6 @@ class Experiment(object):
                 neptune.append_tag('new-tag')  # single tag
                 neptune.append_tag('first-tag', 'second-tag', 'third-tag')  # few str
                 neptune.append_tag(['first-tag', 'second-tag', 'third-tag'])  # list of str
-
-        Note:
-            Calling this method queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         if isinstance(tag, list):
             tags_list = tag
@@ -277,11 +242,6 @@ class Experiment(object):
 
         Note:
             Removing a tag that is not assigned to this experiment is silently ignored.
-
-        Note:
-            Calling this method queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         self._client.update_tags(experiment=self,
                                  tags_to_add=[],
@@ -304,11 +264,6 @@ class Experiment(object):
             .. code:: python3
 
                 exp_logs = experiment.get_logs()
-
-        Note:
-            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         experiment = self._client.get_experiment(self.internal_id)
         channels_last_values_by_name = dict((ch.channelName, ch) for ch in experiment.channelsLastValues)
@@ -339,11 +294,6 @@ class Experiment(object):
             .. code:: python3
 
                 exp_logs = experiment.get_system_channels()
-
-        Note:
-            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         channels = self._client.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
@@ -546,11 +496,6 @@ class Experiment(object):
 
                 # simple use
                 experiment.log_artifact('images/wrong_prediction_1.png')
-
-        Note:
-            Calling this method queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         if not os.path.exists(artifact):
             raise FileNotFound(artifact)
@@ -592,11 +537,6 @@ class Experiment(object):
 
                 import uuid
                 experiment.send_graph(str(uuid.uuid4()), str("tf.GraphDef instance"))
-
-        Note:
-            Calling this method queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
 
         self._client.put_tensorflow_graph(self, graph_id, value)
@@ -621,11 +561,6 @@ class Experiment(object):
 
         Note:
             Check Neptune web application to see that reset charts have no data.
-
-        Note:
-            Calling this method queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         channel = self._find_channel(log_name, ChannelNamespace.USER)
         if channel is None:
@@ -644,11 +579,6 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.get_parameters()
-
-        Note:
-            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         experiment = self._client.get_experiment(self.internal_id)
         return dict((p.name, self._convert_parameter_value(p.value, p.parameterType)) for p in experiment.parameters)
@@ -665,11 +595,6 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.get_properties()
-
-        Note:
-            Calling this accessor queries the server to retrieve current version of experiment, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         experiment = self._client.get_experiment(self.internal_id)
         return dict((p.key, p.value) for p in experiment.properties)
@@ -690,11 +615,6 @@ class Experiment(object):
 
                 experiment.set_property('model', 'LightGBM')
                 experiment.set_property('magic-number', 7)
-
-        Note:
-            Calling this accessor queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         properties[key] = value
@@ -716,11 +636,6 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.remove_property('host')
-
-        Note:
-            Calling this accessor queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         del properties[key]
@@ -758,11 +673,6 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.get_hardware_utilization
-
-        Note:
-            Calling this accessor queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
         metrics_csv = self._client.get_metrics_csv(self)
         try:
@@ -797,10 +707,6 @@ class Experiment(object):
         Note:
             Remember to fetch the dataframe for the channels that have a common temporal/iteration axis x.
             For example combine epoch channels to one dataframe and batch channels to the other
-        Note:
-            Calling this accessor queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
 
         channels_data = {}
@@ -897,10 +803,6 @@ class Experiment(object):
         Note:
             Remember to fetch the dataframe for the channels that have a common temporal/iteration axis x.
             For example combine epoch channels to one dataframe and batch channels to the other
-        Note:
-            Calling this accessor queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
 
         if upload_source_files is None:
@@ -943,11 +845,6 @@ class Experiment(object):
                 # Assuming 'ex' is some exception,
                 # it marks experiment as failed with exception info in experiment details.
                 experiment.stop(str(ex))
-
-        Note:
-            Calling this method queries the server, and may fail due to
-            network issues or changing the underlying experiment externally
-
         """
 
         self._channels_values_sender.join()
