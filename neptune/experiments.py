@@ -520,7 +520,7 @@ class Experiment(object):
 
             .. code:: python3
 
-                experiment.send_graph(uuid, value)
+                experiment.log_graph(uuid, value)
         """
 
         self._client.put_tensorflow_graph(self, graph_id, value)
@@ -568,7 +568,7 @@ class Experiment(object):
         return dict((p.name, self._convert_parameter_value(p.value, p.parameterType)) for p in experiment.parameters)
 
     def get_properties(self):
-        """Retrieve user-defined properties for this experiment.
+        """Retrieve User-defined properties for this experiment.
 
         Returns:
             :obj:`dict` - dictionary mapping a property key to value.
@@ -629,34 +629,39 @@ class Experiment(object):
         )
 
     def get_hardware_utilization(self):
-        """Retrieve RAM, CPU and GPU utilization throughout the experiment.
+        """Retrieve GPU, CPU and memory utilization data.
 
-        The returned DataFrame contains 2 columns (x_*, y_*) for each of: RAM, CPU and each GPU.
-        The ``x_`` column contains the time (in milliseconds) from the experiment start,
-        while the ``y_`` column contains the value of the appropriate metric.
+        Get hardware utilization metrics for entire experiment as a single
+        `pandas.DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_
+        object. Returned DataFrame has following columns (assuming single GPU with 0 index):
 
-        RAM and GPU memory usage is returned in gigabytes.
-        CPU and GPU utilization is returned as a percentage (0-100).
+            * `x_ram` - time (in milliseconds) from the experiment start,
+            * `y_ram` - memory usage in GB,
+            * `x_cpu` - time (in milliseconds) from the experiment start,
+            * `y_cpu` - CPU utilization percentage (0-100),
+            * `x_gpu_util_0` - time (in milliseconds) from the experiment start,
+            * `y_gpu_util_0` - GPU utilization percentage (0-100),
+            * `x_gpu_mem_0` - time (in milliseconds) from the experiment start,
+            * `y_gpu_mem_0` - GPU memory usage in GB.
 
-        E.g. For an experiment using a single GPU, this method will return a DataFrame
-        of the following columns:
-
-        x_ram, y_ram, x_cpu, y_cpu, x_gpu_util_0, y_gpu_util_0, x_gpu_mem_0, y_gpu_mem_0
-
-        The following values denote that after 3 seconds, the experiment used 16.7 GB of RAM.
-        x_ram, y_ram = 3000, 16.7
-
-        The returned DataFrame may contain NaNs if one of the metrics has more values than others.
+        | If more GPUs are available they have their separate columns with appropriate indices (0, 1, 2, ...),
+          for example: `x_gpu_util_1`, `y_gpu_util_1`.
+        | The returned DataFrame may contain ``NaN`` s if one of the metrics has more values than others.
 
         Returns:
-            :obj:`pandas.DataFrame`: Dataframe containing the hardware utilization metrics throughout the experiment.
+            :obj:`pandas.DataFrame` - DataFrame containing the hardware utilization metrics.
 
         Examples:
+            The following values denote that after 3 seconds, the experiment used 16.7 GB of RAM
+
+                * `x_ram` = 3000
+                * `y_ram` = 16.7
+
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
             .. code:: python3
 
-                experiment.get_hardware_utilization
+                hardware_df = experiment.get_hardware_utilization()
         """
         metrics_csv = self._client.get_metrics_csv(self)
         try:
