@@ -18,6 +18,7 @@ import time
 
 from bravado.exception import HTTPError
 
+from neptune.exceptions import NeptuneException
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
 _logger = logging.getLogger(__name__)
@@ -36,7 +37,7 @@ class HardwareMetricReportingThread(NeptuneThread):
 
                 try:
                     self.__metric_service.report_and_send(timestamp=time.time())
-                except HTTPError as e:
+                except (NeptuneException, HTTPError) as e:
                     _logger.debug('Unexpected HTTP error in hardware metric reporting thread: %s', e)
 
                 reporting_duration = time.time() - before
