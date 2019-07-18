@@ -37,12 +37,6 @@ class Project(object):
         namespace (:obj:`str`, required): It can either be your organization or user name.
         name (:obj:`str`, required): project name.
 
-    Attributes:
-        client (:class:`~neptune.client.Client`, required): Client object.
-        internal_id (:obj:`str`, required): UUID of the project.
-        namespace (:obj:`str`, required): It can either be your organization or user name.
-        name (:obj:`str`, required): project name.
-
     Note:
         ``namespace`` and ``name`` joined together form ``project_qualified_name``.
     """

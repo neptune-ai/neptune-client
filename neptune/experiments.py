@@ -38,35 +38,35 @@ _logger = logging.getLogger(__name__)
 _nan_warning_sent = False
 
 
+#pylint: disable=too-many-lines
 class Experiment(object):
-    """It contains all the information about a Neptune Experiment
+    """A class for managing Neptune experiment.
 
-    This class lets you extract experiment by, short experiment id, names of all the channels,
-    system properties and other properties, parameters, numerical channel values,
-    information about the hardware utilization during the experiment
+    Each time User creates new experiment instance of this class is created.
+    It lets you manage experiment, :meth:`~neptune.experiments.Experiment.log_metric`,
+    :meth:`~neptune.experiments.Experiment.log_text`,
+    :meth:`~neptune.experiments.Experiment.log_image`,
+    :meth:`~neptune.experiments.Experiment.set_property`,
+    and much more.
+
 
     Args:
-        client(`neptune.Client`): Client object
-        project(`neptune.Project`)
-        _id(`str`)
-        internal_id(`str`): UUID
+        client (:obj:`neptune.Client`): API Client object
+        project (:obj:`neptune.Project`): :class:`~neptune.projects.Project` instance
+        _id (:obj:`str`): Experiment short id
+        internal_id (:obj:`str`): internal UUID
 
-    Examples:
-        Instantiate a session.
+    Example:
+        Assuming that `project` is an instance of :class:`~neptune.projects.Project`.
 
-        >>> from neptune.sessions import Session
-        >>> session = Session()
+        .. code:: python3
 
-        Fetch a project and a list of experiments.
+            experiment = project.create_experiment()
 
-        >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-        >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
+    Warning:
+        User should never create instances of this class manually.
+        Always use: :meth:`~neptune.projects.Project.create_experiment`.
 
-        Get an experiment instance.
-
-        >>> experiment = experiments[0]
-        >>> experiment
-        Experiment(SAL-1609)
     """
 
     def __init__(self, client, project, _id, internal_id):
@@ -79,37 +79,57 @@ class Experiment(object):
 
     @property
     def id(self):
-        """ Experiment short id
+        """Experiment short id
+
+        | Combination of project key and unique experiment number.
+        | Format is ``<project_key>-<experiment_number>``, for example: ``MPI-142``.
+
+        Returns:
+            :obj:`str` - experiment short id
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment short id.
-
-            >>> experiment.id
-            'SAL-1609'
+                exp_id = experiment.id
 
         """
         return self._id
 
     @property
     def name(self):
+        """Experiment name
+
+        Returns:
+            :obj:`str` experiment name
+
+        Examples:
+            Assuming that `project` is an instance of :class:`~neptune.projects.Project`.
+
+            .. code:: python3
+
+                experiment = project.create_experiment('exp_name')
+                exp_name = experiment.name
+        """
         return self._client.get_experiment(self._internal_id).name
 
     @property
     def state(self):
+        """Current experiment state
+
+        Possible values: `'running'`, `'succeeded'`, `'failed'`, `'aborted'`.
+
+        Returns:
+            :obj:`str` - current experiment state
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                state_str = experiment.state
+        """
         return self._client.get_experiment(self._internal_id).state
 
     @property
@@ -118,7 +138,6 @@ class Experiment(object):
 
     @property
     def limits(self):
-        # TODO: get limit from server
         return {
             'channels': {
                 'numeric': 1000,
@@ -128,33 +147,20 @@ class Experiment(object):
         }
 
     def get_system_properties(self):
-        """Retrieve system properties like owner, times of creation and completion, worker type, etc.
+        """Retrieve experiment properties.
+
+        | Experiment properties are for example: `owner`, `time of creation`, `time of completion`, `hostname`.
+        | List of experiment properties may change over time.
 
         Returns:
-            dict: A dictionary mapping a property name to value.
+            :obj:`dict` - dictionary mapping a property name to value.
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment system properties.
-
-            >>> experiment.get_system_properties
-
-        Note:
-            The list of supported system properties may change over time.
-
+                sys_properties = experiment.get_system_properties
         """
         experiment = self._client.get_experiment(self._internal_id)
         return {
@@ -205,7 +211,6 @@ class Experiment(object):
                 neptune.append_tag('new-tag')  # single tag
                 neptune.append_tag('first-tag', 'second-tag', 'third-tag')  # few str
                 neptune.append_tag(['first-tag', 'second-tag', 'third-tag'])  # list of str
-
         """
         if isinstance(tag, list):
             tags_list = tag
@@ -260,7 +265,6 @@ class Experiment(object):
             .. code:: python3
 
                 exp_logs = experiment.get_logs()
-
         """
         experiment = self._client.get_experiment(self.internal_id)
         channels_last_values_by_name = dict((ch.channelName, ch) for ch in experiment.channelsLastValues)
@@ -280,39 +284,10 @@ class Experiment(object):
         return channels
 
     def get_system_channels(self):
-        """Retrieve all system channel names along with their representations for this experiment.
-
-        Returns:
-            dict: A dictionary mapping a channel name to channel.
-
-        Examples:
-            Instantiate a session.
-
-            >>> from neptune.sessions import Session
-            >>> session = Session()
-
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment channels.
-
-            >>> experiment.get_system_channels()
-
-        """
         channels = self._client.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
 
-    def upload_source_files(self, source_files):
-        """
-        Raises:
-            `StorageLimitReached`: When storage limit in the project has been reached.
-        """
+    def _upload_source_files(self, source_files):
         files_list = []
         for source_file in source_files:
             if not os.path.exists(source_file):
@@ -545,31 +520,21 @@ class Experiment(object):
         return self.log_graph(graph_id, value)
 
     def log_graph(self, graph_id, value):
-        """Upload a tensorflow graph for this experiment.
+        """Upload a TensorFlow graph for this experiment.
 
         Args:
-            graph_id: a string UUID identifying the graph (managed by user)
-            value: a string representation of Tensorflow graph
+            graph_id (:obj:`str`): A string UUID identifying the graph
+            value (:obj:`str`): A string representation of TensorFlow graph
 
-        Examples:
-            Instantiate a session.
+        Example:
+            | Assuming that:
+            | 1. `experiment` is an instance of :class:`~neptune.experiments.Experiment`,
+            | 2. `uuid` is string representation of `uuid.uuid4()`,
+            | 3. `value` is string representation of `tf.GraphDef` instance.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Send graph to experiment.
-            >>> import uuid
-            >>> experiment.send_graph(str(uuid.uuid4()), str("tf.GraphDef instance"))
-
+                experiment.log_graph(uuid, value)
         """
 
         self._client.put_tensorflow_graph(self, graph_id, value)
@@ -594,7 +559,6 @@ class Experiment(object):
 
         Note:
             Check Neptune web application to see that reset charts have no data.
-
         """
         channel = self._find_channel(log_name, ChannelNamespace.USER)
         if channel is None:
@@ -605,56 +569,30 @@ class Experiment(object):
         """Retrieve parameters for this experiment.
 
         Returns:
-            dict: A dictionary mapping a parameter name to value.
+            :obj:`dict` - dictionary mapping a parameter name to value.
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment parameters.
-
-            >>> experiment.get_parameters()
-
+                exp_params = experiment.get_parameters()
         """
         experiment = self._client.get_experiment(self.internal_id)
         return dict((p.name, self._convert_parameter_value(p.value, p.parameterType)) for p in experiment.parameters)
 
     def get_properties(self):
-        """Retrieve user-defined properties for this experiment.
+        """Retrieve User-defined properties for this experiment.
 
         Returns:
-            dict: A dictionary mapping a property key to value.
+            :obj:`dict` - dictionary mapping a property key to value.
 
         Examples:
-            Instantiate a session.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Fetch a project and a list of experiments.
-
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
-
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get experiment properties.
-
-            >>> experiment.get_properties
-
+                exp_properties = experiment.get_properties()
         """
         experiment = self._client.get_experiment(self.internal_id)
         return dict((p.key, p.value) for p in experiment.properties)
@@ -675,7 +613,6 @@ class Experiment(object):
 
                 experiment.set_property('model', 'LightGBM')
                 experiment.set_property('magic-number', 7)
-
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         properties[key] = value
@@ -697,7 +634,6 @@ class Experiment(object):
             .. code:: python3
 
                 experiment.remove_property('host')
-
         """
         properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
         del properties[key]
@@ -707,47 +643,39 @@ class Experiment(object):
         )
 
     def get_hardware_utilization(self):
-        """Retrieve RAM, CPU and GPU utilization throughout the experiment.
+        """Retrieve GPU, CPU and memory utilization data.
 
-        The returned DataFrame contains 2 columns (x_*, y_*) for each of: RAM, CPU and each GPU.
-        The ``x_`` column contains the time (in milliseconds) from the experiment start,
-        while the ``y_`` column contains the value of the appropriate metric.
+        Get hardware utilization metrics for entire experiment as a single
+        `pandas.DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_
+        object. Returned DataFrame has following columns (assuming single GPU with 0 index):
 
-        RAM and GPU memory usage is returned in gigabytes.
-        CPU and GPU utilization is returned as a percentage (0-100).
+            * `x_ram` - time (in milliseconds) from the experiment start,
+            * `y_ram` - memory usage in GB,
+            * `x_cpu` - time (in milliseconds) from the experiment start,
+            * `y_cpu` - CPU utilization percentage (0-100),
+            * `x_gpu_util_0` - time (in milliseconds) from the experiment start,
+            * `y_gpu_util_0` - GPU utilization percentage (0-100),
+            * `x_gpu_mem_0` - time (in milliseconds) from the experiment start,
+            * `y_gpu_mem_0` - GPU memory usage in GB.
 
-        E.g. For an experiment using a single GPU, this method will return a DataFrame
-        of the following columns:
-
-        x_ram, y_ram, x_cpu, y_cpu, x_gpu_util_0, y_gpu_util_0, x_gpu_mem_0, y_gpu_mem_0
-
-        The following values denote that after 3 seconds, the experiment used 16.7 GB of RAM.
-        x_ram, y_ram = 3000, 16.7
-
-        The returned DataFrame may contain NaNs if one of the metrics has more values than others.
+        | If more GPUs are available they have their separate columns with appropriate indices (0, 1, 2, ...),
+          for example: `x_gpu_util_1`, `y_gpu_util_1`.
+        | The returned DataFrame may contain ``NaN`` s if one of the metrics has more values than others.
 
         Returns:
-            `pandas.DataFrame`: Dataframe containing the hardware utilization metrics throughout the experiment.
+            :obj:`pandas.DataFrame` - DataFrame containing the hardware utilization metrics.
 
         Examples:
-            Instantiate a session.
+            The following values denote that after 3 seconds, the experiment used 16.7 GB of RAM
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+                * `x_ram` = 3000
+                * `y_ram` = 16.7
 
-            Fetch a project and a list of experiments.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
+            .. code:: python3
 
-            Get an experiment instance.
-
-            >>> experiment = experiments[0]
-
-            Get hardware utilization channels.
-
-            >>> experiment.get_hardware_utilization
-
+                hardware_df = experiment.get_hardware_utilization()
         """
         metrics_csv = self._client.get_metrics_csv(self)
         try:
@@ -756,45 +684,35 @@ class Experiment(object):
             return pd.DataFrame()
 
     def get_numeric_channels_values(self, *channel_names):
-        """
-        Retrieve values of specified numeric channels.
+        """Retrieve values of specified metrics (numeric logs).
 
-        The returned DataFrame contains 1 additional column x along with the requested channels.
-
-        E.g. get_numeric_channels_values('loss', 'auc') will return a DataFrame of the following structure:
-            x, loss, auc
-
-        The returned DataFrame may contain NaNs if one of the channels has more values than others.
+        The returned
+        `pandas.DataFrame <https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html>`_
+        contains 1 additional column `x` along with the requested metrics.
 
         Args:
-            *channel_names: variable length list of names of the channels to retrieve values for.
+            *channel_names (one or more :obj:`str`): comma-separated metric names.
 
         Returns:
-            `pandas.DataFrame`: Dataframe containing the values for the requested numerical channels.
+            :obj:`pandas.DataFrame` - DataFrame containing values for the requested metrics.
 
-        Examples:
-            Instantiate a session.
+            | The returned DataFrame may contain ``NaN`` s if one of the metrics has more values than others.
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+        Example:
+            Invoking ``get_numeric_channels_values('loss', 'auc')`` returns DataFrame with columns
+            `x`, `loss`, `auc`.
 
-            Fetch a project and a list of experiments.
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`:
 
-            >>> project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
-            >>> experiments = project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
+            .. code:: python3
 
-            Get an experiment instance.
-
-            >>> exp = experiments[0]
-
-            Get numeric channel value for channels 'unet_0 batch sum loss' and 'unet_1 batch sum loss'.
-
-            >>> batch_channels = exp.get_numeric_channels_values('unet_0 batch sum loss', 'unet_1 batch sum loss')
-            >>> epoch_channels = exp.get_numeric_channels_values('unet_0 epoch_val sum loss', 'Learning Rate')
+                batch_channels = experiment.get_numeric_channels_values('batch-1-loss', 'batch-2-metric')
+                epoch_channels = experiment.get_numeric_channels_values('epoch-1-loss', 'epoch-2-metric')
 
         Note:
-            Remember to fetch the dataframe for the channels that have a common temporal/iteration axis x.
-            For example combine epoch channels to one dataframe and batch channels to the other
+            It's good idea to get metrics with common temporal pattern (like iteration or batch/epoch number).
+            Thanks to this each row of returned DataFrame has metrics from the same moment in experiment.
+            For example, combine epoch metrics to one DataFrame and batch metrics to the other.
         """
 
         channels_data = {}
@@ -825,7 +743,6 @@ class Experiment(object):
               send_hardware_metrics=True,
               run_monitoring_thread=True,
               handle_uncaught_exceptions=True):
-
         if upload_source_files is None:
             main_file = sys.argv[0]
             main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
@@ -834,7 +751,7 @@ class Experiment(object):
             else:
                 upload_source_files = []
 
-        self.upload_source_files(upload_source_files)
+        self._upload_source_files(upload_source_files)
 
         self._execution_context.start(
             abort_callback=abort_callback,
