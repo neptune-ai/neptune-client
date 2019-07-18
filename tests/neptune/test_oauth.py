@@ -31,7 +31,9 @@ class TestNeptuneAuth(unittest.TestCase):
         super(TestNeptuneAuth, self).setUp()
 
         self.session = MagicMock()
+        self.session.token = dict()
         self.neptune_auth = NeptuneAuth(self.session)
+        self.neptune_auth.token_expires_at = time.time() + 60
         self.request = a_request()
 
         self.url, self.method, self.body, self.headers = \
@@ -97,6 +99,7 @@ class TestNeptuneAuthenticator(unittest.TestCase):
         # and
         session = MagicMock()
         session_mock.return_value = session
+        session.token = dict()
 
         # and
         neptune_authenticator = NeptuneAuthenticator(auth_tokens)
