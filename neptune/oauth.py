@@ -27,12 +27,13 @@ class NeptuneAuth(AuthBase):
 
     def __init__(self, session):
         self.session = session
+        self.token_expires_at = 0
 
     def __call__(self, r):
         try:
             return self._add_token(r)
         except TokenExpiredError:
-            self.session.refresh_token(self.session.auto_refresh_url)
+            self._refresh_token()
             return self._add_token(r)
 
     def _add_token(self, r):
@@ -42,6 +43,16 @@ class NeptuneAuth(AuthBase):
                                                                   body=r.body,
                                                                   headers=r.headers)
         return r
+
+    def refresh_token_if_needed(self):
+        if self.token_expires_at - time.time() < 30:
+            self._refresh_token()
+
+    def _refresh_token(self):
+        self.session.refresh_token(self.session.auto_refresh_url)
+        if self.session.token is not None and self.session.token.get('access_token') is not None:
+            decoded_json_token = jwt.decode(self.session.token.get('access_token'), verify=False)
+            self.token_expires_at = decoded_json_token.get(u'exp')
 
 
 class NeptuneAuthenticator(Authenticator):
@@ -69,6 +80,7 @@ class NeptuneAuthenticator(Authenticator):
         return True
 
     def apply(self, request):
+        self.auth.refresh_token_if_needed()
         request.auth = self.auth
         return request
 
