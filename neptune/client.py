@@ -115,7 +115,8 @@ class Client(object):
         )
 
         self.authenticator = NeptuneAuthenticator(
-            self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
+            self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result,
+            ssl_verify
         )
         self._http_client.authenticator = self.authenticator
 

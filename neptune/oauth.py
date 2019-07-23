@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import time
 
 import jwt
@@ -57,7 +56,7 @@ class NeptuneAuth(AuthBase):
 
 class NeptuneAuthenticator(Authenticator):
 
-    def __init__(self, auth_tokens):
+    def __init__(self, auth_tokens, ssl_verify):
         super(NeptuneAuthenticator, self).__init__(host='')
         decoded_json_token = jwt.decode(auth_tokens.accessToken, verify=False)
         expires_at = decoded_json_token.get(u'exp')
@@ -68,13 +67,15 @@ class NeptuneAuthenticator(Authenticator):
             u'refresh_token': auth_tokens.refreshToken,
             u'expires_in': expires_at - time.time()
         }
-        self.auth = NeptuneAuth(
-            OAuth2Session(
-                client_id=client_name,
-                token=token,
-                auto_refresh_url=refresh_url,
-                auto_refresh_kwargs={'client_id': client_name},
-                token_updater=_no_token_updater))
+        session = OAuth2Session(
+            client_id=client_name,
+            token=token,
+            auto_refresh_url=refresh_url,
+            auto_refresh_kwargs={'client_id': client_name},
+            token_updater=_no_token_updater
+        )
+        session.verify = ssl_verify
+        self.auth = NeptuneAuth(session)
 
     def matches(self, url):
         return True
