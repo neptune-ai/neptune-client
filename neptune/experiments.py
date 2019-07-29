@@ -283,7 +283,7 @@ class Experiment(object):
             channels[ch.name] = ch
         return channels
 
-    def get_system_channels(self):
+    def _get_system_channels(self):
         channels = self._client.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
 
@@ -734,15 +734,15 @@ class Experiment(object):
 
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
-    def start(self,
-              upload_source_files=None,
-              abort_callback=None,
-              logger=None,
-              upload_stdout=True,
-              upload_stderr=True,
-              send_hardware_metrics=True,
-              run_monitoring_thread=True,
-              handle_uncaught_exceptions=True):
+    def _start(self,
+               upload_source_files=None,
+               abort_callback=None,
+               logger=None,
+               upload_stdout=True,
+               upload_stderr=True,
+               send_hardware_metrics=True,
+               run_monitoring_thread=True,
+               handle_uncaught_exceptions=True):
         if upload_source_files is None:
             main_file = sys.argv[0]
             main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
@@ -864,7 +864,7 @@ class Experiment(object):
         if channel_namespace == ChannelNamespace.USER:
             return self.get_channels().get(channel_name, None)
         elif channel_namespace == ChannelNamespace.SYSTEM:
-            return self.get_system_channels().get(channel_name, None)
+            return self._get_system_channels().get(channel_name, None)
         else:
             raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
 

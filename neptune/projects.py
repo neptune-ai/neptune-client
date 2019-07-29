@@ -384,7 +384,8 @@ class Project(object):
             notebook_id=notebook_id
         )
 
-        experiment.start(
+        # pylint: disable=protected-access
+        experiment._start(
             upload_source_files=upload_source_files,
             abort_callback=abort_callback,
             logger=logger,
