@@ -134,7 +134,8 @@ class ChannelsValuesSendingThread(NeptuneThread):
             for ch in queued_grouped_by_channel.keys()
             if ch.channel_namespace == ChannelNamespace.USER
         ])
-        system_channels_by_name = self._experiment.get_system_channels()
+        # pylint: disable=protected-access
+        system_channels_by_name = self._experiment._get_system_channels()
 
         for channel_key in queued_grouped_by_channel:
             if channel_key.channel_namespace == ChannelNamespace.USER:
