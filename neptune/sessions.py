@@ -107,41 +107,47 @@ class Session(object):
     def get_projects(self, namespace):
         """It gets all project and full project names for given namespace
 
-        In order to access experiment data one needs to get a `Project` object first. This method helps you figure out
-        what are the available projects and access the project of interest.
+        In order to access experiment data one needs to get a :class:`~neptune.projects.Project` object first.
+        This method helps you figure out what are the available projects and access the project of interest.
         You can list both your private and public projects.
         You can also access all the public projects that belong to any user or organization,
         as long as you know what is their namespace.
 
         Args:
-            namespace(str): It can either be your organization or user name. You can list all the public projects
+            namespace(:obj:`str`): It can either be your organization or user name. You can list all the public projects
                 for any organization or user you want as long as you know their namespace.
 
         Returns:
-            dict: Dictionary of "NAMESPACE/PROJECT_NAME" and `neptune.project.Project` object pairs that contains
-            all the projects that belong to the selected namespace.
+            :obj:`dict`: Dictionary of ``NAMESPACE/PROJECT_NAME`` and :class:`~neptune.projects.Project` object pairs
+            that contains all the projects that belong to the selected namespace.
 
         Raises:
             `NamespaceNotFound`: When the given namespace does not exist.
 
         Examples:
-            First, you need to create a Session instance:
 
-            >>> from neptune.sessions import Session
-            >>> session = Session()
+            .. code:: python3
 
-            Now, you can list all the projects available for a selected namespace. You can use `YOUR_NAMESPACE` which
-            is your organization or user name. You can also list public projects created by other organizations.
-            For example you can use the `neptune-ml` namespace.
+                # First, you need to create a Session instance:
 
-            >>> session.get_projects('neptune-ml')
-            {'neptune-ml/Sandbox': Project(neptune-ml/Sandbox),
-            'neptune-ml/Home-Credit-Default-Risk': Project(neptune-ml/Home-Credit-Default-Risk),
-            'neptune-ml/Mapping-Challenge': Project(neptune-ml/Mapping-Challenge),
-            'neptune-ml/Ships': Project(neptune-ml/Ships),
-            'neptune-ml/human-protein-atlas': Project(neptune-ml/human-protein-atlas),
-            'neptune-ml/Salt-Detection': Project(neptune-ml/Salt-Detection),
-            'neptune-ml/Data-Science-Bowl-2018': Project(neptune-ml/Data-Science-Bowl-2018)}
+                from neptune.sessions import Session
+                session = Session()
+
+                # Now, you can list all the projects available for a selected namespace.
+                # You can use `YOUR_NAMESPACE` which is your organization or user name.
+                # You can also list public projects created by other organizations.
+                # For example you can use the `neptune-ml` namespace.
+
+                session.get_projects('neptune-ml')
+
+                # Example output:
+                # {'neptune-ml/Sandbox': Project(neptune-ml/Sandbox),
+                # 'neptune-ml/Home-Credit-Default-Risk': Project(neptune-ml/Home-Credit-Default-Risk),
+                # 'neptune-ml/Mapping-Challenge': Project(neptune-ml/Mapping-Challenge),
+                # 'neptune-ml/Ships': Project(neptune-ml/Ships),
+                # 'neptune-ml/human-protein-atlas': Project(neptune-ml/human-protein-atlas),
+                # 'neptune-ml/Salt-Detection': Project(neptune-ml/Salt-Detection),
+                # 'neptune-ml/Data-Science-Bowl-2018': Project(neptune-ml/Data-Science-Bowl-2018)}
         """
 
         projects = [Project(self._client, p.id, namespace, p.name) for p in self._client.get_projects(namespace)]
