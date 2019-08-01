@@ -25,6 +25,7 @@ from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY
 from io import StringIO
 from itertools import groupby
 
+import logging
 import requests
 import six
 import urllib3
@@ -49,16 +50,19 @@ from neptune.oauth import NeptuneAuthenticator
 from neptune.utils import is_float
 
 
+_logger = logging.getLogger(__name__)
+
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
-        for retry in range(0, 10):
+        for retry in range(0, 11):
             try:
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
                 raise SSLError()
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout):
+                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout) as ex:
+                _logger.warning('Http request to Neptune server failed: %s. Retry in %d seconds.', repr(ex), 2**retry)
                 time.sleep(2**retry)
                 continue
             except HTTPServerError:
