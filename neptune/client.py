@@ -18,6 +18,7 @@ import gzip
 import io
 import os
 import uuid
+import time
 from functools import partial
 
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY
@@ -30,7 +31,8 @@ import urllib3
 
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
-    HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity, HTTPConflict
+    HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity, HTTPConflict, \
+    HTTPServiceUnavailable, HTTPRequestTimeout, HTTPGatewayTimeout
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 
@@ -49,31 +51,35 @@ from neptune.utils import is_float
 
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
-        try:
-            return func(*args, **kwargs)
-        except requests.exceptions.SSLError:
-            raise SSLError()
-        except (BravadoConnectionError, BravadoTimeoutError,
-                requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-            raise ConnectionLost()
-        except HTTPServerError:
-            raise ServerError()
-        except HTTPUnauthorized:
-            raise Unauthorized()
-        except HTTPForbidden:
-            raise Forbidden()
-        except requests.exceptions.RequestException as e:
-            if e.response is None:
-                raise
-            status_code = e.response.status_code
-            if status_code >= HTTPInternalServerError.status_code:
+        for retry in range(0, 10):
+            try:
+                return func(*args, **kwargs)
+            except requests.exceptions.SSLError:
+                raise SSLError()
+            except (BravadoConnectionError, BravadoTimeoutError,
+                    requests.exceptions.ConnectionError, requests.exceptions.Timeout,
+                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout):
+                time.sleep(2**retry)
+                continue
+            except HTTPServerError:
                 raise ServerError()
-            elif status_code == HTTPUnauthorized.status_code:
+            except HTTPUnauthorized:
                 raise Unauthorized()
-            elif status_code == HTTPForbidden.status_code:
+            except HTTPForbidden:
                 raise Forbidden()
-            else:
-                raise
+            except requests.exceptions.RequestException as e:
+                if e.response is None:
+                    raise
+                status_code = e.response.status_code
+                if status_code >= HTTPInternalServerError.status_code:
+                    raise ServerError()
+                elif status_code == HTTPUnauthorized.status_code:
+                    raise Unauthorized()
+                elif status_code == HTTPForbidden.status_code:
+                    raise Forbidden()
+                else:
+                    raise
+        raise ConnectionLost()
 
     return wrapper
 
@@ -299,6 +305,7 @@ class Client(object):
         except HTTPNotFound:
             raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
 
+    @with_api_exceptions_handler
     def get_last_checkpoint(self, project, notebook_id):
         try:
             api_checkpoint_list = self.leaderboard_swagger_client.api.listCheckpoints(
