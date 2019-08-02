@@ -134,6 +134,13 @@ class Client(object):
         from neptune import __version__
         self.client_lib_version = __version__
 
+        import platform
+        user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
+            lib_version=self.client_lib_version,
+            system=platform.platform(),
+            python_version=platform.python_version())
+        self._http_client.session.headers.update({'User-Agent': user_agent})
+
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
