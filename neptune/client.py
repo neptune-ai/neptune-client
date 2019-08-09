@@ -30,6 +30,7 @@ import requests
 import six
 import urllib3
 
+from requests.exceptions import HTTPError
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
     HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity, HTTPConflict, \
@@ -49,8 +50,8 @@ from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
 from neptune.utils import is_float
 
-
 _logger = logging.getLogger(__name__)
+
 
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
@@ -62,8 +63,8 @@ def with_api_exceptions_handler(func):
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
                     HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout) as ex:
-                _logger.warning('Http request to Neptune server failed: %s. Retry in %d seconds.', repr(ex), 2**retry)
-                time.sleep(2**retry)
+                _logger.warning('Http request to Neptune server failed: %s. Retry in %d seconds.', repr(ex), 2 ** retry)
+                time.sleep(2 ** retry)
                 continue
             except HTTPServerError:
                 raise ServerError()
@@ -416,24 +417,24 @@ class Client(object):
             else:
                 raise
 
-    @with_api_exceptions_handler
     def upload_experiment_source(self, experiment, data):
-        with self._upload_loop(partial(self._upload_raw_data,
-                                       api_method=self.backend_swagger_client.api.uploadExperimentSource),
-                               data=data,
-                               path_params={'experimentId': experiment.internal_id},
-                               query_params={}) as response:
-            if response.status_code == NOT_FOUND:
+        try:
+            # Api exception handling is done in _upload_loop
+            self._upload_loop(partial(self._upload_raw_data,
+                                      api_method=self.backend_swagger_client.api.uploadExperimentSource),
+                              data=data,
+                              path_params={'experimentId': experiment.internal_id},
+                              query_params={})
+        except HTTPError as e:
+            if e.response.status_code == NOT_FOUND:
                 # pylint: disable=protected-access
                 raise ExperimentNotFound(
                     experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            elif (response.status_code == UNPROCESSABLE_ENTITY
-                  and extract_response_field(response.content, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+            if e.response.status_code == UNPROCESSABLE_ENTITY and (
+                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
                 raise StorageLimitReached()
-            else:
-                response.raise_for_status()
+            raise
 
-    @with_api_exceptions_handler
     def extract_experiment_source(self, experiment, data):
         try:
             return self._upload_tar_data(
@@ -441,15 +442,15 @@ class Client(object):
                 api_method=self.backend_swagger_client.api.uploadExperimentSourceAsTarstream,
                 data=data
             )
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-        except HTTPUnprocessableEntity as e:
-            if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+        except HTTPError as e:
+            if e.response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+            if e.response.status_code == UNPROCESSABLE_ENTITY and (
+                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
                 raise StorageLimitReached()
-            else:
-                raise
+            raise
 
     @with_api_exceptions_handler
     def create_channel(self, experiment, name, channel_type):
@@ -689,24 +690,24 @@ class Client(object):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
-    @with_api_exceptions_handler
     def upload_experiment_output(self, experiment, data):
-        with self._upload_loop(partial(self._upload_raw_data,
-                                       api_method=self.backend_swagger_client.api.uploadExperimentOutput),
-                               data=data,
-                               path_params={'experimentId': experiment.internal_id},
-                               query_params={}) as response:
-            if response.status_code == NOT_FOUND:
+        try:
+            # Api exception handling is done in _upload_loop
+            self._upload_loop(partial(self._upload_raw_data,
+                                      api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+                              data=data,
+                              path_params={'experimentId': experiment.internal_id},
+                              query_params={})
+        except HTTPError as e:
+            if e.response.status_code == NOT_FOUND:
                 # pylint: disable=protected-access
                 raise ExperimentNotFound(
                     experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            elif (response.status_code == UNPROCESSABLE_ENTITY
-                  and extract_response_field(response.content, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+            if e.response.status_code == UNPROCESSABLE_ENTITY and (
+                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
                 raise StorageLimitReached()
-            else:
-                response.raise_for_status()
+            raise
 
-    @with_api_exceptions_handler
     def extract_experiment_output(self, experiment, data):
         try:
             return self._upload_tar_data(
@@ -714,15 +715,15 @@ class Client(object):
                 api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
                 data=data
             )
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-        except HTTPUnprocessableEntity as e:
-            if extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED':
+        except HTTPError as e:
+            if e.response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+            if e.response.status_code == UNPROCESSABLE_ENTITY and (
+                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
                 raise StorageLimitReached()
-            else:
-                raise
+            raise
 
     @with_api_exceptions_handler
     def download_data(self, project, path, destination):
@@ -739,7 +740,7 @@ class Client(object):
                 response.raise_for_status()
 
             with open(destination, "wb") as f:
-                for chunk in response.iter_content(chunk_size=10*1024*1024):
+                for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
                     if chunk:
                         f.write(chunk)
 
@@ -808,26 +809,28 @@ class Client(object):
                 skip = checksums[part.start].checksum == part.md5()
 
             if not skip:
-                ret = self._upload_loop_chunk(fun, part, data, **kwargs)
+                part_to_send = part.get_data()
+                ret = with_api_exceptions_handler(self._upload_loop_chunk)(fun, part, part_to_send, data, **kwargs)
             else:
                 part.skip()
         data.close()
         return ret
 
-    def _upload_loop_chunk(self, fun, part, data, **kwargs):
-        part_to_send = part.get_data()
+    def _upload_loop_chunk(self, fun, part, part_to_send, data, **kwargs):
         if part.end:
             binary_range = "bytes=%d-%d/%d" % (part.start, part.end - 1, data.length)
         else:
             binary_range = "bytes=%d-/%d" % (part.start, data.length)
-        return fun(data=part_to_send,
-                   headers={
-                       "Content-Type": "application/octet-stream",
-                       "Content-Filename": data.filename,
-                       "Range": binary_range,
-                       "X-File-Permissions": data.permissions
-                   },
-                   **kwargs)
+        response = fun(data=part_to_send,
+                       headers={
+                           "Content-Type": "application/octet-stream",
+                           "Content-Filename": data.filename,
+                           "Range": binary_range,
+                           "X-File-Permissions": data.permissions
+                       },
+                       **kwargs)
+        response.raise_for_status()
+        return response
 
     def _upload_raw_data(self, api_method, data, headers, path_params, query_params):
         url = self.api_address + api_method.operation.path_name + "?"
@@ -872,6 +875,7 @@ class Client(object):
 
         return session.send(session.prepare_request(request), stream=True)
 
+    @with_api_exceptions_handler
     def _upload_tar_data(self, experiment, api_method, data):
         url = self.api_address + api_method.operation.path_name
         url = url.replace("{experimentId}", experiment.internal_id)
@@ -889,8 +893,9 @@ class Client(object):
             )
         )
 
-        return session.send(session.prepare_request(request))
-
+        response = session.send(session.prepare_request(request))
+        response.raise_for_status()
+        return response
 
     def _update_proxies(self):
         try:
