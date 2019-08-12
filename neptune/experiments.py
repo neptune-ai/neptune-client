@@ -471,18 +471,19 @@ class Experiment(object):
         value = ChannelValue(x, dict(image_value=input_image), timestamp)
         self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
 
-    def send_artifact(self, artifact):
+    def send_artifact(self, artifact, destination=None):
         """Save an artifact (file) in experiment storage.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
         """
-        return self.log_artifact(artifact)
+        return self.log_artifact(artifact, destination)
 
-    def log_artifact(self, artifact):
+    def log_artifact(self, artifact, destination=None):
         """Save an artifact (file) in experiment storage.
 
         Args:
             artifact (:obj:`str`): A path to the file in local filesystem.
+            destination (:obj:`str`): A destination path
 
         Raises:
             `StorageLimitReached`: When storage limit in the project has been reached.
@@ -498,7 +499,9 @@ class Experiment(object):
         if not os.path.exists(artifact):
             raise FileNotFound(artifact)
 
-        upload_to_storage(files_list=[(os.path.abspath(artifact), os.path.basename(artifact))],
+        target_name = os.path.basename(artifact) if destination is None else destination
+
+        upload_to_storage(files_list=[(os.path.abspath(artifact), target_name)],
                           upload_api_fun=self._client.upload_experiment_output,
                           upload_tar_api_fun=self._client.extract_experiment_output,
                           experiment=self)
