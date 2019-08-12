@@ -142,14 +142,11 @@ class ChannelsValuesSendingThread(NeptuneThread):
                 channel = user_channels_by_name[channel_key.channel_name]
             else:
                 channel = system_channels_by_name[channel_key.channel_name]
-            last_x = channel.x if hasattr(channel, 'x') and channel.x else 0
             channel_values = []
             for queued_value in queued_grouped_by_channel[channel_key]:
-                x = queued_value.channel_value.x if queued_value.channel_value.x is not None else last_x + 1
                 channel_values.append(ChannelValue(ts=queued_value.channel_value.ts,
-                                                   x=x,
+                                                   x=queued_value.channel_value.x,
                                                    y=queued_value.channel_value.y))
-                last_x = x
             channels_with_values.append(ChannelIdWithValues(channel.id, channel_values))
 
         try:

@@ -855,6 +855,8 @@ class Experiment(object):
     @staticmethod
     def _get_valid_x_y(x, y):
         if x is None:
+            if y is not None:
+                return None, y
             raise NoChannelValue()
 
         if y is None:
