@@ -271,20 +271,20 @@ def log_image(log_name, x, y=None, name=None, description=None, timestamp=None):
     return get_experiment().send_image(log_name, x, y, name, description, timestamp)
 
 
-def send_artifact(artifact):
+def send_artifact(artifact, destination=None):
     """Save an artifact (file) in experiment storage.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
     """
-    return get_experiment().send_artifact(artifact)
+    return get_experiment().log_artifact(artifact, destination)
 
 
-def log_artifact(artifact):
+def log_artifact(artifact, destination=None):
     """Save an artifact (file) in experiment storage.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_artifact`
     """
-    return get_experiment().send_artifact(artifact)
+    return get_experiment().log_artifact(artifact, destination)
 
 
 def stop(traceback=None):
