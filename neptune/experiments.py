@@ -483,7 +483,9 @@ class Experiment(object):
 
         Args:
             artifact (:obj:`str`): A path to the file in local filesystem.
-            destination (:obj:`str`): A destination path
+            destination (:obj:`str`, optional, default is ``None``):
+                A destination path.
+                If ``None`` is passed, an artifact file name will be used.
 
         Raises:
             `StorageLimitReached`: When storage limit in the project has been reached.
