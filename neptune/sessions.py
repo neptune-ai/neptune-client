@@ -105,21 +105,22 @@ class Session(object):
         )
 
     def get_projects(self, namespace):
-        """It gets all project and full project names for given namespace
+        """Get all projects that you have permissions to see in given organization
 
-        In order to access experiment data one needs to get a :class:`~neptune.projects.Project` object first.
-        This method helps you figure out what are the available projects and access the project of interest.
-        You can list both your private and public projects.
-        You can also access all the public projects that belong to any user or organization,
-        as long as you know what is their namespace.
+        | This method gets you all available projects names and their
+          corresponding :class:`~neptune.projects.Project` objects.
+        | Both private and public projects may be returned for the organization.
+          If you have role in private project, it is included.
+        | You can retrieve all the public projects that belong to any user or organization,
+          as long as you know their username or organization name.
 
         Args:
-            namespace(:obj:`str`): It can either be your organization or user name. You can list all the public projects
-                for any organization or user you want as long as you know their namespace.
+            namespace (:obj:`str`): It can either be name of the organization or username.
 
         Returns:
-            :obj:`dict`: Dictionary of ``NAMESPACE/PROJECT_NAME`` and :class:`~neptune.projects.Project` object pairs
-            that contains all the projects that belong to the selected namespace.
+            :obj:`OrderedDict`
+                | **keys** are ``project_qualified_name`` that is: *'organization/project_name'*
+                | **values** are corresponding :class:`~neptune.projects.Project` objects.
 
         Raises:
             `NamespaceNotFound`: When the given namespace does not exist.
@@ -128,8 +129,7 @@ class Session(object):
 
             .. code:: python3
 
-                # First, you need to create a Session instance:
-
+                # create Session
                 from neptune.sessions import Session
                 session = Session()
 
@@ -141,13 +141,17 @@ class Session(object):
                 session.get_projects('neptune-ml')
 
                 # Example output:
-                # {'neptune-ml/Sandbox': Project(neptune-ml/Sandbox),
-                # 'neptune-ml/Home-Credit-Default-Risk': Project(neptune-ml/Home-Credit-Default-Risk),
-                # 'neptune-ml/Mapping-Challenge': Project(neptune-ml/Mapping-Challenge),
-                # 'neptune-ml/Ships': Project(neptune-ml/Ships),
-                # 'neptune-ml/human-protein-atlas': Project(neptune-ml/human-protein-atlas),
-                # 'neptune-ml/Salt-Detection': Project(neptune-ml/Salt-Detection),
-                # 'neptune-ml/Data-Science-Bowl-2018': Project(neptune-ml/Data-Science-Bowl-2018)}
+                # OrderedDict([('neptune-ml/credit-default-prediction',
+                #               Project(neptune-ml/credit-default-prediction)),
+                #              ('neptune-ml/GStore-Customer-Revenue-Prediction',
+                #               Project(neptune-ml/GStore-Customer-Revenue-Prediction)),
+                #              ('neptune-ml/human-protein-atlas',
+                #               Project(neptune-ml/human-protein-atlas)),
+                #              ('neptune-ml/Ships',
+                #               Project(neptune-ml/Ships)),
+                #              ('neptune-ml/Mapping-Challenge',
+                #               Project(neptune-ml/Mapping-Challenge))
+                #              ])
         """
 
         projects = [Project(self._client, p.id, namespace, p.name) for p in self._client.get_projects(namespace)]
