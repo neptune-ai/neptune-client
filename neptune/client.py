@@ -125,7 +125,7 @@ class Client(object):
                     projectIdentifier=project.full_id,
                     entryType=entry_types,
                     shortId=ids, groupShortId=None, state=states, owner=owners, tags=tags,
-                    minRunningTimeSeconds=min_running_time,
+                    tagsMode='and', minRunningTimeSeconds=min_running_time,
                     sortBy=['shortId'], sortFieldType=['native'], sortDirection=['ascending'],
                     limit=limit, offset=offset
                 ).response().result.entries
