@@ -65,43 +65,39 @@ class Project(object):
         return [member.registeredMemberInfo.username for member in project_members if member.registeredMemberInfo]
 
     def get_experiments(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
-        """Retrieve a list of experiments matching the specified criteria.
+        """Retrieve list of experiments matching the specified criteria.
 
-        All of the parameters of this method are optional, each of them specifies a single criterion.
-
+        All parameters are optional, each of them specifies a single criterion.
         Only experiments matching all of the criteria will be returned.
 
-        If a specific criterion accepts a list (like ``state``), experiments matching any element of the list
-        match this criterion.
+        If a specific criterion accepts a :obj:`list` (like ``state``),
+        then matching with any element of the list is sufficient to pass criterion.
 
         Args:
-            id(:obj:`list`): An ID or list of experiment IDs (rowo.g. ``'SAN-1'`` or ``['SAN-1', 'SAN-2']``)
-            state(:obj:`list`): A state or list of experiment states.
-                E.g. ``'succeeded'`` or ``['succeeded', 'running']``.
-                Possible states: ``'running'``, ``'succeeded'``, ``'failed'``, ``'aborted'``
-            owner(:obj:`list`): The owner or list of owners of the experiments. This parameter expects usernames.
-            tag(:obj:`list`): A tag or a list of experiment tags.
-                E.g. ``'solution-1'`` or ``['solution-1', 'solution-2']``.
-            min_running_time(int): Minimum running time of an experiment in seconds.
+            id (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+                | An experiment id like ``'SAN-1'`` or list of ids like ``['SAN-1', 'SAN-2']``.
+            state (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+                | An experiment state like ``'succeeded'`` or list of states like ``['succeeded', 'running']``.
+                | Possible values: ``'running'``, ``'succeeded'``, ``'failed'``, ``'aborted'``.
+            owner (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+                | *Username* of the experiment owner (User who created experiment is an owner) like ``'josh'``
+                  or list of owners like ``['frederic', 'josh']``.
+            tag (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+                 An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
+            min_running_time (:obj:`int`, optional, default is ``None``):
+                Minimum running time of an experiment in seconds, like ``2000``.
 
         Returns:
-            :obj:`list`: List of `Experiment` objects
+            :obj:`list` of :class:`~neptune.experiments.Experiment` objects.
 
         Examples:
 
             .. code:: python3
 
-                # Instantiate a session.
-
-                from neptune.sessions import Session
-                session = Session()
-
-                # Fetch a project.
-
+                # Fetch a project
                 project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
 
-                # Finally, get a list of experiments that satisfies your criteria:
-
+                # Get list of experiments
                 project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
 
                 # Example output:
@@ -110,7 +106,6 @@ class Project(object):
                 #  Experiment(SAL-1941),
                 #  Experiment(SAL-1960),
                 #  Experiment(SAL-2025)]
-
         """
         leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
         return [
@@ -119,57 +114,50 @@ class Project(object):
         ]
 
     def get_leaderboard(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
-        """Fetches Neptune experiment view to pandas ``DataFrame``
+        """Fetch Neptune experiments view as pandas ``DataFrame``.
 
-        Retrieve experiments matching the specified criteria and present them in a form of a DataFrame
-        resembling Neptune's leaderboard.
+        **returned DataFrame**
 
-        The returned DataFrame contains columns for all system properties,
-        numeric and text channels, user-defined properties and parameters defined
-        in the selected experiments (not across the entire project).
+        | In the returned ``DataFrame`` each *row* is an experiment and *columns* represent all system properties,
+          numeric and text logs, parameters and properties in these experiments.
+        | Note that, returned ``DataFrame`` does not contain all columns across the entire project.
+        | Some columns may be empty, since experiments may define various logs, properties, etc.
+        | For each log at most one (the last one) value is returned per experiment.
+        | Text values are trimmed to 255 characters.
 
-        Every row in this ``DataFrame`` represents a single experiment. As such, some columns may be empty,
-        since experiments define various channels, properties, etc.
+        **about parameters**
 
-        For each channel at most one (the last one) value is returned per experiment.
-        Text values are trimmed to 255 characters.
-
-        All of the parameters of this method are optional, each of them specifies a single criterion.
-
+        All parameters are optional, each of them specifies a single criterion.
         Only experiments matching all of the criteria will be returned.
 
-        If a specific criterion accepts a list (like ``state``), experiments matching any element of the list
-        match this criterion.
+        If a specific criterion accepts a :obj:`list` (like ``state``),
+        then matching with any element of the list is sufficient to pass criterion.
 
         Args:
-            id(:obj:`list`): An ID or list of experiment IDs (``'SAN-1'`` or ``['SAN-1', 'SAN-2']``)
-            state(:obj:`list`): A state or list of experiment states.
-                E.g. ``'succeeded'`` or ``['succeeded', 'running']``.
-                Possible states: ``'running'``, ``'succeeded'``, ``'failed'``, ``'aborted'``
-            owner(:obj:`list`): The owner or list of owners of the experiments. This parameter expects usernames.
-            tag(:obj:`list`): A tag or a list of experiment tags.
-                E.g. ``'solution-1'`` or ``['solution-1', 'solution-2']``.
-            min_running_time(int): Minimum running time of an experiment in seconds.
+            id (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+                | An experiment id like ``'SAN-1'`` or list of ids like ``['SAN-1', 'SAN-2']``.
+            state (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+                | An experiment state like ``'succeeded'`` or list of states like ``['succeeded', 'running']``.
+                | Possible values: ``'running'``, ``'succeeded'``, ``'failed'``, ``'aborted'``.
+            owner (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+                | *Username* of the experiment owner (User who created experiment is an owner) like ``'josh'``
+                  or list of owners like ``['frederic', 'josh']``.
+            tag (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+                 An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
+            min_running_time (:obj:`int`, optional, default is ``None``):
+                Minimum running time of an experiment in seconds, like ``2000``.
 
         Returns:
-            `pandas.DataFrame`: Neptune experiment view in the form of a dataframe.
+            :obj:`pandas.DataFrame` - Fetched Neptune experiments view.
 
         Examples:
 
             .. code:: python3
 
-                # Instantiate a session.
-
-                from neptune.sessions import Session
-                session = Session()
-
                 # Fetch a project.
-
                 project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
 
-                # Finally, get a dataframe that resembles experiment view. It is constructed from all the
-                # experiments that satisfy your criteria:
-
+                # Get DataFrame that resembles experiment view.
                 project.get_leaderboard(state=['aborted'], owner=['neyo'], min_running_time=100000)
         """
 
