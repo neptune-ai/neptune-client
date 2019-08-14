@@ -16,31 +16,26 @@
 import base64
 import gzip
 import io
+import logging
 import os
 import uuid
-import time
 from functools import partial
-
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY
 from io import StringIO
 from itertools import groupby
 
-import logging
 import requests
 import six
 import urllib3
-
-from requests.exceptions import HTTPError
 from bravado.client import SwaggerClient
-from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
-    HTTPInternalServerError, HTTPNotFound, HTTPServerError, HTTPUnauthorized, HTTPUnprocessableEntity, HTTPConflict, \
-    HTTPServiceUnavailable, HTTPRequestTimeout, HTTPGatewayTimeout
+from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity, HTTPConflict
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
+from requests.exceptions import HTTPError
 
-from neptune.api_exceptions import ConnectionLost, ExperimentAlreadyFinished, ExperimentLimitReached, \
-    ExperimentNotFound, ExperimentValidationError, Forbidden, NamespaceNotFound, ProjectNotFound, ServerError, \
-    StorageLimitReached, Unauthorized, ChannelAlreadyExists, ChannelsValuesSendBatchError, SSLError, NotebookNotFound, \
+from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitReached, \
+    ExperimentNotFound, ExperimentValidationError, NamespaceNotFound, ProjectNotFound, StorageLimitReached, \
+    ChannelAlreadyExists, ChannelsValuesSendBatchError, NotebookNotFound, \
     PathInProjectNotFound, ChannelNotFound
 from neptune.checkpoint import Checkpoint
 from neptune.experiments import Experiment
@@ -48,45 +43,9 @@ from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
-from neptune.utils import is_float
+from neptune.utils import is_float, with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
-
-
-def with_api_exceptions_handler(func):
-    def wrapper(*args, **kwargs):
-        for retry in range(0, 11):
-            try:
-                return func(*args, **kwargs)
-            except requests.exceptions.SSLError:
-                raise SSLError()
-            except (BravadoConnectionError, BravadoTimeoutError,
-                    requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout) as ex:
-                _logger.warning('Http request to Neptune server failed: %s. Retry in %d seconds.', repr(ex), 2 ** retry)
-                time.sleep(2 ** retry)
-                continue
-            except HTTPServerError:
-                raise ServerError()
-            except HTTPUnauthorized:
-                raise Unauthorized()
-            except HTTPForbidden:
-                raise Forbidden()
-            except requests.exceptions.RequestException as e:
-                if e.response is None:
-                    raise
-                status_code = e.response.status_code
-                if status_code >= HTTPInternalServerError.status_code:
-                    raise ServerError()
-                elif status_code == HTTPUnauthorized.status_code:
-                    raise Unauthorized()
-                elif status_code == HTTPForbidden.status_code:
-                    raise Forbidden()
-                else:
-                    raise
-        raise ConnectionLost()
-
-    return wrapper
 
 
 class Client(object):
@@ -105,30 +64,13 @@ class Client(object):
         if self.proxies is not None:
             self._update_proxies()
 
-        self.backend_swagger_client = SwaggerClient.from_url(
-            '{}/api/backend/swagger.json'.format(self.api_address),
-            config=dict(
-                validate_swagger_spec=False,
-                validate_requests=False,
-                validate_responses=False,
-                formats=[uuid_format]),
-            http_client=self._http_client)
+        self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
+                                                               .format(self.api_address))
 
-        self.leaderboard_swagger_client = SwaggerClient.from_url(
-            '{}/api/leaderboard/swagger.json'.format(self.api_address),
-            config=dict(
-                validate_swagger_spec=False,
-                validate_requests=False,
-                validate_responses=False,
-                formats=[uuid_format]
-            ),
-            http_client=self._http_client
-        )
+        self.leaderboard_swagger_client = self._get_swagger_client('{}/api/leaderboard/swagger.json'
+                                                                   .format(self.api_address))
 
-        self.authenticator = NeptuneAuthenticator(
-            self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result,
-            ssl_verify
-        )
+        self.authenticator = self._create_authenticator(api_token, ssl_verify)
         self._http_client.authenticator = self.authenticator
 
         # This is not a top-level import because of circular dependencies
@@ -903,6 +845,26 @@ class Client(object):
         except:
             # TODO: change error type and info
             raise ValueError("Error when using proxies {}".format(self.proxies))
+
+    @with_api_exceptions_handler
+    def _get_swagger_client(self, url):
+        return SwaggerClient.from_url(
+            url,
+            config=dict(
+                validate_swagger_spec=False,
+                validate_requests=False,
+                validate_responses=False,
+                formats=[uuid_format]
+            ),
+            http_client=self._http_client
+        )
+
+    @with_api_exceptions_handler
+    def _create_authenticator(self, api_token, ssl_verify):
+        return NeptuneAuthenticator(
+            self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result,
+            ssl_verify
+        )
 
 
 uuid_format = SwaggerFormat(

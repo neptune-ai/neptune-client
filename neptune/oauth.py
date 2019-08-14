@@ -21,6 +21,8 @@ from oauthlib.oauth2 import TokenExpiredError
 from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
 
+from neptune.utils import with_api_exceptions_handler
+
 
 class NeptuneAuth(AuthBase):
 
@@ -43,6 +45,7 @@ class NeptuneAuth(AuthBase):
                                                                   headers=r.headers)
         return r
 
+    @with_api_exceptions_handler
     def refresh_token_if_needed(self):
         if self.token_expires_at - time.time() < 30:
             self._refresh_token()
