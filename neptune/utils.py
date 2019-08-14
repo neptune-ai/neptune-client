@@ -15,15 +15,25 @@
 #
 
 import functools
-import math
+import logging
 import os
 import sys
+import time
 
+import math
 import numpy as np
 import pandas as pd
+import requests
+from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
+    HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
+    HTTPGatewayTimeout
 
+from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, \
+    Unauthorized, SSLError
 from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotAFile
 from neptune.git_info import GitInfo
+
+_logger = logging.getLogger(__name__)
 
 IS_WINDOWS = hasattr(sys, 'getwindowsversion')
 
@@ -169,3 +179,39 @@ def get_git_info(repo_path=None):
         )
     except:  # pylint: disable=bare-except
         return None
+
+
+def with_api_exceptions_handler(func):
+    def wrapper(*args, **kwargs):
+        for retry in range(0, 11):
+            try:
+                return func(*args, **kwargs)
+            except requests.exceptions.SSLError:
+                raise SSLError()
+            except (BravadoConnectionError, BravadoTimeoutError,
+                    requests.exceptions.ConnectionError, requests.exceptions.Timeout,
+                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout) as ex:
+                _logger.warning('Http request to Neptune server failed: %s. Retry in %d seconds.', repr(ex), 2 ** retry)
+                time.sleep(2 ** retry)
+                continue
+            except HTTPServerError:
+                raise ServerError()
+            except HTTPUnauthorized:
+                raise Unauthorized()
+            except HTTPForbidden:
+                raise Forbidden()
+            except requests.exceptions.RequestException as e:
+                if e.response is None:
+                    raise
+                status_code = e.response.status_code
+                if status_code >= HTTPInternalServerError.status_code:
+                    raise ServerError()
+                elif status_code == HTTPUnauthorized.status_code:
+                    raise Unauthorized()
+                elif status_code == HTTPForbidden.status_code:
+                    raise Forbidden()
+                else:
+                    raise
+        raise ConnectionLost()
+
+    return wrapper
