@@ -485,6 +485,7 @@ class Experiment(object):
             artifact (:obj:`str`): A path to the file in local filesystem.
 
         Raises:
+            `FileNotFound`: When ``artifact`` file was not found.
             `StorageLimitReached`: When storage limit in the project has been reached.
 
         Example:
@@ -504,6 +505,24 @@ class Experiment(object):
                           experiment=self)
 
     def download_artifact(self, filename, destination_dir):
+        """Download an artifact (file) from the experiment storage.
+
+        Download ``filename`` from the experiment storage and save it in ``destination_dir``.
+
+        Args:
+            filename (:obj:`str`): Name of the file to be downloaded.
+            destination_dir (:obj:`str`): The directory where the file will be downloaded.
+
+        Raises:
+            `NotADirectory`: When ``destination_dir`` is not a directory.
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.download_artifact('forest_results.pkl', '/home/user/files/')
+        """
         path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=filename)
         destination_path = "{dir}/{file}".format(dir=destination_dir, file=filename)
 
