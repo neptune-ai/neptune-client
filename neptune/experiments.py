@@ -510,22 +510,18 @@ class Experiment(object):
         Download ``filename`` from the experiment storage and save it in ``destination_dir``.
 
         Args:
-            filename (:obj:`str`):
-                The name of the artifact file.
-            destination_dir (:obj:`str`):
-                The directory where the file will be downloaded.
+            filename (:obj:`str`): Name of the file to be downloaded.
+            destination_dir (:obj:`str`): The directory where the file will be downloaded.
 
         Raises:
             `NotADirectory`: When ``destination_dir`` is not a directory.
 
         Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
 
             .. code:: python3
 
-                with neptune.create_experiment():
-                    ...
-                    neptune.download_artifact('forest_results.pkl', '.')
-
+                experiment.download_artifact('forest_results.pkl', '/home/user/files/')
         """
         path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=filename)
         destination_path = "{dir}/{file}".format(dir=destination_dir, file=filename)
