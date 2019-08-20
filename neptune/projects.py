@@ -70,8 +70,6 @@ class Project(object):
         All parameters are optional, each of them specifies a single criterion.
         Only experiments matching all of the criteria will be returned.
 
-        For tags, only experiments matching all provided tags are retrieved
-
         Args:
             id (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                 | An experiment id like ``'SAN-1'`` or list of ids like ``['SAN-1', 'SAN-2']``.
