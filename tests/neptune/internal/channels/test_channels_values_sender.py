@@ -52,6 +52,7 @@ class TestChannelsValuesSender(unittest.TestCase):
         # pylint: disable=protected-access
         self._EXPERIMENT._get_channels.return_value = self._CHANNELS
 
+        # pylint: disable=unused-argument
         def create_channel_fun(channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
             if channel_name == self._NUMERIC_CHANNEL.name:
                 return self._NUMERIC_CHANNEL
