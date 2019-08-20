@@ -32,7 +32,7 @@ _logger = logging.getLogger(__name__)
 class ChannelsValuesSender(object):
     _QUEUED_CHANNEL_VALUE = namedtuple(
         "QueuedChannelValue",
-        ['channel_name', 'channel_type', 'channel_value', 'channel_namespace']
+        ['channel_id', 'channel_name', 'channel_type', 'channel_value', 'channel_namespace']
     )
 
     __LOCK = threading.RLock()
@@ -41,13 +41,29 @@ class ChannelsValuesSender(object):
         self._experiment = experiment
         self._values_queue = None
         self._sending_thread = None
+        self._user_channel_name_to_id_map = dict()
+        self._system_channel_name_to_id_map = dict()
 
+    # pylint:disable=protected-access
     def send(self, channel_name, channel_type, channel_value, channel_namespace=ChannelNamespace.USER):
         with self.__LOCK:
             if not self._is_running():
                 self._start()
 
+        if channel_namespace == ChannelNamespace.USER:
+            namespaced_channel_map = self._user_channel_name_to_id_map
+        else:
+            namespaced_channel_map = self._system_channel_name_to_id_map
+
+        if channel_name in namespaced_channel_map:
+            channel_id = namespaced_channel_map[channel_name]
+        else:
+            response = self._experiment._create_channel(channel_name, channel_type, channel_namespace)
+            channel_id = response.id
+            namespaced_channel_map[channel_name] = channel_id
+
         self._values_queue.put(self._QUEUED_CHANNEL_VALUE(
+            channel_id=channel_id,
             channel_name=channel_name,
             channel_type=channel_type,
             channel_value=channel_value,
@@ -118,6 +134,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
     def _send_values(self, queued_channels_values):
         def channel_key(value):
             return ChannelNameWithTypeAndNamespace(
+                value.channel_id,
                 value.channel_name,
                 value.channel_type,
                 value.channel_namespace
@@ -128,26 +145,13 @@ class ChannelsValuesSendingThread(NeptuneThread):
                                      in groupby(sorted(queued_channels_values, key=channel_key),
                                                 channel_key)}
         channels_with_values = []
-        # pylint: disable=protected-access
-        user_channels_by_name = self._experiment._get_channels([
-            (ch.channel_name, ch.channel_type)
-            for ch in queued_grouped_by_channel.keys()
-            if ch.channel_namespace == ChannelNamespace.USER
-        ])
-        # pylint: disable=protected-access
-        system_channels_by_name = self._experiment._get_system_channels()
-
         for channel_key in queued_grouped_by_channel:
-            if channel_key.channel_namespace == ChannelNamespace.USER:
-                channel = user_channels_by_name[channel_key.channel_name]
-            else:
-                channel = system_channels_by_name[channel_key.channel_name]
             channel_values = []
             for queued_value in queued_grouped_by_channel[channel_key]:
                 channel_values.append(ChannelValue(ts=queued_value.channel_value.ts,
                                                    x=queued_value.channel_value.x,
                                                    y=queued_value.channel_value.y))
-            channels_with_values.append(ChannelIdWithValues(channel.id, channel_values))
+            channels_with_values.append(ChannelIdWithValues(channel_key.channel_id, channel_values))
 
         try:
             # pylint:disable=protected-access

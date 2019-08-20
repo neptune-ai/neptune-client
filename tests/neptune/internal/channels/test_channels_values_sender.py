@@ -20,7 +20,7 @@ import unittest
 
 import mock
 
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue, ChannelType
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender, ChannelsValuesSendingThread
 from tests.neptune.experiments_object_factory import a_channel
 
@@ -39,7 +39,9 @@ class TestChannelsValuesSender(unittest.TestCase):
     _IMAGE_CHANNEL = a_channel()
     _IMAGE_CHANNEL.update(name=u'3image', channelType=ChannelType.IMAGE.value)
 
-    _CHANNELS = {c.name: c for c in [_NUMERIC_CHANNEL, _TEXT_CHANNEL, _IMAGE_CHANNEL, a_channel()]}
+    _OTHER_CHANNEL = a_channel()
+
+    _CHANNELS = {c.name: c for c in [_NUMERIC_CHANNEL, _TEXT_CHANNEL, _IMAGE_CHANNEL, _OTHER_CHANNEL]}
 
     # pylint: disable=protected-access
     _BATCH_SIZE = ChannelsValuesSendingThread._MAX_VALUES_BATCH_LENGTH
@@ -49,6 +51,19 @@ class TestChannelsValuesSender(unittest.TestCase):
     def setUp(self):
         # pylint: disable=protected-access
         self._EXPERIMENT._get_channels.return_value = self._CHANNELS
+
+        def create_channel_fun(channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
+            if channel_name == self._NUMERIC_CHANNEL.name:
+                return self._NUMERIC_CHANNEL
+            if channel_name == self._TEXT_CHANNEL.name:
+                return self._TEXT_CHANNEL
+            if channel_name == self._IMAGE_CHANNEL.name:
+                return self._IMAGE_CHANNEL
+            if channel_name == self._OTHER_CHANNEL.name:
+                return self._OTHER_CHANNEL
+            raise ValueError("unexpected channel")
+
+        self._EXPERIMENT._create_channel = mock.MagicMock(side_effect=create_channel_fun)
 
     def tearDown(self):
         self._EXPERIMENT.reset_mock()

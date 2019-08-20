@@ -19,7 +19,7 @@ from enum import Enum
 
 ChannelNameWithTypeAndNamespace = namedtuple(
     "ChannelNameWithType",
-    ['channel_name', 'channel_type', 'channel_namespace']
+    ['channel_id', 'channel_name', 'channel_type', 'channel_namespace']
 )
 ChannelIdWithValues = namedtuple('ChannelIdWithValues', ['channel_id', 'channel_values'])
 
