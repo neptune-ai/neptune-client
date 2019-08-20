@@ -70,20 +70,21 @@ class Project(object):
         All parameters are optional, each of them specifies a single criterion.
         Only experiments matching all of the criteria will be returned.
 
-        If a specific criterion accepts a :obj:`list` (like ``state``),
-        then matching with any element of the list is sufficient to pass criterion.
-
         Args:
             id (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                 | An experiment id like ``'SAN-1'`` or list of ids like ``['SAN-1', 'SAN-2']``.
+                | Matching any element of the list is sufficient to pass criterion.
             state (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                 | An experiment state like ``'succeeded'`` or list of states like ``['succeeded', 'running']``.
                 | Possible values: ``'running'``, ``'succeeded'``, ``'failed'``, ``'aborted'``.
+                | Matching any element of the list is sufficient to pass criterion.
             owner (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                 | *Username* of the experiment owner (User who created experiment is an owner) like ``'josh'``
                   or list of owners like ``['frederic', 'josh']``.
+                | Matching any element of the list is sufficient to pass criterion.
             tag (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
-                 An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
+                 | An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
+                 | Only experiments that have all specified tags will match this criterion.
             min_running_time (:obj:`int`, optional, default is ``None``):
                 Minimum running time of an experiment in seconds, like ``2000``.
 
@@ -130,20 +131,21 @@ class Project(object):
         All parameters are optional, each of them specifies a single criterion.
         Only experiments matching all of the criteria will be returned.
 
-        If a specific criterion accepts a :obj:`list` (like ``state``),
-        then matching with any element of the list is sufficient to pass criterion.
-
         Args:
             id (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                 | An experiment id like ``'SAN-1'`` or list of ids like ``['SAN-1', 'SAN-2']``.
+                | Matching any element of the list is sufficient to pass criterion.
             state (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                 | An experiment state like ``'succeeded'`` or list of states like ``['succeeded', 'running']``.
                 | Possible values: ``'running'``, ``'succeeded'``, ``'failed'``, ``'aborted'``.
+                | Matching any element of the list is sufficient to pass criterion.
             owner (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                 | *Username* of the experiment owner (User who created experiment is an owner) like ``'josh'``
                   or list of owners like ``['frederic', 'josh']``.
+                | Matching any element of the list is sufficient to pass criterion.
             tag (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
-                 An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
+                | An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
+                | Only experiments that have all specified tags will match this criterion.
             min_running_time (:obj:`int`, optional, default is ``None``):
                 Minimum running time of an experiment in seconds, like ``2000``.
 
