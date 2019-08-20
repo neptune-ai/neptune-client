@@ -854,16 +854,26 @@ class Experiment(object):
 
     @staticmethod
     def _get_valid_x_y(x, y):
-        if x is None:
+        """
+        The goal of this function is to allow user to call experiment.log_* with any of:
+            - single parameter treated as y value
+            - both paramters (named/unnamed)
+            - single named y parameter
+        If intended X-coordinate is provided, it is validated to be a float value
+        """
+        if x is None and y is None:
             raise NoChannelValue()
 
-        if y is None:
-            y = x
-            x = None
-        elif not is_float(x):
-            raise InvalidChannelValue(expected_type='float', actual_type=type(x).__name__)
+        if x is None and y is not None:
+            return None, y
 
-        return x, y
+        if x is not None and y is None:
+            return None, x
+
+        if x is not None and y is not None:
+            if not is_float(x):
+                raise InvalidChannelValue(expected_type='float', actual_type=type(x).__name__)
+            return x, y
 
     def _send_channels_values(self, channels_with_values):
         self._client.send_channels_values(self, channels_with_values)

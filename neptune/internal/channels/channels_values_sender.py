@@ -22,7 +22,7 @@ from itertools import groupby
 from future.moves import queue
 
 from neptune.exceptions import NeptuneException
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNameWithTypeAndNamespace, ChannelValue,\
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue,\
     ChannelType, ChannelNamespace
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
@@ -32,7 +32,7 @@ _logger = logging.getLogger(__name__)
 class ChannelsValuesSender(object):
     _QUEUED_CHANNEL_VALUE = namedtuple(
         "QueuedChannelValue",
-        ['channel_name', 'channel_type', 'channel_value', 'channel_namespace']
+        ['channel_id', 'channel_name', 'channel_type', 'channel_value', 'channel_namespace']
     )
 
     __LOCK = threading.RLock()
@@ -41,13 +41,29 @@ class ChannelsValuesSender(object):
         self._experiment = experiment
         self._values_queue = None
         self._sending_thread = None
+        self._user_channel_name_to_id_map = dict()
+        self._system_channel_name_to_id_map = dict()
 
+    # pylint:disable=protected-access
     def send(self, channel_name, channel_type, channel_value, channel_namespace=ChannelNamespace.USER):
         with self.__LOCK:
             if not self._is_running():
                 self._start()
 
+        if channel_namespace == ChannelNamespace.USER:
+            namespaced_channel_map = self._user_channel_name_to_id_map
+        else:
+            namespaced_channel_map = self._system_channel_name_to_id_map
+
+        if channel_name in namespaced_channel_map:
+            channel_id = namespaced_channel_map[channel_name]
+        else:
+            response = self._experiment._create_channel(channel_name, channel_type, channel_namespace)
+            channel_id = response.id
+            namespaced_channel_map[channel_name] = channel_id
+
         self._values_queue.put(self._QUEUED_CHANNEL_VALUE(
+            channel_id=channel_id,
             channel_name=channel_name,
             channel_type=channel_type,
             channel_value=channel_value,
@@ -116,41 +132,21 @@ class ChannelsValuesSendingThread(NeptuneThread):
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
     def _send_values(self, queued_channels_values):
-        def channel_key(value):
-            return ChannelNameWithTypeAndNamespace(
-                value.channel_name,
-                value.channel_type,
-                value.channel_namespace
-            )
+        def get_channel_id(value):
+            return value.channel_id
 
-        queued_grouped_by_channel = {channel: list(values)
-                                     for channel, values
-                                     in groupby(sorted(queued_channels_values, key=channel_key),
-                                                channel_key)}
+        queued_grouped_by_channel = {channel_id: list(values)
+                                     for channel_id, values
+                                     in groupby(sorted(queued_channels_values, key=get_channel_id),
+                                                get_channel_id)}
         channels_with_values = []
-        # pylint: disable=protected-access
-        user_channels_by_name = self._experiment._get_channels([
-            (ch.channel_name, ch.channel_type)
-            for ch in queued_grouped_by_channel.keys()
-            if ch.channel_namespace == ChannelNamespace.USER
-        ])
-        # pylint: disable=protected-access
-        system_channels_by_name = self._experiment._get_system_channels()
-
-        for channel_key in queued_grouped_by_channel:
-            if channel_key.channel_namespace == ChannelNamespace.USER:
-                channel = user_channels_by_name[channel_key.channel_name]
-            else:
-                channel = system_channels_by_name[channel_key.channel_name]
-            last_x = channel.x if hasattr(channel, 'x') and channel.x else 0
+        for channel_id in queued_grouped_by_channel:
             channel_values = []
-            for queued_value in queued_grouped_by_channel[channel_key]:
-                x = queued_value.channel_value.x if queued_value.channel_value.x is not None else last_x + 1
+            for queued_value in queued_grouped_by_channel[channel_id]:
                 channel_values.append(ChannelValue(ts=queued_value.channel_value.ts,
-                                                   x=x,
+                                                   x=queued_value.channel_value.x,
                                                    y=queued_value.channel_value.y))
-                last_x = x
-            channels_with_values.append(ChannelIdWithValues(channel.id, channel_values))
+            channels_with_values.append(ChannelIdWithValues(channel_id, channel_values))
 
         try:
             # pylint:disable=protected-access
