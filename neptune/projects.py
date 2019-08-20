@@ -70,8 +70,10 @@ class Project(object):
         All parameters are optional, each of them specifies a single criterion.
         Only experiments matching all of the criteria will be returned.
 
-        If a specific criterion accepts a :obj:`list` (like ``state``),
+        Except for tags, if a specific criterion accepts a :obj:`list` (like ``state``),
         then matching with any element of the list is sufficient to pass criterion.
+
+        For tags, only experiments matching all provided tags are retrieved
 
         Args:
             id (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
@@ -84,6 +86,7 @@ class Project(object):
                   or list of owners like ``['frederic', 'josh']``.
             tag (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                  An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
+                 Only experiments tagged with all specified tags will match this criterion.
             min_running_time (:obj:`int`, optional, default is ``None``):
                 Minimum running time of an experiment in seconds, like ``2000``.
 
@@ -130,8 +133,10 @@ class Project(object):
         All parameters are optional, each of them specifies a single criterion.
         Only experiments matching all of the criteria will be returned.
 
-        If a specific criterion accepts a :obj:`list` (like ``state``),
+        Except for tags, if a specific criterion accepts a :obj:`list` (like ``state``),
         then matching with any element of the list is sufficient to pass criterion.
+
+        For tags, only experiments matching all provided tags are retrieved
 
         Args:
             id (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
@@ -144,6 +149,7 @@ class Project(object):
                   or list of owners like ``['frederic', 'josh']``.
             tag (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
                  An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
+                 Only experiments tagged with all specified tags will match this criterion.
             min_running_time (:obj:`int`, optional, default is ``None``):
                 Minimum running time of an experiment in seconds, like ``2000``.
 
