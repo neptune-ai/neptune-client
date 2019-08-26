@@ -353,6 +353,9 @@ class Experiment(object):
         if not is_float(y):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
+        if x is not None and is_nan_or_inf(x):
+            x = None
+
         if is_nan_or_inf(y):
             # pylint: disable=global-statement
             global _nan_warning_sent
@@ -411,6 +414,9 @@ class Experiment(object):
         """
         x, y = self._get_valid_x_y(x, y)
 
+        if x is not None and is_nan_or_inf(x):
+            x = None
+
         if not isinstance(y, six.string_types):
             raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
@@ -461,6 +467,9 @@ class Experiment(object):
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         """
         x, y = self._get_valid_x_y(x, y)
+
+        if x is not None and is_nan_or_inf(x):
+            x = None
 
         input_image = dict(
             name=image_name,
