@@ -35,10 +35,8 @@ from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
 
 _logger = logging.getLogger(__name__)
 
-_nan_warning_sent = False
 
-
-#pylint: disable=too-many-lines
+# pylint: disable=too-many-lines
 class Experiment(object):
     """A class for managing Neptune experiment.
 
@@ -347,23 +345,27 @@ class Experiment(object):
         Note:
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
+        Note:
+            Passing either `x` or `y` coordinate as NaN or +/-inf causes this log entry to be ignored.
+            Warning is printed to `stdout`.
         """
         x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
-        if x is not None and is_nan_or_inf(x):
-            x = None
-
         if is_nan_or_inf(y):
-            # pylint: disable=global-statement
-            global _nan_warning_sent
-            if not _nan_warning_sent:
-                _nan_warning_sent = True
-                _logger.warning(
-                    'Invalid metric value: %s. Metrics with nan and inf values will not be sent to server',
-                    y)
+            _logger.warning(
+                'Invalid metric value: %s for channel %s. '
+                'Metrics with nan or +/-inf values will not be sent to server',
+                y,
+                log_name)
+        elif x is not None and is_nan_or_inf(x):
+            _logger.warning(
+                'Invalid metric x-coordinate: %s for channel %s. '
+                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
+                x,
+                log_name)
         else:
             value = ChannelValue(x, dict(numeric_value=y), timestamp)
             self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
@@ -411,6 +413,8 @@ class Experiment(object):
         Note:
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
+        Note:
+            Passing `x` coordinate as NaN or +/-inf causes this log entry to be ignored. Warning is printed to `stdout`.
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -420,8 +424,15 @@ class Experiment(object):
         if not isinstance(y, six.string_types):
             raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
-        value = ChannelValue(x, dict(text_value=y), timestamp)
-        self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
+        if x is not None and is_nan_or_inf(x):
+            _logger.warning(
+                'Invalid metric x-coordinate: %s for channel %s. '
+                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
+                x,
+                log_name)
+        else:
+            value = ChannelValue(x, dict(text_value=y), timestamp)
+            self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
 
     def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
         """Log image data in Neptune.
@@ -465,6 +476,8 @@ class Experiment(object):
         Note:
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
+        Note:
+            Passing `x` coordinate as NaN or +/-inf causes this log entry to be ignored. Warning is printed to `stdout`.
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -477,8 +490,15 @@ class Experiment(object):
             data=base64.b64encode(get_image_content(y)).decode('utf-8')
         )
 
-        value = ChannelValue(x, dict(image_value=input_image), timestamp)
-        self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
+        if x is not None and is_nan_or_inf(x):
+            _logger.warning(
+                'Invalid metric x-coordinate: %s for channel %s. '
+                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
+                x,
+                log_name)
+        else:
+            value = ChannelValue(x, dict(image_value=input_image), timestamp)
+            self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
 
     def send_artifact(self, artifact, destination=None):
         """Save an artifact (file) in experiment storage.
