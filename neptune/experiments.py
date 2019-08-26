@@ -346,8 +346,8 @@ class Experiment(object):
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         Note:
-            Passing either `x` or `y` coordinate as NaN or +/-inf causes this log entry to be ignored.
-            Warning is printed to `stdout`.
+            Passing either ``x`` or ``y`` coordinate as NaN or +/-inf causes this log entry to be ignored.
+            Warning is printed to ``stdout``.
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -414,7 +414,8 @@ class Experiment(object):
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         Note:
-            Passing `x` coordinate as NaN or +/-inf causes this log entry to be ignored. Warning is printed to `stdout`.
+            Passing ``x`` coordinate as NaN or +/-inf causes this log entry to be ignored.
+            Warning is printed to ``stdout``.
         """
         x, y = self._get_valid_x_y(x, y)
 
@@ -477,7 +478,8 @@ class Experiment(object):
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         Note:
-            Passing `x` coordinate as NaN or +/-inf causes this log entry to be ignored. Warning is printed to `stdout`.
+            Passing ``x`` coordinate as NaN or +/-inf causes this log entry to be ignored.
+            Warning is printed to ``stdout``.
         """
         x, y = self._get_valid_x_y(x, y)
 
