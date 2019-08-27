@@ -16,11 +16,13 @@
 import base64
 import logging
 import os
+import re
 import sys
 import threading
 import traceback
 
 import pandas as pd
+import requests
 import six
 from pandas.errors import EmptyDataError
 
@@ -507,6 +509,12 @@ class Experiment(object):
 
                 # simple use
                 experiment.log_artifact('images/wrong_prediction_1.png')
+
+                # save file in other directory
+                experiment.log_artifact('images/wrong_prediction_1.png', 'validation/images/wrong_prediction_1.png')
+
+                # save file under different name
+                experiment.log_artifact('images/wrong_prediction_1.png', 'images/my_image_1.png')
         """
         if not os.path.exists(artifact):
             raise FileNotFound(artifact)
@@ -518,14 +526,16 @@ class Experiment(object):
                           upload_tar_api_fun=self._client.extract_experiment_output,
                           experiment=self)
 
-    def download_artifact(self, filename, destination_dir):
+    def download_artifact(self, filename, destination_dir=None):
         """Download an artifact (file) from the experiment storage.
 
         Download ``filename`` from the experiment storage and save it in ``destination_dir``.
 
         Args:
             filename (:obj:`str`): Name of the file to be downloaded.
-            destination_dir (:obj:`str`): The directory where the file will be downloaded.
+            destination_dir (:obj:`str`):
+                The directory where the file will be downloaded.
+                If ``None`` is passed, a file will be downloaded to current working directory.
 
         Raises:
             `NotADirectory`: When ``destination_dir`` is not a directory.
@@ -537,6 +547,9 @@ class Experiment(object):
 
                 experiment.download_artifact('forest_results.pkl', '/home/user/files/')
         """
+        if destination_dir is None:
+            destination_dir = "."
+
         path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=filename)
         destination_path = "{dir}/{file}".format(dir=destination_dir, file=filename)
 
@@ -546,6 +559,123 @@ class Experiment(object):
             raise NotADirectory(destination_dir)
 
         self._client.download_data(self._project, path, destination_path)
+
+    def download_sources(self, path=None, destination_dir=None):
+        """Download a directory or single file from experiment sources.
+
+        Download a subdirectory (or file) ``path`` from the experiment sources and save it in ``destination_dir``
+        as a ZIP archive.
+
+        Args:
+            path (:obj:`str`):
+                Path of a directory or file in experiment sources to be downloaded.
+                If ``None`` is passed, all source files will be downloaded.
+
+            destination_dir (:obj:`str`): The directory where the archive will be downloaded.
+                If ``None`` is passed, the archive will be downloaded to current working directory.
+
+        Raises:
+            `NotADirectory`: When ``destination_dir`` is not a directory.
+            `FileNotFound`: If a path in experiment sources does not exist.
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                # Download all experiment sources to current working directory
+                experiment.download_sources()
+
+                # Download a single directory
+                experiment.download_sources('data/images')
+
+                # Download all experiment sources to user-defined directory
+                experiment.download_sources(destination_dir='/tmp/sources/')
+
+                # Download a single directory to user-defined directory
+                experiment.download_sources('data/images', '/tmp/sources/')
+        """
+        if path is None:
+            path = ""
+        if destination_dir is None:
+            destination_dir = "."
+
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        elif not os.path.isdir(destination_dir):
+            raise NotADirectory(destination_dir)
+
+        download_request = self._client.prepare_source_download_reuqest(self, path)
+        self._download_from_request(download_request, destination_dir)
+
+    def download_artifacts(self, path=None, destination_dir=None):
+        """Download a directory or single file from experiment artifacts.
+
+        Download a subdirectory (or file) ``path`` from the experiment artifacts and save it in ``destination_dir``
+        as a ZIP archive.
+
+        Args:
+            path (:obj:`str`):
+                Path of a directory or file in experiment artifacts to be downloaded.
+                If ``None`` is passed, all artifacts will be downloaded.
+
+            destination_dir (:obj:`str`): The directory where the archive will be downloaded.
+                If ``None`` is passed, the archive will be downloaded to current working directory.
+
+        Raises:
+            `NotADirectory`: When ``destination_dir`` is not a directory.
+            `FileNotFound`: If a path in experiment artifacts does not exist.
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                # Download all experiment artifacts to current working directory
+                experiment.download_artifacts()
+
+                # Download a single directory
+                experiment.download_artifacts('data/images')
+
+                # Download all experiment artifacts to user-defined directory
+                experiment.download_artifacts(destination_dir='/tmp/sources/')
+
+                # Download a single directory to user-defined directory
+                experiment.download_artifacts('data/images', '/tmp/sources/')
+        """
+        if path is None:
+            path = ""
+        if destination_dir is None:
+            destination_dir = "."
+
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        elif not os.path.isdir(destination_dir):
+            raise NotADirectory(destination_dir)
+
+        download_request = self._client.prepare_output_download_reuqest(self, path)
+        self._download_from_request(download_request, destination_dir)
+
+    def _download_from_request(self, download_request, destination_dir):
+        while not hasattr(download_request, "downloadUrl"):
+            download_request = self._client.get_download_request(download_request.id)
+
+        # pylint: disable=protected-access
+        session = self._client._http_client.session
+
+        request = requests.Request(
+            method='GET',
+            url=download_request.downloadUrl,
+            headers={"Accept": "application/zip"}
+        )
+
+        with session.send(session.prepare_request(request), stream=True) as response:
+            content_disposition = response.headers['content-disposition']
+            filename = re.findall("filename=(.+)", content_disposition)[0]
+            with open("{}/{}".format(destination_dir, filename), "wb+") as f:
+                for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
+                    if chunk:
+                        f.write(chunk)
 
     def send_graph(self, graph_id, value):
         """Alias for :meth:`~neptune.experiments.Experiment.log_graph`
