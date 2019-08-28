@@ -46,9 +46,13 @@ class ChannelsValuesSender(object):
 
     # pylint:disable=protected-access
     def send(self, channel_name, channel_type, channel_value, channel_namespace=ChannelNamespace.USER):
-        with self.__LOCK:
-            if not self._is_running():
-                self._start()
+        # Before taking the lock here, we need to check if the sending thread is not running yet.
+        # Otherwise, the sending thread could call send() while being join()-ed, which would result
+        # in a deadlock.
+        if not self._is_running():
+            with self.__LOCK:
+                if not self._is_running():
+                    self._start()
 
         if channel_namespace == ChannelNamespace.USER:
             namespaced_channel_map = self._user_channel_name_to_id_map
