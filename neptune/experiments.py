@@ -715,31 +715,6 @@ class Experiment(object):
                     if chunk:
                         f.write(chunk)
 
-    def send_graph(self, graph_id, value):
-        """Alias for :meth:`~neptune.experiments.Experiment.log_graph`
-        """
-        return self.log_graph(graph_id, value)
-
-    def log_graph(self, graph_id, value):
-        """Upload a TensorFlow graph for this experiment.
-
-        Args:
-            graph_id (:obj:`str`): A string UUID identifying the graph
-            value (:obj:`str`): A string representation of TensorFlow graph
-
-        Example:
-            | Assuming that:
-            | 1. `experiment` is an instance of :class:`~neptune.experiments.Experiment`,
-            | 2. `uuid` is string representation of `uuid.uuid4()`,
-            | 3. `value` is string representation of `tf.GraphDef` instance.
-
-            .. code:: python3
-
-                experiment.log_graph(uuid, value)
-        """
-
-        self._client.put_tensorflow_graph(self, graph_id, value)
-
     def reset_log(self, log_name):
         """Resets the log.
 
