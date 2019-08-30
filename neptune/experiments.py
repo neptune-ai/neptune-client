@@ -16,15 +16,18 @@
 import base64
 import logging
 import os
+import re
 import sys
 import threading
+import time
 import traceback
 
 import pandas as pd
+import requests
 import six
 from pandas.errors import EmptyDataError
 
-from neptune.api_exceptions import ExperimentAlreadyFinished, ChannelDoesNotExist
+from neptune.api_exceptions import ExperimentAlreadyFinished, ChannelDoesNotExist, PathInProjectNotFound
 from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext, NotADirectory
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
@@ -529,6 +532,12 @@ class Experiment(object):
 
                 # simple use
                 experiment.log_artifact('images/wrong_prediction_1.png')
+
+                # save file in other directory
+                experiment.log_artifact('images/wrong_prediction_1.png', 'validation/images/wrong_prediction_1.png')
+
+                # save file under different name
+                experiment.log_artifact('images/wrong_prediction_1.png', 'images/my_image_1.png')
         """
         if not os.path.exists(artifact):
             raise FileNotFound(artifact)
@@ -540,17 +549,20 @@ class Experiment(object):
                           upload_tar_api_fun=self._client.extract_experiment_output,
                           experiment=self)
 
-    def download_artifact(self, filename, destination_dir):
+    def download_artifact(self, path, destination_dir=None):
         """Download an artifact (file) from the experiment storage.
 
-        Download ``filename`` from the experiment storage and save it in ``destination_dir``.
+        Download a file indicated by ``path`` from the experiment artifacts and save it in ``destination_dir``.
 
         Args:
-            filename (:obj:`str`): Name of the file to be downloaded.
-            destination_dir (:obj:`str`): The directory where the file will be downloaded.
+            path (:obj:`str`): Path to the file to be downloaded.
+            destination_dir (:obj:`str`):
+                The directory where the file will be downloaded.
+                If ``None`` is passed, the file will be downloaded to the current working directory.
 
         Raises:
             `NotADirectory`: When ``destination_dir`` is not a directory.
+            `FileNotFound`: If a path in experiment artifacts does not exist.
 
         Examples:
             Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
@@ -559,15 +571,149 @@ class Experiment(object):
 
                 experiment.download_artifact('forest_results.pkl', '/home/user/files/')
         """
-        path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=filename)
-        destination_path = "{dir}/{file}".format(dir=destination_dir, file=filename)
+        if not destination_dir:
+            destination_dir = os.getcwd()
+
+        project_storage_path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=path)
+        destination_path = os.path.join(destination_dir, os.path.basename(path))
 
         if not os.path.exists(destination_dir):
             os.makedirs(destination_dir)
         elif not os.path.isdir(destination_dir):
             raise NotADirectory(destination_dir)
 
-        self._client.download_data(self._project, path, destination_path)
+        try:
+            self._client.download_data(self._project, project_storage_path, destination_path)
+        except PathInProjectNotFound:
+            raise FileNotFound(path)
+
+    def download_sources(self, path=None, destination_dir=None):
+        """Download a directory or a single file from experiment's sources as a ZIP archive.
+
+        Download a subdirectory (or file) ``path`` from the experiment sources and save it in ``destination_dir``
+        as a ZIP archive. The name of an archive will be a name of downloaded directory (or file) with '.zip' extension.
+
+        Args:
+            path (:obj:`str`):
+                Path of a directory or file in experiment sources to be downloaded.
+                If ``None`` is passed, all source files will be downloaded.
+
+            destination_dir (:obj:`str`): The directory where the archive will be downloaded.
+                If ``None`` is passed, the archive will be downloaded to the current working directory.
+
+        Raises:
+            `NotADirectory`: When ``destination_dir`` is not a directory.
+            `FileNotFound`: If a path in experiment sources does not exist.
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                # Download all experiment sources to current working directory
+                experiment.download_sources()
+
+                # Download a single directory
+                experiment.download_sources('src/my-module')
+
+                # Download all experiment sources to user-defined directory
+                experiment.download_sources(destination_dir='/tmp/sources/')
+
+                # Download a single directory to user-defined directory
+                experiment.download_sources('src/my-module', 'sources/')
+        """
+        if not path:
+            path = ""
+        if not destination_dir:
+            destination_dir = os.getcwd()
+
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        elif not os.path.isdir(destination_dir):
+            raise NotADirectory(destination_dir)
+
+        download_request = self._client.prepare_source_download_reuqest(self, path)
+        self._download_from_request(download_request, destination_dir, path)
+
+    def download_artifacts(self, path=None, destination_dir=None):
+        """Download a directory or a single file from experiment's artifacts as a ZIP archive.
+
+        Download a subdirectory (or file) ``path`` from the experiment artifacts and save it in ``destination_dir``
+        as a ZIP archive. The name of an archive will be a name of downloaded directory (or file) with '.zip' extension.
+
+        Args:
+            path (:obj:`str`):
+                Path of a directory or file in experiment artifacts to be downloaded.
+                If ``None`` is passed, all artifacts will be downloaded.
+
+            destination_dir (:obj:`str`): The directory where the archive will be downloaded.
+                If ``None`` is passed, the archive will be downloaded to the current working directory.
+
+        Raises:
+            `NotADirectory`: When ``destination_dir`` is not a directory.
+            `FileNotFound`: If a path in experiment artifacts does not exist.
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                # Download all experiment artifacts to current working directory
+                experiment.download_artifacts()
+
+                # Download a single directory
+                experiment.download_artifacts('data/images')
+
+                # Download all experiment artifacts to user-defined directory
+                experiment.download_artifacts(destination_dir='/tmp/artifacts/')
+
+                # Download a single directory to user-defined directory
+                experiment.download_artifacts('data/images', 'artifacts/')
+        """
+        if not path:
+            path = ""
+        if not destination_dir:
+            destination_dir = os.getcwd()
+
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        elif not os.path.isdir(destination_dir):
+            raise NotADirectory(destination_dir)
+
+        download_request = self._client.prepare_output_download_reuqest(self, path)
+        self._download_from_request(download_request, destination_dir, path)
+
+    def _download_from_request(self, download_request, destination_dir, path):
+        sleep_time = 1
+        max_sleep_time = 16
+        while not hasattr(download_request, "downloadUrl"):
+            time.sleep(sleep_time)
+            sleep_time = min(sleep_time * 2, max_sleep_time)
+            download_request = self._client.get_download_request(download_request.id)
+
+        # We do not use Client here cause `downloadUrl` can be any url (not only Neptune API endpoint)
+        response = requests.get(
+            url=download_request.downloadUrl,
+            headers={"Accept": "application/zip"},
+            stream=True
+        )
+
+        with response:
+            filename = None
+            if 'content-disposition' in response.headers:
+                content_disposition = response.headers['content-disposition']
+                filenames = re.findall("filename=(.+)", content_disposition)
+                if filenames:
+                    filename = filenames[0]
+
+            if not filename:
+                filename = os.path.basename(path.rstrip("/")) + ".zip"
+
+            destination_path = os.path.join(destination_dir, filename)
+            with open(destination_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
+                    if chunk:
+                        f.write(chunk)
 
     def send_graph(self, graph_id, value):
         """Alias for :meth:`~neptune.experiments.Experiment.log_graph`

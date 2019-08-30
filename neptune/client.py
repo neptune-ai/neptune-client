@@ -38,6 +38,7 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
     ChannelAlreadyExists, ChannelsValuesSendBatchError, NotebookNotFound, \
     PathInProjectNotFound, ChannelNotFound
 from neptune.checkpoint import Checkpoint
+from neptune.exceptions import FileNotFound
 from neptune.experiments import Experiment
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -685,6 +686,32 @@ class Client(object):
                 for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
                     if chunk:
                         f.write(chunk)
+
+    @with_api_exceptions_handler
+    def prepare_source_download_reuqest(self, experiment, path):
+        try:
+            return self.backend_swagger_client.api.prepareForDownload(
+                experimentIdentity=experiment.internal_id,
+                resource='source',
+                path=path
+            ).response().result
+        except HTTPNotFound:
+            raise FileNotFound(path)
+
+    @with_api_exceptions_handler
+    def prepare_output_download_reuqest(self, experiment, path):
+        try:
+            return self.backend_swagger_client.api.prepareForDownload(
+                experimentIdentity=experiment.internal_id,
+                resource='output',
+                path=path
+            ).response().result
+        except HTTPNotFound:
+            raise FileNotFound(path)
+
+    @with_api_exceptions_handler
+    def get_download_request(self, request_id):
+        return self.backend_swagger_client.api.getDownloadRequest(id=request_id).response().result
 
     @staticmethod
     def _get_all_items(get_portion, step):
