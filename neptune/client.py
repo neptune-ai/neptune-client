@@ -16,6 +16,7 @@
 import io
 import logging
 import os
+import platform
 import uuid
 from functools import partial
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY
@@ -54,16 +55,14 @@ class Client(Backend):
     @with_api_exceptions_handler
     def __init__(self, api_address, api_token, proxies=None):
         self._api_address = api_address
-        self.api_token = api_token
-        self.proxies = proxies
         ssl_verify = True
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             urllib3.disable_warnings()
             ssl_verify = False
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
-        if self.proxies is not None:
-            self._update_proxies()
+        if proxies is not None:
+            self._update_proxies(proxies)
 
         self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
                                                                .format(self._api_address))
@@ -78,7 +77,6 @@ class Client(Backend):
         from neptune import __version__
         self.client_lib_version = __version__
 
-        import platform
         user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
             lib_version=self.client_lib_version,
             system=platform.platform(),
@@ -847,12 +845,11 @@ class Client(Backend):
         response.raise_for_status()
         return response
 
-    def _update_proxies(self):
+    def _update_proxies(self, proxies):
         try:
-            self._http_client.session.proxies.update(self.proxies)
-        except:
-            # TODO: change error type and info
-            raise ValueError("Error when using proxies {}".format(self.proxies))
+            self._http_client.session.proxies.update(proxies)
+        except (TypeError, ValueError):
+            raise ValueError("Wrong proxies format: {}".format(proxies))
 
     @with_api_exceptions_handler
     def _get_swagger_client(self, url):
