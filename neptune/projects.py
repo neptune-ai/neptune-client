@@ -34,17 +34,17 @@ class Project(object):
     """A class for storing information and managing Neptune project.
 
     Args:
-        client (:class:`~neptune.client.Client`, required): Client object.
+        backend (:class:`~neptune.Backend`, required): A Backend object.
         internal_id (:obj:`str`, required): UUID of the project.
         namespace (:obj:`str`, required): It can either be your organization or user name.
         name (:obj:`str`, required): project name.
 
     Note:
-        ``namespace`` and ``name`` joined together form ``project_qualified_name``.
+        ``namespace`` and ``name`` joined together with ``/`` form ``project_qualified_name``.
     """
 
-    def __init__(self, client, internal_id, namespace, name):
-        self.client = client
+    def __init__(self, backend, internal_id, namespace, name):
+        self._backend = backend
         self.internal_id = internal_id
         self.namespace = namespace
         self.name = name
@@ -66,7 +66,7 @@ class Project(object):
                 project.get_members()
 
         """
-        project_members = self.client.get_project_members(self.internal_id)
+        project_members = self._backend.get_project_members(self.internal_id)
         return [member.registeredMemberInfo.username for member in project_members if member.registeredMemberInfo]
 
     def get_experiments(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
@@ -115,7 +115,7 @@ class Project(object):
         """
         leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
         return [
-            Experiment(self.client, self, entry.id, entry.internal_id)
+            Experiment(self._backend, self, entry.id, entry.internal_id)
             for entry in leaderboard_entries
         ]
 
@@ -374,7 +374,7 @@ class Project(object):
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
-        experiment = self.client.create_experiment(
+        experiment = self._backend.create_experiment(
             project=self,
             name=name,
             description=description,
@@ -408,7 +408,7 @@ class Project(object):
 
     def _get_experiment_link(self, experiment):
         return "{base_url}/{namespace}/{project}/e/{exp_id}".format(
-            base_url=self.client.api_address,
+            base_url=self._backend.api_address,
             namespace=self.namespace,
             project=self.name,
             exp_id=experiment.id
@@ -430,7 +430,7 @@ class Project(object):
                 # Create a notebook in Neptune
                 notebook = project.create_notebook()
         """
-        return self.client.create_notebook(self)
+        return self._backend.create_notebook(self)
 
     def get_notebook(self, notebook_id):
         """Get a :class:`~neptune.notebook.Notebook` object with given ``notebook_id``.
@@ -448,7 +448,7 @@ class Project(object):
                 # Get a notebook object
                 notebook = project.get_notebook('d1c1b494-0620-4e54-93d5-29f4e848a51a')
         """
-        return self.client.get_notebook(project=self, notebook_id=notebook_id)
+        return self._backend.get_notebook(project=self, notebook_id=notebook_id)
 
     @property
     def full_id(self):
@@ -469,7 +469,7 @@ class Project(object):
         return not self.__eq__(o)
 
     def _fetch_leaderboard(self, id, state, owner, tag, min_running_time):
-        return self.client.get_leaderboard_entries(
+        return self._backend.get_leaderboard_entries(
             project=self, ids=as_list(id), states=as_list(state),
             owners=as_list(owner), tags=as_list(tag),
             min_running_time=min_running_time)

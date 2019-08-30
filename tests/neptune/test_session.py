@@ -27,8 +27,8 @@ API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
 
 
-@patch('neptune.client.SwaggerClient.from_url', MagicMock())
-@patch('neptune.client.NeptuneAuthenticator', MagicMock())
+@patch('neptune.internal.backends.hosted_neptune_backend.SwaggerClient.from_url', MagicMock())
+@patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', MagicMock())
 class TestSession(unittest.TestCase):
     # pylint: disable=protected-access,no-member
 

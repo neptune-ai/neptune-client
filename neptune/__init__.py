@@ -17,12 +17,14 @@ import logging
 import os
 import threading
 
-from neptune import envs, projects, experiments
-from neptune.client import Client
+from neptune import envs
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as _HostedNeptuneBackend
 from neptune.credentials import Credentials
 from neptune.exceptions import MissingProjectQualifiedName, Uninitialized, InvalidNeptuneBackend
 from neptune.internal.backends.offline_backend import OfflineBackend as _OfflineBackend, NoopObject
 from neptune.sessions import Session
+from neptune.projects import Project
+from neptune.backend import Backend
 from ._version import get_versions
 
 __version__ = get_versions()['version']
@@ -57,7 +59,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             For more information see their proxies
             `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
 
-        backend (:class:`~neptune.backend.Backend`, optional, default is ``None``):
+        backend (:class:`~neptune.Backend`, optional, default is ``None``):
             TODO !
 
     Note:
@@ -99,7 +101,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             elif backend_name is None:
                 credentials = Credentials(api_token)
-                backend = Client(credentials.api_address, credentials.api_token, proxies)
+                backend = HostedNeptuneBackend(credentials.api_address, credentials.api_token, proxies)
 
             else:
                 raise InvalidNeptuneBackend(backend_name)
@@ -325,3 +327,4 @@ def stop(traceback=None):
 
 # This is exported explicitly, thread lightly
 OfflineBackend = _OfflineBackend
+HostedNeptuneBackend = _HostedNeptuneBackend

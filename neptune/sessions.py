@@ -18,7 +18,7 @@ import re
 from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
-from neptune.client import Client
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.credentials import Credentials
 from neptune.exceptions import IncorrectProjectQualifiedName
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -70,7 +70,7 @@ class Session(object):
                             'use neptune.init(...) or Session.with_default_backend(api_token)')
 
             self.credentials = Credentials(api_token)
-            self._backend = Client(self.credentials.api_address, self.credentials.api_token, proxies)
+            self._backend = HostedNeptuneBackend(self.credentials.api_address, self.credentials.api_token, proxies)
 
     @classmethod
     def with_default_backend(cls, api_token):
@@ -78,7 +78,7 @@ class Session(object):
             TODO
         """
         credentials = Credentials(api_token)
-        backend = Client(credentials.api_address, credentials.api_token)
+        backend = HostedNeptuneBackend(credentials.api_address, credentials.api_token)
 
         return cls(backend=backend)
 

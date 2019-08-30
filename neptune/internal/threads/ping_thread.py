@@ -25,16 +25,16 @@ _logger = logging.getLogger(__name__)
 class PingThread(NeptuneThread):
     PING_INTERVAL_SECS = 5
 
-    def __init__(self, client, experiment):
+    def __init__(self, backend, experiment):
         super(PingThread, self).__init__(is_daemon=True)
 
-        self.__client = client
+        self.__backend = backend
         self.__experiment = experiment
 
     def run(self):
         while not self.is_interrupted():
             try:
-                self.__client.ping_experiment(self.__experiment)
+                self.__backend.ping_experiment(self.__experiment)
             except HTTPUnprocessableEntity:
                 # A 422 error means that we tried to ping the job after marking it as completed.
                 # In this case, this thread is not needed anymore.

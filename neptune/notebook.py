@@ -23,8 +23,8 @@ class Notebook(object):
     """It contains all the information about a Neptune Notebook
 
         Args:
-            client (:class:`~neptune.backend.Backend`): Client object
-            project (:class:`~neptune.projects.Project`): Project object
+            backend (:class:`~neptune.Backend`): A Backend object
+            project (:class:`~neptune.Project`): Project object
             _id (:obj:`str`): Notebook uuid
             owner (:obj:`str`): Creator of the notebook is the Notebook owner
 
@@ -35,8 +35,8 @@ class Notebook(object):
                 notebook = project.create_notebook('data_exploration.ipynb')
 
     """
-    def __init__(self, client, project, _id, owner):
-        self._client = client
+    def __init__(self, backend, project, _id, owner):
+        self._backend = backend
         self._project = project
         self._id = _id
         self._owner = owner
@@ -70,7 +70,7 @@ class Notebook(object):
         validate_notebook_path(file_path)
 
         with open(file_path) as f:
-            return self._client.create_checkpoint(self.id, os.path.abspath(file_path), f)
+            return self._backend.create_checkpoint(self.id, os.path.abspath(file_path), f)
 
     def get_path(self):
         """Returns the path used to upload the current checkpoint of this notebook
@@ -78,7 +78,7 @@ class Notebook(object):
         Returns:
             :obj:`str`: path of the current checkpoint
         """
-        return self._client.get_last_checkpoint(self._project, self._id).path
+        return self._backend.get_last_checkpoint(self._project, self._id).path
 
     def get_name(self):
         """Returns the name used to upload the current checkpoint of this notebook
@@ -86,4 +86,4 @@ class Notebook(object):
         Returns:
             :obj:`str`: the name of current checkpoint
         """
-        return self._client.get_last_checkpoint(self._project, self._id).name
+        return self._backend.get_last_checkpoint(self._project, self._id).name

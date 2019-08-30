@@ -116,9 +116,9 @@ class TestExperiment(unittest.TestCase):
 
     def test_append_tags(self):
         # given
-        client = mock.MagicMock()
+        backend = mock.MagicMock()
         experiment = Experiment(
-            client,
+            backend,
             a_project(),
             an_experiment_id(),
             a_uuid_string()
@@ -141,7 +141,7 @@ class TestExperiment(unittest.TestCase):
         experiment.append_tags('tag1', 'tag2', 'tag3')
 
         # then
-        client.update_tags.assert_has_calls([
+        backend.update_tags.assert_has_calls([
             build_call(['tag']),
             build_call(['tag1', 'tag2', 'tag3']),
             build_call(['tag1', 'tag2', 'tag3']),
@@ -152,8 +152,8 @@ class TestExperiment(unittest.TestCase):
 
     def test_get_numeric_channels_values(self):
         # when
-        client = MagicMock()
-        client.get_channel_points_csv.return_value = StringIO(u'\n'.join(['0.3,2.5', '1,2']))
+        backend = MagicMock()
+        backend.get_channel_points_csv.return_value = StringIO(u'\n'.join(['0.3,2.5', '1,2']))
 
         experiment = MagicMock()
         experiment.id = a_string()
@@ -161,11 +161,11 @@ class TestExperiment(unittest.TestCase):
         experiment.channels = [Munch(id=a_uuid_string(), name='epoch_loss')]
         experiment.channelsLastValues = [Munch(channelName='epoch_loss', x=2.5, y=2)]
 
-        client.get_experiment.return_value = experiment
+        backend.get_experiment.return_value = experiment
 
         # then
         experiment = Experiment(
-            client=client,
+            backend=backend,
             project=a_project(),
             _id=a_string(),
             internal_id=a_uuid_string()

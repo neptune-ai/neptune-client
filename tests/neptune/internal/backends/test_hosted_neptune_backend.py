@@ -19,12 +19,12 @@ import uuid
 import mock
 from mock import MagicMock
 
-from neptune.client import Client
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from tests.neptune.api_models import ApiParameter
 
 
-@mock.patch('neptune.client.NeptuneAuthenticator', new=MagicMock)
-class TestClient(unittest.TestCase):
+@mock.patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
+class TestHostedNeptuneBackend(unittest.TestCase):
     # pylint:disable=protected-access
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
@@ -40,13 +40,13 @@ class TestClient(unittest.TestCase):
         uuid4.return_value = some_uuid
 
         # and
-        client = Client(api_address='some address', api_token='some token')
+        backend = HostedNeptuneBackend(api_address='some address', api_token='some token')
 
         # and
         some_object = SomeClass()
 
         # when
-        api_params = client._convert_to_api_parameters({
+        api_params = backend._convert_to_api_parameters({
             'str': 'text',
             'bool': False,
             'float': 1.23,

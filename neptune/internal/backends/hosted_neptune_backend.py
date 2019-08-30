@@ -50,7 +50,7 @@ from neptune.utils import is_float, with_api_exceptions_handler
 _logger = logging.getLogger(__name__)
 
 
-class Client(Backend):
+class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def __init__(self, api_address, api_token, proxies=None):
@@ -95,7 +95,7 @@ class Client(Backend):
             ).response().result
 
             return Project(
-                client=self,
+                backend=self,
                 internal_id=project.id,
                 namespace=project.organizationName,
                 name=project.name)
@@ -260,7 +260,7 @@ class Client(Backend):
             api_notebook = api_notebook_list.entries[0]
 
             return Notebook(
-                client=self,
+                backend=self,
                 project=project,
                 _id=api_notebook.id,
                 owner=api_notebook.owner
@@ -293,7 +293,7 @@ class Client(Backend):
             ).response().result
 
             return Notebook(
-                client=self,
+                backend=self,
                 project=project,
                 _id=api_notebook.id,
                 owner=api_notebook.owner
@@ -732,7 +732,7 @@ class Client(Backend):
         ]
 
     def _convert_to_experiment(self, api_experiment, project):
-        return Experiment(client=self,
+        return Experiment(backend=self,
                           project=project,
                           _id=api_experiment.shortId,
                           internal_id=api_experiment.id)
