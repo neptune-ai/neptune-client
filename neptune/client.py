@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import base64
-import gzip
 import io
 import logging
 import os
@@ -494,35 +492,6 @@ class Client(object):
 
             if batch_errors:
                 raise ChannelsValuesSendBatchError(experiment.id, batch_errors)
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-
-    @with_api_exceptions_handler
-    def put_tensorflow_graph(self, experiment, graph_id, graph):
-
-        TensorflowGraph = self.backend_swagger_client.get_model('TensorflowGraph')
-
-        def gzip_compress(data):
-            output_buffer = io.BytesIO()
-            gzip_stream = gzip.GzipFile(fileobj=output_buffer, mode='w')
-            gzip_stream.write(data)
-            gzip_stream.close()
-            return output_buffer.getvalue()
-
-        bingraph = graph.encode('UTF-8')
-        compressed_graph_data = base64.b64encode(gzip_compress(bingraph))
-        data = compressed_graph_data.decode('UTF-8')
-
-        value = TensorflowGraph(id=graph_id, value=data)
-
-        try:
-            r = self.backend_swagger_client.api.putTensorflowGraph(
-                experimentId=experiment.internal_id,
-                tensorflowGraph=value
-            ).response()
-            return r.result
         except HTTPNotFound:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
