@@ -19,9 +19,9 @@ import threading
 
 from neptune import envs
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as _HostedNeptuneBackend
-from neptune.credentials import Credentials
 from neptune.exceptions import MissingProjectQualifiedName, Uninitialized, InvalidNeptuneBackend
-from neptune.internal.backends.offline_backend import OfflineBackend as _OfflineBackend, NoopObject
+from neptune.internal.backends.offline_backend import OfflineBackend as _OfflineBackend
+from neptune.credentials import Credentials
 from neptune.sessions import Session
 from neptune.projects import Project
 from neptune.backend import Backend
@@ -55,16 +55,27 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
 
         proxies (:obj:`str`, optional, default is ``None``):
+            DEPRECATED, will be removed in future versions.
+            Use ``neptune.init(backend=neptune.HostedNeptuneBackend(..., proxies=...))`` instead.
             Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
             For more information see their proxies
             `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
 
         backend (:class:`~neptune.Backend`, optional, default is ``None``):
-            TODO !
+            By default, Neptune client library sends logs, metrics, images, etc to Neptune servers,
+            either publicly available SaaS, or an on-premises installation.
+            Passing an instance of :class:`~neptune.OfflineBackend` makes your code run without communicating
+            with Neptune servers.
+            You can also pass the default backend instance like this:
+            ``neptune.init(backend=neptune.HostedNeptuneBackend(...))``
 
     Note:
         It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
         placing your API token in plain text in your source code.
+
+    Note:
+        Instead of passing ``neptune.OfflineBackend`` instance as ``backend``, you can set an
+        environment variable ``NEPTUNE_BACKEND=offline``.
 
     Returns:
         :class:`~neptune.projects.Project` object that is used to create or list experiments, notebooks, etc.
@@ -85,6 +96,9 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             # specifying project name
             neptune.init('jack/sandbox')
+
+            # running offline
+            neptune.init(backend=neptune.OfflineBackend())
     """
 
     if project_qualified_name is None:
