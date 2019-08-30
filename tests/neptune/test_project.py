@@ -19,7 +19,9 @@ from random import randint
 
 import pandas as pd
 from mock import MagicMock
+from munch import Munch
 
+from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
@@ -179,6 +181,43 @@ class TestProject(unittest.TestCase):
     def test_repr(self):
         # expect
         self.assertEqual('Project({})'.format(self.project.full_id), repr(self.project))
+
+    # pylint: disable=protected-access
+    def test_get_current_experiment_from_stack(self):
+        # given
+        experiment = Munch(internal_id=a_uuid_string())
+
+        # when
+        self.project._push_new_experiment(experiment)
+
+        # then
+        self.assertEqual(self.project._get_current_experiment(), experiment)
+
+    # pylint: disable=protected-access
+    def test_pop_experiment_from_stack(self):
+        # given
+        first_experiment = Munch(internal_id=a_uuid_string())
+        second_experiment = Munch(internal_id=a_uuid_string())
+        # and
+        self.project._push_new_experiment(first_experiment)
+
+        # when
+        self.project._push_new_experiment(second_experiment)
+
+        # then
+        self.assertEqual(self.project._get_current_experiment(), second_experiment)
+        # and
+        self.assertEqual(self.project._pop_stopped_experiment(), second_experiment)
+        # and
+        self.assertEqual(self.project._get_current_experiment(), first_experiment)
+
+    # pylint: disable=protected-access
+    def test_empty_stack(self):
+        # when
+        self.assertIsNone(self.project._pop_stopped_experiment())
+        # and
+        with self.assertRaises(NoExperimentContext):
+            self.project._get_current_experiment()
 
 
 if __name__ == '__main__':

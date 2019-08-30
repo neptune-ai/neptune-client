@@ -13,11 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import os
 import threading
 
 from neptune import envs, projects, experiments
-from neptune.exceptions import MissingProjectQualifiedName, Uninitialized
+from neptune.client import Client
+from neptune.credentials import Credentials
+from neptune.exceptions import MissingProjectQualifiedName, Uninitialized, InvalidNeptuneBackend
+from neptune.internal.backends.offline_backend import OfflineBackend as _OfflineBackend, NoopObject
 from neptune.sessions import Session
 from ._version import get_versions
 
@@ -29,8 +33,10 @@ project = None
 
 __lock = threading.RLock()
 
+_logger = logging.getLogger(__name__)
 
-def init(project_qualified_name=None, api_token=None, proxies=None):
+
+def init(project_qualified_name=None, api_token=None, proxies=None, backend=None):
     """Initialize `Neptune client library <https://github.com/neptune-ml/neptune-client>`_ to work with
     specific project.
 
@@ -50,6 +56,9 @@ def init(project_qualified_name=None, api_token=None, proxies=None):
             Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
             For more information see their proxies
             `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
+
+        backend (:class:`~neptune.backend.Backend`, optional, default is ``None``):
+            TODO !
 
     Note:
         It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
@@ -83,7 +92,19 @@ def init(project_qualified_name=None, api_token=None, proxies=None):
     with __lock:
         global session, project
 
-        session = Session(api_token=api_token, proxies=proxies)
+        if backend is None:
+            backend_name = os.getenv(envs.BACKEND)
+            if backend_name == 'offline':
+                backend = OfflineBackend()
+
+            elif backend_name is None:
+                credentials = Credentials(api_token)
+                backend = Client(credentials.api_address, credentials.api_token, proxies)
+
+            else:
+                raise InvalidNeptuneBackend(backend_name)
+
+        session = Session(backend=backend)
 
         if project_qualified_name is None:
             raise MissingProjectQualifiedName()
@@ -178,7 +199,14 @@ def create_experiment(name=None,
     )
 
 
-get_experiment = experiments.get_current_experiment
+def get_experiment():
+    # pylint: disable=global-statement
+    global project
+    if project is None:
+        raise Uninitialized()
+
+    # pylint: disable=protected-access
+    return project._get_current_experiment()
 
 
 def append_tag(tag, *tags):
@@ -293,3 +321,7 @@ def stop(traceback=None):
     Alias for :meth:`~neptune.experiments.Experiment.stop`
     """
     get_experiment().stop(traceback)
+
+
+# This is exported explicitly, thread lightly
+OfflineBackend = _OfflineBackend

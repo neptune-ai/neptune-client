@@ -15,6 +15,7 @@
 #
 
 import unittest
+from collections import OrderedDict
 
 from mock import MagicMock, patch
 
@@ -47,16 +48,18 @@ class TestSession(unittest.TestCase):
         # then
         self.assertEqual(API_TOKEN, session.credentials.api_token)
 
-    @patch('neptune.sessions.Client')
+    # threading.RLock needs to be mocked, because it breaks the equality of Projects
+    @patch('threading.RLock')
     def test_get_projects_with_given_namespace(self, _):
         # given
-        session = Session(API_TOKEN)
-
-        # and
         api_projects = [a_project(), a_project()]
 
         # and
-        session._client.get_projects.return_value = api_projects
+        backend = MagicMock()
+        backend.get_projects.return_value = api_projects
+
+        # and
+        session = Session(backend=backend)
 
         # and
         custom_namespace = 'custom_namespace'
@@ -65,14 +68,13 @@ class TestSession(unittest.TestCase):
         projects = session.get_projects(custom_namespace)
 
         # then
-        expected_projects = {
-            custom_namespace + '/' + p.name:
-                Project(session._client, p.id, custom_namespace, p.name) for p in api_projects
-        }
+        expected_projects = OrderedDict(
+            (custom_namespace + '/' + p.name, Project(backend, p.id, custom_namespace, p.name)) for p in api_projects
+        )
         self.assertEqual(expected_projects, projects)
 
         # and
-        session._client.get_projects.assert_called_with(custom_namespace)
+        backend.get_projects.assert_called_with(custom_namespace)
 
 
 if __name__ == '__main__':

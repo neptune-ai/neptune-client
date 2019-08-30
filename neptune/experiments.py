@@ -18,7 +18,6 @@ import logging
 import os
 import re
 import sys
-import threading
 import time
 import traceback
 
@@ -28,7 +27,7 @@ import six
 from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ExperimentAlreadyFinished, ChannelDoesNotExist, PathInProjectNotFound
-from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext, NotADirectory
+from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NotADirectory
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
@@ -1021,7 +1020,8 @@ class Experiment(object):
 
         self._execution_context.stop()
 
-        pop_stopped_experiment()
+        # pylint: disable=protected-access
+        self._project._pop_stopped_experiment()
 
     def __enter__(self):
         return self
@@ -1057,7 +1057,7 @@ class Experiment(object):
         """
         The goal of this function is to allow user to call experiment.log_* with any of:
             - single parameter treated as y value
-            - both paramters (named/unnamed)
+            - both parameters (named/unnamed)
             - single named y parameter
         If intended X-coordinate is provided, it is validated to be a float value
         """
@@ -1100,7 +1100,7 @@ class Experiment(object):
         elif channel_namespace == ChannelNamespace.SYSTEM:
             return self._get_system_channels().get(channel_name, None)
         else:
-            raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
+            raise RuntimeError("Unknown channel namespace {}".format(channel_namespace))
 
     def _create_channel(self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
         if channel_namespace == ChannelNamespace.USER:
@@ -1108,38 +1108,4 @@ class Experiment(object):
         elif channel_namespace == ChannelNamespace.SYSTEM:
             return self._client.create_system_channel(self, channel_name, channel_type)
         else:
-            raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
-
-
-_experiments_stack = []
-
-__lock = threading.RLock()
-
-
-def get_current_experiment():
-    # pylint: disable=global-statement
-    global _experiments_stack
-    with __lock:
-        if _experiments_stack:
-            return _experiments_stack[len(_experiments_stack) - 1]
-        else:
-            raise NoExperimentContext()
-
-
-def push_new_experiment(new_experiment):
-    # pylint: disable=global-statement
-    global _experiments_stack, __lock
-    with __lock:
-        _experiments_stack.append(new_experiment)
-        return new_experiment
-
-
-def pop_stopped_experiment():
-    # pylint: disable=global-statement
-    global _experiments_stack, __lock
-    with __lock:
-        if _experiments_stack:
-            stopped_experiment = _experiments_stack.pop()
-        else:
-            stopped_experiment = None
-        return stopped_experiment
+            raise RuntimeError("Unknown channel namespace {}".format(channel_namespace))

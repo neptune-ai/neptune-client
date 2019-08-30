@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+
 class ChannelWithLastValue(object):
     def __init__(self, channel_with_value_dto):
         self.channel_with_value_dto = channel_with_value_dto

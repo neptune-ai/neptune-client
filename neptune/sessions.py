@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import re
 from collections import OrderedDict
 
@@ -23,6 +24,8 @@ from neptune.exceptions import IncorrectProjectQualifiedName
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
 
+_logger = logging.getLogger(__name__)
+
 
 class Session(object):
     """A class for running communication with Neptune.
@@ -31,12 +34,16 @@ class Session(object):
 
     Args:
         api_token (:obj:`str`, optional, default is ``None``):
+            TODO: deprecated
             User's API token.
             If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
         proxies (:obj:`str`, optional, default is ``None``):
+            TODO: deprecated
             Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
             For more information see their proxies
             `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
+        backend (:class:`~neptune.backend.Backend`, optional, default is ``None``):
+            TODO
 
     Examples:
         Create session and pass 'api_token'
@@ -54,13 +61,26 @@ class Session(object):
             session = Session()
 
     """
-    def __init__(self, api_token=None, proxies=None):
+    def __init__(self, api_token=None, proxies=None, backend=None):
+        self._backend = backend
+
+        if self._backend is None:
+            _logger.warning('WARNING: Instantiating Session without specifying a backend is deprecated '
+                            'and will be removed in future versions. For current behaviour '
+                            'use neptune.init(...) or Session.with_default_backend(api_token)')
+
+            self.credentials = Credentials(api_token)
+            self._backend = Client(self.credentials.api_address, self.credentials.api_token, proxies)
+
+    @classmethod
+    def with_default_backend(cls, api_token):
+        """
+            TODO
+        """
         credentials = Credentials(api_token)
+        backend = Client(credentials.api_address, credentials.api_token)
 
-        self.credentials = credentials
-        self.proxies = proxies
-
-        self._client = Client(self.credentials.api_address, self.credentials.api_token, proxies)
+        return cls(backend=backend)
 
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.
@@ -96,13 +116,7 @@ class Session(object):
         if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project_qualified_name):
             raise IncorrectProjectQualifiedName(project_qualified_name)
 
-        project = self._client.get_project(project_qualified_name)
-        return Project(
-            client=self._client,
-            internal_id=project.id,
-            namespace=project.organizationName,
-            name=project.name
-        )
+        return self._backend.get_project(project_qualified_name)
 
     def get_projects(self, namespace):
         """Get all projects that you have permissions to see in given organization
@@ -154,5 +168,5 @@ class Session(object):
                 #              ])
         """
 
-        projects = [Project(self._client, p.id, namespace, p.name) for p in self._client.get_projects(namespace)]
+        projects = [Project(self._backend, p.id, namespace, p.name) for p in self._backend.get_projects(namespace)]
         return OrderedDict((p.full_id, p) for p in projects)

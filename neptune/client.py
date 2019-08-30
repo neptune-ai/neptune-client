@@ -35,6 +35,7 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
     ExperimentNotFound, ExperimentValidationError, NamespaceNotFound, ProjectNotFound, StorageLimitReached, \
     ChannelAlreadyExists, ChannelsValuesSendBatchError, NotebookNotFound, \
     PathInProjectNotFound, ChannelNotFound
+from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
 from neptune.exceptions import FileNotFound
 from neptune.experiments import Experiment
@@ -42,16 +43,17 @@ from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
+from neptune.projects import Project
 from neptune.utils import is_float, with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
 
 
-class Client(object):
+class Client(Backend):
 
     @with_api_exceptions_handler
     def __init__(self, api_address, api_token, proxies=None):
-        self.api_address = api_address
+        self._api_address = api_address
         self.api_token = api_token
         self.proxies = proxies
         ssl_verify = True
@@ -64,10 +66,10 @@ class Client(object):
             self._update_proxies()
 
         self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
-                                                               .format(self.api_address))
+                                                               .format(self._api_address))
 
         self.leaderboard_swagger_client = self._get_swagger_client('{}/api/leaderboard/swagger.json'
-                                                                   .format(self.api_address))
+                                                                   .format(self._api_address))
 
         self.authenticator = self._create_authenticator(api_token, ssl_verify)
         self._http_client.authenticator = self.authenticator
@@ -83,12 +85,22 @@ class Client(object):
             python_version=platform.python_version())
         self._http_client.session.headers.update({'User-Agent': user_agent})
 
+    @property
+    def api_address(self):
+        return self._api_address
+
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
-            return self.backend_swagger_client.api.getProject(
+            project = self.backend_swagger_client.api.getProject(
                 projectIdentifier=project_qualified_name
             ).response().result
+
+            return Project(
+                client=self,
+                internal_id=project.id,
+                namespace=project.organizationName,
+                name=project.name)
         except HTTPNotFound:
             raise ProjectNotFound(project_qualified_name)
 

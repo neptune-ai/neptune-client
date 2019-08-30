@@ -15,13 +15,15 @@
 #
 
 import os
+import threading
 from platform import node as get_hostname
 
 import click
 import pandas as pd
 
 from neptune.envs import NOTEBOOK_ID_ENV_NAME
-from neptune.experiments import Experiment, push_new_experiment
+from neptune.exceptions import NoExperimentContext
+from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
 
@@ -46,6 +48,9 @@ class Project(object):
         self.internal_id = internal_id
         self.namespace = namespace
         self.name = name
+
+        self._experiments_stack = []
+        self.__lock = threading.RLock()
 
     def get_members(self):
         """Retrieve a list of project members.
@@ -395,9 +400,8 @@ class Project(object):
             handle_uncaught_exceptions=handle_uncaught_exceptions
         )
 
-        push_new_experiment(experiment)
+        self._push_new_experiment(experiment)
 
-        click.echo(str(experiment.id))
         click.echo(self._get_experiment_link(experiment))
 
         return experiment
@@ -509,3 +513,23 @@ class Project(object):
             return weight, system_property_weight, name
 
         return sorted(column_names, key=key)
+
+    def _get_current_experiment(self):
+        with self.__lock:
+            if self._experiments_stack:
+                return self._experiments_stack[-1]
+            else:
+                raise NoExperimentContext()
+
+    def _push_new_experiment(self, new_experiment):
+        with self.__lock:
+            self._experiments_stack.append(new_experiment)
+            return new_experiment
+
+    def _pop_stopped_experiment(self):
+        with self.__lock:
+            if self._experiments_stack:
+                stopped_experiment = self._experiments_stack.pop()
+            else:
+                stopped_experiment = None
+            return stopped_experiment
