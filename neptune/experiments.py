@@ -455,23 +455,27 @@ class Experiment(object):
         | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
-            log_name (:obj:`str`): The name of log, i.e. `mse`, `loss`, `accuracy`.
-            x (:obj:`double` or :obj:`PIL image`): Depending, whether ``y`` parameter is passed:
+            log_name (:obj:`str`): The name of log, i.e. `bboxes`, `visualisations`, `sample_images`.
+            x (:obj:`double`): Depending, whether ``y`` parameter is passed:
 
                 * ``y`` not passed: The value of the log (data-point). See ``y`` parameter.
                 * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
 
-            y (:obj:`PIL image` or :obj:`numpy.array` or :obj:`str`, optional, default is ``None``):
-                The value of the log (data-point). Can be one of following types:
+            y (multiple types supported, optional, default is ``None``):
 
-                    * :obj:`PIL image`
-                    * :obj:`matplotlib.figure.Figure`
-                    * :obj:`str` - path to image file
-                    * 2-dimensional :obj:`numpy.array` - interpreted as grayscale image
-                    * 3-dimensional :obj:`numpy.array`:
-                        * if last dimension is 1 - interpreted as grayscale image
-                        * if last dimension is 3 - interpreted as RGB image
-                        * if last dimension is 4 - interpreted as RGBA image
+                The value of the log (data-point). Can be one of the following types:
+
+                * :obj:`PIL image`
+                  `Pillow docs <https://pillow.readthedocs.io/en/latest/reference/Image.html#image-module>`_
+                * :obj:`matplotlib.figure.Figure`
+                  `Matplotlib 3.1.1 docs <https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.figure.Figure.html>`_
+                * :obj:`str` - path to image file
+                * 2-dimensional :obj:`numpy.array` - interpreted as grayscale image
+                * 3-dimensional :obj:`numpy.array` - behavior depends on last dimension
+
+                    * if last dimension is 1 - interpreted as grayscale image
+                    * if last dimension is 3 - interpreted as RGB image
+                    * if last dimension is 4 - interpreted as RGBA image
 
             image_name (:obj:`str`, optional, default is ``None``): Image name
             description (:obj:`str`, optional, default is ``None``): Image description
@@ -496,25 +500,27 @@ class Experiment(object):
 
                 # 2d numpy array
                 array = numpy.random.rand(300, 200)*255
-                e.log_image('fig', array)
+                experiment.log_image('fig', array)
 
                 # 3d grayscale array
                 array = numpy.random.rand(300, 200, 1)*255
-                e.log_image('fig', array)
+                experiment.log_image('fig', array)
 
                 # 3d RGB array
                 array = numpy.random.rand(300, 200, 3)*255
-                e.log_image('fig', array)
+                experiment.log_image('fig', array)
 
                 # 3d RGBA array
                 array = numpy.random.rand(300, 200, 4)*255
-                e.log_image('fig', array)
+                experiment.log_image('fig', array)
 
                 # 3d RGBA array
                 from matplotlib import pyplot
                 pyplot.plot([1, 2, 3, 4])
                 pyplot.ylabel('some numbers')
-                e.log_image('fig', plt.gcf())
+                experiment.log_image('fig', plt.gcf())
+
+                # ToDo example that uses Figure explicitely
 
         Note:
             For efficiency, logs are uploaded in batches via a queue.
@@ -522,8 +528,8 @@ class Experiment(object):
         Note:
             Passing ``x`` coordinate as NaN or +/-inf causes this log entry to be ignored.
             Warning is printed to ``stdout``.
-        Note:
-            Only images up to 2MB are supported.
+        Warning:
+            Only images up to 2MB are supported. Larger files will not be logged to Neptune.
         """
         x, y = self._get_valid_x_y(x, y)
 
