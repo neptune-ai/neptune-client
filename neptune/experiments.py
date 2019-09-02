@@ -456,10 +456,20 @@ class Experiment(object):
             log_name (:obj:`str`): The name of log, i.e. `mse`, `loss`, `accuracy`.
             x (:obj:`double` or :obj:`PIL image`): Depending, whether ``y`` parameter is passed:
 
-                * ``y`` not passed: The value of the log (data-point). Must be :obj:`PIL image`.
+                * ``y`` not passed: The value of the log (data-point). See ``y`` parameter.
                 * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
 
-            y (:obj:`PIL image`, optional, default is ``None``): The value of the log (data-point).
+            y (:obj:`PIL image` or :obj:`numpy.array` or :obj:`str`, optional, default is ``None``):
+                The value of the log (data-point). Can be one of following types:
+
+                    * :obj:`PIL image`
+                    * :obj:`str` - path to image file
+                    * 2-dimensional :obj:`numpy.array` - interpreted as grayscale image
+                    * 3-dimensional :obj:`numpy.array`:
+                        * if last dimension is 1 - interpreted as grayscale image
+                        * if last dimension is 3 - interpreted as RGB image
+                        * if last dimension is 4 - interpreted as RGBA image
+
             image_name (:obj:`str`, optional, default is ``None``): Image name
             description (:obj:`str`, optional, default is ``None``): Image description
             timestamp (:obj:`time`, optional, default is ``None``):
