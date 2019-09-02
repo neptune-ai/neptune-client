@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import logging
 import re
 from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.credentials import Credentials
 from neptune.exceptions import IncorrectProjectQualifiedName
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
@@ -33,32 +33,75 @@ class Session(object):
     In order to query Neptune experiments you need to instantiate this object first.
 
     Args:
+        backend (:class:`~neptune.backend.Backend`, optional, default is ``None``):
+            By default, Neptune client library sends logs, metrics, images, etc to Neptune servers:
+            either publicly available SaaS, or an on-premises installation.
+
+            You can pass the default backend instance explicitly to specify its parameters:
+
+            .. code :: python3
+
+                from neptune import Session, HostedNeptuneBackend
+                session = Session(backend=HostedNeptuneBackend(...))
+
+            Passing an instance of :class:`~neptune.OfflineBackend` makes your code run without communicating
+            with Neptune servers.
+
+            .. code :: python3
+
+                from neptune import Session, OfflineBackend
+                session = Session(backend=OfflineBackend())
+
         api_token (:obj:`str`, optional, default is ``None``):
-            TODO: deprecated
-            User's API token.
-            If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
+            User's API token. If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
+            Parameter is ignored if ``backend`` is passed.
+
+            .. deprecated :: 0.4.4
+
+            Instead, use:
+
+            .. code :: python3
+
+                from neptune import Session
+                session = Session.with_default_backend(api_token='...')
+
         proxies (:obj:`str`, optional, default is ``None``):
-            TODO: deprecated
             Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
             For more information see their proxies
             `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
-        backend (:class:`~neptune.backend.Backend`, optional, default is ``None``):
-            TODO
+            Parameter is ignored if ``backend`` is passed.
+
+            .. deprecated :: 0.4.4
+
+            Instead, use:
+
+            .. code :: python3
+
+                from neptune import Session, HostedNeptuneBackend
+                session = Session(backend=HostedNeptuneBackend(proxies=...))
 
     Examples:
-        Create session and pass 'api_token'
+
+        Create session, assuming you have created an environment variable ``NEPTUNE_API_TOKEN``
 
         .. code:: python3
 
-            from neptune.sessions import Session
-            session = Session(api_token='YOUR_NEPTUNE_API_TOKEN')
+            from neptune import Session
+            session = Session.with_default_backend()
 
-        Create session, assuming you have created an environment variable 'NEPTUNE_API_TOKEN'
+        Create session and pass ``api_token``
 
         .. code:: python3
 
-            from neptune.sessions import Session
-            session = Session()
+            from neptune import Session
+            session = Session.with_default_backend(api_token='...')
+
+        Create an offline session
+
+        .. code:: python3
+
+            from neptune import Session, OfflineBackend
+            session = Session(backend=OfflineBackend())
 
     """
     def __init__(self, api_token=None, proxies=None, backend=None):
@@ -67,20 +110,28 @@ class Session(object):
         if self._backend is None:
             _logger.warning('WARNING: Instantiating Session without specifying a backend is deprecated '
                             'and will be removed in future versions. For current behaviour '
-                            'use neptune.init(...) or Session.with_default_backend(api_token)')
+                            'use `neptune.init(...)` or `Session.with_default_backend(...)')
 
-            self.credentials = Credentials(api_token)
-            self._backend = HostedNeptuneBackend(self.credentials.api_address, self.credentials.api_token, proxies)
+            self._backend = HostedNeptuneBackend(api_token, proxies)
 
     @classmethod
-    def with_default_backend(cls, api_token):
-        """
-            TODO
-        """
-        credentials = Credentials(api_token)
-        backend = HostedNeptuneBackend(credentials.api_address, credentials.api_token)
+    def with_default_backend(cls, api_token=None):
+        """The simplest way to instantiate a ``Session``.
 
-        return cls(backend=backend)
+        Args:
+            api_token (:obj:`str`):
+                User's API token.
+                If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
+
+        Examples:
+
+            .. code :: python3
+
+                from neptune import Session
+                session = Session.with_default_backend()
+
+        """
+        return cls(HostedNeptuneBackend(api_token))
 
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.

@@ -24,7 +24,7 @@ _logger = logging.getLogger(__name__)
 class OfflineBackend(Backend):
 
     def __init__(self):
-        _logger.warning('Neptune is running in the offline mode. No data is being logged to Neptune.')
+        _logger.warning('Neptune is running in offline mode. No data is being logged to Neptune.')
         _logger.warning('Disable offline mode to log your experiments.')
 
     @property
@@ -55,10 +55,10 @@ class OfflineBackend(Backend):
         return NoopObject()
 
     def get_notebook(self, project, notebook_id):
-        pass
+        return NoopObject()
 
     def get_last_checkpoint(self, project, notebook_id):
-        pass
+        return NoopObject()
 
     def create_notebook(self, project):
         return NoopObject()
@@ -128,3 +128,9 @@ class NoopObject(object):
 
     def __call__(self, *args, **kwargs):
         return NoopObject()
+
+    def __enter__(self):
+        return NoopObject()
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass

@@ -40,7 +40,7 @@ class Credentials(object):
 
     Examples:
 
-        >>> from neptune.credentials import Credentials
+        >>> from neptune.internal.backends.credentials import Credentials
         >>> credentials=Credentials('YOUR_NEPTUNE_API_KEY')
 
         Alternatively you can create an environment variable by running:
@@ -71,25 +71,19 @@ class Credentials(object):
                 "Remember not to upload source file with API token to any public repository.",
                 envs.API_TOKEN_ENV_NAME)
 
-        self.api_token = api_token
+        self._api_token = api_token
         if self.api_token is None:
             raise MissingApiToken()
 
+        self._api_address = self._api_token_to_dict(self.api_token)['api_address']
+
+    @property
+    def api_token(self):
+        return self._api_token
+
     @property
     def api_address(self):
-        """ The address of the Neptune API associated with the credentials.
-
-        Returns:
-            str: URL address of the Neptune API associated with the credentials.
-
-        Examples:
-
-            >>> from neptune.credentials import Credentials
-            >>> credentials=Credentials()
-            >>> credentials.api_address
-            'https://app.neptune.ml'
-        """
-        return self._api_token_to_dict(self.api_token)['api_address']
+        return self._api_address
 
     @staticmethod
     def _api_token_to_dict(api_token):

@@ -23,30 +23,10 @@ from neptune.projects import Project
 from neptune.sessions import Session
 from tests.neptune.api_objects_factory import a_project
 
-API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
-            'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
-
 
 @patch('neptune.internal.backends.hosted_neptune_backend.SwaggerClient.from_url', MagicMock())
 @patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', MagicMock())
 class TestSession(unittest.TestCase):
-    # pylint: disable=protected-access,no-member
-
-    @patch('neptune.credentials.os.getenv', return_value=API_TOKEN)
-    def test_should_take_default_credentials_from_env(self, _):
-        # when
-        session = Session()
-
-        # then
-        self.assertEqual(API_TOKEN, session.credentials.api_token)
-
-    @patch('neptune.credentials.os.getenv', return_value=API_TOKEN)
-    def test_should_accept_given_api_token(self, _):
-        # when
-        session = Session(API_TOKEN)
-
-        # then
-        self.assertEqual(API_TOKEN, session.credentials.api_token)
 
     # threading.RLock needs to be mocked, because it breaks the equality of Projects
     @patch('threading.RLock')

@@ -18,13 +18,11 @@ import os
 import threading
 
 from neptune import envs
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as _HostedNeptuneBackend
 from neptune.exceptions import MissingProjectQualifiedName, Uninitialized, InvalidNeptuneBackend
-from neptune.internal.backends.offline_backend import OfflineBackend as _OfflineBackend
-from neptune.credentials import Credentials
-from neptune.sessions import Session
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.backends.offline_backend import OfflineBackend
 from neptune.projects import Project
-from neptune.backend import Backend
+from neptune.sessions import Session
 from ._version import get_versions
 
 __version__ = get_versions()['version']
@@ -51,31 +49,49 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             If ``None``, the value of ``NEPTUNE_PROJECT`` environment variable will be taken.
 
         api_token (:obj:`str`, optional, default is ``None``):
-            User's API token.
-            If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
+            User's API token. If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
+
+            .. note::
+
+                It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
+                placing your API token in plain text in your source code.
 
         proxies (:obj:`str`, optional, default is ``None``):
-            DEPRECATED, will be removed in future versions.
-            Use ``neptune.init(backend=neptune.HostedNeptuneBackend(..., proxies=...))`` instead.
             Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
             For more information see their proxies
             `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
 
+            .. deprecated :: 0.4.4
+
+            Instead, use:
+
+            .. code :: python3
+
+                from neptune import HostedNeptuneBackend
+                neptune.init(backend=HostedNeptuneBackend(proxies=...))
+
         backend (:class:`~neptune.Backend`, optional, default is ``None``):
-            By default, Neptune client library sends logs, metrics, images, etc to Neptune servers,
+            By default, Neptune client library sends logs, metrics, images, etc to Neptune servers:
             either publicly available SaaS, or an on-premises installation.
+
+            You can also pass the default backend instance explicitly to specify its parameters:
+
+            .. code :: python3
+
+                from neptune import HostedNeptuneBackend
+                neptune.init(backend=HostedNeptuneBackend(...))
+
             Passing an instance of :class:`~neptune.OfflineBackend` makes your code run without communicating
             with Neptune servers.
-            You can also pass the default backend instance like this:
-            ``neptune.init(backend=neptune.HostedNeptuneBackend(...))``
 
-    Note:
-        It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
-        placing your API token in plain text in your source code.
+            .. code :: python3
 
-    Note:
-        Instead of passing ``neptune.OfflineBackend`` instance as ``backend``, you can set an
-        environment variable ``NEPTUNE_BACKEND=offline``.
+                from neptune import OfflineBackend
+                neptune.init(backend=OfflineBackend())
+
+            .. note::
+                Instead of passing a ``neptune.OfflineBackend`` instance as ``backend``, you can set an
+                environment variable ``NEPTUNE_BACKEND=offline`` to override the default behaviour.
 
     Returns:
         :class:`~neptune.projects.Project` object that is used to create or list experiments, notebooks, etc.
@@ -114,8 +130,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
                 backend = OfflineBackend()
 
             elif backend_name is None:
-                credentials = Credentials(api_token)
-                backend = HostedNeptuneBackend(credentials.api_address, credentials.api_token, proxies)
+                backend = HostedNeptuneBackend(api_token, proxies)
 
             else:
                 raise InvalidNeptuneBackend(backend_name)
@@ -337,8 +352,3 @@ def stop(traceback=None):
     Alias for :meth:`~neptune.experiments.Experiment.stop`
     """
     get_experiment().stop(traceback)
-
-
-# This is exported explicitly, thread lightly
-OfflineBackend = _OfflineBackend
-HostedNeptuneBackend = _HostedNeptuneBackend
