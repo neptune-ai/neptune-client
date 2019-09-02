@@ -70,6 +70,8 @@ class Experiment(object):
 
     """
 
+    IMAGE_SIZE_LIMIT = 2097152
+
     def __init__(self, client, project, _id, internal_id):
         self._client = client
         self._project = project
@@ -520,17 +522,26 @@ class Experiment(object):
         Note:
             Passing ``x`` coordinate as NaN or +/-inf causes this log entry to be ignored.
             Warning is printed to ``stdout``.
+        Note:
+            Only images up to 2MB are supported.
         """
         x, y = self._get_valid_x_y(x, y)
 
         if x is not None and is_nan_or_inf(x):
             x = None
 
+        image_content = get_image_content(y)
+        if len(image_content) > self.IMAGE_SIZE_LIMIT:
+            _logger.warning('Your image is larger than 2MB. Neptune supports logging images smaller than 2MB. '
+                            'Resize or increase compression of this image')
+            image_content = None
+
         input_image = dict(
             name=image_name,
-            description=description,
-            data=base64.b64encode(get_image_content(y)).decode('utf-8')
+            description=description
         )
+        if image_content:
+            input_image['data'] = base64.b64encode(image_content).decode('utf-8')
 
         if x is not None and is_nan_or_inf(x):
             _logger.warning(
