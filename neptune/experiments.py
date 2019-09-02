@@ -463,6 +463,7 @@ class Experiment(object):
                 The value of the log (data-point). Can be one of following types:
 
                     * :obj:`PIL image`
+                    * :obj:`matplotlib.figure.Figure`
                     * :obj:`str` - path to image file
                     * 2-dimensional :obj:`numpy.array` - interpreted as grayscale image
                     * 3-dimensional :obj:`numpy.array`:
@@ -482,10 +483,36 @@ class Experiment(object):
 
             .. code:: python3
 
-                # simple use
-                experiment.log_image('bbox_images', PIL_object_1)
-                experiment.log_image('bbox_images', PIL_object_2)
-                experiment.log_image('bbox_images', PIL_object_3, image_name='difficult_case')
+                # path to image file
+                experiment.log_image('bbox_images', 'pictures/image.png')
+                experiment.log_image('bbox_images', x=5, 'pictures/image.png')
+                experiment.log_image('bbox_images', 'pictures/image.png', image_name='difficult_case')
+
+                # PIL image
+                img = PIL.Image.new('RGB', (60, 30), color = 'red')
+                experiment.log_image('fig', img)
+
+                # 2d numpy array
+                array = numpy.random.rand(300, 200)*255
+                e.log_image('fig', array)
+
+                # 3d grayscale array
+                array = numpy.random.rand(300, 200, 1)*255
+                e.log_image('fig', array)
+
+                # 3d RGB array
+                array = numpy.random.rand(300, 200, 3)*255
+                e.log_image('fig', array)
+
+                # 3d RGBA array
+                array = numpy.random.rand(300, 200, 4)*255
+                e.log_image('fig', array)
+
+                # 3d RGBA array
+                from matplotlib import pyplot
+                pyplot.plot([1, 2, 3, 4])
+                pyplot.ylabel('some numbers')
+                e.log_image('fig', plt.gcf())
 
         Note:
             For efficiency, logs are uploaded in batches via a queue.

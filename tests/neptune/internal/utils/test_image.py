@@ -16,6 +16,10 @@
 import os
 import unittest
 
+import matplotlib
+matplotlib.use('agg')
+from matplotlib import pyplot
+
 from PIL import Image
 from uuid import uuid4
 import numpy
@@ -88,3 +92,14 @@ class TestImage(unittest.TestCase):
 
         # expect
         self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
+
+    def test_get_image_content_from_figure(self):
+        # given
+        pyplot.plot([1, 2, 3, 4])
+        pyplot.ylabel('some interesting numbers')
+        figure = pyplot.gcf()
+        figure.canvas.draw()
+        expected_image = Image.frombytes('RGB', figure.canvas.get_width_height(), figure.canvas.tostring_rgb())
+
+        # expect
+        self.assertEqual(get_image_content(figure), _get_pil_image_data(expected_image))
