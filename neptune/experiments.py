@@ -514,13 +514,26 @@ class Experiment(object):
                 array = numpy.random.rand(300, 200, 4)*255
                 experiment.log_image('fig', array)
 
-                # 3d RGBA array
+                # matplotlib figure
                 from matplotlib import pyplot
                 pyplot.plot([1, 2, 3, 4])
                 pyplot.ylabel('some numbers')
-                experiment.log_image('fig', plt.gcf())
+                experiment.log_image('plots', plt.gcf())
 
-                # ToDo example that uses Figure explicitely
+                # matplotlib figure
+                from matplotlib import pyplot
+                import numpy
+
+                numpy.random.seed(19680801)
+                data = numpy.random.randn(2, 100)
+
+                figure, axs = pyplot.subplots(2, 2, figsize=(5, 5))
+                axs[0, 0].hist(data[0])
+                axs[1, 0].scatter(data[0], data[1])
+                axs[0, 1].plot(data[0], data[1])
+                axs[1, 1].hist2d(data[0], data[1])
+
+                experiment.log_image('diagrams', figure)
 
         Note:
             For efficiency, logs are uploaded in batches via a queue.
