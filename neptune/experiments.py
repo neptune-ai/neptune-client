@@ -514,13 +514,13 @@ class Experiment(object):
                 array = numpy.random.rand(300, 200, 4)*255
                 experiment.log_image('fig', array)
 
-                # matplotlib figure
+                # matplotlib figure example 1
                 from matplotlib import pyplot
                 pyplot.plot([1, 2, 3, 4])
                 pyplot.ylabel('some numbers')
                 experiment.log_image('plots', plt.gcf())
 
-                # matplotlib figure
+                # matplotlib figure example 2
                 from matplotlib import pyplot
                 import numpy
 
