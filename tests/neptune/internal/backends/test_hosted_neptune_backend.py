@@ -19,12 +19,16 @@ import uuid
 import mock
 from mock import MagicMock
 
-from neptune.client import Client
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from tests.neptune.api_models import ApiParameter
 
 
-@mock.patch('neptune.client.NeptuneAuthenticator', new=MagicMock)
-class TestClient(unittest.TestCase):
+API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
+            'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
+
+
+@mock.patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
+class TestHostedNeptuneBackend(unittest.TestCase):
     # pylint:disable=protected-access
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
@@ -40,13 +44,13 @@ class TestClient(unittest.TestCase):
         uuid4.return_value = some_uuid
 
         # and
-        client = Client(api_address='some address', api_token='some token')
+        backend = HostedNeptuneBackend(api_token=API_TOKEN)
 
         # and
         some_object = SomeClass()
 
         # when
-        api_params = client._convert_to_api_parameters({
+        api_params = backend._convert_to_api_parameters({
             'str': 'text',
             'bool': False,
             'float': 1.23,
@@ -65,6 +69,24 @@ class TestClient(unittest.TestCase):
             ApiParameter(id=some_uuid, name='obj', parameterType='string', value=str(some_object))
         }
         self.assertEqual(expected_api_params, set(api_params))
+
+    # pylint: disable=unused-argument
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    @mock.patch('neptune.internal.backends.credentials.os.getenv', return_value=API_TOKEN)
+    def test_should_take_default_credentials_from_env(self, env, swagger_client_factory):
+        # when
+        backend = HostedNeptuneBackend()
+
+        # then
+        self.assertEqual(API_TOKEN, backend.credentials.api_token)
+
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    def test_should_accept_given_api_token(self, _):
+        # when
+        session = HostedNeptuneBackend(API_TOKEN)
+
+        # then
+        self.assertEqual(API_TOKEN, session.credentials.api_token)
 
 
 class SomeClass(object):

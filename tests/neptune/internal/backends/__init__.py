@@ -13,12 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-PROJECT_ENV_NAME = 'NEPTUNE_PROJECT'
-
-API_TOKEN_ENV_NAME = 'NEPTUNE_API_TOKEN'
-
-NOTEBOOK_ID_ENV_NAME = 'NEPTUNE_NOTEBOOK_ID'
-
-BACKEND = 'NEPTUNE_BACKEND'

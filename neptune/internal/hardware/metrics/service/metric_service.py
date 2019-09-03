@@ -16,12 +16,12 @@
 
 
 class MetricService(object):
-    def __init__(self, client, metric_reporter, experiment, metrics_container):
-        self.__client = client
+    def __init__(self, backend, metric_reporter, experiment, metrics_container):
+        self.__backend = backend
         self.__metric_reporter = metric_reporter
         self.experiment = experiment
         self.metrics_container = metrics_container
 
     def report_and_send(self, timestamp):
         metric_reports = self.__metric_reporter.report(timestamp)
-        self.__client.send_hardware_metric_reports(self.experiment, self.metrics_container.metrics(), metric_reports)
+        self.__backend.send_hardware_metric_reports(self.experiment, self.metrics_container.metrics(), metric_reports)

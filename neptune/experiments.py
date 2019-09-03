@@ -18,7 +18,6 @@ import logging
 import os
 import re
 import sys
-import threading
 import time
 import traceback
 
@@ -28,7 +27,7 @@ import six
 from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ExperimentAlreadyFinished, ChannelDoesNotExist, PathInProjectNotFound
-from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NoExperimentContext, NotADirectory
+from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NotADirectory
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
@@ -52,9 +51,9 @@ class Experiment(object):
 
 
     Args:
-        client (:obj:`neptune.Client`): API Client object
-        project (:obj:`neptune.Project`): :class:`~neptune.projects.Project` instance
-        _id (:obj:`str`): Experiment short id
+        backend (:obj:`neptune.Backend`): A Backend object
+        project (:obj:`neptune.Project`): The project this experiment belongs to
+        _id (:obj:`str`): Experiment id
         internal_id (:obj:`str`): internal UUID
 
     Example:
@@ -72,13 +71,13 @@ class Experiment(object):
 
     IMAGE_SIZE_LIMIT = 2097152
 
-    def __init__(self, client, project, _id, internal_id):
-        self._client = client
+    def __init__(self, backend, project, _id, internal_id):
+        self._backend = backend
         self._project = project
         self._id = _id
         self._internal_id = internal_id
         self._channels_values_sender = ChannelsValuesSender(self)
-        self._execution_context = ExecutionContext(client, self)
+        self._execution_context = ExecutionContext(backend, self)
 
     @property
     def id(self):
@@ -115,7 +114,7 @@ class Experiment(object):
                 experiment = project.create_experiment('exp_name')
                 exp_name = experiment.name
         """
-        return self._client.get_experiment(self._internal_id).name
+        return self._backend.get_experiment(self._internal_id).name
 
     @property
     def state(self):
@@ -133,7 +132,7 @@ class Experiment(object):
 
                 state_str = experiment.state
         """
-        return self._client.get_experiment(self._internal_id).state
+        return self._backend.get_experiment(self._internal_id).state
 
     @property
     def internal_id(self):
@@ -165,7 +164,7 @@ class Experiment(object):
 
                 sys_properties = experiment.get_system_properties
         """
-        experiment = self._client.get_experiment(self._internal_id)
+        experiment = self._backend.get_experiment(self._internal_id)
         return {
             'id': experiment.shortId,
             'name': experiment.name,
@@ -191,7 +190,7 @@ class Experiment(object):
 
                 experiment.get_tags()
         """
-        return self._client.get_experiment(self._internal_id).tags
+        return self._backend.get_experiment(self._internal_id).tags
 
     def append_tag(self, tag, *tags):
         """Append tag(s) to the current experiment.
@@ -219,9 +218,9 @@ class Experiment(object):
             tags_list = tag
         else:
             tags_list = [tag] + list(tags)
-        self._client.update_tags(experiment=self,
-                                 tags_to_add=tags_list,
-                                 tags_to_delete=[])
+        self._backend.update_tags(experiment=self,
+                                  tags_to_add=tags_list,
+                                  tags_to_delete=[])
 
     def append_tags(self, tag, *tags):
         """Append tag(s) to the current experiment.
@@ -247,9 +246,9 @@ class Experiment(object):
         Note:
             Removing a tag that is not assigned to this experiment is silently ignored.
         """
-        self._client.update_tags(experiment=self,
-                                 tags_to_add=[],
-                                 tags_to_delete=[tag])
+        self._backend.update_tags(experiment=self,
+                                  tags_to_add=[],
+                                  tags_to_delete=[tag])
 
     def get_channels(self):
         """Alias for :meth:`~neptune.experiments.Experiment.get_logs`
@@ -269,7 +268,7 @@ class Experiment(object):
 
                 exp_logs = experiment.get_logs()
         """
-        experiment = self._client.get_experiment(self.internal_id)
+        experiment = self._backend.get_experiment(self.internal_id)
         channels_last_values_by_name = dict((ch.channelName, ch) for ch in experiment.channelsLastValues)
         channels = dict()
         for ch in experiment.channels:
@@ -287,7 +286,7 @@ class Experiment(object):
         return channels
 
     def _get_system_channels(self):
-        channels = self._client.get_system_channels(self)
+        channels = self._backend.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
 
     def _upload_source_files(self, source_files):
@@ -298,8 +297,8 @@ class Experiment(object):
             files_list.append((os.path.abspath(source_file), source_file))
 
         upload_to_storage(files_list=files_list,
-                          upload_api_fun=self._client.upload_experiment_source,
-                          upload_tar_api_fun=self._client.extract_experiment_source,
+                          upload_api_fun=self._backend.upload_experiment_source,
+                          upload_tar_api_fun=self._backend.extract_experiment_source,
                           experiment=self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
@@ -593,8 +592,8 @@ class Experiment(object):
         target_name = os.path.basename(artifact) if destination is None else destination
 
         upload_to_storage(files_list=[(os.path.abspath(artifact), target_name)],
-                          upload_api_fun=self._client.upload_experiment_output,
-                          upload_tar_api_fun=self._client.extract_experiment_output,
+                          upload_api_fun=self._backend.upload_experiment_output,
+                          upload_tar_api_fun=self._backend.extract_experiment_output,
                           experiment=self)
 
     def download_artifact(self, path, destination_dir=None):
@@ -631,7 +630,7 @@ class Experiment(object):
             raise NotADirectory(destination_dir)
 
         try:
-            self._client.download_data(self._project, project_storage_path, destination_path)
+            self._backend.download_data(self._project, project_storage_path, destination_path)
         except PathInProjectNotFound:
             raise FileNotFound(path)
 
@@ -680,7 +679,7 @@ class Experiment(object):
         elif not os.path.isdir(destination_dir):
             raise NotADirectory(destination_dir)
 
-        download_request = self._client.prepare_source_download_reuqest(self, path)
+        download_request = self._backend.prepare_source_download_reuqest(self, path)
         self._download_from_request(download_request, destination_dir, path)
 
     def download_artifacts(self, path=None, destination_dir=None):
@@ -728,7 +727,7 @@ class Experiment(object):
         elif not os.path.isdir(destination_dir):
             raise NotADirectory(destination_dir)
 
-        download_request = self._client.prepare_output_download_reuqest(self, path)
+        download_request = self._backend.prepare_output_download_reuqest(self, path)
         self._download_from_request(download_request, destination_dir, path)
 
     def _download_from_request(self, download_request, destination_dir, path):
@@ -737,9 +736,9 @@ class Experiment(object):
         while not hasattr(download_request, "downloadUrl"):
             time.sleep(sleep_time)
             sleep_time = min(sleep_time * 2, max_sleep_time)
-            download_request = self._client.get_download_request(download_request.id)
+            download_request = self._backend.get_download_request(download_request.id)
 
-        # We do not use Client here cause `downloadUrl` can be any url (not only Neptune API endpoint)
+        # We do not use Backend here cause `downloadUrl` can be any url (not only Neptune API endpoint)
         response = requests.get(
             url=download_request.downloadUrl,
             headers={"Accept": "application/zip"},
@@ -787,7 +786,7 @@ class Experiment(object):
         channel = self._find_channel(log_name, ChannelNamespace.USER)
         if channel is None:
             raise ChannelDoesNotExist(self.id, log_name)
-        self._client.reset_channel(channel.id)
+        self._backend.reset_channel(channel.id)
 
     def get_parameters(self):
         """Retrieve parameters for this experiment.
@@ -802,7 +801,7 @@ class Experiment(object):
 
                 exp_params = experiment.get_parameters()
         """
-        experiment = self._client.get_experiment(self.internal_id)
+        experiment = self._backend.get_experiment(self.internal_id)
         return dict((p.name, self._convert_parameter_value(p.value, p.parameterType)) for p in experiment.parameters)
 
     def get_properties(self):
@@ -818,7 +817,7 @@ class Experiment(object):
 
                 exp_properties = experiment.get_properties()
         """
-        experiment = self._client.get_experiment(self.internal_id)
+        experiment = self._backend.get_experiment(self.internal_id)
         return dict((p.key, p.value) for p in experiment.properties)
 
     def set_property(self, key, value):
@@ -838,9 +837,9 @@ class Experiment(object):
                 experiment.set_property('model', 'LightGBM')
                 experiment.set_property('magic-number', 7)
         """
-        properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
+        properties = {p.key: p.value for p in self._backend.get_experiment(self.internal_id).properties}
         properties[key] = value
-        return self._client.update_experiment(
+        return self._backend.update_experiment(
             experiment=self,
             properties=properties
         )
@@ -859,9 +858,9 @@ class Experiment(object):
 
                 experiment.remove_property('host')
         """
-        properties = {p.key: p.value for p in self._client.get_experiment(self.internal_id).properties}
+        properties = {p.key: p.value for p in self._backend.get_experiment(self.internal_id).properties}
         del properties[key]
-        return self._client.update_experiment(
+        return self._backend.update_experiment(
             experiment=self,
             properties=properties
         )
@@ -901,7 +900,7 @@ class Experiment(object):
 
                 hardware_df = experiment.get_hardware_utilization()
         """
-        metrics_csv = self._client.get_metrics_csv(self)
+        metrics_csv = self._backend.get_metrics_csv(self)
         try:
             return pd.read_csv(metrics_csv)
         except EmptyDataError:
@@ -945,7 +944,7 @@ class Experiment(object):
             channel_id = channels_by_name[channel_name].id
             try:
                 channels_data[channel_name] = pd.read_csv(
-                    self._client.get_channel_points_csv(self, channel_id),
+                    self._backend.get_channel_points_csv(self, channel_id),
                     header=None,
                     names=['x_{}'.format(channel_name), 'y_{}'.format(channel_name)],
                     dtype=float
@@ -1013,15 +1012,16 @@ class Experiment(object):
 
         try:
             if exc_tb is None:
-                self._client.mark_succeeded(self)
+                self._backend.mark_succeeded(self)
             else:
-                self._client.mark_failed(self, exc_tb)
+                self._backend.mark_failed(self, exc_tb)
         except ExperimentAlreadyFinished:
             pass
 
         self._execution_context.stop()
 
-        pop_stopped_experiment()
+        # pylint: disable=protected-access
+        self._project._pop_stopped_experiment()
 
     def __enter__(self):
         return self
@@ -1057,7 +1057,7 @@ class Experiment(object):
         """
         The goal of this function is to allow user to call experiment.log_* with any of:
             - single parameter treated as y value
-            - both paramters (named/unnamed)
+            - both parameters (named/unnamed)
             - single named y parameter
         If intended X-coordinate is provided, it is validated to be a float value
         """
@@ -1076,7 +1076,7 @@ class Experiment(object):
             return x, y
 
     def _send_channels_values(self, channels_with_values):
-        self._client.send_channels_values(self, channels_with_values)
+        self._backend.send_channels_values(self, channels_with_values)
 
     def _get_channels(self, channels_names_with_types):
         existing_channels = self.get_channels()
@@ -1100,46 +1100,12 @@ class Experiment(object):
         elif channel_namespace == ChannelNamespace.SYSTEM:
             return self._get_system_channels().get(channel_name, None)
         else:
-            raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
+            raise RuntimeError("Unknown channel namespace {}".format(channel_namespace))
 
     def _create_channel(self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
         if channel_namespace == ChannelNamespace.USER:
-            return self._client.create_channel(self, channel_name, channel_type)
+            return self._backend.create_channel(self, channel_name, channel_type)
         elif channel_namespace == ChannelNamespace.SYSTEM:
-            return self._client.create_system_channel(self, channel_name, channel_type)
+            return self._backend.create_system_channel(self, channel_name, channel_type)
         else:
-            raise RuntimeError("Unknown channel namesapce {}".format(channel_namespace))
-
-
-_experiments_stack = []
-
-__lock = threading.RLock()
-
-
-def get_current_experiment():
-    # pylint: disable=global-statement
-    global _experiments_stack
-    with __lock:
-        if _experiments_stack:
-            return _experiments_stack[len(_experiments_stack) - 1]
-        else:
-            raise NoExperimentContext()
-
-
-def push_new_experiment(new_experiment):
-    # pylint: disable=global-statement
-    global _experiments_stack, __lock
-    with __lock:
-        _experiments_stack.append(new_experiment)
-        return new_experiment
-
-
-def pop_stopped_experiment():
-    # pylint: disable=global-statement
-    global _experiments_stack, __lock
-    with __lock:
-        if _experiments_stack:
-            stopped_experiment = _experiments_stack.pop()
-        else:
-            stopped_experiment = None
-        return stopped_experiment
+            raise RuntimeError("Unknown channel namespace {}".format(channel_namespace))

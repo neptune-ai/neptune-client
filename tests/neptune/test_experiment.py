@@ -25,8 +25,7 @@ from mock import call, MagicMock
 from munch import Munch
 from pandas.util.testing import assert_frame_equal
 
-from neptune.exceptions import NoExperimentContext
-from neptune.experiments import Experiment, push_new_experiment, get_current_experiment, pop_stopped_experiment
+from neptune.experiments import Experiment
 from neptune.internal.channels.channels import ChannelType, ChannelValue
 from tests.neptune.random_utils import sort_df_by_columns, a_string, a_uuid_string, an_experiment_id, a_project
 
@@ -117,15 +116,15 @@ class TestExperiment(unittest.TestCase):
 
     def test_append_tags(self):
         # given
-        client = mock.MagicMock()
+        backend = mock.MagicMock()
         experiment = Experiment(
-            client,
+            backend,
             a_project(),
             an_experiment_id(),
             a_uuid_string()
         )
 
-        #and
+        # and
         def build_call(tags_list):
             return call(
                 experiment=experiment,
@@ -142,7 +141,7 @@ class TestExperiment(unittest.TestCase):
         experiment.append_tags('tag1', 'tag2', 'tag3')
 
         # then
-        client.update_tags.assert_has_calls([
+        backend.update_tags.assert_has_calls([
             build_call(['tag']),
             build_call(['tag1', 'tag2', 'tag3']),
             build_call(['tag1', 'tag2', 'tag3']),
@@ -153,8 +152,8 @@ class TestExperiment(unittest.TestCase):
 
     def test_get_numeric_channels_values(self):
         # when
-        client = MagicMock()
-        client.get_channel_points_csv.return_value = StringIO(u'\n'.join(['0.3,2.5', '1,2']))
+        backend = MagicMock()
+        backend.get_channel_points_csv.return_value = StringIO(u'\n'.join(['0.3,2.5', '1,2']))
 
         experiment = MagicMock()
         experiment.id = a_string()
@@ -162,11 +161,11 @@ class TestExperiment(unittest.TestCase):
         experiment.channels = [Munch(id=a_uuid_string(), name='epoch_loss')]
         experiment.channelsLastValues = [Munch(channelName='epoch_loss', x=2.5, y=2)]
 
-        client.get_experiment.return_value = experiment
+        backend.get_experiment.return_value = experiment
 
         # then
         experiment = Experiment(
-            client=client,
+            backend=backend,
             project=a_project(),
             _id=a_string(),
             internal_id=a_uuid_string()
@@ -180,40 +179,6 @@ class TestExperiment(unittest.TestCase):
         result = sort_df_by_columns(result)
 
         assert_frame_equal(expected_result, result)
-
-    def test_get_current_experiment_from_stack(self):
-        # given
-        experiment = Munch(internal_id=a_uuid_string())
-
-        # when
-        push_new_experiment(experiment)
-
-        # then
-        self.assertEqual(get_current_experiment(), experiment)
-
-    def test_pop_experiment_from_stack(self):
-        # given
-        first_experiment = Munch(internal_id=a_uuid_string())
-        second_experiment = Munch(internal_id=a_uuid_string())
-        # and
-        push_new_experiment(first_experiment)
-
-        # when
-        push_new_experiment(second_experiment)
-
-        # then
-        self.assertEqual(get_current_experiment(), second_experiment)
-        # and
-        self.assertEqual(pop_stopped_experiment(), second_experiment)
-        # and
-        self.assertEqual(get_current_experiment(), first_experiment)
-
-    def test_empty_stack(self):
-        # when
-        self.assertIsNone(pop_stopped_experiment())
-        # and
-        with self.assertRaises(NoExperimentContext):
-            get_current_experiment()
 
 
 if __name__ == '__main__':

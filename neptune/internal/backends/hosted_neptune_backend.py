@@ -16,6 +16,7 @@
 import io
 import logging
 import os
+import platform
 import uuid
 from functools import partial
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY
@@ -35,33 +36,35 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
     ExperimentNotFound, ExperimentValidationError, NamespaceNotFound, ProjectNotFound, StorageLimitReached, \
     ChannelAlreadyExists, ChannelsValuesSendBatchError, NotebookNotFound, \
     PathInProjectNotFound, ChannelNotFound
+from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
 from neptune.exceptions import FileNotFound
 from neptune.experiments import Experiment
+from neptune.internal.backends.credentials import Credentials
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
+from neptune.projects import Project
 from neptune.utils import is_float, with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
 
 
-class Client(object):
+class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
-    def __init__(self, api_address, api_token, proxies=None):
-        self.api_address = api_address
-        self.api_token = api_token
-        self.proxies = proxies
+    def __init__(self, api_token=None, proxies=None):
+        self.credentials = Credentials(api_token)
+
         ssl_verify = True
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             urllib3.disable_warnings()
             ssl_verify = False
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
-        if self.proxies is not None:
-            self._update_proxies()
+        if proxies is not None:
+            self._update_proxies(proxies)
 
         self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
                                                                .format(self.api_address))
@@ -69,26 +72,35 @@ class Client(object):
         self.leaderboard_swagger_client = self._get_swagger_client('{}/api/leaderboard/swagger.json'
                                                                    .format(self.api_address))
 
-        self.authenticator = self._create_authenticator(api_token, ssl_verify)
+        self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify)
         self._http_client.authenticator = self.authenticator
 
         # This is not a top-level import because of circular dependencies
         from neptune import __version__
         self.client_lib_version = __version__
 
-        import platform
         user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
             lib_version=self.client_lib_version,
             system=platform.platform(),
             python_version=platform.python_version())
         self._http_client.session.headers.update({'User-Agent': user_agent})
 
+    @property
+    def api_address(self):
+        return self.credentials.api_address
+
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
-            return self.backend_swagger_client.api.getProject(
+            project = self.backend_swagger_client.api.getProject(
                 projectIdentifier=project_qualified_name
             ).response().result
+
+            return Project(
+                backend=self,
+                internal_id=project.id,
+                namespace=project.organizationName,
+                name=project.name)
         except HTTPNotFound:
             raise ProjectNotFound(project_qualified_name)
 
@@ -250,7 +262,7 @@ class Client(object):
             api_notebook = api_notebook_list.entries[0]
 
             return Notebook(
-                client=self,
+                backend=self,
                 project=project,
                 _id=api_notebook.id,
                 owner=api_notebook.owner
@@ -283,7 +295,7 @@ class Client(object):
             ).response().result
 
             return Notebook(
-                client=self,
+                backend=self,
                 project=project,
                 _id=api_notebook.id,
                 owner=api_notebook.owner
@@ -722,7 +734,7 @@ class Client(object):
         ]
 
     def _convert_to_experiment(self, api_experiment, project):
-        return Experiment(client=self,
+        return Experiment(backend=self,
                           project=project,
                           _id=api_experiment.shortId,
                           internal_id=api_experiment.id)
@@ -835,12 +847,11 @@ class Client(object):
         response.raise_for_status()
         return response
 
-    def _update_proxies(self):
+    def _update_proxies(self, proxies):
         try:
-            self._http_client.session.proxies.update(self.proxies)
-        except:
-            # TODO: change error type and info
-            raise ValueError("Error when using proxies {}".format(self.proxies))
+            self._http_client.session.proxies.update(proxies)
+        except (TypeError, ValueError):
+            raise ValueError("Wrong proxies format: {}".format(proxies))
 
     @with_api_exceptions_handler
     def _get_swagger_client(self, url):

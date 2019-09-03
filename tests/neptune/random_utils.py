@@ -57,7 +57,7 @@ def a_project_qualified_name():
 
 def a_project():
     return Project(
-        client=mock.MagicMock(),
+        backend=mock.MagicMock(),
         internal_id=a_uuid_string(),
         name=a_string(),
         namespace=a_string()

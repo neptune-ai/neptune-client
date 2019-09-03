@@ -19,7 +19,9 @@ from random import randint
 
 import pandas as pd
 from mock import MagicMock
+from munch import Munch
 
+from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
@@ -32,8 +34,8 @@ from tests.neptune.random_utils import a_string, a_string_list, a_uuid_string
 class TestProject(unittest.TestCase):
     def setUp(self):
         super(TestProject, self).setUp()
-        self.client = MagicMock()
-        self.project = Project(client=self.client, internal_id=a_uuid_string(), namespace=a_string(), name=a_string())
+        self.backend = MagicMock()
+        self.project = Project(backend=self.backend, internal_id=a_uuid_string(), namespace=a_string(), name=a_string())
 
     def test_get_members(self):
         # given
@@ -41,13 +43,13 @@ class TestProject(unittest.TestCase):
         members = [a_registered_project_member(username) for username in member_usernames]
 
         # and
-        self.client.get_project_members.return_value = members + [an_invited_project_member()]
+        self.backend.get_project_members.return_value = members + [an_invited_project_member()]
 
         # when
         fetched_member_usernames = self.project.get_members()
 
         # then
-        self.client.get_project_members.assert_called_once_with(self.project.internal_id)
+        self.backend.get_project_members.assert_called_once_with(self.project.internal_id)
 
         # and
         self.assertEqual(member_usernames, fetched_member_usernames)
@@ -55,27 +57,27 @@ class TestProject(unittest.TestCase):
     def test_get_experiments_with_no_params(self):
         # given
         leaderboard_entries = [MagicMock() for _ in range(0, 2)]
-        self.client.get_leaderboard_entries.return_value = leaderboard_entries
+        self.backend.get_leaderboard_entries.return_value = leaderboard_entries
 
         # when
         experiments = self.project.get_experiments()
 
         # then
-        self.client.get_leaderboard_entries.assert_called_once_with(
+        self.backend.get_leaderboard_entries.assert_called_once_with(
             project=self.project,
             ids=None,
             states=None, owners=None, tags=None,
             min_running_time=None)
 
         # and
-        expected_experiments = [Experiment(self.client, self.project, entry.id, entry.internal_id)
+        expected_experiments = [Experiment(self.backend, self.project, entry.id, entry.internal_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_experiments_with_scalar_params(self):
         # given
         leaderboard_entries = [MagicMock() for _ in range(0, 2)]
-        self.client.get_leaderboard_entries.return_value = leaderboard_entries
+        self.backend.get_leaderboard_entries.return_value = leaderboard_entries
 
         # and
         params = dict(
@@ -93,17 +95,17 @@ class TestProject(unittest.TestCase):
             states=[params['state']], owners=[params['owner']], tags=[params['tag']],
             min_running_time=params['min_running_time']
         )
-        self.client.get_leaderboard_entries.assert_called_once_with(**expected_params)
+        self.backend.get_leaderboard_entries.assert_called_once_with(**expected_params)
 
         # and
-        expected_experiments = [Experiment(self.client, self.project, entry.id, entry.internal_id)
+        expected_experiments = [Experiment(self.backend, self.project, entry.id, entry.internal_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_experiments_with_list_params(self):
         # given
         leaderboard_entries = [MagicMock() for _ in range(0, 2)]
-        self.client.get_leaderboard_entries.return_value = leaderboard_entries
+        self.backend.get_leaderboard_entries.return_value = leaderboard_entries
 
         # and
         params = dict(
@@ -121,22 +123,22 @@ class TestProject(unittest.TestCase):
             states=params['state'], owners=params['owner'], tags=params['tag'],
             min_running_time=params['min_running_time']
         )
-        self.client.get_leaderboard_entries.assert_called_once_with(**expected_params)
+        self.backend.get_leaderboard_entries.assert_called_once_with(**expected_params)
 
         # and
-        expected_experiments = [Experiment(self.client, self.project, entry.id, entry.internal_id)
+        expected_experiments = [Experiment(self.backend, self.project, entry.id, entry.internal_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_leaderboard(self):
         # given
-        self.client.get_leaderboard_entries.return_value = [LeaderboardEntry(some_exp_entry_dto)]
+        self.backend.get_leaderboard_entries.return_value = [LeaderboardEntry(some_exp_entry_dto)]
 
         # when
         leaderboard = self.project.get_leaderboard()
 
         # then
-        self.client.get_leaderboard_entries.assert_called_once_with(
+        self.backend.get_leaderboard_entries.assert_called_once_with(
             project=self.project,
             ids=None,
             states=None, owners=None, tags=None,
@@ -179,6 +181,43 @@ class TestProject(unittest.TestCase):
     def test_repr(self):
         # expect
         self.assertEqual('Project({})'.format(self.project.full_id), repr(self.project))
+
+    # pylint: disable=protected-access
+    def test_get_current_experiment_from_stack(self):
+        # given
+        experiment = Munch(internal_id=a_uuid_string())
+
+        # when
+        self.project._push_new_experiment(experiment)
+
+        # then
+        self.assertEqual(self.project._get_current_experiment(), experiment)
+
+    # pylint: disable=protected-access
+    def test_pop_experiment_from_stack(self):
+        # given
+        first_experiment = Munch(internal_id=a_uuid_string())
+        second_experiment = Munch(internal_id=a_uuid_string())
+        # and
+        self.project._push_new_experiment(first_experiment)
+
+        # when
+        self.project._push_new_experiment(second_experiment)
+
+        # then
+        self.assertEqual(self.project._get_current_experiment(), second_experiment)
+        # and
+        self.assertEqual(self.project._pop_stopped_experiment(), second_experiment)
+        # and
+        self.assertEqual(self.project._get_current_experiment(), first_experiment)
+
+    # pylint: disable=protected-access
+    def test_empty_stack(self):
+        # when
+        self.assertIsNone(self.project._pop_stopped_experiment())
+        # and
+        with self.assertRaises(NoExperimentContext):
+            self.project._get_current_experiment()
 
 
 if __name__ == '__main__':

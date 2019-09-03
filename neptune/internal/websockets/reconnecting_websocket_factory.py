@@ -19,15 +19,15 @@ from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebso
 
 
 class ReconnectingWebsocketFactory(object):
-    def __init__(self, client, experiment_id):
-        self._client = client
-        self._base_address = re.sub(r'^http', 'ws', self._client.api_address) + '/api/notifications/v1'
+    def __init__(self, backend, experiment_id):
+        self._backend = backend
+        self._base_address = re.sub(r'^http', 'ws', self._backend.api_address) + '/api/notifications/v1'
         self._experiment_id = experiment_id
 
     def create(self, shutdown_condition):
         url = self._experiment_url(self._base_address, self._experiment_id)
         return ReconnectingWebsocket(
-            url=url, oauth2_session=self._client.authenticator.auth.session, shutdown_event=shutdown_condition)
+            url=url, oauth2_session=self._backend.authenticator.auth.session, shutdown_event=shutdown_condition)
 
     @staticmethod
     def _experiment_url(base_address, experiment_id):

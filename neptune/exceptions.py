@@ -95,3 +95,12 @@ class IncorrectProjectQualifiedName(NeptuneException):
         super(IncorrectProjectQualifiedName, self).__init__('Incorrect project qualified name "{}". '
                                                             'Should be in format "namespace/project_name".'
                                                             .format(project_qualified_name))
+
+
+class InvalidNeptuneBackend(NeptuneException):
+    def __init__(self, provided_backend_name):
+        super(InvalidNeptuneBackend, self).__init__(
+            'Unknown {} "{}". '
+            'Use this environment variable to modify neptune-client behaviour at runtime, '
+            'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
+            .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
