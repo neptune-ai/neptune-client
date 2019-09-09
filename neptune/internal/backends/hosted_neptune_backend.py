@@ -190,6 +190,17 @@ class HostedNeptuneBackend(Backend):
                           git_info,
                           hostname,
                           notebook_id):
+        if not isinstance(name, six.string_types):
+            raise ValueError("name should be string")
+        if not isinstance(description, six.string_types):
+            raise ValueError("description should be string")
+        if not isinstance(params, dict):
+            raise ValueError("params should be dict")
+        if not isinstance(properties, dict):
+            raise ValueError("properties should be dict")
+        if not isinstance(hostname, six.string_types):
+            raise ValueError("hostname should be string")
+
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
         GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
         GitCommitDTO = self.backend_swagger_client.get_model('GitCommitDTO')
