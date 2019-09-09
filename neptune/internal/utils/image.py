@@ -40,6 +40,8 @@ def get_image_content(image):
                 return _get_pil_image_data(Image.fromarray(array2d.astype(numpy.uint8)))
             if shape[2] in (3, 4):
                 return _get_pil_image_data(Image.fromarray(image.astype(numpy.uint8)))
+        raise ValueError("Incorrect size of numpy.ndarray. Should be 2-dimensional or"
+                         "3-dimensional with 3rd dimension of size 1, 3 or 4.")
 
     elif isinstance(image, Image.Image):
         return _get_pil_image_data(image)
