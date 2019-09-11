@@ -175,7 +175,7 @@ def get_git_info(repo_path=None):
             author_name=commit.author.name,
             author_email=commit.author.email,
             commit_date=commit.committed_datetime,
-            repository_dirty=repo.is_dirty()
+            repository_dirty=repo.is_dirty(untracked_files=True)
         )
     except:  # pylint: disable=bare-except
         return None
