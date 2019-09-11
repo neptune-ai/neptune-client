@@ -322,12 +322,12 @@ def send_image(channel_name, x, y=None, name=None, description=None, timestamp=N
     return get_experiment().send_image(channel_name, x, y, name, description, timestamp)
 
 
-def log_image(log_name, x, y=None, name=None, description=None, timestamp=None):
+def log_image(log_name, x, y=None, image_name=None, description=None, timestamp=None):
     """Log image data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_image`
     """
-    return get_experiment().send_image(log_name, x, y, name, description, timestamp)
+    return get_experiment().send_image(log_name, x, y, image_name, description, timestamp)
 
 
 def send_artifact(artifact, destination=None):
