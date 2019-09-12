@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import logging
 import os
 import sys
 import threading
@@ -24,11 +25,14 @@ import pandas as pd
 import six
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name
 
-from neptune.envs import NOTEBOOK_ID_ENV_NAME
+from neptune.envs import NOTEBOOK_ID_ENV_NAME, NOTEBOOK_PATH_ENV_NAME
 from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
+from neptune.internal.notebooks.notebooks import create_checkpoint
 from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, glob
+
+_logger = logging.getLogger(__name__)
 
 
 class Project(object):
@@ -210,7 +214,8 @@ class Project(object):
                           handle_uncaught_exceptions=True,
                           git_info=None,
                           hostname=None,
-                          notebook_id=None):
+                          notebook_id=None,
+                          notebook_path=None):
         """Create and start Neptune experiment.
 
         Create experiment, set its status to `running` and append it to the top of the experiments view.
@@ -412,7 +417,18 @@ class Project(object):
             for filepath in expanded_source_files:
                 upload_source_entries.append(UploadEntry(os.path.abspath(filepath), normalize_file_name(filepath)))
 
+        if notebook_path is None and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
+            notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
+
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
+
+        checkpoint_id = None
+        if notebook_id is not None and notebook_path is not None:
+            checkpoint = create_checkpoint(backend=self._backend,
+                                           notebook_id=notebook_id,
+                                           notebook_path=notebook_path)
+            if checkpoint is not None:
+                checkpoint_id = checkpoint.id
 
         experiment = self._backend.create_experiment(
             project=self,
@@ -425,7 +441,8 @@ class Project(object):
             monitored=run_monitoring_thread,
             git_info=git_info,
             hostname=hostname,
-            notebook_id=notebook_id
+            notebook_id=notebook_id,
+            checkpoint_id=checkpoint_id
         )
 
         # pylint: disable=protected-access

@@ -19,7 +19,7 @@ import os
 import platform
 import uuid
 from functools import partial
-from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY
+from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
 from io import StringIO
 from itertools import groupby
 
@@ -189,7 +189,8 @@ class HostedNeptuneBackend(Backend):
                           monitored,
                           git_info,
                           hostname,
-                          notebook_id):
+                          notebook_id,
+                          checkpoint_id):
         if not isinstance(name, six.string_types):
             raise ValueError("Invalid name {}, should be a string.".format(name))
         if not isinstance(description, six.string_types):
@@ -233,7 +234,8 @@ class HostedNeptuneBackend(Backend):
                 abortable=abortable,
                 monitored=monitored,
                 hostname=hostname,
-                notebookId=notebook_id
+                notebookId=notebook_id,
+                checkpointId=checkpoint_id
             )
 
             kwargs = {
@@ -315,20 +317,29 @@ class HostedNeptuneBackend(Backend):
             raise ProjectNotFound(project_identifier=project.full_id)
 
     @with_api_exceptions_handler
-    def create_checkpoint(self, notebook_id, jupyter_path, _file):
-        with self._upload_raw_data(api_method=self.leaderboard_swagger_client.api.createCheckpoint,
-                                   data=_file,
-                                   headers={"Content-Type": "application/octet-stream"},
-                                   path_params={
-                                       "notebookId": notebook_id
-                                   },
-                                   query_params={
-                                       "jupyterPath": jupyter_path
-                                   }) as response:
-            if response.status_code == NOT_FOUND:
-                raise NotebookNotFound(notebook_id=notebook_id)
-            else:
-                response.raise_for_status()
+    def create_checkpoint(self, notebook_id, jupyter_path, _file=None):
+        if _file is not None:
+            with self._upload_raw_data(api_method=self.leaderboard_swagger_client.api.createCheckpoint,
+                                       data=_file,
+                                       headers={"Content-Type": "application/octet-stream"},
+                                       path_params={
+                                           "notebookId": notebook_id
+                                       },
+                                       query_params={
+                                           "jupyterPath": jupyter_path
+                                       }) as response:
+                if response.status_code == NOT_FOUND:
+                    raise NotebookNotFound(notebook_id=notebook_id)
+                else:
+                    response.raise_for_status()
+                    CheckpointDTO = self.leaderboard_swagger_client.get_model('CheckpointDTO')
+                    return CheckpointDTO.unmarshal(response.json())
+        else:
+            NewCheckpointDTO = self.leaderboard_swagger_client.get_model('NewCheckpointDTO')
+            return self.leaderboard_swagger_client.api.createEmptyCheckpoint(
+                notebookId=notebook_id,
+                checkpoint=NewCheckpointDTO(path=jupyter_path)
+            ).response().result
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
