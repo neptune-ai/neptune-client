@@ -340,20 +340,17 @@ class Project(object):
                                           description='neural net trained on MNIST',
                                           upload_source_files=[])
 
-                # Send all python source files
+                # Send all py files in cwd (excluding hidden files with names beginning with a dot)
                 neptune.create_experiment(upload_source_files=['*.py'])
 
-                # Send all files in the current directory (excluding hidden files with names beginning with a dot)
+                # Send all files and directories in cwd (excluding hidden files with names beginning with a dot)
                 neptune.create_experiment(upload_source_files=['*'])
 
-                # Send all files in the current directory including hidden files
+                # Send all files and directories in cwd including hidden files
                 neptune.create_experiment(upload_source_files=['*', '.*'])
 
                 # Send files with names being a single character followed by '.py' extension.
                 neptune.create_experiment(upload_source_files=['?.py'])
-
-                # Send two files with names being a special characters * and ?
-                neptune.create_experiment(upload_source_files=['[*]', '[?]'])
 
                 # larger example
                 neptune.create_experiment(name='first-pytorch-ever',
@@ -391,9 +388,9 @@ class Project(object):
         if notebook_id is None and os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
             notebook_id = os.environ[NOTEBOOK_ID_ENV_NAME]
 
-        expanded_source_files = []
+        expanded_source_files = set()
         for filepath in upload_source_files:
-            expanded_source_files += glob.glob(filepath)
+            expanded_source_files |= set(glob.glob(filepath))
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
@@ -413,7 +410,7 @@ class Project(object):
 
         # pylint: disable=protected-access
         experiment._start(
-            upload_source_files=expanded_source_files,
+            upload_source_files=list(expanded_source_files),
             abort_callback=abort_callback,
             logger=logger,
             upload_stdout=upload_stdout,
