@@ -388,6 +388,9 @@ class Project(object):
         if notebook_id is None and os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
             notebook_id = os.environ[NOTEBOOK_ID_ENV_NAME]
 
+        if upload_source_files is None:
+            upload_source_files = ['main.py']
+
         expanded_source_files = set()
         for filepath in upload_source_files:
             expanded_source_files |= set(glob.glob(filepath))
