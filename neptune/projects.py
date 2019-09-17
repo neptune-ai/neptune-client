@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import glob
 import os
 import threading
 from platform import node as get_hostname
@@ -251,6 +252,9 @@ class Project(object):
                   Must be list of :obj:`str`.
                   Uploaded sources are displayed in the experiment's `Source code` tab.
                 | Pass empty list (``[]``) to upload no files.
+                | Unix style pathname pattern expansion is supported. For example, you can pass ``['*.py']`` to upload
+                  all python source files from the current directory (no recursion lookup is used).
+                  For more information see `glob library <https://docs.python.org/3/library/glob.html>`_.
 
             abort_callback (:obj:`callable`, optional, default is ``None``):
                 Callback that defines how `abort experiment` action in the Web application should work.
@@ -336,6 +340,18 @@ class Project(object):
                                           description='neural net trained on MNIST',
                                           upload_source_files=[])
 
+                # Send all py files in cwd (excluding hidden files with names beginning with a dot)
+                neptune.create_experiment(upload_source_files=['*.py'])
+
+                # Send all files and directories in cwd (excluding hidden files with names beginning with a dot)
+                neptune.create_experiment(upload_source_files=['*'])
+
+                # Send all files and directories in cwd including hidden files
+                neptune.create_experiment(upload_source_files=['*', '.*'])
+
+                # Send files with names being a single character followed by '.py' extension.
+                neptune.create_experiment(upload_source_files=['?.py'])
+
                 # larger example
                 neptune.create_experiment(name='first-pytorch-ever',
                                           params={'lr': 0.0005,
@@ -372,6 +388,10 @@ class Project(object):
         if notebook_id is None and os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
             notebook_id = os.environ[NOTEBOOK_ID_ENV_NAME]
 
+        expanded_source_files = set()
+        for filepath in upload_source_files:
+            expanded_source_files |= set(glob.glob(filepath))
+
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         experiment = self._backend.create_experiment(
@@ -390,7 +410,7 @@ class Project(object):
 
         # pylint: disable=protected-access
         experiment._start(
-            upload_source_files=upload_source_files,
+            upload_source_files=list(expanded_source_files),
             abort_callback=abort_callback,
             logger=logger,
             upload_stdout=upload_stdout,
