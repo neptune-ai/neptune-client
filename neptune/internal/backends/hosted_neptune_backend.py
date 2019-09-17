@@ -201,6 +201,15 @@ class HostedNeptuneBackend(Backend):
         if not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
 
+        if notebook_id is not None:
+            try:
+                project.get_notebook(notebook_id)
+            except NotebookNotFound:
+                _logger.warning("Notebook({}) was not found in Project({}). "
+                                "Notebook with given id doesn't exist or belongs to a different project."
+                                .format(notebook_id, project.full_id))
+                notebook_id = None
+
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
         GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
         GitCommitDTO = self.backend_swagger_client.get_model('GitCommitDTO')
