@@ -300,7 +300,6 @@ class Experiment(object):
 
         | If a log with provided ``log_name`` does not exist, it is created automatically.
         | If log exists (determined by ``log_name``), then new value is appended to it.
-        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
             log_name (:obj:`str`): The name of log, i.e. `mse`, `loss`, `accuracy`.
@@ -373,7 +372,6 @@ class Experiment(object):
 
         | If a log with provided ``log_name`` does not exist, it is created automatically.
         | If log exists (determined by ``log_name``), then new value is appended to it.
-        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
             log_name (:obj:`str`): The name of log, i.e. `mse`, `my_text_data`, `timing_info`.
@@ -438,7 +436,6 @@ class Experiment(object):
 
         | If a log with provided ``log_name`` does not exist, it is created automatically.
         | If log exists (determined by ``log_name``), then new value is appended to it.
-        | See :ref:`Limits<limits-top>` for information about API and storage usage upper bounds.
 
         Args:
             log_name (:obj:`str`): The name of log, i.e. `bboxes`, `visualisations`, `sample_images`.
