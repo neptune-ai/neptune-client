@@ -16,11 +16,13 @@
 
 import glob
 import os
+import sys
 import threading
 from platform import node as get_hostname
 
 import click
 import pandas as pd
+from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name
 
 from neptune.envs import NOTEBOOK_ID_ENV_NAME
 from neptune.exceptions import NoExperimentContext
@@ -246,11 +248,10 @@ class Project(object):
                 Tags are displayed in the experiment's `Details` (`Metadata` section)
                 and can be viewed in `experiments view` as a column.
 
-            upload_source_files (:obj:`list`, optional, default is ``['main.py']``):
-                | Where `'main.py'` is Python file from which experiment was created
-                  (name `'main.py'` is just an example here).
-                  Must be list of :obj:`str`.
-                  Uploaded sources are displayed in the experiment's `Source code` tab.
+            upload_source_files (:obj:`list`, optional, default is ``None``): List of source files to be uploaded.
+                Must be list of :obj:`str`.
+                Uploaded sources are displayed in the experiment's `Source code` tab.
+                | If ``None`` is passed, Python file from which experiment was created will be uploaded.
                 | Pass empty list (``[]``) to upload no files.
                 | Unix style pathname pattern expansion is supported. For example, you can pass ``['*.py']`` to upload
                   all python source files from the current directory (no recursion lookup is used).
@@ -388,12 +389,19 @@ class Project(object):
         if notebook_id is None and os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
             notebook_id = os.environ[NOTEBOOK_ID_ENV_NAME]
 
+        upload_source_entries = []
         if upload_source_files is None:
-            upload_source_files = ['main.py']
-
-        expanded_source_files = set()
-        for filepath in upload_source_files:
-            expanded_source_files |= set(glob.glob(filepath))
+            main_file = sys.argv[0]
+            if os.path.isfile(main_file):
+                upload_source_entries = [
+                    UploadEntry(os.path.abspath(main_file), normalize_file_name(os.path.basename(main_file)))
+                ]
+        else:
+            expanded_source_files = set()
+            for filepath in upload_source_files:
+                expanded_source_files |= set(glob.glob(filepath))
+            for filepath in expanded_source_files:
+                upload_source_entries.append(UploadEntry(os.path.abspath(filepath), filepath))
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
@@ -413,7 +421,7 @@ class Project(object):
 
         # pylint: disable=protected-access
         experiment._start(
-            upload_source_files=list(expanded_source_files),
+            upload_source_entries=upload_source_entries,
             abort_callback=abort_callback,
             logger=logger,
             upload_stdout=upload_stdout,

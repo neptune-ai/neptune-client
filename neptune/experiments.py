@@ -17,7 +17,6 @@ import base64
 import logging
 import os
 import re
-import sys
 import time
 import traceback
 
@@ -31,7 +30,7 @@ from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
-from neptune.internal.storage.storage_utils import upload_to_storage
+from neptune.internal.storage.storage_utils import upload_to_storage, UploadEntry, normalize_file_name
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
 
@@ -288,18 +287,6 @@ class Experiment(object):
     def _get_system_channels(self):
         channels = self._backend.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
-
-    def _upload_source_files(self, source_files):
-        files_list = []
-        for source_file in source_files:
-            if not os.path.exists(source_file):
-                raise FileNotFound(source_file)
-            files_list.append((os.path.abspath(source_file), source_file))
-
-        upload_to_storage(files_list=files_list,
-                          upload_api_fun=self._backend.upload_experiment_source,
-                          upload_tar_api_fun=self._backend.extract_experiment_source,
-                          experiment=self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
         """Log metrics (numeric values) in Neptune.
@@ -610,7 +597,7 @@ class Experiment(object):
 
         target_name = os.path.basename(artifact) if destination is None else destination
 
-        upload_to_storage(files_list=[(os.path.abspath(artifact), target_name)],
+        upload_to_storage(upload_entries=[UploadEntry(os.path.abspath(artifact), normalize_file_name(target_name))],
                           upload_api_fun=self._backend.upload_experiment_output,
                           upload_tar_api_fun=self._backend.extract_experiment_output,
                           experiment=self)
@@ -977,7 +964,7 @@ class Experiment(object):
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
     def _start(self,
-               upload_source_files=None,
+               upload_source_entries=None,
                abort_callback=None,
                logger=None,
                upload_stdout=True,
@@ -985,15 +972,10 @@ class Experiment(object):
                send_hardware_metrics=True,
                run_monitoring_thread=True,
                handle_uncaught_exceptions=True):
-        if upload_source_files is None:
-            main_file = sys.argv[0]
-            main_abs_path = os.path.join(os.getcwd(), os.path.basename(main_file))
-            if os.path.isfile(main_abs_path):
-                upload_source_files = [os.path.relpath(main_abs_path, os.getcwd())]
-            else:
-                upload_source_files = []
-
-        self._upload_source_files(upload_source_files)
+        upload_to_storage(upload_entries=upload_source_entries,
+                          upload_api_fun=self._backend.upload_experiment_source,
+                          upload_tar_api_fun=self._backend.extract_experiment_source,
+                          experiment=self)
 
         self._execution_context.start(
             abort_callback=abort_callback,
