@@ -19,6 +19,7 @@ import time
 from collections import namedtuple
 from itertools import groupby
 
+from bravado.exception import HTTPUnprocessableEntity
 from future.moves import queue
 
 from neptune.exceptions import NeptuneException
@@ -155,5 +156,11 @@ class ChannelsValuesSendingThread(NeptuneThread):
         try:
             # pylint:disable=protected-access
             self._experiment._send_channels_values(channels_with_values)
+        except HTTPUnprocessableEntity as e:
+            message = "Maximum storage limit reached"
+            try:
+                message = e.response.json()["message"]
+            finally:
+                _logger.warning('Failed to send channel value: %s', message)
         except (NeptuneException, IOError) as e:
             _logger.warning('Failed to send channel value: %s', e)
