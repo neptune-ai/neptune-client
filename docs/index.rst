@@ -66,12 +66,6 @@ Example above creates Neptune `experiment <https://ui.neptune.ml/o/shared/org/on
 
    Cheat-sheet <technical_reference/cheatsheet.rst>
 
-.. toctree::
-   :maxdepth: 1
-   :caption: Miscellaneous
-
-   API usage limits <limits.rst>
-
 Bugs, feature requests and questions
 ------------------------------------
 
