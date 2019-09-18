@@ -93,26 +93,26 @@ class UploadPackage(object):
         return self.to_str()
 
 
-def split_upload_files(files_list, max_package_size=1 * 1024 * 1024, max_files=500):
+def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_files=500):
     current_package = UploadPackage()
-    for (path, name) in files_list:
-        size = 0 if os.path.isdir(path) else os.path.getsize(path)
+    for entry in upload_entries:
+        size = 0 if os.path.isdir(entry.source_path) else os.path.getsize(entry.source_path)
 
         if (size + current_package.size > max_package_size or current_package.len > max_files) \
                 and not current_package.is_empty():
             yield current_package
             current_package.reset()
-        current_package.update(UploadEntry(path, __normalize_file_name(name)), size)
+        current_package.update(entry, size)
 
     yield current_package
 
 
-def __normalize_file_name(name):
+def normalize_file_name(name):
     return name.replace(os.sep, '/')
 
 
-def upload_to_storage(files_list, upload_api_fun, upload_tar_api_fun, **kwargs):
-    for package in split_upload_files(files_list):
+def upload_to_storage(upload_entries, upload_api_fun, upload_tar_api_fun, **kwargs):
+    for package in split_upload_files(upload_entries):
         if package.is_empty():
             break
 

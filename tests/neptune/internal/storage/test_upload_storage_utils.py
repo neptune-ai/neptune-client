@@ -29,15 +29,13 @@ class TestUploadStorageUtils(unittest.TestCase):
     def test_split_upload_files_should_generate_upload_files_list_for_only_one_file(self, getsize):
         # GIVEN
         entry = UploadEntry("/tmp/test.gz", "test.gz")
-        # AND
-        file_entry = (entry.source_path, entry.target_path)
         size = 10 * self.MAX_PACKAGE_SIZE
         getsize.return_value = size
 
         # EXPECT
         expected = UploadPackage()
         expected.update(entry, size)
-        self.assertEqual(list(split_upload_files([file_entry], max_package_size=self.MAX_PACKAGE_SIZE)), [expected])
+        self.assertEqual(list(split_upload_files([entry], max_package_size=self.MAX_PACKAGE_SIZE)), [expected])
 
     @patch('os.path.isdir', new=lambda _: False)
     @patch('os.path.getsize')
@@ -45,12 +43,12 @@ class TestUploadStorageUtils(unittest.TestCase):
         # GIVEN
         entry = UploadEntry("/tmp/test.gz", "test.gz")
         # AND
-        file_entry = (entry.source_path, entry.target_path)
+        upload_entry = UploadEntry(entry.source_path, entry.target_path)
         size = 10 * self.MAX_PACKAGE_SIZE
         getsize.return_value = size
 
         # EXPECT
         expected = UploadPackage()
         expected.update(entry, size)
-        for package in split_upload_files([file_entry], max_package_size=self.MAX_PACKAGE_SIZE):
+        for package in split_upload_files([upload_entry], max_package_size=self.MAX_PACKAGE_SIZE):
             self.assertFalse(package.is_empty())
