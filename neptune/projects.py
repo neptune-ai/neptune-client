@@ -22,6 +22,7 @@ from platform import node as get_hostname
 
 import click
 import pandas as pd
+import six
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name
 
 from neptune.envs import NOTEBOOK_ID_ENV_NAME
@@ -248,8 +249,8 @@ class Project(object):
                 Tags are displayed in the experiment's `Details` (`Metadata` section)
                 and can be viewed in `experiments view` as a column.
 
-            upload_source_files (:obj:`list`, optional, default is ``None``): List of source files to be uploaded.
-                Must be list of :obj:`str`.
+            upload_source_files (:obj:`list` or :obj:`str`, optional, default is ``None``):
+                List of source files to be uploaded. Must be list of :obj:`str` or single :obj:`str`.
                 Uploaded sources are displayed in the experiment's `Source code` tab.
                 | If ``None`` is passed, Python file from which experiment was created will be uploaded.
                 | Pass empty list (``[]``) to upload no files.
@@ -342,16 +343,16 @@ class Project(object):
                                           upload_source_files=[])
 
                 # Send all py files in cwd (excluding hidden files with names beginning with a dot)
-                neptune.create_experiment(upload_source_files=['*.py'])
+                neptune.create_experiment(upload_source_files='*.py')
 
                 # Send all files and directories in cwd (excluding hidden files with names beginning with a dot)
-                neptune.create_experiment(upload_source_files=['*'])
+                neptune.create_experiment(upload_source_files='*')
 
                 # Send all files and directories in cwd including hidden files
                 neptune.create_experiment(upload_source_files=['*', '.*'])
 
                 # Send files with names being a single character followed by '.py' extension.
-                neptune.create_experiment(upload_source_files=['?.py'])
+                neptune.create_experiment(upload_source_files='?.py')
 
                 # larger example
                 neptune.create_experiment(name='first-pytorch-ever',
@@ -389,6 +390,9 @@ class Project(object):
         if notebook_id is None and os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
             notebook_id = os.environ[NOTEBOOK_ID_ENV_NAME]
 
+        if isinstance(upload_source_files, six.string_types):
+            upload_source_files = [upload_source_files]
+
         upload_source_entries = []
         if upload_source_files is None:
             main_file = sys.argv[0]
@@ -401,7 +405,7 @@ class Project(object):
             for filepath in upload_source_files:
                 expanded_source_files |= set(glob.glob(filepath))
             for filepath in expanded_source_files:
-                upload_source_entries.append(UploadEntry(os.path.abspath(filepath), filepath))
+                upload_source_entries.append(UploadEntry(os.path.abspath(filepath), normalize_file_name(filepath)))
 
         abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
