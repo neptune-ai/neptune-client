@@ -51,8 +51,8 @@ class OfflineBackend(Backend):
 
     def create_experiment(self, project, name, description,
                           params, properties, tags, abortable,
-                          monitored, git_info, hostname, notebook_id,
-                          checkpoint_id):
+                          monitored, git_info, hostname, entrypoint,
+                          notebook_id, checkpoint_id):
         return NoopObject()
 
     def get_notebook(self, project, notebook_id):
