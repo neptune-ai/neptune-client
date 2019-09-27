@@ -18,12 +18,12 @@ import threading
 import time
 from collections import namedtuple
 from itertools import groupby
+from queue import Queue, Empty
 
 from bravado.exception import HTTPUnprocessableEntity
-from future.moves import queue
 
 from neptune.exceptions import NeptuneException
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue,\
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue, \
     ChannelType, ChannelNamespace
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
@@ -87,7 +87,7 @@ class ChannelsValuesSender(object):
         return self._values_queue is not None and self._sending_thread is not None and self._sending_thread.is_alive()
 
     def _start(self):
-        self._values_queue = queue.Queue()
+        self._values_queue = Queue()
         self._sending_thread = ChannelsValuesSendingThread(self._experiment, self._values_queue)
         self._sending_thread.start()
 
@@ -111,7 +111,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
                 self._values_batch.append(self._values_queue.get(timeout=max(self._sleep_time, 0)))
                 self._values_queue.task_done()
                 self._sleep_time -= time.time() - sleep_start
-            except queue.Empty:
+            except Empty:
                 self._sleep_time = 0
 
             if self._sleep_time <= 0 \
