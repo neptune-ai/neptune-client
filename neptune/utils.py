@@ -15,6 +15,7 @@
 #
 
 import functools
+import glob as globlib
 import logging
 import os
 import sys
@@ -215,3 +216,11 @@ def with_api_exceptions_handler(func):
         raise ConnectionLost()
 
     return wrapper
+
+
+def glob(pathname):
+    # pylint: disable=unexpected-keyword-arg
+    if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+        return globlib.glob(pathname)
+    else:
+        return globlib.glob(pathname, recursive=True)
