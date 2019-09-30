@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import glob
 import os
 import sys
 import threading
@@ -29,7 +28,7 @@ from neptune.envs import NOTEBOOK_ID_ENV_NAME
 from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
-from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
+from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, glob
 
 
 class Project(object):
@@ -252,10 +251,12 @@ class Project(object):
             upload_source_files (:obj:`list` or :obj:`str`, optional, default is ``None``):
                 List of source files to be uploaded. Must be list of :obj:`str` or single :obj:`str`.
                 Uploaded sources are displayed in the experiment's `Source code` tab.
+
                 | If ``None`` is passed, Python file from which experiment was created will be uploaded.
                 | Pass empty list (``[]``) to upload no files.
-                | Unix style pathname pattern expansion is supported. For example, you can pass ``['*.py']`` to upload
-                  all python source files from the current directory (no recursion lookup is used).
+                | Unix style pathname pattern expansion is supported. For example, you can pass ``'*.py'`` to upload
+                  all python source files from the current directory.
+                  For recursion lookup use ``'**/*.py'`` (for Python 3.5 and later).
                   For more information see `glob library <https://docs.python.org/3/library/glob.html>`_.
 
             abort_callback (:obj:`callable`, optional, default is ``None``):
@@ -345,6 +346,10 @@ class Project(object):
                 # Send all py files in cwd (excluding hidden files with names beginning with a dot)
                 neptune.create_experiment(upload_source_files='*.py')
 
+                # Send all py files from all subdirectories (excluding hidden files with names beginning with a dot)
+                # Supported on Python 3.5 and later.
+                neptune.create_experiment(upload_source_files='**/*.py')
+
                 # Send all files and directories in cwd (excluding hidden files with names beginning with a dot)
                 neptune.create_experiment(upload_source_files='*')
 
@@ -403,7 +408,7 @@ class Project(object):
         else:
             expanded_source_files = set()
             for filepath in upload_source_files:
-                expanded_source_files |= set(glob.glob(filepath))
+                expanded_source_files |= set(glob(filepath))
             for filepath in expanded_source_files:
                 upload_source_entries.append(UploadEntry(os.path.abspath(filepath), normalize_file_name(filepath)))
 
