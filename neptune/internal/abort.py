@@ -34,7 +34,7 @@ class DefaultAbortImpl(object):
 
     @staticmethod
     def requirements_installed():
-        # pylint:disable=unused-import,unused-variable
+        # pylint:disable=unused-import,unused-variable,bad-option-value,import-outside-toplevel
         try:
             import psutil
             return True
@@ -43,6 +43,7 @@ class DefaultAbortImpl(object):
             return False
 
     def abort(self):
+        # pylint:disable=bad-option-value,import-outside-toplevel
         import psutil
 
         process = None
@@ -61,6 +62,7 @@ class DefaultAbortImpl(object):
 
     @staticmethod
     def _get_processes(process):
+        # pylint:disable=bad-option-value,import-outside-toplevel
         import psutil
 
         try:
@@ -69,6 +71,7 @@ class DefaultAbortImpl(object):
             return []
 
     def _abort(self, process):
+        # pylint:disable=bad-option-value,import-outside-toplevel
         import psutil
 
         try:
@@ -77,6 +80,7 @@ class DefaultAbortImpl(object):
             pass
 
     def _kill(self, process):
+        # pylint:disable=bad-option-value,import-outside-toplevel
         import psutil
 
         for process in self._get_processes(process):

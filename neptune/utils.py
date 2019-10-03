@@ -131,6 +131,7 @@ def _split_df_by_stems(df):
 
 
 def discover_git_repo_location():
+    # pylint:disable=bad-option-value,import-outside-toplevel
     import __main__
 
     if hasattr(__main__, '__file__'):
@@ -164,6 +165,7 @@ def get_git_info(repo_path=None):
 
     """
     try:
+        # pylint:disable=bad-option-value,import-outside-toplevel
         import git
 
         repo = git.Repo(repo_path, search_parent_directories=True)
