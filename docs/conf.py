@@ -51,14 +51,7 @@ master_doc = 'index'
 # This pattern also affects html_static_path and html_extra_path.
 exclude_patterns = ['_build',
                     'Thumbs.db',
-                    '.DS_Store',
-                    '404.rst',
-                    'experiment.rst',
-                    'neptune.rst',
-                    'notebook.rst',
-                    'project.rst',
-                    'session.rst',
-                    'utils.rst']
+                    '.DS_Store']
 
 
 # -- Options for HTML output -------------------------------------------------
