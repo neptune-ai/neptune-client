@@ -21,7 +21,7 @@ _logger = logging.getLogger(__name__)
 class SystemMonitor(object):
     @staticmethod
     def requirements_installed():
-        # pylint:disable=unused-import,unused-variable
+        # pylint:disable=unused-import,unused-variable,bad-option-value,import-outside-toplevel
         try:
             import psutil
             return True
@@ -40,5 +40,6 @@ class SystemMonitor(object):
 
     @classmethod
     def _psutil(cls):
+        # pylint:disable=bad-option-value,import-outside-toplevel
         import psutil
         return psutil

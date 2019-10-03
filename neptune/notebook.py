@@ -24,7 +24,7 @@ class Notebook(object):
 
         Args:
             backend (:class:`~neptune.Backend`): A Backend object
-            project (:class:`~neptune.Project`): Project object
+            project (:class:`~neptune.projects.Project`): Project object
             _id (:obj:`str`): Notebook uuid
             owner (:obj:`str`): Creator of the notebook is the Notebook owner
 

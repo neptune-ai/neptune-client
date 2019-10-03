@@ -108,3 +108,6 @@ venv.bak/
 # Pycharm
 .idea/
 *.iml
+
+# Vim
+*.swp

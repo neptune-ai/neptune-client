@@ -85,7 +85,7 @@ neptune.stop()
 Making sure that all your hyperparameters are recorded is very important.
 With Neptune, you can do that easily by passing `params` dictionary when creating the experiment.
 
-```pythonhttps://docs.neptune.ml/how-to-guides/keep-the-code-private/
+```python
 params = {'n_estimators':10,
           'criterion': 'gini',
           'max_depth': 2,
