@@ -33,13 +33,13 @@ def create_checkpoint(backend, notebook_id, notebook_path):
         with _checkpoints_lock:
 
             if execution_count in _checkpoints:
-                return
+                return _checkpoints[execution_count]
 
             checkpoint = backend.create_checkpoint(notebook_id, notebook_path)
             send_checkpoint_created(notebook_id=notebook_id,
                                     notebook_path=notebook_path,
                                     checkpoint_id=checkpoint.id)
-            _checkpoints[execution_count] = checkpoint.id
+            _checkpoints[execution_count] = checkpoint
             return checkpoint
     except ImportError:
         _logger.debug("Notebook checkpoint creation skipped. Can't import `ipykernel.comm`.")
