@@ -797,7 +797,7 @@ class HostedNeptuneBackend(Backend):
                        headers={
                            "Content-Type": "application/octet-stream",
                            "Content-Filename": data.filename,
-                           "Range": binary_range,
+                           "X-Range": binary_range,
                            "X-File-Permissions": data.permissions
                        },
                        **kwargs)
