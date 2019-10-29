@@ -202,7 +202,7 @@ class HostedNeptuneBackend(Backend):
             raise ValueError("Invalid properties {}, should be a dict.".format(properties))
         if not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
-        if not isinstance(entrypoint, six.string_types):
+        if entrypoint != None and not isinstance(entrypoint, six.string_types):
             raise ValueError("Invalid entrypoint {}, should be a string.".format(entrypoint))
 
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
