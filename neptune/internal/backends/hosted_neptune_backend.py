@@ -46,7 +46,7 @@ from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
-from neptune.utils import is_float, with_api_exceptions_handler
+from neptune.utils import is_float, with_api_exceptions_handler, update_session_proxies
 
 _logger = logging.getLogger(__name__)
 
@@ -63,8 +63,8 @@ class HostedNeptuneBackend(Backend):
             ssl_verify = False
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
-        if proxies is not None:
-            self._update_proxies(proxies)
+
+        update_session_proxies(self._http_client.session, proxies)
 
         self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
                                                                .format(self.api_address))
@@ -868,12 +868,6 @@ class HostedNeptuneBackend(Backend):
         response = session.send(session.prepare_request(request))
         response.raise_for_status()
         return response
-
-    def _update_proxies(self, proxies):
-        try:
-            self._http_client.session.proxies.update(proxies)
-        except (TypeError, ValueError):
-            raise ValueError("Wrong proxies format: {}".format(proxies))
 
     @with_api_exceptions_handler
     def _get_swagger_client(self, url):

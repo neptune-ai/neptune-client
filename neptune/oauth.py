@@ -21,7 +21,7 @@ from oauthlib.oauth2 import TokenExpiredError
 from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
 
-from neptune.utils import with_api_exceptions_handler
+from neptune.utils import with_api_exceptions_handler, update_session_proxies
 
 
 class NeptuneAuth(AuthBase):
@@ -70,23 +70,18 @@ class NeptuneAuthenticator(Authenticator):
             u'refresh_token': auth_tokens.refreshToken,
             u'expires_in': expires_at - time.time()
         }
-        self._session = OAuth2Session(
+        session = OAuth2Session(
             client_id=client_name,
             token=token,
             auto_refresh_url=refresh_url,
             auto_refresh_kwargs={'client_id': client_name},
             token_updater=_no_token_updater
         )
-        self._session.verify = ssl_verify
-        if proxies is not None:
-            self._update_proxies(proxies)
-        self.auth = NeptuneAuth(self._session)
+        session.verify = ssl_verify
 
-    def _update_proxies(self, proxies):
-        try:
-            self._session.proxies.update(proxies)
-        except (TypeError, ValueError):
-            raise ValueError("Wrong proxies format: {}".format(proxies))
+        update_session_proxies(session, proxies)
+
+        self.auth = NeptuneAuth(session)
 
     def matches(self, url):
         return True
