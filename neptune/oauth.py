@@ -21,7 +21,7 @@ from oauthlib.oauth2 import TokenExpiredError
 from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
 
-from neptune.utils import with_api_exceptions_handler
+from neptune.utils import with_api_exceptions_handler, update_session_proxies
 
 
 class NeptuneAuth(AuthBase):
@@ -59,7 +59,7 @@ class NeptuneAuth(AuthBase):
 
 class NeptuneAuthenticator(Authenticator):
 
-    def __init__(self, auth_tokens, ssl_verify):
+    def __init__(self, auth_tokens, ssl_verify, proxies):
         super(NeptuneAuthenticator, self).__init__(host='')
         decoded_json_token = jwt.decode(auth_tokens.accessToken, verify=False)
         expires_at = decoded_json_token.get(u'exp')
@@ -78,6 +78,9 @@ class NeptuneAuthenticator(Authenticator):
             token_updater=_no_token_updater
         )
         session.verify = ssl_verify
+
+        update_session_proxies(session, proxies)
+
         self.auth = NeptuneAuth(session)
 
     def matches(self, url):

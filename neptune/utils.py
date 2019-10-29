@@ -139,6 +139,14 @@ def discover_git_repo_location():
     return None
 
 
+def update_session_proxies(session, proxies):
+    if proxies is not None:
+        try:
+            session.proxies.update(proxies)
+        except (TypeError, ValueError):
+            raise ValueError("Wrong proxies format: {}".format(proxies))
+
+
 def get_git_info(repo_path=None):
     """Retrieve information about git repository.
 
