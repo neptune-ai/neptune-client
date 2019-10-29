@@ -72,7 +72,7 @@ class HostedNeptuneBackend(Backend):
         self.leaderboard_swagger_client = self._get_swagger_client('{}/api/leaderboard/swagger.json'
                                                                    .format(self.api_address))
 
-        self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify)
+        self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies)
         self._http_client.authenticator = self.authenticator
 
         # This is not a top-level import because of circular dependencies
@@ -889,10 +889,11 @@ class HostedNeptuneBackend(Backend):
         )
 
     @with_api_exceptions_handler
-    def _create_authenticator(self, api_token, ssl_verify):
+    def _create_authenticator(self, api_token, ssl_verify, proxies):
         return NeptuneAuthenticator(
             self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result,
-            ssl_verify
+            ssl_verify,
+            proxies
         )
 
 

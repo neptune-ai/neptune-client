@@ -59,7 +59,7 @@ class NeptuneAuth(AuthBase):
 
 class NeptuneAuthenticator(Authenticator):
 
-    def __init__(self, auth_tokens, ssl_verify):
+    def __init__(self, auth_tokens, ssl_verify, proxies):
         super(NeptuneAuthenticator, self).__init__(host='')
         decoded_json_token = jwt.decode(auth_tokens.accessToken, verify=False)
         expires_at = decoded_json_token.get(u'exp')
@@ -70,15 +70,23 @@ class NeptuneAuthenticator(Authenticator):
             u'refresh_token': auth_tokens.refreshToken,
             u'expires_in': expires_at - time.time()
         }
-        session = OAuth2Session(
+        self._session = OAuth2Session(
             client_id=client_name,
             token=token,
             auto_refresh_url=refresh_url,
             auto_refresh_kwargs={'client_id': client_name},
             token_updater=_no_token_updater
         )
-        session.verify = ssl_verify
-        self.auth = NeptuneAuth(session)
+        self._session.verify = ssl_verify
+        if proxies is not None:
+            self._update_proxies(proxies)
+        self.auth = NeptuneAuth(self._session)
+
+    def _update_proxies(self, proxies):
+        try:
+            self._session.proxies.update(proxies)
+        except (TypeError, ValueError):
+            raise ValueError("Wrong proxies format: {}".format(proxies))
 
     def matches(self, url):
         return True
