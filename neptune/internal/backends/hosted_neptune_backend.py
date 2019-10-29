@@ -189,6 +189,7 @@ class HostedNeptuneBackend(Backend):
                           monitored,
                           git_info,
                           hostname,
+                          entrypoint,
                           notebook_id,
                           checkpoint_id):
         if not isinstance(name, six.string_types):
@@ -201,6 +202,8 @@ class HostedNeptuneBackend(Backend):
             raise ValueError("Invalid properties {}, should be a dict.".format(properties))
         if not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
+        if entrypoint is not None and not isinstance(entrypoint, six.string_types):
+            raise ValueError("Invalid entrypoint {}, should be a string.".format(entrypoint))
 
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
         GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
@@ -228,9 +231,9 @@ class HostedNeptuneBackend(Backend):
                 properties=self._convert_to_api_properties(properties),
                 tags=tags,
                 gitInfo=git_info_data,
-                enqueueCommand="command",  # FIXME
-                entrypoint="",  # FIXME
-                execArgsTemplate="",  # FIXME,
+                enqueueCommand="command",  # legacy (it's ignored but any non-empty string is required)
+                entrypoint=entrypoint,
+                execArgsTemplate="",  # legacy,
                 abortable=abortable,
                 monitored=monitored,
                 hostname=hostname,

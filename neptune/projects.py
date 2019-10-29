@@ -404,9 +404,11 @@ class Project(object):
             upload_source_files = [upload_source_files]
 
         upload_source_entries = []
+        main_file = sys.argv[0]
+        entrypoint = main_file or None
         if upload_source_files is None:
-            main_file = sys.argv[0]
             if os.path.isfile(main_file):
+                entrypoint = normalize_file_name(os.path.basename(main_file))
                 upload_source_entries = [
                     UploadEntry(os.path.abspath(main_file), normalize_file_name(os.path.basename(main_file)))
                 ]
@@ -441,6 +443,7 @@ class Project(object):
             monitored=run_monitoring_thread,
             git_info=git_info,
             hostname=hostname,
+            entrypoint=entrypoint,
             notebook_id=notebook_id,
             checkpoint_id=checkpoint_id
         )
