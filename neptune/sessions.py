@@ -131,7 +131,7 @@ class Session(object):
                 session = Session.with_default_backend()
 
         """
-        return cls(HostedNeptuneBackend(api_token))
+        return cls(backend=HostedNeptuneBackend(api_token))
 
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.
