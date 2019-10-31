@@ -841,7 +841,7 @@ class Experiment(object):
                 experiment.set_property('magic-number', 7)
         """
         properties = {p.key: p.value for p in self._backend.get_experiment(self.internal_id).properties}
-        properties[key] = value
+        properties[key] = str(value)
         return self._backend.update_experiment(
             experiment=self,
             properties=properties
