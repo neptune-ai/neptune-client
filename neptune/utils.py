@@ -201,7 +201,7 @@ def with_api_exceptions_handler(func):
                 raise SSLError()
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout) as ex:
+                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout):
                 if retry >= 6:
                     _logger.warning('Experiencing connection interruptions. Reestablishing communication with Neptune.')
                 time.sleep(2 ** retry)
