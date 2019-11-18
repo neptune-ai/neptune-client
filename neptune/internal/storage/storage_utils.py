@@ -104,7 +104,7 @@ def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_fil
     walked_entries = set()
     for entry in upload_entries:
         if os.path.isdir(entry.source_path):
-            for root, dirs, files in os.walk(entry.source_path):
+            for root, _, files in os.walk(entry.source_path):
                 path_relative_to_entry_source = os.path.relpath(root, entry.source_path)
                 if path_relative_to_entry_source == ".":
                     target_root = entry.target_path
