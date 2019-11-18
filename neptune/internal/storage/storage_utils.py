@@ -36,6 +36,12 @@ class UploadEntry(object):
         """
         return not self == other
 
+    def __hash__(self):
+        """
+        Returns the hash of source_path
+        """
+        return self.source_path.__hash__()
+
     def to_str(self):
         """
         Returns the string representation of the model
@@ -93,10 +99,39 @@ class UploadPackage(object):
         return self.to_str()
 
 
-def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_files=500):
+def split_upload_files2(upload_entries, max_package_size=1 * 1024 * 1024, max_files=500):
     current_package = UploadPackage()
     for entry in upload_entries:
         size = 0 if os.path.isdir(entry.source_path) else os.path.getsize(entry.source_path)
+
+        if (size + current_package.size > max_package_size or current_package.len > max_files) \
+                and not current_package.is_empty():
+            yield current_package
+            current_package.reset()
+        current_package.update(entry, size)
+
+    yield current_package
+
+
+def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_files=500):
+    current_package = UploadPackage()
+    walked_entries = set()
+    for entry in upload_entries:
+        if os.path.isdir(entry.source_path):
+            for root, dirs, files in os.walk(entry.source_path):
+                path_relative_to_entry_source = os.path.relpath(root, entry.source_path)
+                if path_relative_to_entry_source.startswith("."):
+                    target_root = entry.target_path
+                else:
+                    target_root = entry.target_path + "/" + path_relative_to_entry_source
+                for file in files:
+                    walked_entries.add(UploadEntry(root + "/" + file, target_root + "/" + file))
+        else:
+            walked_entries.add(entry)
+
+    for entry in walked_entries:
+        size = os.path.getsize(entry.source_path)
+        print(entry.source_path, size)
 
         if (size + current_package.size > max_package_size or current_package.len > max_files) \
                 and not current_package.is_empty():
@@ -120,8 +155,10 @@ def upload_to_storage(upload_entries, upload_api_fun, upload_tar_api_fun, **kwar
         creating_a_single_empty_dir = package.len == 1 and os.path.isdir(package.items[0].source_path)
 
         if uploading_multiple_entries or creating_a_single_empty_dir:
+            print("compressing ", package.len, "files with size", package.size)
             data = compress_to_tar_gz_in_memory(upload_entries=package.items)
             upload_tar_api_fun(**dict(kwargs, data=data))
         else:
+            print("streaming a file with size", package.size)
             file_chunk_stream = FileChunkStream(package.items[0])
             upload_api_fun(**dict(kwargs, data=file_chunk_stream))
