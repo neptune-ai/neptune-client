@@ -36,6 +36,12 @@ class UploadEntry(object):
         """
         return not self == other
 
+    def __hash__(self):
+        """
+        Returns the hash of source and target path
+        """
+        return hash((self.source_path, self.target_path))
+
     def to_str(self):
         """
         Returns the string representation of the model
@@ -93,10 +99,30 @@ class UploadPackage(object):
         return self.to_str()
 
 
+def scan_unique_upload_entries(upload_entries):
+    """
+    Returns upload entries for all files that could be found for given upload entries.
+    In case of directory as upload entry, files we be taken from all subdirectories recursively.
+    Any duplicated entries are removed.
+    """
+    walked_entries = set()
+    for entry in upload_entries:
+        if os.path.isdir(entry.source_path):
+            for root, _, files in os.walk(entry.source_path):
+                path_relative_to_entry_source = os.path.relpath(root, entry.source_path)
+                target_root = os.path.normpath(os.path.join(entry.target_path, path_relative_to_entry_source))
+                for filename in files:
+                    walked_entries.add(UploadEntry(os.path.join(root, filename), os.path.join(target_root, filename)))
+        else:
+            walked_entries.add(entry)
+    return walked_entries
+
+
 def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_files=500):
     current_package = UploadPackage()
+
     for entry in upload_entries:
-        size = 0 if os.path.isdir(entry.source_path) else os.path.getsize(entry.source_path)
+        size = os.path.getsize(entry.source_path)
 
         if (size + current_package.size > max_package_size or current_package.len > max_files) \
                 and not current_package.is_empty():
@@ -112,7 +138,7 @@ def normalize_file_name(name):
 
 
 def upload_to_storage(upload_entries, upload_api_fun, upload_tar_api_fun, **kwargs):
-    for package in split_upload_files(upload_entries):
+    for package in split_upload_files(scan_unique_upload_entries(upload_entries)):
         if package.is_empty():
             break
 
