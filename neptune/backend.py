@@ -26,6 +26,10 @@ class Backend(object):
     def api_address(self):
         pass
 
+    @abstractproperty
+    def api_link_address(self):
+        pass
+
     @abstractmethod
     def get_project(self, project_qualified_name):
         pass

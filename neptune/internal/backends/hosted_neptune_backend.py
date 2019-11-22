@@ -69,6 +69,15 @@ class HostedNeptuneBackend(Backend):
         self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
                                                                .format(self.api_address))
 
+        self._view_address = self.credentials.api_address
+
+        try:
+            configuration = self.backend_swagger_client.api.configuration().response().result
+            if configuration.view_address is not None and configuration.view_address:
+                self._view_address = configuration.view_address
+        except Exception as _:
+            pass
+
         self.leaderboard_swagger_client = self._get_swagger_client('{}/api/leaderboard/swagger.json'
                                                                    .format(self.api_address))
 
@@ -88,6 +97,10 @@ class HostedNeptuneBackend(Backend):
     @property
     def api_address(self):
         return self.credentials.api_address
+
+    @property
+    def api_link_address(self):
+        return self._view_address
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
