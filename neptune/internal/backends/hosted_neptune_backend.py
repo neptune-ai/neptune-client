@@ -72,8 +72,8 @@ class HostedNeptuneBackend(Backend):
         self._view_address = self.credentials.api_address
 
         try:
-            configuration = self.backend_swagger_client.api.configuration().response().result
-            if configuration.view_address is not None and configuration.view_address:
+            configuration = self.backend_swagger_client.api.clientConfiguration().response().result
+            if configuration.view_address:
                 self._view_address = configuration.view_address
         except Exception as _:
             pass
