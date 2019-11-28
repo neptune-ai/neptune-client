@@ -38,7 +38,7 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
     PathInProjectNotFound, ChannelNotFound
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
-from neptune.client_config import ClientConfig
+from neptune.internal.backends.client_config import ClientConfig
 from neptune.exceptions import FileNotFound
 from neptune.experiments import Experiment
 from neptune.internal.backends.credentials import Credentials
@@ -57,7 +57,6 @@ class HostedNeptuneBackend(Backend):
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
         self.credentials = Credentials(api_token)
-        api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
 
         ssl_verify = True
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
@@ -68,15 +67,11 @@ class HostedNeptuneBackend(Backend):
 
         update_session_proxies(self._http_client.session, proxies)
 
-        self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(api_url))
-        self._client_config = self.get_client_config(api_token)
+        config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
+        backend_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(config_api_url))
+        self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
 
-        if self._client_config.api_url != api_url:
-            self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
-                                                                   .format(self.api_address))
-
-        self.leaderboard_swagger_client = self._get_swagger_client('{}/api/leaderboard/swagger.json'
-                                                                   .format(self.api_address))
+        self._set_swagger_clients(self._client_config, config_api_url, backend_client)
 
         self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies)
         self._http_client.authenticator = self.authenticator
@@ -98,11 +93,6 @@ class HostedNeptuneBackend(Backend):
     @property
     def display_address(self):
         return self._client_config.display_url
-
-    @with_api_exceptions_handler
-    def get_client_config(self, api_token):
-        config = self.backend_swagger_client.api.getClientConfig(X_Neptune_Api_Token=api_token).response().result
-        return ClientConfig(api_url=config.apiUrl, display_url=config.displayUrl)
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
@@ -908,6 +898,20 @@ class HostedNeptuneBackend(Backend):
             proxies
         )
 
+    @with_api_exceptions_handler
+    def _create_client_config(self, api_token, backend_client):
+        config = backend_client.api.getClientConfig(X_Neptune_Api_Token=api_token).response().result
+        return ClientConfig(api_url=config.apiUrl, display_url=config.applicationUrl)
+
+    def _set_swagger_clients(self, client_config, client_config_api_addr, client_config_backend_client):
+        self.backend_swagger_client = (
+            client_config_backend_client if client_config_api_addr == client_config.api_url
+            else self._get_swagger_client('{}/api/backend/swagger.json'.format(client_config.api_url))
+        )
+
+        self.leaderboard_swagger_client = self._get_swagger_client(
+            '{}/api/leaderboard/swagger.json'.format(client_config.api_url)
+        )
 
 uuid_format = SwaggerFormat(
     format='uuid',
