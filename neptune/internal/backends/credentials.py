@@ -75,15 +75,21 @@ class Credentials(object):
         if self.api_token is None:
             raise MissingApiToken()
 
-        self._api_address = self._api_token_to_dict(self.api_token)['api_address']
+        token_dict = self._api_token_to_dict(self.api_token)
+        self._token_origin_address = token_dict['api_address']
+        self._api_url = token_dict['api_url'] if 'api_url' in token_dict else None
 
     @property
     def api_token(self):
         return self._api_token
 
     @property
-    def api_address(self):
-        return self._api_address
+    def token_origin_address(self):
+        return self._token_origin_address
+
+    @property
+    def api_url_opt(self):
+        return self._api_url
 
     @staticmethod
     def _api_token_to_dict(api_token):

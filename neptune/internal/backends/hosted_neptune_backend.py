@@ -38,6 +38,7 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
     PathInProjectNotFound, ChannelNotFound
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
+from neptune.client_config import ClientConfig
 from neptune.exceptions import FileNotFound
 from neptune.experiments import Experiment
 from neptune.internal.backends.credentials import Credentials
@@ -56,6 +57,7 @@ class HostedNeptuneBackend(Backend):
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
         self.credentials = Credentials(api_token)
+        api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
 
         ssl_verify = True
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
@@ -66,8 +68,12 @@ class HostedNeptuneBackend(Backend):
 
         update_session_proxies(self._http_client.session, proxies)
 
-        self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
-                                                               .format(self.api_address))
+        self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(api_url))
+        self._client_config = self.get_client_config(api_token)
+
+        if self._client_config.api_url != api_url:
+            self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
+                                                                   .format(self.api_address))
 
         self.leaderboard_swagger_client = self._get_swagger_client('{}/api/leaderboard/swagger.json'
                                                                    .format(self.api_address))
@@ -87,7 +93,16 @@ class HostedNeptuneBackend(Backend):
 
     @property
     def api_address(self):
-        return self.credentials.api_address
+        return self._client_config.api_url
+
+    @property
+    def display_address(self):
+        return self._client_config.display_url
+
+    @with_api_exceptions_handler
+    def get_client_config(self, api_token):
+        config = self.backend_swagger_client.api.getClientConfig(X_Neptune_Api_Token=api_token).response().result
+        return ClientConfig(api_url=config.apiUrl, display_url=config.displayUrl)
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
