@@ -150,7 +150,7 @@ class Experiment(object):
     def get_system_properties(self):
         """Retrieve experiment properties.
 
-        | Experiment properties are for example: `owner`, `time of creation`, `time of completion`, `hostname`.
+        | Experiment properties are for example: `owner`, `created`, `name`, `hostname`.
         | List of experiment properties may change over time.
 
         Returns:
@@ -171,9 +171,13 @@ class Experiment(object):
             'finished': experiment.timeOfCompletion,
             'running_time': experiment.runningTime,
             'owner': experiment.owner,
-            'size': experiment.storageSize,
+            'storage_size': experiment.storageSize,
+            'channels_size': experiment.channelsSize,
+            'size': experiment.storageSize + experiment.channelsSize,
             'tags': experiment.tags,
-            'notes': experiment.description
+            'notes': experiment.description,
+            'description': experiment.description,
+            'hostname': experiment.hostname
         }
 
     def get_tags(self):
