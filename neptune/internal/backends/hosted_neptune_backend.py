@@ -33,6 +33,7 @@ from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEnt
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 from requests.exceptions import HTTPError
+from six.moves.urllib.parse import urlparse
 
 from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, NamespaceNotFound, ProjectNotFound, StorageLimitReached, \
@@ -917,15 +918,9 @@ class HostedNeptuneBackend(Backend):
         )
 
     def _verify_host_resolution(self, api_url, app_url):
-        # pylint: disable=import-error
-        if sys.version_info.major >= 3:
-            from urllib.parse import urlparse
-        else:
-            from urlparse import urlparse
-
-        host = urlparse(api_url).netloc
+        host = urlparse(api_url).netloc.split(':')[0]
         try:
-            socket.gethostbyname(host.split(':')[0])
+            socket.gethostbyname(host)
         except socket.gaierror:
             if self.credentials.api_url_opt is None:
                 _logger.error(
@@ -934,7 +929,7 @@ class HostedNeptuneBackend(Backend):
             else:
                 _logger.error(
                     "Cannot resolve hostname %s. Please contact Neptune support.",
-                    host=host.split(':')[0])
+                    host)
             sys.exit(1)
 
 uuid_format = SwaggerFormat(
