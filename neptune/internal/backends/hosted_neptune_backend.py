@@ -17,6 +17,8 @@ import io
 import logging
 import os
 import platform
+import socket
+import sys
 import uuid
 from functools import partial
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
@@ -68,6 +70,7 @@ class HostedNeptuneBackend(Backend):
         update_session_proxies(self._http_client.session, proxies)
 
         config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
+        self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
         backend_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(config_api_url))
         self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
 
@@ -912,6 +915,27 @@ class HostedNeptuneBackend(Backend):
         self.leaderboard_swagger_client = self._get_swagger_client(
             '{}/api/leaderboard/swagger.json'.format(client_config.api_url)
         )
+
+    def _verify_host_resolution(self, api_url, app_url):
+        # pylint: disable=import-error
+        if sys.version_info.major >= 3:
+            from urllib.parse import urlparse
+        else:
+            from urlparse import urlparse
+
+        host = urlparse(api_url).netloc
+        try:
+            socket.gethostbyname(host.split(':')[0])
+        except socket.gaierror:
+            if self.credentials.api_url_opt is None:
+                _logger.error(
+                    "Your API token is deprecated. Please visit %s to get a new one.",
+                    urlparse(app_url).netloc)
+            else:
+                _logger.error(
+                    "Cannot resolve hostname %s. Please contact Neptune support.",
+                    host=host.split(':')[0])
+            sys.exit(1)
 
 uuid_format = SwaggerFormat(
     format='uuid',
