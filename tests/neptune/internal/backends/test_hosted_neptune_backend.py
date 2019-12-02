@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import base64
 import socket
 import unittest
 import uuid
@@ -92,10 +91,10 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self.assertEqual(API_TOKEN, session.credentials.api_token)
 
     @mock.patch('socket.gethostbyname')
-    def test_depracted_token_error_msg(self, gethostname_mock):
+    def test_depracted_token(self, gethostname_mock):
         # given
-        token_json = '{"api_address":"https://ui.stage.neptune.ml","api_key":"9838d954-4003-11e9-bf50-23198355da66"}'
-        token = str(base64.encodebytes(token_json.encode('utf-8')), 'utf-8')
+        token = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkuc3RhZ2UubmVwdHVuZS5tbCIsImF' \
+                'waV9rZXkiOiI5ODM4ZDk1NC00MDAzLTExZTktYmY1MC0yMzE5ODM1NWRhNjYifQ=='
 
         gethostname_mock.side_effect = socket.gaierror
 
@@ -104,12 +103,10 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             HostedNeptuneBackend(token)
 
     @mock.patch('socket.gethostbyname')
-    def test_depracted_token_error_msg(self, gethostname_mock):
+    def test_cannot_resolve_host(self, gethostname_mock):
         # given
-        token_json = '{"api_address":"https://ui.stage.neptune.ml",' \
-                     '"api_url":"https://ui.stage.neptune.ai",' \
-                     '"api_key":"9838d954-4003-11e9-bf50-23198355da66"}'
-        token = str(base64.encodebytes(token_json.encode('utf-8')), 'utf-8')
+        token = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkuc3RhZ2UubmVwdHVuZS5tbCIsImFwaV91cmwiOiJodHRwczovL3VpLn' \
+                'N0YWdlLm5lcHR1bmUuYWkiLCJhcGlfa2V5IjoiOTgzOGQ5NTQtNDAwMy0xMWU5LWJmNTAtMjMxOTgzNTVkYTY2In0='
 
         gethostname_mock.side_effect = socket.gaierror
 

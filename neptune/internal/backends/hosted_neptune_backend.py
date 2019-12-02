@@ -18,7 +18,6 @@ import logging
 import os
 import platform
 import socket
-import sys
 import uuid
 from functools import partial
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
@@ -33,7 +32,7 @@ from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEnt
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 from requests.exceptions import HTTPError
-from six.moves.urllib.parse import urlparse
+from six.moves import urllib
 
 from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, NamespaceNotFound, ProjectNotFound, StorageLimitReached, \
@@ -918,12 +917,12 @@ class HostedNeptuneBackend(Backend):
         )
 
     def _verify_host_resolution(self, api_url, app_url):
-        host = urlparse(api_url).netloc.split(':')[0]
+        host = urllib.parse.urlparse(api_url).netloc.split(':')[0]
         try:
             socket.gethostbyname(host)
         except socket.gaierror:
             if self.credentials.api_url_opt is None:
-                raise DeprecatedApiToken(urlparse(app_url).netloc)
+                raise DeprecatedApiToken(urllib.parse.urlparse(app_url).netloc)
             else:
                 raise CannotResolveHostname(host)
 
