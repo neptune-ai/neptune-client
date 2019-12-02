@@ -42,7 +42,7 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
 from neptune.internal.backends.client_config import ClientConfig
-from neptune.exceptions import FileNotFound
+from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname
 from neptune.experiments import Experiment
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.utils.http import extract_response_field
@@ -923,14 +923,9 @@ class HostedNeptuneBackend(Backend):
             socket.gethostbyname(host)
         except socket.gaierror:
             if self.credentials.api_url_opt is None:
-                _logger.error(
-                    "Your API token is deprecated. Please visit %s to get a new one.",
-                    urlparse(app_url).netloc)
+                raise DeprecatedApiToken(urlparse(app_url).netloc)
             else:
-                _logger.error(
-                    "Cannot resolve hostname %s. Please contact Neptune support.",
-                    host)
-            sys.exit(1)
+                raise CannotResolveHostname(host)
 
 uuid_format = SwaggerFormat(
     format='uuid',

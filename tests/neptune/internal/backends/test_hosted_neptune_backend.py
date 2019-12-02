@@ -13,12 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import base64
+import socket
 import unittest
 import uuid
 
 import mock
 from mock import MagicMock
 
+from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from tests.neptune.api_models import ApiParameter
 
@@ -88,6 +91,31 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         # then
         self.assertEqual(API_TOKEN, session.credentials.api_token)
 
+    @mock.patch('socket.gethostbyname')
+    def test_depracted_token_error_msg(self, gethostname_mock):
+        # given
+        token_json = '{"api_address":"https://ui.stage.neptune.ml","api_key":"9838d954-4003-11e9-bf50-23198355da66"}'
+        token = str(base64.encodebytes(token_json.encode('utf-8')), 'utf-8')
+
+        gethostname_mock.side_effect = socket.gaierror
+
+        # expect
+        with self.assertRaises(DeprecatedApiToken):
+            HostedNeptuneBackend(token)
+
+    @mock.patch('socket.gethostbyname')
+    def test_depracted_token_error_msg(self, gethostname_mock):
+        # given
+        token_json = '{"api_address":"https://ui.stage.neptune.ml",' \
+                     '"api_url":"https://ui.stage.neptune.ai",' \
+                     '"api_key":"9838d954-4003-11e9-bf50-23198355da66"}'
+        token = str(base64.encodebytes(token_json.encode('utf-8')), 'utf-8')
+
+        gethostname_mock.side_effect = socket.gaierror
+
+        # expect
+        with self.assertRaises(CannotResolveHostname):
+            HostedNeptuneBackend(token)
 
 class SomeClass(object):
     pass
