@@ -468,7 +468,7 @@ class Project(object):
 
     def _get_experiment_link(self, experiment):
         return "{base_url}/{namespace}/{project}/e/{exp_id}".format(
-            base_url=self._backend.api_address,
+            base_url=self._backend.display_address,
             namespace=self.namespace,
             project=self.name,
             exp_id=experiment.id

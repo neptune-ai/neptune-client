@@ -104,3 +104,13 @@ class InvalidNeptuneBackend(NeptuneException):
             'Use this environment variable to modify neptune-client behaviour at runtime, '
             'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
             .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
+
+class DeprecatedApiToken(NeptuneException):
+    def __init__(self, app_url):
+        super(DeprecatedApiToken, self).__init__(
+            "Your API token is deprecated. Please visit {} to get a new one.".format(app_url))
+
+class CannotResolveHostname(NeptuneException):
+    def __init__(self, host):
+        super(CannotResolveHostname, self).__init__(
+            "Cannot resolve hostname {}. Please contact Neptune support.".format(host))

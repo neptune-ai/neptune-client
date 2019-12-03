@@ -13,12 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import socket
 import unittest
 import uuid
 
 import mock
 from mock import MagicMock
 
+from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from tests.neptune.api_models import ApiParameter
 
@@ -88,6 +90,29 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         # then
         self.assertEqual(API_TOKEN, session.credentials.api_token)
 
+    @mock.patch('socket.gethostbyname')
+    def test_depracted_token(self, gethostname_mock):
+        # given
+        token = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkuc3RhZ2UubmVwdHVuZS5tbCIsImF' \
+                'waV9rZXkiOiI5ODM4ZDk1NC00MDAzLTExZTktYmY1MC0yMzE5ODM1NWRhNjYifQ=='
+
+        gethostname_mock.side_effect = socket.gaierror
+
+        # expect
+        with self.assertRaises(DeprecatedApiToken):
+            HostedNeptuneBackend(token)
+
+    @mock.patch('socket.gethostbyname')
+    def test_cannot_resolve_host(self, gethostname_mock):
+        # given
+        token = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkuc3RhZ2UubmVwdHVuZS5tbCIsImFwaV91cmwiOiJodHRwczovL3VpLn' \
+                'N0YWdlLm5lcHR1bmUuYWkiLCJhcGlfa2V5IjoiOTgzOGQ5NTQtNDAwMy0xMWU5LWJmNTAtMjMxOTgzNTVkYTY2In0='
+
+        gethostname_mock.side_effect = socket.gaierror
+
+        # expect
+        with self.assertRaises(CannotResolveHostname):
+            HostedNeptuneBackend(token)
 
 class SomeClass(object):
     pass
