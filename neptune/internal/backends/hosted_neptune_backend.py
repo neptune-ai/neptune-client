@@ -17,6 +17,7 @@ import io
 import logging
 import os
 import platform
+import socket
 import uuid
 from functools import partial
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
@@ -31,6 +32,7 @@ from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEnt
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 from requests.exceptions import HTTPError
+from six.moves import urllib
 
 from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitReached, \
     ExperimentNotFound, ExperimentValidationError, NamespaceNotFound, ProjectNotFound, StorageLimitReached, \
@@ -38,7 +40,8 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
     PathInProjectNotFound, ChannelNotFound
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
-from neptune.exceptions import FileNotFound
+from neptune.internal.backends.client_config import ClientConfig
+from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname
 from neptune.experiments import Experiment
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.utils.http import extract_response_field
@@ -66,11 +69,12 @@ class HostedNeptuneBackend(Backend):
 
         update_session_proxies(self._http_client.session, proxies)
 
-        self.backend_swagger_client = self._get_swagger_client('{}/api/backend/swagger.json'
-                                                               .format(self.api_address))
+        config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
+        self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
+        backend_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(config_api_url))
+        self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
 
-        self.leaderboard_swagger_client = self._get_swagger_client('{}/api/leaderboard/swagger.json'
-                                                                   .format(self.api_address))
+        self._set_swagger_clients(self._client_config, config_api_url, backend_client)
 
         self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies)
         self._http_client.authenticator = self.authenticator
@@ -87,7 +91,11 @@ class HostedNeptuneBackend(Backend):
 
     @property
     def api_address(self):
-        return self.credentials.api_address
+        return self._client_config.api_url
+
+    @property
+    def display_address(self):
+        return self._client_config.display_url
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
@@ -893,6 +901,30 @@ class HostedNeptuneBackend(Backend):
             proxies
         )
 
+    @with_api_exceptions_handler
+    def _create_client_config(self, api_token, backend_client):
+        config = backend_client.api.getClientConfig(X_Neptune_Api_Token=api_token).response().result
+        return ClientConfig(api_url=config.apiUrl, display_url=config.applicationUrl)
+
+    def _set_swagger_clients(self, client_config, client_config_api_addr, client_config_backend_client):
+        self.backend_swagger_client = (
+            client_config_backend_client if client_config_api_addr == client_config.api_url
+            else self._get_swagger_client('{}/api/backend/swagger.json'.format(client_config.api_url))
+        )
+
+        self.leaderboard_swagger_client = self._get_swagger_client(
+            '{}/api/leaderboard/swagger.json'.format(client_config.api_url)
+        )
+
+    def _verify_host_resolution(self, api_url, app_url):
+        host = urllib.parse.urlparse(api_url).netloc.split(':')[0]
+        try:
+            socket.gethostbyname(host)
+        except socket.gaierror:
+            if self.credentials.api_url_opt is None:
+                raise DeprecatedApiToken(urllib.parse.urlparse(app_url).netloc)
+            else:
+                raise CannotResolveHostname(host)
 
 uuid_format = SwaggerFormat(
     format='uuid',

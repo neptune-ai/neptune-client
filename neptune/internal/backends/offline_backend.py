@@ -31,6 +31,10 @@ class OfflineBackend(Backend):
     def api_address(self):
         return 'OFFLINE'
 
+    @property
+    def display_address(self):
+        return 'OFFLINE'
+
     def get_project(self, project_qualified_name):
         return NoopObject()
 
