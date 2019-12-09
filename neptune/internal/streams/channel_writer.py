@@ -16,7 +16,7 @@
 
 from __future__ import unicode_literals
 
-from datetime import datetime, timezone
+from datetime import datetime
 import re
 
 from neptune.internal.channels.channels import ChannelNamespace, ChannelValue, ChannelType
@@ -40,7 +40,7 @@ class ChannelWriter(object):
         lines = self.__SPLIT_PATTERN.split(self._data)
         for line in lines[:-1]:
             value = ChannelValue(
-                x=(datetime.now(tz=timezone.utc) - self._time_started).total_seconds() * 1000,
+                x=(datetime.now(tz=self._time_started.tzinfo) - self._time_started).total_seconds() * 1000,
                 y=dict(text_value=str(line)),
                 ts=None
             )
