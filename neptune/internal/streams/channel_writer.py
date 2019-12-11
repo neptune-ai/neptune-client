@@ -16,8 +16,8 @@
 
 from __future__ import unicode_literals
 
+from datetime import datetime
 import re
-import time
 
 from neptune.internal.channels.channels import ChannelNamespace, ChannelValue, ChannelType
 
@@ -26,7 +26,7 @@ class ChannelWriter(object):
     __SPLIT_PATTERN = re.compile(r'[\n\r]{1,2}')
 
     def __init__(self, experiment, channel_name, channel_namespace=ChannelNamespace.USER):
-        self.time_started_ms = time.time() * 1000
+        self._time_started = experiment.get_system_properties()['created']
         self._experiment = experiment
         self._channel_name = channel_name
         self._channel_namespace = channel_namespace
@@ -40,7 +40,7 @@ class ChannelWriter(object):
         lines = self.__SPLIT_PATTERN.split(self._data)
         for line in lines[:-1]:
             value = ChannelValue(
-                x=time.time() * 1000 - self.time_started_ms,
+                x=(datetime.now(tz=self._time_started.tzinfo) - self._time_started).total_seconds() * 1000,
                 y=dict(text_value=str(line)),
                 ts=None
             )
