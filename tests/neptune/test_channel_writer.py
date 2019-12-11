@@ -15,6 +15,7 @@
 #
 
 import unittest
+from datetime import datetime
 
 from mock import MagicMock
 
@@ -26,6 +27,7 @@ class TestChannelWriter(unittest.TestCase):
     def test_write_data_to_channel_writer(self):
         # given
         experiment = MagicMock()
+        experiment.get_system_properties.return_value = {"created": datetime.now()}
         channel_name = 'a channel name'
         writer = ChannelWriter(experiment, channel_name)
 
