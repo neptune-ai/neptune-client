@@ -32,6 +32,7 @@ class ReconnectingWebsocket(object):
 
     def shutdown(self):
         self._shutdown_event.set()
+        self.client.close()
         self.client.abort()
         self.client.shutdown()
 
