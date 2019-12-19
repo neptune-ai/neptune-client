@@ -36,6 +36,10 @@ class AbortingThread(NeptuneThread):
         except WebSocketConnectionClosedException:
             pass
 
+    def shutdown(self):
+        self.interrupt()
+        self._ws_client.shutdown()
+
     @staticmethod
     def _is_heartbeat(message):
         return message.strip() == ''

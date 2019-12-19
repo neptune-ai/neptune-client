@@ -39,6 +39,10 @@ class WebsocketClientAdapter(object):
     def connected(self):
         return self._ws_client and self._ws_client.connected
 
+    def close(self):
+        if self._ws_client:
+            return self._ws_client.close()
+
     def abort(self):
         if self._ws_client:
             return self._ws_client.abort()

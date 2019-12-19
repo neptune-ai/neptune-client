@@ -96,7 +96,7 @@ class ExecutionContext(object):
             self._hardware_metric_thread = None
 
         if self._aborting_thread:
-            self._aborting_thread.interrupt()
+            self._aborting_thread.shutdown()
             self._aborting_thread = None
 
         if self._stdout_uploader:
