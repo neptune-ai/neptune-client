@@ -4,7 +4,7 @@
 [![Downloads](https://pepy.tech/badge/neptune-client/week)](https://pepy.tech/project/neptune-client/week)
 
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
-[![Build Status](https://travis-ci.org/neptune-ml/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-client)
+[![Build Status](https://travis-ci.org/neptune-ai/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-client)
 
 # Overview
 
@@ -25,7 +25,7 @@ It works with any:
 # Getting started
 
 ### Register
-Go to https://neptune.ml/ and sign up.
+Go to https://neptune.ai/ and sign up.
 
 It is completely free for individuals and non-organizations, and you can invite others to join your team!
 
@@ -148,14 +148,14 @@ neptune.create_experiment(upload_source_files=['utils.py',
                                                'main.py'])
 ```
 
-**[Check the example project here](https://ui.neptune.ml/jakub-czakon/quick-start/experiments)**
+**[Check the example project here](https://ui.neptune.ai/jakub-czakon/quick-start/experiments)**
 
 
 # Getting help
 If you get stuck, don't worry we are here to help.
 The best order of communication is:
 
- * [neptune documentation](https://docs.neptune.ml)
- * [github issues](https://github.com/neptune-ml/neptune-client/issues)
- * [neptune community forum](https://community.neptune.ml/)
+ * [neptune documentation](https://docs.neptune.ai)
+ * [github issues](https://github.com/neptune-ai/neptune-client/issues)
+ * [neptune community forum](https://community.neptune.ai/)
  * [neptune community spectrum](https://spectrum.chat/neptune-community?tab=posts)

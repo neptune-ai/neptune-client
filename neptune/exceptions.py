@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2020, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ class Uninitialized(NeptuneException):
     def __init__(self):
         super(Uninitialized, self).__init__(
             "You must initialize neptune-client first. "
-            "For more information, please visit: https://github.com/neptune-ml/neptune-client#initialize-neptune")
+            "For more information, please visit: https://github.com/neptune-ai/neptune-client#initialize-neptune")
 
 
 class FileNotFound(NeptuneException):
