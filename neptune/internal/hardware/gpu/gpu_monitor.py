@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from pynvml import NVMLError, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, \
+from py3nvml.py3nvml import NVMLError, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, \
     nvmlDeviceGetUtilizationRates, nvmlInit
 
 
