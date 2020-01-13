@@ -23,14 +23,17 @@ class GPUMonitor(object):
         return self.__nvml_get_or_else(nvmlDeviceGetCount, default=0)
 
     def get_card_usage_percent(self, card_index):
+        # pylint: disable=no-member
         return self.__nvml_get_or_else(
             lambda: float(nvmlDeviceGetUtilizationRates(nvmlDeviceGetHandleByIndex(card_index)).gpu))
 
     def get_card_used_memory_in_bytes(self, card_index):
+        # pylint: disable=no-member
         return self.__nvml_get_or_else(lambda: nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).used)
 
     def get_top_card_memory_in_bytes(self):
         def read_top_card_memory_in_bytes():
+            # pylint: disable=no-member
             return self.__nvml_get_or_else(lambda: [
                 nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).total
                 for card_index in range(nvmlDeviceGetCount())
