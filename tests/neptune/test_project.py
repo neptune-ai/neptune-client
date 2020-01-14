@@ -207,15 +207,13 @@ class TestProject(unittest.TestCase):
         # then
         self.assertEqual(self.project._get_current_experiment(), second_experiment)
         # and
-        self.assertEqual(self.project._pop_stopped_experiment(), second_experiment)
+        self.project._remove_stopped_experiment(second_experiment)
         # and
         self.assertEqual(self.project._get_current_experiment(), first_experiment)
 
     # pylint: disable=protected-access
     def test_empty_stack(self):
-        # when
-        self.assertIsNone(self.project._pop_stopped_experiment())
-        # and
+        # expect
         with self.assertRaises(NoExperimentContext):
             self.project._get_current_experiment()
 

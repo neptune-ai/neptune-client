@@ -1023,7 +1023,7 @@ class Experiment(object):
         self._execution_context.stop()
 
         # pylint: disable=protected-access
-        self._project._pop_stopped_experiment()
+        self._project._remove_stopped_experiment(self)
 
     def __enter__(self):
         return self

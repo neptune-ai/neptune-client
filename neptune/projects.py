@@ -586,10 +586,7 @@ class Project(object):
             self._experiments_stack.append(new_experiment)
             return new_experiment
 
-    def _pop_stopped_experiment(self):
+    def _remove_stopped_experiment(self, experiment):
         with self.__lock:
             if self._experiments_stack:
-                stopped_experiment = self._experiments_stack.pop()
-            else:
-                stopped_experiment = None
-            return stopped_experiment
+                self._experiments_stack = [exp for exp in self._experiments_stack if exp != experiment]
