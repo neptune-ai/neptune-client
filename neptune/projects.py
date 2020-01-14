@@ -594,8 +594,6 @@ class Project(object):
                 self._experiments_stack = [exp for exp in self._experiments_stack if exp != experiment]
 
     def _shutdown_hook(self):
-        # pylint: disable=global-statement
-        # pylint: disable=protected-access
         if self._experiments_stack:
             # stopping experiment removes it from list, co we copy it
             copied_experiment_list = [exp for exp in self._experiments_stack]
