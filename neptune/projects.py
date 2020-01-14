@@ -19,6 +19,7 @@ import os
 import sys
 import threading
 from platform import node as get_hostname
+import atexit
 
 import click
 import pandas as pd
@@ -58,6 +59,7 @@ class Project(object):
 
         self._experiments_stack = []
         self.__lock = threading.RLock()
+        atexit.register(self._shutdown_hook)
 
     def get_members(self):
         """Retrieve a list of project members.
@@ -590,3 +592,12 @@ class Project(object):
         with self.__lock:
             if self._experiments_stack:
                 self._experiments_stack = [exp for exp in self._experiments_stack if exp != experiment]
+
+    def _shutdown_hook(self):
+        # pylint: disable=global-statement
+        # pylint: disable=protected-access
+        if self._experiments_stack:
+            # stopping experiment removes it from list, co we copy it
+            copied_experiment_list = [exp for exp in self._experiments_stack]
+            for exp in copied_experiment_list:
+                exp.stop()
