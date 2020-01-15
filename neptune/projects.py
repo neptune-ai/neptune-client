@@ -71,7 +71,7 @@ class Project(object):
 
             .. code:: python3
 
-                project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+                project = session.get_projects('neptune-ai')['neptune-ai/Salt-Detection']
                 project.get_members()
 
         """
@@ -110,7 +110,7 @@ class Project(object):
             .. code:: python3
 
                 # Fetch a project
-                project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+                project = session.get_projects('neptune-ai')['neptune-ai/Salt-Detection']
 
                 # Get list of experiments
                 project.get_experiments(state=['aborted'], owner=['neyo'], min_running_time=100000)
@@ -171,7 +171,7 @@ class Project(object):
             .. code:: python3
 
                 # Fetch a project.
-                project = session.get_projects('neptune-ml')['neptune-ml/Salt-Detection']
+                project = session.get_projects('neptune-ai')['neptune-ai/Salt-Detection']
 
                 # Get DataFrame that resembles experiment view.
                 project.get_leaderboard(state=['aborted'], owner=['neyo'], min_running_time=100000)

@@ -201,21 +201,21 @@ class Session(object):
                 # Now, you can list all the projects available for a selected namespace.
                 # You can use `YOUR_NAMESPACE` which is your organization or user name.
                 # You can also list public projects created by other organizations.
-                # For example you can use the `neptune-ml` namespace.
+                # For example you can use the `neptune-ai` namespace.
 
-                session.get_projects('neptune-ml')
+                session.get_projects('neptune-ai')
 
                 # Example output:
-                # OrderedDict([('neptune-ml/credit-default-prediction',
-                #               Project(neptune-ml/credit-default-prediction)),
-                #              ('neptune-ml/GStore-Customer-Revenue-Prediction',
-                #               Project(neptune-ml/GStore-Customer-Revenue-Prediction)),
-                #              ('neptune-ml/human-protein-atlas',
-                #               Project(neptune-ml/human-protein-atlas)),
-                #              ('neptune-ml/Ships',
-                #               Project(neptune-ml/Ships)),
-                #              ('neptune-ml/Mapping-Challenge',
-                #               Project(neptune-ml/Mapping-Challenge))
+                # OrderedDict([('neptune-ai/credit-default-prediction',
+                #               Project(neptune-ai/credit-default-prediction)),
+                #              ('neptune-ai/GStore-Customer-Revenue-Prediction',
+                #               Project(neptune-ai/GStore-Customer-Revenue-Prediction)),
+                #              ('neptune-ai/human-protein-atlas',
+                #               Project(neptune-ai/human-protein-atlas)),
+                #              ('neptune-ai/Ships',
+                #               Project(neptune-ai/Ships)),
+                #              ('neptune-ai/Mapping-Challenge',
+                #               Project(neptune-ai/Mapping-Challenge))
                 #              ])
         """
 

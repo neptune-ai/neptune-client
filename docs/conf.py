@@ -18,8 +18,8 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'Neptune client'
-copyright = '2019, team neptune.ml'
-author = 'team neptune.ml'
+copyright = '2019, team neptune.ai'
+author = 'team neptune.ai'
 
 # The short X.Y version
 version = '0.2'
