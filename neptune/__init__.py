@@ -37,7 +37,7 @@ _logger = logging.getLogger(__name__)
 
 
 def init(project_qualified_name=None, api_token=None, proxies=None, backend=None):
-    """Initialize `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with
+    """Initialize `Neptune client library <https://github.com/neptune-ml/neptune-client>`_ to work with
     specific project.
 
     Authorize user, sets value of global variable ``project`` to :class:`~neptune.projects.Project` object
@@ -146,7 +146,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
 
 def set_project(project_qualified_name):
-    """Setups `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with specific project.
+    """Setups `Neptune client library <https://github.com/neptune-ml/neptune-client>`_ to work with specific project.
 
     | Sets value of global variable ``project`` to :class:`~neptune.projects.Project` object
       that can be used to create or list experiments, notebooks, etc.
