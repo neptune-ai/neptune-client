@@ -18,7 +18,7 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'Neptune client'
-copyright = '2020, team neptune.ai'
+copyright = '2019, team neptune.ai'
 author = 'team neptune.ai'
 
 # The short X.Y version
