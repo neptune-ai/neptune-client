@@ -4,7 +4,7 @@
 [![Downloads](https://pepy.tech/badge/neptune-client/week)](https://pepy.tech/project/neptune-client/week)
 
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
-[![Build Status](https://travis-ci.org/neptune-ml/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ml/neptune-client)
+[![Build Status](https://travis-ci.org/neptune-ai/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-client)
 
 # Overview
 
@@ -156,6 +156,6 @@ If you get stuck, don't worry we are here to help.
 The best order of communication is:
 
  * [neptune documentation](https://docs.neptune.ai)
- * [github issues](https://github.com/neptune-ml/neptune-client/issues)
+ * [github issues](https://github.com/neptune-ai/neptune-client/issues)
  * [neptune community forum](https://community.neptune.ai/)
  * [neptune community spectrum](https://spectrum.chat/neptune-community?tab=posts)
