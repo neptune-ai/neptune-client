@@ -227,6 +227,8 @@ class HostedNeptuneBackend(Backend):
                     authorEmail=git_info.author_email,
                     commitDate=git_info.commit_date
                 ),
+                remotes=git_info.remote_urls,
+                currentBranch=git_info.active_branch,
                 repositoryDirty=git_info.repository_dirty
             )
 
@@ -925,6 +927,7 @@ class HostedNeptuneBackend(Backend):
                 raise DeprecatedApiToken(urllib.parse.urlparse(app_url).netloc)
             else:
                 raise CannotResolveHostname(host)
+
 
 uuid_format = SwaggerFormat(
     format='uuid',
