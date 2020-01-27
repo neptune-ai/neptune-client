@@ -603,6 +603,36 @@ class Experiment(object):
                           upload_tar_api_fun=self._backend.extract_experiment_output,
                           experiment=self)
 
+    def delete_artifacts(self, path):
+        """Removes an artifact(s) (file/directory) from the experiment storage.
+
+        Args:
+            path (:obj:`list`): List of paths to remove from the experiment's output
+
+        Raises:
+            `FileNotFound`: If a path in experiment artifacts does not exist.
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.delete_artifacts('forest_results.pkl')
+                experiment.delete_artifacts('')
+        """
+        if path is not None:
+            paths = path
+            if not isinstance(path, list):
+                paths = [path]
+            paths = [p[1:] if p.startswith['/'] else p for p in paths]
+            project_storage_path = ["/{experimentId}/output/{file}".format(experimentId=self.id, file=p) for p in
+                                    paths]
+            try:
+                self._backend.rm_data(project=self._project, project_storage_path=project_storage_path, recursive=True)
+            except PathInProjectNotFound as e:
+                raise FileNotFound("poc")
+        raise ValueError("path argument must not be None")
+
     def download_artifact(self, path, destination_dir=None):
         """Download an artifact (file) from the experiment storage.
 

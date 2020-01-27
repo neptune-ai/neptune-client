@@ -685,6 +685,18 @@ class HostedNeptuneBackend(Backend):
             raise
 
     @with_api_exceptions_handler
+    def rm_data(self, project, paths, recursive=False):
+        try:
+            return self.backend_swagger_client.api.rmData(projectId=project.internal_id,
+                                                          pathParam=paths,
+                                                          recursive=recursive,
+
+                                                          ).response().result
+        except BaseException as e:
+            print("exception was raised: ", e)
+            raise e
+
+    @with_api_exceptions_handler
     def download_data(self, project, path, destination):
         with self._download_raw_data(api_method=self.backend_swagger_client.api.downloadData,
                                      headers={"Accept": "application/octet-stream"},
