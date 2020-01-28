@@ -629,8 +629,8 @@ class Experiment(object):
                                     paths]
             try:
                 self._backend.rm_data(project=self._project, project_storage_path=project_storage_path, recursive=True)
-            except PathInProjectNotFound as e:
-                raise FileNotFound("poc")
+            except PathInProjectNotFound:
+                raise FileNotFound(path)
         raise ValueError("path argument must not be None")
 
     def download_artifact(self, path, destination_dir=None):

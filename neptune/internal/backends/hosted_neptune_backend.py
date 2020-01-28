@@ -689,8 +689,7 @@ class HostedNeptuneBackend(Backend):
         try:
             return self.backend_swagger_client.api.rmData(projectId=project.internal_id,
                                                           pathParam=paths,
-                                                          recursive=recursive,
-
+                                                          recursive=recursive
                                                           ).response().result
         except BaseException as e:
             print("exception was raised: ", e)
