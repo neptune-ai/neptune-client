@@ -180,13 +180,25 @@ def get_git_info(repo_path=None):
 
         commit = repo.head.commit
 
+        active_branch = ""
+
+        try:
+            active_branch = repo.active_branch.name
+        except TypeError as e:
+            if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
+                active_branch = "Detached HEAD"
+
+        remote_urls = [remote.url for remote in repo.remotes]
+
         return GitInfo(
             commit_id=commit.hexsha,
             message=commit.message,
             author_name=commit.author.name,
             author_email=commit.author.email,
             commit_date=commit.committed_datetime,
-            repository_dirty=repo.is_dirty(untracked_files=True)
+            repository_dirty=repo.is_dirty(untracked_files=True),
+            active_branch=active_branch,
+            remote_urls=remote_urls
         )
     except:  # pylint: disable=bare-except
         return None

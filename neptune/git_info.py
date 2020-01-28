@@ -37,7 +37,11 @@ class GitInfo(object):
                  author_name="",
                  author_email="",
                  commit_date="",
-                 repository_dirty=True):
+                 repository_dirty=True,
+                 active_branch="",
+                 remote_urls=None):
+        if remote_urls is None:
+            remote_urls = []
         if commit_id is None:
             raise TypeError("commit_id must not be None")
 
@@ -47,6 +51,8 @@ class GitInfo(object):
         self.author_email = author_email
         self.commit_date = commit_date
         self.repository_dirty = repository_dirty
+        self.active_branch = active_branch
+        self.remote_urls = remote_urls
 
     def __eq__(self, o):
         return o is not None and self.__dict__ == o.__dict__

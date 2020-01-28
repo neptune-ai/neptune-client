@@ -43,6 +43,8 @@ class TestGitInfo(unittest.TestCase):
         repo.head.commit.author.name = 'author_name'
         repo.head.commit.author.email = 'author@email'
         repo.head.commit.committed_datetime = now
+        repo.active_branch.name = "master"
+        repo.remotes = []
 
         # when
         git_info = get_git_info('.')
@@ -54,7 +56,9 @@ class TestGitInfo(unittest.TestCase):
             author_name='author_name',
             author_email='author@email',
             commit_date=now,
-            repository_dirty=True
+            repository_dirty=True,
+            active_branch="master",
+            remote_urls=[]
         ))
 
 
