@@ -624,11 +624,18 @@ class Experiment(object):
             paths = path
             if not isinstance(path, list):
                 paths = [path]
-            paths = [p[1:] if p.startswith['/'] else p for p in paths]
-            project_storage_path = ["/{experimentId}/output/{file}".format(experimentId=self.id, file=p) for p in
-                                    paths]
+            paths = [p[1:] if p.startswith('/') else p for p in paths]
+            project_storage_path = [
+                os.path.normpath("{experimentId}/output/{file}".format(experimentId=self.id, file=p)) for p in
+                paths]
+            for path in project_storage_path:
+                if path.startswith(".."):
+                    raise ValueError("path to delete must be within project's directory")
+                if path == "." or path == "/":
+                    raise ValueError("path must be different than project's directory")
             try:
-                self._backend.rm_data(project=self._project, project_storage_path=project_storage_path, recursive=True)
+                self._backend.rm_data(project=self._project, paths=project_storage_path, recursive=True)
+                return
             except PathInProjectNotFound:
                 raise FileNotFound(path)
         raise ValueError("path argument must not be None")
