@@ -13,10 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from future.utils import PY3
-from websocket import ABNF, create_connection
+
 import os
 import ssl
+
+from future.utils import PY3
+from websocket import ABNF, create_connection
+
 
 class WebsocketClientAdapter(object):
     def __init__(self):
