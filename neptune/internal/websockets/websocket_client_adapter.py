@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import os
+import ssl
+
 from future.utils import PY3
 from websocket import ABNF, create_connection
 
@@ -22,7 +26,11 @@ class WebsocketClientAdapter(object):
         self._ws_client = None
 
     def connect(self, url, token):
-        self._ws_client = create_connection(url, header=self._auth_header(token))
+        sslopt = None
+        if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
+            sslopt = {"cert_reqs": ssl.CERT_NONE}
+
+        self._ws_client = create_connection(url, header=self._auth_header(token), sslopt=sslopt)
 
     def recv(self):
         if self._ws_client is None:
