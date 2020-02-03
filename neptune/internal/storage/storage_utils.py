@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
+from os.path import sep
 from pprint import pformat
 
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream
@@ -134,7 +134,7 @@ def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_fil
 
 
 def normalize_file_name(name):
-    return name.replace(os.sep, '/')
+    return name.replace(sep, '/')
 
 
 def upload_to_storage(upload_entries, upload_api_fun, upload_tar_api_fun, **kwargs):

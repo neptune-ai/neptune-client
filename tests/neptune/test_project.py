@@ -18,15 +18,16 @@ import unittest
 from random import randint
 
 import pandas as pd
-from mock import MagicMock
+import os.path
+import ntpath
+from mock import MagicMock, patch
 from munch import Munch
 
 from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
-from tests.neptune.api_objects_factory import a_registered_project_member, \
-    an_invited_project_member
+from tests.neptune.api_objects_factory import a_registered_project_member, an_invited_project_member
 from tests.neptune.project_test_fixture import some_exp_entry_dto, some_exp_entry_row
 from tests.neptune.random_utils import a_string, a_string_list, a_uuid_string
 
@@ -217,6 +218,80 @@ class TestProject(unittest.TestCase):
         with self.assertRaises(NoExperimentContext):
             self.project._get_current_experiment()
 
+    def test_create_experiment_with_relative_upload_sources(self):
+        # given
+        anExperiment = MagicMock()
+        # and
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            "test_project.*",
+            "../../*.md"
+        ])
+
+        # then
+        anExperiment._start.assert_called_once()
+        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
+            "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
+        })
+
+    def test_create_experiment_with_absolute_upload_sources(self):
+        # given
+        anExperiment = MagicMock()
+        # and
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            os.path.abspath('test_project.py'),
+            "../../*.md"
+        ])
+
+        # then
+        anExperiment._start.assert_called_once()
+        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
+            "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
+        })
+
+    def test_create_experiment_with_upload_single_sources(self):
+        # given
+        anExperiment = MagicMock()
+        # and
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            os.path.abspath('test_project.py')
+        ])
+
+        # then
+        anExperiment._start.assert_called_once()
+        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
+            "test_project.py"
+        })
+
+    @patch('neptune.projects.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.projects.abspath', new=ntpath.abspath)
+    @patch('neptune.projects.commonpath', new=ntpath.commonpath)
+    @patch('neptune.internal.storage.storage_utils.sep', new=ntpath.sep)
+    def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(self):
+        # given
+        anExperiment = MagicMock()
+        # and
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            'c:/test1/*',
+            'd:/test2/*'
+        ])
+
+        # then
+        anExperiment._start.assert_called_once()
+        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
+            'c:/test1/file.txt', 'd:/test2/file.txt'
+        })
 
 if __name__ == '__main__':
     unittest.main()
