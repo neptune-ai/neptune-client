@@ -242,10 +242,6 @@ class TestProject(unittest.TestCase):
 
         # then
         anExperiment._start.assert_called_once()
-        print('test')
-        print(os.getcwd())
-        print(os.path.dirname(os.path.abspath(__file__)))
-        print({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']})
         self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
             "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
         })
@@ -269,8 +265,6 @@ class TestProject(unittest.TestCase):
 
         # then
         anExperiment._start.assert_called_once()
-        print('test')
-        print({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']})
         self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
             "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
         })
@@ -289,8 +283,6 @@ class TestProject(unittest.TestCase):
 
         # then
         anExperiment._start.assert_called_once()
-        print('test')
-        print({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']})
         self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
             "test_project.py"
         })
@@ -312,8 +304,6 @@ class TestProject(unittest.TestCase):
 
         # then
         anExperiment._start.assert_called_once()
-        print('test')
-        print({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']})
         self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
             'c:/test1/file.txt', 'd:/test2/file.txt'
         })
