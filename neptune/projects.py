@@ -14,25 +14,25 @@
 # limitations under the License.
 #
 
+import atexit
 import logging
 import os
 import os.path
 import sys
 import threading
 from platform import node as get_hostname
-import atexit
+
 import click
 import pandas as pd
 import six
-from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name
 
 from neptune.envs import NOTEBOOK_ID_ENV_NAME, NOTEBOOK_PATH_ENV_NAME
 from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
+from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name
 from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, glob
-
 
 _logger = logging.getLogger(__name__)
 
@@ -419,9 +419,9 @@ class Project(object):
             expanded_source_files = set()
             for filepath in upload_source_files:
                 expanded_source_files |= set(glob(filepath))
-            absolute_paths = set()
+            absolute_paths = []
             for filepath in expanded_source_files:
-                absolute_paths.add(os.path.abspath(filepath))
+                absolute_paths.append(os.path.abspath(filepath))
             try:
                 common_source_root = os.path.commonpath(absolute_paths)
             except ValueError:
