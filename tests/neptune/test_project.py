@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
+import ntpath
+import os.path
+import sys
 import unittest
 from random import randint
 
-import os.path
-import ntpath
 import pandas as pd
-import sys
 from mock import MagicMock, patch
 from munch import Munch
 
