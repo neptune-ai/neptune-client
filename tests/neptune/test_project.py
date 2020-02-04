@@ -223,9 +223,11 @@ class TestProject(unittest.TestCase):
         with self.assertRaises(NoExperimentContext):
             self.project._get_current_experiment()
 
-    @unittest.skipIf(sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5),
-                     "not supported in this Python version")
     def test_create_experiment_with_relative_upload_sources(self):
+        # skip if
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+            self.skipTest("not supported in this Python version")
+
         # given
         os.chdir('tests/neptune')
         # and
@@ -248,9 +250,11 @@ class TestProject(unittest.TestCase):
             "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
         })
 
-    @unittest.skipIf(sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5),
-                     "not supported in this Python version")
     def test_create_experiment_with_absolute_upload_sources(self):
+        # skip if
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+            self.skipTest("not supported in this Python version")
+
         # given
         os.chdir('tests/neptune')
         # and
