@@ -20,6 +20,7 @@ from random import randint
 import os.path
 import ntpath
 import pandas as pd
+import sys
 from mock import MagicMock, patch
 from munch import Munch
 
@@ -222,6 +223,8 @@ class TestProject(unittest.TestCase):
         with self.assertRaises(NoExperimentContext):
             self.project._get_current_experiment()
 
+    @unittest.skipIf(sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5),
+                     "not supported in this Python version")
     def test_create_experiment_with_relative_upload_sources(self):
         # given
         os.chdir('tests/neptune')
@@ -245,6 +248,8 @@ class TestProject(unittest.TestCase):
             "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
         })
 
+    @unittest.skipIf(sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5),
+                     "not supported in this Python version")
     def test_create_experiment_with_absolute_upload_sources(self):
         # given
         os.chdir('tests/neptune')
@@ -268,12 +273,14 @@ class TestProject(unittest.TestCase):
 
     def test_create_experiment_with_upload_single_sources(self):
         # given
+        os.chdir('tests/neptune')
+        # and
         anExperiment = MagicMock()
         self.backend.create_experiment.return_value = anExperiment
 
         # when
         self.project.create_experiment(upload_source_files=[
-            os.path.abspath('tests/neptune/test_project.py')
+            'test_project.py'
         ])
 
         # then
