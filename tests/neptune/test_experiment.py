@@ -164,9 +164,8 @@ class TestExperiment(unittest.TestCase):
         # and
         def build_call(paths):
             return call(
-                project=project,
-                paths=paths,
-                recursive=True
+                experiment=experiment,
+                paths=paths
             )
 
         # when
@@ -174,20 +173,15 @@ class TestExperiment(unittest.TestCase):
         experiment.delete_artifacts('/../an_abs_path_in_exp')
         experiment.delete_artifacts('/../../an_abs_path_in_prj')
         experiment.delete_artifacts('a_path_in_exp_output')
-        experiment.delete_artifacts('../a_path_in_exp')
-        experiment.delete_artifacts('../../a_path_in_prj')
-        self.assertRaises(ValueError, experiment.delete_artifacts, "../../")
-        self.assertRaises(ValueError, experiment.delete_artifacts, "../../..")
-        self.assertRaises(ValueError, experiment.delete_artifacts, "../../../outside_project")
+        self.assertRaises(ValueError, experiment.delete_artifacts, '../a_path_outside_exp')
+        self.assertRaises(ValueError, experiment.delete_artifacts, "..")
 
         # then
         backend.rm_data.assert_has_calls([
-            build_call(['{}/output/an_abs_path_in_exp_output'.format(experiment.id)]),
-            build_call(['{}/an_abs_path_in_exp'.format(experiment.id)]),
-            build_call(['an_abs_path_in_prj']),
-            build_call(['{}/output/a_path_in_exp_output'.format(experiment.id)]),
-            build_call(['{}/a_path_in_exp'.format(experiment.id)]),
-            build_call(['a_path_in_prj'])
+            build_call(['/an_abs_path_in_exp_output']),
+            build_call(['/../an_abs_path_in_exp']),
+            build_call(['/../../an_abs_path_in_prj']),
+            build_call(['a_path_in_exp_output']),
         ])
 
     def test_get_numeric_channels_values(self):
