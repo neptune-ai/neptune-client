@@ -685,12 +685,11 @@ class HostedNeptuneBackend(Backend):
             raise
 
     @with_api_exceptions_handler
-    def rm_data(self, project, paths, recursive=False):
+    def rm_data(self, experiment, paths):
         try:
-            return self.backend_swagger_client.api.rmData(projectId=project.internal_id,
-                                                          pathParam=paths,
-                                                          recursive=recursive
-                                                         ).response().result
+            return [self.backend_swagger_client.api.deleteExperimentOutput(experimentId=str(experiment.internal_id),
+                                                                           path=path,
+                                                                           ).response().result for path in paths]
         except BaseException as e:
             print("exception was raised: ", e)
             raise e
