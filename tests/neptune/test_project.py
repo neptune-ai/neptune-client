@@ -17,9 +17,9 @@
 import unittest
 from random import randint
 
-import pandas as pd
 import os.path
 import ntpath
+import pandas as pd
 from mock import MagicMock, patch
 from munch import Munch
 
@@ -37,6 +37,10 @@ class TestProject(unittest.TestCase):
         super(TestProject, self).setUp()
         self.backend = MagicMock()
         self.project = Project(backend=self.backend, internal_id=a_uuid_string(), namespace=a_string(), name=a_string())
+        self.current_directory = os.getcwd()
+
+    def tearDown(self):
+        os.chdir(self.current_directory)
 
     def test_get_members(self):
         # given
@@ -220,8 +224,9 @@ class TestProject(unittest.TestCase):
 
     def test_create_experiment_with_relative_upload_sources(self):
         # given
-        anExperiment = MagicMock()
+        os.chdir('tests/neptune')
         # and
+        anExperiment = MagicMock()
         self.backend.create_experiment.return_value = anExperiment
 
         # when
@@ -232,14 +237,22 @@ class TestProject(unittest.TestCase):
 
         # then
         anExperiment._start.assert_called_once()
+        print('test')
+        print(os.getcwd())
+        print(os.path.dirname(os.path.abspath(__file__)))
+        print({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']})
         self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
             "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
         })
 
+        #cleanup
+        os.chdir('../..')
+
     def test_create_experiment_with_absolute_upload_sources(self):
         # given
-        anExperiment = MagicMock()
+        os.chdir('tests/neptune')
         # and
+        anExperiment = MagicMock()
         self.backend.create_experiment.return_value = anExperiment
 
         # when
@@ -250,6 +263,8 @@ class TestProject(unittest.TestCase):
 
         # then
         anExperiment._start.assert_called_once()
+        print('test')
+        print({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']})
         self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
             "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
         })
@@ -257,24 +272,24 @@ class TestProject(unittest.TestCase):
     def test_create_experiment_with_upload_single_sources(self):
         # given
         anExperiment = MagicMock()
-        # and
         self.backend.create_experiment.return_value = anExperiment
 
         # when
         self.project.create_experiment(upload_source_files=[
-            os.path.abspath('test_project.py')
+            os.path.abspath('tests/neptune/test_project.py')
         ])
 
         # then
         anExperiment._start.assert_called_once()
+        print('test')
+        print({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']})
         self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
             "test_project.py"
         })
 
     @patch('neptune.projects.glob', new=lambda path: [path.replace('*', 'file.txt')])
-    @patch('neptune.projects.abspath', new=ntpath.abspath)
-    @patch('neptune.projects.commonpath', new=ntpath.commonpath)
-    @patch('neptune.internal.storage.storage_utils.sep', new=ntpath.sep)
+    @patch('neptune.projects.os.path', new=ntpath)
+    @patch('neptune.internal.storage.storage_utils.os.sep', new=ntpath.sep)
     def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(self):
         # given
         anExperiment = MagicMock()
@@ -283,12 +298,14 @@ class TestProject(unittest.TestCase):
 
         # when
         self.project.create_experiment(upload_source_files=[
-            'c:/test1/*',
-            'd:/test2/*'
+            'c:\\test1\\*',
+            'd:\\test2\\*'
         ])
 
         # then
         anExperiment._start.assert_called_once()
+        print('test')
+        print({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']})
         self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
             'c:/test1/file.txt', 'd:/test2/file.txt'
         })

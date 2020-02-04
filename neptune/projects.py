@@ -16,11 +16,11 @@
 
 import logging
 import os
+import os.path
 import sys
 import threading
 from platform import node as get_hostname
 import atexit
-
 import click
 import pandas as pd
 import six
@@ -33,7 +33,6 @@ from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
 from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, glob
 
-from os.path import abspath, commonpath
 
 _logger = logging.getLogger(__name__)
 
@@ -414,7 +413,7 @@ class Project(object):
             if os.path.isfile(main_file):
                 entrypoint = normalize_file_name(os.path.basename(main_file))
                 upload_source_entries = [
-                    UploadEntry(abspath(main_file), normalize_file_name(os.path.basename(main_file)))
+                    UploadEntry(os.path.abspath(main_file), normalize_file_name(os.path.basename(main_file)))
                 ]
         else:
             expanded_source_files = set()
@@ -422,17 +421,18 @@ class Project(object):
                 expanded_source_files |= set(glob(filepath))
             absolute_paths = set()
             for filepath in expanded_source_files:
-                absolute_paths.add(abspath(filepath))
+                absolute_paths.add(os.path.abspath(filepath))
             try:
-                common_source_root = commonpath(absolute_paths)
-                if os.path.isfile(common_source_root):
-                    common_source_root = os.path.dirname(common_source_root)
-                for absolute_path in absolute_paths:
-                    upload_source_entries.append(UploadEntry(absolute_path, normalize_file_name(os.path.relpath(absolute_path, common_source_root))))
+                common_source_root = os.path.commonpath(absolute_paths)
             except ValueError:
                 for absolute_path in absolute_paths:
                     upload_source_entries.append(UploadEntry(absolute_path, normalize_file_name(absolute_path)))
-
+            else:
+                if os.path.isfile(common_source_root):
+                    common_source_root = os.path.dirname(common_source_root)
+                for absolute_path in absolute_paths:
+                    upload_source_entries.append(UploadEntry(absolute_path, normalize_file_name(
+                        os.path.relpath(absolute_path, common_source_root))))
 
         if notebook_path is None and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
             notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
