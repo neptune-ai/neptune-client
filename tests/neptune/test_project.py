@@ -245,9 +245,6 @@ class TestProject(unittest.TestCase):
             "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
         })
 
-        #cleanup
-        os.chdir('../..')
-
     def test_create_experiment_with_absolute_upload_sources(self):
         # given
         os.chdir('tests/neptune')
