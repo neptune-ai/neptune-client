@@ -114,3 +114,9 @@ class CannotResolveHostname(NeptuneException):
     def __init__(self, host):
         super(CannotResolveHostname, self).__init__(
             "Cannot resolve hostname {}. Please contact Neptune support.".format(host))
+
+class Python3RequiredForPathsOutsideOfCurrentDirectory(NeptuneException):
+    def __init__(self):
+        super(Python3RequiredForPathsOutsideOfCurrentDirectory, self).__init__(
+            "To use path with .. (parent directory), you need to have Python 3.5 or later.")
+
