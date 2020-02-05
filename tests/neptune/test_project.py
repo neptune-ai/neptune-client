@@ -287,6 +287,20 @@ class TestProject(unittest.TestCase):
             "test_project.py"
         })
 
+    def test_create_experiment_with_common_path_below_current_directory(self):
+        # given
+        anExperiment = MagicMock()
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            'tests/neptune/*.*'
+        ])
+
+        # then
+        anExperiment._start.assert_called_once()
+        self.assertTrue(anExperiment._start.call_args[1]['upload_source_entries'][0].target_path.startswith('tests/neptune/'))
+
     @patch('neptune.projects.glob', new=lambda path: [path.replace('*', 'file.txt')])
     @patch('neptune.projects.os.path', new=ntpath)
     @patch('neptune.internal.storage.storage_utils.os.sep', new=ntpath.sep)

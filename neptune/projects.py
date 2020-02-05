@@ -439,6 +439,8 @@ class Project(object):
                 else:
                     if os.path.isfile(common_source_root):
                         common_source_root = os.path.dirname(common_source_root)
+                    if common_source_root.startswith(os.getcwd() + os.sep):
+                        common_source_root = os.getcwd()
                     for absolute_path in absolute_paths:
                         upload_source_entries.append(UploadEntry(absolute_path, normalize_file_name(
                             os.path.relpath(absolute_path, common_source_root))))
