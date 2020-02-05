@@ -299,6 +299,7 @@ class TestProject(unittest.TestCase):
 
         # then
         anExperiment._start.assert_called_once()
+        print(anExperiment._start.call_args[1]['upload_source_entries'][0].target_path)
         self.assertTrue(
             anExperiment._start.call_args[1]['upload_source_entries'][0].target_path.startswith('tests/neptune/'))
 
