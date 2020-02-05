@@ -27,7 +27,7 @@ import pandas as pd
 import six
 
 from neptune.envs import NOTEBOOK_ID_ENV_NAME, NOTEBOOK_PATH_ENV_NAME
-from neptune.exceptions import NoExperimentContext, Python3RequiredForPathsOutsideOfCurrentDirectory
+from neptune.exceptions import NoExperimentContext
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
@@ -425,7 +425,7 @@ class Project(object):
             if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
                 for filepath in expanded_source_files:
                     if filepath.startswith('..'):
-                        raise Python3RequiredForPathsOutsideOfCurrentDirectory()
+                        raise ValueError('You need to have Python 3.5 or later to use paths outside current directory.')
                     upload_source_entries.append(UploadEntry(os.path.abspath(filepath), normalize_file_name(filepath)))
             else:
                 absolute_paths = []
