@@ -294,12 +294,13 @@ class TestProject(unittest.TestCase):
 
         # when
         self.project.create_experiment(upload_source_files=[
-            'tests/neptune/*.*'
+            os.path.abspath('tests/neptune') + '/*.*'
         ])
 
         # then
         anExperiment._start.assert_called_once()
-        self.assertTrue(anExperiment._start.call_args[1]['upload_source_entries'][0].target_path.startswith('tests/neptune/'))
+        self.assertTrue(
+            anExperiment._start.call_args[1]['upload_source_entries'][0].target_path.startswith('tests/neptune/'))
 
     @patch('neptune.projects.glob', new=lambda path: [path.replace('*', 'file.txt')])
     @patch('neptune.projects.os.path', new=ntpath)
