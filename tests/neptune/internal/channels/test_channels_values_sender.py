@@ -46,7 +46,8 @@ class TestChannelsValuesSender(unittest.TestCase):
     # pylint: disable=protected-access
     _BATCH_SIZE = ChannelsValuesSendingThread._MAX_VALUES_BATCH_LENGTH
     # pylint: disable=protected-access
-    _IMAGES_BATCH_SIZE = ChannelsValuesSendingThread._MAX_IMAGE_VALUES_BATCH_LENGTH
+    _IMAGES_BATCH_IMAGE_SIZE = ChannelsValuesSendingThread._MAX_IMAGE_VALUES_BATCH_SIZE / 3
+    _IMAGES_BATCH_SIZE = 3
 
     def setUp(self):
         # pylint: disable=protected-access
@@ -119,7 +120,15 @@ class TestChannelsValuesSender(unittest.TestCase):
 
     def test_send_images_in_smaller_batches(self):
         # and
-        channels_values = [ChannelValue(x=i, y="base64Image==", ts=self._TS + i)
+        value = "base64Image=="
+        channels_values = [ChannelValue(x=i,
+                                        y={
+                                            'image_value': {
+                                                'data':
+                                                    value + value * int(self._IMAGES_BATCH_IMAGE_SIZE / (len(value)))
+                                            }
+                                        },
+                                        ts=self._TS + i)
                            for i in range(0, self._IMAGES_BATCH_SIZE * 3)]
         # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
@@ -143,7 +152,7 @@ class TestChannelsValuesSender(unittest.TestCase):
             )]),
             mock.call._send_channels_values([ChannelIdWithValues(
                 channel_id=self._IMAGE_CHANNEL.id,
-                channel_values=channels_values[self._IMAGES_BATCH_SIZE * 2:self._IMAGES_BATCH_SIZE * 3]
+                channel_values=channels_values[self._IMAGES_BATCH_SIZE * 2:]
             )])
         ])
 
@@ -155,7 +164,11 @@ class TestChannelsValuesSender(unittest.TestCase):
         text_values = [ChannelValue(x=i, y="text", ts=self._TS + i)
                        for i in range(0, 3)]
 
-        image_values = [ChannelValue(x=i, y="base64Image==", ts=self._TS + i)
+        image_values = [ChannelValue(x=i, y={
+            'image_value': {
+                'data': "base64Image=="
+            }
+        }, ts=self._TS + i)
                         for i in range(0, 3)]
         # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)

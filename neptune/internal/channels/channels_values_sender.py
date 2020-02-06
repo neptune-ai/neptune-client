@@ -95,7 +95,7 @@ class ChannelsValuesSender(object):
 class ChannelsValuesSendingThread(NeptuneThread):
     _SLEEP_TIME = 5
     _MAX_VALUES_BATCH_LENGTH = 100
-    _MAX_IMAGE_VALUES_BATCH_LENGTH = 10
+    _MAX_IMAGE_VALUES_BATCH_SIZE = 10485760  # 10 MB
 
     def __init__(self, experiment, values_queue):
         super(ChannelsValuesSendingThread, self).__init__(is_daemon=False)
@@ -116,8 +116,8 @@ class ChannelsValuesSendingThread(NeptuneThread):
 
             if self._sleep_time <= 0 \
                     or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH \
-                    or len([v for v in self._values_batch if
-                            v.channel_type == ChannelType.IMAGE.value]) >= self._MAX_IMAGE_VALUES_BATCH_LENGTH:  # pylint:disable=line-too-long
+                    or sum([len(v.channel_value.y['image_value']['data']) for v in self._values_batch if
+                            v.channel_type == ChannelType.IMAGE.value]) >= self._MAX_IMAGE_VALUES_BATCH_SIZE:  # pylint:disable=line-too-long
                 self._process_batch()
 
         self._process_batch()
