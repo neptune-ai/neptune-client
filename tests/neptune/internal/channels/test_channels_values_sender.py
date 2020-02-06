@@ -165,10 +165,10 @@ class TestChannelsValuesSender(unittest.TestCase):
                        for i in range(0, 3)]
 
         image_values = [ChannelValue(x=i, y={
-                                            'image_value': {
-                                                'data': "base64Image=="
-                                            }
-                                        }, ts=self._TS + i)
+            'image_value': {
+                'data': "base64Image=="
+            }
+        }, ts=self._TS + i)
                         for i in range(0, 3)]
         # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
