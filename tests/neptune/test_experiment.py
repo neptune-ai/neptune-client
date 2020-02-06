@@ -173,6 +173,7 @@ class TestExperiment(unittest.TestCase):
         experiment.delete_artifacts('/../an_abs_path_in_exp')
         experiment.delete_artifacts('/../../an_abs_path_in_prj')
         experiment.delete_artifacts('a_path_in_exp_output')
+        self.assertRaises(ValueError, experiment.delete_artifacts, 'test/../../a_path_outside_exp')
         self.assertRaises(ValueError, experiment.delete_artifacts, '../a_path_outside_exp')
         self.assertRaises(ValueError, experiment.delete_artifacts, "..")
 
