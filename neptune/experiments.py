@@ -628,9 +628,12 @@ class Experiment(object):
         if not isinstance(path, list):
             paths = [path]
         for path in paths:
-            if path.startswith(".."):
+            if path is None:
+                raise ValueError("path argument must not be None")
+            normalized_path = os.path.normpath(path)
+            if normalized_path.startswith(".."):
                 raise ValueError("path to delete must be within project's directory")
-            if path == "." or path == "/" or not path:
+            if normalized_path == "." or normalized_path == "/" or not normalized_path:
                 raise ValueError("Cannot delete whole artifacts directory")
         try:
             for path in paths:
