@@ -338,6 +338,14 @@ def send_artifact(artifact, destination=None):
     return get_experiment().log_artifact(artifact, destination)
 
 
+def delete_artifacts(path):
+    """Delete an artifact (file/directory) from experiment storage.
+
+    Alias for :meth:`~neptune.experiments.Experiment.delete_artifacts`
+    """
+    return get_experiment().delete_artifacts(path)
+
+
 def log_artifact(artifact, destination=None):
     """Save an artifact (file) in experiment storage.
 

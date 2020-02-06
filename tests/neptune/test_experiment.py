@@ -150,6 +150,41 @@ class TestExperiment(unittest.TestCase):
             build_call(['tag1', 'tag2', 'tag3'])
         ])
 
+    def test_delete_artifact(self):
+        # given
+        backend = mock.MagicMock()
+        project = a_project()
+        experiment = Experiment(
+            backend,
+            project,
+            an_experiment_id(),
+            a_uuid_string()
+        )
+
+        # and
+        def build_call(path):
+            return call(
+                experiment=experiment,
+                path=path
+            )
+
+        # when
+        experiment.delete_artifacts('/an_abs_path_in_exp_output')
+        experiment.delete_artifacts('/../an_abs_path_in_exp')
+        experiment.delete_artifacts('/../../an_abs_path_in_prj')
+        experiment.delete_artifacts('a_path_in_exp_output')
+        self.assertRaises(ValueError, experiment.delete_artifacts, 'test/../../a_path_outside_exp')
+        self.assertRaises(ValueError, experiment.delete_artifacts, '../a_path_outside_exp')
+        self.assertRaises(ValueError, experiment.delete_artifacts, "..")
+
+        # then
+        backend.rm_data.assert_has_calls([
+            build_call('/an_abs_path_in_exp_output'),
+            build_call('/../an_abs_path_in_exp'),
+            build_call('/../../an_abs_path_in_prj'),
+            build_call('a_path_in_exp_output'),
+        ])
+
     def test_get_numeric_channels_values(self):
         # when
         backend = MagicMock()

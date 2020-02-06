@@ -605,6 +605,44 @@ class Experiment(object):
                           upload_tar_api_fun=self._backend.extract_experiment_output,
                           experiment=self)
 
+    def delete_artifacts(self, path):
+        """Removes an artifact(s) (file/directory) from the experiment storage.
+
+        Args:
+            path (:obj:`list` or :obj:`str`): Path or list of paths to remove from the experiment's output
+
+        Raises:
+            `FileNotFound`: If a path in experiment artifacts does not exist.
+
+        Examples:
+            Assuming that `experiment` is an instance of :class:`~neptune.experiments.Experiment`.
+
+            .. code:: python3
+
+                experiment.delete_artifacts('forest_results.pkl')
+                experiment.delete_artifacts(['forest_results.pkl', 'directory'])
+                experiment.delete_artifacts('')
+        """
+        if path is None:
+            raise ValueError("path argument must not be None")
+
+        paths = path
+        if not isinstance(path, list):
+            paths = [path]
+        for path in paths:
+            if path is None:
+                raise ValueError("path argument must not be None")
+            normalized_path = os.path.normpath(path)
+            if normalized_path.startswith(".."):
+                raise ValueError("path to delete must be within project's directory")
+            if normalized_path == "." or normalized_path == "/" or not normalized_path:
+                raise ValueError("Cannot delete whole artifacts directory")
+        try:
+            for path in paths:
+                self._backend.rm_data(experiment=self, path=path)
+        except PathInProjectNotFound:
+            raise FileNotFound(path)
+
     def download_artifact(self, path, destination_dir=None):
         """Download an artifact (file) from the experiment storage.
 
