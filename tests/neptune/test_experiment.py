@@ -162,10 +162,10 @@ class TestExperiment(unittest.TestCase):
         )
 
         # and
-        def build_call(paths):
+        def build_call(path):
             return call(
                 experiment=experiment,
-                paths=paths
+                path=path
             )
 
         # when
@@ -178,10 +178,10 @@ class TestExperiment(unittest.TestCase):
 
         # then
         backend.rm_data.assert_has_calls([
-            build_call(['/an_abs_path_in_exp_output']),
-            build_call(['/../an_abs_path_in_exp']),
-            build_call(['/../../an_abs_path_in_prj']),
-            build_call(['a_path_in_exp_output']),
+            build_call('/an_abs_path_in_exp_output'),
+            build_call('/../an_abs_path_in_exp'),
+            build_call('/../../an_abs_path_in_prj'),
+            build_call('a_path_in_exp_output'),
         ])
 
     def test_get_numeric_channels_values(self):

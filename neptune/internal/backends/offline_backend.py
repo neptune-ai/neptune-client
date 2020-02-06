@@ -122,7 +122,7 @@ class OfflineBackend(Backend):
     def extract_experiment_output(self, experiment, data):
         pass
 
-    def rm_data(self, project, paths, recursive=False):
+    def rm_data(self, experiment, path):
         pass
 
     def download_data(self, project, path, destination):
