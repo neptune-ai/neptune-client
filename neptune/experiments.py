@@ -538,8 +538,10 @@ class Experiment(object):
 
         image_content = get_image_content(y)
         if len(image_content) > self.IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
-            _logger.warning('Your image is larger than {0}MB. Neptune supports logging images smaller than {0}MB. '
-                            'Resize or increase compression of this image'.format(self.IMAGE_SIZE_LIMIT_MB))
+            _logger.warning('Your image is larger than %dMB. Neptune supports logging images smaller than %dMB. '
+                            'Resize or increase compression of this image',
+                            self.IMAGE_SIZE_LIMIT_MB,
+                            self.IMAGE_SIZE_LIMIT_MB)
             image_content = None
 
         input_image = dict(
