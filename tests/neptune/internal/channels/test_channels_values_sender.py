@@ -122,7 +122,12 @@ class TestChannelsValuesSender(unittest.TestCase):
         # and
         value = "base64Image=="
         channels_values = [ChannelValue(x=i,
-                                        y=value + value * int(self._IMAGES_BATCH_IMAGE_SIZE / (len(value))),
+                                        y={
+                                            'image_value': {
+                                                'data':
+                                                    value + value * int(self._IMAGES_BATCH_IMAGE_SIZE / (len(value)))
+                                            }
+                                        },
                                         ts=self._TS + i)
                            for i in range(0, self._IMAGES_BATCH_SIZE * 3)]
         # and
@@ -159,7 +164,11 @@ class TestChannelsValuesSender(unittest.TestCase):
         text_values = [ChannelValue(x=i, y="text", ts=self._TS + i)
                        for i in range(0, 3)]
 
-        image_values = [ChannelValue(x=i, y="base64Image==", ts=self._TS + i)
+        image_values = [ChannelValue(x=i, y={
+                                            'image_value': {
+                                                'data': "base64Image=="
+                                            }
+                                        }, ts=self._TS + i)
                         for i in range(0, 3)]
         # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
