@@ -121,7 +121,18 @@ class ChannelDoesNotExist(NeptuneApiException):
 
 
 class ChannelsValuesSendBatchError(NeptuneApiException):
+    @staticmethod
+    def _format_error(error):
+        return "{msg} (metricId: '{channelId}', x: {x})".format(
+            msg=error.error,
+            channelId=error.channelId,
+            x=error.x)
+
     def __init__(self, experiment_short_id, batch_errors):
-        super(ChannelsValuesSendBatchError, self) \
-            .__init__("Received batch errors sending channels' values to experiment {}. "
-                      "Skipping {} values.".format(experiment_short_id, len(batch_errors)))
+        super(ChannelsValuesSendBatchError, self).__init__(
+            "Received batch errors sending channels' values to experiment {}. "
+            "Cause: {} "
+            "Skipping {} values.".format(
+                experiment_short_id,
+                self._format_error(batch_errors[0]) if batch_errors else "No errors",
+                len(batch_errors)))
