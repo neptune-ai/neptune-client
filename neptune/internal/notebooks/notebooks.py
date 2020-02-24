@@ -29,17 +29,20 @@ def create_checkpoint(backend, notebook_id, notebook_path):
         # pylint:disable=bad-option-value,import-outside-toplevel
         import IPython
         ipython = IPython.core.getipython.get_ipython()
-        execution_count = ipython.kernel.execution_count
+        execution_count = -1
+        if ipython is not None and ipython.kernel is not None:
+            execution_count = ipython.kernel.execution_count
         with _checkpoints_lock:
 
-            if execution_count in _checkpoints:
+            if execution_count in _checkpoints and execution_count != -1:
                 return _checkpoints[execution_count]
 
             checkpoint = backend.create_checkpoint(notebook_id, notebook_path)
-            send_checkpoint_created(notebook_id=notebook_id,
-                                    notebook_path=notebook_path,
-                                    checkpoint_id=checkpoint.id)
-            _checkpoints[execution_count] = checkpoint
+            if ipython is not None and ipython.kernel is not None:
+                send_checkpoint_created(notebook_id=notebook_id,
+                                        notebook_path=notebook_path,
+                                        checkpoint_id=checkpoint.id)
+                _checkpoints[execution_count] = checkpoint
             return checkpoint
     except ImportError:
         _logger.debug("Notebook checkpoint creation skipped. Can't import `ipykernel.comm`.")
