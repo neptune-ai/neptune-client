@@ -34,7 +34,7 @@ def create_checkpoint(backend, notebook_id, notebook_path):
             execution_count = ipython.kernel.execution_count
         with _checkpoints_lock:
 
-            if execution_count in _checkpoints and execution_count != -1:
+            if execution_count in _checkpoints:
                 return _checkpoints[execution_count]
 
             checkpoint = backend.create_checkpoint(notebook_id, notebook_path)
