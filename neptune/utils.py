@@ -256,3 +256,11 @@ def glob(pathname):
         return globlib.glob(pathname)
     else:
         return globlib.glob(pathname, recursive=True)
+
+def is_ipython():
+    try:
+        import IPython
+        ipython = IPython.core.getipython.get_ipython()
+        return ipython is not None
+    except ImportError:
+        return False
