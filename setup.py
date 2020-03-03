@@ -24,7 +24,7 @@ def main():
             cmdclass=versioneer.get_cmdclass(),
             entry_points={
                 'console_scripts': [
-                    'neptune = cli.main:main',
+                    'neptune = neptune_cli.main:main',
                 ],
             },
             classifiers=[
