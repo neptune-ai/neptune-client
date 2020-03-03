@@ -27,7 +27,7 @@ _checkpoints = dict()
 
 def create_checkpoint(backend, notebook_id, notebook_path):
     if is_ipython():
-        # pylint:disable=bad-option-value,import-outside-toplevel
+        # pylint:disable=bad-option-value,import-outside-toplevel,import-error
         import IPython
         ipython = IPython.core.getipython.get_ipython()
         execution_count = -1
