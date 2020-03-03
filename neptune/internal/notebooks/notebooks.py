@@ -17,6 +17,7 @@ import logging
 import threading
 
 from neptune.internal.notebooks.comm import send_checkpoint_created
+from neptune.utils import is_ipython
 
 _logger = logging.getLogger(__name__)
 
@@ -25,12 +26,12 @@ _checkpoints = dict()
 
 
 def create_checkpoint(backend, notebook_id, notebook_path):
-    try:
+    if is_ipython():
         # pylint:disable=bad-option-value,import-outside-toplevel
         import IPython
         ipython = IPython.core.getipython.get_ipython()
         execution_count = -1
-        if ipython is not None and ipython.kernel is not None:
+        if ipython.kernel is not None:
             execution_count = ipython.kernel.execution_count
         with _checkpoints_lock:
 
@@ -44,5 +45,3 @@ def create_checkpoint(backend, notebook_id, notebook_path):
                                         checkpoint_id=checkpoint.id)
                 _checkpoints[execution_count] = checkpoint
             return checkpoint
-    except ImportError:
-        _logger.debug("Notebook checkpoint creation skipped. Can't import `ipykernel.comm`.")
