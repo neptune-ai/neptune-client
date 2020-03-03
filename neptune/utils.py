@@ -259,6 +259,7 @@ def glob(pathname):
 
 def is_ipython():
     try:
+        # pylint:disable=bad-option-value,import-outside-toplevel
         import IPython
         ipython = IPython.core.getipython.get_ipython()
         return ipython is not None
