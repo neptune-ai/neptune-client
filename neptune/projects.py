@@ -32,7 +32,7 @@ from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name
-from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, glob
+from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, glob, is_ipython
 
 _logger = logging.getLogger(__name__)
 
@@ -410,10 +410,14 @@ class Project(object):
             upload_source_files = [upload_source_files]
 
         upload_source_entries = []
-        main_file = sys.argv[0]
-        entrypoint = main_file or None
+        if is_ipython():
+            main_file = None
+            entrypoint = None
+        else:
+            main_file = sys.argv[0]
+            entrypoint = main_file or None
         if upload_source_files is None:
-            if os.path.isfile(main_file):
+            if main_file is not None and os.path.isfile(main_file):
                 entrypoint = normalize_file_name(os.path.basename(main_file))
                 upload_source_entries = [
                     UploadEntry(os.path.abspath(main_file), normalize_file_name(os.path.basename(main_file)))

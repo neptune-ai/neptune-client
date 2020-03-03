@@ -256,3 +256,12 @@ def glob(pathname):
         return globlib.glob(pathname)
     else:
         return globlib.glob(pathname, recursive=True)
+
+def is_ipython():
+    try:
+        # pylint:disable=bad-option-value,import-outside-toplevel
+        import IPython
+        ipython = IPython.core.getipython.get_ipython()
+        return ipython is not None
+    except ImportError:
+        return False
