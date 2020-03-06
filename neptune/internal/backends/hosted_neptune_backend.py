@@ -51,6 +51,7 @@ from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
 from neptune.utils import is_float, with_api_exceptions_handler, update_session_proxies
 
+
 _logger = logging.getLogger(__name__)
 
 
@@ -58,6 +59,10 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
+        from neptune import ANONYMOUS, ANONYMOUS_API_TOKEN
+        if api_token == ANONYMOUS:
+            api_token = ANONYMOUS_API_TOKEN
+
         self.credentials = Credentials(api_token)
 
         ssl_verify = True
