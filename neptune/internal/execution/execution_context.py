@@ -17,6 +17,7 @@ import os
 import sys
 import time
 import traceback
+import logging
 from logging import StreamHandler
 
 from neptune.internal.abort import DefaultAbortImpl, CustomAbortImpl
@@ -31,6 +32,9 @@ from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMe
 from neptune.internal.threads.ping_thread import PingThread
 from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
 from neptune.utils import is_notebook, in_docker
+
+
+_logger = logging.getLogger(__name__)
 
 
 class ExecutionContext(object):
@@ -61,11 +65,6 @@ class ExecutionContext(object):
         if handle_uncaught_exceptions:
             self._set_uncaught_exception_handler()
 
-        abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
-
-        if abortable:
-            self._run_aborting_thread(abort_callback)
-
         if logger:
             # pylint: disable=protected-access
             channel = self._experiment._get_channel('logger', 'text', ChannelNamespace.SYSTEM)
@@ -80,11 +79,20 @@ class ExecutionContext(object):
         if upload_stderr and not is_notebook():
             self._stderr_uploader = StdErrWithUpload(self._experiment)
 
+        abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
+        if abortable:
+            self._run_aborting_thread(abort_callback)
+        else:
+            _logger.warning('psutil is not installed. You will not be able to abort this experiment from the UI.')
+
         if run_monitoring_thread:
             self._run_monitoring_thread()
 
-        if send_hardware_metrics and SystemMonitor.requirements_installed():
-            self._run_hardware_metrics_reporting_thread()
+        if send_hardware_metrics:
+            if SystemMonitor.requirements_installed():
+                self._run_hardware_metrics_reporting_thread()
+            else:
+                _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
 
     def stop(self):
         if self._ping_thread:

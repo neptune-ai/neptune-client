@@ -13,33 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 
-_logger = logging.getLogger(__name__)
+try:
+    import psutil
+    PSUTIL_INSTALLED = True
+except ImportError:
+    PSUTIL_INSTALLED = False
 
 
 class SystemMonitor(object):
     @staticmethod
     def requirements_installed():
-        # pylint:disable=unused-import,unused-variable,bad-option-value,import-outside-toplevel
-        try:
-            import psutil
-            return True
-        except ImportError:
-            _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
-            return False
+        return PSUTIL_INSTALLED
 
-    def cpu_count(self):
-        return self._psutil().cpu_count()
+    @staticmethod
+    def cpu_count():
+        return psutil.cpu_count()
 
-    def cpu_percent(self):
-        return self._psutil().cpu_percent()
+    @staticmethod
+    def cpu_percent():
+        return psutil.cpu_percent()
 
-    def virtual_memory(self):
-        return self._psutil().virtual_memory()
-
-    @classmethod
-    def _psutil(cls):
-        # pylint:disable=bad-option-value,import-outside-toplevel
-        import psutil
-        return psutil
+    @staticmethod
+    def virtual_memory():
+        return psutil.virtual_memory()
