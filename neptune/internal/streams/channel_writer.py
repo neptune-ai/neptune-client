@@ -26,11 +26,11 @@ class ChannelWriter(object):
     __SPLIT_PATTERN = re.compile(r'[\n\r]{1,2}')
 
     def __init__(self, experiment, channel_name, channel_namespace=ChannelNamespace.USER):
-        self._time_started = experiment.get_system_properties()['created']
         self._experiment = experiment
         self._channel_name = channel_name
         self._channel_namespace = channel_namespace
         self._data = None
+        self._x_offset = TimeOffset(self._experiment.get_system_properties()['created'])
 
     def write(self, data):
         if self._data is None:
@@ -40,7 +40,7 @@ class ChannelWriter(object):
         lines = self.__SPLIT_PATTERN.split(self._data)
         for line in lines[:-1]:
             value = ChannelValue(
-                x=(datetime.now(tz=self._time_started.tzinfo) - self._time_started).total_seconds() * 1000,
+                x=self._x_offset.next(),
                 y=dict(text_value=str(line)),
                 ts=None
             )
@@ -53,3 +53,26 @@ class ChannelWriter(object):
             )
 
         self._data = lines[-1]
+
+
+class TimeOffset(object):
+    def __init__(self, start):
+        self._start = start
+        self._previous = None
+
+    def next(self):
+        """
+        This method returns the number of milliseconds from start.
+        It returns a float, with microsecond granularity.
+
+        Since on Windows, datetime.now() has actually a millisecond granularity,
+        we remember the last returned value and in case of a collision, we add a microsecond.
+        """
+        millis_from_start = (datetime.now(tz=self._start.tzinfo) - self._start).total_seconds() * 1000
+        if millis_from_start != self._previous:
+            self._previous = millis_from_start
+        else:
+            microsecond = 0.001
+            self._previous = millis_from_start + microsecond
+
+        return self._previous
