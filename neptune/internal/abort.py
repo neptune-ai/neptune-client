@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 
-_logger = logging.getLogger(__name__)
+try:
+    import psutil
+    PSUTIL_INSTALLED = True
+except ImportError:
+    PSUTIL_INSTALLED = False
 
 
 class CustomAbortImpl(object):
@@ -34,56 +37,36 @@ class DefaultAbortImpl(object):
 
     @staticmethod
     def requirements_installed():
-        # pylint:disable=unused-import,unused-variable,bad-option-value,import-outside-toplevel
-        try:
-            import psutil
-            return True
-        except ImportError:
-            _logger.warning('psutil is not installed. The experiment will not be abortable.')
-            return False
+        return PSUTIL_INSTALLED
 
     def abort(self):
-        # pylint:disable=bad-option-value,import-outside-toplevel
-        import psutil
-
-        process = None
         try:
-            process = psutil.Process(self._pid)
+            processes = self._get_process_with_children(psutil.Process(self._pid))
         except psutil.NoSuchProcess:
-            pass
+            processes = []
 
-        if process is not None:
-            processes = self._get_processes(process)
-            for p in processes:
-                self._abort(p)
-            _, alive = psutil.wait_procs(processes, timeout=self.KILL_TIMEOUT)
-            for p in alive:
-                self._kill(p)
+        for p in processes:
+            self._abort(p)
+        _, alive = psutil.wait_procs(processes, timeout=self.KILL_TIMEOUT)
+        for p in alive:
+            self._kill(p)
 
     @staticmethod
-    def _get_processes(process):
-        # pylint:disable=bad-option-value,import-outside-toplevel
-        import psutil
-
+    def _get_process_with_children(process):
         try:
             return [process] + process.children(recursive=True)
         except psutil.NoSuchProcess:
             return []
 
-    def _abort(self, process):
-        # pylint:disable=bad-option-value,import-outside-toplevel
-        import psutil
-
+    @staticmethod
+    def _abort(process):
         try:
             process.terminate()
         except psutil.NoSuchProcess:
             pass
 
     def _kill(self, process):
-        # pylint:disable=bad-option-value,import-outside-toplevel
-        import psutil
-
-        for process in self._get_processes(process):
+        for process in self._get_process_with_children(process):
             try:
                 if process.is_running():
                     process.kill()
