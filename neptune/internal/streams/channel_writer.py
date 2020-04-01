@@ -30,7 +30,7 @@ class ChannelWriter(object):
         self._channel_name = channel_name
         self._channel_namespace = channel_namespace
         self._data = None
-        self._x_offset = TimeOffset(self._experiment.get_system_properties()['created'])
+        self._x_offset = TimeOffsetGenerator(self._experiment.get_system_properties()['created'])
 
     def write(self, data):
         if self._data is None:
@@ -55,7 +55,7 @@ class ChannelWriter(object):
         self._data = lines[-1]
 
 
-class TimeOffset(object):
+class TimeOffsetGenerator(object):
     def __init__(self, start):
         self._start = start
         self._previous_millis_from_start = None
