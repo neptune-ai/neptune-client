@@ -58,7 +58,7 @@ class ChannelWriter(object):
 class TimeOffset(object):
     def __init__(self, start):
         self._start = start
-        self._previous = None
+        self._previous_millis_from_start = None
 
     def next(self):
         """
@@ -69,10 +69,10 @@ class TimeOffset(object):
         we remember the last returned value and in case of a collision, we add a microsecond.
         """
         millis_from_start = (datetime.now(tz=self._start.tzinfo) - self._start).total_seconds() * 1000
-        if millis_from_start != self._previous:
-            self._previous = millis_from_start
-        else:
+        if self._previous_millis_from_start >= millis_from_start:
             microsecond = 0.001
-            self._previous = millis_from_start + microsecond
+            self._previous_millis_from_start = self._previous_millis_from_start + microsecond
+        else:
+            self._previous_millis_from_start = millis_from_start
 
-        return self._previous
+        return self._previous_millis_from_start
