@@ -78,7 +78,7 @@ class TestChannelWriter(unittest.TestCase):
 
     @staticmethod
     def _extract_x_to_text_from_calls(calls):
-        channel_values = [kwargs['channel_value'] for (args, kwargs) in calls]
+        channel_values = [kwargs['channel_value'] for (_, kwargs) in calls]
         return dict((v.x, v.y['text_value']) for v in channel_values)
 
 
