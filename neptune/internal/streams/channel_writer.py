@@ -69,7 +69,7 @@ class TimeOffset(object):
         we remember the last returned value and in case of a collision, we add a microsecond.
         """
         millis_from_start = (datetime.now(tz=self._start.tzinfo) - self._start).total_seconds() * 1000
-        if self._previous_millis_from_start >= millis_from_start:
+        if self._previous_millis_from_start is not None and self._previous_millis_from_start >= millis_from_start:
             microsecond = 0.001
             self._previous_millis_from_start = self._previous_millis_from_start + microsecond
         else:
