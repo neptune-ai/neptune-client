@@ -25,6 +25,8 @@ class NeptuneThread(threading.Thread):
         self._interrupted = threading.Event()
 
     def should_continue_running(self):
+        # TODO: remove this pylint exception once we stop supporting Python 2
+        # pylint: disable=no-member
         if utils.is_python_2():
             all_threads = threading.enumerate()
 
