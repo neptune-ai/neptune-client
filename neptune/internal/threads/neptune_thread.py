@@ -31,7 +31,7 @@ class NeptuneThread(threading.Thread):
             all_threads = threading.enumerate()
 
             # pylint:disable=protected-access
-            main_thread_is_alive = any(t.__class__ is threading._MainThread for t in all_threads)
+            main_thread_is_alive = any(t.__class__ is threading._MainThread and t.is_alive() for t in all_threads)
         else:
             main_thread_is_alive = threading.main_thread().is_alive()
 
