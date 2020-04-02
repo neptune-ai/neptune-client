@@ -30,7 +30,7 @@ class AbortingThread(NeptuneThread):
 
     def run(self):
         try:
-            while not self.is_interrupted():
+            while self.should_continue_running():
                 raw_message = self._ws_client.recv()
                 self._abort_message_processor.run(raw_message)
         except WebSocketConnectionClosedException:

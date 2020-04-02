@@ -32,7 +32,7 @@ class PingThread(NeptuneThread):
         self.__experiment = experiment
 
     def run(self):
-        while not self.is_interrupted():
+        while self.should_continue_running():
             try:
                 self.__backend.ping_experiment(self.__experiment)
             except HTTPUnprocessableEntity:

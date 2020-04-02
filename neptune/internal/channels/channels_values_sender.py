@@ -105,7 +105,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
         self._values_batch = []
 
     def run(self):
-        while not self.is_interrupted() or not self._values_queue.empty():
+        while self.should_continue_running() or not self._values_queue.empty():
             try:
                 sleep_start = time.time()
                 self._values_batch.append(self._values_queue.get(timeout=max(self._sleep_time, 0)))
@@ -121,10 +121,6 @@ class ChannelsValuesSendingThread(NeptuneThread):
                 self._process_batch()
 
         self._process_batch()
-
-    def join(self, timeout=None):
-        self.interrupt()
-        super(ChannelsValuesSendingThread, self).join(timeout)
 
     def _process_batch(self):
         send_start = time.time()

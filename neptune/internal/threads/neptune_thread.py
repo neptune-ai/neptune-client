@@ -15,6 +15,8 @@
 #
 import threading
 
+import six
+
 
 class NeptuneThread(threading.Thread):
     def __init__(self, is_daemon):
@@ -22,8 +24,18 @@ class NeptuneThread(threading.Thread):
         self.setDaemon(is_daemon)
         self._interrupted = threading.Event()
 
-    def is_interrupted(self):
-        return self._interrupted.is_set()
+    def should_continue_running(self):
+        # TODO: remove this pylint exception once we stop supporting Python 2
+        # pylint: disable=no-member
+        if six.PY2:
+            all_threads = threading.enumerate()
+
+            # pylint:disable=protected-access
+            main_thread_is_alive = any(t.__class__ is threading._MainThread and t.is_alive() for t in all_threads)
+        else:
+            main_thread_is_alive = threading.main_thread().is_alive()
+
+        return not self._interrupted.is_set() and main_thread_is_alive
 
     def interrupt(self):
         self._interrupted.set()

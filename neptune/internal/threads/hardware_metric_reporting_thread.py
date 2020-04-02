@@ -32,7 +32,7 @@ class HardwareMetricReportingThread(NeptuneThread):
 
     def run(self):
         try:
-            while not self.is_interrupted():
+            while self.should_continue_running():
                 before = time.time()
 
                 try:
