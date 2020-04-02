@@ -266,7 +266,3 @@ def is_ipython():
         return ipython is not None
     except ImportError:
         return False
-
-
-def is_python_2():
-    return sys.version_info[0] == 2

@@ -15,7 +15,7 @@
 #
 import threading
 
-from neptune import utils
+import six
 
 
 class NeptuneThread(threading.Thread):
@@ -27,7 +27,7 @@ class NeptuneThread(threading.Thread):
     def should_continue_running(self):
         # TODO: remove this pylint exception once we stop supporting Python 2
         # pylint: disable=no-member
-        if utils.is_python_2():
+        if six.PY2:
             all_threads = threading.enumerate()
 
             # pylint:disable=protected-access
