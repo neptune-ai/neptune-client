@@ -14,11 +14,19 @@
 # limitations under the License.
 #
 
+import logging
+import time
+
 from py3nvml.py3nvml import NVMLError, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, \
     nvmlDeviceGetUtilizationRates, nvmlInit
 
+_logger = logging.getLogger(__name__)
 
 class GPUMonitor(object):
+
+    nvml_error_time = 0
+    nvml_error_period = 30
+
     def get_card_count(self):
         return self.__nvml_get_or_else(nvmlDeviceGetCount, default=0)
 
@@ -51,5 +59,9 @@ class GPUMonitor(object):
         try:
             nvmlInit()
             return getter()
-        except NVMLError:
+        except NVMLError as e:
+            timestamp = time.time()
+            if timestamp - GPUMonitor.nvml_error_time > GPUMonitor.nvml_error_period:
+                _logger.warning("NVMLError: %s - GPU usage metrics may not be reported.", e)
+                GPUMonitor.nvml_error_time = timestamp
             return default

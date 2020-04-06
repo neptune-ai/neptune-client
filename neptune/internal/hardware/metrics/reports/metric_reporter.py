@@ -29,15 +29,16 @@ class MetricReporter(object):
         return [
             MetricReport(
                 metric=metric,
-                values=[self.__metric_value_for_gauge(gauge, timestamp) for gauge in metric.gauges]
+                values=[x for x in [self.__metric_value_for_gauge(gauge, timestamp) for gauge in metric.gauges] if x]
             )
             for metric in self.__metrics
         ]
 
     def __metric_value_for_gauge(self, gauge, timestamp):
+        value = gauge.value()
         return MetricValue(
             timestamp=timestamp,
             running_time=timestamp - self.__reference_timestamp,
             gauge_name=gauge.name(),
-            value=gauge.value()
-        )
+            value=value
+        ) if value else None
