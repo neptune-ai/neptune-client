@@ -65,7 +65,9 @@ class TestFileChunkStream(unittest.TestCase):
 
         # when
         stream = FileChunkStream(UploadEntry(StringIO(text), "some/path"))
-        chunks = stream.generate(chunk_size=10)
+        chunks = list()
+        for chunk in stream.generate(chunk_size=10):
+            chunks.append(chunk)
 
         # then
         self.assertEqual(stream.length, None)

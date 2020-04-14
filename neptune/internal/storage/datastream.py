@@ -36,6 +36,9 @@ class FileChunk(object):
         else:
             return io.BytesIO(self.data)
 
+    def __eq__(self, other):
+        return self.__dict__ == other.__dict__
+
 
 class FileChunkStream(object):
 
