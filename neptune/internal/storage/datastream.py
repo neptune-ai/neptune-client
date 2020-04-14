@@ -26,33 +26,31 @@ from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 
 
 class FileChunk(object):
-    def __init__(self, fobj, start, end):
-        self.fobj = fobj
+    def __init__(self, data, start, end):
+        self.data = data
         self.start = start
         self.end = end
 
     def get_data(self):
-        self.fobj.seek(self.start)
-        return io.BytesIO(self.fobj.read(self.end - self.start))
-
-    def skip(self):
-        pass
-
-    def md5(self):
-        hash_md5 = hashlib.md5()
-        self.fobj.seek(self.start)
-        item = self.fobj.read(self.end - self.start)
-        hash_md5.update(item)
-        return hash_md5.hexdigest()
+        print(self.data.__class__)
+        if isinstance(self.data, str):
+            return io.StringIO(self.data)
+        else:
+            return io.BytesIO(self.data)
 
 
 class FileChunkStream(object):
 
     def __init__(self, upload_entry):
         self.filename = upload_entry.target_path
-        self.fobj = io.open(upload_entry.source_path, 'rb')
-        self.length = os.path.getsize(upload_entry.source_path)
-        self.permissions = self.permissions_to_unix_string(upload_entry.source_path)
+        if upload_entry.is_stream():
+            self.fobj = upload_entry.source_path
+            self.length = None
+            self.permissions = '----------'
+        else:
+            self.fobj = io.open(upload_entry.source_path, 'rb')
+            self.length = os.path.getsize(upload_entry.source_path)
+            self.permissions = self.permissions_to_unix_string(upload_entry.source_path)
 
     @classmethod
     def permissions_to_unix_string(cls, path):
@@ -70,14 +68,17 @@ class FileChunkStream(object):
         return False
 
     def generate(self, chunk_size=BYTES_IN_ONE_MB):
-        num_chunks = (self.length + chunk_size - 1) // chunk_size
-        if num_chunks == 0:
-            yield FileChunk(self.fobj, 0, 0)
-
-        for i in range(num_chunks):
-            start = i * chunk_size
-            end = min(self.length, (i + 1) * chunk_size)
-            yield FileChunk(self.fobj, start, end)
+        last_offset = 0
+        while True:
+            chunk = self.fobj.read(chunk_size)
+            if chunk:
+                new_offset = last_offset + len(chunk)
+                yield FileChunk(chunk, last_offset, new_offset)
+                last_offset = new_offset
+            else:
+                if last_offset == 0:
+                    yield FileChunk(chunk, 0, 0)
+                break
 
     def close(self):
         self.fobj.close()

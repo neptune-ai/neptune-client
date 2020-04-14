@@ -801,34 +801,28 @@ class HostedNeptuneBackend(Backend):
             )
         )
 
-    def _upload_loop(self, fun, data, checksums=None, **kwargs):
+    def _upload_loop(self, fun, data, **kwargs):
         ret = None
         for part in data.generate():
-            skip = False
-            if checksums and part.start in checksums:
-                skip = checksums[part.start].checksum == part.md5()
+            part_to_send = part.get_data()
+            ret = with_api_exceptions_handler(self._upload_loop_chunk)(fun, part, part_to_send, data, **kwargs)
 
-            if not skip:
-                part_to_send = part.get_data()
-                ret = with_api_exceptions_handler(self._upload_loop_chunk)(fun, part, part_to_send, data, **kwargs)
-            else:
-                part.skip()
         data.close()
         return ret
 
     def _upload_loop_chunk(self, fun, part, part_to_send, data, **kwargs):
-        if part.end:
+        if data.length is not None:
             binary_range = "bytes=%d-%d/%d" % (part.start, part.end - 1, data.length)
         else:
-            binary_range = "bytes=%d-/%d" % (part.start, data.length)
-        response = fun(data=part_to_send,
-                       headers={
-                           "Content-Type": "application/octet-stream",
-                           "Content-Filename": data.filename,
-                           "X-Range": binary_range,
-                           "X-File-Permissions": data.permissions
-                       },
-                       **kwargs)
+            binary_range = "bytes=%d-%d" % (part.start, part.end - 1)
+        headers = {
+            "Content-Type": "application/octet-stream",
+            "Content-Filename": data.filename,
+            "X-Range": binary_range,
+        }
+        if data.permissions is not None:
+            headers["X-File-Permissions"] = data.permissions
+        response = fun(data=part_to_send, headers=headers, **kwargs)
         response.raise_for_status()
         return response
 

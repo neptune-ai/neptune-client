@@ -54,6 +54,9 @@ class UploadEntry(object):
         """
         return self.to_str()
 
+    def is_stream(self):
+        return hasattr(self.source_path, 'read')
+
 
 class UploadPackage(object):
     def __init__(self):
@@ -107,14 +110,15 @@ def scan_unique_upload_entries(upload_entries):
     """
     walked_entries = set()
     for entry in upload_entries:
-        if os.path.isdir(entry.source_path):
+        if entry.is_stream() or not os.path.isdir(entry.source_path):
+            walked_entries.add(entry)
+        else:
             for root, _, files in os.walk(entry.source_path):
                 path_relative_to_entry_source = os.path.relpath(root, entry.source_path)
                 target_root = os.path.normpath(os.path.join(entry.target_path, path_relative_to_entry_source))
                 for filename in files:
                     walked_entries.add(UploadEntry(os.path.join(root, filename), os.path.join(target_root, filename)))
-        else:
-            walked_entries.add(entry)
+
     return walked_entries
 
 
@@ -122,13 +126,19 @@ def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_fil
     current_package = UploadPackage()
 
     for entry in upload_entries:
-        size = os.path.getsize(entry.source_path)
-
-        if (size + current_package.size > max_package_size or current_package.len > max_files) \
-                and not current_package.is_empty():
+        if entry.is_stream():
             yield current_package
             current_package.reset()
-        current_package.update(entry, size)
+            current_package.update(entry, 0)
+            yield current_package
+            current_package.reset()
+        else:
+            size = os.path.getsize(entry.source_path)
+            if (size + current_package.size > max_package_size or current_package.len > max_files) \
+                    and not current_package.is_empty():
+                yield current_package
+                current_package.reset()
+            current_package.update(entry, size)
 
     yield current_package
 
@@ -140,10 +150,11 @@ def normalize_file_name(name):
 def upload_to_storage(upload_entries, upload_api_fun, upload_tar_api_fun, **kwargs):
     for package in split_upload_files(scan_unique_upload_entries(upload_entries)):
         if package.is_empty():
-            break
+            continue
 
         uploading_multiple_entries = package.len > 1
-        creating_a_single_empty_dir = package.len == 1 and os.path.isdir(package.items[0].source_path)
+        creating_a_single_empty_dir = package.len == 1 and not package.items[0].is_stream() \
+                                      and os.path.isdir(package.items[0].source_path)
 
         if uploading_multiple_entries or creating_a_single_empty_dir:
             data = compress_to_tar_gz_in_memory(upload_entries=package.items)
