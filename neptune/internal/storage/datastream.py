@@ -31,7 +31,6 @@ class FileChunk(object):
         self.end = end
 
     def get_data(self):
-        print(self.data.__class__)
         if isinstance(self.data, str):
             return io.StringIO(self.data)
         else:
