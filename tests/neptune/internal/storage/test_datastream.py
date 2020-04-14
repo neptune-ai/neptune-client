@@ -61,7 +61,7 @@ class TestFileChunkStream(unittest.TestCase):
 
     def test_generate_chunks_from_stream(self):
         # given
-        text = 'ABCDEFGHIJKLMNOPRSTUWXYZ'
+        text = u"ABCDEFGHIJKLMNOPRSTUWXYZ"
 
         # when
         stream = FileChunkStream(UploadEntry(StringIO(text), "some/path"))
@@ -72,9 +72,9 @@ class TestFileChunkStream(unittest.TestCase):
         # then
         self.assertEqual(stream.length, None)
         self.assertEqual(chunks, [
-            FileChunk("ABCDEFGHIJ", 0, 10),
-            FileChunk("KLMNOPRSTU", 10, 20),
-            FileChunk("WXYZ", 20, 24)
+            FileChunk(u"ABCDEFGHIJ", 0, 10),
+            FileChunk(u"KLMNOPRSTU", 10, 20),
+            FileChunk(u"WXYZ", 20, 24)
         ])
 
 
