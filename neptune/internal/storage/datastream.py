@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import hashlib
 import io
 import os
 import stat
