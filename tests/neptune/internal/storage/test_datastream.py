@@ -16,9 +16,11 @@
 
 import unittest
 
+from io import StringIO
 from mock import patch
 
-from neptune.internal.storage.datastream import FileChunkStream
+from neptune.internal.storage.datastream import FileChunkStream, FileChunk
+from neptune.internal.storage.storage_utils import UploadEntry
 
 
 class TestFileChunkStream(unittest.TestCase):
@@ -56,6 +58,24 @@ class TestFileChunkStream(unittest.TestCase):
 
         # then
         self.assertEqual('-' * 10, permissions_string)
+
+    def test_generate_chunks_from_stream(self):
+        # given
+        text = u"ABCDEFGHIJKLMNOPRSTUWXYZ"
+
+        # when
+        stream = FileChunkStream(UploadEntry(StringIO(text), "some/path"))
+        chunks = list()
+        for chunk in stream.generate(chunk_size=10):
+            chunks.append(chunk)
+
+        # then
+        self.assertEqual(stream.length, None)
+        self.assertEqual(chunks, [
+            FileChunk(u"ABCDEFGHIJ", 0, 10),
+            FileChunk(u"KLMNOPRSTU", 10, 20),
+            FileChunk(u"WXYZ", 20, 24)
+        ])
 
 
 if __name__ == '__main__':
