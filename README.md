@@ -1,8 +1,4 @@
 # neptune-client
-[![Downloads](https://pepy.tech/badge/neptune-client)](https://pepy.tech/project/neptune-client)
-[![Downloads](https://pepy.tech/badge/neptune-client/month)](https://pepy.tech/project/neptune-client/month)
-[![Downloads](https://pepy.tech/badge/neptune-client/week)](https://pepy.tech/project/neptune-client/week)
-
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
 [![Build Status](https://travis-ci.org/neptune-ai/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-client)
 
