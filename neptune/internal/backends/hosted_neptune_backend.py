@@ -18,12 +18,14 @@ import logging
 import os
 import platform
 import socket
+import sys
 import uuid
 from functools import partial
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
 from io import StringIO
 from itertools import groupby
 
+import click
 import requests
 import six
 import urllib3
@@ -31,6 +33,7 @@ from bravado.client import SwaggerClient
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity, HTTPConflict
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
+from packaging import version
 from requests.exceptions import HTTPError
 from six.moves import urllib
 
@@ -79,14 +82,16 @@ class HostedNeptuneBackend(Backend):
         backend_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(config_api_url))
         self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
 
+        # This is not a top-level import because of circular dependencies
+        from neptune import __version__
+        self.client_lib_version = __version__
+
+        self._verify_version()
+
         self._set_swagger_clients(self._client_config, config_api_url, backend_client)
 
         self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies)
         self._http_client.authenticator = self.authenticator
-
-        # This is not a top-level import because of circular dependencies
-        from neptune import __version__
-        self.client_lib_version = __version__
 
         user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
             lib_version=self.client_lib_version,
@@ -915,7 +920,53 @@ class HostedNeptuneBackend(Backend):
     @with_api_exceptions_handler
     def _create_client_config(self, api_token, backend_client):
         config = backend_client.api.getClientConfig(X_Neptune_Api_Token=api_token).response().result
-        return ClientConfig(api_url=config.apiUrl, display_url=config.applicationUrl)
+        
+        min_recommended = None
+        min_compatible = None
+        max_compatible = None
+
+        if hasattr(config, "versions"):
+            min_recommended = getattr(config.versions, "minRecommendedVersion", None)
+            min_compatible = getattr(config.versions, "minCompatibleVersion", None)
+            max_compatible = getattr(config.versions, "maxCompatibleVersion", None)
+
+        return ClientConfig(
+            api_url=config.apiUrl,
+            display_url=config.applicationUrl,
+            min_recommended_version=version.parse(min_recommended) if min_recommended else None,
+            min_compatible_version=version.parse(min_compatible) if min_compatible else None,
+            max_compatible_version=version.parse(max_compatible) if max_compatible else None
+        )
+
+    def _verify_version(self):
+        parsed_version = version.parse(self.client_lib_version)
+
+        if self._client_config.min_compatible_version and self._client_config.min_compatible_version > parsed_version:
+            click.echo(
+                "ERROR: Minimal supported client version is {} (installed: {}). Please upgrade neptune-client".format(
+                    self._client_config.min_compatible_version,
+                    self.client_lib_version
+                ),
+                sys.stderr
+            )
+            sys.exit(1)
+        if self._client_config.max_compatible_version and self._client_config.max_compatible_version < parsed_version:
+            click.echo(
+                "ERROR: Maximal supported client version is {} (installed: {}). Please downgrade neptune-client".format(
+                    self._client_config.max_compatible_version,
+                    self.client_lib_version
+                ),
+                sys.stderr
+            )
+            sys.exit(1)
+        if self._client_config.min_recommended_version and self._client_config.min_recommended_version > parsed_version:
+            click.echo(
+                "WARNING: There is a new version of neptune-client {} (installed: {}).".format(
+                    self._client_config.min_recommended_version,
+                    self.client_lib_version
+                ),
+                sys.stderr
+            )
 
     def _set_swagger_clients(self, client_config, client_config_api_addr, client_config_backend_client):
         self.backend_swagger_client = (
