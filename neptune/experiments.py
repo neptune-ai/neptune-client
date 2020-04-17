@@ -572,7 +572,9 @@ class Experiment(object):
         """Save an artifact (file) in experiment storage.
 
         Args:
-            artifact (:obj:`str`): A path to the file in local filesystem.
+            artifact (:obj:`str` or :obj:`IO object`):
+                A path to the file in local filesystem or IO object. It can be open
+                file descriptor or in-memory buffer like `io.StringIO` or `io.BytesIO`.
             destination (:obj:`str`, optional, default is ``None``):
                 A destination path.
                 If ``None`` is passed, an artifact file name will be used.
