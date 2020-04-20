@@ -17,6 +17,7 @@
 import io
 import os
 import stat
+import sys
 import tarfile
 
 from future.builtins import object
@@ -32,7 +33,10 @@ class FileChunk(object):
 
     def get_data(self):
         if isinstance(self.data, str):
-            return io.StringIO(self.data)
+            if sys.version_info.major < 3:
+                return io.StringIO(unicode(self.data))
+            else:
+                return io.StringIO(self.data)
         else:
             return io.BytesIO(self.data)
 
