@@ -18,6 +18,7 @@ import io
 import os
 import stat
 import tarfile
+import six
 
 from future.builtins import object
 
@@ -32,7 +33,11 @@ class FileChunk(object):
 
     def get_data(self):
         if isinstance(self.data, str):
-            return io.StringIO(self.data)
+            # pylint: disable=undefined-variable
+            if six.PY3:
+                return io.StringIO(self.data)
+            else:
+                return io.StringIO(unicode(self.data))
         else:
             return io.BytesIO(self.data)
 
