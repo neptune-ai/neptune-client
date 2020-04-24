@@ -925,10 +925,16 @@ class HostedNeptuneBackend(Backend):
         min_compatible = None
         max_compatible = None
 
-        if hasattr(config, "versions"):
-            min_recommended = getattr(config.versions, "minRecommendedVersion", None)
-            min_compatible = getattr(config.versions, "minCompatibleVersion", None)
-            max_compatible = getattr(config.versions, "maxCompatibleVersion", None)
+        if hasattr(config, "pyLibVersions"):
+            min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
+            min_compatible = getattr(config.pyLibVersions, "minCompatibleVersion", None)
+            max_compatible = getattr(config.pyLibVersions, "maxCompatibleVersion", None)
+        else:
+            click.echo(
+                "ERROR: This client version is not supported by your Neptune instance. Please contant Neptune support.",
+                sys.stderr
+            )
+            sys.exit(1)
 
         return ClientConfig(
             api_url=config.apiUrl,
