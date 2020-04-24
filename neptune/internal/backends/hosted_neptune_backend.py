@@ -44,7 +44,7 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
 from neptune.internal.backends.client_config import ClientConfig
-from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname
+from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
 from neptune.experiments import Experiment
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.utils.http import extract_response_field
@@ -66,6 +66,10 @@ class HostedNeptuneBackend(Backend):
         if api_token == ANONYMOUS:
             api_token = ANONYMOUS_API_TOKEN
 
+        # This is not a top-level import because of circular dependencies
+        from neptune import __version__
+        self.client_lib_version = __version__
+
         self.credentials = Credentials(api_token)
 
         ssl_verify = True
@@ -81,10 +85,6 @@ class HostedNeptuneBackend(Backend):
         self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
         backend_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(config_api_url))
         self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
-
-        # This is not a top-level import because of circular dependencies
-        from neptune import __version__
-        self.client_lib_version = __version__
 
         self._verify_version()
 
@@ -906,21 +906,18 @@ class HostedNeptuneBackend(Backend):
                 validate_responses=False,
                 formats=[uuid_format]
             ),
-            http_client=self._http_client
-        )
+            http_client=self._http_client)
 
     @with_api_exceptions_handler
     def _create_authenticator(self, api_token, ssl_verify, proxies):
         return NeptuneAuthenticator(
             self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result,
             ssl_verify,
-            proxies
-        )
+            proxies)
 
     @with_api_exceptions_handler
     def _create_client_config(self, api_token, backend_client):
         config = backend_client.api.getClientConfig(X_Neptune_Api_Token=api_token).response().result
-        
         min_recommended = None
         min_compatible = None
         max_compatible = None
@@ -932,9 +929,8 @@ class HostedNeptuneBackend(Backend):
         else:
             click.echo(
                 "ERROR: This client version is not supported by your Neptune instance. Please contant Neptune support.",
-                sys.stderr
-            )
-            sys.exit(1)
+                sys.stderr)
+            raise UnsupportedClientVersion(self.client_lib_version, None, "0.4.111")
 
         return ClientConfig(
             api_url=config.apiUrl,
@@ -950,29 +946,24 @@ class HostedNeptuneBackend(Backend):
         if self._client_config.min_compatible_version and self._client_config.min_compatible_version > parsed_version:
             click.echo(
                 "ERROR: Minimal supported client version is {} (installed: {}). Please upgrade neptune-client".format(
-                    self._client_config.min_compatible_version,
-                    self.client_lib_version
-                ),
-                sys.stderr
-            )
-            sys.exit(1)
+                    self._client_config.min_compatible_version, self.client_lib_version),
+                sys.stderr)
+            raise UnsupportedClientVersion(self.client_lib_version,
+                                           self._client_config.min_compatible_version,
+                                           self._client_config.max_compatible_version)
         if self._client_config.max_compatible_version and self._client_config.max_compatible_version < parsed_version:
             click.echo(
                 "ERROR: Maximal supported client version is {} (installed: {}). Please downgrade neptune-client".format(
-                    self._client_config.max_compatible_version,
-                    self.client_lib_version
-                ),
-                sys.stderr
-            )
-            sys.exit(1)
+                    self._client_config.max_compatible_version, self.client_lib_version),
+                sys.stderr)
+            raise UnsupportedClientVersion(self.client_lib_version,
+                                           self._client_config.min_compatible_version,
+                                           self._client_config.max_compatible_version)
         if self._client_config.min_recommended_version and self._client_config.min_recommended_version > parsed_version:
             click.echo(
                 "WARNING: There is a new version of neptune-client {} (installed: {}).".format(
-                    self._client_config.min_recommended_version,
-                    self.client_lib_version
-                ),
-                sys.stderr
-            )
+                    self._client_config.min_recommended_version, self.client_lib_version),
+                sys.stderr)
 
     def _set_swagger_clients(self, client_config, client_config_api_addr, client_config_backend_client):
         self.backend_swagger_client = (
@@ -995,10 +986,5 @@ class HostedNeptuneBackend(Backend):
                 raise CannotResolveHostname(host)
 
 
-uuid_format = SwaggerFormat(
-    format='uuid',
-    to_python=lambda x: x,
-    to_wire=lambda x: x,
-    validate=lambda x: None,
-    description=''
-)
+uuid_format = SwaggerFormat(format='uuid', to_python=lambda x: x,
+                            to_wire=lambda x: x, validate=lambda x: None, description='')

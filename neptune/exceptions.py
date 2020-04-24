@@ -114,3 +114,11 @@ class CannotResolveHostname(NeptuneException):
     def __init__(self, host):
         super(CannotResolveHostname, self).__init__(
             "Cannot resolve hostname {}. Please contact Neptune support.".format(host))
+
+class UnsupportedClientVersion(NeptuneException):
+    def __init__(self, version, minVersion, maxVersion):
+        super(UnsupportedClientVersion, self).__init__(
+            "This client version ({}) is not supported. Please install neptune-client{}".format(
+                version,
+                "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion)
+            ))
