@@ -20,7 +20,7 @@ import uuid
 import mock
 from mock import MagicMock
 
-from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname
+from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from tests.neptune.api_models import ApiParameter
 
@@ -34,12 +34,53 @@ class TestHostedNeptuneBackend(unittest.TestCase):
     # pylint:disable=protected-access
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
+    @mock.patch('neptune.__version__', '0.5.13')
+    def test_min_compatible_version_ok(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.13')
+
+        # expect
+        HostedNeptuneBackend(api_token=API_TOKEN)
+
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    @mock.patch('neptune.__version__', '0.5.13')
+    def test_min_compatible_version_fail(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.14')
+
+        # expect
+        with self.assertRaises(UnsupportedClientVersion) as ex:
+            HostedNeptuneBackend(api_token=API_TOKEN)
+
+        self.assertTrue("Please install neptune-client>=0.5.14" in str(ex.exception))
+
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    @mock.patch('neptune.__version__', '0.5.13')
+    def test_max_compatible_version_ok(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.13')
+
+        # expect
+        HostedNeptuneBackend(api_token=API_TOKEN)
+
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    @mock.patch('neptune.__version__', '0.5.13')
+    def test_max_compatible_version_fail(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.12')
+
+        # expect
+        with self.assertRaises(UnsupportedClientVersion) as ex:
+            HostedNeptuneBackend(api_token=API_TOKEN)
+
+        self.assertTrue("Please install neptune-client==0.5.12" in str(ex.exception))
+
+    @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('uuid.uuid4')
     def test_convert_to_api_parameters(self, uuid4, swagger_client_factory):
         # given
-        swagger_client = MagicMock()
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         swagger_client.get_model.return_value = ApiParameter
-        swagger_client_factory.return_value = swagger_client
 
         # and
         some_uuid = str(uuid.uuid4())
@@ -76,6 +117,9 @@ class TestHostedNeptuneBackend(unittest.TestCase):
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.internal.backends.credentials.os.getenv', return_value=API_TOKEN)
     def test_should_take_default_credentials_from_env(self, env, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+
         # when
         backend = HostedNeptuneBackend()
 
@@ -83,7 +127,10 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self.assertEqual(API_TOKEN, backend.credentials.api_token)
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
-    def test_should_accept_given_api_token(self, _):
+    def test_should_accept_given_api_token(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+
         # when
         session = HostedNeptuneBackend(API_TOKEN)
 
@@ -113,6 +160,28 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         # expect
         with self.assertRaises(CannotResolveHostname):
             HostedNeptuneBackend(token)
+
+    @staticmethod
+    def _get_swagger_client_mock(
+            swagger_client_factory,
+            min_recommended=None,
+            min_compatible=None,
+            max_compatible=None):
+        py_lib_versions = type('py_lib_versions', (object,), {})()
+        setattr(py_lib_versions, "minRecommendedVersion", min_recommended)
+        setattr(py_lib_versions, "minCompatibleVersion", min_compatible)
+        setattr(py_lib_versions, "maxCompatibleVersion", max_compatible)
+
+        client_config = type('client_config_response_result', (object,), {})()
+        setattr(client_config, "pyLibVersions", py_lib_versions)
+        setattr(client_config, "apiUrl", None)
+        setattr(client_config, "applicationUrl", None)
+
+        swagger_client = MagicMock()
+        swagger_client.api.getClientConfig.return_value.response.return_value.result = client_config
+        swagger_client_factory.return_value = swagger_client
+
+        return swagger_client
 
 class SomeClass(object):
     pass
