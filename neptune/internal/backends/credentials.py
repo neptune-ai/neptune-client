@@ -61,8 +61,12 @@ class Credentials(object):
     """
 
     def __init__(self, api_token=None):
+
+        from neptune import ANONYMOUS_API_TOKEN
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
+        elif api_token == ANONYMOUS_API_TOKEN:
+            pass  # Do not warn about using public API token
         else:
             _logger.warning(
                 "WARNING: It is not secure to place API token in your source code. "
