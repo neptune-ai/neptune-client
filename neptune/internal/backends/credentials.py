@@ -21,6 +21,7 @@ import os
 
 from neptune import envs
 from neptune.api_exceptions import InvalidApiKey
+from neptune.constants import ANONYMOUS_API_TOKEN
 from neptune.exceptions import MissingApiToken
 
 _logger = logging.getLogger(__name__)
@@ -63,6 +64,8 @@ class Credentials(object):
     def __init__(self, api_token=None):
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
+        elif api_token == ANONYMOUS_API_TOKEN:
+            pass  # Do not warn about using public API token
         else:
             _logger.warning(
                 "WARNING: It is not secure to place API token in your source code. "

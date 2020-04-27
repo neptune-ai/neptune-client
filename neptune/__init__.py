@@ -18,6 +18,7 @@ import os
 import threading
 
 from neptune import envs
+from neptune import constants
 from neptune.exceptions import MissingProjectQualifiedName, Uninitialized, InvalidNeptuneBackend
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.backends.offline_backend import OfflineBackend
@@ -38,13 +39,12 @@ _logger = logging.getLogger(__name__)
 """Access Neptune as an anonymous user.
 You can pass this value as api_token during init() call, either by an environment variable or passing it directly
 """
-ANONYMOUS = 'ANONYMOUS'
+ANONYMOUS = constants.ANONYMOUS
 
 """Anonymous user API token.
 You can pass this value as api_token during init() call, either by an environment variable or passing it directly
 """
-ANONYMOUS_API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYW' \
-                      'kiLCJhcGlfa2V5IjoiYjcwNmJjOGYtNzZmOS00YzJlLTkzOWQtNGJhMDM2ZjkzMmU0In0='
+ANONYMOUS_API_TOKEN = constants.ANONYMOUS_API_TOKEN
 
 
 def init(project_qualified_name=None, api_token=None, proxies=None, backend=None):
