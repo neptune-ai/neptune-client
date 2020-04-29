@@ -796,7 +796,6 @@ class Experiment(object):
             sleep_time = min(sleep_time * 2, max_sleep_time)
             download_request = self._backend.get_download_request(download_request.id)
 
-        
         ssl_verify = True
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             ssl_verify = False
