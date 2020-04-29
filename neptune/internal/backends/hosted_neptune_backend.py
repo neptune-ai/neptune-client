@@ -415,12 +415,13 @@ class HostedNeptuneBackend(Backend):
             else:
                 raise
 
-    def upload_experiment_source(self, experiment, data):
+    def upload_experiment_source(self, experiment, data, progress_indicator):
         try:
             # Api exception handling is done in _upload_loop
             self._upload_loop(partial(self._upload_raw_data,
                                       api_method=self.backend_swagger_client.api.uploadExperimentSource),
                               data=data,
+                              progress_indicator=progress_indicator,
                               path_params={'experimentId': experiment.internal_id},
                               query_params={})
         except HTTPError as e:
@@ -659,12 +660,13 @@ class HostedNeptuneBackend(Backend):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
-    def upload_experiment_output(self, experiment, data):
+    def upload_experiment_output(self, experiment, data, progress_indicator):
         try:
             # Api exception handling is done in _upload_loop
             self._upload_loop(partial(self._upload_raw_data,
                                       api_method=self.backend_swagger_client.api.uploadExperimentOutput),
                               data=data,
+                              progress_indicator=progress_indicator,
                               path_params={'experimentId': experiment.internal_id},
                               query_params={})
         except HTTPError as e:
@@ -806,11 +808,13 @@ class HostedNeptuneBackend(Backend):
             )
         )
 
-    def _upload_loop(self, fun, data, **kwargs):
+    def _upload_loop(self, fun, data, progress_indicator, **kwargs):
         ret = None
         for part in data.generate():
             part_to_send = part.get_data()
             ret = with_api_exceptions_handler(self._upload_loop_chunk)(fun, part, part_to_send, data, **kwargs)
+            if progress_indicator is not None:
+                progress_indicator.progress(part.end - part.start)
 
         data.close()
         return ret

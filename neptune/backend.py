@@ -90,7 +90,7 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def upload_experiment_source(self, experiment, data):
+    def upload_experiment_source(self, experiment, data, progress_indicator):
         pass
 
     @abstractmethod
@@ -138,7 +138,7 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def upload_experiment_output(self, experiment, data):
+    def upload_experiment_output(self, experiment, data, progress_indicator):
         pass
 
     @abstractmethod
