@@ -813,8 +813,7 @@ class HostedNeptuneBackend(Backend):
         for part in data.generate():
             part_to_send = part.get_data()
             ret = with_api_exceptions_handler(self._upload_loop_chunk)(fun, part, part_to_send, data, **kwargs)
-            if progress_indicator is not None:
-                progress_indicator.progress(part.end - part.start)
+            progress_indicator.progress(part.end - part.start)
 
         data.close()
         return ret
