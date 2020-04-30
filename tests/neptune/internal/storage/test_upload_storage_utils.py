@@ -69,7 +69,7 @@ class TestUploadStorageUtils(unittest.TestCase):
 
         # THEN
         warning.assert_any_call('You are sending %dMB of source code to Neptune. '
-                        'It is pretty uncommon - please make sure it\'s what you wanted.', 101)
+                                'It is pretty uncommon - please make sure it\'s what you wanted.', 101)
         warning.assert_any_call('%d MB (100%%) of source code was sent to Neptune.', 101)
 
     @patch('io.open', new=MagicMock)
