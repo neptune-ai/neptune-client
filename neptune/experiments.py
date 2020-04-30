@@ -1032,6 +1032,7 @@ class Experiment(object):
         upload_to_storage(upload_entries=upload_source_entries,
                           upload_api_fun=self._backend.upload_experiment_source,
                           upload_tar_api_fun=self._backend.extract_experiment_source,
+                          warn_limit=100 * 1024 * 1024,
                           experiment=self)
 
         self._execution_context.start(

@@ -80,7 +80,7 @@ class OfflineBackend(Backend):
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         pass
 
-    def upload_experiment_source(self, experiment, data):
+    def upload_experiment_source(self, experiment, data, progress_indicator):
         pass
 
     def extract_experiment_source(self, experiment, data):
@@ -116,7 +116,7 @@ class OfflineBackend(Backend):
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
         pass
 
-    def upload_experiment_output(self, experiment, data):
+    def upload_experiment_output(self, experiment, data, progress_indicator):
         pass
 
     def extract_experiment_output(self, experiment, data):
