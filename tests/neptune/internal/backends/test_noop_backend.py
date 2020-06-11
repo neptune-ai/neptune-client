@@ -22,4 +22,4 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     def test_builtin_fields_not_overriden(self):
         objectUnderTest = NoopObject()
-        self.assertIsNotNone(objectUnderTest.__class__)
+        self.assertIsInstance(objectUnderTest.__class__, type)
