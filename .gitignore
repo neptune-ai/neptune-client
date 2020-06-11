@@ -111,7 +111,3 @@ venv.bak/
 
 # Vim
 *.swp
-
-# VS Code
-.history
-.vscode
