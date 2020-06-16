@@ -132,4 +132,13 @@ class OfflineBackend(Backend):
 class NoopObject(object):
 
     def __getattr__(self, item):
-        return None
+        return self
+
+    def __call__(self, *args, **kwargs):
+        return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
