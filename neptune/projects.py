@@ -283,9 +283,9 @@ class Project(object):
                     * If ``abort_callback=callable``, then ``callable`` is executed when `abort experiment` action
                       in the Web application is triggered.
 
-            logger (:obj:`logging.handlers` or `None`, optional, default is ``None``):
-                If `handler <https://docs.python.org/3.6/library/logging.handlers.html>`_
-                to `Python logger` is passed, new experiment's `text log`
+            logger (:obj:`logging.Logger` or `None`, optional, default is ``None``):
+                If Python's `Logger <https://docs.python.org/3/library/logging.html#logging.Logger>`_
+                is passed, new experiment's `text log`
                 (see: :meth:`~neptune.experiments.Experiment.log_text`) with name `"logger"` is created.
                 Each time `Python logger` logs new data, it is automatically sent to the `"logger"` in experiment.
                 As a results all data from `Python logger` are in the `Logs` tab in the experiment.
