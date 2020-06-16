@@ -20,40 +20,36 @@ from neptune.internal.backends.offline_backend import NoopObject
 
 class TestHostedNeptuneObject(unittest.TestCase):
 
-    # given
-    objectUnderTest = NoopObject()
-    some_value = 42
-
     def test_builtin_fields_not_overriden(self):
-        #when
-        result = self.objectUnderTest.__class__
+        # given
+        objectUnderTest = NoopObject()
 
         # then
-        self.assertIsInstance(result, type)
+        self.assertIsInstance(objectUnderTest.__class__, type)
 
     def test_attributes_fall_back_on_getattr(self):
-        #when
-        attribute = self.objectUnderTest.foo
-
-        # and
-        method_call = self.objectUnderTest.bar(self.some_value)
+        # given
+        objectUnderTest = NoopObject()
+        some_value = 42
 
         # then
-        self.assertEqual(attribute, self.objectUnderTest)
-
-        # and
-        self.assertEqual(method_call, self.objectUnderTest)
+        self.assertEqual(objectUnderTest.foo, objectUnderTest)
+        self.assertEqual(objectUnderTest.bar(some_value), objectUnderTest)
 
     def test_noop_object_callable(self):
-        # when
-        result = self.objectUnderTest(self.some_value)
+        # given
+        objectUnderTest = NoopObject()
+        some_value = 42
 
         # then
-        self.assertEqual(result, self.objectUnderTest)
+        self.assertEqual(objectUnderTest(some_value), objectUnderTest)
 
     def test_noop_object_context_manager(self):
+        # given
+        objectUnderTest = NoopObject()
+
         # when
-        with self.objectUnderTest as e:
+        with objectUnderTest as e:
 
             # then
             e(42)
