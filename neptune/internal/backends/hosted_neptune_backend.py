@@ -809,8 +809,6 @@ class HostedNeptuneBackend(Backend):
         )
 
     def _upload_loop(self, fun, data, progress_indicator, **kwargs):
-
-
         ret = None
         for part in data.generate():
             ret = with_api_exceptions_handler(self._upload_loop_chunk)(fun, part, data, **kwargs)
