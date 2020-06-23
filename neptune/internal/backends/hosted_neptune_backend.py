@@ -811,14 +811,13 @@ class HostedNeptuneBackend(Backend):
     def _upload_loop(self, fun, data, progress_indicator, **kwargs):
         ret = None
         for part in data.generate():
-            part_to_send = part.get_data()
-            ret = with_api_exceptions_handler(self._upload_loop_chunk)(fun, part, part_to_send, data, **kwargs)
+            ret = with_api_exceptions_handler(self._upload_loop_chunk)(fun, part, data, **kwargs)
             progress_indicator.progress(part.end - part.start)
 
         data.close()
         return ret
 
-    def _upload_loop_chunk(self, fun, part, part_to_send, data, **kwargs):
+    def _upload_loop_chunk(self, fun, part, data, **kwargs):
         if data.length is not None:
             binary_range = "bytes=%d-%d/%d" % (part.start, part.end - 1, data.length)
         else:
@@ -830,7 +829,7 @@ class HostedNeptuneBackend(Backend):
         }
         if data.permissions is not None:
             headers["X-File-Permissions"] = data.permissions
-        response = fun(data=part_to_send, headers=headers, **kwargs)
+        response = fun(data=part.get_data(), headers=headers, **kwargs)
         response.raise_for_status()
         return response
 
