@@ -128,8 +128,8 @@ class ChannelsValuesSendingThread(NeptuneThread):
             try:
                 self._send_values(self._values_batch)
                 self._values_batch = []
-            except (NeptuneException, IOError) as e:
-                _logger.warning('Failed to send channel value: %s', e)
+            except (NeptuneException, IOError):
+                _logger.exception('Failed to send channel value.')
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
     def _send_values(self, queued_channels_values):
@@ -158,5 +158,5 @@ class ChannelsValuesSendingThread(NeptuneThread):
                 message = e.response.json()["message"]
             finally:
                 _logger.warning('Failed to send channel value: %s', message)
-        except (NeptuneException, IOError) as e:
-            _logger.warning('Failed to send channel value: %s', e)
+        except (NeptuneException, IOError):
+            _logger.exception('Failed to send channel value.')

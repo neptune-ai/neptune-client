@@ -32,7 +32,6 @@ from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPF
 from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, Unauthorized, SSLError
 from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotAFile
 from neptune.git_info import GitInfo
-from neptune import envs
 
 _logger = logging.getLogger(__name__)
 
@@ -210,8 +209,6 @@ def with_api_exceptions_handler(func):
             try:
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
-                if os.getenv(envs.DEBUG_ENABLED):
-                    _logger.exception('Experiencing SSL issues.')
                 raise SSLError()
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
