@@ -210,6 +210,7 @@ def with_api_exceptions_handler(func):
             try:
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
+                _logger.exception('Experiencing SSL issues.')
                 raise SSLError()
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
