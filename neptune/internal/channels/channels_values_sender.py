@@ -141,6 +141,8 @@ class ChannelsValuesSendingThread(NeptuneThread):
                                      in groupby(sorted(queued_channels_values, key=get_channel_id),
                                                 get_channel_id)}
 
+        _logger.info("Travic test")
+
         channels_with_values = []
         for channel_id in queued_grouped_by_channel:
             channel_values = []
