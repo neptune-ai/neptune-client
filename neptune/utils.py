@@ -29,8 +29,7 @@ from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPF
     HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
     HTTPGatewayTimeout, HTTPBadGateway
 
-from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, \
-    Unauthorized, SSLError
+from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, Unauthorized, SSLError
 from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotAFile
 from neptune.git_info import GitInfo
 
