@@ -1,3 +1,5 @@
+# pylint: disable=protected-access
+
 #####################
 ### Neptune types
 #####################
@@ -5,69 +7,95 @@
 class Typ:
     pass
 
+type_placeholder = None
+
 ###################################
 ### Mock for testing
 ###################################
 
-last_op = [None]
+ops = []
 
 ###################################
 ### Variables and structures
 ###################################
 
 class Variable:
-  
-    def __init__(self, typ):
+    """
+    """
+
+    def __init__(self, experiment, path, typ):
         super().__init__()
-        # TODO validate type
-        self.typ = typ
+        self._experiment = experiment
+        self._path = path
+        self._type = typ
 
-    # Structures Atom/Series/Set should override their respective method
-    # assign/log/set when inheriting from Variable.
-
-    def _wrong_structure_method_attempted(self):
-        raise TypeError() # TODO message
-
-    def assign(self, *args, **kwargs):
-        self._wrong_structure_method_attempted()
-
-    def log(self, *args, **kwargs):
-        self._wrong_structure_method_attempted()
-
-    def add(self, *args, **kwargs):
-        self._wrong_structure_method_attempted()
+    def str_path(self):
+        return str(self._path)
 
 class Atom(Variable):
     """
     typ: supported Python type or Neptune type
     """
 
-    def assign(self, value):
-        last_op[0] = ('atom.assign', convert_type(self.__class__, value))
+    def __init__(self, experiment, path, value):
+        super().__init__(experiment, path, type_placeholder)
+        self.value = value
+
+    @property
+    def value(self):
+        ops.append((self.str_path(), 'value.getter', self._value))
+        return self._value
+
+    @value.setter
+    def value(self, v):
+        ops.append((self.str_path(), 'value.setter', v))
+        self._value = v
 
 class Series(Variable):
     """
     typ: supported Python type or Neptune type
     """
     
-    def __init__(self, typ):
-        # TODO check that the type is supported by the Series structure 
-        super().__init__(typ)
+    def __init__(self, experiment, path, typ):
+        # TODO check that the type is supported by the Series structure
+        super().__init__(experiment, path, typ)
 
-    def log(self, value):
-        last_op[0] = ('series.log', convert_type(self.__class__, value))
+    interface = ['log', 'get', 'remove']
+
+    def log(self, value, step=None, timestamp=None):
+        pass
+
+    def get(self, step=None, timestamp=None):
+        pass
+
+    def remove(self, step=None, timestamp=None):
+        pass
 
 class Set(Variable):
     """
     typ: supported Python type or Neptune type
     """
     
-    def __init__(self, typ):
-        # TODO check that the type is supported by the Set structure 
-        super().__init__(typ)
+    def __init__(self, experiment, path, typ):
+        # TODO check that the type is supported by the Set structure
+        super().__init__(experiment, path, typ)
 
-    def add(self, value):
-        last_op[0] = ('set.add', convert_type(self.__class__, value))
+    # TODO mark interface methods with decorators?
+    interface = ['get', 'set', 'insert', 'remove']
+
+    def get(self):
+        pass
+
+    def set(self, *values):
+        pass
+
+    def add(self, *values):
+        pass
+
+    def remove(self, *values):
+        pass
+
+Variable.structures = [Atom, Series, Set]
 
 ###################################
 ### Implicit mappings
@@ -77,17 +105,17 @@ class Set(Variable):
 # Ideally, there should be a way to register custom conversions.
 # Also, lookup should be made efficient.
 
-# The format is (structure_type, external_type, neptune_conversion)
-implicit_conversions = [
-    (Atom, int, int),
-    (Series, int, float)
-]
+# # The format is (structure_type, external_type, neptune_conversion)
+# implicit_conversions = [
+#     (Atom, int, int),
+#     (Series, int, float)
+# ]
 
-def convert_type(structure_type, value):
-    for (st, et, conversion) in implicit_conversions:
-        if issubclass(structure_type, st) and isinstance(value, et):
-            return conversion(value)
-    raise ValueError()
+# def convert_type(structure_type, value):
+#     for (st, et, conversion) in implicit_conversions:
+#         if issubclass(structure_type, st) and isinstance(value, et):
+#             return conversion(value)
+#     raise ValueError()
 
 ###################################
 ### Namespace
@@ -121,6 +149,12 @@ class Path:
     def __hash__(self):
         return hash(self._value)
 
+    def __str__(self):
+        return self._value
+
+    def __repr__(self):
+        return f"Path({self._value})"
+
 class Experiment:
   
     def __init__(self):
@@ -133,20 +167,14 @@ class Experiment:
         """
         return self._members.get(path)
 
+    def _set_variable(self, path, variable):
+        self._members[path] = variable
+
     def __getitem__(self, path):
         """
         path: string
         """
         return ExperimentView(self, Path(path))
-
-    def assign(self, path, value):
-        pass
-
-    def log(self, path, value, step, timestamp):
-        pass
-
-    def add(self, path, *values):
-        pass
 
 class ExperimentView:
   
@@ -165,11 +193,42 @@ class ExperimentView:
         """
         return ExperimentView(self._experiment, self._path + path)
 
+    def _get_variable(self):
+        return self._experiment._get_variable(self._path)
+
+    def _set_variable(self, var):
+        self._experiment._set_variable(self._path, var)
+
+    @property
+    def value(self):
+        return self._get_variable().value
+
+    @value.setter
+    def value(self, v):
+        var = self._get_variable()
+        if var:
+            var.value = v
+        else:
+            var = Atom(self._experiment, self._path, v)
+            self._set_variable(var)
+
     def assign(self, value):
-        self._experiment.assign(self._path, value)
+        var = self._experiment._get_variable(self._path)
+        if not var:
+            var = Atom(self._experiment, self._path, type_placeholder)
+            self._experiment._set_variable(self._path, var)
+        var.assign(value)
 
     def log(self, value, step=None, timestamp=None):
-        self._experiment.log(self._path, value, step, timestamp)
+        var = self._experiment._get_variable(self._path)
+        if not var:
+            var = Series(self._experiment, self._path, type_placeholder)
+            self._experiment._set_variable(self._path, var)
+        var.log(value, step, timestamp)
 
     def add(self, *values):
-        self._experiment.add(self._path, *values)
+        var = self._experiment._get_variable(self._path)
+        if not var:
+            var = Set(self._experiment, self._path, type_placeholder)
+            self._experiment._set_variable(self._path, var)
+        var.add(*values)
