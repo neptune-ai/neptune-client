@@ -1,4 +1,5 @@
-from . import Experiment, ops, _Path
+from .experiment import Experiment
+from .variable import ops
 
 def test_atom_ops():
     # given
