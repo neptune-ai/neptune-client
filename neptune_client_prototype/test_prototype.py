@@ -1,4 +1,4 @@
-from . import Experiment, ops, Path
+from . import Experiment, ops, _Path
 
 def test_atom_ops():
     # given
@@ -8,8 +8,7 @@ def test_atom_ops():
     result = e['atom'].value
     # then
     assert result == 1
-    assert ops[-2] == ('atom', 'value.setter', 1)
-    assert ops[-1] == ('atom', 'value.getter', 1)
+    assert ops[-1] == ('atom', 'value.setter', 1)
 
 def test_atom_reassignment():
     # given
@@ -20,9 +19,8 @@ def test_atom_reassignment():
     result = e['atom'].value
     # then
     assert result == 2
-    assert ops[-3] == ('atom', 'value.setter', 1)
-    assert ops[-2] == ('atom', 'value.setter', 2)
-    assert ops[-1] == ('atom', 'value.getter', 2)
+    assert ops[-2] == ('atom', 'value.setter', 1)
+    assert ops[-1] == ('atom', 'value.setter', 2)
 
 def test_set_ops():
     # given
@@ -32,5 +30,4 @@ def test_set_ops():
     result = e['set'].get()
     # then
     assert result == {1, 2}
-    assert ops[-2] == ('set', 'add', (1, 2))
-    assert ops[-1] == ('set', 'get', {1, 2})
+    assert ops[-1] == ('set', 'add', (1, 2))
