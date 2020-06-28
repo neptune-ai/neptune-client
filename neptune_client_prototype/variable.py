@@ -58,13 +58,14 @@ class Series(Variable):
     def __init__(self, experiment, path, typ):
         # TODO check that the type is supported by the Series structure
         super().__init__(experiment, path, typ)
+        self._values = []
 
     interface = ['log', 'get', 'remove']
 
     def log(self, value, step=None, timestamp=None):
-        pass
+        self._values
 
-    def get(self, step=None, timestamp=None):
+    def tail(self, n_last, step=None):
         pass
 
     def remove(self, step=None, timestamp=None):
@@ -78,7 +79,7 @@ class Set(Variable):
     def __init__(self, experiment, path, typ):
         # TODO check that the type is supported by the Set structure
         super().__init__(experiment, path, typ)
-        self._values = {}
+        self._values = set()
 
     # TODO mark interface methods with decorators?
     interface = ['get', 'set', 'insert', 'remove']
@@ -87,13 +88,15 @@ class Set(Variable):
         return self._values
 
     def set(self, *values):
+        ops.append((str(self._path), 'set', values))
         self._values = set(values)
 
     def add(self, *values):
-        ops.append((self._path, 'add', values))
-        self._values += values
+        ops.append((str(self._path), 'add', values))
+        self._values.update(values)
 
     def remove(self, *values):
-        self._values -= values
+        ops.append((str(self._path), 'remove', values))
+        self._values.difference_update(values)
 
 Variable.structures = [Atom, Series, Set]

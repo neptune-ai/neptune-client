@@ -1,5 +1,7 @@
 from .variable import *
 
+from copy import copy
+
 # pylint: disable=protected-access
 
 class _Path:
@@ -10,24 +12,32 @@ class _Path:
         """
         super().__init__()
         # TODO validate and normalize to /path/to/variable
-        self._value = path
+        if isinstance(path, str):
+            self._value = path.split('/')
+        elif isinstance(path, list):
+            self._value = copy(path)
+        else:
+            raise TypeError()
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._value[key]
+        elif isinstance(key, slice):
+            return _Path(self._value[key])
+        else:
+            raise TypeError()
+
+    def __iter__(self):
+        return iter(self._value)
 
     def __add__(self, other):
         """
-        other: string or _Path
+        other: _Path
         """
-        if isinstance(other, str):
-            return self + _Path(other)
-        elif isinstance(other, _Path):
-            return _Path(self._value + other._value)
-        else:
-            raise ValueError()
+        return _Path(self._value + other._value)
 
     def __eq__(self, other):
         return self._value == other._value
-
-    def __hash__(self):
-        return hash(self._value)
 
     def __str__(self):
         return self._value
@@ -45,9 +55,23 @@ class Experiment:
         """
         path: _Path
         """
-        return self._members.get(path)
+        # TODO handle non-existent path
+        ref = self._members
+        for segment in path:
+            ref = ref[segment] 
+        return ref
 
     def _set_variable(self, path, variable):
+        namespace = self._members
+        location, variable_name = path
+        for segment in path:
+            if segment in namespace:
+                namespace = namespace[segment]
+            else:
+                namespace[segment] = {}
+                namespace = namespace[segment]
+        
+
         self._members[path] = variable
 
     def __getitem__(self, path):
@@ -105,7 +129,11 @@ class ExperimentView:
         if not var:
             var = Set(self._experiment, self._path, type_placeholder)
             self._set_variable(var)
-        self.add(*values)
+        var.add(*values)
 
     def __getattr__(self, attr):
-        pass
+        var = self._get_variable()
+        if var:
+            return getattr(var, attr)
+        else:
+            return getattr(super(), attr)
