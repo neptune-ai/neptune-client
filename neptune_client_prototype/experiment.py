@@ -1,49 +1,20 @@
 from .variable import *
 
 from copy import copy
+from collections import abc
 
 # pylint: disable=protected-access
 
-class _Path:
+def parse_path(path):
+    """
+    path: string
 
-    def __init__(self, path):
-        """
-        path: str
-        """
-        super().__init__()
-        # TODO validate and normalize to /path/to/variable
-        if isinstance(path, str):
-            self._value = path.split('/')
-        elif isinstance(path, list):
-            self._value = copy(path)
-        else:
-            raise TypeError()
+    Returns: list of strings
 
-    def __getitem__(self, key):
-        if isinstance(key, int):
-            return self._value[key]
-        elif isinstance(key, slice):
-            return _Path(self._value[key])
-        else:
-            raise TypeError()
-
-    def __iter__(self):
-        return iter(self._value)
-
-    def __add__(self, other):
-        """
-        other: _Path
-        """
-        return _Path(self._value + other._value)
-
-    def __eq__(self, other):
-        return self._value == other._value
-
-    def __str__(self):
-        return self._value
-
-    def __repr__(self):
-        return f"_Path({self._value})"
+    Throws: ValueError if invalid path
+    """
+    # TODO validate
+    return path.split('/')
 
 class Experiment:
   
@@ -53,40 +24,46 @@ class Experiment:
 
     def _get_variable(self, path):
         """
-        path: _Path
+        path: list of strings
         """
-        # TODO handle non-existent path
         ref = self._members
         for segment in path:
-            ref = ref[segment] 
+            if segment in ref:
+                ref = ref[segment]
+            else:
+                return None
         return ref
 
     def _set_variable(self, path, variable):
+        """
+        path: list of strings
+        variable: Structure
+        """
         namespace = self._members
-        location, variable_name = path
-        for segment in path:
+        location, variable_name = path[:-1], path[-1]
+        for segment in location:
             if segment in namespace:
                 namespace = namespace[segment]
             else:
                 namespace[segment] = {}
                 namespace = namespace[segment]
-        
-
-        self._members[path] = variable
+        namespace[variable_name] = variable
 
     def __getitem__(self, path):
         """
         path: string
         """
-        return ExperimentView(self, _Path(path))
+        return ExperimentView(self, parse_path(path))
 
+def _is_iterable_not_string(o):
+    return isinstance(o, abc.Iterable) and not isinstance(o, str)
 
 class ExperimentView:
   
     def __init__(self, experiment, path):
         """
         experiment: Experiment
-        path: _Path
+        path: list of strings
         """
         super().__init__()
         self._experiment = experiment
@@ -96,7 +73,7 @@ class ExperimentView:
         """
         key: string
         """
-        return ExperimentView(self._experiment, self._path + path)
+        return ExperimentView(self._experiment, self._path + parse_path(path))
 
     def _get_variable(self):
         return self._experiment._get_variable(self._path)
@@ -104,27 +81,51 @@ class ExperimentView:
     def _set_variable(self, var):
         self._experiment._set_variable(self._path, var)
 
-    @property
-    def value(self):
-        return self._get_variable().value
+    # TODO atomicity
+    def _assign_batch(self, update_description):
+        for k, v in update_description.items():
+            self[k].assign(v)
 
-    @value.setter
-    def value(self, v):
+    def assign(self, value):
+        if isinstance(value, dict):
+            # assume the user is peforming a batch update
+            self._assign_batch(value)
+            return
         var = self._get_variable()
         if var:
-            var.value = v
+            var.assign(value)
         else:
-            var = Atom(self._experiment, self._path, v)
+            var = Atom(self._experiment, self._path, value)
             self._set_variable(var)
 
+    # TODO atomicity
+    def _log_batch(self, update_description):
+        # TODO handle custom step and timestamp
+        for k, v in update_description.items():
+            self[k].log(v)
+
     def log(self, value, step=None, timestamp=None):
-        var = self._experiment._get_variable(self._path)
+        if isinstance(value, dict):
+            # assume the user is peforming a batch update
+            self._log_batch(value)
+            return
+        var = self._get_variable()
         if not var:
             var = Series(self._experiment, self._path, type_placeholder)
-            self._experiment._set_variable(self._path, var)
+            self._set_variable(var)
         var.log(value, step, timestamp)
 
+    # TODO atomicity?
+    def _add_batch(self, update_description):
+        for k, v in update_description.items():
+            v = v if _is_iterable_not_string(v) else (v,)
+            self[k].add(*v)
+
     def add(self, *values):
+        if len(values) == 1 and isinstance(values[0], dict):
+            # assume the user is peforming a batch update
+            self._add_batch(values[0])
+            return
         var = self._get_variable()
         if not var:
             var = Set(self._experiment, self._path, type_placeholder)
@@ -136,4 +137,4 @@ class ExperimentView:
         if var:
             return getattr(var, attr)
         else:
-            return getattr(super(), attr)
+            raise AttributeError()

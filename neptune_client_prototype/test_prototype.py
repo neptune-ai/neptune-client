@@ -5,64 +5,85 @@ def test_atom_ops():
     # given
     e = Experiment()
     # when
-    e['atom'].value = 1
-    result = e['atom'].value
+    e['atom'].assign(1)
     # then
-    assert result == 1
-    assert ops[-1] == ('atom', 'value.setter', 1)
+    assert e['atom'].read() == 1
+    assert ops[-1] == (['atom'], 'assign', 1)
 
 def test_atom_reassignment():
     # given
     e = Experiment()
     # when
-    e['atom'].value = 1
-    e['atom'].value = 2
-    result = e['atom'].value
+    e['atom'].assign(1)
+    e['atom'].assign(2)
     # then
-    assert result == 2
-    assert ops[-2] == ('atom', 'value.setter', 1)
-    assert ops[-1] == ('atom', 'value.setter', 2)
+    assert e['atom'].read() == 2
+    assert ops[-2] == (['atom'], 'assign', 1)
+    assert ops[-1] == (['atom'], 'assign', 2)
+
+def test_batch_assign():
+    e = Experiment()
+    e['foo'].assign({'bar': 1, 'baz': 2})
+    assert e['foo/bar'].read == 1
+    assert e['foo/baz'].read == 2
 
 def test_set_ops():
     # given
     e = Experiment()
     # when
     e['set'].add(1, 2)
-    result = e['set'].get()
     # then
-    assert result == {1, 2}
-    assert ops[-1] == ('set', 'add', (1, 2))
+    assert e['set'].get() == {1, 2}
+    assert ops[-1] == (['set'], 'add', (1, 2))
 
 def test_set_reset():
     # given
     e = Experiment()
-    # when
     e['set'].add(1, 2)
-    e['set'].set(3, 4)
-    result = e['set'].get()
+    # when
+    e['set'].reset(3, 4)
     # then
-    assert result == {3, 4}
-    assert ops[-2] == ('set', 'add', (1, 2))
-    assert ops[-1] == ('set', 'set', (3, 4))
+    assert e['set'].get() == {3, 4}
+    assert ops[-1] == (['set'], 'reset', (3, 4))
 
 def test_set_remove():
     # given
     e = Experiment()
-    # when
     e['set'].add(1, 2, 3)
+    # when
     e['set'].remove(1, 3)
-    result = e['set'].get()
     # then
-    assert result == {2}
-    assert ops[-2] == ('set', 'add', (1, 2, 3))
-    assert ops[-1] == ('set', 'remove', (1, 3))
+    assert e['set'].get() == {2}
+    assert ops[-1] == (['set'], 'remove', (1, 3))
+
+def test_set_batch_update():
+    e = Experiment()
+    e['foo'].add({'bar': 42, 'baz': (43, 44)})
+    assert e['foo/bar'].get() == {42}
+    assert e['foo/baz'].get() == {43, 44}
+
+class Wildcard():
+
+    def __eq__(self, _):
+        return True
 
 def test_series_log():
     # given
     e = Experiment()
     # when
-    e['series'].log(42, timestamp=1)
-    result = e['series'].tail(1)
+    e['series'].log(42)
+    e['series'].log(84)
+    e['series'].log(168)
     # then
-    assert result == [(1, 42)]
-    assert ops[-2] == ('series', 'log', (None, 1, 42))
+    assert e['series'].tail(2) == [84, 168]
+    assert ops[-3] == (['series'], 'log', (0, Wildcard(), 42))
+    assert ops[-2] == (['series'], 'log', (1, Wildcard(), 84))
+    assert ops[-1] == (['series'], 'log', (2, Wildcard(), 168))
+
+def test_series_batch_update():
+    e = Experiment()
+    e['foo'].log({'bar': 1, 'baz': 2})
+    e['foo'].log({'bar': 2, 'baz': 3, 'xyz': 0})
+    assert e['foo/bar'].tail(2) == [1, 2]
+    assert e['foo/baz'].tail(2) == [2, 3]
+    assert e['foo/xyz'].tail(1) == [0]
