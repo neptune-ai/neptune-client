@@ -16,6 +16,13 @@ def parse_path(path):
     # TODO validate
     return path.split('/')
 
+class Namespace(dict):
+
+    def __getattribute__(self, name):
+        if name == 'assign': # TODO support all methods on structures
+            raise AttributeError('cannot assign to an existing namespace')
+        return super().__getattribute__(name)
+
 class Experiment:
   
     def __init__(self):
@@ -45,7 +52,7 @@ class Experiment:
             if segment in namespace:
                 namespace = namespace[segment]
             else:
-                namespace[segment] = {}
+                namespace[segment] = Namespace()
                 namespace = namespace[segment]
         namespace[variable_name] = variable
 
@@ -111,7 +118,7 @@ class ExperimentView:
             return
         var = self._get_variable()
         if not var:
-            var = Series(self._experiment, self._path, type_placeholder)
+            var = Series(self._experiment, self._path)
             self._set_variable(var)
         var.log(value, step, timestamp)
 
@@ -128,7 +135,7 @@ class ExperimentView:
             return
         var = self._get_variable()
         if not var:
-            var = Set(self._experiment, self._path, type_placeholder)
+            var = Set(self._experiment, self._path, None)
             self._set_variable(var)
         var.add(*values)
 

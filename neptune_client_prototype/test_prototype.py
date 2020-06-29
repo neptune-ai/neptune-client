@@ -1,6 +1,8 @@
 from .experiment import Experiment
 from .variable import ops
 
+import pytest
+
 def test_atom_ops():
     # given
     e = Experiment()
@@ -87,3 +89,36 @@ def test_series_batch_update():
     assert e['foo/bar'].tail(2) == [1, 2]
     assert e['foo/baz'].tail(2) == [2, 3]
     assert e['foo/xyz'].tail(1) == [0]
+
+def test_update_wrong_structure():
+    # TODO add meaningful error messages
+    e = Experiment()
+    e['foo'].assign(1)
+    with pytest.raises(AttributeError):
+        e['foo'].add('bar')
+
+def test_attempt_namespace_update():
+    e = Experiment()
+    e['foo/bar'].assign(1)
+    with pytest.raises(AttributeError) as excinfo:
+        e['foo'].assign(2)
+    assert 'cannot assign to an existing namespace' in str(excinfo.value)
+
+def test_getter_of_nonexistent_variable():
+    e = Experiment()
+    with pytest.raises(AttributeError):
+        e['foo'].tail(2)
+
+def test_change_atom_type():
+    e = Experiment()
+    e['foo'].assign(1)
+    e['foo'].assign('bar')
+    assert e['foo'].read() == 'bar'
+    assert e._members['foo']._type == str
+
+def test_attempt_change_series_type():
+    e = Experiment()
+    e['foo'].log('bar')
+    with pytest.raises(TypeError) as excinfo:
+        e['foo'].log(42)
+    assert 'cannot log a new type to a series' in str(excinfo.value)

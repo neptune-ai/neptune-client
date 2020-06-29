@@ -1,6 +1,7 @@
 # pylint: disable=protected-access
 
 import time
+from datetime import datetime
 
 #####################
 ### Neptune types
@@ -8,8 +9,6 @@ import time
 
 class Typ:
     pass
-
-type_placeholder = None
 
 ###################################
 ### Mock for testing
@@ -30,6 +29,10 @@ class Variable:
         self._experiment = experiment
         self._path = path
         self._type = typ
+        self._metadata = {}
+
+    def add_metadata(self, key, value):
+        self._metadata[key] = value
 
 class Atom(Variable):
     """
@@ -37,25 +40,47 @@ class Atom(Variable):
     """
 
     def __init__(self, experiment, path, value):
-        super().__init__(experiment, path, type_placeholder)
+        typ, value = self._convert_type(value)
+        super().__init__(experiment, path, typ)
         self.assign(value)
+
+    def _convert_type(self, value):
+        # TODO support all supported types
+        supported_types = [int, float, str, datetime]
+        for typ in supported_types:
+            if isinstance(value, typ):
+                return typ, value
+        raise TypeError('type not supported')
 
     def read(self):
         return self._value
 
-    def assign(self, v):
-        ops.append((self._path, 'assign', v))
-        self._value = v
+    # TODO allow for changing type?
+    def assign(self, value):
+        typ, value = self._convert_type(value)
+        ops.append((self._path, 'assign', value))
+        self._value = value
+        self._type = typ
 
 class Series(Variable):
     """
     typ: supported Python type or Neptune type
     """
     
-    def __init__(self, experiment, path, typ):
+    def __init__(self, experiment, path):
         # TODO check that the type is supported by the Series structure
-        super().__init__(experiment, path, typ)
+        super().__init__(experiment, path, None)
         self._values = []
+
+    def _convert_type(self, value):
+        # TODO support all supported types
+        supported_types = [str, datetime]
+        for typ in supported_types:
+            if isinstance(value, typ):
+                return typ, value
+        if isinstance(value, int) or isinstance(value, float):
+            return float, float(value)
+        raise TypeError('type not supported')
 
     def _next_step(self):
         if self._values:
@@ -81,6 +106,11 @@ class Series(Variable):
 
     def log(self, value, step=None, timestamp=None):
         # TODO handle step and timestamp from user
+        typ, value = self._convert_type(value)
+        if self._type is None:
+            self._type = typ
+        elif self._type != typ:
+            raise TypeError('cannot log a new type to a series')
         step = self._next_step()
         timestamp = self._next_timestamp()
         ops.append((self._path, 'log', (step, timestamp, value)))
