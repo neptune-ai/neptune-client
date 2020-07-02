@@ -1,28 +1,39 @@
 # pylint: disable=protected-access
 
+"""
+Defines variables and container types.
+
+Neptune define three container types: Atom, Series, and Set.
+
+Detailed documentation on creating / modifying / reading variables of
+a container type, refer to the documentation for the given container type,
+e.g.
+
+>>> help(Series)
+"""
+
 import time
 from datetime import datetime
 
-#####################
-### Neptune types
-#####################
+def parse_path(path):
+    """
+    path: string
 
-class Typ:
-    pass
+    Returns: list of strings
 
-###################################
-### Mock for testing
-###################################
+    Throws: ValueError if invalid path
+    """
+    # TODO validate
+    return path.split('/')
 
-ops = []
+def path_to_str(path):
+    return '/'.join(path)
 
 ###################################
 ### Variables and structures
 ###################################
 
 class Variable:
-    """
-    """
 
     def __init__(self, experiment, path, typ):
         super().__init__()
@@ -31,12 +42,19 @@ class Variable:
         self._type = typ
         self._metadata = {}
 
+    def type(self):
+        return self._type
+
     def add_metadata(self, key, value):
         self._metadata[key] = value
 
+    def _log(self, string):
+        self._experiment._log(f'{path_to_str(self._path)}: {string}')
+
 class Atom(Variable):
     """
-    typ: supported Python type or Neptune type
+    Modifying / initializing methods: assign
+    Reading methods: read
     """
 
     def __init__(self, experiment, path, value):
@@ -58,13 +76,14 @@ class Atom(Variable):
     # TODO allow for changing type?
     def assign(self, value):
         typ, value = self._convert_type(value)
-        ops.append((self._path, 'assign', value))
+        self._log(f'assign {value}')
         self._value = value
         self._type = typ
 
 class Series(Variable):
     """
-    typ: supported Python type or Neptune type
+    Writing / initializing methods: log
+    Reading methods: tail, all
     """
     
     def __init__(self, experiment, path):
@@ -113,15 +132,22 @@ class Series(Variable):
             raise TypeError('cannot log a new type to a series')
         step = self._next_step()
         timestamp = self._next_timestamp()
-        ops.append((self._path, 'log', (step, timestamp, value)))
+        self._log(f'log step={step}, timestamp={timestamp}, value={value}')
         self._values.append((step, timestamp, value))
 
-    def tail(self, n_last):
+    def tail(self, n_last, with_steps=False, with_timestamps=False):
+        # TODO handle steps and timestamps
         return [v for _, _, v in self._values[-n_last:]]
+
+    def all(self, with_steps=False, with_timestamps=False):
+        # TODO handle steps and timestamps
+        return [v for _, _, v in self._values]
 
 class Set(Variable):
     """
-    typ: supported Python type or Neptune type
+    Modifying / initializing methods: add
+    Writing methods: remove, reset
+    Reading methods: get
     """
     
     def __init__(self, experiment, path, typ):

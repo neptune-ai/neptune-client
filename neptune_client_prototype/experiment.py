@@ -5,17 +5,6 @@ from collections import abc
 
 # pylint: disable=protected-access
 
-def parse_path(path):
-    """
-    path: string
-
-    Returns: list of strings
-
-    Throws: ValueError if invalid path
-    """
-    # TODO validate
-    return path.split('/')
-
 class Namespace(dict):
 
     def __getattribute__(self, name):
@@ -25,9 +14,13 @@ class Namespace(dict):
 
 class Experiment:
   
-    def __init__(self):
+    def __init__(self, name):
         super().__init__()
+        self.name = name
         self._members = {}
+
+    def _log(self, string):
+        print(f'Experiment {self.name}: {string}')
 
     def _get_variable(self, path):
         """
@@ -92,6 +85,13 @@ class ExperimentView:
     def _assign_batch(self, update_description):
         for k, v in update_description.items():
             self[k].assign(v)
+
+    def variable_type(self):
+        var = self._get_variable()
+        if var:
+            return (type(var), var.type())
+        else:
+            raise KeyError(f'Variable {self._path} not defined in experiment {self._experiment}')
 
     def assign(self, value):
         if isinstance(value, dict):
