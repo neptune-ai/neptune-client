@@ -145,3 +145,13 @@ class ExperimentView:
             return getattr(var, attr)
         else:
             raise AttributeError()
+
+    def namespace_contents(self):
+        var = self._get_variable()
+        if not var:
+            raise KeyError(f'There is no namespace {self._path}')
+        if isinstance(var, Variable):
+            raise KeyError(f'{self._path} is a variable, not a namespace')
+        if not isinstance(var, Namespace):
+            raise ValueError
+        return {k: type(v) for k, v in var.items()}

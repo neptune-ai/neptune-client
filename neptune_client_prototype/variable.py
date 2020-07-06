@@ -159,13 +159,13 @@ class Set(Variable):
         return self._values
 
     def reset(self, *values):
-        ops.append((self._path, 'reset', values))
+        self._log(f'reset {values}')
         self._values = set(values)
 
     def add(self, *values):
-        ops.append((self._path, 'add', values))
+        self._log(f'add {values}')
         self._values.update(values)
 
     def remove(self, *values):
-        ops.append((self._path, 'remove', values))
+        self._log(f'remove {values}')
         self._values.difference_update(values)
