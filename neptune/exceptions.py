@@ -79,7 +79,9 @@ class NoExperimentContext(NeptuneException):
 class MissingApiToken(NeptuneException):
     def __init__(self):
         super(MissingApiToken, self).__init__('Missing API token. Use "{}" environment '
-                                              'variable or pass it as an argument'
+                                              'variable or pass it as an argument to neptune.init. '
+                                              'Open this link to get your API token '
+                                              'https://ui.neptune.ai/get_my_api_token'
                                               .format(envs.API_TOKEN_ENV_NAME))
 
 
