@@ -45,7 +45,7 @@ class Project(object):
     Args:
         backend (:class:`~neptune.Backend`, required): A Backend object.
         internal_id (:obj:`str`, required): UUID of the project.
-        namespace (:obj:`str`, required): It can either be your organization or user name.
+        namespace (:obj:`str`, required): It can either be your workspace or user name.
         name (:obj:`str`, required): project name.
 
     Note:
