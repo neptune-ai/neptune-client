@@ -115,8 +115,8 @@ class ChannelsValuesSendingThread(NeptuneThread):
                 self._sleep_time = 0
 
             image_values_batch_size = sum([len(v.channel_value.y['image_value']['data'] or [])
-                                          for v in self._values_batch
-                                          if v.channel_type == ChannelType.IMAGE.value])
+                                           for v in self._values_batch
+                                           if v.channel_type == ChannelType.IMAGE.value])
             if self._sleep_time <= 0 \
                     or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH \
                     or image_values_batch_size >= self._MAX_IMAGE_VALUES_BATCH_SIZE:  # pylint:disable=line-too-long
