@@ -62,6 +62,7 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
+        self._proxies = proxies
 
         if api_token == ANONYMOUS:
             api_token = ANONYMOUS_API_TOKEN
@@ -82,7 +83,10 @@ class HostedNeptuneBackend(Backend):
         update_session_proxies(self._http_client.session, proxies)
 
         config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
-        self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
+        # We don't need to be able to resolve Neptune host if we use proxy
+        if proxies is None:
+            self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
+
         backend_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(config_api_url))
         self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
 
@@ -106,6 +110,10 @@ class HostedNeptuneBackend(Backend):
     @property
     def display_address(self):
         return self._client_config.display_url
+
+    @property
+    def proxies(self):
+        return self._proxies
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
