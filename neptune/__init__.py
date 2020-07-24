@@ -67,10 +67,14 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
                 It is strongly recommended to use ``NEPTUNE_API_TOKEN`` environment variable rather than
                 placing your API token in plain text in your source code.
 
-        proxies (:obj:`str`, optional, default is ``None``):
+        proxies (:obj:`dict`, optional, default is ``None``):
             Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
             For more information see their proxies
             `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
+
+            .. note::
+
+                Only `http` and `https` keys are supported by all features.
 
             .. deprecated :: 0.4.4
 

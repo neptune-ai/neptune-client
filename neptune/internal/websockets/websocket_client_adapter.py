@@ -17,9 +17,10 @@
 import os
 import ssl
 
+from six.moves.urllib.parse import urlparse
+
 from future.utils import PY3
 from websocket import ABNF, create_connection
-from urllib.parse import urlparse
 
 
 class WebsocketClientAdapter(object):
