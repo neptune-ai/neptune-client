@@ -83,7 +83,6 @@ class HostedNeptuneBackend(Backend):
         update_session_proxies(self._http_client.session, proxies)
 
         config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
-
         # We don't need to be able to resolve Neptune host if we use proxy
         if proxies is None:
             self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)

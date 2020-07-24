@@ -17,7 +17,7 @@
 import os
 import ssl
 
-from six.moves.urllib.parse import urlparse
+from six.moves import urllib
 
 from future.utils import PY3
 from websocket import ABNF, create_connection
@@ -36,7 +36,7 @@ class WebsocketClientAdapter(object):
         proxy = proxies[proto] if proxies and proto in proxies else os.getenv("{}_PROXY".format(proto.upper()))
 
         if proxy:
-            proxy_split = urlparse(proxy).netloc.split(':')
+            proxy_split = urllib.parse.urlparse(proxy).netloc.split(':')
             proxy_host = proxy_split[0]
             proxy_port = proxy_split[1] if len(proxy_split) > 1 else "80" if proto == "http" else "443"
         else:
