@@ -35,6 +35,10 @@ class OfflineBackend(Backend):
     def display_address(self):
         return 'OFFLINE'
 
+    @property
+    def proxies(self):
+        return None
+
     def get_project(self, project_qualified_name):
         return NoopObject()
 

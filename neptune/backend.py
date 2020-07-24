@@ -30,6 +30,10 @@ class Backend(object):
     def display_address(self):
         pass
 
+    @abstractproperty
+    def proxies(self):
+        pass
+
     @abstractmethod
     def get_project(self, project_qualified_name):
         pass

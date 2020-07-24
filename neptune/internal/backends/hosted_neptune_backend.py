@@ -62,6 +62,7 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
+        self._proxies = proxies
 
         if api_token == ANONYMOUS:
             api_token = ANONYMOUS_API_TOKEN
@@ -106,6 +107,10 @@ class HostedNeptuneBackend(Backend):
     @property
     def display_address(self):
         return self._client_config.display_url
+
+    @property
+    def proxies(self):
+        return self._proxies
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
