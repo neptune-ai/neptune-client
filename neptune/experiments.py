@@ -278,15 +278,17 @@ class Experiment(object):
             last_value = channels_last_values_by_name.get(ch.name, None)
             if last_value is not None:
                 ch.x = last_value.x
+                ch.step = last_value.x
                 ch.y = last_value.y
             elif ch.lastX is not None:
                 ch.x = ch.lastX
+                ch.step = ch.lastX
+                ch.lastStep = ch.lastX
                 ch.y = None
             else:
                 ch.x = None
+                ch.step = None
                 ch.y = None
-            ch.lastStep = ch.lastX
-            ch.step = ch.x
             channels[ch.name] = ch
         return channels
 
