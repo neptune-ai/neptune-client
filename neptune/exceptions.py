@@ -51,7 +51,7 @@ class InvalidNotebookPath(NeptuneException):
 class InvalidChannelX(NeptuneException):
     def __init__(self, x):
         super(InvalidChannelX, self).__init__(
-            "Invalid channel X-coordinate: '{}'. The sequence of X-coordinates must be strictly increasing.".format(x))
+            "Invalid channel step: '{}'. The sequence of steps must be strictly increasing.".format(x))
 
 
 class NoChannelValue(NeptuneException):

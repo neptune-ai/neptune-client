@@ -24,6 +24,7 @@ from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBacken
 from neptune.internal.backends.offline_backend import OfflineBackend
 from neptune.projects import Project
 from neptune.sessions import Session
+from neptune.utils import deprecated_alias
 from ._version import get_versions
 
 __version__ = get_versions()['version']
@@ -297,52 +298,58 @@ def remove_property(key):
     get_experiment().remove_property(key)
 
 
-def send_metric(channel_name, x, y=None, timestamp=None):
+@deprecated_alias(x='step')
+def send_metric(channel_name, step, y=None, timestamp=None):
     """Log metrics (numeric values) in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_metric`
     """
-    return get_experiment().send_metric(channel_name, x, y, timestamp)
+    return get_experiment().send_metric(channel_name, step, y, timestamp)
 
 
-def log_metric(log_name, x, y=None, timestamp=None):
+@deprecated_alias(x='step')
+def log_metric(log_name, step, y=None, timestamp=None):
     """Log metrics (numeric values) in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_metric`
     """
-    return get_experiment().log_metric(log_name, x, y, timestamp)
+    return get_experiment().log_metric(log_name, step, y, timestamp)
 
 
-def send_text(channel_name, x, y=None, timestamp=None):
+@deprecated_alias(x='step')
+def send_text(channel_name, step, y=None, timestamp=None):
     """Log text data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_text`
     """
-    return get_experiment().send_text(channel_name, x, y, timestamp)
+    return get_experiment().send_text(channel_name, step, y, timestamp)
 
 
-def log_text(log_name, x, y=None, timestamp=None):
+@deprecated_alias(x='step')
+def log_text(log_name, step, y=None, timestamp=None):
     """Log text data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_text`
     """
-    return get_experiment().send_text(log_name, x, y, timestamp)
+    return get_experiment().send_text(log_name, step, y, timestamp)
 
 
-def send_image(channel_name, x, y=None, name=None, description=None, timestamp=None):
+@deprecated_alias(x='step')
+def send_image(channel_name, step, y=None, name=None, description=None, timestamp=None):
     """Log image data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_image`
     """
-    return get_experiment().send_image(channel_name, x, y, name, description, timestamp)
+    return get_experiment().send_image(channel_name, step, y, name, description, timestamp)
 
 
-def log_image(log_name, x, y=None, image_name=None, description=None, timestamp=None):
+@deprecated_alias(x='step')
+def log_image(log_name, step, y=None, image_name=None, description=None, timestamp=None):
     """Log image data in Neptune.
 
     Alias for :meth:`~neptune.experiments.Experiment.log_image`
     """
-    return get_experiment().send_image(log_name, x, y, image_name, description, timestamp)
+    return get_experiment().send_image(log_name, step, y, image_name, description, timestamp)
 
 
 def send_artifact(artifact, destination=None):

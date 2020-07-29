@@ -123,7 +123,7 @@ class ChannelDoesNotExist(NeptuneApiException):
 class ChannelsValuesSendBatchError(NeptuneApiException):
     @staticmethod
     def _format_error(error):
-        return "{msg} (metricId: '{channelId}', x: {x})".format(
+        return "{msg} (metricId: '{channelId}', step: {x})".format(
             msg=error.error,
             channelId=error.channelId,
             x=error.x)

@@ -32,7 +32,7 @@ from neptune.internal.channels.channels_values_sender import ChannelsValuesSende
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.storage.storage_utils import upload_to_storage, UploadEntry, normalize_file_name
 from neptune.internal.utils.image import get_image_content
-from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
+from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf, deprecated_alias
 
 _logger = logging.getLogger(__name__)
 
@@ -285,6 +285,8 @@ class Experiment(object):
             else:
                 ch.x = None
                 ch.y = None
+            ch.lastStep = ch.lastX
+            ch.step = ch.x
             channels[ch.name] = ch
         return channels
 
@@ -292,14 +294,16 @@ class Experiment(object):
         channels = self._backend.get_system_channels(self)
         return dict((ch.name, ch) for ch in channels)
 
-    def send_metric(self, channel_name, x, y=None, timestamp=None):
+    @deprecated_alias(x='step')
+    def send_metric(self, channel_name, step, y=None, timestamp=None):
         """Log metrics (numeric values) in Neptune.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_metric`
         """
-        return self.log_metric(channel_name, x, y, timestamp)
+        return self.log_metric(channel_name, step, y, timestamp)
 
-    def log_metric(self, log_name, x, y=None, timestamp=None):
+    @deprecated_alias(x='step')
+    def log_metric(self, log_name, step, y=None, timestamp=None):
         """Log metrics (numeric values) in Neptune
 
         | If a log with provided ``log_name`` does not exist, it is created automatically.
@@ -307,7 +311,7 @@ class Experiment(object):
 
         Args:
             log_name (:obj:`str`): The name of log, i.e. `mse`, `loss`, `accuracy`.
-            x (:obj:`double`): Depending, whether ``y`` parameter is passed:
+            step (:obj:`double`): Depending, whether ``y`` parameter is passed:
 
                 * ``y`` not passed: The value of the log (data-point).
                 * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
@@ -331,7 +335,7 @@ class Experiment(object):
                 experiment.log_metric('accuracy', 0.65)
                 experiment.log_metric('accuracy', 0.8)
 
-                # Providing both x and y params
+                # Providing both step and y params
                 experiment.log_metric('accuracy', 0, 0.5)
                 experiment.log_metric('accuracy', 1, 0.65)
                 experiment.log_metric('accuracy', 2, 0.8)
@@ -340,10 +344,10 @@ class Experiment(object):
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         Note:
-            Passing either ``x`` or ``y`` coordinate as NaN or +/-inf causes this log entry to be ignored.
+            Passing either ``step`` or ``y`` coordinate as NaN or +/-inf causes this log entry to be ignored.
             Warning is printed to ``stdout``.
         """
-        x, y = self._get_valid_x_y(x, y)
+        step, y = self._get_valid_x_y(step, y)
 
         if not is_float(y):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
@@ -354,24 +358,26 @@ class Experiment(object):
                 'Metrics with nan or +/-inf values will not be sent to server',
                 y,
                 log_name)
-        elif x is not None and is_nan_or_inf(x):
+        elif step is not None and is_nan_or_inf(step):
             _logger.warning(
-                'Invalid metric x-coordinate: %s for channel %s. '
-                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
-                x,
+                'Invalid metric step: %s for channel %s. '
+                'Metrics with nan or +/-inf step will not be sent to server',
+                step,
                 log_name)
         else:
-            value = ChannelValue(x, dict(numeric_value=y), timestamp)
+            value = ChannelValue(step, dict(numeric_value=y), timestamp)
             self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
 
-    def send_text(self, channel_name, x, y=None, timestamp=None):
+    @deprecated_alias(x='step')
+    def send_text(self, channel_name, step, y=None, timestamp=None):
         """Log text data in Neptune.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_text`
         """
-        return self.log_text(channel_name, x, y, timestamp)
+        return self.log_text(channel_name, step, y, timestamp)
 
-    def log_text(self, log_name, x, y=None, timestamp=None):
+    @deprecated_alias(x='step')
+    def log_text(self, log_name, step, y=None, timestamp=None):
         """Log text data in Neptune
 
         | If a log with provided ``log_name`` does not exist, it is created automatically.
@@ -379,7 +385,7 @@ class Experiment(object):
 
         Args:
             log_name (:obj:`str`): The name of log, i.e. `mse`, `my_text_data`, `timing_info`.
-            x (:obj:`double` or :obj:`str`): Depending, whether ``y`` parameter is passed:
+            step (:obj:`double` or :obj:`str`): Depending, whether ``y`` parameter is passed:
 
                 * ``y`` not passed: The value of the log (data-point). Must be ``str``.
                 * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
@@ -398,44 +404,46 @@ class Experiment(object):
                 # common case, where log name and data are passed
                 neptune.log_text('my_text_data', str(data_item))
 
-                # log_name, x and timestamp are passed
+                # log_name, step and timestamp are passed
                 neptune.log_text(log_name='logging_losses_as_text',
-                                 x=str(val_loss),
+                                 step=str(val_loss),
                                  timestamp=1560430912)
 
         Note:
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         Note:
-            Passing ``x`` coordinate as NaN or +/-inf causes this log entry to be ignored.
+            Passing ``step`` coordinate as NaN or +/-inf causes this log entry to be ignored.
             Warning is printed to ``stdout``.
         """
-        x, y = self._get_valid_x_y(x, y)
+        step, y = self._get_valid_x_y(step, y)
 
-        if x is not None and is_nan_or_inf(x):
-            x = None
+        if step is not None and is_nan_or_inf(step):
+            step = None
 
         if not isinstance(y, six.string_types):
             raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
 
-        if x is not None and is_nan_or_inf(x):
+        if step is not None and is_nan_or_inf(step):
             _logger.warning(
-                'Invalid metric x-coordinate: %s for channel %s. '
-                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
-                x,
+                'Invalid metric step: %s for channel %s. '
+                'Metrics with nan or +/-inf step will not be sent to server',
+                step,
                 log_name)
         else:
-            value = ChannelValue(x, dict(text_value=y), timestamp)
+            value = ChannelValue(step, dict(text_value=y), timestamp)
             self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
 
-    def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
+    @deprecated_alias(x='step')
+    def send_image(self, channel_name, step, y=None, name=None, description=None, timestamp=None):
         """Log image data in Neptune.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_image`
         """
-        return self.log_image(channel_name, x, y, name, description, timestamp)
+        return self.log_image(channel_name, step, y, name, description, timestamp)
 
-    def log_image(self, log_name, x, y=None, image_name=None, description=None, timestamp=None):
+    @deprecated_alias(x='step')
+    def log_image(self, log_name, step, y=None, image_name=None, description=None, timestamp=None):
         """Log image data in Neptune
 
         | If a log with provided ``log_name`` does not exist, it is created automatically.
@@ -443,7 +451,7 @@ class Experiment(object):
 
         Args:
             log_name (:obj:`str`): The name of log, i.e. `bboxes`, `visualisations`, `sample_images`.
-            x (:obj:`double`): Depending, whether ``y`` parameter is passed:
+            step (:obj:`double`): Depending, whether ``y`` parameter is passed:
 
                 * ``y`` not passed: The value of the log (data-point). See ``y`` parameter.
                 * ``y`` passed: Index of log entry being appended. Must be strictly increasing.
@@ -478,7 +486,7 @@ class Experiment(object):
 
                 # path to image file
                 experiment.log_image('bbox_images', 'pictures/image.png')
-                experiment.log_image('bbox_images', x=5, 'pictures/image.png')
+                experiment.log_image('bbox_images', step=5, 'pictures/image.png')
                 experiment.log_image('bbox_images', 'pictures/image.png', image_name='difficult_case')
 
                 # PIL image
@@ -526,15 +534,15 @@ class Experiment(object):
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
         Note:
-            Passing ``x`` coordinate as NaN or +/-inf causes this log entry to be ignored.
+            Passing ``step`` as NaN or +/-inf causes this log entry to be ignored.
             Warning is printed to ``stdout``.
         Warning:
             Only images up to 15MB are supported. Larger files will not be logged to Neptune.
         """
-        x, y = self._get_valid_x_y(x, y)
+        step, y = self._get_valid_x_y(step, y)
 
-        if x is not None and is_nan_or_inf(x):
-            x = None
+        if step is not None and is_nan_or_inf(step):
+            step = None
 
         image_content = get_image_content(y)
         if len(image_content) > self.IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
@@ -551,14 +559,14 @@ class Experiment(object):
         if image_content:
             input_image['data'] = base64.b64encode(image_content).decode('utf-8')
 
-        if x is not None and is_nan_or_inf(x):
+        if step is not None and is_nan_or_inf(step):
             _logger.warning(
-                'Invalid metric x-coordinate: %s for channel %s. '
-                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
-                x,
+                'Invalid metric step: %s for channel %s. '
+                'Metrics with nan or +/-inf step will not be sent to server',
+                step,
                 log_name)
         else:
-            value = ChannelValue(x, dict(image_value=input_image), timestamp)
+            value = ChannelValue(step, dict(image_value=input_image), timestamp)
             self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
 
     def send_artifact(self, artifact, destination=None):
@@ -575,6 +583,9 @@ class Experiment(object):
             artifact (:obj:`str` or :obj:`IO object`):
                 A path to the file in local filesystem or IO object. It can be open
                 file descriptor or in-memory buffer like `io.StringIO` or `io.BytesIO`.
+                Note! If you use in-memory buffer and you write some data into the buffer,
+                remember to reset read position in the buffer, so the read position is before
+                your data, not after. It is usually done by calling ``buffer.seek(0)``.
             destination (:obj:`str`, optional, default is ``None``):
                 A destination path.
                 If ``None`` is passed, an artifact file name will be used.
@@ -596,6 +607,13 @@ class Experiment(object):
 
                 # save file under different name
                 experiment.log_artifact('images/wrong_prediction_1.png', 'images/my_image_1.png')
+
+                # save content from the buffer
+                from io import StringIO
+                buffer = StringIO()
+                buffer.write("some random AI-generated text")
+                buffer.seek(0)
+                experiment.log_artifact(buffer, 'generated_text.txt')
         """
         if isinstance(artifact, str):
             if os.path.exists(artifact):

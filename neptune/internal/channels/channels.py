@@ -57,7 +57,7 @@ class ChannelValue(object):
         return self._y
 
     def __str__(self):
-        return 'ChannelValue(x={},y={},ts={})'.format(self.x, self.y, self.ts)
+        return 'ChannelValue(step={},y={},ts={})'.format(self.x, self.y, self.ts)
 
     def __repr__(self):
         return str(self)

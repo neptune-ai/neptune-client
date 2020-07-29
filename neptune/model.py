@@ -40,6 +40,14 @@ class ChannelWithLastValue(object):
         self.channel_with_value_dto.x = x
 
     @property
+    def step(self):
+        return self.channel_with_value_dto.x
+
+    @step.setter
+    def step(self, step):
+        self.channel_with_value_dto.x = step
+
+    @property
     def trimmed_y(self):
         return self.y[:255] if self.type == 'text' else self.y
 
@@ -132,6 +140,10 @@ class Point(object):
         return self.point_dto.x
 
     @property
+    def step(self):
+        return self.point_dto.x
+
+    @property
     def numeric_y(self):
         return self.point_dto.y.numericValue
 
@@ -142,6 +154,10 @@ class Points(object):
 
     @property
     def xs(self):
+        return [p.x for p in self.point_dtos]
+
+    @property
+    def steps(self):
         return [p.x for p in self.point_dtos]
 
     @property
