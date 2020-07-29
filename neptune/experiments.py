@@ -1138,7 +1138,7 @@ class Experiment(object):
             - single parameter treated as y value
             - both parameters (named/unnamed)
             - single named y parameter
-        If intended X-coordinate is provided, it is validated to be a float value
+        If intended step is provided, it is validated to be a float value
         """
         if x is None and y is None:
             raise NoChannelValue()
