@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import logging
+import os
 import time
 
 from bravado.exception import HTTPError
@@ -29,10 +30,11 @@ class HardwareMetricReportingThread(NeptuneThread):
         super(HardwareMetricReportingThread, self).__init__(is_daemon=True)
         self.__metric_service = metric_service
         self.__metric_sending_interval_seconds = metric_sending_interval_seconds
+        self._owner_pid = os.getpid()
 
     def run(self):
         try:
-            while self.should_continue_running():
+            while self.should_continue_running() and os.getpid() == self._owner_pid:
                 before = time.time()
 
                 try:

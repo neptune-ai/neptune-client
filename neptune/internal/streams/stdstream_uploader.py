@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import sys
 
 from neptune.internal.channels.channels import ChannelNamespace
@@ -26,14 +27,21 @@ class StdStreamWithUpload(object):
         self._channel = experiment._get_channel(channel_name, 'text', ChannelNamespace.SYSTEM)
         self._channel_writer = ChannelWriter(experiment, channel_name, ChannelNamespace.SYSTEM)
         self._stream = stream
+        self._owner_pid = os.getpid()
 
     def write(self, data):
         self._stream.write(data)
         try:
+            if self._owner_pid != os.getpid():
+                self.close()
+                return
             self._channel_writer.write(data)
         # pylint:disable=bare-except
         except:
             pass
+
+    def close(self):
+        pass
 
     def isatty(self):
         return hasattr(self._stream, 'isatty') and self._stream.isatty()

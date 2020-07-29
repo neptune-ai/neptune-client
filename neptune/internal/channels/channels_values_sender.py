@@ -15,6 +15,7 @@
 #
 import logging
 import threading
+import os
 import time
 from collections import namedtuple
 from itertools import groupby
@@ -26,6 +27,7 @@ from neptune.exceptions import NeptuneException
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue, \
     ChannelType, ChannelNamespace
 from neptune.internal.threads.neptune_thread import NeptuneThread
+
 
 _logger = logging.getLogger(__name__)
 
@@ -103,6 +105,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
         self._experiment = experiment
         self._sleep_time = self._SLEEP_TIME
         self._values_batch = []
+        self._my_pid = os.getpid()
 
     def run(self):
         while self.should_continue_running() or not self._values_queue.empty():
@@ -152,6 +155,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
             channels_with_values.append(ChannelIdWithValues(channel_id, channel_values))
 
         try:
+            print("Sending values from pid " + str(os.getpid()))
             # pylint:disable=protected-access
             self._experiment._send_channels_values(channels_with_values)
         except HTTPUnprocessableEntity as e:

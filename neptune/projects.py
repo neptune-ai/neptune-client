@@ -97,7 +97,7 @@ class Project(object):
                 | *Username* of the experiment owner (User who created experiment is an owner) like ``'josh'``
                   or list of owners like ``['frederic', 'josh']``.
                 | Matching any element of the list is sufficient to pass criterion.
-            tag (:obj:`str` or :obj:`list` of :obj:`str`, optional, default is ``None``):
+            tag (:obj:`str` or :obj:`list` of :obj:`st  r`, optional, default is ``None``):
                  | An experiment tag like ``'lightGBM'`` or list of tags like ``['pytorch', 'cycleLR']``.
                  | Only experiments that have all specified tags will match this criterion.
             min_running_time (:obj:`int`, optional, default is ``None``):

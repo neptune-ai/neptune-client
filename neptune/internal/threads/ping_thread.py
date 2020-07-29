@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import logging
+import os
 
 from bravado.exception import HTTPUnprocessableEntity
 
@@ -30,9 +31,10 @@ class PingThread(NeptuneThread):
 
         self.__backend = backend
         self.__experiment = experiment
+        self._owner_pid = os.getpid()
 
     def run(self):
-        while self.should_continue_running():
+        while self.should_continue_running() and os.getpid() == self._owner_pid:
             try:
                 self.__backend.ping_experiment(self.__experiment)
             except HTTPUnprocessableEntity:

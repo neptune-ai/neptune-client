@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# pylint: disable=too-many-lines
 import io
 import logging
 import os
@@ -73,28 +74,79 @@ class HostedNeptuneBackend(Backend):
 
         self.credentials = Credentials(api_token)
 
+        self._proxies = proxies
+
         ssl_verify = True
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             urllib3.disable_warnings()
             ssl_verify = False
+        self._ssl_verify = ssl_verify
 
-        self._http_client = RequestsClient(ssl_verify=ssl_verify)
+        self._http_client = None
+        self._client_config = None
+        self.authenticator = None
 
-        update_session_proxies(self._http_client.session, proxies)
+        self.leaderboard_swagger_client = None
+        self.backend_swagger_client = None
+        self.recreate_api_client()
+        self._pid_map = {str(os.getpid()): self.backend_swagger_client}
 
+    def get_for_current_pid(self):
+        current_pid = os.getpid()
+        if current_pid not in self._pid_map:
+            http_client = RequestsClient(ssl_verify=self._ssl_verify)
+            update_session_proxies(http_client.session, self._proxies)
+            config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
+            self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
+            backend_client = self._get_swagger_client(
+                '{}/api/backend/swagger.json'.format(self._client_config.api_url),
+                http_client
+            )
+            leaderboard_client = self._get_swagger_client(
+                '{}/api/leaderboard/swagger.json'.format(self._client_config.api_url),
+                http_client
+            )
+
+            authenticator = self._create_authenticator(
+                self.credentials.api_token,
+                self._ssl_verify,
+                self._proxies,
+                backend_client
+            )
+            http_client.authenticator = authenticator
+
+            user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
+                lib_version=self.client_lib_version,
+                system=platform.platform(),
+                python_version=platform.python_version())
+            http_client.session.headers.update({'User-Agent': user_agent})
+            self._pid_map[str(current_pid)] = {'backend': backend_client, 'tracking': leaderboard_client}
+        return self._pid_map[str(current_pid)]
+
+    def recreate_api_client(self):
+        self._http_client = RequestsClient(ssl_verify=self._ssl_verify)
+        update_session_proxies(self._http_client.session, self._proxies)
         config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
         # We don't need to be able to resolve Neptune host if we use proxy
-        if proxies is None:
+        if self._proxies is None:
             self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
-
-        backend_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(config_api_url))
+        self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
+        backend_client = self._get_swagger_client(
+            '{}/api/backend/swagger.json'.format(config_api_url)
+            , self._http_client
+        )
         self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
 
         self._verify_version()
 
-        self._set_swagger_clients(self._client_config, config_api_url, backend_client)
+        self._set_swagger_clients(self._client_config, config_api_url, backend_client, self._http_client)
 
-        self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies)
+        self.authenticator = self._create_authenticator(
+            self.credentials.api_token,
+            self._ssl_verify,
+            self._proxies,
+            self.backend_swagger_client
+        )
         self._http_client.authenticator = self.authenticator
 
         user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
@@ -531,9 +583,11 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def send_channels_values(self, experiment, channels_with_values):
-        InputChannelValues = self.backend_swagger_client.get_model('InputChannelValues')
-        Point = self.backend_swagger_client.get_model('Point')
-        Y = self.backend_swagger_client.get_model('Y')
+        client = self.get_for_current_pid()
+        backend = client['backend']
+        InputChannelValues = backend.get_model('InputChannelValues')
+        Point = backend.get_model('Point')
+        Y = backend.get_model('Y')
 
         input_channels_values = []
         for channel_with_values in channels_with_values:
@@ -551,7 +605,7 @@ class HostedNeptuneBackend(Backend):
             ))
 
         try:
-            batch_errors = self.backend_swagger_client.api.postChannelValues(
+            batch_errors = backend.api.postChannelValues(
                 experimentId=experiment.internal_id,
                 channelsValues=input_channels_values
             ).response().result
@@ -607,8 +661,10 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def ping_experiment(self, experiment):
+        client = self.get_for_current_pid()
+        backend = client['backend']
         try:
-            self.backend_swagger_client.api.pingExperiment(experimentId=experiment.internal_id).response()
+            backend.api.pingExperiment(experimentId=experiment.internal_id).response()
         except HTTPNotFound:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
@@ -616,7 +672,9 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def create_hardware_metric(self, experiment, metric):
-        SystemMetricParams = self.backend_swagger_client.get_model('SystemMetricParams')
+        client = self.get_for_current_pid()
+        backend = client['backend']
+        SystemMetricParams = backend.get_model('SystemMetricParams')
 
         try:
             series = [gauge.name() for gauge in metric.gauges]
@@ -624,7 +682,7 @@ class HostedNeptuneBackend(Backend):
                 name=metric.name, description=metric.description, resourceType=metric.resource_type,
                 unit=metric.unit, min=metric.min_value, max=metric.max_value, series=series)
 
-            metric_dto = self.backend_swagger_client.api.createSystemMetric(
+            metric_dto = backend.api.createSystemMetric(
                 experimentId=experiment.internal_id, metricToCreate=system_metric_params
             ).response().result
 
@@ -636,8 +694,10 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
-        SystemMetricValues = self.backend_swagger_client.get_model('SystemMetricValues')
-        SystemMetricPoint = self.backend_swagger_client.get_model('SystemMetricPoint')
+        client = self.get_for_current_pid()
+        backend = client['backend']
+        SystemMetricValues = backend.get_model('SystemMetricValues')
+        SystemMetricPoint = backend.get_model('SystemMetricPoint')
 
         try:
             metrics_by_name = {metric.name: metric for metric in metrics}
@@ -659,7 +719,7 @@ class HostedNeptuneBackend(Backend):
                 for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name)
             ]
 
-            response = self.backend_swagger_client.api.postSystemMetricValues(
+            response = backend.api.postSystemMetricValues(
                 experimentId=experiment.internal_id, metricValues=system_metric_values).response()
 
             return response
@@ -907,7 +967,7 @@ class HostedNeptuneBackend(Backend):
         return response
 
     @with_api_exceptions_handler
-    def _get_swagger_client(self, url):
+    def _get_swagger_client(self, url, http_client):
         return SwaggerClient.from_url(
             url,
             config=dict(
@@ -916,12 +976,12 @@ class HostedNeptuneBackend(Backend):
                 validate_responses=False,
                 formats=[uuid_format]
             ),
-            http_client=self._http_client)
+            http_client=http_client)
 
     @with_api_exceptions_handler
-    def _create_authenticator(self, api_token, ssl_verify, proxies):
+    def _create_authenticator(self, api_token, ssl_verify, proxies, client):
         return NeptuneAuthenticator(
-            self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result,
+            client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result,
             ssl_verify,
             proxies)
 
@@ -975,14 +1035,14 @@ class HostedNeptuneBackend(Backend):
                     self._client_config.min_recommended_version, self.client_lib_version),
                 sys.stderr)
 
-    def _set_swagger_clients(self, client_config, client_config_api_addr, client_config_backend_client):
+    def _set_swagger_clients(self, client_config, client_config_api_addr, client_config_backend_client, http_client):
         self.backend_swagger_client = (
             client_config_backend_client if client_config_api_addr == client_config.api_url
-            else self._get_swagger_client('{}/api/backend/swagger.json'.format(client_config.api_url))
+            else self._get_swagger_client('{}/api/backend/swagger.json'.format(client_config.api_url), http_client)
         )
 
         self.leaderboard_swagger_client = self._get_swagger_client(
-            '{}/api/leaderboard/swagger.json'.format(client_config.api_url)
+            '{}/api/leaderboard/swagger.json'.format(client_config.api_url), http_client
         )
 
     def _verify_host_resolution(self, api_url, app_url):
