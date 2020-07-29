@@ -155,7 +155,6 @@ class ChannelsValuesSendingThread(NeptuneThread):
             channels_with_values.append(ChannelIdWithValues(channel_id, channel_values))
 
         try:
-            print("Sending values from pid " + str(os.getpid()))
             # pylint:disable=protected-access
             self._experiment._send_channels_values(channels_with_values)
         except HTTPUnprocessableEntity as e:
