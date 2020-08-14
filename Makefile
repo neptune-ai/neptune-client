@@ -10,8 +10,7 @@ build:
 tests: checkstyle_tests unit_tests
 
 checkstyle_tests:
-	# python -m pylint -j 0 -f parseable neptune tests
-	python3 -m pylint -j 0 -f parseable neptune_client_prototype neptune_client_prototype_tests
+	python3 -m pylint -j 0 -f parseable neptune tests
 
 unit_tests:
 	tox

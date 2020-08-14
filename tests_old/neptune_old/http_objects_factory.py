@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2019, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +14,15 @@
 # limitations under the License.
 #
 
-from .experiment import Experiment
-from .variable import Atom, Set, Series
+from mock import MagicMock
+
+from tests_old.neptune_old.random_utils import a_string
+
+
+def a_request():
+    request = MagicMock()
+    request.method = 'post'
+    request.url = 'http://{}.com'.format(a_string())
+    request.headers = {a_string(): a_string()}
+    request.body = a_string()
+    return request

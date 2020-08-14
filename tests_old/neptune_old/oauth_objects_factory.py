@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2019, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,5 +14,18 @@
 # limitations under the License.
 #
 
-from .experiment import Experiment
-from .variable import Atom, Set, Series
+import time
+
+import jwt
+
+from tests_old.neptune_old.random_utils import a_string
+
+SECRET = 'secret'
+
+
+def an_access_token():
+    return jwt.encode({'exp': time.time(), 'azp': a_string(), 'iss': 'http://{}.com'.format(a_string())}, SECRET)
+
+
+def a_refresh_token():
+    return jwt.encode({'exp': 0, 'azp': a_string(), 'iss': 'http://{}.com'.format(a_string())}, SECRET)
