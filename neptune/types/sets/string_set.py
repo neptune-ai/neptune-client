@@ -13,5 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import TypeVar, Iterable, TYPE_CHECKING
 
-from .experiment import Experiment
+from neptune.types.sets.set import Set
+
+if TYPE_CHECKING:
+    from neptune.types.value_visitor import ValueVisitor
+
+Ret = TypeVar('Ret')
+
+
+class StringSet(Set):
+
+    def __init__(self, values: Iterable[str]):
+        self.values = set(values)
+
+    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+        return visitor.visit_string_set(self)
+
+    def __str__(self):
+        return "StringSet({})".format(str(self.values))

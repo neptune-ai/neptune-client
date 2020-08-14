@@ -14,4 +14,6 @@
 # limitations under the License.
 #
 
-from .experiment import Experiment
+
+class NeptuneInternalException(Exception):
+    pass

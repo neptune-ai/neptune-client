@@ -13,5 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import List
 
-from .experiment import Experiment
+
+def parse_path(path: str) -> List[str]:
+    return path.split('/')
+
+
+def path_to_str(path: List[str]) -> str:
+    return '/'.join(path)

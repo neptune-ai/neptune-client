@@ -14,119 +14,66 @@
 # limitations under the License.
 #
 
-from collections import abc
+from typing import List, TYPE_CHECKING
 
-from .variable import *
+from neptune.internal.utils import parse_path, path_to_str
+from neptune.variable import FloatVariable, StringVariable, FloatSeriesVariable, StringSeriesVariable, StringSetVariable
 
-# pylint: disable=protected-access
-
-
-def _is_iterable_not_string(o):
-    return isinstance(o, abc.Iterable) and not isinstance(o, str)
+if TYPE_CHECKING:
+    from neptune.experiment import Experiment
 
 
 class Handler:
 
-    def __init__(self, experiment, path):
-        """
-        experiment: Experiment
-        path: list of strings
-        """
+    def __init__(self, _experiment: 'Experiment', path: List[str]):
         super().__init__()
-        self._experiment = experiment
+        self._experiment = _experiment
         self._path = path
 
-    def __getitem__(self, path):
-        """
-        key: string
-        """
+    def __getitem__(self, path: str) -> 'Handler':
         return Handler(self._experiment, self._path + parse_path(path))
 
-    def _get_variable(self):
-        return self._experiment._get_variable(self._path)
-
-    def _set_variable(self, var):
-        self._experiment._set_variable(self._path, var)
-
-    # TODO atomicity
-    def _assign_batch(self, update_description):
-        for k, v in update_description.items():
-            self[k].assign(v)
-
-    def variable_type(self):
-        var = self._get_variable()
-        if var:
-            return (type(var), var.type())
-        else:
-            raise KeyError(f'Variable {self._path} not defined in experiment {self._experiment}')
-
-    def assign(self, value):
-        if isinstance(value, dict):
-            # assume the user is peforming a batch update
-            self._assign_batch(value)
-            return
-        var = self._get_variable()
-        if var:
-            var.assign(value)
-        else:
-            var = Atom(self._experiment, self._path, value)
-            self._set_variable(var)
-
-    # TODO atomicity
-    def _log_batch(self, update_description):
-        # TODO handle custom step and timestamp
-        for k, v in update_description.items():
-            self[k].log(v)
-
-    def log(self, value, step=None, timestamp=None):
-        if isinstance(value, dict):
-            # assume the user is peforming a batch update
-            self._log_batch(value)
-            return
-        var = self._get_variable()
-        if not var:
-            var = Series(self._experiment, self._path)
-            self._set_variable(var)
-        var.log(value, step, timestamp)
-
-    # TODO atomicity?
-    def _add_batch(self, update_description):
-        for k, v in update_description.items():
-            v = v if _is_iterable_not_string(v) else (v,)
-            self[k].add(*v)
-
-    def add(self, *values):
-        if len(values) == 1 and isinstance(values[0], dict):
-            # assume the user is peforming a batch update
-            self._add_batch(values[0])
-            return
-        var = self._get_variable()
-        if not var:
-            var = Set(self._experiment, self._path, None)
-            self._set_variable(var)
-        var.add(*values)
+    def __setitem__(self, key: str, value) -> None:
+        self[key].assign(value)
 
     def __getattr__(self, attr):
-        var = self._get_variable()
+        var = self._experiment._structure.get(self._path)
         if var:
             return getattr(var, attr)
         else:
             raise AttributeError()
 
-    def namespace_contents(self):
-        var = self._get_variable()
+    def assign(self, value) -> None:
+        var = self._experiment._structure.get(self._path)
         if not var:
-            raise KeyError(f'There is no namespace {self._path}')
-        if isinstance(var, Variable):
-            raise KeyError(f'{self._path} is a variable, not a namespace')
-        if not isinstance(var, Namespace):
-            raise ValueError
-        return {k: type(v) for k, v in var.items()}
+            if isinstance(value, (float, int)):
+                var = FloatVariable(self._experiment, self._path)
+                self._experiment._structure.set(self._path, var)
+            if isinstance(value, str):
+                var = StringVariable(self._experiment, self._path)
+                self._experiment._structure.set(self._path, var)
+        var.assign(value)
 
+    def log(self, value, step=None, timestamp=None) -> None:
+        var = self._experiment._structure.get(self._path)
+        if not var:
+            if isinstance(value, (float, int)):
+                var = FloatSeriesVariable(self._experiment, self._path)
+                self._experiment._structure.set(self._path, var)
+            if isinstance(value, str):
+                var = StringSeriesVariable(self._experiment, self._path)
+                self._experiment._structure.set(self._path, var)
+        var.log(value, step, timestamp)
 
-class Namespace(dict):
+    def insert(self, *values) -> None:
+        var = self._experiment._structure.get(self._path)
+        if not var:
+            var = StringSetVariable(self._experiment, self._path)
+            self._experiment._structure.set(self._path, var)
+        var.insert(list(values))
 
-    def __getattribute__(self, name):
-        if name == 'assign': # TODO support all methods on structures
-            raise AttributeError('cannot assign to an existing namespace')
-        return super().__getattribute__(name)
+    def pop(self, path: str) -> None:
+        self._experiment.pop(path_to_str(self._path) + "/" + path)
+
+    def __delitem__(self, path) -> None:
+        self.pop(path)

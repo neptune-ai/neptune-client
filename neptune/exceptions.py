@@ -13,5 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import uuid
 
-from .experiment import Experiment
+
+class NeptuneException(Exception):
+    pass
+
+
+class MetadataInconsistency(NeptuneException):
+    pass
+
+
+class InternalClientError(NeptuneException):
+    def __init__(self, msg: str):
+        super().__init__("Internal client error: {}. Please contact Neptune support.".format(msg))
+
+
+class ExperimentUUIDNotFound(NeptuneException):
+    def __init__(self, exp_uuid: uuid.UUID):
+        super().__init__("Experiment with UUID {} not found. Could be deleted.".format(exp_uuid))

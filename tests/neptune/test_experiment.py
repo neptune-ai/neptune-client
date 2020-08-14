@@ -15,45 +15,56 @@
 #
 import unittest
 
-from neptune.experiment import Experiment, Handler, parse_path
+from neptune.exceptions import MetadataInconsistency
+from neptune.internal.sync_neptune_server_mock import SyncNeptuneServerMock
+from neptune.types.atoms.float import Float
 
-# pylint: disable=protected-access
+from neptune.types.atoms.string import String
 
 
 class TestExperiment(unittest.TestCase):
 
-    def test_get_variable(self):
-        # given
-        e = Experiment()
-        e._members = {
-            'foo': {
-                'bar': 1
-            }
-        }
-        # when
-        result = e._get_variable(['foo', 'bar'])
-        # then
-        assert result == 1
+    def test_define(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp.define("some/path/value", Float(5))
+        self.assertEqual(exp.get_structure()['some']['path']['value'].get(), 5)
 
-    def test_set_variable(self):
-        e = Experiment()
-        e._set_variable(['foo', 'bar'], 2)
-        assert e._members['foo']['bar'] == 2
+    def test_define_string(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp.define("some/path/value", String("Some string"))
+        self.assertEqual(exp.get_structure()['some']['path']['value'].get(), "Some string")
 
-    def test_set_variable_2(self):
-        e = Experiment()
-        e._members = {
-            'foo': {}
-        }
-        e._set_variable(['foo', 'bar'], 2)
-        assert e._members['foo']['bar'] == 2
+    def test_define_few_variables(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp.define("some/path/num", Float(3))
+        exp.define("some/path/text", String("Some text"))
+        self.assertEqual(exp.get_structure()['some']['path']['num'].get(), 3)
+        self.assertEqual(exp.get_structure()['some']['path']['text'].get(), "Some text")
 
-    def test_parse_path(self):
-        assert parse_path('foo/bar') == ['foo', 'bar']
+    def test_define_conflict(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp.define("some/path/value", Float(5))
+        with self.assertRaises(MetadataInconsistency):
+            exp.define("some/path/value", Float(1))
 
-    def test_experiment_getitem(self):
-        e = Experiment()
-        ev = e['foo/bar']
-        assert isinstance(ev, Handler)
-        assert ev._experiment is e
-        assert ev._path == ['foo', 'bar']
+    def test_pop(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp.define("some/path/num", Float(3))
+        exp.define("some/path/text", String("Some text"))
+        exp.pop("some/path/text")
+        self.assertTrue('num' in exp.get_structure()['some']['path'])
+        self.assertTrue('text' not in exp.get_structure()['some']['path'])
+
+    def test_experiment_as_handler(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp.define("some/path/num", Float(3))
+        exp.define("some/path/text", String("Some text"))
+        handler = exp['some/path']
+        self.assertEqual(handler['num'].get(), 3)
+        self.assertEqual(handler['text'].get(), "Some text")

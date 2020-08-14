@@ -14,51 +14,45 @@
 # limitations under the License.
 #
 
-from .handler import Handler, Namespace
-from .variable import *
+import uuid
+from typing import Dict, Any, TYPE_CHECKING
 
-# pylint: disable=protected-access
+import neptune.handler as handler
+
+from neptune.exceptions import MetadataInconsistency
+from neptune.internal.experiment_structure import ExperimentStructure
+from neptune.internal.operation import DeleteVariable
+from neptune.internal.utils import parse_path
+from neptune.internal.variable_setter_value_visitor import VariableSetterValueVisitor
+from neptune.types.value import Value
+from neptune.variable import Variable
+
+if TYPE_CHECKING:
+    from neptune.internal.neptune_server import NeptuneServer
 
 
-class Experiment():
+class Experiment(handler.Handler):
 
-    def __init__(self, name=None):
-        super().__init__()
-        self.name = name
-        self._members = {}
+    def __init__(self, _uuid: uuid.UUID, server: 'NeptuneServer'):
+        super().__init__(self, path=[])
+        self._uuid = _uuid
+        self._server = server
+        self._structure = ExperimentStructure[Variable]()
 
-    def _log(self, string):
-        print(f'Experiment {self.name}: {string}')
+    def get_structure(self) -> Dict[str, Any]:
+        return self._structure.get_structure()
 
-    def _get_variable(self, path):
-        """
-        path: list of strings
-        """
-        ref = self._members
-        for segment in path:
-            if segment in ref:
-                ref = ref[segment]
-            else:
-                return None
-        return ref
+    def define(self, path: str, value: Value) -> Variable:
+        parsed_path = parse_path(path)
+        old_var = self._structure.get(parsed_path)
+        if old_var:
+            raise MetadataInconsistency("Variable {} is already defined".format(path))
+        visitor = VariableSetterValueVisitor(self, parsed_path)
+        var = visitor.visit(value)
+        self._structure.set(parsed_path, var)
+        return var
 
-    def _set_variable(self, path, variable):
-        """
-        path: list of strings
-        variable: Structure
-        """
-        namespace = self._members
-        location, variable_name = path[:-1], path[-1]
-        for segment in location:
-            if segment in namespace:
-                namespace = namespace[segment]
-            else:
-                namespace[segment] = Namespace()
-                namespace = namespace[segment]
-        namespace[variable_name] = variable
-
-    def __getitem__(self, path):
-        """
-        path: string
-        """
-        return Handler(self, parse_path(path))
+    def pop(self, path: str):
+        parsed_path = parse_path(path)
+        self._structure.pop(parsed_path)
+        self._server.queue_operation(DeleteVariable(self._uuid, parsed_path))

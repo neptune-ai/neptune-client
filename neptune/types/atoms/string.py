@@ -14,4 +14,23 @@
 # limitations under the License.
 #
 
-from .experiment import Experiment
+from typing import TypeVar, TYPE_CHECKING
+
+from neptune.types.atoms.atom import Atom
+
+if TYPE_CHECKING:
+    from neptune.types.value_visitor import ValueVisitor
+
+Ret = TypeVar('Ret')
+
+
+class String(Atom):
+
+    def __init__(self, value: str):
+        self.value = value
+
+    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+        return visitor.visit_string(self)
+
+    def __str__(self):
+        return "String({})".format(str(self.value))

@@ -15,48 +15,82 @@
 #
 
 import unittest
-import time
-
-from neptune.experiment import Experiment
 
 # pylint: disable=protected-access
+from neptune.internal.sync_neptune_server_mock import SyncNeptuneServerMock
+from neptune.variable import FloatVariable, StringVariable, FloatSeriesVariable, StringSeriesVariable, StringSetVariable
 
 
-class TestExperiment(unittest.TestCase):
+class TestHandler(unittest.TestCase):
 
-    def test_getitem(self):
-        e = Experiment()
-        ev = e['foo']
-        ev1 = ev['bar']
-        assert ev1._experiment is e
-        assert ev1._path == ['foo', 'bar']
+    def test_set(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp['some/num/val'] = 5
+        exp['some/str/val'] = "some text"
+        self.assertEqual(exp['some/num/val'].get(), 5)
+        self.assertEqual(exp['some/str/val'].get(), "some text")
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatVariable)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringVariable)
 
-    def test_assign_new(self):
-        e = Experiment()
-        e['foo'].assign(1)
-        assert e._members['foo']._value == 1
+    def test_assign(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp['some/num/val'].assign(5)
+        exp['some/str/val'].assign("some text")
+        self.assertEqual(exp['some/num/val'].get(), 5)
+        self.assertEqual(exp['some/str/val'].get(), "some text")
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatVariable)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringVariable)
 
-    def test_assign_existing(self):
-        e = Experiment()
-        e['foo'].assign(1)
-        e['foo'].assign(2)
-        assert e._members['foo']._value == 2
+    def test_log(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp['some/num/val'].log(5)
+        exp['some/str/val'].log("some text")
+        # TODO: self.assertEqual(exp['some/num/val'].get_values(), 5)
+        # TODO: self.assertEqual(exp['some/str/val'].get_values(), "some text")
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeriesVariable)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeriesVariable)
 
-    def test_series_log_new(self):
-        e = Experiment()
-        e['foo'].log(42)
-        e['foo'].log(84)
-        step0, timestamp0, entry0 = e._members['foo']._values[0]
-        step1, timestamp1, entry1 = e._members['foo']._values[1]
-        now = time.time()
-        assert step0 == 0
-        assert now - 1 < timestamp0 < now
-        assert entry0 == 42
-        assert step1 == 1
-        assert now - 1 < timestamp1 < now
-        assert entry1 == 84
+    def test_insert(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp['some/str/val'].insert("some text", "something else")
+        self.assertEqual(exp['some/str/val'].get(), {"some text", "something else"})
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSetVariable)
 
-    def test_set_add_new(self):
-        e = Experiment()
-        e['foo'].add('tag1', 'tag2')
-        assert e['foo'].get() == {'tag2', 'tag1'}
+    def test_pop(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp['some/num/val'].assign(3)
+        self.assertIn('some', exp.get_structure())
+        ns = exp['some']
+        ns.pop('num/val')
+        self.assertNotIn('some', exp.get_structure())
+
+    def test_del(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        exp['some/num/val'].assign(3)
+        self.assertIn('some', exp.get_structure())
+        ns = exp['some']
+        del ns['num/val']
+        self.assertNotIn('some', exp.get_structure())
+
+    def test_lookup(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        ns = exp['some/ns']
+        ns['val'] = 5
+        self.assertEqual(exp['some/ns/val'].get(), 5)
+
+        ns = exp['other/ns']
+        exp['other/ns/some/value'] = 3
+        self.assertEqual(ns['some/value'].get(), 3)
+
+    def test_attribute_error(self):
+        server = SyncNeptuneServerMock()
+        exp = server.create_experiment()
+        with self.assertRaises(AttributeError):
+            exp['var'].something()

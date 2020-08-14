@@ -16,178 +16,108 @@
 
 # pylint: disable=protected-access
 
-"""
-Defines variables and container types.
-
-Neptune define three container types: Atom, Series, and Set.
-
-Detailed documentation on creating / modifying / reading variables of
-a container type, refer to the documentation for the given container type,
-e.g.
-
->>> help(Series)
-"""
-
 import time
-from datetime import datetime
+from typing import List, TYPE_CHECKING
 
+from neptune.exceptions import MetadataInconsistency
+from neptune.internal.operation import AssignFloat, AssignString, LogFloats, LogStrings, InsertStrings, RemoveStrings, \
+    ClearFloatLog, ClearStringLog, ClearStringSet
+from neptune.types.atoms.float import Float
+from neptune.types.atoms.string import String
+from neptune.types.sets.string_set import StringSet
 
-def parse_path(path):
-    """
-    path: string
-
-    Returns: list of strings
-
-    Throws: ValueError if invalid path
-    """
-    # TODO validate
-    return path.split('/')
-
-
-def path_to_str(path):
-    return '/'.join(path)
-
-###################################
-### Variables and structures
-###################################
+if TYPE_CHECKING:
+    from neptune.experiment import Experiment
 
 
 class Variable:
 
-    def __init__(self, experiment, path, typ):
+    def __init__(self, _experiment: 'Experiment', path: List[str]):
         super().__init__()
-        self._experiment = experiment
+        self._experiment = _experiment
         self._path = path
-        self._type = typ
-        self._metadata = {}
-
-    def type(self):
-        return self._type
-
-    def add_metadata(self, key, value):
-        self._metadata[key] = value
-
-    def _log(self, string):
-        self._experiment._log(f'{path_to_str(self._path)}: {string}')
 
 
-class Atom(Variable):
-    """
-    Modifying / initializing methods: assign
-    Reading methods: read
-    """
-
-    def __init__(self, experiment, path, value):
-        typ, value = self._convert_type(value)
-        super().__init__(experiment, path, typ)
-        self.assign(value)
-
-    def _convert_type(self, value):
-        # TODO support all supported types
-        supported_types = [int, float, str, datetime]
-        for typ in supported_types:
-            if isinstance(value, typ):
-                return typ, value
-        raise TypeError('type not supported')
-
-    def read(self):
-        return self._value
-
-    # TODO allow for changing type?
-    def assign(self, value):
-        typ, value = self._convert_type(value)
-        self._log(f'assign {value}')
-        self._value = value
-        self._type = typ
+class AtomVariable(Variable):
+    pass
 
 
-class Series(Variable):
-    """
-    Writing / initializing methods: log
-    Reading methods: tail, all
-    """
+class FloatVariable(AtomVariable):
 
-    def __init__(self, experiment, path):
-        # TODO check that the type is supported by the Series structure
-        super().__init__(experiment, path, None)
-        self._values = []
-
-    def _convert_type(self, value):
-        # TODO support all supported types
-        supported_types = [str, datetime]
-        for typ in supported_types:
-            if isinstance(value, typ):
-                return typ, value
-        if isinstance(value, int) or isinstance(value, float):
-            return float, float(value)
-        raise TypeError('type not supported')
-
-    def _next_step(self):
-        if self._values:
-            last_step = self._values[-1][0]
-            return last_step + 1
-        else:
-            return 0
-
-    # TODO is a picosecond good enough? I am not aware of systems which track
-    # the current unixtime down to picoseconds
-    tiebreaker_nanosecond = 1e-12
-
-    def _next_timestamp(self):
-        if self._values:
-            last_timestamp = self._values[-1][1]
-            now = time.time()
-            if now == last_timestamp:
-                return now + self.tiebreaker_nanosecond
-            else:
-                return now
-        else:
-            return time.time()
-
-    def log(self, value, step=None, timestamp=None):
-        # TODO handle step and timestamp from user
-        typ, value = self._convert_type(value)
-        if self._type is None:
-            self._type = typ
-        elif self._type != typ:
-            raise TypeError('cannot log a new type to a series')
-        step = self._next_step()
-        timestamp = self._next_timestamp()
-        self._log(f'log step={step}, timestamp={timestamp}, value={value}')
-        self._values.append((step, timestamp, value))
-
-    # def tail(self, n_last, with_steps=False, with_timestamps=False):
-    #    # TODO handle steps and timestamps
-    #    return [v for _, _, v in self._values[-n_last:]]
-
-    # def all(self, with_steps=False, with_timestamps=False):
-    #    # TODO handle steps and timestamps
-    #    return [v for _, _, v in self._values]
-
-
-class Set(Variable):
-    """
-    Modifying / initializing methods: add
-    Writing methods: remove, reset
-    Reading methods: get
-    """
-
-    def __init__(self, experiment, path, typ):
-        # TODO check that the type is supported by the Set structure
-        super().__init__(experiment, path, typ)
-        self._values = set()
+    def assign(self, value: float):
+        self._experiment._server.queue_operation(AssignFloat(self._experiment._uuid, self._path, value))
 
     def get(self):
-        return self._values
+        val = self._experiment._server.get(self._experiment._uuid, self._path)
+        if not isinstance(val, Float):
+            raise MetadataInconsistency("Variable {} is not a Float".format(self._path))
+        return val.value
 
-    def reset(self, *values):
-        self._log(f'reset {values}')
-        self._values = set(values)
 
-    def add(self, *values):
-        self._log(f'add {values}')
-        self._values.update(values)
+class StringVariable(AtomVariable):
 
-    def remove(self, *values):
-        self._log(f'remove {values}')
-        self._values.difference_update(values)
+    def assign(self, value: str):
+        self._experiment._server.queue_operation(AssignString(self._experiment._uuid, self._path, value))
+
+    def get(self):
+        val = self._experiment._server.get(self._experiment._uuid, self._path)
+        if not isinstance(val, String):
+            raise MetadataInconsistency("Variable {} is not a String".format(self._path))
+        return val.value
+
+
+class FloatSeriesVariable(Variable):
+
+    def __init__(self, _experiment: 'Experiment', path: List[str]):
+        super().__init__(_experiment, path)
+        self._next_step = 0
+
+    def log(self, value: float, step: float = None, timestamp: float = None):
+        # TODO: Support steps and timestamps
+        if not step:
+            step = self._next_step
+        if not timestamp:
+            timestamp = time.time()
+        self._next_step = step + 1
+
+        self._experiment._server.queue_operation(LogFloats(self._experiment._uuid, self._path, [value]))
+
+    def clear(self):
+        self._experiment.queue_operation(ClearFloatLog(self._experiment._uuid, self._path))
+
+
+class StringSeriesVariable(Variable):
+
+    def __init__(self, _experiment: 'Experiment', path: List[str]):
+        super().__init__(_experiment, path)
+        self._next_step = 0
+
+    def log(self, value: str, step: float = None, timestamp: float = None):
+        if not step:
+            step = self._next_step
+        if not timestamp:
+            timestamp = time.time()
+        self._next_step = step + 1
+
+        self._experiment._server.queue_operation(LogStrings(self._experiment._uuid, self._path, [value]))
+
+    def clear(self):
+        self._experiment.queue_operation(ClearStringLog(self._experiment._uuid, self._path))
+
+
+class StringSetVariable(Variable):
+
+    def insert(self, values: List[str]):
+        self._experiment._server.queue_operation(InsertStrings(self._experiment._uuid, self._path, values))
+
+    def remove(self, values: List[str]):
+        self._experiment._server.queue_operation(RemoveStrings(self._experiment._uuid, self._path, values))
+
+    def clear(self):
+        self._experiment.queue_operation(ClearStringSet(self._experiment._uuid, self._path))
+
+    def get(self):
+        val = self._experiment._server.get(self._experiment._uuid, self._path)
+        if  not isinstance(val, StringSet):
+            raise MetadataInconsistency("Variable {} is not a StringSet".format(self._path))
+        return val.values

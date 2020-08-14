@@ -13,5 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import abc
 
-from .experiment import Experiment
+from typing_extensions import TYPE_CHECKING
+
+from neptune.internal.operation import Operation
+
+if TYPE_CHECKING:
+    from neptune import Experiment
+
+
+class NeptuneServer:
+
+    @abc.abstractmethod
+    def create_experiment(self) -> 'Experiment':
+        pass
+
+    @abc.abstractmethod
+    def queue_operation(self, op: Operation) -> None:
+        pass

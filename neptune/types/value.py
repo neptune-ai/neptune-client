@@ -13,5 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import abc
+from typing import TypeVar, TYPE_CHECKING
 
-from .experiment import Experiment
+if TYPE_CHECKING:
+    from neptune.types.value_visitor import ValueVisitor
+
+Ret = TypeVar('Ret')
+
+
+class Value:
+
+    @abc.abstractmethod
+    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+        pass

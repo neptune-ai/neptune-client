@@ -14,4 +14,23 @@
 # limitations under the License.
 #
 
-from .experiment import Experiment
+from typing import TypeVar, Iterable, TYPE_CHECKING
+
+from neptune.types.series.series import Series
+
+if TYPE_CHECKING:
+    from neptune.types.value_visitor import ValueVisitor
+
+Ret = TypeVar('Ret')
+
+
+class FloatSeries(Series):
+
+    def __init__(self, values: Iterable[float]):
+        self.values = list(values)
+
+    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+        return visitor.visit_float_series(self)
+
+    def __str__(self):
+        return "FloatSeries({})".format(str(self.values))
