@@ -15,7 +15,7 @@
 #
 import unittest
 
-from neptune_client_prototype.experiment import Experiment, ExperimentView, parse_path
+from neptune_client_prototype.experiment import Experiment, Handler, parse_path
 
 # pylint: disable=protected-access
 
@@ -54,6 +54,6 @@ class TestExperiment(unittest.TestCase):
     def test_experiment_getitem(self):
         e = Experiment()
         ev = e['foo/bar']
-        assert isinstance(ev, ExperimentView)
+        assert isinstance(ev, Handler)
         assert ev._experiment is e
         assert ev._path == ['foo', 'bar']

@@ -25,7 +25,7 @@ def _is_iterable_not_string(o):
     return isinstance(o, abc.Iterable) and not isinstance(o, str)
 
 
-class ExperimentView:
+class Handler:
 
     def __init__(self, experiment, path):
         """
@@ -40,7 +40,7 @@ class ExperimentView:
         """
         key: string
         """
-        return ExperimentView(self._experiment, self._path + parse_path(path))
+        return Handler(self._experiment, self._path + parse_path(path))
 
     def _get_variable(self):
         return self._experiment._get_variable(self._path)

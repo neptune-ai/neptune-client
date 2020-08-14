@@ -14,13 +14,13 @@
 # limitations under the License.
 #
 
-from .experiment_view import ExperimentView, Namespace
+from .handler import Handler, Namespace
 from .variable import *
 
 # pylint: disable=protected-access
 
 
-class Experiment:
+class Experiment():
 
     def __init__(self, name=None):
         super().__init__()
@@ -61,4 +61,4 @@ class Experiment:
         """
         path: string
         """
-        return ExperimentView(self, parse_path(path))
+        return Handler(self, parse_path(path))
