@@ -1,3 +1,19 @@
+#
+# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
 # pylint: disable=protected-access
 
 """
@@ -15,6 +31,7 @@ e.g.
 import time
 from datetime import datetime
 
+
 def parse_path(path):
     """
     path: string
@@ -26,12 +43,14 @@ def parse_path(path):
     # TODO validate
     return path.split('/')
 
+
 def path_to_str(path):
     return '/'.join(path)
 
 ###################################
 ### Variables and structures
 ###################################
+
 
 class Variable:
 
@@ -50,6 +69,7 @@ class Variable:
 
     def _log(self, string):
         self._experiment._log(f'{path_to_str(self._path)}: {string}')
+
 
 class Atom(Variable):
     """
@@ -80,12 +100,13 @@ class Atom(Variable):
         self._value = value
         self._type = typ
 
+
 class Series(Variable):
     """
     Writing / initializing methods: log
     Reading methods: tail, all
     """
-    
+
     def __init__(self, experiment, path):
         # TODO check that the type is supported by the Series structure
         super().__init__(experiment, path, None)
@@ -108,7 +129,7 @@ class Series(Variable):
         else:
             return 0
 
-    # TODO is a picosecond good enough? I am not aware of systems which track 
+    # TODO is a picosecond good enough? I am not aware of systems which track
     # the current unixtime down to picoseconds
     tiebreaker_nanosecond = 1e-12
 
@@ -135,13 +156,14 @@ class Series(Variable):
         self._log(f'log step={step}, timestamp={timestamp}, value={value}')
         self._values.append((step, timestamp, value))
 
-    def tail(self, n_last, with_steps=False, with_timestamps=False):
-        # TODO handle steps and timestamps
-        return [v for _, _, v in self._values[-n_last:]]
+    # def tail(self, n_last, with_steps=False, with_timestamps=False):
+    #    # TODO handle steps and timestamps
+    #    return [v for _, _, v in self._values[-n_last:]]
 
-    def all(self, with_steps=False, with_timestamps=False):
-        # TODO handle steps and timestamps
-        return [v for _, _, v in self._values]
+    # def all(self, with_steps=False, with_timestamps=False):
+    #    # TODO handle steps and timestamps
+    #    return [v for _, _, v in self._values]
+
 
 class Set(Variable):
     """
@@ -149,7 +171,7 @@ class Set(Variable):
     Writing methods: remove, reset
     Reading methods: get
     """
-    
+
     def __init__(self, experiment, path, typ):
         # TODO check that the type is supported by the Set structure
         super().__init__(experiment, path, typ)
