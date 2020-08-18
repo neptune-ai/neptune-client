@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from neptune import Experiment
 
 
-class NeptuneServer:
+class NeptuneBackend:
 
     @abc.abstractmethod
     def create_experiment(self) -> 'Experiment':

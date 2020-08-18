@@ -45,10 +45,10 @@ class AtomVariable(Variable):
 class FloatVariable(AtomVariable):
 
     def assign(self, value: float):
-        self._experiment._server.queue_operation(AssignFloat(self._experiment._uuid, self._path, value))
+        self._experiment._backend.queue_operation(AssignFloat(self._experiment._uuid, self._path, value))
 
     def get(self):
-        val = self._experiment._server.get(self._experiment._uuid, self._path)
+        val = self._experiment._backend.get(self._experiment._uuid, self._path)
         if not isinstance(val, Float):
             raise MetadataInconsistency("Variable {} is not a Float".format(self._path))
         return val.value
@@ -57,10 +57,10 @@ class FloatVariable(AtomVariable):
 class StringVariable(AtomVariable):
 
     def assign(self, value: str):
-        self._experiment._server.queue_operation(AssignString(self._experiment._uuid, self._path, value))
+        self._experiment._backend.queue_operation(AssignString(self._experiment._uuid, self._path, value))
 
     def get(self):
-        val = self._experiment._server.get(self._experiment._uuid, self._path)
+        val = self._experiment._backend.get(self._experiment._uuid, self._path)
         if not isinstance(val, String):
             raise MetadataInconsistency("Variable {} is not a String".format(self._path))
         return val.value
@@ -80,7 +80,7 @@ class FloatSeriesVariable(Variable):
             timestamp = time.time()
         self._next_step = step + 1
 
-        self._experiment._server.queue_operation(LogFloats(self._experiment._uuid, self._path, [value]))
+        self._experiment._backend.queue_operation(LogFloats(self._experiment._uuid, self._path, [value]))
 
     def clear(self):
         self._experiment.queue_operation(ClearFloatLog(self._experiment._uuid, self._path))
@@ -99,7 +99,7 @@ class StringSeriesVariable(Variable):
             timestamp = time.time()
         self._next_step = step + 1
 
-        self._experiment._server.queue_operation(LogStrings(self._experiment._uuid, self._path, [value]))
+        self._experiment._backend.queue_operation(LogStrings(self._experiment._uuid, self._path, [value]))
 
     def clear(self):
         self._experiment.queue_operation(ClearStringLog(self._experiment._uuid, self._path))
@@ -108,16 +108,16 @@ class StringSeriesVariable(Variable):
 class StringSetVariable(Variable):
 
     def insert(self, values: List[str]):
-        self._experiment._server.queue_operation(InsertStrings(self._experiment._uuid, self._path, values))
+        self._experiment._backend.queue_operation(InsertStrings(self._experiment._uuid, self._path, values))
 
     def remove(self, values: List[str]):
-        self._experiment._server.queue_operation(RemoveStrings(self._experiment._uuid, self._path, values))
+        self._experiment._backend.queue_operation(RemoveStrings(self._experiment._uuid, self._path, values))
 
     def clear(self):
         self._experiment.queue_operation(ClearStringSet(self._experiment._uuid, self._path))
 
     def get(self):
-        val = self._experiment._server.get(self._experiment._uuid, self._path)
+        val = self._experiment._backend.get(self._experiment._uuid, self._path)
         if  not isinstance(val, StringSet):
             raise MetadataInconsistency("Variable {} is not a StringSet".format(self._path))
         return val.values

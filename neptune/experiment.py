@@ -28,15 +28,15 @@ from neptune.types.value import Value
 from neptune.variable import Variable
 
 if TYPE_CHECKING:
-    from neptune.internal.neptune_server import NeptuneServer
+    from neptune.internal.neptune_backend import NeptuneBackend
 
 
 class Experiment(handler.Handler):
 
-    def __init__(self, _uuid: uuid.UUID, server: 'NeptuneServer'):
+    def __init__(self, _uuid: uuid.UUID, backend: 'NeptuneBackend'):
         super().__init__(self, path=[])
         self._uuid = _uuid
-        self._server = server
+        self._backend = backend
         self._structure = ExperimentStructure[Variable]()
 
     def get_structure(self) -> Dict[str, Any]:
@@ -55,4 +55,4 @@ class Experiment(handler.Handler):
     def pop(self, path: str):
         parsed_path = parse_path(path)
         self._structure.pop(parsed_path)
-        self._server.queue_operation(DeleteVariable(self._uuid, parsed_path))
+        self._backend.queue_operation(DeleteVariable(self._uuid, parsed_path))

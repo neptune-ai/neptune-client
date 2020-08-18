@@ -17,14 +17,14 @@
 import unittest
 
 # pylint: disable=protected-access
-from neptune.internal.sync_neptune_server_mock import SyncNeptuneServerMock
+from neptune.internal.sync_neptune_backend_mock import SyncNeptuneBackendMock
 from neptune.variable import FloatVariable, StringVariable, FloatSeriesVariable, StringSeriesVariable, StringSetVariable
 
 
 class TestHandler(unittest.TestCase):
 
     def test_set(self):
-        server = SyncNeptuneServerMock()
+        server = SyncNeptuneBackendMock()
         exp = server.create_experiment()
         exp['some/num/val'] = 5
         exp['some/str/val'] = "some text"
@@ -34,7 +34,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringVariable)
 
     def test_assign(self):
-        server = SyncNeptuneServerMock()
+        server = SyncNeptuneBackendMock()
         exp = server.create_experiment()
         exp['some/num/val'].assign(5)
         exp['some/str/val'].assign("some text")
@@ -44,7 +44,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringVariable)
 
     def test_log(self):
-        server = SyncNeptuneServerMock()
+        server = SyncNeptuneBackendMock()
         exp = server.create_experiment()
         exp['some/num/val'].log(5)
         exp['some/str/val'].log("some text")
@@ -54,14 +54,14 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeriesVariable)
 
     def test_insert(self):
-        server = SyncNeptuneServerMock()
+        server = SyncNeptuneBackendMock()
         exp = server.create_experiment()
         exp['some/str/val'].insert("some text", "something else")
         self.assertEqual(exp['some/str/val'].get(), {"some text", "something else"})
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSetVariable)
 
     def test_pop(self):
-        server = SyncNeptuneServerMock()
+        server = SyncNeptuneBackendMock()
         exp = server.create_experiment()
         exp['some/num/val'].assign(3)
         self.assertIn('some', exp.get_structure())
@@ -70,7 +70,7 @@ class TestHandler(unittest.TestCase):
         self.assertNotIn('some', exp.get_structure())
 
     def test_del(self):
-        server = SyncNeptuneServerMock()
+        server = SyncNeptuneBackendMock()
         exp = server.create_experiment()
         exp['some/num/val'].assign(3)
         self.assertIn('some', exp.get_structure())
@@ -79,7 +79,7 @@ class TestHandler(unittest.TestCase):
         self.assertNotIn('some', exp.get_structure())
 
     def test_lookup(self):
-        server = SyncNeptuneServerMock()
+        server = SyncNeptuneBackendMock()
         exp = server.create_experiment()
         ns = exp['some/ns']
         ns['val'] = 5
@@ -90,7 +90,7 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(ns['some/value'].get(), 3)
 
     def test_attribute_error(self):
-        server = SyncNeptuneServerMock()
+        server = SyncNeptuneBackendMock()
         exp = server.create_experiment()
         with self.assertRaises(AttributeError):
             exp['var'].something()

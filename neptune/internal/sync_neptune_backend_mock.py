@@ -20,7 +20,7 @@ from typing import Optional, List
 from neptune import Experiment
 from neptune.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.internal.experiment_structure import ExperimentStructure
-from neptune.internal.neptune_server import NeptuneServer
+from neptune.internal.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation, RemoveStrings, InsertStrings, LogStrings, LogFloats, \
     AssignString, AssignFloat, DeleteVariable, ClearFloatLog, ClearStringLog, ClearStringSet
 from neptune.internal.operation_visitor import OperationVisitor
@@ -32,7 +32,7 @@ from neptune.types.sets.string_set import StringSet
 from neptune.types.value import Value
 
 
-class SyncNeptuneServerMock(NeptuneServer):
+class SyncNeptuneBackendMock(NeptuneBackend):
 
     def __init__(self):
         self._experiments = dict()
@@ -52,7 +52,7 @@ class SyncNeptuneServerMock(NeptuneServer):
                 raise MetadataInconsistency("{} is a namespace, not a variable".format(op.path))
             else:
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
-        visitor = SyncNeptuneServerMock.NewValueOpVisitor(op.path, val)
+        visitor = SyncNeptuneBackendMock.NewValueOpVisitor(op.path, val)
         new_val = visitor.visit(op)
         if new_val:
             exp.set(op.path, new_val)
