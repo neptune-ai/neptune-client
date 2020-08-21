@@ -35,6 +35,13 @@ class Operation:
         pass
 
 
+class VersionedOperation:
+
+    def __init__(self, op: Operation, version: int):
+        self.op = op
+        self.version = version
+
+
 class AssignFloat(Operation):
 
     def __init__(self, exp_uuid: uuid.UUID, path: List[str], value: float):

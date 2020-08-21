@@ -22,7 +22,7 @@ import neptune.handler as handler
 from neptune.exceptions import MetadataInconsistency
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.operation import DeleteVariable
-from neptune.internal.utils import parse_path
+from neptune.internal.utils.paths import parse_path
 from neptune.internal.variable_setter_value_visitor import VariableSetterValueVisitor
 from neptune.types.value import Value
 from neptune.variable import Variable

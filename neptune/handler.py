@@ -16,7 +16,7 @@
 
 from typing import List, TYPE_CHECKING
 
-from neptune.internal.utils import parse_path, path_to_str
+from neptune.internal.utils.paths import parse_path, path_to_str
 from neptune.variable import FloatVariable, StringVariable, FloatSeriesVariable, StringSeriesVariable, StringSetVariable
 
 if TYPE_CHECKING:
@@ -37,6 +37,7 @@ class Handler:
         self[key].assign(value)
 
     def __getattr__(self, attr):
+        # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if var:
             return getattr(var, attr)
@@ -44,6 +45,7 @@ class Handler:
             raise AttributeError()
 
     def assign(self, value) -> None:
+        # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if not var:
             if isinstance(value, (float, int)):
@@ -55,6 +57,7 @@ class Handler:
         var.assign(value)
 
     def log(self, value, step=None, timestamp=None) -> None:
+        # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if not var:
             if isinstance(value, (float, int)):
@@ -66,6 +69,7 @@ class Handler:
         var.log(value, step, timestamp)
 
     def insert(self, *values) -> None:
+        # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if not var:
             var = StringSetVariable(self._experiment, self._path)
