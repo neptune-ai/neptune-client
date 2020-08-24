@@ -14,22 +14,16 @@
 # limitations under the License.
 #
 import abc
-from typing import List
-
-from typing_extensions import TYPE_CHECKING
 
 from neptune.internal.operation import Operation
 
-if TYPE_CHECKING:
-    from neptune import Experiment
 
-
-class NeptuneBackend:
+class OperationProcessor:
 
     @abc.abstractmethod
-    def create_experiment(self) -> 'Experiment':
+    def queue_operation(self, op: Operation, wait: bool) -> None:
         pass
 
     @abc.abstractmethod
-    def execute_operations(self, operations: List[Operation]) -> None:
+    def wait(self) -> None:
         pass

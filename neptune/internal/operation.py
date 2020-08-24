@@ -24,6 +24,11 @@ if TYPE_CHECKING:
 Ret = TypeVar('Ret')
 
 
+def all_subclasses(cls):
+    return set(cls.__subclasses__()).union(
+        [s for c in cls.__subclasses__() for s in all_subclasses(c)])
+
+
 class Operation:
 
     def __init__(self, exp_uuid: uuid.UUID, path: List[str]):
@@ -34,12 +39,36 @@ class Operation:
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         pass
 
+    @abc.abstractmethod
+    def to_dict(self) -> dict:
+        pass
+
+    @staticmethod
+    def from_dict(data: dict) -> 'Operation':
+        if "type" not in data:
+            raise ValueError("Malformed operation {} - type is missing".format(data))
+        sub_classes = {cls.__name__: cls for cls in all_subclasses(Operation)}
+        if not data["type"] in sub_classes:
+            raise ValueError("Malformed operation {} - unknown type {}".format(data, data["type"]))
+        return sub_classes[data["type"]].from_dict(data)
+
 
 class VersionedOperation:
 
     def __init__(self, op: Operation, version: int):
         self.op = op
         self.version = version
+
+    @staticmethod
+    def to_dict(obj: 'VersionedOperation') -> dict:
+        return {
+            "op": obj.op.to_dict(),
+            "version": obj.version
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'VersionedOperation':
+        return VersionedOperation(Operation.from_dict(data["op"]), data["version"])
 
 
 class AssignFloat(Operation):
@@ -51,6 +80,18 @@ class AssignFloat(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_float(self)
 
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path,
+            "value": self.value
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'AssignFloat':
+        return AssignFloat(uuid.UUID(data["exp_uuid"]), data["path"], data["value"])
+
 
 class AssignString(Operation):
 
@@ -60,6 +101,18 @@ class AssignString(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_string(self)
+
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path,
+            "value": self.value
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'AssignString':
+        return AssignString(uuid.UUID(data["exp_uuid"]), data["path"], data["value"])
 
 
 class LogFloats(Operation):
@@ -71,6 +124,18 @@ class LogFloats(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_log_floats(self)
 
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path,
+            "values": self.values
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'LogFloats':
+        return LogFloats(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+
 
 class LogStrings(Operation):
 
@@ -81,17 +146,51 @@ class LogStrings(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_log_strings(self)
 
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path,
+            "values": self.values
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'LogStrings':
+        return LogStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+
 
 class ClearFloatLog(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_clear_float_log(self)
 
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ClearFloatLog':
+        return ClearFloatLog(uuid.UUID(data["exp_uuid"]), data["path"])
+
 
 class ClearStringLog(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_clear_string_log(self)
+
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ClearStringLog':
+        return ClearStringLog(uuid.UUID(data["exp_uuid"]), data["path"])
 
 
 class InsertStrings(Operation):
@@ -103,6 +202,18 @@ class InsertStrings(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_insert_strings(self)
 
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path,
+            "values": self.values
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'InsertStrings':
+        return InsertStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+
 
 class RemoveStrings(Operation):
 
@@ -113,14 +224,48 @@ class RemoveStrings(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_remove_strings(self)
 
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path,
+            "values": self.values
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'RemoveStrings':
+        return RemoveStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+
 
 class ClearStringSet(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_clear_string_set(self)
 
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ClearStringSet':
+        return ClearStringSet(uuid.UUID(data["exp_uuid"]), data["path"])
+
 
 class DeleteVariable(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_delete_variable(self)
+
+    def to_dict(self) -> dict:
+        return {
+            "type": self.__class__.__name__,
+            "exp_uuid": str(self.exp_uuid),
+            "path": self.path
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'DeleteVariable':
+        return DeleteVariable(uuid.UUID(data["exp_uuid"]), data["path"])

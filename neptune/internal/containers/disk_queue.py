@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import json
 import os
 from typing import TypeVar, List, Callable, Optional
 
-from neptune.internal.collections.queue import Queue
+from neptune.internal.containers.queue import Queue
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 
 T = TypeVar('T')
@@ -28,19 +28,20 @@ class DiskQueue(Queue[T]):
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
 
     def __init__(
-            self, dir_path: str,
+            self,
+            dir_path: str,
             log_files_name: str,
-            json_serializer: Callable[[T], str],
-            json_deserializer: Callable[[dict], T],
+            to_dict: Callable[[T], dict],
+            from_dict: Callable[[dict], T],
             max_file_size: int = 10 * 1024**2):
         self._dir_path = dir_path
         self._log_files_name = log_files_name
-        self._json_serializer = json_serializer
-        self._json_deserializer = json_deserializer
+        self._to_dict = to_dict
+        self._from_dict = from_dict
         self._max_file_size = max_file_size
 
         try:
-            os.mkdir(self._dir_path)
+            os.makedirs(self._dir_path)
         except FileExistsError:
             pass
 
@@ -51,25 +52,25 @@ class DiskQueue(Queue[T]):
         self._file_size = 0
 
     def put(self, obj: T) -> None:
-        json = self._json_serializer(obj)
-        if self._file_size + len(json) > self._max_file_size:
+        _json = json.dumps(self._to_dict(obj))
+        if self._file_size + len(_json) > self._max_file_size:
             self._writer.close()
             self._write_file_idx += 1
             self._writer = open(self._current_write_log_file(), "a")
             self._file_size = 0
-        self._writer.write(json + "\n")
-        self._file_size += len(json) + 1
+        self._writer.write(_json + "\n")
+        self._file_size += len(_json) + 1
 
     def get(self) -> Optional[T]:
-        json = self._reader.get()
-        if not json:
+        _json = self._reader.get()
+        if not _json:
             if self._read_file_idx >= self._write_file_idx:
                 return None
             self._reader.close()
             self._read_file_idx += 1
             self._reader = JsonFileSplitter(self._current_read_log_file())
             return self.get()
-        return self._json_deserializer(json)
+        return self._from_dict(_json)
 
     def get_batch(self, size: int) -> List[T]:
         ret = []
@@ -82,6 +83,11 @@ class DiskQueue(Queue[T]):
 
     def flush(self):
         self._writer.flush()
+
+    def is_overflowing(self) -> bool:
+        # Some heurisitc.
+        return self._write_file_idx > self._read_file_idx + 1 or (
+            self._write_file_idx > self._read_file_idx and self._writer.tell() >= self._max_file_size / 2)
 
     def close(self):
         self._reader.close()

@@ -13,23 +13,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import abc
-from typing import List
+from typing import Generic, TypeVar, List
 
-from typing_extensions import TYPE_CHECKING
-
-from neptune.internal.operation import Operation
-
-if TYPE_CHECKING:
-    from neptune import Experiment
+T = TypeVar('T')
 
 
-class NeptuneBackend:
+class Queue(Generic[T]):
+
+    # NOTICE: All implementations should be thread-safe as long as there is only one consumer and one producer.
 
     @abc.abstractmethod
-    def create_experiment(self) -> 'Experiment':
+    def put(self, obj: T) -> None:
         pass
 
     @abc.abstractmethod
-    def execute_operations(self, operations: List[Operation]) -> None:
+    def get(self) -> T:
+        pass
+
+    @abc.abstractmethod
+    def get_batch(self, size: int) -> List[T]:
+        pass
+
+    @abc.abstractmethod
+    def flush(self) -> None:
+        pass
+
+    @abc.abstractmethod
+    def is_overflowing(self) -> bool:
+        pass
+
+    @abc.abstractmethod
+    def close(self):
         pass

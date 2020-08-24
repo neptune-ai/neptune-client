@@ -13,23 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import abc
-from typing import Generic, TypeVar, List
-
-T = TypeVar('T')
-
-
-class Queue(Generic[T]):
-
-    @abc.abstractmethod
-    def put(self, obj: T) -> None:
-        pass
-
-    @abc.abstractmethod
-    def get(self) -> T:
-        pass
-
-    @abc.abstractmethod
-    def get_batch(self, size: int) -> List[T]:
-        pass
