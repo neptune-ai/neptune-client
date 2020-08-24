@@ -57,7 +57,7 @@ class Experiment(handler.Handler):
     def pop(self, path: str, wait: bool = False):
         parsed_path = parse_path(path)
         self._structure.pop(parsed_path)
-        self._op_processor.queue_operation(DeleteVariable(self._uuid, parsed_path), wait)
+        self._op_processor.enqueue_operation(DeleteVariable(self._uuid, parsed_path), wait)
 
     def wait(self):
         self._op_processor.wait()

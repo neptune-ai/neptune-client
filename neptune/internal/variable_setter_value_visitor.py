@@ -51,7 +51,7 @@ class VariableSetterValueVisitor(ValueVisitor[Variable]):
         # TODO: Avoid loop
         for val in value.values[:-1]:
             var.log(val)
-        var.log(value.values[len(value.values) - 1], self._wait)
+        var.log(value.values[-1], self._wait)
         return var
 
     def visit_string_series(self, value: StringSeries) -> Variable:
@@ -60,7 +60,7 @@ class VariableSetterValueVisitor(ValueVisitor[Variable]):
         # TODO: Avoid loop
         for val in value.values[:-1]:
             var.log(val)
-        var.log(value.values[len(value.values) - 1], self._wait)
+        var.log(value.values[-1], self._wait)
         return var
 
     def visit_string_set(self, value: StringSet) -> Variable:

@@ -16,7 +16,7 @@
 from threading import Event
 from time import time
 
-from neptune.internal.containers.queue import Queue
+from neptune.internal.containers.storage_queue import StorageQueue
 from neptune.internal.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation, VersionedOperation
 from neptune.internal.operation_processor import OperationProcessor
@@ -28,7 +28,7 @@ from neptune.internal.threading.daemon import Daemon
 class AsyncOperationProcessor(OperationProcessor):
 
     def __init__(self,
-                 queue: Queue[VersionedOperation],
+                 queue: StorageQueue[VersionedOperation],
                  backend: NeptuneBackend,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
@@ -38,11 +38,10 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumed_version = 0
         self._waiting_for_version = 0
         self._waiting_event = Event()
-        self._consumer_event = Event()
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
         self._consumer.start()
 
-    def queue_operation(self, op: Operation, wait: bool) -> None:
+    def enqueue_operation(self, op: Operation, wait: bool) -> None:
         self._last_version += 1
         self._queue.put(VersionedOperation(op, self._last_version))
         if self._queue.is_overflowing():
@@ -79,7 +78,7 @@ class AsyncOperationProcessor(OperationProcessor):
             if not batch:
                 return
             self._processor._backend.execute_operations([op.op for op in batch])
-            self._processor._consumed_version = batch[len(batch) - 1].version
+            self._processor._consumed_version = batch[-1].version
             if self._processor._waiting_for_version > 0:
                 if self._processor._consumed_version >= self._processor._waiting_for_version:
                     self._processor._waiting_for_version = 0

@@ -17,13 +17,13 @@ import json
 import os
 from typing import TypeVar, List, Callable, Optional
 
-from neptune.internal.containers.queue import Queue
+from neptune.internal.containers.storage_queue import StorageQueue
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 
 T = TypeVar('T')
 
 
-class DiskQueue(Queue[T]):
+class DiskQueue(StorageQueue[T]):
 
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
 

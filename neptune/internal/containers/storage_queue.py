@@ -20,7 +20,7 @@ from typing import Generic, TypeVar, List
 T = TypeVar('T')
 
 
-class Queue(Generic[T]):
+class StorageQueue(Generic[T]):
 
     # NOTICE: All implementations should be thread-safe as long as there is only one consumer and one producer.
 

@@ -45,7 +45,7 @@ class AtomVariable(Variable):
 class FloatVariable(AtomVariable):
 
     def assign(self, value: float, wait: bool = False):
-        self._experiment._op_processor.queue_operation(AssignFloat(self._experiment._uuid, self._path, value), wait)
+        self._experiment._op_processor.enqueue_operation(AssignFloat(self._experiment._uuid, self._path, value), wait)
 
     def get(self):
         val = self._experiment._backend.get(self._experiment._uuid, self._path)
@@ -57,7 +57,7 @@ class FloatVariable(AtomVariable):
 class StringVariable(AtomVariable):
 
     def assign(self, value: str, wait: bool = False):
-        self._experiment._op_processor.queue_operation(AssignString(self._experiment._uuid, self._path, value), wait)
+        self._experiment._op_processor.enqueue_operation(AssignString(self._experiment._uuid, self._path, value), wait)
 
     def get(self):
         val = self._experiment._backend.get(self._experiment._uuid, self._path)
@@ -80,7 +80,7 @@ class FloatSeriesVariable(Variable):
             timestamp = time.time()
         self._next_step = step + 1
 
-        self._experiment._op_processor.queue_operation(LogFloats(self._experiment._uuid, self._path, [value]), wait)
+        self._experiment._op_processor.enqueue_operation(LogFloats(self._experiment._uuid, self._path, [value]), wait)
 
     def clear(self, wait: bool = False):
         self._experiment.queue_operation(ClearFloatLog(self._experiment._uuid, self._path), wait)
@@ -99,7 +99,7 @@ class StringSeriesVariable(Variable):
             timestamp = time.time()
         self._next_step = step + 1
 
-        self._experiment._op_processor.queue_operation(LogStrings(self._experiment._uuid, self._path, [value]), wait)
+        self._experiment._op_processor.enqueue_operation(LogStrings(self._experiment._uuid, self._path, [value]), wait)
 
     def clear(self, wait: bool = False):
         self._experiment.queue_operation(ClearStringLog(self._experiment._uuid, self._path), wait)
@@ -108,13 +108,15 @@ class StringSeriesVariable(Variable):
 class StringSetVariable(Variable):
 
     def insert(self, values: List[str], wait: bool = False):
-        self._experiment._op_processor.queue_operation(InsertStrings(self._experiment._uuid, self._path, values), wait)
+        self._experiment._op_processor.enqueue_operation(
+            InsertStrings(self._experiment._uuid, self._path, values), wait)
 
     def remove(self, values: List[str], wait: bool = False):
-        self._experiment._op_processor.queue_operation(RemoveStrings(self._experiment._uuid, self._path, values), wait)
+        self._experiment._op_processor.enqueue_operation(
+            RemoveStrings(self._experiment._uuid, self._path, values), wait)
 
     def clear(self, wait: bool = False):
-        self._experiment._op_processor.queue_operation(ClearStringSet(self._experiment._uuid, self._path), wait)
+        self._experiment._op_processor.enqueue_operation(ClearStringSet(self._experiment._uuid, self._path), wait)
 
     def get(self):
         val = self._experiment._backend.get(self._experiment._uuid, self._path)
