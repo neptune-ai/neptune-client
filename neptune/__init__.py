@@ -19,18 +19,26 @@ from .internal.async_operation_processor import AsyncOperationProcessor
 from .internal.containers.disk_queue import DiskQueue
 from .internal.neptune_backend_mock import NeptuneBackendMock
 from .internal.operation import VersionedOperation
+from .internal.sync_operation_processor import SyncOperationProcessor
 
 
-def init(mode: str = "async", flush_period: float = 5) -> Experiment:
-    if mode not in ["async"]:
-        raise ValueError('mode should be on of: ["async"]')
+def init(connection_mode: str = "async", flush_period: float = 5) -> Experiment:
     backend = NeptuneBackendMock()
     exp_uuid = backend.create_experiment()
-    operation_processor = AsyncOperationProcessor(
-        DiskQueue(".neptune/{}".format(exp_uuid),
-                  "operations",
-                  VersionedOperation.to_dict,
-                  VersionedOperation.from_dict),
-        backend,
-        sleep_time=flush_period)
+
+    if connection_mode == "async":
+        operation_processor = AsyncOperationProcessor(
+            DiskQueue(".neptune/{}".format(exp_uuid),
+                      "operations",
+                      VersionedOperation.to_dict,
+                      VersionedOperation.from_dict),
+            backend,
+            sleep_time=flush_period)
+    elif connection_mode == "sync":
+        operation_processor = SyncOperationProcessor(backend)
+    elif connection_mode == "offline":
+        operation_processor = SyncOperationProcessor(backend)
+    else:
+        raise ValueError('connection_mode should be on of ["async", "sync", "offline"]')
+
     return Experiment(exp_uuid, backend, operation_processor)
