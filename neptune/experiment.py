@@ -25,7 +25,7 @@ from neptune.internal.operation import DeleteVariable
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.variable_setter_value_visitor import VariableSetterValueVisitor
 from neptune.types.value import Value
-from neptune.variable import Variable
+from neptune.variables.variable import Variable
 
 if TYPE_CHECKING:
     from neptune.internal.neptune_backend import NeptuneBackend

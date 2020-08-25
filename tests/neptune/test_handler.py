@@ -19,7 +19,11 @@ import unittest
 # pylint: disable=protected-access
 
 from neptune import init
-from neptune.variable import FloatVariable, StringVariable, FloatSeriesVariable, StringSeriesVariable, StringSetVariable
+from neptune.variables.atoms.float import Float
+from neptune.variables.atoms.string import String
+from neptune.variables.series.float_series import FloatSeries
+from neptune.variables.series.string_series import StringSeries
+from neptune.variables.sets.string_set import StringSet
 
 
 class TestHandler(unittest.TestCase):
@@ -31,8 +35,8 @@ class TestHandler(unittest.TestCase):
         exp.wait()
         self.assertEqual(exp['some/num/val'].get(), 5)
         self.assertEqual(exp['some/str/val'].get(), "some text")
-        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatVariable)
-        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringVariable)
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
 
     def test_assign(self):
         exp = init(flush_period=0.5)
@@ -40,8 +44,8 @@ class TestHandler(unittest.TestCase):
         exp['some/str/val'].assign("some text", wait=True)
         self.assertEqual(exp['some/num/val'].get(), 5)
         self.assertEqual(exp['some/str/val'].get(), "some text")
-        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatVariable)
-        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringVariable)
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
 
     def test_log(self):
         exp = init(flush_period=0.5)
@@ -49,14 +53,14 @@ class TestHandler(unittest.TestCase):
         exp['some/str/val'].log("some text")
         # TODO: self.assertEqual(exp['some/num/val'].get_values(), 5)
         # TODO: self.assertEqual(exp['some/str/val'].get_values(), "some text")
-        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeriesVariable)
-        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeriesVariable)
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeries)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
 
     def test_add(self):
         exp = init(flush_period=0.5)
         exp['some/str/val'].add("some text", "something else", wait=True)
         self.assertEqual(exp['some/str/val'].get(), {"some text", "something else"})
-        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSetVariable)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
 
     def test_pop(self):
         exp = init(flush_period=0.5)

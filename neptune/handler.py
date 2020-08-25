@@ -17,7 +17,11 @@
 from typing import List, TYPE_CHECKING
 
 from neptune.internal.utils.paths import parse_path, path_to_str
-from neptune.variable import FloatVariable, StringVariable, FloatSeriesVariable, StringSeriesVariable, StringSetVariable
+from neptune.variables.atoms.float import Float
+from neptune.variables.atoms.string import String
+from neptune.variables.series.float_series import FloatSeries
+from neptune.variables.series.string_series import StringSeries
+from neptune.variables.sets.string_set import StringSet
 
 if TYPE_CHECKING:
     from neptune.experiment import Experiment
@@ -49,10 +53,10 @@ class Handler:
         var = self._experiment._structure.get(self._path)
         if not var:
             if isinstance(value, (float, int)):
-                var = FloatVariable(self._experiment, self._path)
+                var = Float(self._experiment, self._path)
                 self._experiment._structure.set(self._path, var)
             if isinstance(value, str):
-                var = StringVariable(self._experiment, self._path)
+                var = String(self._experiment, self._path)
                 self._experiment._structure.set(self._path, var)
         var.assign(value, wait)
 
@@ -61,10 +65,10 @@ class Handler:
         var = self._experiment._structure.get(self._path)
         if not var:
             if isinstance(value, (float, int)):
-                var = FloatSeriesVariable(self._experiment, self._path)
+                var = FloatSeries(self._experiment, self._path)
                 self._experiment._structure.set(self._path, var)
             if isinstance(value, str):
-                var = StringSeriesVariable(self._experiment, self._path)
+                var = StringSeries(self._experiment, self._path)
                 self._experiment._structure.set(self._path, var)
         var.log(value, step, timestamp, wait)
 
@@ -72,7 +76,7 @@ class Handler:
         # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if not var:
-            var = StringSetVariable(self._experiment, self._path)
+            var = StringSet(self._experiment, self._path)
             self._experiment._structure.set(self._path, var)
         var.add(list(values), wait)
 

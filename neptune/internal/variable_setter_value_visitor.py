@@ -21,8 +21,12 @@ from neptune.types.series.float_series import FloatSeries
 from neptune.types.series.string_series import StringSeries
 from neptune.types.sets.string_set import StringSet
 from neptune.types.value_visitor import ValueVisitor
-from neptune.variable import Variable, FloatVariable, StringVariable, FloatSeriesVariable, StringSeriesVariable, \
-    StringSetVariable
+from neptune.variables.atoms.float import Float as FloatVar
+from neptune.variables.atoms.string import String as StringVar
+from neptune.variables.series.float_series import FloatSeries as FloatSeriesVar
+from neptune.variables.series.string_series import StringSeries as StringSeriesVar
+from neptune.variables.sets.string_set import StringSet as StringSetVar
+from neptune.variables.variable import Variable
 
 if TYPE_CHECKING:
     from neptune import Experiment
@@ -36,17 +40,17 @@ class VariableSetterValueVisitor(ValueVisitor[Variable]):
         self._wait = wait
 
     def visit_float(self, value: Float) -> Variable:
-        var = FloatVariable(self._experiment, self._path)
+        var = FloatVar(self._experiment, self._path)
         var.assign(value.value, self._wait)
         return var
 
     def visit_string(self, value: String) -> Variable:
-        var = StringVariable(self._experiment, self._path)
+        var = StringVar(self._experiment, self._path)
         var.assign(value.value, self._wait)
         return var
 
     def visit_float_series(self, value: FloatSeries) -> Variable:
-        var = FloatSeriesVariable(self._experiment, self._path)
+        var = FloatSeriesVar(self._experiment, self._path)
         var.clear()
         # TODO: Avoid loop
         for val in value.values[:-1]:
@@ -55,7 +59,7 @@ class VariableSetterValueVisitor(ValueVisitor[Variable]):
         return var
 
     def visit_string_series(self, value: StringSeries) -> Variable:
-        var = StringSeriesVariable(self._experiment, self._path)
+        var = StringSeriesVar(self._experiment, self._path)
         var.clear()
         # TODO: Avoid loop
         for val in value.values[:-1]:
@@ -64,7 +68,7 @@ class VariableSetterValueVisitor(ValueVisitor[Variable]):
         return var
 
     def visit_string_set(self, value: StringSet) -> Variable:
-        var = StringSetVariable(self._experiment, self._path)
+        var = StringSetVar(self._experiment, self._path)
         var.clear()
         var.add(value.values, self._wait)
         return var
