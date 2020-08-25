@@ -28,7 +28,7 @@ from neptune.types.value import Value
 from neptune.variables.variable import Variable
 
 if TYPE_CHECKING:
-    from neptune.internal.neptune_backend import NeptuneBackend
+    from neptune.internal.backends.neptune_backend import NeptuneBackend
     from neptune.internal.operation_processor import OperationProcessor
 
 

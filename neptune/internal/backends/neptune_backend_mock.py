@@ -16,11 +16,10 @@
 
 import uuid
 from typing import Optional, List
-from uuid import UUID
 
 from neptune.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.internal.experiment_structure import ExperimentStructure
-from neptune.internal.neptune_backend import NeptuneBackend
+from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation, RemoveStrings, AddStrings, LogStrings, LogFloats, \
     AssignString, AssignFloat, DeleteVariable, ClearFloatLog, ClearStringLog, ClearStringSet
 from neptune.internal.operation_visitor import OperationVisitor
@@ -37,7 +36,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def __init__(self):
         self._experiments = dict()
 
-    def create_experiment(self) -> UUID:
+    def create_experiment(self) -> uuid.UUID:
         new_uuid = uuid.uuid4()
         self._experiments[new_uuid] = ExperimentStructure[Value]()
         return new_uuid

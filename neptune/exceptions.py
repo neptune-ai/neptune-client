@@ -13,10 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import uuid
+from typing import Union, Optional
+
+from packaging.version import Version
+
+from neptune import envs
+from neptune.internal.utils import replace_patch_version
 
 
 class NeptuneException(Exception):
+    pass
+
+
+class NeptuneApiException(NeptuneException):
     pass
 
 
@@ -32,3 +43,61 @@ class InternalClientError(NeptuneException):
 class ExperimentUUIDNotFound(NeptuneException):
     def __init__(self, exp_uuid: uuid.UUID):
         super().__init__("Experiment with UUID {} not found. Could be deleted.".format(exp_uuid))
+
+
+class MissingApiToken(NeptuneException):
+    def __init__(self):
+        super().__init__(
+            'Missing API token. Use "{}" environment variable or pass it as an argument to neptune.init. '
+            'Open this link to get your API token https://ui.neptune.ai/get_my_api_token'.format(
+                envs.API_TOKEN_ENV_NAME))
+
+
+class InvalidApiKey(NeptuneException):
+    def __init__(self):
+        super().__init__('The provided API key is invalid.')
+
+
+class UnsupportedClientVersion(NeptuneException):
+    def __init__(
+            self,
+            version: Union[Version, str],
+            min_version: Optional[Union[Version, str]] = None,
+            max_version: Optional[Union[Version, str]] = None):
+        super().__init__(
+            "This neptune-client version ({}) is not supported. Please install neptune-client{}".format(
+                str(version),
+                "==" + replace_patch_version(str(max_version)) if max_version else ">=" + str(min_version)
+            ))
+
+
+class CannotResolveHostname(NeptuneException):
+    def __init__(self, host):
+        super().__init__("Cannot resolve hostname {}.".format(host))
+
+
+class SSLError(NeptuneException):
+    def __init__(self):
+        super().__init__(
+            'SSL certificate validation failed. Set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE '
+            'environment variable to accept self-signed certificates.')
+
+
+class ConnectionLost(NeptuneException):
+    def __init__(self):
+        super().__init__('Connection to Neptune server was lost.')
+
+
+class InternalServerError(NeptuneApiException):
+    def __init__(self):
+        super().__init__('Internal server error. Please contact Neptune support.')
+
+
+class Unauthorized(NeptuneApiException):
+    def __init__(self):
+        super().__init__('Unauthorized. Verify your API token is invalid.')
+
+
+class Forbidden(NeptuneApiException):
+    def __init__(self):
+        super().__init__('You have no permissions to access this resource.')

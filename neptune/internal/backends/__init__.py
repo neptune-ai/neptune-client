@@ -13,7 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-def replace_patch_version(version: str):
-    return version[:version.index(".", version.index(".") + 1)] + ".0"

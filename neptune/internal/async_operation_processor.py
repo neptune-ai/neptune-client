@@ -17,7 +17,7 @@ from threading import Event
 from time import time
 
 from neptune.internal.containers.storage_queue import StorageQueue
-from neptune.internal.neptune_backend import NeptuneBackend
+from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation, VersionedOperation
 from neptune.internal.operation_processor import OperationProcessor
 from neptune.internal.threading.daemon import Daemon

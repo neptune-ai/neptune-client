@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from neptune.internal.neptune_backend import NeptuneBackend
+from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation
 from neptune.internal.operation_processor import OperationProcessor
 

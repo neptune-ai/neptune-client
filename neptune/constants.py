@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+"""Constants used by Neptune"""
 
-def replace_patch_version(version: str):
-    return version[:version.index(".", version.index(".") + 1)] + ".0"
+ANONYMOUS = 'ANONYMOUS'
+
+ANONYMOUS_API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYW' \
+                      'kiLCJhcGlfa2V5IjoiYjcwNmJjOGYtNzZmOS00YzJlLTkzOWQtNGJhMDM2ZjkzMmU0In0='
