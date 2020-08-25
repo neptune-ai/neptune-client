@@ -13,23 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import abc
-from typing import List
-
-from typing_extensions import TYPE_CHECKING
-
-from neptune.internal.operation import Operation
-
-if TYPE_CHECKING:
-    from neptune import Experiment
-
-
-class NeptuneBackend:
-
-    @abc.abstractmethod
-    def create_experiment(self) -> 'Experiment':
-        pass
-
-    @abc.abstractmethod
-    def execute_operations(self, operations: List[Operation]) -> None:
-        pass

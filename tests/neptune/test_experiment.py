@@ -15,8 +15,8 @@
 #
 import unittest
 
+from neptune import init
 from neptune.exceptions import MetadataInconsistency
-from neptune.internal.sync_neptune_backend_mock import SyncNeptuneBackendMock
 from neptune.types.atoms.float import Float
 
 from neptune.types.atoms.string import String
@@ -25,35 +25,30 @@ from neptune.types.atoms.string import String
 class TestExperiment(unittest.TestCase):
 
     def test_define(self):
-        server = SyncNeptuneBackendMock()
-        exp = server.create_experiment()
-        exp.define("some/path/value", Float(5))
+        exp = init(flush_period=0.5)
+        exp.define("some/path/value", Float(5), wait=True)
         self.assertEqual(exp.get_structure()['some']['path']['value'].get(), 5)
 
     def test_define_string(self):
-        server = SyncNeptuneBackendMock()
-        exp = server.create_experiment()
-        exp.define("some/path/value", String("Some string"))
+        exp = init(flush_period=0.5)
+        exp.define("some/path/value", String("Some string"), wait=True)
         self.assertEqual(exp.get_structure()['some']['path']['value'].get(), "Some string")
 
     def test_define_few_variables(self):
-        server = SyncNeptuneBackendMock()
-        exp = server.create_experiment()
+        exp = init(flush_period=0.5)
         exp.define("some/path/num", Float(3))
-        exp.define("some/path/text", String("Some text"))
+        exp.define("some/path/text", String("Some text"), wait=True)
         self.assertEqual(exp.get_structure()['some']['path']['num'].get(), 3)
         self.assertEqual(exp.get_structure()['some']['path']['text'].get(), "Some text")
 
     def test_define_conflict(self):
-        server = SyncNeptuneBackendMock()
-        exp = server.create_experiment()
+        exp = init(flush_period=0.5)
         exp.define("some/path/value", Float(5))
         with self.assertRaises(MetadataInconsistency):
             exp.define("some/path/value", Float(1))
 
     def test_pop(self):
-        server = SyncNeptuneBackendMock()
-        exp = server.create_experiment()
+        exp = init(flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"))
         exp.pop("some/path/text")
@@ -61,10 +56,10 @@ class TestExperiment(unittest.TestCase):
         self.assertTrue('text' not in exp.get_structure()['some']['path'])
 
     def test_experiment_as_handler(self):
-        server = SyncNeptuneBackendMock()
-        exp = server.create_experiment()
+        exp = init(flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"))
         handler = exp['some/path']
+        exp.wait()
         self.assertEqual(handler['num'].get(), 3)
         self.assertEqual(handler['text'].get(), "Some text")

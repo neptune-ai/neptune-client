@@ -14,12 +14,11 @@
 # limitations under the License.
 #
 
-import json
 import os
 import unittest
 from tempfile import TemporaryDirectory
 
-from neptune.internal.collections.disk_queue import DiskQueue
+from neptune.internal.containers.disk_queue import DiskQueue
 
 # pylint: disable=protected-access
 
@@ -79,8 +78,8 @@ class TestDiskQueue(unittest.TestCase):
             queue.close()
 
     @staticmethod
-    def _serializer(obj: 'TestDiskQueue.Obj') -> str:
-        return json.dumps(obj.__dict__)
+    def _serializer(obj: 'TestDiskQueue.Obj') -> dict:
+        return obj.__dict__
 
     @staticmethod
     def _deserializer(obj: dict) -> 'TestDiskQueue.Obj':

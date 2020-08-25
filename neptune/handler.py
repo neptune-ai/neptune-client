@@ -44,7 +44,7 @@ class Handler:
         else:
             raise AttributeError()
 
-    def assign(self, value) -> None:
+    def assign(self, value, wait: bool = False) -> None:
         # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if not var:
@@ -54,9 +54,9 @@ class Handler:
             if isinstance(value, str):
                 var = StringVariable(self._experiment, self._path)
                 self._experiment._structure.set(self._path, var)
-        var.assign(value)
+        var.assign(value, wait)
 
-    def log(self, value, step=None, timestamp=None) -> None:
+    def log(self, value, step=None, timestamp=None, wait: bool = False) -> None:
         # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if not var:
@@ -66,18 +66,18 @@ class Handler:
             if isinstance(value, str):
                 var = StringSeriesVariable(self._experiment, self._path)
                 self._experiment._structure.set(self._path, var)
-        var.log(value, step, timestamp)
+        var.log(value, step, timestamp, wait)
 
-    def insert(self, *values) -> None:
+    def insert(self, *values, wait: bool = False) -> None:
         # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if not var:
             var = StringSetVariable(self._experiment, self._path)
             self._experiment._structure.set(self._path, var)
-        var.insert(list(values))
+        var.insert(list(values), wait)
 
-    def pop(self, path: str) -> None:
-        self._experiment.pop(path_to_str(self._path) + "/" + path)
+    def pop(self, path: str, wait: bool = False) -> None:
+        self._experiment.pop(path_to_str(self._path) + "/" + path, wait)
 
     def __delitem__(self, path) -> None:
         self.pop(path)

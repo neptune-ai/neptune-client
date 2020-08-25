@@ -16,8 +16,8 @@
 
 import uuid
 from typing import Optional, List
+from uuid import UUID
 
-from neptune import Experiment
 from neptune.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.neptune_backend import NeptuneBackend
@@ -32,17 +32,21 @@ from neptune.types.sets.string_set import StringSet
 from neptune.types.value import Value
 
 
-class SyncNeptuneBackendMock(NeptuneBackend):
+class NeptuneBackendMock(NeptuneBackend):
 
     def __init__(self):
         self._experiments = dict()
 
-    def create_experiment(self) -> Experiment:
+    def create_experiment(self) -> UUID:
         new_uuid = uuid.uuid4()
         self._experiments[new_uuid] = ExperimentStructure[Value]()
-        return Experiment(new_uuid, self)
+        return new_uuid
 
-    def queue_operation(self, op: Operation) -> None:
+    def execute_operations(self, operations: List[Operation]) -> None:
+        for op in operations:
+            self._execute_operation(op)
+
+    def _execute_operation(self, op: Operation) -> None:
         if op.exp_uuid not in self._experiments:
             raise ExperimentUUIDNotFound(op.exp_uuid)
         exp = self._experiments[op.exp_uuid]
@@ -52,7 +56,7 @@ class SyncNeptuneBackendMock(NeptuneBackend):
                 raise MetadataInconsistency("{} is a namespace, not a variable".format(op.path))
             else:
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
-        visitor = SyncNeptuneBackendMock.NewValueOpVisitor(op.path, val)
+        visitor = NeptuneBackendMock.NewValueOpVisitor(op.path, val)
         new_val = visitor.visit(op)
         if new_val:
             exp.set(op.path, new_val)

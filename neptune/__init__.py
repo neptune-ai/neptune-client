@@ -15,3 +15,22 @@
 #
 
 from .experiment import Experiment
+from .internal.async_operation_processor import AsyncOperationProcessor
+from .internal.containers.disk_queue import DiskQueue
+from .internal.neptune_backend_mock import NeptuneBackendMock
+from .internal.operation import VersionedOperation
+
+
+def init(mode: str = "async", flush_period: float = 5) -> Experiment:
+    if mode not in ["async"]:
+        raise ValueError('mode should be on of: ["async"]')
+    backend = NeptuneBackendMock()
+    exp_uuid = backend.create_experiment()
+    operation_processor = AsyncOperationProcessor(
+        DiskQueue(".neptune/{}".format(exp_uuid),
+                  "operations",
+                  VersionedOperation.to_dict,
+                  VersionedOperation.from_dict),
+        backend,
+        sleep_time=flush_period)
+    return Experiment(exp_uuid, backend, operation_processor)

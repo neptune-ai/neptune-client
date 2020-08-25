@@ -13,23 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import abc
-from typing import Generic, TypeVar, List
 
-T = TypeVar('T')
+from neptune.internal.operation import Operation
 
 
-class Queue(Generic[T]):
+class OperationProcessor:
 
     @abc.abstractmethod
-    def put(self, obj: T) -> None:
+    def enqueue_operation(self, op: Operation, wait: bool) -> None:
         pass
 
     @abc.abstractmethod
-    def get(self) -> T:
-        pass
-
-    @abc.abstractmethod
-    def get_batch(self, size: int) -> List[T]:
+    def wait(self) -> None:
         pass

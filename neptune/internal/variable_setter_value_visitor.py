@@ -30,38 +30,41 @@ if TYPE_CHECKING:
 
 class VariableSetterValueVisitor(ValueVisitor[Variable]):
 
-    def __init__(self, _experiment: 'Experiment', path: List[str]):
+    def __init__(self, _experiment: 'Experiment', path: List[str], wait: bool = False):
         self._experiment = _experiment
         self._path = path
+        self._wait = wait
 
     def visit_float(self, value: Float) -> Variable:
         var = FloatVariable(self._experiment, self._path)
-        var.assign(value.value)
+        var.assign(value.value, self._wait)
         return var
 
     def visit_string(self, value: String) -> Variable:
         var = StringVariable(self._experiment, self._path)
-        var.assign(value.value)
+        var.assign(value.value, self._wait)
         return var
 
     def visit_float_series(self, value: FloatSeries) -> Variable:
         var = FloatSeriesVariable(self._experiment, self._path)
         var.clear()
         # TODO: Avoid loop
-        for val in value.values:
+        for val in value.values[:-1]:
             var.log(val)
+        var.log(value.values[-1], self._wait)
         return var
 
     def visit_string_series(self, value: StringSeries) -> Variable:
         var = StringSeriesVariable(self._experiment, self._path)
         var.clear()
         # TODO: Avoid loop
-        for val in value.values:
+        for val in value.values[:-1]:
             var.log(val)
+        var.log(value.values[-1], self._wait)
         return var
 
     def visit_string_set(self, value: StringSet) -> Variable:
         var = StringSetVariable(self._experiment, self._path)
         var.clear()
-        var.insert(value.values)
+        var.insert(value.values, self._wait)
         return var

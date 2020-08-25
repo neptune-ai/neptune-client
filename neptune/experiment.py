@@ -29,30 +29,35 @@ from neptune.variable import Variable
 
 if TYPE_CHECKING:
     from neptune.internal.neptune_backend import NeptuneBackend
+    from neptune.internal.operation_processor import OperationProcessor
 
 
 class Experiment(handler.Handler):
 
-    def __init__(self, _uuid: uuid.UUID, backend: 'NeptuneBackend'):
+    def __init__(self, _uuid: uuid.UUID, backend: 'NeptuneBackend', op_processor: 'OperationProcessor'):
         super().__init__(self, path=[])
         self._uuid = _uuid
         self._backend = backend
+        self._op_processor = op_processor
         self._structure = ExperimentStructure[Variable]()
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
 
-    def define(self, path: str, value: Value) -> Variable:
+    def define(self, path: str, value: Value, wait: bool = False) -> Variable:
         parsed_path = parse_path(path)
         old_var = self._structure.get(parsed_path)
         if old_var:
             raise MetadataInconsistency("Variable {} is already defined".format(path))
-        visitor = VariableSetterValueVisitor(self, parsed_path)
+        visitor = VariableSetterValueVisitor(self, parsed_path, wait)
         var = visitor.visit(value)
         self._structure.set(parsed_path, var)
         return var
 
-    def pop(self, path: str):
+    def pop(self, path: str, wait: bool = False):
         parsed_path = parse_path(path)
         self._structure.pop(parsed_path)
-        self._backend.queue_operation(DeleteVariable(self._uuid, parsed_path))
+        self._op_processor.enqueue_operation(DeleteVariable(self._uuid, parsed_path), wait)
+
+    def wait(self):
+        self._op_processor.wait()

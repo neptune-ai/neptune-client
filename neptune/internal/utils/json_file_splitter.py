@@ -51,6 +51,6 @@ class JsonFileSplitter:
 
     def _decode(self):
         self._start_pos = self._buffer.index("{", self._start_pos)
-        data, size = self._decoder.raw_decode(self._buffer, self._start_pos)
-        self._start_pos = size
+        data, end = self._decoder.raw_decode(self._buffer, self._start_pos)
+        self._start_pos = end
         return data
