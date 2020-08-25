@@ -17,7 +17,7 @@ import abc
 from typing import TypeVar, Generic
 
 from neptune.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, ClearFloatLog, \
-    ClearStringLog, InsertStrings, RemoveStrings, DeleteVariable, ClearStringSet
+    ClearStringLog, AddStrings, RemoveStrings, DeleteVariable, ClearStringSet
 
 Ret = TypeVar('Ret')
 
@@ -52,7 +52,7 @@ class OperationVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_insert_strings(self, op: InsertStrings) -> Ret:
+    def visit_add_strings(self, op: AddStrings) -> Ret:
         pass
 
     @abc.abstractmethod

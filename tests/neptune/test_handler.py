@@ -52,9 +52,9 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeriesVariable)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeriesVariable)
 
-    def test_insert(self):
+    def test_add(self):
         exp = init(flush_period=0.5)
-        exp['some/str/val'].insert("some text", "something else", wait=True)
+        exp['some/str/val'].add("some text", "something else", wait=True)
         self.assertEqual(exp['some/str/val'].get(), {"some text", "something else"})
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSetVariable)
 

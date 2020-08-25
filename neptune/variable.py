@@ -20,7 +20,7 @@ import time
 from typing import List, TYPE_CHECKING
 
 from neptune.exceptions import MetadataInconsistency
-from neptune.internal.operation import AssignFloat, AssignString, LogFloats, LogStrings, InsertStrings, RemoveStrings, \
+from neptune.internal.operation import AssignFloat, AssignString, LogFloats, LogStrings, AddStrings, RemoveStrings, \
     ClearFloatLog, ClearStringLog, ClearStringSet
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
@@ -107,9 +107,9 @@ class StringSeriesVariable(Variable):
 
 class StringSetVariable(Variable):
 
-    def insert(self, values: List[str], wait: bool = False):
+    def add(self, values: List[str], wait: bool = False):
         self._experiment._op_processor.enqueue_operation(
-            InsertStrings(self._experiment._uuid, self._path, values), wait)
+            AddStrings(self._experiment._uuid, self._path, values), wait)
 
     def remove(self, values: List[str], wait: bool = False):
         self._experiment._op_processor.enqueue_operation(

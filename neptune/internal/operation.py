@@ -170,14 +170,14 @@ class ClearStringLog(Operation):
         return ClearStringLog(uuid.UUID(data["exp_uuid"]), data["path"])
 
 
-class InsertStrings(Operation):
+class AddStrings(Operation):
 
     def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[str]):
         super().__init__(exp_uuid, path)
         self.values = values
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
-        return visitor.visit_insert_strings(self)
+        return visitor.visit_add_strings(self)
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
@@ -185,8 +185,8 @@ class InsertStrings(Operation):
         return ret
 
     @staticmethod
-    def from_dict(data: dict) -> 'InsertStrings':
-        return InsertStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+    def from_dict(data: dict) -> 'AddStrings':
+        return AddStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
 
 
 class RemoveStrings(Operation):

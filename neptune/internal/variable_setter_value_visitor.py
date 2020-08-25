@@ -66,5 +66,5 @@ class VariableSetterValueVisitor(ValueVisitor[Variable]):
     def visit_string_set(self, value: StringSet) -> Variable:
         var = StringSetVariable(self._experiment, self._path)
         var.clear()
-        var.insert(value.values, self._wait)
+        var.add(value.values, self._wait)
         return var

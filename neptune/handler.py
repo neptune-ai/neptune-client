@@ -68,13 +68,13 @@ class Handler:
                 self._experiment._structure.set(self._path, var)
         var.log(value, step, timestamp, wait)
 
-    def insert(self, *values, wait: bool = False) -> None:
+    def add(self, *values, wait: bool = False) -> None:
         # pylint: disable=protected-access
         var = self._experiment._structure.get(self._path)
         if not var:
             var = StringSetVariable(self._experiment, self._path)
             self._experiment._structure.set(self._path, var)
-        var.insert(list(values), wait)
+        var.add(list(values), wait)
 
     def pop(self, path: str, wait: bool = False) -> None:
         self._experiment.pop(path_to_str(self._path) + "/" + path, wait)

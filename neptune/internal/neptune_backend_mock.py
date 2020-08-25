@@ -21,7 +21,7 @@ from uuid import UUID
 from neptune.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.neptune_backend import NeptuneBackend
-from neptune.internal.operation import Operation, RemoveStrings, InsertStrings, LogStrings, LogFloats, \
+from neptune.internal.operation import Operation, RemoveStrings, AddStrings, LogStrings, LogFloats, \
     AssignString, AssignFloat, DeleteVariable, ClearFloatLog, ClearStringLog, ClearStringSet
 from neptune.internal.operation_visitor import OperationVisitor
 from neptune.types.atoms.float import Float
@@ -112,11 +112,11 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("clear", StringSeries.__name__)
             return StringSeries([])
 
-        def visit_insert_strings(self, op: InsertStrings) -> Optional[Value]:
+        def visit_add_strings(self, op: AddStrings) -> Optional[Value]:
             if self._current_value is None:
                 return StringSet(op.values)
             if not isinstance(self._current_value, StringSet):
-                raise self._create_type_error("insert", StringSet.__name__)
+                raise self._create_type_error("add", StringSet.__name__)
             return StringSet(self._current_value.values.union(op.values))
 
         def visit_remove_strings(self, op: RemoveStrings) -> Optional[Value]:
