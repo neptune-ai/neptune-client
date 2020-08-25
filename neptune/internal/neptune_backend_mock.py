@@ -96,7 +96,8 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("log", StringSeries.__name__)
             return StringSeries(self._current_value.values + op.values)
 
-        def visit_clear_float_log(self, _: ClearFloatLog) -> Optional[Value]:
+        def visit_clear_float_log(self, op: ClearFloatLog) -> Optional[Value]:
+            # pylint: disable=unused-argument
             if self._current_value is None:
                 raise MetadataInconsistency(
                     "Cannot perform clear operation on {}. Variable is undefined.".format(self._path))
@@ -104,7 +105,8 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("clear", FloatSeries.__name__)
             return FloatSeries([])
 
-        def visit_clear_string_log(self, _: ClearStringLog) -> Optional[Value]:
+        def visit_clear_string_log(self, op: ClearStringLog) -> Optional[Value]:
+            # pylint: disable=unused-argument
             if self._current_value is None:
                 raise MetadataInconsistency(
                     "Cannot perform clear operation on {}. Variable is undefined.".format(self._path))
@@ -127,7 +129,8 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("remove", StringSet.__name__)
             return StringSet(self._current_value.values.difference(op.values))
 
-        def visit_clear_string_set(self, _: ClearStringSet) -> Optional[Value]:
+        def visit_clear_string_set(self, op: ClearStringSet) -> Optional[Value]:
+            # pylint: disable=unused-argument
             if self._current_value is None:
                 raise MetadataInconsistency(
                     "Cannot perform clear operation on {}. Variable is undefined.".format(self._path))
@@ -135,7 +138,8 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("clear", StringSet.__name__)
             return StringSet(set())
 
-        def visit_delete_variable(self, _: DeleteVariable) -> Optional[Value]:
+        def visit_delete_variable(self, op: DeleteVariable) -> Optional[Value]:
+            # pylint: disable=unused-argument
             if self._current_value is None:
                 raise MetadataInconsistency(
                     "Cannot perform delete operation on {}. Variable is undefined.".format(self._path))
