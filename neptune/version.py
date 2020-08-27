@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from packaging import version
 
+from ._version import get_versions
 
-def replace_patch_version(version: str):
-    return version[:version.index(".", version.index(".") + 1)] + ".0"
+version = version.parse(get_versions()['version'])
+del get_versions

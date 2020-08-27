@@ -13,16 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from . import constants
+from .version import version as parsed_version
 from .experiment import Experiment
-from .internal.async_operation_processor import AsyncOperationProcessor
-from .internal.containers.disk_queue import DiskQueue
-from .internal.neptune_backend_mock import NeptuneBackendMock
-from .internal.operation import VersionedOperation
-from .internal.sync_operation_processor import SyncOperationProcessor
+
+
+__version__ = str(parsed_version)
+del parsed_version
+
+
+ANONYMOUS = constants.ANONYMOUS
+
+
+ANONYMOUS_API_TOKEN = constants.ANONYMOUS_API_TOKEN
 
 
 def init(connection_mode: str = "async", flush_period: float = 5) -> Experiment:
+    # Do not expose these imports in main module
+    # pylint:disable=import-outside-toplevel
+    from .internal.async_operation_processor import AsyncOperationProcessor
+    from .internal.backends.neptune_backend_mock import NeptuneBackendMock
+    from .internal.containers.disk_queue import DiskQueue
+    from .internal.operation import VersionedOperation
+    from .internal.sync_operation_processor import SyncOperationProcessor
+
     backend = NeptuneBackendMock()
     exp_uuid = backend.create_experiment()
 

@@ -14,20 +14,17 @@
 # limitations under the License.
 #
 import abc
+import uuid
+
 from typing import List
 
-from typing_extensions import TYPE_CHECKING
-
 from neptune.internal.operation import Operation
-
-if TYPE_CHECKING:
-    from neptune import Experiment
 
 
 class NeptuneBackend:
 
     @abc.abstractmethod
-    def create_experiment(self) -> 'Experiment':
+    def create_experiment(self) -> uuid.UUID:
         pass
 
     @abc.abstractmethod

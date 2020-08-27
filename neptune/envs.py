@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2019, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,5 +15,8 @@
 #
 
 
-def replace_patch_version(version: str):
-    return version[:version.index(".", version.index(".") + 1)] + ".0"
+PROJECT_ENV_NAME = 'NEPTUNE_PROJECT'
+
+API_TOKEN_ENV_NAME = 'NEPTUNE_API_TOKEN'
+
+NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE = 'NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE'
