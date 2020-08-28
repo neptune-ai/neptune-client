@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import os
 import unittest
 
 # pylint: disable=protected-access
 
-from neptune import init
+from neptune import init, ANONYMOUS
+from neptune.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.variables.atoms.float import Float
 from neptune.variables.atoms.string import String
 from neptune.variables.series.float_series import FloatSeries
@@ -28,8 +29,13 @@ from neptune.variables.sets.string_set import StringSet
 
 class TestHandler(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
     def test_set(self):
-        exp = init(flush_period=0.5)
+        exp = init(connection_mode="offline", flush_period=0.5)
         exp['some/num/val'] = 5
         exp['some/str/val'] = "some text"
         exp.wait()
@@ -39,7 +45,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
 
     def test_assign(self):
-        exp = init(flush_period=0.5)
+        exp = init(connection_mode="offline", flush_period=0.5)
         exp['some/num/val'].assign(5)
         exp['some/str/val'].assign("some text", wait=True)
         self.assertEqual(exp['some/num/val'].get(), 5)
@@ -48,7 +54,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
 
     def test_log(self):
-        exp = init(flush_period=0.5)
+        exp = init(connection_mode="offline", flush_period=0.5)
         exp['some/num/val'].log(5)
         exp['some/str/val'].log("some text")
         # TODO: self.assertEqual(exp['some/num/val'].get_values(), 5)
@@ -57,13 +63,13 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
 
     def test_add(self):
-        exp = init(flush_period=0.5)
+        exp = init(connection_mode="offline", flush_period=0.5)
         exp['some/str/val'].add("some text", "something else", wait=True)
         self.assertEqual(exp['some/str/val'].get(), {"some text", "something else"})
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
 
     def test_pop(self):
-        exp = init(flush_period=0.5)
+        exp = init(connection_mode="offline", flush_period=0.5)
         exp['some/num/val'].assign(3, wait=True)
         self.assertIn('some', exp.get_structure())
         ns = exp['some']
@@ -71,7 +77,7 @@ class TestHandler(unittest.TestCase):
         self.assertNotIn('some', exp.get_structure())
 
     def test_del(self):
-        exp = init(flush_period=0.5)
+        exp = init(connection_mode="offline", flush_period=0.5)
         exp['some/num/val'].assign(3)
         self.assertIn('some', exp.get_structure())
         ns = exp['some']
@@ -79,7 +85,7 @@ class TestHandler(unittest.TestCase):
         self.assertNotIn('some', exp.get_structure())
 
     def test_lookup(self):
-        exp = init(flush_period=0.5)
+        exp = init(connection_mode="offline", flush_period=0.5)
         ns = exp['some/ns']
         ns['val'] = 5
         exp.wait()
@@ -91,6 +97,6 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(ns['some/value'].get(), 3)
 
     def test_attribute_error(self):
-        exp = init(flush_period=0.5)
+        exp = init(connection_mode="offline", flush_period=0.5)
         with self.assertRaises(AttributeError):
             exp['var'].something()

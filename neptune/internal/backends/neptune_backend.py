@@ -18,13 +18,21 @@ import uuid
 
 from typing import List
 
+from neptune.internal.backends.api_model import Project, Experiment
 from neptune.internal.operation import Operation
 
 
 class NeptuneBackend:
 
+    def get_display_address(self) -> str:
+        pass
+
     @abc.abstractmethod
-    def create_experiment(self) -> uuid.UUID:
+    def get_project(self, project_id: str) -> Project:
+        pass
+
+    @abc.abstractmethod
+    def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
         pass
 
     @abc.abstractmethod

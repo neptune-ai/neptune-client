@@ -40,9 +40,25 @@ class InternalClientError(NeptuneException):
         super().__init__("Internal client error: {}. Please contact Neptune support.".format(msg))
 
 
+class BadUsage(NeptuneException):
+    def __init__(self, msg: str):
+        super().__init__("Bad usage: {}".format(msg))
+
+
+class ProjectNotFound(NeptuneException):
+    def __init__(self, project_id):
+        super().__init__("Project {} not found.".format(project_id))
+
+
 class ExperimentUUIDNotFound(NeptuneException):
     def __init__(self, exp_uuid: uuid.UUID):
         super().__init__("Experiment with UUID {} not found. Could be deleted.".format(exp_uuid))
+
+
+class MissingProject(NeptuneException):
+    def __init__(self):
+        super().__init__('Missing project identifier. Use "{}" environment variable or pass it as an argument'.format(
+            envs.PROJECT_ENV_NAME))
 
 
 class MissingApiToken(NeptuneException):

@@ -22,17 +22,19 @@ from typing import List, Optional, Dict
 
 import urllib3
 from bravado.client import SwaggerClient
+from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.exceptions import UnsupportedClientVersion
-from neptune.internal.backends.api_model import ClientConfig
+from neptune.exceptions import UnsupportedClientVersion, ProjectNotFound
+from neptune.internal.backends.api_model import ClientConfig, Project, Experiment
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
     create_swagger_client, verify_client_version, update_session_proxies
 from neptune.internal.credentials import Credentials
 from neptune.internal.operation import Operation
+from neptune.internal.utils import verify_type
 from neptune.types.value import Value
 from neptune.version import version as neptune_client_version
 from neptune_old.oauth import NeptuneAuthenticator
@@ -75,12 +77,47 @@ class HostedNeptuneBackend(NeptuneBackend):
             python_version=platform.python_version())
         self._http_client.session.headers.update({'User-Agent': user_agent})
 
-    def create_experiment(self) -> uuid.UUID:
-        pass
+    def get_display_address(self) -> str:
+        return self._client_config.display_url
 
+    @with_api_exceptions_handler
+    def get_project(self, project_id: str) -> Project:
+        verify_type("project_id", project_id, str)
+
+        try:
+            project = self.backend_client.api.getProject(projectIdentifier=project_id).response().result
+            return Project(uuid.UUID(project.id), project.name, project.organizationName)
+        except HTTPNotFound:
+            raise ProjectNotFound(project_id)
+
+    @with_api_exceptions_handler
+    def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
+        verify_type("project_uuid", project_uuid, uuid.UUID)
+
+        params = {
+            "projectIdentifier": str(project_uuid),
+            "name": "Untitled",
+            "parameters": [],
+            "properties": [],
+            "tags": [],
+        }
+
+        kwargs = {
+            'experimentCreationParams': params,
+            'X-Neptune-CliVersion': str(neptune_client_version)
+        }
+
+        try:
+            experiment = self.leaderboard_client.api.createExperiment(**kwargs).response().result
+            return Experiment(uuid.UUID(experiment.id), experiment.shortId, project_uuid)
+        except HTTPNotFound:
+            raise ProjectNotFound(project_id=project_uuid)
+
+    @with_api_exceptions_handler
     def execute_operations(self, operations: List[Operation]) -> None:
         pass
 
+    @with_api_exceptions_handler
     def get(self, _uuid: uuid.UUID, path: List[str]) -> Value:
         pass
 
