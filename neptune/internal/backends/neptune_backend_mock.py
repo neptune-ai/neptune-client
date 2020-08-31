@@ -18,6 +18,8 @@ import uuid
 from typing import Optional, List
 
 from neptune.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
+from neptune.internal.backends.api_model import Project, Experiment
+from neptune.internal.credentials import Credentials
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation, RemoveStrings, AddStrings, LogStrings, LogFloats, \
@@ -33,13 +35,20 @@ from neptune.types.value import Value
 
 class NeptuneBackendMock(NeptuneBackend):
 
-    def __init__(self):
+    def __init__(self, credentials: Credentials):
+        # pylint: disable=unused-argument
         self._experiments = dict()
 
-    def create_experiment(self) -> uuid.UUID:
+    def get_display_address(self) -> str:
+        return "OFFLINE"
+
+    def get_project(self, project_id: str) -> Project:
+        return Project(uuid.uuid4(), "sandbox", "workspace")
+
+    def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
         new_uuid = uuid.uuid4()
         self._experiments[new_uuid] = ExperimentStructure[Value]()
-        return new_uuid
+        return Experiment(new_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
 
     def execute_operations(self, operations: List[Operation]) -> None:
         for op in operations:

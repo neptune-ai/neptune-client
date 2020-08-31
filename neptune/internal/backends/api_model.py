@@ -13,9 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import uuid
 from typing import Optional
 
 from packaging.version import Version
+
+
+class Project:
+
+    def __init__(self, _uuid: uuid.UUID, name: str, workspace: str):
+        self.uuid = _uuid
+        self.name = name
+        self.workspace = workspace
+
+
+class Experiment:
+
+    def __init__(self, _uuid: uuid.UUID, _id: str, project_uuid: uuid.UUID):
+        self.uuid = _uuid
+        self.id = _id
+        self.project_uuid = project_uuid
 
 
 class ClientConfig(object):

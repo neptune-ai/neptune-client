@@ -13,16 +13,27 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# pylint: disable=protected-access
+
 import os
 import unittest
 
-from neptune import init
+from mock import patch
 
-# pylint: disable=protected-access
+from neptune import init, ANONYMOUS
+from neptune.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.exceptions import MetadataInconsistency
+from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
 
+@patch('neptune.internal.init_impl.HostedNeptuneBackend', NeptuneBackendMock)
 class TestClient(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     def test_incorrect_mode(self):
         with self.assertRaises(ValueError):

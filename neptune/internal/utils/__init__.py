@@ -13,7 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Union, Tuple
 
 
 def replace_patch_version(version: str):
     return version[:version.index(".", version.index(".") + 1)] + ".0"
+
+
+def verify_type(var_name: str, var, expected_type: Union[type, Tuple[type]]):
+    try:
+        type_name = (" or ".join(t.__name__ for t in expected_type)
+                     if isinstance(expected_type, tuple)
+                     else expected_type.__name__)
+    except Exception as e:
+        # Just to be sure that nothing weird will be raised here
+        raise TypeError("Incorrect type of {}".format(var_name)) from e
+
+    if not isinstance(var, expected_type):
+        raise TypeError("{} must be a {} (was {})".format(var_name, type_name, type(var)))
