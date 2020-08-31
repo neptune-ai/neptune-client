@@ -67,6 +67,7 @@ class DiskQueue(StorageQueue[T]):
             if self._read_file_idx >= self._write_file_idx:
                 return None
             self._reader.close()
+            os.remove(self._current_read_log_file())
             self._read_file_idx += 1
             self._reader = JsonFileSplitter(self._current_read_log_file())
             return self.get()

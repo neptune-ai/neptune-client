@@ -58,7 +58,7 @@ class TestDiskQueue(unittest.TestCase):
             queue.close()
             self.assertTrue(queue._write_file_idx > 10)
             self.assertEqual(set(os.listdir(dirpath)),
-                             set(["operations-{}.log".format(i) for i in range(0, queue._write_file_idx + 1)]))
+                             {"operations-{}.log".format(queue._write_file_idx)})
 
     def test_get_batch(self):
         with TemporaryDirectory() as dirpath:
