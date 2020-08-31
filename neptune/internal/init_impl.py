@@ -22,13 +22,15 @@ import click
 
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.exceptions import MissingProject
-from neptune.internal.async_operation_processor import AsyncOperationProcessor
+from neptune.internal.backgroud_job_list import BackgroundJobList
+from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
+from neptune.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.internal.containers.disk_queue import DiskQueue
 from neptune.internal.credentials import Credentials
 from neptune.internal.operation import VersionedOperation
-from neptune.internal.sync_operation_processor import SyncOperationProcessor
+from neptune.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.version import version as parsed_version
 from neptune.experiment import Experiment
 
@@ -36,7 +38,11 @@ from neptune.experiment import Experiment
 __version__ = str(parsed_version)
 
 
-def init(project: Optional[str] = None, connection_mode: str = "async", flush_period: float = 5) -> Experiment:
+def init(
+        project: Optional[str] = None,
+        connection_mode: str = "async",
+        send_hardware_metrics=True,
+        flush_period: float = 5) -> Experiment:
 
     if not project:
         project = os.getenv(PROJECT_ENV_NAME)
@@ -72,6 +78,10 @@ def init(project: Optional[str] = None, connection_mode: str = "async", flush_pe
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline"]')
 
+    background_jobs = []
+    if send_hardware_metrics:
+        background_jobs.append(HardwareMetricReportingJob(exp.uuid, backend))
+
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
         base_url=backend.get_display_address(),
         workspace=project_obj.workspace,
@@ -79,4 +89,4 @@ def init(project: Optional[str] = None, connection_mode: str = "async", flush_pe
         exp_id=exp.id
     ))
 
-    return Experiment(exp.uuid, backend, operation_processor)
+    return Experiment(exp.uuid, backend, operation_processor, background_job=BackgroundJobList(background_jobs))

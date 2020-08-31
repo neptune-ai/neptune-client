@@ -13,17 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import abc
+from typing import List
 
-from neptune.internal.operation import Operation
+from neptune.internal.background_job import BackgroundJob
 
 
-class OperationProcessor:
+class BackgroundJobList(BackgroundJob):
 
-    @abc.abstractmethod
-    def enqueue_operation(self, op: Operation, wait: bool) -> None:
-        pass
+    def __init__(self, jobs: List[BackgroundJob]):
+        self._jobs = jobs
 
-    @abc.abstractmethod
-    def wait(self) -> None:
-        pass
+    def start(self):
+        for job in self._jobs:
+            job.start()
+
+    def stop(self):
+        for job in self._jobs:
+            job.stop()
+
+    def join(self):
+        for job in self._jobs:
+            job.join()

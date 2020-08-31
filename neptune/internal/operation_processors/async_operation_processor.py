@@ -19,7 +19,7 @@ from time import time
 from neptune.internal.containers.storage_queue import StorageQueue
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation, VersionedOperation
-from neptune.internal.operation_processor import OperationProcessor
+from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.threading.daemon import Daemon
 
 # pylint: disable=protected-access
@@ -56,6 +56,11 @@ class AsyncOperationProcessor(OperationProcessor):
             return
         self._waiting_event.wait()
         self._waiting_event.clear()
+
+    def stop(self):
+        self._consumer.interrupt()
+        self._consumer.join()
+        self._queue.close()
 
     class ConsumerThread(Daemon):
 
