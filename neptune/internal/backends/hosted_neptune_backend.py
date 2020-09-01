@@ -18,16 +18,22 @@ import os
 import platform
 import uuid
 
+from itertools import groupby
 from typing import List, Optional, Dict
+from uuid import UUID
 
 import urllib3
+
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
 from packaging import version
 
+from neptune_old.internal.hardware.metrics.reports.metric_report import MetricReport
+from neptune_old.internal.hardware.metrics.metric import Metric
+
 from neptune.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.exceptions import UnsupportedClientVersion, ProjectNotFound
+from neptune.exceptions import UnsupportedClientVersion, ProjectNotFound, ExperimentUUIDNotFound
 from neptune.internal.backends.api_model import ClientConfig, Project, Experiment
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
@@ -120,6 +126,69 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def get(self, _uuid: uuid.UUID, path: List[str]) -> Value:
         pass
+
+    @with_api_exceptions_handler
+    def send_hardware_metric_reports(
+            self,
+            experiment_uuid: UUID,
+            metrics: List[Metric],
+            metric_reports: List[MetricReport]) -> None:
+        verify_type("experiment_uuid", experiment_uuid, uuid.UUID)
+        verify_type("metrics", metrics, list)
+        verify_type("metric_reports", metric_reports, list)
+
+        try:
+            metrics_by_name = {metric.name: metric for metric in metrics}
+
+            system_metric_values = [
+                {
+                    "metricId": metrics_by_name.get(report.metric.name).internal_id,
+                    "seriesName": gauge_name,
+                    "values": [
+                        {
+                            "timestampMillis": int(metric_value.timestamp * 1000.0),
+                            "x": int(metric_value.running_time * 1000.0),
+                            "y": metric_value.value
+                        }
+                        for metric_value in metric_values
+                    ]
+                }
+                for report in metric_reports
+                for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name)
+            ]
+
+            self.backend_client.api.postSystemMetricValues(
+                experimentId=experiment_uuid,
+                metricValues=system_metric_values
+            ).response()
+        except HTTPNotFound:
+            raise ExperimentUUIDNotFound(experiment_uuid)
+
+    @with_api_exceptions_handler
+    def create_hardware_metric(self, experiment_uuid: UUID, exec_id: str, metric: Metric) -> UUID:
+        verify_type("experiment_uuid", experiment_uuid, uuid.UUID)
+        verify_type("exec_id", exec_id, str)
+        verify_type("metric", metric, Metric)
+
+        try:
+            series = [gauge.name() for gauge in metric.gauges]
+            system_metric_params = {
+                "name": "{} ({})".format(metric.name, exec_id),
+                "description": metric.description,
+                "resourceType": metric.resource_type,
+                "unit": metric.unit,
+                "min": metric.min_value,
+                "max": metric.max_value,
+                "series": series
+            }
+
+            metric_dto = self.backend_client.api.createSystemMetric(
+                experimentId=experiment_uuid, metricToCreate=system_metric_params
+            ).response().result
+
+            return metric_dto.id
+        except HTTPNotFound:
+            raise ExperimentUUIDNotFound(experiment_uuid)
 
     @with_api_exceptions_handler
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:

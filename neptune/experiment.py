@@ -15,31 +15,38 @@
 #
 
 import uuid
-from typing import Dict, Any, TYPE_CHECKING
+from typing import Dict, Any
+
+from neptune.internal.backends.neptune_backend import NeptuneBackend
 
 import neptune.handler as handler
 
 from neptune.exceptions import MetadataInconsistency
+from neptune.internal.background_job import BackgroundJob
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.operation import DeleteVariable
+from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.variable_setter_value_visitor import VariableSetterValueVisitor
 from neptune.types.value import Value
 from neptune.variables.variable import Variable
 
-if TYPE_CHECKING:
-    from neptune.internal.backends.neptune_backend import NeptuneBackend
-    from neptune.internal.operation_processor import OperationProcessor
-
 
 class Experiment(handler.Handler):
 
-    def __init__(self, _uuid: uuid.UUID, backend: 'NeptuneBackend', op_processor: 'OperationProcessor'):
+    def __init__(
+            self,
+            _uuid: uuid.UUID,
+            backend: NeptuneBackend,
+            op_processor: OperationProcessor,
+            background_job: BackgroundJob = None):
         super().__init__(self, path=[])
         self._uuid = _uuid
         self._backend = backend
         self._op_processor = op_processor
         self._structure = ExperimentStructure[Variable]()
+        self._bg_job = background_job
+        self._start()
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
@@ -61,3 +68,13 @@ class Experiment(handler.Handler):
 
     def wait(self):
         self._op_processor.wait()
+
+    def _start(self):
+        if self._bg_job:
+            self._bg_job.start()
+
+    def stop(self):
+        self._op_processor.stop()
+        if self._bg_job:
+            self._bg_job.stop()
+            self._bg_job.join()
