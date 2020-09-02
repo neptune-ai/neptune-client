@@ -16,7 +16,7 @@
 import abc
 import uuid
 
-from typing import List
+from typing import List, Optional, Any
 from uuid import UUID
 
 from neptune_old.internal.hardware.metrics.reports.metric_report import MetricReport
@@ -37,7 +37,11 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
+    def create_experiment(self,
+                          project_uuid: uuid.UUID,
+                          notebook_uuid: Optional[uuid.UUID] = None,
+                          checkpoint_uuid: Optional[uuid.UUID] = None
+                          ) -> Experiment:
         pass
 
     @abc.abstractmethod
@@ -54,4 +58,8 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def create_hardware_metric(self, experiment_uuid: UUID, exec_id: str, metric: Metric) -> UUID:
+        pass
+
+    @abc.abstractmethod
+    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str, _file: Any = None) -> Optional[uuid.UUID]:
         pass

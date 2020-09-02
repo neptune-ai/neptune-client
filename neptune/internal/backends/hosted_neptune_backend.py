@@ -19,10 +19,12 @@ import platform
 import uuid
 
 from itertools import groupby
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Any
 from uuid import UUID
 
+from http.client import NOT_FOUND
 import urllib3
+import requests
 
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
@@ -47,7 +49,6 @@ from neptune_old.oauth import NeptuneAuthenticator
 
 
 class HostedNeptuneBackend(NeptuneBackend):
-
     BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
     LB_SWAGGER_PATH = "/api/leaderboard/swagger.json"
 
@@ -97,11 +98,17 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ProjectNotFound(project_id)
 
     @with_api_exceptions_handler
-    def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
+    def create_experiment(self,
+                          project_uuid: uuid.UUID,
+                          notebook_uuid: Optional[uuid.UUID] = None,
+                          checkpoint_uuid: Optional[uuid.UUID] = None
+                          ) -> Experiment:
         verify_type("project_uuid", project_uuid, uuid.UUID)
 
         params = {
             "projectIdentifier": str(project_uuid),
+            "notebookId": str(notebook_uuid) if notebook_uuid is not None else None,
+            "checkpointId": str(checkpoint_uuid) if checkpoint_uuid is not None else None,
             "name": "Untitled",
             "parameters": [],
             "properties": [],
@@ -208,6 +215,50 @@ class HostedNeptuneBackend(NeptuneBackend):
             min_compatible_version=version.parse(min_compatible) if min_compatible else None,
             max_compatible_version=version.parse(max_compatible) if max_compatible else None
         )
+
+    @with_api_exceptions_handler
+    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str, _file: Any = None) -> Optional[uuid.UUID]:
+        # TODO maybe write an endpoint in backend that accepts FormData to be swagger-compatible? shouldn't hurt much
+        #  and we would be able to call this normally
+        if _file is not None:
+            url: str = self._client_config.api_url \
+                  + self.leaderboard_client.api.createCheckpoint.operation.path_name \
+                  + "?"
+            path_params: Dict[str, str] = {
+                "notebookId": str(notebook_id)
+            }
+            query_params: Dict[str, str] = {
+                "jupyterPath": str(jupyter_path)
+            }
+            for key, val in path_params.items():
+                url = url.replace("{" + key + "}", val)
+            for key, val in query_params.items():
+                url = url + key + "=" + val + "&"
+
+            session: requests.Session = self._http_client.session
+
+            request: requests.Request = self._http_client.authenticator.apply(
+                requests.Request(
+                    method='POST',
+                    url=url,
+                    data=_file,
+                    headers={"Content-Type": "application/octet-stream"}
+                )
+            )
+
+            with session.send(session.prepare_request(request)) as response:
+                if response.status_code == NOT_FOUND:
+                    return None  # TODO maybe throw an exception when notebook does not exist?
+                else:
+                    response.raise_for_status()
+                    return UUID(response.json().id)
+        else:
+            return UUID(self.leaderboard_client.api.createEmptyCheckpoint(
+                notebookId=notebook_id,
+                checkpoint={
+                    'path': jupyter_path
+                }
+            ).response().result.id)
 
     @staticmethod
     def _create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:

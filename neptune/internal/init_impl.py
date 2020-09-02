@@ -18,6 +18,7 @@ import os
 
 from typing import Optional
 
+import uuid
 import click
 
 from neptune.envs import PROJECT_ENV_NAME
@@ -33,7 +34,8 @@ from neptune.internal.operation import VersionedOperation
 from neptune.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.version import version as parsed_version
 from neptune.experiment import Experiment
-
+from neptune.internal.notebook import Notebook
+from neptune.envs import NOTEBOOK_ID_ENV_NAME, NOTEBOOK_PATH_ENV_NAME
 
 __version__ = str(parsed_version)
 
@@ -43,7 +45,6 @@ def init(
         connection_mode: str = "async",
         send_hardware_metrics=True,
         flush_period: float = 5) -> Experiment:
-
     if not project:
         project = os.getenv(PROJECT_ENV_NAME)
     if not project:
@@ -61,7 +62,23 @@ def init(
         raise ValueError('connection_mode should be on of ["async", "sync", "offline"]')
 
     project_obj = backend.get_project(project)
-    exp = backend.create_experiment(project_obj.uuid)
+
+    notebook_id: Optional[uuid.UUID] = None
+    notebook_path: Optional[str] = None
+    checkpoint_id: Optional[uuid.UUID] = None
+
+    if os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
+        notebook_id = uuid.UUID(os.environ[NOTEBOOK_ID_ENV_NAME])
+    if os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
+        notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
+    if notebook_id is not None and notebook_path is not None:
+        checkpoint_id = Notebook(backend, notebook_id, notebook_path).create_checkpoint()
+
+    exp = backend.create_experiment(
+        project_obj.uuid,
+        checkpoint_uuid=checkpoint_id,
+        notebook_uuid=notebook_id
+    )
 
     if connection_mode == "async":
         operation_processor = AsyncOperationProcessor(
