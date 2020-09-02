@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.internal.utils import verify_type
 
 from neptune.exceptions import MetadataInconsistency
 from neptune.internal.operation import AssignString
@@ -25,7 +26,10 @@ from neptune.variables.atoms.atom import Atom
 class String(Atom):
 
     def assign(self, value: str, wait: bool = False):
-        self._experiment._op_processor.enqueue_operation(AssignString(self._experiment._uuid, self._path, value), wait)
+        verify_type("value", value, str)
+        with self._experiment.lock():
+            self._experiment._op_processor.enqueue_operation(
+                AssignString(self._experiment._uuid, self._path, value), wait)
 
     def get(self):
         val = self._experiment._backend.get(self._experiment._uuid, self._path)

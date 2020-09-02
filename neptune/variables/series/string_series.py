@@ -15,31 +15,37 @@
 #
 
 import time
-from typing import List, TYPE_CHECKING
+
+from neptune.internal.utils import verify_type
+
+from neptune.types.series.string_series import StringSeries as StringSeriesVal
 
 from neptune.internal.operation import LogStrings, ClearStringLog
 from neptune.variables.series.series import Series
-
-if TYPE_CHECKING:
-    from neptune.experiment import Experiment
 
 # pylint: disable=protected-access
 
 
 class StringSeries(Series):
 
-    def __init__(self, _experiment: 'Experiment', path: List[str]):
-        super().__init__(_experiment, path)
-        self._next_step = 0
+    def assign(self, value: StringSeriesVal, wait: bool = False):
+        verify_type("value", value, StringSeriesVal)
+        with self._experiment.lock():
+            self.clear()
+            # TODO: Avoid loop
+            for val in value.values[:-1]:
+                self.log(val)
+            self.log(value.values[-1], wait)
 
     def log(self, value: str, step: float = None, timestamp: float = None, wait: bool = False):
-        if not step:
-            step = self._next_step
-        if not timestamp:
-            timestamp = time.time()
-        self._next_step = step + 1
-
-        self._experiment._op_processor.enqueue_operation(LogStrings(self._experiment._uuid, self._path, [value]), wait)
+        # pylint: disable=unused-argument
+        verify_type("value", value, str)
+        with self._experiment.lock():
+            if not timestamp:
+                timestamp = time.time()
+            self._experiment._op_processor.enqueue_operation(
+                LogStrings(self._experiment._uuid, self._path, [value]), wait)
 
     def clear(self, wait: bool = False):
-        self._experiment.queue_operation(ClearStringLog(self._experiment._uuid, self._path), wait)
+        with self._experiment.lock():
+            self._experiment._op_processor.enqueue_operation(ClearStringLog(self._experiment._uuid, self._path), wait)

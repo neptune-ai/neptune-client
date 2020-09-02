@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
-from typing import List
+from typing import Iterable
+
+from neptune.internal.utils import verify_type
 
 from neptune.exceptions import MetadataInconsistency
 from neptune.internal.operation import AddStrings, RemoveStrings, ClearStringSet
@@ -26,16 +28,25 @@ from neptune.variables.sets.set import Set
 
 class StringSet(Set):
 
-    def add(self, values: List[str], wait: bool = False):
-        self._experiment._op_processor.enqueue_operation(
-            AddStrings(self._experiment._uuid, self._path, values), wait)
+    def assign(self, value: StringSetVal, wait: bool = False):
+        verify_type("value", value, StringSetVal)
+        with self._experiment.lock():
+            self.clear()
+            self.add(value.values, wait)
 
-    def remove(self, values: List[str], wait: bool = False):
-        self._experiment._op_processor.enqueue_operation(
-            RemoveStrings(self._experiment._uuid, self._path, values), wait)
+    def add(self, values: Iterable[str], wait: bool = False):
+        with self._experiment.lock():
+            self._experiment._op_processor.enqueue_operation(
+                AddStrings(self._experiment._uuid, self._path, list(values)), wait)
+
+    def remove(self, values: Iterable[str], wait: bool = False):
+        with self._experiment.lock():
+            self._experiment._op_processor.enqueue_operation(
+                RemoveStrings(self._experiment._uuid, self._path, list(values)), wait)
 
     def clear(self, wait: bool = False):
-        self._experiment._op_processor.enqueue_operation(ClearStringSet(self._experiment._uuid, self._path), wait)
+        with self._experiment.lock():
+            self._experiment._op_processor.enqueue_operation(ClearStringSet(self._experiment._uuid, self._path), wait)
 
     def get(self):
         val = self._experiment._backend.get(self._experiment._uuid, self._path)

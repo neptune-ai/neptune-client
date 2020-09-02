@@ -13,12 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List
+from typing import List, Iterable
+
+
+def _remove_empty_paths(paths: Iterable[str]) -> List[str]:
+    return [path for path in paths if path]
 
 
 def parse_path(path: str) -> List[str]:
-    return path.split('/')
+    return _remove_empty_paths(path.split('/'))
 
 
 def path_to_str(path: List[str]) -> str:
-    return '/'.join(path)
+    return '/'.join(_remove_empty_paths(path))
+
+
+def join_paths(*paths: str) -> str:
+    return '/'.join(_remove_empty_paths(paths))

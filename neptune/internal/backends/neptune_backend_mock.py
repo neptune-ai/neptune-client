@@ -122,8 +122,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_clear_float_log(self, op: ClearFloatLog) -> Optional[Value]:
             # pylint: disable=unused-argument
             if self._current_value is None:
-                raise MetadataInconsistency(
-                    "Cannot perform clear operation on {}. Variable is undefined.".format(self._path))
+                return FloatSeries([])
             if not isinstance(self._current_value, FloatSeries):
                 raise self._create_type_error("clear", FloatSeries.__name__)
             return FloatSeries([])
@@ -131,8 +130,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_clear_string_log(self, op: ClearStringLog) -> Optional[Value]:
             # pylint: disable=unused-argument
             if self._current_value is None:
-                raise MetadataInconsistency(
-                    "Cannot perform clear operation on {}. Variable is undefined.".format(self._path))
+                return StringSeries([])
             if not isinstance(self._current_value, StringSeries):
                 raise self._create_type_error("clear", StringSeries.__name__)
             return StringSeries([])
@@ -146,8 +144,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_remove_strings(self, op: RemoveStrings) -> Optional[Value]:
             if self._current_value is None:
-                raise MetadataInconsistency(
-                    "Cannot perform remove operation on {}. Variable is undefined.".format(self._path))
+                return StringSet(set())
             if not isinstance(self._current_value, StringSet):
                 raise self._create_type_error("remove", StringSet.__name__)
             return StringSet(self._current_value.values.difference(op.values))
@@ -155,8 +152,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_clear_string_set(self, op: ClearStringSet) -> Optional[Value]:
             # pylint: disable=unused-argument
             if self._current_value is None:
-                raise MetadataInconsistency(
-                    "Cannot perform clear operation on {}. Variable is undefined.".format(self._path))
+                return StringSet(set())
             if not isinstance(self._current_value, StringSet):
                 raise self._create_type_error("clear", StringSet.__name__)
             return StringSet(set())
