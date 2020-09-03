@@ -34,7 +34,7 @@ from neptune.internal.operation import VersionedOperation
 from neptune.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.version import version as parsed_version
 from neptune.experiment import Experiment
-from neptune.internal.notebook import Notebook
+from neptune.internal.notebook_context import create_checkpoint
 from neptune.envs import NOTEBOOK_ID_ENV_NAME, NOTEBOOK_PATH_ENV_NAME
 
 __version__ = str(parsed_version)
@@ -72,7 +72,7 @@ def init(
     if os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
         notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
     if notebook_id is not None and notebook_path is not None:
-        checkpoint_id = Notebook(backend, notebook_id, notebook_path).create_checkpoint()
+        checkpoint_id = create_checkpoint(backend, notebook_id, notebook_path)
 
     exp = backend.create_experiment(
         project_obj.uuid,

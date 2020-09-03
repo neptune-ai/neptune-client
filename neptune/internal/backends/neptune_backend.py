@@ -16,7 +16,7 @@
 import abc
 import uuid
 
-from typing import List, Optional, Any
+from typing import List, Optional
 from uuid import UUID
 
 from neptune_old.internal.hardware.metrics.reports.metric_report import MetricReport
@@ -61,5 +61,5 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str, _file: Any = None) -> Optional[uuid.UUID]:
+    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> uuid.UUID:
         pass

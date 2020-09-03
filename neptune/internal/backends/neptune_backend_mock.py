@@ -15,7 +15,7 @@
 #
 
 import uuid
-from typing import Optional, List, Any
+from typing import Optional, List
 from uuid import UUID
 
 from neptune_old.internal.hardware.metrics.reports.metric_report import MetricReport
@@ -93,8 +93,8 @@ class NeptuneBackendMock(NeptuneBackend):
     def get(self, _uuid: uuid.UUID, path: List[str]) -> Value:
         return self._experiments[_uuid].get(path)
 
-    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str, _file: Any = None) -> Optional[uuid.UUID]:
-        return None
+    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
+        return uuid.uuid4()
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
 

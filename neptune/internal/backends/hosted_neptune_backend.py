@@ -22,9 +22,7 @@ from itertools import groupby
 from typing import List, Optional, Dict, Any
 from uuid import UUID
 
-from http.client import NOT_FOUND
 import urllib3
-import requests
 
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
@@ -217,48 +215,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
 
     @with_api_exceptions_handler
-    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str, _file: Any = None) -> Optional[uuid.UUID]:
-        # TODO maybe write an endpoint in backend that accepts FormData to be swagger-compatible? shouldn't hurt much
-        #  and we would be able to call this normally
-        if _file is not None:
-            url = self._client_config.api_url \
-                  + self.leaderboard_client.api.createCheckpoint.operation.path_name \
-                  + "?"
-            path_params = {
-                "notebookId": str(notebook_id)
+    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> uuid.UUID:
+        return UUID(self.leaderboard_client.api.createEmptyCheckpoint(
+            notebookId=notebook_id,
+            checkpoint={
+                'path': jupyter_path
             }
-            query_params = {
-                "jupyterPath": str(jupyter_path)
-            }
-            for key, val in path_params.items():
-                url = url.replace("{" + key + "}", val)
-            for key, val in query_params.items():
-                url = url + key + "=" + val + "&"
-
-            session = self._http_client.session
-
-            request = self._http_client.authenticator.apply(
-                requests.Request(
-                    method='POST',
-                    url=url,
-                    data=_file,
-                    headers={"Content-Type": "application/octet-stream"}
-                )
-            )
-
-            with session.send(session.prepare_request(request)) as response:
-                if response.status_code == NOT_FOUND:
-                    return None  # TODO maybe throw an exception when notebook does not exist?
-                else:
-                    response.raise_for_status()
-                    return UUID(response.json().id)
-        else:
-            return UUID(self.leaderboard_client.api.createEmptyCheckpoint(
-                notebookId=notebook_id,
-                checkpoint={
-                    'path': jupyter_path
-                }
-            ).response().result.id)
+        ).response().result.id)
 
     @staticmethod
     def _create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
