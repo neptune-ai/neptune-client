@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Union
+
+from neptune.internal.utils import verify_type
 
 from neptune.exceptions import MetadataInconsistency
 from neptune.internal.operation import AssignFloat
@@ -24,8 +27,11 @@ from neptune.variables.atoms.atom import Atom
 
 class Float(Atom):
 
-    def assign(self, value: float, wait: bool = False):
-        self._experiment._op_processor.enqueue_operation(AssignFloat(self._experiment._uuid, self._path, value), wait)
+    def assign(self, value: Union[float, int], wait: bool = False):
+        verify_type("value", value, (float, int))
+        with self._experiment.lock():
+            self._experiment._op_processor.enqueue_operation(
+                AssignFloat(self._experiment._uuid, self._path, value), wait)
 
     def get(self):
         val = self._experiment._backend.get(self._experiment._uuid, self._path)

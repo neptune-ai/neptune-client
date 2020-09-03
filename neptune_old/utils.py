@@ -98,10 +98,11 @@ def is_nan_or_inf(value):
 
 
 def file_contains(filename, text):
-    for line in open(filename):
-        if text in line:
-            return True
-    return False
+    with open(filename) as f:
+        for line in f:
+            if text in line:
+                return True
+        return False
 
 
 def in_docker():

@@ -51,24 +51,15 @@ class VariableSetterValueVisitor(ValueVisitor[Variable]):
 
     def visit_float_series(self, value: FloatSeries) -> Variable:
         var = FloatSeriesVar(self._experiment, self._path)
-        var.clear()
-        # TODO: Avoid loop
-        for val in value.values[:-1]:
-            var.log(val)
-        var.log(value.values[-1], self._wait)
+        var.assign(value, self._wait)
         return var
 
     def visit_string_series(self, value: StringSeries) -> Variable:
         var = StringSeriesVar(self._experiment, self._path)
-        var.clear()
-        # TODO: Avoid loop
-        for val in value.values[:-1]:
-            var.log(val)
-        var.log(value.values[-1], self._wait)
+        var.assign(value, self._wait)
         return var
 
     def visit_string_set(self, value: StringSet) -> Variable:
         var = StringSetVar(self._experiment, self._path)
-        var.clear()
-        var.add(value.values, self._wait)
+        var.assign(value, self._wait)
         return var

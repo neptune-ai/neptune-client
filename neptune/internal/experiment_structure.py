@@ -15,6 +15,8 @@
 #
 from typing import Dict, Any, Optional, List, TypeVar, Generic
 
+from neptune.internal.utils.paths import path_to_str
+
 from neptune.exceptions import MetadataInconsistency
 
 T = TypeVar('T')
@@ -34,13 +36,13 @@ class ExperimentStructure(Generic[T]):
         for part in path:
             if not isinstance(ref, dict):
                 raise MetadataInconsistency("Cannot access path '{}': '{}' is already defined as a variable, "
-                                            "not a namespace".format(path, part))
+                                            "not a namespace".format(path_to_str(path), part))
             if part not in ref:
                 return None
             ref = ref[part]
 
         if isinstance(ref, dict):
-            raise MetadataInconsistency("Cannot get variable '{}'. It's a namespace".format(path))
+            raise MetadataInconsistency("Cannot get variable '{}'. It's a namespace".format(path_to_str(path)))
 
         return ref
 
@@ -54,10 +56,10 @@ class ExperimentStructure(Generic[T]):
             ref = ref[part]
             if not isinstance(ref, dict):
                 raise MetadataInconsistency("Cannot access path '{}': '{}' is already defined as a variable, "
-                                            "not a namespace".format(path, part))
+                                            "not a namespace".format(path_to_str(path), part))
 
         if variable_name in ref and isinstance(ref[variable_name], dict):
-            raise MetadataInconsistency("Cannot set variable '{}'. It's a namespace".format(path))
+            raise MetadataInconsistency("Cannot set variable '{}'. It's a namespace".format(path_to_str(path)))
 
         ref[variable_name] = var
 
@@ -70,11 +72,12 @@ class ExperimentStructure(Generic[T]):
 
         head, tail = sub_path[0], sub_path[1:]
         if head not in ref:
-            raise MetadataInconsistency("Cannot delete {}. Variable not found.".format(var_path))
+            raise MetadataInconsistency("Cannot delete {}. Variable not found.".format(path_to_str(var_path)))
 
         if not tail:
             if isinstance(ref[head], dict):
-                raise MetadataInconsistency("Cannot delete {}. It's a namespace, not a variable.")
+                raise MetadataInconsistency(
+                    "Cannot delete {}. It's a namespace, not a variable.".format(path_to_str(var_path)))
             del ref[head]
         else:
             self._pop_impl(ref[head], tail, var_path)

@@ -14,8 +14,13 @@
 # limitations under the License.
 #
 
+import threading
 import uuid
-from typing import Dict, Any
+from typing import Dict, Any, Union
+
+from neptune.types.atoms.string import String
+
+from neptune.types.atoms.float import Float
 
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 
@@ -40,41 +45,58 @@ class Experiment(handler.Handler):
             backend: NeptuneBackend,
             op_processor: OperationProcessor,
             background_job: BackgroundJob = None):
-        super().__init__(self, path=[])
+        super().__init__(self, path="")
         self._uuid = _uuid
         self._backend = backend
         self._op_processor = op_processor
         self._structure = ExperimentStructure[Variable]()
         self._bg_job = background_job
+        self._lock = threading.RLock()
         self._start()
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
 
-    def define(self, path: str, value: Value, wait: bool = False) -> Variable:
+    def define(self, path: str, value: Union[Value, int, float, str], wait: bool = False) -> Variable:
+        if isinstance(value, (int, float)):
+            value = Float(value)
+        elif isinstance(value, str):
+            value = String(value)
         parsed_path = parse_path(path)
-        old_var = self._structure.get(parsed_path)
-        if old_var:
-            raise MetadataInconsistency("Variable {} is already defined".format(path))
-        visitor = VariableSetterValueVisitor(self, parsed_path, wait)
-        var = visitor.visit(value)
-        self._structure.set(parsed_path, var)
-        return var
+
+        with self._lock:
+            old_var = self._structure.get(parsed_path)
+            if old_var:
+                raise MetadataInconsistency("Variable {} is already defined".format(path))
+            visitor = VariableSetterValueVisitor(self, parsed_path, wait)
+            var = visitor.visit(value)
+            self._structure.set(parsed_path, var)
+            return var
+
+    def get_attribute(self, path: str) -> Variable:
+        with self._lock:
+            return self._structure.get(parse_path(path))
 
     def pop(self, path: str, wait: bool = False):
-        parsed_path = parse_path(path)
-        self._structure.pop(parsed_path)
-        self._op_processor.enqueue_operation(DeleteVariable(self._uuid, parsed_path), wait)
+        with self._lock:
+            parsed_path = parse_path(path)
+            self._structure.pop(parsed_path)
+            self._op_processor.enqueue_operation(DeleteVariable(self._uuid, parsed_path), wait)
+
+    def lock(self) -> threading.RLock:
+        return self._lock
 
     def wait(self):
-        self._op_processor.wait()
+        with self._lock:
+            self._op_processor.wait()
 
     def _start(self):
         if self._bg_job:
             self._bg_job.start()
 
-    def stop(self):
-        self._op_processor.stop()
-        if self._bg_job:
-            self._bg_job.stop()
-            self._bg_job.join()
+    def close(self):
+        with self._lock:
+            self._op_processor.stop()
+            if self._bg_job:
+                self._bg_job.stop()
+                self._bg_job.join()

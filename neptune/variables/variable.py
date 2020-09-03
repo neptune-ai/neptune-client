@@ -26,3 +26,6 @@ class Variable:
         super().__init__()
         self._experiment = _experiment
         self._path = path
+
+    def __getattr__(self, attr):
+        raise AttributeError("{} has no attribute {}.".format(type(self), attr))

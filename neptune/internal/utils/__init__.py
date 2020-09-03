@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Union, Tuple
+from typing import Union
 
 
 def replace_patch_version(version: str):
     return version[:version.index(".", version.index(".") + 1)] + ".0"
 
 
-def verify_type(var_name: str, var, expected_type: Union[type, Tuple[type]]):
+def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
     try:
         type_name = (" or ".join(t.__name__ for t in expected_type)
                      if isinstance(expected_type, tuple)

@@ -15,32 +15,39 @@
 #
 
 import time
-from typing import List, TYPE_CHECKING
+from typing import Union
+
+from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
+
+from neptune.internal.utils import verify_type
 
 from neptune.internal.operation import ClearFloatLog, LogFloats
 from neptune.variables.series.series import Series
-
-if TYPE_CHECKING:
-    from neptune.experiment import Experiment
 
 # pylint: disable=protected-access
 
 
 class FloatSeries(Series):
 
-    def __init__(self, _experiment: 'Experiment', path: List[str]):
-        super().__init__(_experiment, path)
-        self._next_step = 0
+    def assign(self, value: FloatSeriesVal, wait: bool = False):
+        verify_type("value", value, FloatSeriesVal)
+        with self._experiment.lock():
+            self.clear()
+            # TODO: Avoid loop
+            for val in value.values[:-1]:
+                self.log(val)
+            self.log(value.values[-1], wait)
 
-    def log(self, value: float, step: float = None, timestamp: float = None, wait: bool = False):
-        # TODO: Support steps and timestamps
-        if not step:
-            step = self._next_step
-        if not timestamp:
-            timestamp = time.time()
-        self._next_step = step + 1
-
-        self._experiment._op_processor.enqueue_operation(LogFloats(self._experiment._uuid, self._path, [value]), wait)
+    def log(self, value: Union[float, int], step: float = None, timestamp: float = None, wait: bool = False):
+        # pylint: disable=unused-argument
+        verify_type("value", value, (float, int))
+        with self._experiment.lock():
+            # TODO: Support steps and timestamps
+            if not timestamp:
+                timestamp = time.time()
+            self._experiment._op_processor.enqueue_operation(
+                LogFloats(self._experiment._uuid, self._path, [value]), wait)
 
     def clear(self, wait: bool = False):
-        self._experiment.queue_operation(ClearFloatLog(self._experiment._uuid, self._path), wait)
+        with self._experiment.lock():
+            self._experiment._op_processor.enqueue_operation(ClearFloatLog(self._experiment._uuid, self._path), wait)
