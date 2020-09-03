@@ -17,8 +17,7 @@
 import logging
 import threading
 import uuid
-from typing import Dict, Any, Optional
-
+from typing import Any
 
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune_old.utils import is_ipython
