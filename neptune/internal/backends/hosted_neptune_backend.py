@@ -19,7 +19,7 @@ import platform
 import uuid
 
 from itertools import groupby
-from typing import List, Optional, Dict, Any
+from typing import List, Optional, Dict
 from uuid import UUID
 
 import urllib3

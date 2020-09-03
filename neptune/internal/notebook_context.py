@@ -50,7 +50,7 @@ def create_checkpoint(
                 _send_checkpoint_created(
                     checkpoint_id=checkpoint_id,
                     notebook_id=notebook_id,
-                    notebook_path=notebook_path 
+                    notebook_path=notebook_path
                 )
                 _checkpoints[execution_count] = checkpoint_id
             return checkpoint_id
@@ -70,7 +70,7 @@ def _send_checkpoint_created(
                   notebook_path=str(notebook_path))))
 
 
-def _get_comm(self) -> Any:
+def _get_comm() -> Any:
     # pylint: disable=import-error
     from ipykernel.comm import Comm
     return Comm(target_name='neptune_comm')
