@@ -41,7 +41,7 @@ __version__ = str(parsed_version)
 def init(
         project: Optional[str] = None,
         connection_mode: str = "async",
-        send_hardware_metrics=True,
+        capture_hardware_metrics=True,
         flush_period: float = 5) -> Experiment:
 
     if not project:
@@ -79,8 +79,8 @@ def init(
         raise ValueError('connection_mode should be on of ["async", "sync", "offline"]')
 
     background_jobs = []
-    if send_hardware_metrics:
-        background_jobs.append(HardwareMetricReportingJob(exp.uuid, backend))
+    if capture_hardware_metrics:
+        background_jobs.append(HardwareMetricReportingJob())
 
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
         base_url=backend.get_display_address(),
@@ -89,4 +89,4 @@ def init(
         exp_id=exp.id
     ))
 
-    return Experiment(exp.uuid, backend, operation_processor, background_job=BackgroundJobList(background_jobs))
+    return Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))

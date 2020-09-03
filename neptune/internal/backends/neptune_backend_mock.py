@@ -16,11 +16,6 @@
 
 import uuid
 from typing import Optional, List
-from uuid import UUID
-
-from neptune_old.internal.hardware.metrics.reports.metric_report import MetricReport
-
-from neptune_old.internal.hardware.metrics.metric import Metric
 
 from neptune.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.internal.backends.api_model import Project, Experiment
@@ -75,16 +70,6 @@ class NeptuneBackendMock(NeptuneBackend):
             exp.set(op.path, new_val)
         else:
             exp.pop(op.path)
-
-    def send_hardware_metric_reports(
-            self,
-            experiment_uuid: UUID,
-            metrics: List[Metric],
-            metric_reports: List[MetricReport]) -> None:
-        pass
-
-    def create_hardware_metric(self, experiment_uuid: UUID, exec_id: str, metric: Metric) -> UUID:
-        return uuid.uuid4()
 
     def get(self, _uuid: uuid.UUID, path: List[str]) -> Value:
         return self._experiments[_uuid].get(path)

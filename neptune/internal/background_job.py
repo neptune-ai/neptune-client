@@ -16,11 +16,16 @@
 
 import abc
 
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from neptune.experiment import Experiment
+
 
 class BackgroundJob:
 
     @abc.abstractmethod
-    def start(self):
+    def start(self, experiment: 'Experiment'):
         pass
 
     @abc.abstractmethod
