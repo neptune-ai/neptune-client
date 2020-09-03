@@ -27,7 +27,6 @@ from neptune.internal.backends.neptune_backend import NeptuneBackend
 import neptune.handler as handler
 
 from neptune.exceptions import MetadataInconsistency
-from neptune.internal.background_job import BackgroundJob
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.operation import DeleteVariable
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
@@ -43,16 +42,13 @@ class Experiment(handler.Handler):
             self,
             _uuid: uuid.UUID,
             backend: NeptuneBackend,
-            op_processor: OperationProcessor,
-            background_job: BackgroundJob = None):
+            op_processor: OperationProcessor):
         super().__init__(self, path="")
         self._uuid = _uuid
         self._backend = backend
         self._op_processor = op_processor
         self._structure = ExperimentStructure[Variable]()
-        self._bg_job = background_job
         self._lock = threading.RLock()
-        self._start()
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
@@ -90,13 +86,6 @@ class Experiment(handler.Handler):
         with self._lock:
             self._op_processor.wait()
 
-    def _start(self):
-        if self._bg_job:
-            self._bg_job.start()
-
     def close(self):
         with self._lock:
             self._op_processor.stop()
-            if self._bg_job:
-                self._bg_job.stop()
-                self._bg_job.join()

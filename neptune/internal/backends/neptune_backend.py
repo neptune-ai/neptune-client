@@ -17,11 +17,6 @@ import abc
 import uuid
 
 from typing import List
-from uuid import UUID
-
-from neptune_old.internal.hardware.metrics.reports.metric_report import MetricReport
-
-from neptune_old.internal.hardware.metrics.metric import Metric
 
 from neptune.internal.backends.api_model import Project, Experiment
 from neptune.internal.operation import Operation
@@ -42,16 +37,4 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def execute_operations(self, operations: List[Operation]) -> None:
-        pass
-
-    @abc.abstractmethod
-    def send_hardware_metric_reports(
-            self,
-            experiment_uuid: UUID,
-            metrics: List[Metric],
-            metric_reports: List[MetricReport]) -> None:
-        pass
-
-    @abc.abstractmethod
-    def create_hardware_metric(self, experiment_uuid: UUID, exec_id: str, metric: Metric) -> UUID:
         pass

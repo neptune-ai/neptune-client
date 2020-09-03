@@ -17,10 +17,7 @@
 import logging
 import os
 import time
-import uuid
-import socket
-
-from uuid import UUID
+from itertools import groupby
 
 from neptune_old.internal.hardware.metrics.metrics_container import MetricsContainer
 from neptune_old.internal.hardware.metrics.reports.metric_reporter import MetricReporter
@@ -33,7 +30,7 @@ from neptune_old.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune_old.internal.hardware.system.system_monitor import SystemMonitor
 from neptune_old.utils import in_docker
 
-from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.experiment import Experiment
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.threading.daemon import Daemon
 
@@ -43,11 +40,9 @@ _logger = logging.getLogger(__name__)
 
 class HardwareMetricReportingJob(BackgroundJob):
 
-    def __init__(self, exp_uuid: UUID, backend: NeptuneBackend, period: float = 10):
-        self._exp_uuid = exp_uuid
-        self._backend = backend
+    def __init__(self, experiment: Experiment, period: float = 10):
+        self._experiment = experiment
         self._period = period
-        self._random_execution_id = "{}-{}".format(socket.gethostname(), str(uuid.uuid4()))
         self._thread = None
         self._started = False
 
@@ -63,14 +58,11 @@ class HardwareMetricReportingJob(BackgroundJob):
         gauge_factory = GaugeFactory(gauge_mode=gauge_mode)
         metrics_factory = MetricsFactory(gauge_factory=gauge_factory, system_resource_info=system_resource_info)
         metrics_container = metrics_factory.create_metrics_container()
-        for metric in metrics_container.metrics():
-            metric.internal_id = self._backend.create_hardware_metric(self._exp_uuid, self._random_execution_id, metric)
         metric_reporter = MetricReporterFactory(time.time()).create(metrics=metrics_container.metrics())
 
         self._thread = self.ReportingThread(
             self._period,
-            self._exp_uuid,
-            self._backend,
+            self._experiment,
             metric_reporter,
             metrics_container)
         self._thread.start()
@@ -89,16 +81,23 @@ class HardwareMetricReportingJob(BackgroundJob):
         def __init__(
                 self,
                 period: float,
-                exp_uuid: UUID,
-                backend: NeptuneBackend,
+                experiment: Experiment,
                 metric_reporter: MetricReporter,
                 metrics_container: MetricsContainer):
             super().__init__(sleep_time=period)
-            self._exp_uuid = exp_uuid
-            self._backend = backend
+            self._experiment = experiment
             self._metric_reporter = metric_reporter
             self._metrics_container = metrics_container
 
         def work(self) -> None:
-            metric_report = self._metric_reporter.report(time.time())
-            self._backend.send_hardware_metric_reports(self._exp_uuid, self._metrics_container.metrics(), metric_report)
+            prefix = "monitoring/hardware"
+            metric_reports = self._metric_reporter.report(time.time())
+            for report in metric_reports:
+                for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name):
+                    # TODO: Avoid loop
+                    for metric_value in metric_values:
+                        self._experiment["{}/{}/{}".format(prefix, report.metric.resource_type, gauge_name)].log(
+                            value=metric_value.value,
+                            step=int(metric_value.running_time * 1000.0),
+                            timestamp=metric_value.timestamp
+                        )

@@ -22,8 +22,7 @@ import click
 
 from neptune.envs import PROJECT_ENV_NAME
 from neptune.exceptions import MissingProject
-from neptune.internal.backgroud_job_list import BackgroundJobList
-from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
+from neptune.internal.extended_experiment import ExtendedExperiment
 from neptune.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.backends.neptune_backend_mock import NeptuneBackendMock
@@ -41,7 +40,7 @@ __version__ = str(parsed_version)
 def init(
         project: Optional[str] = None,
         connection_mode: str = "async",
-        send_hardware_metrics=True,
+        capture_hardware_metrics=True,
         flush_period: float = 5) -> Experiment:
 
     if not project:
@@ -78,10 +77,6 @@ def init(
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline"]')
 
-    background_jobs = []
-    if send_hardware_metrics:
-        background_jobs.append(HardwareMetricReportingJob(exp.uuid, backend))
-
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
         base_url=backend.get_display_address(),
         workspace=project_obj.workspace,
@@ -89,4 +84,4 @@ def init(
         exp_id=exp.id
     ))
 
-    return Experiment(exp.uuid, backend, operation_processor, background_job=BackgroundJobList(background_jobs))
+    return ExtendedExperiment(exp.uuid, backend, operation_processor, capture_hardware_metrics)
