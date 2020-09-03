@@ -47,19 +47,27 @@ def create_checkpoint(
 
             checkpoint_id = backend.create_checkpoint(notebook_id, notebook_path)
             if ipython is not None and ipython.kernel is not None:
-                _send_checkpoint_created(checkpoint_id=checkpoint_id)
+                _send_checkpoint_created(
+                    checkpoint_id=checkpoint_id,
+                    notebook_id=notebook_id,
+                    notebook_path=notebook_path 
+                )
                 _checkpoints[execution_count] = checkpoint_id
             return checkpoint_id
     return None
 
 
-def _send_checkpoint_created(self, checkpoint_id: uuid.UUID) -> None:
-    neptune_comm = self._get_comm()
+def _send_checkpoint_created(
+        checkpoint_id: uuid.UUID,
+        notebook_id: uuid.UUID,
+        notebook_path: str
+) -> None:
+    neptune_comm = _get_comm()
     neptune_comm.send(data=dict(
         message_type="CHECKPOINT_CREATED",
         data=dict(checkpoint_id=str(checkpoint_id),
-                  notebook_id=str(self._notebook_id),
-                  notebook_path=str(self._notebook_path))))
+                  notebook_id=str(notebook_id),
+                  notebook_path=str(notebook_path))))
 
 
 def _get_comm(self) -> Any:
