@@ -63,9 +63,9 @@ def init(
 
     project_obj = backend.get_project(project)
 
-    notebook_id: Optional[uuid.UUID] = None
-    notebook_path: Optional[str] = None
-    checkpoint_id: Optional[uuid.UUID] = None
+    notebook_id = None
+    notebook_path = None
+    checkpoint_id = None
 
     if os.getenv(NOTEBOOK_ID_ENV_NAME, None) is not None:
         notebook_id = uuid.UUID(os.environ[NOTEBOOK_ID_ENV_NAME])

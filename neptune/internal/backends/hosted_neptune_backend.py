@@ -221,13 +221,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         # TODO maybe write an endpoint in backend that accepts FormData to be swagger-compatible? shouldn't hurt much
         #  and we would be able to call this normally
         if _file is not None:
-            url: str = self._client_config.api_url \
+            url = self._client_config.api_url \
                   + self.leaderboard_client.api.createCheckpoint.operation.path_name \
                   + "?"
-            path_params: Dict[str, str] = {
+            path_params = {
                 "notebookId": str(notebook_id)
             }
-            query_params: Dict[str, str] = {
+            query_params = {
                 "jupyterPath": str(jupyter_path)
             }
             for key, val in path_params.items():
@@ -235,9 +235,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             for key, val in query_params.items():
                 url = url + key + "=" + val + "&"
 
-            session: requests.Session = self._http_client.session
+            session = self._http_client.session
 
-            request: requests.Request = self._http_client.authenticator.apply(
+            request = self._http_client.authenticator.apply(
                 requests.Request(
                     method='POST',
                     url=url,

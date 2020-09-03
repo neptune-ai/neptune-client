@@ -26,19 +26,19 @@ from neptune_old.utils import is_ipython
 _logger = logging.getLogger(__name__)
 
 _checkpoints_lock = threading.Lock()
-_checkpoints: Dict[int, uuid.UUID] = dict()
+_checkpoints = dict()
 
 
 class Notebook:
 
     def __init__(self,
                  backend: NeptuneBackend,
-                 notebook_id: Optional[uuid.UUID],
-                 notebook_path: Optional[str]
+                 notebook_id: uuid.UUID,
+                 notebook_path: str
                  ):
-        self._notebook_id: uuid.UUID = notebook_id
-        self._notebook_path: str = notebook_path
-        self._backend: NeptuneBackend = backend
+        self._notebook_id = notebook_id
+        self._notebook_path = notebook_path
+        self._backend = backend
 
     def create_checkpoint(self) -> uuid.UUID:
         if is_ipython():
@@ -53,14 +53,14 @@ class Notebook:
                 if execution_count in _checkpoints:
                     return _checkpoints[execution_count]
 
-                checkpoint_id: uuid.UUID = self._backend.create_checkpoint(self._notebook_id, self._notebook_path)
+                checkpoint_id = self._backend.create_checkpoint(self._notebook_id, self._notebook_path)
                 if ipython is not None and ipython.kernel is not None:
                     self._send_checkpoint_created(checkpoint_id=checkpoint_id)
                     _checkpoints[execution_count] = checkpoint_id
                 return checkpoint_id
 
     def _send_checkpoint_created(self, checkpoint_id: uuid.UUID) -> None:
-        neptune_comm: Any = self._get_comm()
+        neptune_comm = self._get_comm()
         neptune_comm.send(data=dict(
             message_type="CHECKPOINT_CREATED",
             data=dict(checkpoint_id=str(checkpoint_id),
