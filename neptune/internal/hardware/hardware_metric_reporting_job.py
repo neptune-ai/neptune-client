@@ -17,7 +17,9 @@
 import logging
 import os
 import time
+
 from itertools import groupby
+from typing import TYPE_CHECKING
 
 from neptune_old.internal.hardware.metrics.metrics_container import MetricsContainer
 from neptune_old.internal.hardware.metrics.reports.metric_reporter import MetricReporter
@@ -30,23 +32,23 @@ from neptune_old.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune_old.internal.hardware.system.system_monitor import SystemMonitor
 from neptune_old.utils import in_docker
 
-from neptune.experiment import Experiment
 from neptune.internal.background_job import BackgroundJob
 from neptune.internal.threading.daemon import Daemon
 
+if TYPE_CHECKING:
+    from neptune.experiment import Experiment
 
 _logger = logging.getLogger(__name__)
 
 
 class HardwareMetricReportingJob(BackgroundJob):
 
-    def __init__(self, experiment: Experiment, period: float = 10):
-        self._experiment = experiment
+    def __init__(self, period: float = 10):
         self._period = period
         self._thread = None
         self._started = False
 
-    def start(self):
+    def start(self, experiment: 'Experiment'):
         if not SystemMonitor.requirements_installed():
             _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
             return
@@ -62,7 +64,7 @@ class HardwareMetricReportingJob(BackgroundJob):
 
         self._thread = self.ReportingThread(
             self._period,
-            self._experiment,
+            experiment,
             metric_reporter,
             metrics_container)
         self._thread.start()
@@ -81,7 +83,7 @@ class HardwareMetricReportingJob(BackgroundJob):
         def __init__(
                 self,
                 period: float,
-                experiment: Experiment,
+                experiment: 'Experiment',
                 metric_reporter: MetricReporter,
                 metrics_container: MetricsContainer):
             super().__init__(sleep_time=period)

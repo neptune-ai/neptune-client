@@ -13,9 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from neptune.internal.background_job import BackgroundJob
+
+if TYPE_CHECKING:
+    from neptune.experiment import Experiment
 
 
 class BackgroundJobList(BackgroundJob):
@@ -23,9 +26,9 @@ class BackgroundJobList(BackgroundJob):
     def __init__(self, jobs: List[BackgroundJob]):
         self._jobs = jobs
 
-    def start(self):
+    def start(self, experiment: 'Experiment'):
         for job in self._jobs:
-            job.start()
+            job.start(experiment)
 
     def stop(self):
         for job in self._jobs:

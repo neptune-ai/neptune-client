@@ -18,6 +18,7 @@ import threading
 import uuid
 from typing import Dict, Any, Union
 
+from neptune.internal.background_job import BackgroundJob
 from neptune.types.atoms.string import String
 
 from neptune.types.atoms.float import Float
@@ -42,13 +43,16 @@ class Experiment(handler.Handler):
             self,
             _uuid: uuid.UUID,
             backend: NeptuneBackend,
-            op_processor: OperationProcessor):
+            op_processor: OperationProcessor,
+            background_job: BackgroundJob):
         super().__init__(self, path="")
         self._uuid = _uuid
         self._backend = backend
         self._op_processor = op_processor
+        self._bg_job = background_job
         self._structure = ExperimentStructure[Variable]()
         self._lock = threading.RLock()
+        self._bg_job.start(self)
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
@@ -88,4 +92,5 @@ class Experiment(handler.Handler):
 
     def close(self):
         with self._lock:
+            self._bg_job.stop()
             self._op_processor.stop()
