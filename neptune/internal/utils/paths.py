@@ -16,12 +16,12 @@
 from typing import List, Iterable
 
 
-def _remove_empty_paths(paths: Iterable[str]) -> List[str]:
-    return [path for path in paths if path]
+def _remove_empty_paths(paths: Iterable[str]) -> Iterable[str]:
+    return filter(bool, paths)
 
 
 def parse_path(path: str) -> List[str]:
-    return _remove_empty_paths(path.split('/'))
+    return list(_remove_empty_paths(path.split('/')))
 
 
 def path_to_str(path: List[str]) -> str:
