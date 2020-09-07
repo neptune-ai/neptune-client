@@ -18,23 +18,23 @@ import threading
 import uuid
 from typing import Dict, Any, Union
 
-from neptune.internal.background_job import BackgroundJob
-from neptune.types.atoms.string import String
-
-from neptune.types.atoms.float import Float
-
-from neptune.internal.backends.neptune_backend import NeptuneBackend
-
 import neptune.handler as handler
 
-from neptune.exceptions import MetadataInconsistency
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+from neptune.internal.background_job import BackgroundJob
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.operation import DeleteVariable
 from neptune.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.internal.utils.paths import parse_path
 from neptune.internal.variable_setter_value_visitor import VariableSetterValueVisitor
+from neptune.types.atoms.string import String
+from neptune.types.atoms.float import Float
 from neptune.types.value import Value
+from neptune.variables.atoms.float import Float as FloatVar
+from neptune.variables.atoms.string import String as StringVar
+from neptune.variables.sets.string_set import StringSet as StringSetVar
 from neptune.variables.variable import Variable
+from neptune.exceptions import MetadataInconsistency
 
 
 class Experiment(handler.Handler):
@@ -53,6 +53,7 @@ class Experiment(handler.Handler):
         self._structure = ExperimentStructure[Variable]()
         self._lock = threading.RLock()
         self._bg_job.start(self)
+        self._prepare_sys_namespace()
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
@@ -94,3 +95,18 @@ class Experiment(handler.Handler):
         with self._lock:
             self._bg_job.stop()
             self._op_processor.stop()
+
+    def _prepare_sys_namespace(self):
+        self._structure.set(["sys", "id"], StringVar)
+        self._structure.set(["sys", "owner"], StringVar)
+        self._structure.set(["sys", "name"], StringVar)
+        self._structure.set(["sys", "description"], StringVar)
+        self._structure.set(["sys", "hostname"], StringVar)
+        self._structure.set(["sys", "creation_time"], StringVar)
+        self._structure.set(["sys", "modification_time"], StringVar)
+        self._structure.set(["sys", "size"], FloatVar)
+        self._structure.set(["sys", "tags"], StringSetVar)
+        self._structure.set(["sys", "notebook", "id"], StringVar)
+        self._structure.set(["sys", "notebook", "name"], StringVar)
+        self._structure.set(["sys", "notebook", "checkpoint", "id"], StringVar)
+        self._structure.set(["sys", "notebook", "checkpoint", "name"], StringVar)
