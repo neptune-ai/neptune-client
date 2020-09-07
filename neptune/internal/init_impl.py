@@ -31,6 +31,7 @@ from neptune.internal.containers.disk_queue import DiskQueue
 from neptune.internal.credentials import Credentials
 from neptune.internal.operation import VersionedOperation
 from neptune.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
+from neptune.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, StderrCaptureBackgroundJob
 from neptune.version import version as parsed_version
 from neptune.experiment import Experiment
 
@@ -41,6 +42,8 @@ __version__ = str(parsed_version)
 def init(
         project: Optional[str] = None,
         connection_mode: str = "async",
+        capture_stdout=True,
+        capture_stderr=True,
         capture_hardware_metrics=True,
         flush_period: float = 5) -> Experiment:
 
@@ -81,6 +84,10 @@ def init(
     background_jobs = []
     if capture_hardware_metrics:
         background_jobs.append(HardwareMetricReportingJob())
+    if capture_stdout:
+        background_jobs.append(StdoutCaptureBackgroundJob())
+    if capture_stderr:
+        background_jobs.append(StderrCaptureBackgroundJob())
 
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
         base_url=backend.get_display_address(),
