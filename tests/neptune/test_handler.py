@@ -20,6 +20,9 @@ import unittest
 
 from neptune import init, ANONYMOUS
 from neptune.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
+from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
+from neptune.types.series.string_series import StringSeries as StringSeriesVal
+from neptune.types.sets.string_set import StringSet as StringSetVal
 from neptune.variables.atoms.float import Float
 from neptune.variables.atoms.string import String
 from neptune.variables.series.float_series import FloatSeries
@@ -44,7 +47,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
 
-    def test_assign(self):
+    def test_assign_atom(self):
         exp = init(connection_mode="offline", flush_period=0.5)
         exp['some/num/val'].assign(5)
         exp['some/str/val'].assign("some text", wait=True)
@@ -53,14 +56,44 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
 
+        exp['some/num/val'].assign(15)
+        exp['some/str/val'].assign("other text", wait=True)
+        self.assertEqual(exp['some/num/val'].get(), 15)
+        self.assertEqual(exp['some/str/val'].get(), "other text")
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
+
+    def test_assign_series(self):
+        exp = init(connection_mode="offline", flush_period=0.5)
+        exp['some/num/val'].assign(FloatSeriesVal([1, 2, 0, 10]))
+        exp['some/str/val'].assign(StringSeriesVal(["text1", "text2"]), wait=True)
+        # TODO: Assert fetching value
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeries)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
+
+        exp['some/num/val'].assign(FloatSeriesVal([122, 543, 2, 5]))
+        exp['some/str/val'].assign(StringSeriesVal(["other 1", "other 2", "other 3"]), wait=True)
+        # TODO: Assert fetching value
+        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeries)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
+
     def test_log(self):
         exp = init(connection_mode="offline", flush_period=0.5)
         exp['some/num/val'].log(5)
         exp['some/str/val'].log("some text")
-        # TODO: self.assertEqual(exp['some/num/val'].get_values(), 5)
-        # TODO: self.assertEqual(exp['some/str/val'].get_values(), "some text")
+        # TODO: Assert fetching value
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeries)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
+
+    def test_assign_set(self):
+        exp = init(connection_mode="offline", flush_period=0.5)
+        exp['some/str/val'].assign(StringSetVal(["tag1", "tag2"]), wait=True)
+        self.assertEqual(exp['some/str/val'].get(), {"tag1", "tag2"})
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
+
+        exp['some/str/val'].assign(StringSetVal(["other_1", "other_2", "other_3"]), wait=True)
+        self.assertEqual(exp['some/str/val'].get(), {"other_1", "other_2", "other_3"})
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
 
     def test_add(self):
         exp = init(connection_mode="offline", flush_period=0.5)

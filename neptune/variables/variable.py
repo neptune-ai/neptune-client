@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import uuid
 from typing import List, TYPE_CHECKING
+
+from neptune.internal.backends.neptune_backend import NeptuneBackend
+
+from neptune.internal.operation import Operation
 
 if TYPE_CHECKING:
     from neptune.experiment import Experiment
@@ -29,3 +33,17 @@ class Variable:
 
     def __getattr__(self, attr):
         raise AttributeError("{} has no attribute {}.".format(type(self), attr))
+
+    def _enqueue_operation(self, operation: Operation, wait: bool):
+        # pylint: disable=protected-access
+        self._experiment._op_processor.enqueue_operation(operation, wait)
+
+    @property
+    def _backend(self) -> NeptuneBackend:
+        # pylint: disable=protected-access
+        return self._experiment._backend
+
+    @property
+    def _experiment_uuid(self) -> uuid.UUID:
+        # pylint: disable=protected-access
+        return self._experiment._uuid

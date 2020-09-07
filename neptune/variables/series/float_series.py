@@ -15,39 +15,47 @@
 #
 
 import time
-from typing import Union
+from typing import Union, Optional
 
 from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
 
 from neptune.internal.utils import verify_type
 
-from neptune.internal.operation import ClearFloatLog, LogFloats
+from neptune.internal.operation import ClearFloatLog, LogFloats, LogSeriesValue
 from neptune.variables.series.series import Series
-
-# pylint: disable=protected-access
 
 
 class FloatSeries(Series):
 
     def assign(self, value: FloatSeriesVal, wait: bool = False):
         verify_type("value", value, FloatSeriesVal)
-        with self._experiment.lock():
-            self.clear()
-            # TODO: Avoid loop
-            for val in value.values[:-1]:
-                self.log(val)
-            self.log(value.values[-1], wait)
 
-    def log(self, value: Union[float, int], step: float = None, timestamp: float = None, wait: bool = False):
-        # pylint: disable=unused-argument
-        verify_type("value", value, (float, int))
         with self._experiment.lock():
-            # TODO: Support steps and timestamps
-            if not timestamp:
-                timestamp = time.time()
-            self._experiment._op_processor.enqueue_operation(
-                LogFloats(self._experiment._uuid, self._path, [value]), wait)
+            clear_op = ClearFloatLog(self._experiment_uuid, self._path)
+            if not value.values:
+                self._enqueue_operation(clear_op, wait=wait)
+            else:
+                self._enqueue_operation(clear_op, wait=False)
+                ts = time.time()
+                values = [LogSeriesValue[float](val, step=None, ts=ts) for val in value.values]
+                self._enqueue_operation(LogFloats(self._experiment_uuid, self._path, values), wait=wait)
+
+    def log(self,
+            value: Union[float, int],
+            step: Optional[float] = None,
+            timestamp: Optional[float] = None,
+            wait: bool = False):
+        verify_type("value", value, (float, int))
+
+        if not timestamp:
+            timestamp = time.time()
+
+        with self._experiment.lock():
+            self._enqueue_operation(
+                LogFloats(self._experiment_uuid, self._path, LogSeriesValue[float](value, step, timestamp)),
+                wait
+            )
 
     def clear(self, wait: bool = False):
         with self._experiment.lock():
-            self._experiment._op_processor.enqueue_operation(ClearFloatLog(self._experiment._uuid, self._path), wait)
+            self._enqueue_operation(ClearFloatLog(self._experiment_uuid, self._path), wait)

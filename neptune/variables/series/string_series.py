@@ -15,37 +15,46 @@
 #
 
 import time
+from typing import Optional
 
 from neptune.internal.utils import verify_type
 
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
 
-from neptune.internal.operation import LogStrings, ClearStringLog
+from neptune.internal.operation import LogStrings, ClearStringLog, LogSeriesValue
 from neptune.variables.series.series import Series
-
-# pylint: disable=protected-access
 
 
 class StringSeries(Series):
 
     def assign(self, value: StringSeriesVal, wait: bool = False):
         verify_type("value", value, StringSeriesVal)
-        with self._experiment.lock():
-            self.clear()
-            # TODO: Avoid loop
-            for val in value.values[:-1]:
-                self.log(val)
-            self.log(value.values[-1], wait)
 
-    def log(self, value: str, step: float = None, timestamp: float = None, wait: bool = False):
-        # pylint: disable=unused-argument
-        verify_type("value", value, str)
         with self._experiment.lock():
-            if not timestamp:
-                timestamp = time.time()
-            self._experiment._op_processor.enqueue_operation(
-                LogStrings(self._experiment._uuid, self._path, [value]), wait)
+            clear_op = ClearStringLog(self._experiment_uuid, self._path)
+            if not value.values:
+                self._enqueue_operation(clear_op, wait=wait)
+            else:
+                self._enqueue_operation(clear_op, wait=False)
+                ts = time.time()
+                values = [LogSeriesValue[str](val, step=None, ts=ts) for val in value.values]
+                self._enqueue_operation(LogStrings(self._experiment_uuid, self._path, values), wait=wait)
+
+    def log(self,
+            value: str,
+            step: Optional[float] = None,
+            timestamp: Optional[float] = None,
+            wait: bool = False):
+        verify_type("value", value, str)
+
+        if not timestamp:
+            timestamp = time.time()
+
+        with self._experiment.lock():
+            self._enqueue_operation(
+                LogStrings(self._experiment_uuid, self._path, LogSeriesValue[str](value, step, timestamp)),
+                wait)
 
     def clear(self, wait: bool = False):
         with self._experiment.lock():
-            self._experiment._op_processor.enqueue_operation(ClearStringLog(self._experiment._uuid, self._path), wait)
+            self._enqueue_operation(ClearStringLog(self._experiment_uuid, self._path), wait)

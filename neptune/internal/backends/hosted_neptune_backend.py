@@ -119,7 +119,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         pass
 
     @with_api_exceptions_handler
-    def get(self, _uuid: uuid.UUID, path: List[str]) -> Value:
+    def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         pass
 
     @with_api_exceptions_handler
