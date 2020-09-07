@@ -42,9 +42,9 @@ __version__ = str(parsed_version)
 def init(
         project: Optional[str] = None,
         connection_mode: str = "async",
-        capture_stdout=True,
-        capture_stderr=True,
-        capture_hardware_metrics=True,
+        capture_stdout: bool = True,
+        capture_stderr: bool = True,
+        capture_hardware_metrics: bool = True,
         flush_period: float = 5) -> Experiment:
 
     if not project:
