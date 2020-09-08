@@ -20,6 +20,8 @@ import unittest
 
 from neptune import init, ANONYMOUS
 from neptune.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
+from neptune.types.atoms.float import Float as FloatVal
+from neptune.types.atoms.string import String as StringVal
 from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.types.sets.string_set import StringSet as StringSetVal
@@ -56,8 +58,8 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
 
-        exp['some/num/val'].assign(15)
-        exp['some/str/val'].assign("other text", wait=True)
+        exp['some/num/val'].assign(FloatVal(15))
+        exp['some/str/val'].assign(StringVal("other text"), wait=True)
         self.assertEqual(exp['some/num/val'].get(), 15)
         self.assertEqual(exp['some/str/val'].get(), "other text")
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)

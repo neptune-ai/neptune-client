@@ -15,7 +15,7 @@
 #
 import abc
 import uuid
-from typing import List, TypeVar, Generic, Optional
+from typing import List, TypeVar, Generic, Optional, Set
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
@@ -254,7 +254,7 @@ class ClearStringLog(Operation):
 
 class AddStrings(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[str]):
+    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: Set[str]):
         super().__init__(exp_uuid, path)
         self.values = values
 
@@ -263,12 +263,12 @@ class AddStrings(Operation):
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["values"] = self.values
+        ret["values"] = list(self.values)
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'AddStrings':
-        return AddStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+        return AddStrings(uuid.UUID(data["exp_uuid"]), data["path"], set(data["values"]))
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -282,7 +282,7 @@ class AddStrings(Operation):
 
 class RemoveStrings(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[str]):
+    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: Set[str]):
         super().__init__(exp_uuid, path)
         self.values = values
 
@@ -291,12 +291,12 @@ class RemoveStrings(Operation):
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["values"] = self.values
+        ret["values"] = list(self.values)
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'RemoveStrings':
-        return RemoveStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+        return RemoveStrings(uuid.UUID(data["exp_uuid"]), data["path"], set(data["values"]))
 
     def __eq__(self, other):
         if type(other) is type(self):

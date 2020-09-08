@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Union
+
 from neptune.internal.utils import verify_type
 
 from neptune.exceptions import MetadataInconsistency
@@ -21,16 +23,17 @@ from neptune.types.atoms.string import String as StringVal
 from neptune.variables.atoms.atom import Atom
 
 
-
 class String(Atom):
 
-    def assign(self, value: str, wait: bool = False):
-        verify_type("value", value, str)
+    def assign(self, value: Union[StringVal, str], wait: bool = False):
+        verify_type("value", value, (StringVal, str))
+        if isinstance(value, StringVal):
+            value = value.value
         with self._experiment.lock():
             self._enqueue_operation(
                 AssignString(self._experiment_uuid, self._path, value), wait)
 
-    def get(self):
+    def get(self) -> str:
         # pylint: disable=protected-access
         val = self._backend.get_attribute(self._experiment_uuid, self._path)
         if not isinstance(val, StringVal):

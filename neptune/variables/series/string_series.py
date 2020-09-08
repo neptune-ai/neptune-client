@@ -52,7 +52,7 @@ class StringSeries(Series):
 
         with self._experiment.lock():
             self._enqueue_operation(
-                LogStrings(self._experiment_uuid, self._path, LogSeriesValue[str](value, step, timestamp)),
+                LogStrings(self._experiment_uuid, self._path, [LogSeriesValue[str](value, step, timestamp)]),
                 wait)
 
     def clear(self, wait: bool = False):
