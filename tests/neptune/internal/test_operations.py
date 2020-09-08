@@ -35,8 +35,17 @@ class TestOperations(unittest.TestCase):
         return [
             AssignFloat(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], 5),
             AssignString(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], "a\rsdf\thr"),
-            LogFloats(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [5, 3, 10]),
-            LogStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], ["jetybv", "ghs\ner", "r", "ghsr"]),
+            LogFloats(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [
+                LogSeriesValue[float](5, 4, 500),
+                LogSeriesValue[float](3, None, 1000),
+                LogSeriesValue[float](10, 10, 1234)
+            ]),
+            LogStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [
+                LogSeriesValue[str]("jetybv", 1, 5),
+                LogSeriesValue[str]("ghs\ner", 3, 123),
+                LogSeriesValue[str]("r", None, 1356),
+                LogSeriesValue[str]("ghsr", 13, 53682)
+            ]),
             ClearFloatLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
             ClearStringLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
             AddStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], ["asef", "asrge4"]),

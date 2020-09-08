@@ -71,8 +71,8 @@ class NeptuneBackendMock(NeptuneBackend):
         else:
             exp.pop(op.path)
 
-    def get(self, _uuid: uuid.UUID, path: List[str]) -> Value:
-        return self._experiments[_uuid].get(path)
+    def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
+        return self._experiments[experiment_uuid].get(path)
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
 

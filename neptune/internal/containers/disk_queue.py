@@ -17,6 +17,7 @@ import json
 import os
 from typing import TypeVar, List, Callable, Optional
 
+from neptune.exceptions import MalformedOperation
 from neptune.internal.containers.storage_queue import StorageQueue
 from neptune.internal.utils.json_file_splitter import JsonFileSplitter
 
@@ -71,7 +72,10 @@ class DiskQueue(StorageQueue[T]):
             self._read_file_idx += 1
             self._reader = JsonFileSplitter(self._current_read_log_file())
             return self.get()
-        return self._from_dict(_json)
+        try:
+            return self._from_dict(_json)
+        except Exception as e:
+            raise MalformedOperation from e
 
     def get_batch(self, size: int) -> List[T]:
         ret = []

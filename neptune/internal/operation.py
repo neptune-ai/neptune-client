@@ -15,13 +15,14 @@
 #
 import abc
 import uuid
-from typing import List, TypeVar
+from typing import List, TypeVar, Generic, Optional
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from neptune.internal.operation_visitor import OperationVisitor
 
 Ret = TypeVar('Ret')
+T = TypeVar('T')
 
 
 def all_subclasses(cls):
@@ -54,6 +55,15 @@ class Operation:
         if not data["type"] in sub_classes:
             raise ValueError("Malformed operation {} - unknown type {}".format(data, data["type"]))
         return sub_classes[data["type"]].from_dict(data)
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.exp_uuid == other.exp_uuid and self.path == other.path
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((self.exp_uuid, self.path))
 
 
 class VersionedOperation:
@@ -92,6 +102,15 @@ class AssignFloat(Operation):
     def from_dict(data: dict) -> 'AssignFloat':
         return AssignFloat(uuid.UUID(data["exp_uuid"]), data["path"], data["value"])
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.value == other.value
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.value))
+
 
 class AssignString(Operation):
 
@@ -111,10 +130,47 @@ class AssignString(Operation):
     def from_dict(data: dict) -> 'AssignString':
         return AssignString(uuid.UUID(data["exp_uuid"]), data["path"], data["value"])
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.value == other.value
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.value))
+
+
+class LogSeriesValue(Generic[T]):
+
+    def __init__(self, value: T, step: Optional[float], ts: float):
+        self.value = value
+        self.step = step
+        self.ts = ts
+
+    def to_dict(self) -> dict:
+        return {
+            "value": self.value,
+            "step": self.step,
+            "ts": self.ts
+        }
+
+    @staticmethod
+    def from_dict(data: dict) -> 'LogSeriesValue[T]':
+        return LogSeriesValue(data["value"], data.get("step", None), data["ts"])
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return self.value == other.value and self.step == other.step and self.ts == other.ts
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((self.value, self.step, self.ts))
+
 
 class LogFloats(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[float]):
+    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[LogSeriesValue[float]]):
         super().__init__(exp_uuid, path)
         self.values = values
 
@@ -123,17 +179,30 @@ class LogFloats(Operation):
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["values"] = self.values
+        ret["values"] = [value.to_dict() for value in self.values]
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'LogFloats':
-        return LogFloats(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+        return LogFloats(
+            uuid.UUID(data["exp_uuid"]),
+            data["path"],
+            [LogSeriesValue[float].from_dict(value) for value in data["values"]]
+        )
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.values == other.values
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.values))
 
 
 class LogStrings(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[str]):
+    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[LogSeriesValue[str]]):
         super().__init__(exp_uuid, path)
         self.values = values
 
@@ -142,12 +211,25 @@ class LogStrings(Operation):
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["values"] = self.values
+        ret["values"] = [value.to_dict() for value in self.values]
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'LogStrings':
-        return LogStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+        return LogStrings(
+            uuid.UUID(data["exp_uuid"]),
+            data["path"],
+            [LogSeriesValue[str].from_dict(value) for value in data["values"]]
+        )
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.values == other.values
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.values))
 
 
 class ClearFloatLog(Operation):
@@ -188,6 +270,15 @@ class AddStrings(Operation):
     def from_dict(data: dict) -> 'AddStrings':
         return AddStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
 
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.values == other.values
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.values))
+
 
 class RemoveStrings(Operation):
 
@@ -206,6 +297,15 @@ class RemoveStrings(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'RemoveStrings':
         return RemoveStrings(uuid.UUID(data["exp_uuid"]), data["path"], data["values"])
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.values == other.values
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.values))
 
 
 class ClearStringSet(Operation):

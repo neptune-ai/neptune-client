@@ -23,8 +23,6 @@ from neptune.internal.operation import AddStrings, RemoveStrings, ClearStringSet
 from neptune.types.sets.string_set import StringSet as StringSetVal
 from neptune.variables.sets.set import Set
 
-# pylint: disable=protected-access
-
 
 class StringSet(Set):
 
@@ -36,20 +34,19 @@ class StringSet(Set):
 
     def add(self, values: Iterable[str], wait: bool = False):
         with self._experiment.lock():
-            self._experiment._op_processor.enqueue_operation(
-                AddStrings(self._experiment._uuid, self._path, list(values)), wait)
+            self._enqueue_operation(AddStrings(self._experiment_uuid, self._path, list(values)), wait)
 
     def remove(self, values: Iterable[str], wait: bool = False):
         with self._experiment.lock():
-            self._experiment._op_processor.enqueue_operation(
-                RemoveStrings(self._experiment._uuid, self._path, list(values)), wait)
+            self._enqueue_operation(RemoveStrings(self._experiment_uuid, self._path, list(values)), wait)
 
     def clear(self, wait: bool = False):
         with self._experiment.lock():
-            self._experiment._op_processor.enqueue_operation(ClearStringSet(self._experiment._uuid, self._path), wait)
+            self._enqueue_operation(ClearStringSet(self._experiment_uuid, self._path), wait)
 
     def get(self):
-        val = self._experiment._backend.get(self._experiment._uuid, self._path)
+        # pylint: disable=protected-access
+        val = self._backend.get_attribute(self._experiment_uuid, self._path)
         if  not isinstance(val, StringSetVal):
             raise MetadataInconsistency("Variable {} is not a StringSet".format(self._path))
         return val.values

@@ -22,19 +22,18 @@ from neptune.internal.operation import AssignFloat
 from neptune.types.atoms.float import Float as FloatVal
 from neptune.variables.atoms.atom import Atom
 
-# pylint: disable=protected-access
-
 
 class Float(Atom):
 
     def assign(self, value: Union[float, int], wait: bool = False):
         verify_type("value", value, (float, int))
         with self._experiment.lock():
-            self._experiment._op_processor.enqueue_operation(
-                AssignFloat(self._experiment._uuid, self._path, value), wait)
+            self._enqueue_operation(
+                AssignFloat(self._experiment_uuid, self._path, value), wait)
 
     def get(self):
-        val = self._experiment._backend.get(self._experiment._uuid, self._path)
+        # pylint: disable=protected-access
+        val = self._backend.get_attribute(self._experiment_uuid, self._path)
         if not isinstance(val, FloatVal):
             raise MetadataInconsistency("Variable {} is not a Float".format(self._path))
         return val.value

@@ -35,6 +35,10 @@ class MetadataInconsistency(NeptuneException):
     pass
 
 
+class MalformedOperation(NeptuneException):
+    pass
+
+
 class InternalClientError(NeptuneException):
     def __init__(self, msg: str):
         super().__init__("Internal client error: {}. Please contact Neptune support.".format(msg))

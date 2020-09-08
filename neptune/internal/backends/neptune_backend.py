@@ -18,6 +18,8 @@ import uuid
 
 from typing import List
 
+from neptune.types.value import Value
+
 from neptune.internal.backends.api_model import Project, Experiment
 from neptune.internal.operation import Operation
 
@@ -29,6 +31,10 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_project(self, project_id: str) -> Project:
+        pass
+
+    @abc.abstractmethod
+    def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         pass
 
     @abc.abstractmethod
