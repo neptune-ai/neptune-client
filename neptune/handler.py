@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
-from typing import TYPE_CHECKING, Union, Iterable
+from typing import TYPE_CHECKING, Union
+
+from neptune.internal.utils import verify_type, verify_collection_type
 
 from neptune.types.value import Value
 
@@ -51,6 +53,7 @@ class Handler:
             raise AttributeError()
 
     def assign(self, value: Union[Value, int, float, str], wait: bool = False) -> None:
+        verify_type("value", value, (Value, int, float, str))
         with self._experiment.lock():
             var = self._experiment.get_attribute(self._path)
             if var:
@@ -59,6 +62,9 @@ class Handler:
                 self._experiment.define(self._path, value, wait)
 
     def log(self, value: Union[int, float, str], step=None, timestamp=None, wait: bool = False) -> None:
+        verify_type("value", value, (int, float, str))
+        verify_type("step", step, (int, float, type(None)))
+        verify_type("timestamp", step, (int, float, type(None)))
         with self._experiment.lock():
             var = self._experiment.get_attribute(self._path)
             if var:
@@ -70,16 +76,18 @@ class Handler:
                     val = StringSeries([value])
                 self._experiment.define(self._path, val, wait)
 
-    def add(self, *values: Iterable[str], wait: bool = False) -> None:
+    def add(self, *values: str, wait: bool = False) -> None:
+        verify_collection_type("value", values, str)
         with self._experiment.lock():
             var = self._experiment.get_attribute(self._path)
             if var:
-                var.add(list(values), wait)
+                var.add(values, wait)
             else:
-                val = StringSet([str(v) for v in values])
+                val = StringSet(values)
                 self._experiment.define(self._path, val, wait)
 
     def pop(self, path: str, wait: bool = False) -> None:
+        verify_type("path", path, str)
         self._experiment.pop(join_paths(self._path, path), wait)
 
     def __delitem__(self, path) -> None:

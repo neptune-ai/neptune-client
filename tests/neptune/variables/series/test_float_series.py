@@ -17,7 +17,7 @@
 # pylint: disable=protected-access
 
 from mock import MagicMock, call, patch
-from neptune.internal.operation import ClearFloatLog, LogFloats, LogSeriesValue
+from neptune.internal.operation import ClearFloatLog, LogFloats
 
 from neptune.variables.series.float_series import FloatSeries, FloatSeriesVal
 
@@ -29,7 +29,7 @@ class TestFloatSeries(TestVariableBase):
 
     def test_assign(self):
         value = FloatSeriesVal([17, 3.6])
-        expected = [LogSeriesValue[float](17, None, self._now()), LogSeriesValue[float](3.6, None, self._now())]
+        expected = [LogFloats.ValueType(17, None, self._now()), LogFloats.ValueType(3.6, None, self._now())]
 
         backend, processor = MagicMock(), MagicMock()
         exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
@@ -56,8 +56,8 @@ class TestFloatSeries(TestVariableBase):
 
     def test_log(self):
         value_and_expected = [
-            (13, LogSeriesValue[float](13, None, self._now())),
-            (15.3, LogSeriesValue[float](15.3, None, self._now()))
+            (13, LogFloats.ValueType(13, None, self._now())),
+            (15.3, LogFloats.ValueType(15.3, None, self._now()))
         ]
 
         for value, expected in value_and_expected:
@@ -69,8 +69,8 @@ class TestFloatSeries(TestVariableBase):
 
     def test_log_with_step(self):
         value_step_and_expected = [
-            (13, 5.3, LogSeriesValue[float](13, 5.3, self._now())),
-            (15.3, 10, LogSeriesValue[float](15.3, 10, self._now()))
+            (13, 5.3, LogFloats.ValueType(13, 5.3, self._now())),
+            (15.3, 10, LogFloats.ValueType(15.3, 10, self._now()))
         ]
 
         for value, step, expected in value_step_and_expected:
@@ -82,8 +82,8 @@ class TestFloatSeries(TestVariableBase):
 
     def test_log_with_timestamp(self):
         value_step_and_expected = [
-            (13, 5.3, LogSeriesValue[float](13, None, 5.3)),
-            (15.3, 10, LogSeriesValue[float](15.3, None, 10))
+            (13, 5.3, LogFloats.ValueType(13, None, 5.3)),
+            (15.3, 10, LogFloats.ValueType(15.3, None, 10))
         ]
 
         for value, ts, expected in value_step_and_expected:

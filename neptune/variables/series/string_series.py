@@ -21,7 +21,7 @@ from neptune.internal.utils import verify_type
 
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
 
-from neptune.internal.operation import LogStrings, ClearStringLog, LogSeriesValue
+from neptune.internal.operation import LogStrings, ClearStringLog
 from neptune.variables.series.series import Series
 
 
@@ -37,7 +37,7 @@ class StringSeries(Series):
             else:
                 self._enqueue_operation(clear_op, wait=False)
                 ts = time.time()
-                values = [LogSeriesValue[str](val, step=None, ts=ts) for val in value.values]
+                values = [LogStrings.ValueType(val, step=None, ts=ts) for val in value.values]
                 self._enqueue_operation(LogStrings(self._experiment_uuid, self._path, values), wait=wait)
 
     def log(self,
@@ -46,13 +46,15 @@ class StringSeries(Series):
             timestamp: Optional[float] = None,
             wait: bool = False):
         verify_type("value", value, str)
+        verify_type("step", step, (float, int, type(None)))
+        verify_type("timestamp", timestamp, (float, int, type(None)))
 
         if not timestamp:
             timestamp = time.time()
 
         with self._experiment.lock():
             self._enqueue_operation(
-                LogStrings(self._experiment_uuid, self._path, [LogSeriesValue[str](value, step, timestamp)]),
+                LogStrings(self._experiment_uuid, self._path, [LogStrings.ValueType(value, step, timestamp)]),
                 wait)
 
     def clear(self, wait: bool = False):

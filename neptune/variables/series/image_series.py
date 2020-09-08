@@ -15,49 +15,50 @@
 #
 
 import time
-from typing import Union, Optional
-
-from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
+from typing import Optional
 
 from neptune.internal.utils import verify_type
+from neptune.internal.utils.images import get_image_content
 
-from neptune.internal.operation import ClearFloatLog, LogFloats
+from neptune.types.series.image_series import ImageSeries as ImageSeriesVal, ImageAcceptedTypes
+
+from neptune.internal.operation import LogImages, ClearImageLog
 from neptune.variables.series.series import Series
 
 
-class FloatSeries(Series):
+class ImageSeries(Series):
 
-    def assign(self, value: FloatSeriesVal, wait: bool = False):
-        verify_type("value", value, FloatSeriesVal)
+    def assign(self, value: ImageSeriesVal, wait: bool = False):
+        verify_type("value", value, ImageSeriesVal)
 
         with self._experiment.lock():
-            clear_op = ClearFloatLog(self._experiment_uuid, self._path)
+            clear_op = ClearImageLog(self._experiment_uuid, self._path)
             if not value.values:
                 self._enqueue_operation(clear_op, wait=wait)
             else:
                 self._enqueue_operation(clear_op, wait=False)
                 ts = time.time()
-                values = [LogFloats.ValueType(val, step=None, ts=ts) for val in value.values]
-                self._enqueue_operation(LogFloats(self._experiment_uuid, self._path, values), wait=wait)
+                values = [LogImages.ValueType(val, step=None, ts=ts) for val in value.values]
+                self._enqueue_operation(LogImages(self._experiment_uuid, self._path, values), wait=wait)
 
     def log(self,
-            value: Union[float, int],
+            value: ImageAcceptedTypes,
             step: Optional[float] = None,
             timestamp: Optional[float] = None,
             wait: bool = False):
-        verify_type("value", value, (float, int))
         verify_type("step", step, (float, int, type(None)))
         verify_type("timestamp", timestamp, (float, int, type(None)))
 
         if not timestamp:
             timestamp = time.time()
 
+        content = get_image_content(value)
+
         with self._experiment.lock():
             self._enqueue_operation(
-                LogFloats(self._experiment_uuid, self._path, [LogFloats.ValueType(value, step, timestamp)]),
-                wait
-            )
+                LogImages(self._experiment_uuid, self._path, [LogImages.ValueType(content, step, timestamp)]),
+                wait)
 
     def clear(self, wait: bool = False):
         with self._experiment.lock():
-            self._enqueue_operation(ClearFloatLog(self._experiment_uuid, self._path), wait)
+            self._enqueue_operation(ClearImageLog(self._experiment_uuid, self._path), wait)

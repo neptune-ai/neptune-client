@@ -34,7 +34,7 @@ class DiskQueue(StorageQueue[T]):
             log_files_name: str,
             to_dict: Callable[[T], dict],
             from_dict: Callable[[dict], T],
-            max_file_size: int = 10 * 1024**2):
+            max_file_size: int = 64 * 1024**2):
         self._dir_path = dir_path
         self._log_files_name = log_files_name
         self._to_dict = to_dict

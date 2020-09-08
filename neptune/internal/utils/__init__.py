@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Union
+import base64
+from typing import Union, List, Set, Tuple, TypeVar
+
+T = TypeVar('T')
+Collection = Union[List[T], Set[T], Tuple[T]]
 
 
 def replace_patch_version(version: str):
@@ -31,3 +35,13 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
 
     if not isinstance(var, expected_type):
         raise TypeError("{} must be a {} (was {})".format(var_name, type_name, type(var)))
+
+
+def verify_collection_type(var_name: str, var, expected_type: Union[type, tuple]):
+    verify_type(var_name, var, (list, set, tuple))
+    for value in var:
+        verify_type("elements of {}".format(var_name), value, expected_type)
+
+
+def base64_encode(data: bytes) -> str:
+    return base64.b64encode(data).decode('utf-8')

@@ -15,10 +15,14 @@
 #
 
 # pylint: disable=protected-access
+import numpy
+from PIL import Image
 from mock import patch, MagicMock, call
-from neptune.variables.series.string_series import StringSeries, StringSeriesVal
 
-from neptune.internal.operation import ClearStringLog, LogStrings
+from neptune.internal.utils.images import get_image_content
+from neptune.variables.series.image_series import ImageSeries, ImageSeriesVal
+
+from neptune.internal.operation import ClearImageLog, LogImages
 from tests.neptune.variables.test_variable_base import TestVariableBase
 
 
@@ -26,74 +30,85 @@ from tests.neptune.variables.test_variable_base import TestVariableBase
 class TestStringSeries(TestVariableBase):
 
     def test_assign(self):
-        value = StringSeriesVal(["aaaa", "bbc"])
-        expected = [LogStrings.ValueType("aaaa", None, self._now()), LogStrings.ValueType("bbc", None, self._now())]
+        value = ImageSeriesVal([self._random_image_array(), self._random_image_array()])
+        expected = [
+            LogImages.ValueType(value.values[0], None, self._now()),
+            LogImages.ValueType(value.values[1], None, self._now())
+        ]
 
         backend, processor = MagicMock(), MagicMock()
         exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
-        var = StringSeries(exp, path)
+        var = ImageSeries(exp, path)
         var.assign(value, wait=wait)
         self.assertEqual(2, processor.enqueue_operation.call_count)
         processor.enqueue_operation.assert_has_calls([
-            call(ClearStringLog(exp._uuid, path), False),
-            call(LogStrings(exp._uuid, path, expected), wait)
+            call(ClearImageLog(exp._uuid, path), False),
+            call(LogImages(exp._uuid, path, expected), wait)
         ])
 
     def test_assign_empty(self):
         backend, processor = MagicMock(), MagicMock()
         exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
-        var = StringSeries(exp, path)
-        var.assign(StringSeriesVal([]), wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearStringLog(exp._uuid, path), wait)
+        var = ImageSeries(exp, path)
+        var.assign(ImageSeriesVal([]), wait=wait)
+        processor.enqueue_operation.assert_called_once_with(ClearImageLog(exp._uuid, path), wait)
 
     def test_assign_type_error(self):
         values = [[5.], ["text"], [], 55, "string", None]
         for value in values:
             with self.assertRaises(TypeError):
-                StringSeries(MagicMock(), MagicMock()).assign(value)
+                ImageSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_log(self):
+        values = [self._random_image_array(), self._random_image_array()]
         value_and_expected = [
-            ("xyz", LogStrings.ValueType("xyz", None, self._now())),
-            ("abc", LogStrings.ValueType("abc", None, self._now()))
+            (values[0], LogImages.ValueType(get_image_content(values[0]), None, self._now())),
+            (values[1], LogImages.ValueType(get_image_content(values[1]), None, self._now()))
         ]
 
         for value, expected in value_and_expected:
             backend, processor = MagicMock(), MagicMock()
             exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
-            var = StringSeries(exp, path)
+            var = ImageSeries(exp, path)
             var.log(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogStrings(exp._uuid, path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogImages(exp._uuid, path, [expected]), wait)
 
     def test_log_with_step(self):
-        value_step_and_expected = [
-            ("xyz", 5.3, LogStrings.ValueType("xyz", 5.3, self._now())),
-            ("abc", 10, LogStrings.ValueType("abc", 10, self._now()))
+        values = [self._random_image_array(), self._random_image_array()]
+        value_and_expected = [
+            (values[0], 5.3, LogImages.ValueType(get_image_content(values[0]), 5.3, self._now())),
+            (values[1], 100, LogImages.ValueType(get_image_content(values[1]), 100, self._now()))
         ]
 
-        for value, step, expected in value_step_and_expected:
+        for value, step, expected in value_and_expected:
             backend, processor = MagicMock(), MagicMock()
             exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
-            var = StringSeries(exp, path)
+            var = ImageSeries(exp, path)
             var.log(value, step=step, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogStrings(exp._uuid, path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogImages(exp._uuid, path, [expected]), wait)
 
     def test_log_with_timestamp(self):
-        value_step_and_expected = [
-            ("xyz", 5.3, LogStrings.ValueType("xyz", None, 5.3)),
-            ("abc", 10, LogStrings.ValueType("abc", None, 10))
+        values = [self._random_image_array(), self._random_image_array()]
+        value_and_expected = [
+            (values[0], 5.3, LogImages.ValueType(get_image_content(values[0]), None, 5.3)),
+            (values[1], 100, LogImages.ValueType(get_image_content(values[1]), None, 100))
         ]
 
-        for value, ts, expected in value_step_and_expected:
+        for value, ts, expected in value_and_expected:
             backend, processor = MagicMock(), MagicMock()
             exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
-            var = StringSeries(exp, path)
+            var = ImageSeries(exp, path)
             var.log(value, timestamp=ts, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogStrings(exp._uuid, path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogImages(exp._uuid, path, [expected]), wait)
 
     def test_clear(self):
         backend, processor = MagicMock(), MagicMock()
         exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
-        var = StringSeries(exp, path)
+        var = ImageSeries(exp, path)
         var.clear(wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearStringLog(exp._uuid, path), wait)
+        processor.enqueue_operation.assert_called_once_with(ClearImageLog(exp._uuid, path), wait)
+
+    @staticmethod
+    def _random_image_array(w=20, h=10):
+        image_array = numpy.random.rand(w, h, 3) * 255
+        return Image.fromarray(image_array.astype(numpy.uint8))
