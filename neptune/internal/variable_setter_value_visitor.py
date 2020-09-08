@@ -17,6 +17,7 @@ from typing import List, TYPE_CHECKING
 
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
+from neptune.types.atoms.file import File
 from neptune.types.series.float_series import FloatSeries
 from neptune.types.series.image_series import ImageSeries
 from neptune.types.series.string_series import StringSeries
@@ -24,6 +25,7 @@ from neptune.types.sets.string_set import StringSet
 from neptune.types.value_visitor import ValueVisitor
 from neptune.variables.atoms.float import Float as FloatVar
 from neptune.variables.atoms.string import String as StringVar
+from neptune.variables.atoms.file import File as FileVar
 from neptune.variables.series.float_series import FloatSeries as FloatSeriesVar
 from neptune.variables.series.string_series import StringSeries as StringSeriesVar
 from neptune.variables.series.image_series import ImageSeries as ImageSeriesVar
@@ -43,12 +45,17 @@ class VariableSetterValueVisitor(ValueVisitor[Variable]):
 
     def visit_float(self, value: Float) -> Variable:
         var = FloatVar(self._experiment, self._path)
-        var.assign(value.value, self._wait)
+        var.assign(value, self._wait)
         return var
 
     def visit_string(self, value: String) -> Variable:
         var = StringVar(self._experiment, self._path)
-        var.assign(value.value, self._wait)
+        var.assign(value, self._wait)
+        return var
+
+    def visit_file(self, value: File) -> Variable:
+        var = FileVar(self._experiment, self._path)
+        var.assign(value, self._wait)
         return var
 
     def visit_float_series(self, value: FloatSeries) -> Variable:

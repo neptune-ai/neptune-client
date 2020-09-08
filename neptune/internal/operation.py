@@ -137,6 +137,34 @@ class AssignString(Operation):
         return hash((super().__hash__(), self.value))
 
 
+class UploadFile(Operation):
+
+    def __init__(self, path: List[str], file_path: str):
+        super().__init__(path)
+        self.file_path = file_path
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_upload_file(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["file_path"] = self.file_path
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'UploadFile':
+        return UploadFile(data["path"], data["file_path"])
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.file_path == other.file_path
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.file_path))
+
+
 class LogSeriesValue(Generic[T]):
 
     def __init__(self, value: T, step: Optional[float], ts: float):

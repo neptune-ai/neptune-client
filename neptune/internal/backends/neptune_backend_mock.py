@@ -22,11 +22,16 @@ from neptune.internal.backends.api_model import Project, Experiment
 from neptune.internal.credentials import Credentials
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.backends.neptune_backend import NeptuneBackend
-from neptune.internal.operation import Operation, RemoveStrings, AddStrings, LogStrings, LogFloats, \
-    AssignString, AssignFloat, DeleteVariable, ClearFloatLog, ClearStringLog, ClearStringSet, LogImages, ClearImageLog
+from neptune.internal.operation import Operation, DeleteVariable, \
+    AssignString, AssignFloat, \
+    LogStrings, LogFloats, LogImages, \
+    ClearFloatLog, ClearStringLog, ClearStringSet, ClearImageLog, \
+    RemoveStrings, AddStrings, \
+    UploadFile
 from neptune.internal.operation_visitor import OperationVisitor
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
+from neptune.types.atoms.file import File
 from neptune.types.series.float_series import FloatSeries
 from neptune.types.series.image_series import ImageSeries
 from neptune.types.series.string_series import StringSeries
@@ -90,6 +95,11 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, String):
                 raise self._create_type_error("assign", String.__name__)
             return String(op.value)
+
+        def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, File):
+                raise self._create_type_error("save", File.__name__)
+            return File(op.file_path)
 
         def visit_log_floats(self, op: LogFloats) -> Optional[Value]:
             raw_values = [x.value for x in op.values]

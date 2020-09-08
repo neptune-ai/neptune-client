@@ -35,7 +35,7 @@ from packaging.version import Version
 from requests import Session
 
 from neptune.exceptions import SSLError, ConnectionLost, InternalServerError, Unauthorized, Forbidden, \
-    CannotResolveHostname, UnsupportedClientVersion, BadUsage
+    CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
 from neptune.internal.backends.api_model import ClientConfig
 from neptune.internal.utils import replace_patch_version
 
@@ -62,7 +62,7 @@ def with_api_exceptions_handler(func):
             except HTTPForbidden:
                 raise Forbidden()
             except HTTPClientError as e:
-                raise BadUsage("API status code {}".format(e.status_code)) from e
+                raise ClientHttpError(e.status_code) from e
             except requests.exceptions.RequestException as e:
                 if e.response is None:
                     raise
@@ -81,7 +81,7 @@ def with_api_exceptions_handler(func):
                 elif status_code == HTTPForbidden.status_code:
                     raise Forbidden()
                 elif 400 <= status_code < 500:
-                    raise BadUsage("API status code {}".format(status_code)) from e
+                    raise ClientHttpError(status_code) from e
                 else:
                     raise
         raise ConnectionLost()
