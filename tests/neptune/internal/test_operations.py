@@ -48,8 +48,8 @@ class TestOperations(unittest.TestCase):
             ]),
             ClearFloatLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
             ClearStringLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
-            AddStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], ["asef", "asrge4"]),
-            RemoveStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], ["a\ne", "aeg\t4ger", "agrg"]),
+            AddStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], {"asef", "asrge4"}),
+            RemoveStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], {"a\ne", "aeg\t4ger", "agrg"}),
             ClearStringSet(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
             DeleteVariable(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())])
         ]

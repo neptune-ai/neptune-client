@@ -52,7 +52,7 @@ class FloatSeries(Series):
 
         with self._experiment.lock():
             self._enqueue_operation(
-                LogFloats(self._experiment_uuid, self._path, LogSeriesValue[float](value, step, timestamp)),
+                LogFloats(self._experiment_uuid, self._path, [LogSeriesValue[float](value, step, timestamp)]),
                 wait
             )
 

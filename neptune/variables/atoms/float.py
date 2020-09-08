@@ -25,13 +25,15 @@ from neptune.variables.atoms.atom import Atom
 
 class Float(Atom):
 
-    def assign(self, value: Union[float, int], wait: bool = False):
-        verify_type("value", value, (float, int))
+    def assign(self, value: Union[FloatVal, float, int], wait: bool = False):
+        verify_type("value", value, (FloatVal, float, int))
+        if isinstance(value, FloatVal):
+            value = value.value
         with self._experiment.lock():
             self._enqueue_operation(
                 AssignFloat(self._experiment_uuid, self._path, value), wait)
 
-    def get(self):
+    def get(self) -> float:
         # pylint: disable=protected-access
         val = self._backend.get_attribute(self._experiment_uuid, self._path)
         if not isinstance(val, FloatVal):
