@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import abc
-import uuid
 from typing import List, TypeVar, Generic, Optional, Set
 
 from typing import TYPE_CHECKING
@@ -32,8 +31,7 @@ def all_subclasses(cls):
 
 class Operation:
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str]):
-        self.exp_uuid = exp_uuid
+    def __init__(self, path: List[str]):
         self.path = path
 
     @abc.abstractmethod
@@ -43,7 +41,6 @@ class Operation:
     def to_dict(self) -> dict:
         return {
             "type": self.__class__.__name__,
-            "exp_uuid": str(self.exp_uuid),
             "path": self.path
         }
 
@@ -58,12 +55,12 @@ class Operation:
 
     def __eq__(self, other):
         if type(other) is type(self):
-            return self.exp_uuid == other.exp_uuid and self.path == other.path
+            return self.path == other.path
         else:
             return False
 
     def __hash__(self):
-        return hash((self.exp_uuid, self.path))
+        return hash(self.path)
 
 
 class VersionedOperation:
@@ -86,8 +83,8 @@ class VersionedOperation:
 
 class AssignFloat(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], value: float):
-        super().__init__(exp_uuid, path)
+    def __init__(self, path: List[str], value: float):
+        super().__init__(path)
         self.value = value
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -100,7 +97,7 @@ class AssignFloat(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'AssignFloat':
-        return AssignFloat(uuid.UUID(data["exp_uuid"]), data["path"], data["value"])
+        return AssignFloat(data["path"], data["value"])
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -114,8 +111,8 @@ class AssignFloat(Operation):
 
 class AssignString(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], value: str):
-        super().__init__(exp_uuid, path)
+    def __init__(self, path: List[str], value: str):
+        super().__init__(path)
         self.value = value
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -128,7 +125,7 @@ class AssignString(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'AssignString':
-        return AssignString(uuid.UUID(data["exp_uuid"]), data["path"], data["value"])
+        return AssignString(data["path"], data["value"])
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -172,8 +169,8 @@ class LogFloats(Operation):
 
     ValueType = LogSeriesValue[float]
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[ValueType]):
-        super().__init__(exp_uuid, path)
+    def __init__(self, path: List[str], values: List[ValueType]):
+        super().__init__(path)
         self.values = values
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -187,7 +184,6 @@ class LogFloats(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'LogFloats':
         return LogFloats(
-            uuid.UUID(data["exp_uuid"]),
             data["path"],
             [LogFloats.ValueType.from_dict(value) for value in data["values"]]
         )
@@ -206,8 +202,8 @@ class LogStrings(Operation):
 
     ValueType = LogSeriesValue[str]
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[ValueType]):
-        super().__init__(exp_uuid, path)
+    def __init__(self, path: List[str], values: List[ValueType]):
+        super().__init__(path)
         self.values = values
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -221,7 +217,6 @@ class LogStrings(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'LogStrings':
         return LogStrings(
-            uuid.UUID(data["exp_uuid"]),
             data["path"],
             [LogStrings.ValueType.from_dict(value) for value in data["values"]]
         )
@@ -240,8 +235,8 @@ class LogImages(Operation):
 
     ValueType = LogSeriesValue[Optional[str]]
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[ValueType]):
-        super().__init__(exp_uuid, path)
+    def __init__(self, path: List[str], values: List[ValueType]):
+        super().__init__(path)
         self.values = values
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -255,7 +250,6 @@ class LogImages(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'LogImages':
         return LogImages(
-            uuid.UUID(data["exp_uuid"]),
             data["path"],
             [LogImages.ValueType.from_dict(value) for value in data["values"]]
         )
@@ -277,7 +271,7 @@ class ClearFloatLog(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'ClearFloatLog':
-        return ClearFloatLog(uuid.UUID(data["exp_uuid"]), data["path"])
+        return ClearFloatLog(data["path"])
 
 
 class ClearStringLog(Operation):
@@ -287,7 +281,7 @@ class ClearStringLog(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'ClearStringLog':
-        return ClearStringLog(uuid.UUID(data["exp_uuid"]), data["path"])
+        return ClearStringLog(data["path"])
 
 
 class ClearImageLog(Operation):
@@ -297,13 +291,13 @@ class ClearImageLog(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'ClearImageLog':
-        return ClearImageLog(uuid.UUID(data["exp_uuid"]), data["path"])
+        return ClearImageLog(data["path"])
 
 
 class AddStrings(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: Set[str]):
-        super().__init__(exp_uuid, path)
+    def __init__(self, path: List[str], values: Set[str]):
+        super().__init__(path)
         self.values = values
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -316,7 +310,7 @@ class AddStrings(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'AddStrings':
-        return AddStrings(uuid.UUID(data["exp_uuid"]), data["path"], set(data["values"]))
+        return AddStrings(data["path"], set(data["values"]))
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -330,8 +324,8 @@ class AddStrings(Operation):
 
 class RemoveStrings(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: Set[str]):
-        super().__init__(exp_uuid, path)
+    def __init__(self, path: List[str], values: Set[str]):
+        super().__init__(path)
         self.values = values
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -344,7 +338,7 @@ class RemoveStrings(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'RemoveStrings':
-        return RemoveStrings(uuid.UUID(data["exp_uuid"]), data["path"], set(data["values"]))
+        return RemoveStrings(data["path"], set(data["values"]))
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -363,7 +357,7 @@ class ClearStringSet(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'ClearStringSet':
-        return ClearStringSet(uuid.UUID(data["exp_uuid"]), data["path"])
+        return ClearStringSet(data["path"])
 
 
 class DeleteVariable(Operation):
@@ -373,4 +367,4 @@ class DeleteVariable(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'DeleteVariable':
-        return DeleteVariable(uuid.UUID(data["exp_uuid"]), data["path"])
+        return DeleteVariable(data["path"])

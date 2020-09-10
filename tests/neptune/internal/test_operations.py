@@ -15,6 +15,7 @@
 #
 import json
 import unittest
+import uuid
 
 from neptune.internal.operation import *
 
@@ -33,28 +34,28 @@ class TestOperations(unittest.TestCase):
     @staticmethod
     def _list_objects():
         return [
-            AssignFloat(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], 5),
-            AssignString(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], "a\rsdf\thr"),
-            LogFloats(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [
+            AssignFloat(["some", "random", "path", str(uuid.uuid4())], 5),
+            AssignString(["some", "random", "path", str(uuid.uuid4())], "a\rsdf\thr"),
+            LogFloats(["some", "random", "path", str(uuid.uuid4())], [
                 LogFloats.ValueType(5, 4, 500),
                 LogFloats.ValueType(3, None, 1000),
                 LogFloats.ValueType(10, 10, 1234)
             ]),
-            LogStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [
+            LogStrings(["some", "random", "path", str(uuid.uuid4())], [
                 LogStrings.ValueType("jetybv", 1, 5),
                 LogStrings.ValueType("ghs\ner", 3, 123),
                 LogStrings.ValueType("r", None, 1356),
                 LogStrings.ValueType("ghsr", 13, 53682)
             ]),
-            LogImages(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [
+            LogImages(["some", "random", "path", str(uuid.uuid4())], [
                 LogImages.ValueType("base64_image_1", None, 2),
                 LogImages.ValueType("base64_image_2", 0, 5),
             ]),
-            ClearFloatLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
-            ClearStringLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
-            ClearImageLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
-            AddStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], {"asef", "asrge4"}),
-            RemoveStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], {"a\ne", "aeg\t4ger", "agrg"}),
-            ClearStringSet(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
-            DeleteVariable(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())])
+            ClearFloatLog(["some", "random", "path", str(uuid.uuid4())]),
+            ClearStringLog(["some", "random", "path", str(uuid.uuid4())]),
+            ClearImageLog(["some", "random", "path", str(uuid.uuid4())]),
+            AddStrings(["some", "random", "path", str(uuid.uuid4())], {"asef", "asrge4"}),
+            RemoveStrings(["some", "random", "path", str(uuid.uuid4())], {"a\ne", "aeg\t4ger", "agrg"}),
+            ClearStringSet(["some", "random", "path", str(uuid.uuid4())]),
+            DeleteVariable(["some", "random", "path", str(uuid.uuid4())])
         ]

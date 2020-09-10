@@ -31,13 +31,13 @@ class StringSeries(Series[Val, Data]):
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in value.values]
-        return LogStrings(self._experiment_uuid, self._path, values)
+        return LogStrings(self._path, values)
 
     def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
-        return LogStrings(self._experiment_uuid, self._path, [LogStrings.ValueType(data, step, timestamp)])
+        return LogStrings(self._path, [LogStrings.ValueType(data, step, timestamp)])
 
     def _get_clear_operation(self) -> Operation:
-        return ClearStringLog(self._experiment_uuid, self._path)
+        return ClearStringLog(self._path)
 
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)

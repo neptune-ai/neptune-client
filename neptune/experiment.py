@@ -82,7 +82,7 @@ class Experiment(handler.Handler):
         with self._lock:
             parsed_path = parse_path(path)
             self._structure.pop(parsed_path)
-            self._op_processor.enqueue_operation(DeleteVariable(self._uuid, parsed_path), wait)
+            self._op_processor.enqueue_operation(DeleteVariable(parsed_path), wait)
 
     def lock(self) -> threading.RLock:
         return self._lock

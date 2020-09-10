@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import uuid
 from threading import Event
 from time import time
 
@@ -28,10 +29,12 @@ from neptune.internal.threading.daemon import Daemon
 class AsyncOperationProcessor(OperationProcessor):
 
     def __init__(self,
+                 experiment_uuid: uuid.UUID,
                  queue: StorageQueue[VersionedOperation],
                  backend: NeptuneBackend,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
+        self._experiment_uuid = experiment_uuid
         self._queue = queue
         self._backend = backend
         self._last_version = 0
@@ -82,7 +85,7 @@ class AsyncOperationProcessor(OperationProcessor):
             batch = self._processor._queue.get_batch(self._batch_size)
             if not batch:
                 return
-            self._processor._backend.execute_operations([op.op for op in batch])
+            self._processor._backend.execute_operations(self._processor._experiment_uuid, [op.op for op in batch])
             self._processor._consumed_version = batch[-1].version
             if self._processor._waiting_for_version > 0:
                 if self._processor._consumed_version >= self._processor._waiting_for_version:

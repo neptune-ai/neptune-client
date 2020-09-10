@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import uuid
 
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation
@@ -21,12 +22,13 @@ from neptune.internal.operation_processors.operation_processor import OperationP
 
 class SyncOperationProcessor(OperationProcessor):
 
-    def __init__(self, backend: NeptuneBackend):
+    def __init__(self, experiment_uuid: uuid.UUID, backend: NeptuneBackend):
+        self._experiment_uuid = experiment_uuid
         self._backend = backend
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument
-        self._backend.execute_operations([op])
+        self._backend.execute_operations(self._experiment_uuid, [op])
 
     def wait(self):
         pass

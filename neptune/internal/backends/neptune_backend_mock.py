@@ -51,14 +51,14 @@ class NeptuneBackendMock(NeptuneBackend):
         self._experiments[new_uuid] = ExperimentStructure[Value]()
         return Experiment(new_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
 
-    def execute_operations(self, operations: List[Operation]) -> None:
+    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         for op in operations:
-            self._execute_operation(op)
+            self._execute_operation(experiment_uuid, op)
 
-    def _execute_operation(self, op: Operation) -> None:
-        if op.exp_uuid not in self._experiments:
-            raise ExperimentUUIDNotFound(op.exp_uuid)
-        exp = self._experiments[op.exp_uuid]
+    def _execute_operation(self, exp_uuid: uuid.UUID, op: Operation) -> None:
+        if exp_uuid not in self._experiments:
+            raise ExperimentUUIDNotFound(exp_uuid)
+        exp = self._experiments[exp_uuid]
         val = exp.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):

@@ -68,6 +68,7 @@ def init(
 
     if connection_mode == "async":
         operation_processor = AsyncOperationProcessor(
+            exp.uuid,
             DiskQueue(".neptune/{}".format(exp.uuid),
                       "operations",
                       VersionedOperation.to_dict,
@@ -75,9 +76,9 @@ def init(
             backend,
             sleep_time=flush_period)
     elif connection_mode == "sync":
-        operation_processor = SyncOperationProcessor(backend)
+        operation_processor = SyncOperationProcessor(exp.uuid, backend)
     elif connection_mode == "offline":
-        operation_processor = SyncOperationProcessor(backend)
+        operation_processor = SyncOperationProcessor(exp.uuid, backend)
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline"]')
 

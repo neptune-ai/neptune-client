@@ -42,5 +42,5 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def execute_operations(self, operations: List[Operation]) -> None:
+    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         pass
