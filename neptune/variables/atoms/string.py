@@ -30,8 +30,7 @@ class String(Atom):
         if isinstance(value, StringVal):
             value = value.value
         with self._experiment.lock():
-            self._enqueue_operation(
-                AssignString(self._experiment_uuid, self._path, value), wait)
+            self._enqueue_operation(AssignString(self._path, value), wait)
 
     def get(self) -> str:
         # pylint: disable=protected-access

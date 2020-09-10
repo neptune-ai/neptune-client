@@ -38,7 +38,7 @@ class TestString(TestVariableBase):
             exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
             var = String(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignString(exp._uuid, path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(AssignString(path, expected), wait)
 
     def test_assign_type_error(self):
         values = [55, None]

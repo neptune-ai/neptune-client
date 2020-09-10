@@ -32,14 +32,14 @@ class ImageSeries(Series[Val, Data]):
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
         values = [LogImages.ValueType(val, step=step, ts=timestamp) for val in value.values]
-        return LogImages(self._experiment_uuid, self._path, values)
+        return LogImages(self._path, values)
 
     def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
         content = get_image_content(data)
-        return LogImages(self._experiment_uuid, self._path, [LogImages.ValueType(content, step, timestamp)])
+        return LogImages(self._path, [LogImages.ValueType(content, step, timestamp)])
 
     def _get_clear_operation(self) -> Operation:
-        return ClearImageLog(self._experiment_uuid, self._path)
+        return ClearImageLog(self._path)
 
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)

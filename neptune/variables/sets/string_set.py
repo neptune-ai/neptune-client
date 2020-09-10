@@ -31,22 +31,22 @@ class StringSet(Set):
         verify_type("value", value, StringSetVal)
         with self._experiment.lock():
             if not value.values:
-                self._enqueue_operation(ClearStringSet(self._experiment_uuid, self._path), wait=wait)
+                self._enqueue_operation(ClearStringSet(self._path), wait=wait)
             else:
-                self._enqueue_operation(ClearStringSet(self._experiment_uuid, self._path), wait=False)
-                self._enqueue_operation(AddStrings(self._experiment_uuid, self._path, value.values), wait=wait)
+                self._enqueue_operation(ClearStringSet(self._path), wait=False)
+                self._enqueue_operation(AddStrings(self._path, value.values), wait=wait)
 
     def add(self, values: Iterable[str], wait: bool = False):
         with self._experiment.lock():
-            self._enqueue_operation(AddStrings(self._experiment_uuid, self._path, set(values)), wait)
+            self._enqueue_operation(AddStrings(self._path, set(values)), wait)
 
     def remove(self, values: Iterable[str], wait: bool = False):
         with self._experiment.lock():
-            self._enqueue_operation(RemoveStrings(self._experiment_uuid, self._path, set(values)), wait)
+            self._enqueue_operation(RemoveStrings(self._path, set(values)), wait)
 
     def clear(self, wait: bool = False):
         with self._experiment.lock():
-            self._enqueue_operation(ClearStringSet(self._experiment_uuid, self._path), wait)
+            self._enqueue_operation(ClearStringSet(self._path), wait)
 
     def get(self) -> typing.Set[str]:
         # pylint: disable=protected-access

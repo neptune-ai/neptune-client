@@ -39,8 +39,8 @@ class TestSeries(TestVariableBase):
         var.assign(value, wait=wait)
         self.assertEqual(2, processor.enqueue_operation.call_count)
         processor.enqueue_operation.assert_has_calls([
-            call(ClearFloatLog(exp._uuid, path), False),
-            call(LogFloats(exp._uuid, path, expected), wait)
+            call(ClearFloatLog(path), False),
+            call(LogFloats(path, expected), wait)
         ])
 
     def test_assign_empty(self):
@@ -48,7 +48,7 @@ class TestSeries(TestVariableBase):
         exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
         var = FloatSeries(exp, path)
         var.assign(FloatSeriesVal([]), wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearFloatLog(exp._uuid, path), wait)
+        processor.enqueue_operation.assert_called_once_with(ClearFloatLog(path), wait)
 
     def test_log(self):
         value_and_expected = [
@@ -61,7 +61,7 @@ class TestSeries(TestVariableBase):
             exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
             var = FloatSeries(exp, path)
             var.log(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(exp._uuid, path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
 
     def test_log_with_step(self):
         value_step_and_expected = [
@@ -74,7 +74,7 @@ class TestSeries(TestVariableBase):
             exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
             var = FloatSeries(exp, path)
             var.log(value, step=step, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(exp._uuid, path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
 
     def test_log_with_timestamp(self):
         value_step_and_expected = [
@@ -87,14 +87,14 @@ class TestSeries(TestVariableBase):
             exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
             var = FloatSeries(exp, path)
             var.log(value, timestamp=ts, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(exp._uuid, path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
 
     def test_clear(self):
         backend, processor = MagicMock(), MagicMock()
         exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
         var = FloatSeries(exp, path)
         var.clear(wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearFloatLog(exp._uuid, path), wait)
+        processor.enqueue_operation.assert_called_once_with(ClearFloatLog(path), wait)
 
     class SeriesTestClass(Series[FloatSeriesVal, int]):
 
@@ -103,10 +103,10 @@ class TestSeries(TestVariableBase):
                                           step: Optional[float],
                                           timestamp: float) -> Operation:
             values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
-            return LogFloats(self._experiment_uuid, self._path, values)
+            return LogFloats(self._path, values)
 
         def _get_log_operation_from_data(self, data: int, step: Optional[float], timestamp: float) -> Operation:
-            return LogFloats(self._experiment_uuid, self._path, [LogFloats.ValueType(data, step, timestamp)])
+            return LogFloats(self._path, [LogFloats.ValueType(data, step, timestamp)])
 
         def _get_clear_operation(self) -> Operation:
-            return ClearFloatLog(self._experiment_uuid, self._path)
+            return ClearFloatLog(self._path)
