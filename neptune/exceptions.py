@@ -39,6 +39,11 @@ class MalformedOperation(NeptuneException):
     pass
 
 
+class FileNotFound(NeptuneException):
+    def __init__(self, file: str):
+        super().__init__("File not found: {}".format(file))
+
+
 class InternalClientError(NeptuneException):
     def __init__(self, msg: str):
         super().__init__("Internal client error: {}. Please contact Neptune support.".format(msg))

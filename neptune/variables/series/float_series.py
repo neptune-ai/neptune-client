@@ -14,48 +14,33 @@
 # limitations under the License.
 #
 
-import time
 from typing import Union, Optional
 
 from neptune.types.series.float_series import FloatSeries as FloatSeriesVal
 
 from neptune.internal.utils import verify_type
 
-from neptune.internal.operation import ClearFloatLog, LogFloats, LogSeriesValue
+from neptune.internal.operation import ClearFloatLog, LogFloats, Operation
 from neptune.variables.series.series import Series
 
+Val = FloatSeriesVal
+Data = Union[float, int]
 
-class FloatSeries(Series):
 
-    def assign(self, value: FloatSeriesVal, wait: bool = False):
-        verify_type("value", value, FloatSeriesVal)
+class FloatSeries(Series[Val, Data]):
 
-        with self._experiment.lock():
-            clear_op = ClearFloatLog(self._experiment_uuid, self._path)
-            if not value.values:
-                self._enqueue_operation(clear_op, wait=wait)
-            else:
-                self._enqueue_operation(clear_op, wait=False)
-                ts = time.time()
-                values = [LogSeriesValue[float](val, step=None, ts=ts) for val in value.values]
-                self._enqueue_operation(LogFloats(self._experiment_uuid, self._path, values), wait=wait)
+    def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
+        values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
+        return LogFloats(self._experiment_uuid, self._path, values)
 
-    def log(self,
-            value: Union[float, int],
-            step: Optional[float] = None,
-            timestamp: Optional[float] = None,
-            wait: bool = False):
-        verify_type("value", value, (float, int))
+    def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
+        return LogFloats(self._experiment_uuid, self._path, [LogFloats.ValueType(data, step, timestamp)])
 
-        if not timestamp:
-            timestamp = time.time()
+    def _get_clear_operation(self) -> Operation:
+        return ClearFloatLog(self._experiment_uuid, self._path)
 
-        with self._experiment.lock():
-            self._enqueue_operation(
-                LogFloats(self._experiment_uuid, self._path, [LogSeriesValue[float](value, step, timestamp)]),
-                wait
-            )
+    def _verify_value_type(self, value) -> None:
+        verify_type("value", value, Val)
 
-    def clear(self, wait: bool = False):
-        with self._experiment.lock():
-            self._enqueue_operation(ClearFloatLog(self._experiment_uuid, self._path), wait)
+    def _verify_data_type(self, data) -> None:
+        verify_type("data", data, (float, int))

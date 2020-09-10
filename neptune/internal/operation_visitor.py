@@ -17,7 +17,7 @@ import abc
 from typing import TypeVar, Generic
 
 from neptune.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, ClearFloatLog, \
-    ClearStringLog, AddStrings, RemoveStrings, DeleteVariable, ClearStringSet
+    ClearStringLog, AddStrings, RemoveStrings, DeleteVariable, ClearStringSet, LogImages, ClearImageLog
 
 Ret = TypeVar('Ret')
 
@@ -44,11 +44,19 @@ class OperationVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
+    def visit_log_images(self, op: LogImages) -> Ret:
+        pass
+
+    @abc.abstractmethod
     def visit_clear_float_log(self, op: ClearFloatLog) -> Ret:
         pass
 
     @abc.abstractmethod
     def visit_clear_string_log(self, op: ClearStringLog) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_clear_image_log(self, op: ClearImageLog) -> Ret:
         pass
 
     @abc.abstractmethod

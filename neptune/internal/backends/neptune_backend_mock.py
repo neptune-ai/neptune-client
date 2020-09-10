@@ -23,11 +23,12 @@ from neptune.internal.credentials import Credentials
 from neptune.internal.experiment_structure import ExperimentStructure
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.operation import Operation, RemoveStrings, AddStrings, LogStrings, LogFloats, \
-    AssignString, AssignFloat, DeleteVariable, ClearFloatLog, ClearStringLog, ClearStringSet
+    AssignString, AssignFloat, DeleteVariable, ClearFloatLog, ClearStringLog, ClearStringSet, LogImages, ClearImageLog
 from neptune.internal.operation_visitor import OperationVisitor
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
 from neptune.types.series.float_series import FloatSeries
+from neptune.types.series.image_series import ImageSeries
 from neptune.types.series.string_series import StringSeries
 from neptune.types.sets.string_set import StringSet
 from neptune.types.value import Value
@@ -91,18 +92,28 @@ class NeptuneBackendMock(NeptuneBackend):
             return String(op.value)
 
         def visit_log_floats(self, op: LogFloats) -> Optional[Value]:
+            raw_values = [x.value for x in op.values]
             if self._current_value is None:
-                return FloatSeries(op.values)
+                return FloatSeries(raw_values)
             if not isinstance(self._current_value, FloatSeries):
                 raise self._create_type_error("log", FloatSeries.__name__)
-            return FloatSeries(self._current_value.values + op.values)
+            return FloatSeries(self._current_value.values + raw_values)
 
         def visit_log_strings(self, op: LogStrings) -> Optional[Value]:
+            raw_values = [x.value for x in op.values]
             if self._current_value is None:
-                return StringSeries(op.values)
+                return StringSeries(raw_values)
             if not isinstance(self._current_value, StringSeries):
                 raise self._create_type_error("log", StringSeries.__name__)
-            return StringSeries(self._current_value.values + op.values)
+            return StringSeries(self._current_value.values + raw_values)
+
+        def visit_log_images(self, op: LogImages) -> Optional[Value]:
+            raw_values = [x.value for x in op.values]
+            if self._current_value is None:
+                return ImageSeries(raw_values)
+            if not isinstance(self._current_value, ImageSeries):
+                raise self._create_type_error("log", ImageSeries.__name__)
+            return ImageSeries(self._current_value.values + raw_values)
 
         def visit_clear_float_log(self, op: ClearFloatLog) -> Optional[Value]:
             # pylint: disable=unused-argument
@@ -119,6 +130,14 @@ class NeptuneBackendMock(NeptuneBackend):
             if not isinstance(self._current_value, StringSeries):
                 raise self._create_type_error("clear", StringSeries.__name__)
             return StringSeries([])
+
+        def visit_clear_image_log(self, op: ClearImageLog) -> Optional[Value]:
+            # pylint: disable=unused-argument
+            if self._current_value is None:
+                return ImageSeries([])
+            if not isinstance(self._current_value, ImageSeries):
+                raise self._create_type_error("clear", ImageSeries.__name__)
+            return ImageSeries([])
 
         def visit_add_strings(self, op: AddStrings) -> Optional[Value]:
             if self._current_value is None:

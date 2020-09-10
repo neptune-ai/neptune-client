@@ -17,30 +17,29 @@
 from typing import Optional
 
 from neptune.internal.utils import verify_type
+from neptune.internal.utils.images import get_image_content
 
-from neptune.types.series.string_series import StringSeries as StringSeriesVal
+from neptune.types.series.image_series import ImageSeries as ImageSeriesVal, ImageAcceptedTypes
 
-from neptune.internal.operation import LogStrings, ClearStringLog, Operation
+from neptune.internal.operation import LogImages, ClearImageLog, Operation
 from neptune.variables.series.series import Series
 
-Val = StringSeriesVal
-Data = str
+Val = ImageSeriesVal
+Data = ImageAcceptedTypes
 
 
-class StringSeries(Series[Val, Data]):
+class ImageSeries(Series[Val, Data]):
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
-        values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in value.values]
-        return LogStrings(self._experiment_uuid, self._path, values)
+        values = [LogImages.ValueType(val, step=step, ts=timestamp) for val in value.values]
+        return LogImages(self._experiment_uuid, self._path, values)
 
     def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
-        return LogStrings(self._experiment_uuid, self._path, [LogStrings.ValueType(data, step, timestamp)])
+        content = get_image_content(data)
+        return LogImages(self._experiment_uuid, self._path, [LogImages.ValueType(content, step, timestamp)])
 
     def _get_clear_operation(self) -> Operation:
-        return ClearStringLog(self._experiment_uuid, self._path)
+        return ClearImageLog(self._experiment_uuid, self._path)
 
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)
-
-    def _verify_data_type(self, data) -> None:
-        verify_type("data", data, Data)

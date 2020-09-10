@@ -36,18 +36,23 @@ class TestOperations(unittest.TestCase):
             AssignFloat(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], 5),
             AssignString(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], "a\rsdf\thr"),
             LogFloats(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [
-                LogSeriesValue[float](5, 4, 500),
-                LogSeriesValue[float](3, None, 1000),
-                LogSeriesValue[float](10, 10, 1234)
+                LogFloats.ValueType(5, 4, 500),
+                LogFloats.ValueType(3, None, 1000),
+                LogFloats.ValueType(10, 10, 1234)
             ]),
             LogStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [
-                LogSeriesValue[str]("jetybv", 1, 5),
-                LogSeriesValue[str]("ghs\ner", 3, 123),
-                LogSeriesValue[str]("r", None, 1356),
-                LogSeriesValue[str]("ghsr", 13, 53682)
+                LogStrings.ValueType("jetybv", 1, 5),
+                LogStrings.ValueType("ghs\ner", 3, 123),
+                LogStrings.ValueType("r", None, 1356),
+                LogStrings.ValueType("ghsr", 13, 53682)
+            ]),
+            LogImages(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], [
+                LogImages.ValueType("base64_image_1", None, 2),
+                LogImages.ValueType("base64_image_2", 0, 5),
             ]),
             ClearFloatLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
             ClearStringLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
+            ClearImageLog(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),
             AddStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], {"asef", "asrge4"}),
             RemoveStrings(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())], {"a\ne", "aeg\t4ger", "agrg"}),
             ClearStringSet(uuid.uuid4(), ["some", "random", "path", str(uuid.uuid4())]),

@@ -156,7 +156,7 @@ class LogSeriesValue(Generic[T]):
 
     @staticmethod
     def from_dict(data: dict) -> 'LogSeriesValue[T]':
-        return LogSeriesValue(data["value"], data.get("step", None), data["ts"])
+        return LogSeriesValue[T](data["value"], data.get("step", None), data["ts"])
 
     def __eq__(self, other):
         if type(other) is type(self):
@@ -170,7 +170,9 @@ class LogSeriesValue(Generic[T]):
 
 class LogFloats(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[LogSeriesValue[float]]):
+    ValueType = LogSeriesValue[float]
+
+    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[ValueType]):
         super().__init__(exp_uuid, path)
         self.values = values
 
@@ -187,7 +189,7 @@ class LogFloats(Operation):
         return LogFloats(
             uuid.UUID(data["exp_uuid"]),
             data["path"],
-            [LogSeriesValue[float].from_dict(value) for value in data["values"]]
+            [LogFloats.ValueType.from_dict(value) for value in data["values"]]
         )
 
     def __eq__(self, other):
@@ -202,7 +204,9 @@ class LogFloats(Operation):
 
 class LogStrings(Operation):
 
-    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[LogSeriesValue[str]]):
+    ValueType = LogSeriesValue[str]
+
+    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[ValueType]):
         super().__init__(exp_uuid, path)
         self.values = values
 
@@ -219,7 +223,41 @@ class LogStrings(Operation):
         return LogStrings(
             uuid.UUID(data["exp_uuid"]),
             data["path"],
-            [LogSeriesValue[str].from_dict(value) for value in data["values"]]
+            [LogStrings.ValueType.from_dict(value) for value in data["values"]]
+        )
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.values == other.values
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.values))
+
+
+class LogImages(Operation):
+
+    ValueType = LogSeriesValue[Optional[str]]
+
+    def __init__(self, exp_uuid: uuid.UUID, path: List[str], values: List[ValueType]):
+        super().__init__(exp_uuid, path)
+        self.values = values
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_log_images(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["values"] = [value.to_dict() for value in self.values]
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'LogImages':
+        return LogImages(
+            uuid.UUID(data["exp_uuid"]),
+            data["path"],
+            [LogImages.ValueType.from_dict(value) for value in data["values"]]
         )
 
     def __eq__(self, other):
@@ -250,6 +288,16 @@ class ClearStringLog(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'ClearStringLog':
         return ClearStringLog(uuid.UUID(data["exp_uuid"]), data["path"])
+
+
+class ClearImageLog(Operation):
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_clear_image_log(self)
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ClearImageLog':
+        return ClearImageLog(uuid.UUID(data["exp_uuid"]), data["path"])
 
 
 class AddStrings(Operation):

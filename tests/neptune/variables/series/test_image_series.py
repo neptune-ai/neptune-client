@@ -16,24 +16,24 @@
 
 # pylint: disable=protected-access
 
-from mock import MagicMock, patch
+from mock import patch, MagicMock
 
-from neptune.variables.series.float_series import FloatSeries
+from neptune.variables.series.image_series import ImageSeries
 
 from tests.neptune.variables.test_variable_base import TestVariableBase
 
 
 @patch("time.time", new=TestVariableBase._now)
-class TestFloatSeries(TestVariableBase):
+class TestStringSeries(TestVariableBase):
 
     def test_assign_type_error(self):
         values = [[5.], ["text"], [], 55, "string", None]
         for value in values:
             with self.assertRaises(TypeError):
-                FloatSeries(MagicMock(), MagicMock()).assign(value)
+                ImageSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_log_type_error(self):
-        values = [[5.], ["text"], [], "string", None]
+        values = [[5.], ["text"], [], 55, None]
         for value in values:
             with self.assertRaises(TypeError):
-                FloatSeries(MagicMock(), MagicMock()).log(value)
+                ImageSeries(MagicMock(), MagicMock()).log(value)

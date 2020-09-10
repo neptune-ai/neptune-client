@@ -13,10 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import abc
-from typing import TypeVar, TYPE_CHECKING
 
-from neptune.types.value import Value
+from typing import TypeVar, Iterable, TYPE_CHECKING
+
+from neptune.internal.utils.images import ImageAcceptedTypes, get_image_content
+from neptune.types.series.series import Series
 
 if TYPE_CHECKING:
     from neptune.types.value_visitor import ValueVisitor
@@ -24,13 +25,17 @@ if TYPE_CHECKING:
 Ret = TypeVar('Ret')
 
 
-class Series(Value):
+class ImageSeries(Series):
 
-    @abc.abstractmethod
+    def __init__(self, values: Iterable[ImageAcceptedTypes]):
+        self._values = [get_image_content(value) for value in values]
+
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
-        pass
+        return visitor.visit_image_series(self)
 
     @property
-    @abc.abstractmethod
     def values(self):
-        pass
+        return self._values
+
+    def __str__(self):
+        return "ImageSeries({})".format(str(self.values))
