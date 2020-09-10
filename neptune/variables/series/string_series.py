@@ -14,49 +14,33 @@
 # limitations under the License.
 #
 
-import time
 from typing import Optional
 
 from neptune.internal.utils import verify_type
 
 from neptune.types.series.string_series import StringSeries as StringSeriesVal
 
-from neptune.internal.operation import LogStrings, ClearStringLog
+from neptune.internal.operation import LogStrings, ClearStringLog, Operation
 from neptune.variables.series.series import Series
 
+Val = StringSeriesVal
+Data = str
 
-class StringSeries(Series):
 
-    def assign(self, value: StringSeriesVal, wait: bool = False):
-        verify_type("value", value, StringSeriesVal)
+class StringSeries(Series[Val, Data]):
 
-        with self._experiment.lock():
-            clear_op = ClearStringLog(self._experiment_uuid, self._path)
-            if not value.values:
-                self._enqueue_operation(clear_op, wait=wait)
-            else:
-                self._enqueue_operation(clear_op, wait=False)
-                ts = time.time()
-                values = [LogStrings.ValueType(val, step=None, ts=ts) for val in value.values]
-                self._enqueue_operation(LogStrings(self._experiment_uuid, self._path, values), wait=wait)
+    def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
+        values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in value.values]
+        return LogStrings(self._experiment_uuid, self._path, values)
 
-    def log(self,
-            value: str,
-            step: Optional[float] = None,
-            timestamp: Optional[float] = None,
-            wait: bool = False):
-        verify_type("value", value, str)
-        verify_type("step", step, (float, int, type(None)))
-        verify_type("timestamp", timestamp, (float, int, type(None)))
+    def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
+        return LogStrings(self._experiment_uuid, self._path, [LogStrings.ValueType(data, step, timestamp)])
 
-        if not timestamp:
-            timestamp = time.time()
+    def _get_clear_operation(self) -> Operation:
+        return ClearStringLog(self._experiment_uuid, self._path)
 
-        with self._experiment.lock():
-            self._enqueue_operation(
-                LogStrings(self._experiment_uuid, self._path, [LogStrings.ValueType(value, step, timestamp)]),
-                wait)
+    def _verify_value_type(self, value) -> None:
+        verify_type("value", value, Val)
 
-    def clear(self, wait: bool = False):
-        with self._experiment.lock():
-            self._enqueue_operation(ClearStringLog(self._experiment_uuid, self._path), wait)
+    def _verify_data_type(self, data) -> None:
+        verify_type("data", data, Data)

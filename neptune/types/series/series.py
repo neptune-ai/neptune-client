@@ -29,3 +29,8 @@ class Series(Value):
     @abc.abstractmethod
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         pass
+
+    @property
+    @abc.abstractmethod
+    def values(self):
+        pass

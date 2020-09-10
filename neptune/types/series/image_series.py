@@ -28,10 +28,14 @@ Ret = TypeVar('Ret')
 class ImageSeries(Series):
 
     def __init__(self, values: Iterable[ImageAcceptedTypes]):
-        self.values = [get_image_content(value) for value in values]
+        self._values = [get_image_content(value) for value in values]
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_image_series(self)
+
+    @property
+    def values(self):
+        return self._values
 
     def __str__(self):
         return "ImageSeries({})".format(str(self.values))

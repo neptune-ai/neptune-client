@@ -27,10 +27,14 @@ Ret = TypeVar('Ret')
 class FloatSeries(Series):
 
     def __init__(self, values: Iterable[float]):
-        self.values = list(values)
+        self._values = list(values)
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_float_series(self)
+
+    @property
+    def values(self):
+        return self._values
 
     def __str__(self):
         return "FloatSeries({})".format(str(self.values))
