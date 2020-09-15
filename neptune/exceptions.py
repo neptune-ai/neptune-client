@@ -49,9 +49,9 @@ class InternalClientError(NeptuneException):
         super().__init__("Internal client error: {}. Please contact Neptune support.".format(msg))
 
 
-class BadUsage(NeptuneException):
-    def __init__(self, msg: str):
-        super().__init__("Bad usage: {}".format(msg))
+class ClientHttpError(NeptuneException):
+    def __init__(self, code: int):
+        super().__init__("Client HTTP error {}".format(code))
 
 
 class ProjectNotFound(NeptuneException):

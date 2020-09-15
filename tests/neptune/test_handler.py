@@ -27,6 +27,7 @@ from neptune.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.types.sets.string_set import StringSet as StringSetVal
 from neptune.variables.atoms.float import Float
 from neptune.variables.atoms.string import String
+from neptune.variables.atoms.file import File
 from neptune.variables.series.float_series import FloatSeries
 from neptune.variables.series.string_series import StringSeries
 from neptune.variables.sets.string_set import StringSet
@@ -64,6 +65,12 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(exp['some/str/val'].get(), "other text")
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
+
+    def test_save_file(self):
+        exp = init(connection_mode="offline", flush_period=0.5)
+        exp['some/num/file'].save("path/to/other/file.txt")
+        # TODO: Test download
+        self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
 
     def test_assign_series(self):
         exp = init(connection_mode="offline", flush_period=0.5)

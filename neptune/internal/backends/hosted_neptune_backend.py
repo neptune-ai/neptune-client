@@ -33,20 +33,20 @@ from neptune.internal.backends.api_model import ClientConfig, Project, Experimen
 from neptune.internal.backends.neptune_backend import NeptuneBackend
 from neptune.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
     create_swagger_client, verify_client_version, update_session_proxies
+from neptune.internal.backends.hosted_file_operations import upload_to_storage
 from neptune.internal.credentials import Credentials
-from neptune.internal.operation import Operation
+from neptune.internal.operation import Operation, UploadFile
 from neptune.internal.utils import verify_type
 from neptune.types.value import Value
 from neptune.version import version as neptune_client_version
+from neptune_old.internal.storage.storage_utils import UploadEntry
 from neptune_old.oauth import NeptuneAuthenticator
 
 
 class HostedNeptuneBackend(NeptuneBackend):
-
     BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
-    LB_SWAGGER_PATH = "/api/leaderboard/swagger.json"
+    LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
 
-    @with_api_exceptions_handler
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
         self.credentials = credentials
 
@@ -66,8 +66,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         verify_client_version(self._client_config, neptune_client_version)
 
         if config_api_url != self._client_config.api_url:
-            self.backend_client = create_swagger_client(config_api_url + self.BACKEND_SWAGGER_PATH, self._http_client)
-        self.leaderboard_client = create_swagger_client(config_api_url + self.LB_SWAGGER_PATH, self._http_client)
+            self.backend_client = create_swagger_client(self._client_config.api_url + self.BACKEND_SWAGGER_PATH,
+                                                        self._http_client)
+        self.leaderboard_client = create_swagger_client(self._client_config.api_url + self.LEADERBOARD_SWAGGER_PATH,
+                                                        self._http_client)
 
         # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
         self._http_client.authenticator = NeptuneAuthenticator(self._get_auth_tokens(), ssl_verify, proxies)
@@ -114,9 +116,38 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
 
-    @with_api_exceptions_handler
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
+        upload_operations, other_operations = [], []
+        for op in operations:
+            (upload_operations if isinstance(op, UploadFile) else other_operations).append(op)
+
+        if other_operations:
+            self._execute_operations(experiment_uuid, other_operations)
+        if upload_operations:
+            self._upload_files(experiment_uuid, upload_operations)
+
+    @with_api_exceptions_handler
+    def _execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         pass
+
+    # Do not use @with_api_exceptions_handler. It should be used internally.
+    def _upload_files(self, experiment_uuid: uuid.UUID, operations: List[UploadFile]) -> None:
+        def get_destination(op: UploadFile) -> str:
+            try:
+                ext = op.file_path[op.file_path.rindex("."):]
+            except ValueError:
+                ext = ""
+            return '/'.join(op.path) + ext
+
+        upload_entries = [UploadEntry(op.file_path, get_destination(op)) for op in operations]
+        api_url = self._client_config.api_url
+        api = self.leaderboard_client.api
+        # TODO: Use new upload endpoint
+        upload_to_storage(upload_entries=upload_entries,
+                          http_client=self._http_client,
+                          file_url=api_url + api.uploadOutputUsingPOST.operation.path_name,
+                          tar_files_url=api_url + api.uploadOutputAsTarStreamUsingPOST.operation.path_name,
+                          experiment_uuid=experiment_uuid)
 
     @with_api_exceptions_handler
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:

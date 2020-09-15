@@ -18,6 +18,7 @@ from typing import TypeVar, Generic
 
 from neptune.types.atoms.float import Float
 from neptune.types.atoms.string import String
+from neptune.types.atoms.file import File
 from neptune.types.series.float_series import FloatSeries
 from neptune.types.series.image_series import ImageSeries
 from neptune.types.series.string_series import StringSeries
@@ -38,6 +39,10 @@ class ValueVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_string(self, value: String) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_file(self, value: File) -> Ret:
         pass
 
     @abc.abstractmethod

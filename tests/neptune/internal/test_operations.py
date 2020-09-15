@@ -34,28 +34,33 @@ class TestOperations(unittest.TestCase):
     @staticmethod
     def _list_objects():
         return [
-            AssignFloat(["some", "random", "path", str(uuid.uuid4())], 5),
-            AssignString(["some", "random", "path", str(uuid.uuid4())], "a\rsdf\thr"),
-            LogFloats(["some", "random", "path", str(uuid.uuid4())], [
+            AssignFloat(TestOperations._random_path(), 5),
+            AssignString(TestOperations._random_path(), "a\rsdf\thr"),
+            UploadFile(TestOperations._random_path(), "file/path/f/txt"),
+            LogFloats(TestOperations._random_path(), [
                 LogFloats.ValueType(5, 4, 500),
                 LogFloats.ValueType(3, None, 1000),
                 LogFloats.ValueType(10, 10, 1234)
             ]),
-            LogStrings(["some", "random", "path", str(uuid.uuid4())], [
+            LogStrings(TestOperations._random_path(), [
                 LogStrings.ValueType("jetybv", 1, 5),
                 LogStrings.ValueType("ghs\ner", 3, 123),
                 LogStrings.ValueType("r", None, 1356),
                 LogStrings.ValueType("ghsr", 13, 53682)
             ]),
-            LogImages(["some", "random", "path", str(uuid.uuid4())], [
+            LogImages(TestOperations._random_path(), [
                 LogImages.ValueType("base64_image_1", None, 2),
                 LogImages.ValueType("base64_image_2", 0, 5),
             ]),
-            ClearFloatLog(["some", "random", "path", str(uuid.uuid4())]),
-            ClearStringLog(["some", "random", "path", str(uuid.uuid4())]),
-            ClearImageLog(["some", "random", "path", str(uuid.uuid4())]),
-            AddStrings(["some", "random", "path", str(uuid.uuid4())], {"asef", "asrge4"}),
-            RemoveStrings(["some", "random", "path", str(uuid.uuid4())], {"a\ne", "aeg\t4ger", "agrg"}),
-            ClearStringSet(["some", "random", "path", str(uuid.uuid4())]),
-            DeleteVariable(["some", "random", "path", str(uuid.uuid4())])
+            ClearFloatLog(TestOperations._random_path()),
+            ClearStringLog(TestOperations._random_path()),
+            ClearImageLog(TestOperations._random_path()),
+            AddStrings(TestOperations._random_path(), {"asef", "asrge4"}),
+            RemoveStrings(TestOperations._random_path(), {"a\ne", "aeg\t4ger", "agrg"}),
+            ClearStringSet(TestOperations._random_path()),
+            DeleteVariable(TestOperations._random_path())
         ]
+
+    @staticmethod
+    def _random_path():
+        return ["some", "random", "path", str(uuid.uuid4())]

@@ -13,17 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import io
 import socket
 import unittest
+import uuid
 
-import mock
-from mock import MagicMock
+from bravado.exception import HTTPNotFound
+from mock import MagicMock, patch
 from packaging.version import Version
 
-from neptune.exceptions import CannotResolveHostname, UnsupportedClientVersion
+from neptune_old.internal.storage.storage_utils import UploadEntry
+
+from neptune.exceptions import CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.credentials import Credentials
+from neptune.internal.operation import UploadFile
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
@@ -31,12 +35,113 @@ API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
 credentials = Credentials(API_TOKEN)
 
 
-@mock.patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
+@patch('neptune.internal.backends.hosted_neptune_backend.RequestsClient', new=MagicMock())
+@patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock())
+@patch('bravado.client.SwaggerClient.from_url')
+@patch('platform.platform', new=lambda: 'testPlatform')
+@patch('platform.python_version', new=lambda: '3.9.test')
 class TestHostedNeptuneBackend(unittest.TestCase):
     # pylint:disable=protected-access
 
-    @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('io.open')
+    @patch('os.path.getsize', new=lambda _: 1024)
+    def test_upload_files(self, open_mock, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+
+        open_file_mock = io.BytesIO(bytearray(1024))
+        open_mock.return_value = open_file_mock
+
+        backend = HostedNeptuneBackend(credentials)
+
+        result_mock = MagicMock()
+        result_mock.status_code = 200
+        send_mock = MagicMock()
+        send_mock.return_value = result_mock
+        backend._http_client.session.send = send_mock
+
+        # when
+        backend.execute_operations(
+            experiment_uuid=uuid.uuid4(),
+            operations=[
+                UploadFile(
+                    path=['some', 'files', 'some_file'],
+                    file_path='path_to_file'
+                )
+            ]
+        )
+
+    @patch('neptune.internal.backends.hosted_neptune_backend.upload_to_storage')
+    def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(credentials)
+        exp_uuid = uuid.uuid4()
+
+        # when
+        backend.execute_operations(
+            experiment_uuid=exp_uuid,
+            operations=[
+                UploadFile(
+                    path=['some', 'path', '1', "var"],
+                    file_path='/path/to/file'
+                ),
+                UploadFile(
+                    path=['some', 'path', '2', "var"],
+                    file_path='/some.file/with.dots.txt'
+                ),
+                UploadFile(
+                    path=['some', 'path', '3', "var"],
+                    file_path='/path/to/some_image.jpeg'
+                )
+            ]
+        )
+
+        # then
+        upload_mock.assert_called_once_with(
+            upload_entries=[
+                UploadEntry("/path/to/file", "some/path/1/var"),
+                UploadEntry("/some.file/with.dots.txt", "some/path/2/var.txt"),
+                UploadEntry("/path/to/some_image.jpeg", "some/path/3/var.jpeg"),
+            ],
+            http_client=backend._http_client,
+            file_url="ui.neptune.ai/api/leaderboard/v1/storage/legacy/uploadOutput/{experimentId}",
+            tar_files_url="ui.neptune.ai/api/leaderboard/v1/storage/legacy/uploadOutputAsTarStream/{experimentId}",
+            experiment_uuid=exp_uuid
+        )
+
+    @patch('io.open')
+    @patch('os.path.getsize', new=lambda _: 8)
+    def test_upload_files_not_found(self, open_mock, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+
+        open_file_mock = io.BytesIO(bytearray(8))
+        open_mock.return_value = open_file_mock
+
+        backend = HostedNeptuneBackend(credentials)
+
+        result_mock = MagicMock()
+        result_mock.status_code = 404
+        result_mock.raise_for_status.side_effect = HTTPNotFound(MagicMock())
+        send_mock = MagicMock()
+        send_mock.return_value = result_mock
+        backend._http_client.session.send = send_mock
+
+        # expect
+        with self.assertRaises(ClientHttpError):
+            backend.execute_operations(
+                experiment_uuid=uuid.uuid4(),
+                operations=[
+                    UploadFile(
+                        path=['some', 'files', 'some_file'],
+                        file_path='path_to_file'
+                    )
+                ]
+            )
+        send_mock.assert_called_once()
+
+    @patch('neptune.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.13')
@@ -44,8 +149,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.14')
@@ -56,8 +160,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         self.assertTrue("Please install neptune-client>=0.5.14" in str(ex.exception))
 
-    @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.12')
@@ -65,8 +168,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.4.999')
@@ -77,8 +179,8 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         self.assertTrue("Please install neptune-client==0.4.0" in str(ex.exception))
 
-    @mock.patch('socket.gethostbyname')
-    def test_cannot_resolve_host(self, gethostname_mock):
+    @patch('socket.gethostbyname')
+    def test_cannot_resolve_host(self, gethostname_mock, _):
         # given
         gethostname_mock.side_effect = socket.gaierror
 
@@ -99,11 +201,15 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         client_config = type('client_config_response_result', (object,), {})()
         setattr(client_config, "pyLibVersions", py_lib_versions)
-        setattr(client_config, "apiUrl", None)
-        setattr(client_config, "applicationUrl", None)
+        setattr(client_config, "apiUrl", "ui.neptune.ai")
+        setattr(client_config, "applicationUrl", "ui.neptune.ai")
 
         swagger_client = MagicMock()
         swagger_client.api.getClientConfig.return_value.response.return_value.result = client_config
+        swagger_client.api.uploadOutputUsingPOST.operation.path_name = \
+            "/api/leaderboard/v1/storage/legacy/uploadOutput/{experimentId}"
+        swagger_client.api.uploadOutputAsTarStreamUsingPOST.operation.path_name = \
+            "/api/leaderboard/v1/storage/legacy/uploadOutputAsTarStream/{experimentId}"
         swagger_client_factory.return_value = swagger_client
 
         return swagger_client
