@@ -21,7 +21,7 @@ from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.types.series.string_series import StringSeries as StringSeriesVal
 
 from neptune.alpha.internal.operation import LogStrings, ClearStringLog, Operation
-from neptune.alpha.variables.series.series import Series
+from neptune.alpha.attributes.series.series import Series
 
 Val = StringSeriesVal
 Data = str

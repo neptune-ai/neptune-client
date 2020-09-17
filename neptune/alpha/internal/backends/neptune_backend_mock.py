@@ -22,7 +22,7 @@ from neptune.alpha.internal.backends.api_model import Project, Experiment
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
-from neptune.alpha.internal.operation import Operation, DeleteVariable, \
+from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     AssignString, AssignFloat, \
     LogStrings, LogFloats, LogImages, \
     ClearFloatLog, ClearStringLog, ClearStringSet, ClearImageLog, \
@@ -67,7 +67,7 @@ class NeptuneBackendMock(NeptuneBackend):
         val = exp.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):
-                raise MetadataInconsistency("{} is a namespace, not a variable".format(op.path))
+                raise MetadataInconsistency("{} is a namespace, not an attribute".format(op.path))
             else:
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
         visitor = NeptuneBackendMock.NewValueOpVisitor(op.path, val)
@@ -171,11 +171,11 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("clear", StringSet.__name__)
             return StringSet(set())
 
-        def visit_delete_variable(self, op: DeleteVariable) -> Optional[Value]:
+        def visit_delete_attribute(self, op: DeleteAttribute) -> Optional[Value]:
             # pylint: disable=unused-argument
             if self._current_value is None:
                 raise MetadataInconsistency(
-                    "Cannot perform delete operation on {}. Variable is undefined.".format(self._path))
+                    "Cannot perform delete operation on {}. Attribute is undefined.".format(self._path))
             return None
 
         def _create_type_error(self, op_name, expected):

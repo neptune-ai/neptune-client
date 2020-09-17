@@ -20,7 +20,7 @@ from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AssignString
 from neptune.alpha.types.atoms.string import String as StringVal
-from neptune.alpha.variables.atoms.atom import Atom
+from neptune.alpha.attributes.atoms.atom import Atom
 
 
 class String(Atom):
@@ -36,5 +36,5 @@ class String(Atom):
         # pylint: disable=protected-access
         val = self._backend.get_attribute(self._experiment_uuid, self._path)
         if not isinstance(val, StringVal):
-            raise MetadataInconsistency("Variable {} is not a String".format(self._path))
+            raise MetadataInconsistency("Attribute {} is not a String".format(self._path))
         return val.value

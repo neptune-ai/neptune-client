@@ -18,22 +18,22 @@
 
 from mock import patch, MagicMock
 
-from neptune.alpha.variables.series.string_series import StringSeries
+from neptune.alpha.attributes.series.image_series import ImageSeries
 
-from tests.neptune.alpha.variables.test_variable_base import TestVariableBase
+from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
 
-@patch("time.time", new=TestVariableBase._now)
-class TestStringSeries(TestVariableBase):
+@patch("time.time", new=TestAttributeBase._now)
+class TestStringSeries(TestAttributeBase):
 
     def test_assign_type_error(self):
         values = [[5.], ["text"], [], 55, "string", None]
         for value in values:
             with self.assertRaises(TypeError):
-                StringSeries(MagicMock(), MagicMock()).assign(value)
+                ImageSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_log_type_error(self):
         values = [[5.], ["text"], [], 55, None]
         for value in values:
             with self.assertRaises(TypeError):
-                StringSeries(MagicMock(), MagicMock()).assign(value)
+                ImageSeries(MagicMock(), MagicMock()).log(value)

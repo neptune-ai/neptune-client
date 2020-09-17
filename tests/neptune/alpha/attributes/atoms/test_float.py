@@ -20,12 +20,12 @@ from mock import MagicMock
 
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AssignFloat
-from neptune.alpha.variables.atoms.float import Float, FloatVal
+from neptune.alpha.attributes.atoms.float import Float, FloatVal
 
-from tests.neptune.alpha.variables.test_variable_base import TestVariableBase
+from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
 
-class TestFloat(TestVariableBase):
+class TestFloat(TestAttributeBase):
 
     def test_assign(self):
         value_and_expected = [

@@ -13,33 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import random
-import time
-import unittest
-import uuid
-
-from mock import MagicMock
-
-from neptune.alpha.experiment import Experiment
+from neptune.alpha.attributes.attribute import Attribute
 
 
-_now = time.time()
-
-
-class TestVariableBase(unittest.TestCase):
-
-    @staticmethod
-    def _create_experiment(backend, op_processor):
-        return Experiment(uuid.uuid4(), backend, op_processor, MagicMock())
-
-    @staticmethod
-    def _random_path():
-        return ["some", "random", "path", str(uuid.uuid4())]
-
-    @staticmethod
-    def _random_wait():
-        return bool(random.getrandbits(1))
-
-    @staticmethod
-    def _now():
-        return _now
+class Atom(Attribute):
+    pass

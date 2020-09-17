@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.alpha.variables.variable import Variable
+from neptune.alpha.attributes.attribute import Attribute
 
 
-class Atom(Variable):
+class Set(Attribute):
     pass

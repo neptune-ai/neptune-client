@@ -25,12 +25,12 @@ from neptune.alpha.types.atoms.string import String as StringVal
 from neptune.alpha.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.alpha.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.alpha.types.sets.string_set import StringSet as StringSetVal
-from neptune.alpha.variables.atoms.float import Float
-from neptune.alpha.variables.atoms.string import String
-from neptune.alpha.variables.atoms.file import File
-from neptune.alpha.variables.series.float_series import FloatSeries
-from neptune.alpha.variables.series.string_series import StringSeries
-from neptune.alpha.variables.sets.string_set import StringSet
+from neptune.alpha.attributes.atoms.float import Float
+from neptune.alpha.attributes.atoms.string import String
+from neptune.alpha.attributes.atoms.file import File
+from neptune.alpha.attributes.series.float_series import FloatSeries
+from neptune.alpha.attributes.series.string_series import StringSeries
+from neptune.alpha.attributes.sets.string_set import StringSet
 
 
 class TestHandler(unittest.TestCase):

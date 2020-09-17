@@ -19,12 +19,12 @@ from mock import MagicMock, call
 
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import ClearStringSet, AddStrings, RemoveStrings
-from neptune.alpha.variables.sets.string_set import StringSet, StringSetVal
+from neptune.alpha.attributes.sets.string_set import StringSet, StringSetVal
 
-from tests.neptune.alpha.variables.test_variable_base import TestVariableBase
+from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
 
-class TestStringSet(TestVariableBase):
+class TestStringSet(TestAttributeBase):
 
     def test_assign(self):
         value = StringSetVal(["ert", "qwe"])
