@@ -20,14 +20,14 @@ from typing import Optional
 from mock import MagicMock, call, patch
 
 from neptune.alpha.internal.operation import ClearFloatLog, LogFloats, Operation
-from neptune.alpha.variables.series.float_series import FloatSeries, FloatSeriesVal
-from neptune.alpha.variables.series.series import Series
+from neptune.alpha.attributes.series.float_series import FloatSeries, FloatSeriesVal
+from neptune.alpha.attributes.series.series import Series
 
-from tests.neptune.alpha.variables.test_variable_base import TestVariableBase
+from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
 
-@patch("time.time", new=TestVariableBase._now)
-class TestSeries(TestVariableBase):
+@patch("time.time", new=TestAttributeBase._now)
+class TestSeries(TestAttributeBase):
 
     def test_assign(self):
         value = FloatSeriesVal([17, 3.6])

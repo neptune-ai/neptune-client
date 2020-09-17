@@ -17,7 +17,7 @@ import abc
 from typing import TypeVar, Generic
 
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
-    ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteVariable, ClearStringSet, LogImages, \
+    ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
     ClearImageLog, UploadFile
 
 Ret = TypeVar('Ret')
@@ -73,7 +73,7 @@ class OperationVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_delete_variable(self, op: DeleteVariable) -> Ret:
+    def visit_delete_attribute(self, op: DeleteAttribute) -> Ret:
         pass
 
     @abc.abstractmethod

@@ -20,12 +20,12 @@ from mock import MagicMock
 
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AssignString
-from neptune.alpha.variables.atoms.string import String, StringVal
+from neptune.alpha.attributes.atoms.string import String, StringVal
 
-from tests.neptune.alpha.variables.test_variable_base import TestVariableBase
+from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
 
-class TestString(TestVariableBase):
+class TestString(TestAttributeBase):
 
     def test_assign(self):
         value_and_expected = [

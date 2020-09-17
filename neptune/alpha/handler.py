@@ -46,19 +46,19 @@ class Handler:
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
 
-    def __getattr__(self, attr):
-        var = self._experiment.get_attribute(self._path)
-        if var:
-            return getattr(var, attr)
+    def __getattr__(self, attribute_name):
+        attr = self._experiment.get_attribute(self._path)
+        if attr:
+            return getattr(attr, attribute_name)
         else:
             raise AttributeError()
 
     def assign(self, value: Union[Value, int, float, str], wait: bool = False) -> None:
         verify_type("value", value, (Value, int, float, str))
         with self._experiment.lock():
-            var = self._experiment.get_attribute(self._path)
-            if var:
-                var.assign(value, wait)
+            attr = self._experiment.get_attribute(self._path)
+            if attr:
+                attr.assign(value, wait)
             else:
                 self._experiment.define(self._path, value, wait)
 
@@ -71,9 +71,9 @@ class Handler:
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", step, (int, float, type(None)))
         with self._experiment.lock():
-            var = self._experiment.get_attribute(self._path)
-            if var:
-                var.log(value, step=step, timestamp=timestamp, wait=wait)
+            attr = self._experiment.get_attribute(self._path)
+            if attr:
+                attr.log(value, step=step, timestamp=timestamp, wait=wait)
             else:
                 if isinstance(value, (float, int)):
                     val = FloatSeries([value])
@@ -84,9 +84,9 @@ class Handler:
     def add(self, *values: str, wait: bool = False) -> None:
         verify_collection_type("value", values, str)
         with self._experiment.lock():
-            var = self._experiment.get_attribute(self._path)
-            if var:
-                var.add(values, wait)
+            attr = self._experiment.get_attribute(self._path)
+            if attr:
+                attr.add(values, wait)
             else:
                 val = StringSet(values)
                 self._experiment.define(self._path, val, wait)

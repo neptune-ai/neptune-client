@@ -24,7 +24,7 @@ if TYPE_CHECKING:
     from neptune.alpha.experiment import Experiment
 
 
-class Variable:
+class Attribute:
 
     def __init__(self, _experiment: 'Experiment', path: List[str]):
         super().__init__()

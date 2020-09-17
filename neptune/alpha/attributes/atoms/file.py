@@ -20,7 +20,7 @@ from neptune.alpha.internal.utils import verify_type
 
 from neptune.alpha.internal.operation import UploadFile
 from neptune.alpha.types.atoms.file import File as FileVal
-from neptune.alpha.variables.atoms.atom import Atom
+from neptune.alpha.attributes.atoms.atom import Atom
 
 # pylint: disable=protected-access
 

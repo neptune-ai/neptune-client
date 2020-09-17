@@ -20,12 +20,12 @@ import os
 from mock import MagicMock
 
 from neptune.alpha.internal.operation import UploadFile
-from neptune.alpha.variables.atoms.file import File, FileVal
+from neptune.alpha.attributes.atoms.file import File, FileVal
 
-from tests.neptune.alpha.variables.test_variable_base import TestVariableBase
+from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
 
-class TestFile(TestVariableBase):
+class TestFile(TestAttributeBase):
 
     def test_assign(self):
         value_and_expected = [

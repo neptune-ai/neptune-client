@@ -388,11 +388,11 @@ class ClearStringSet(Operation):
         return ClearStringSet(data["path"])
 
 
-class DeleteVariable(Operation):
+class DeleteAttribute(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
-        return visitor.visit_delete_variable(self)
+        return visitor.visit_delete_attribute(self)
 
     @staticmethod
-    def from_dict(data: dict) -> 'DeleteVariable':
-        return DeleteVariable(data["path"])
+    def from_dict(data: dict) -> 'DeleteAttribute':
+        return DeleteAttribute(data["path"])

@@ -23,13 +23,13 @@ from neptune.alpha.internal.utils import verify_type
 
 from neptune.alpha.types.series.series import Series as SeriesVal
 
-from neptune.alpha.variables.variable import Variable
+from neptune.alpha.attributes.attribute import Attribute
 
 Val = TypeVar('Val', bound=SeriesVal)
 Data = TypeVar('Data')
 
 
-class Series(Variable, Generic[Val, Data]):
+class Series(Attribute, Generic[Val, Data]):
 
     def assign(self, value: Val, wait: bool = False) -> None:
         self._verify_value_type(value)

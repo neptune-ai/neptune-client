@@ -18,13 +18,13 @@
 
 from mock import MagicMock, patch
 
-from neptune.alpha.variables.series.float_series import FloatSeries
+from neptune.alpha.attributes.series.float_series import FloatSeries
 
-from tests.neptune.alpha.variables.test_variable_base import TestVariableBase
+from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
 
-@patch("time.time", new=TestVariableBase._now)
-class TestFloatSeries(TestVariableBase):
+@patch("time.time", new=TestAttributeBase._now)
+class TestFloatSeries(TestAttributeBase):
 
     def test_assign_type_error(self):
         values = [[5.], ["text"], [], 55, "string", None]
