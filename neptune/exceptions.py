@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2019, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,116 +13,112 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import uuid
-from typing import Union, Optional
-
-from packaging.version import Version
-
 from neptune import envs
-from neptune.internal.utils import replace_patch_version
 
 
 class NeptuneException(Exception):
     pass
 
 
-class NeptuneApiException(NeptuneException):
-    pass
-
-
-class MetadataInconsistency(NeptuneException):
-    pass
-
-
-class MalformedOperation(NeptuneException):
-    pass
+class Uninitialized(NeptuneException):
+    def __init__(self):
+        super(Uninitialized, self).__init__(
+            "You must initialize neptune-client first. "
+            "For more information, please visit: https://github.com/neptune-ai/neptune-client#initialize-neptune")
 
 
 class FileNotFound(NeptuneException):
-    def __init__(self, file: str):
-        super().__init__("File not found: {}".format(file))
+    def __init__(self, path):
+        super(FileNotFound, self).__init__("File {} doesn't exist.".format(path))
 
 
-class InternalClientError(NeptuneException):
-    def __init__(self, msg: str):
-        super().__init__("Internal client error: {}. Please contact Neptune support.".format(msg))
+class NotAFile(NeptuneException):
+    def __init__(self, path):
+        super(NotAFile, self).__init__("Path {} is not a file.".format(path))
 
 
-class ClientHttpError(NeptuneException):
-    def __init__(self, code: int):
-        super().__init__("Client HTTP error {}".format(code))
+class NotADirectory(NeptuneException):
+    def __init__(self, path):
+        super(NotADirectory, self).__init__("Path {} is not a directory.".format(path))
 
 
-class ProjectNotFound(NeptuneException):
-    def __init__(self, project_id):
-        super().__init__("Project {} not found.".format(project_id))
+class InvalidNotebookPath(NeptuneException):
+    def __init__(self, path):
+        super(InvalidNotebookPath, self).__init__(
+            "File {} is not a valid notebook. Should end with .ipynb.".format(path))
 
 
-class ExperimentUUIDNotFound(NeptuneException):
-    def __init__(self, exp_uuid: uuid.UUID):
-        super().__init__("Experiment with UUID {} not found. Could be deleted.".format(exp_uuid))
+class InvalidChannelX(NeptuneException):
+    def __init__(self, x):
+        super(InvalidChannelX, self).__init__(
+            "Invalid channel X-coordinate: '{}'. The sequence of X-coordinates must be strictly increasing.".format(x))
 
 
-class MissingProject(NeptuneException):
+class NoChannelValue(NeptuneException):
     def __init__(self):
-        super().__init__('Missing project identifier. Use "{}" environment variable or pass it as an argument'.format(
-            envs.PROJECT_ENV_NAME))
+        super(NoChannelValue, self).__init__('No channel value provided.')
+
+
+class LibraryNotInstalled(NeptuneException):
+    def __init__(self, library):
+        super(LibraryNotInstalled, self).__init__("Library {} is not installed".format(library))
+
+
+class InvalidChannelValue(NeptuneException):
+    def __init__(self, expected_type, actual_type):
+        super(InvalidChannelValue, self).__init__(
+            'Invalid channel value type. Expected: {expected}, actual: {actual}.'.format(
+                expected=expected_type, actual=actual_type))
+
+
+class NoExperimentContext(NeptuneException):
+    def __init__(self):
+        super(NoExperimentContext, self).__init__('Unable to find current active experiment')
 
 
 class MissingApiToken(NeptuneException):
     def __init__(self):
-        super().__init__(
-            'Missing API token. Use "{}" environment variable or pass it as an argument to neptune.init. '
-            'Open this link to get your API token https://ui.neptune.ai/get_my_api_token'.format(
-                envs.API_TOKEN_ENV_NAME))
+        super(MissingApiToken, self).__init__('Missing API token. Use "{}" environment '
+                                              'variable or pass it as an argument'
+                                              .format(envs.API_TOKEN_ENV_NAME))
 
 
-class InvalidApiKey(NeptuneException):
+class MissingProjectQualifiedName(NeptuneException):
     def __init__(self):
-        super().__init__('The provided API key is invalid.')
+        super(MissingProjectQualifiedName, self).__init__('Missing project qualified name. Use "{}" environment '
+                                                          'variable or pass it as an argument'
+                                                          .format(envs.PROJECT_ENV_NAME))
 
 
-class UnsupportedClientVersion(NeptuneException):
-    def __init__(
-            self,
-            version: Union[Version, str],
-            min_version: Optional[Union[Version, str]] = None,
-            max_version: Optional[Union[Version, str]] = None):
-        super().__init__(
-            "This neptune-client version ({}) is not supported. Please install neptune-client{}".format(
-                str(version),
-                "==" + replace_patch_version(str(max_version)) if max_version else ">=" + str(min_version)
-            ))
+class IncorrectProjectQualifiedName(NeptuneException):
+    def __init__(self, project_qualified_name):
+        super(IncorrectProjectQualifiedName, self).__init__('Incorrect project qualified name "{}". '
+                                                            'Should be in format "namespace/project_name".'
+                                                            .format(project_qualified_name))
 
+
+class InvalidNeptuneBackend(NeptuneException):
+    def __init__(self, provided_backend_name):
+        super(InvalidNeptuneBackend, self).__init__(
+            'Unknown {} "{}". '
+            'Use this environment variable to modify neptune-client behaviour at runtime, '
+            'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
+            .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
+
+class DeprecatedApiToken(NeptuneException):
+    def __init__(self, app_url):
+        super(DeprecatedApiToken, self).__init__(
+            "Your API token is deprecated. Please visit {} to get a new one.".format(app_url))
 
 class CannotResolveHostname(NeptuneException):
     def __init__(self, host):
-        super().__init__("Cannot resolve hostname {}.".format(host))
+        super(CannotResolveHostname, self).__init__(
+            "Cannot resolve hostname {}. Please contact Neptune support.".format(host))
 
-
-class SSLError(NeptuneException):
-    def __init__(self):
-        super().__init__(
-            'SSL certificate validation failed. Set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE '
-            'environment variable to accept self-signed certificates.')
-
-
-class ConnectionLost(NeptuneException):
-    def __init__(self):
-        super().__init__('Connection to Neptune server was lost.')
-
-
-class InternalServerError(NeptuneApiException):
-    def __init__(self):
-        super().__init__('Internal server error. Please contact Neptune support.')
-
-
-class Unauthorized(NeptuneApiException):
-    def __init__(self):
-        super().__init__('Unauthorized. Verify your API token is invalid.')
-
-
-class Forbidden(NeptuneApiException):
-    def __init__(self):
-        super().__init__('You have no permissions to access this resource.')
+class UnsupportedClientVersion(NeptuneException):
+    def __init__(self, version, minVersion, maxVersion):
+        super(UnsupportedClientVersion, self).__init__(
+            "This client version ({}) is not supported. Please install neptune-client{}".format(
+                version,
+                "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion)
+            ))
