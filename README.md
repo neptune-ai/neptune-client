@@ -57,9 +57,9 @@ pip install neptune-client
 Toward the top of your script insert the following snippet.
 
 ```python
-import neptune_old
+import neptune
 
-neptune_old.init(api_token='YOUR_API_TOKEN',
+neptune.init(api_token='YOUR_API_TOKEN',
              project_qualified_name='USERNAME/PROJECT_NAME')
 ```
 
