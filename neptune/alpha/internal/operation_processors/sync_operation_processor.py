@@ -28,6 +28,7 @@ class SyncOperationProcessor(OperationProcessor):
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument
+        # TODO: Handle errors
         self._backend.execute_operations(self._experiment_uuid, [op])
 
     def wait(self):
