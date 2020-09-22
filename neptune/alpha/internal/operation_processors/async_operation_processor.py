@@ -85,6 +85,7 @@ class AsyncOperationProcessor(OperationProcessor):
             batch = self._processor._queue.get_batch(self._batch_size)
             if not batch:
                 return
+            # TODO: Handle errors
             self._processor._backend.execute_operations(self._processor._experiment_uuid, [op.op for op in batch])
             self._processor._consumed_version = batch[-1].version
             if self._processor._waiting_for_version > 0:

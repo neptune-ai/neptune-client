@@ -13,3 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from .float_series import FloatSeries
+from .image_series import ImageSeries
+from .string_series import StringSeries

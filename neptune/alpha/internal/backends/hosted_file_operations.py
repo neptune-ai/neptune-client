@@ -15,48 +15,73 @@
 #
 import io
 import os
+import uuid
+from typing import List
 
 import requests
+from bravado.client import SwaggerClient
 
+from neptune.alpha.exceptions import FileUploadError
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream
 from neptune.internal.storage.storage_utils import scan_unique_upload_entries, \
-    split_upload_files
+    split_upload_files, UploadEntry
 
 
-def upload_to_storage(upload_entries, file_url, tar_files_url, **kwargs):
-    unique_upload_entries = scan_unique_upload_entries(upload_entries)
+def upload_file_attributes(experiment_uuid: uuid.UUID,
+                           upload_entries: List[UploadEntry],
+                           swagger_client: SwaggerClient) -> List[FileUploadError]:
+    result = []
+    existing_entries = []
 
-    for package in split_upload_files(unique_upload_entries):
-        if package.is_empty():
-            continue
-
-        uploading_multiple_entries = package.len > 1
-        creating_a_single_empty_dir = package.len == 1 and not package.items[0].is_stream() \
-                                      and os.path.isdir(package.items[0].source_path)
-
-        if uploading_multiple_entries or creating_a_single_empty_dir:
-            data = compress_to_tar_gz_in_memory(upload_entries=package.items)
-            _upload_tar_files(**dict(kwargs, data=data, url=tar_files_url))
+    # NOTICE: After following check there still is a small window in which file can be deleted.
+    for entry in upload_entries:
+        if not os.path.isfile(entry.source_path):
+            result.append(FileUploadError(entry.source_path, "Path not found or is a not a file."))
         else:
-            file_chunk_stream = FileChunkStream(package.items[0])
-            _upload_file(**dict(kwargs, data=file_chunk_stream, url=file_url))
+            existing_entries.append(entry)
 
+    if not existing_entries:
+        return result
 
-def _upload_tar_files(http_client, url, experiment_uuid, data):
-    return upload_raw_data(http_client=http_client,
-                           url=url,
-                           data=io.BytesIO(data),
-                           headers=dict(),
-                           path_params={'experimentId': str(experiment_uuid)})
+    try:
+        unique_upload_entries = scan_unique_upload_entries(existing_entries)
 
+        for package in split_upload_files(unique_upload_entries):
+            if package.is_empty():
+                continue
 
-def _upload_file(http_client, url, experiment_uuid, data):
-    _upload_loop(http_client=http_client,
-                 url=url,
-                 data=data,
-                 path_params={'experimentId': str(experiment_uuid)},
-                 query_params={})
+            uploading_multiple_entries = package.len > 1
+            creating_a_single_empty_dir = package.len == 1 and not package.items[0].is_stream() \
+                                          and os.path.isdir(package.items[0].source_path)
+
+            if uploading_multiple_entries or creating_a_single_empty_dir:
+                data = compress_to_tar_gz_in_memory(upload_entries=package.items)
+                url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadTarStream.operation.path_name
+                upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
+                                url=url,
+                                data=io.BytesIO(data),
+                                headers=dict(),
+                                query_params={
+                                    "experimentIdentifier": str(experiment_uuid),
+                                    "resource": "attributes",
+                                })
+            else:
+                file_chunk_stream = FileChunkStream(package.items[0])
+                url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadPath.operation.path_name
+                _upload_loop(http_client=swagger_client.swagger_spec.http_client,
+                             url=url,
+                             data=file_chunk_stream,
+                             query_params={
+                                 "experimentIdentifier": str(experiment_uuid),
+                                 "resource": "attributes",
+                                 "pathParam": file_chunk_stream.filename
+                             })
+
+            return result
+    except Exception as e:
+        msg = getattr(e, 'message', repr(e))
+        return [FileUploadError(entry.source_path, msg) for entry in upload_entries]
 
 
 def _upload_loop(data, **kwargs):

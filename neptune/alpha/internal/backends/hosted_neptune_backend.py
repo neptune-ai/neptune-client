@@ -28,12 +28,12 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound
+from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
     create_swagger_client, verify_client_version, update_session_proxies
-from neptune.alpha.internal.backends.hosted_file_operations import upload_to_storage
+from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import Operation, UploadFile
 from neptune.alpha.internal.utils import verify_type
@@ -116,6 +116,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
 
+    # TODO: Return errors to OperationProcessor
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         upload_operations, other_operations = [], []
         for op in operations:
@@ -131,7 +132,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         pass
 
     # Do not use @with_api_exceptions_handler. It should be used internally.
-    def _upload_files(self, experiment_uuid: uuid.UUID, operations: List[UploadFile]) -> None:
+    def _upload_files(self, experiment_uuid: uuid.UUID, operations: List[UploadFile]) -> List[FileUploadError]:
         def get_destination(op: UploadFile) -> str:
             try:
                 ext = op.file_path[op.file_path.rindex("."):]
@@ -140,14 +141,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return '/'.join(op.path) + ext
 
         upload_entries = [UploadEntry(op.file_path, get_destination(op)) for op in operations]
-        api_url = self._client_config.api_url
-        api = self.leaderboard_client.api
-        # TODO: Use new upload endpoint
-        upload_to_storage(upload_entries=upload_entries,
-                          http_client=self._http_client,
-                          file_url=api_url + api.uploadOutputUsingPOST.operation.path_name,
-                          tar_files_url=api_url + api.uploadOutputAsTarStreamUsingPOST.operation.path_name,
-                          experiment_uuid=experiment_uuid)
+        # TODO: Handle errors
+        return upload_file_attributes(experiment_uuid=experiment_uuid,
+                                      upload_entries=upload_entries,
+                                      swagger_client=self.leaderboard_client)
 
     @with_api_exceptions_handler
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:

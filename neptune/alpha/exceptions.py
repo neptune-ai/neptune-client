@@ -24,7 +24,15 @@ from neptune.alpha.internal.utils import replace_patch_version
 
 
 class NeptuneException(Exception):
-    pass
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and str(self).__eq__(str(other))
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), str(self)))
 
 
 class NeptuneApiException(NeptuneException):
@@ -42,6 +50,11 @@ class MalformedOperation(NeptuneException):
 class FileNotFound(NeptuneException):
     def __init__(self, file: str):
         super().__init__("File not found: {}".format(file))
+
+
+class FileUploadError(NeptuneException):
+    def __init__(self, filename: str, msg: str):
+        super().__init__("Cannot upload file {}: {}".format(filename, msg))
 
 
 class InternalClientError(NeptuneException):
