@@ -28,7 +28,7 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError
+from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, ExperimentUUIDNotFound
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
@@ -129,7 +129,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def _execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
-        pass
+        try:
+            self.leaderboard_client.api.sendOperations()
+        except HTTPNotFound:
+            raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
     # Do not use @with_api_exceptions_handler. It should be used internally.
     def _upload_files(self, experiment_uuid: uuid.UUID, operations: List[UploadFile]) -> List[FileUploadError]:
