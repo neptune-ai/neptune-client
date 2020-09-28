@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import sys
 import uuid
 from threading import Event
-from time import time
+from time import time, sleep
 
+import click
+
+from neptune.alpha.exceptions import ConnectionLost
 from neptune.alpha.internal.containers.storage_queue import StorageQueue
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.operation import Operation, VersionedOperation
@@ -67,6 +71,9 @@ class AsyncOperationProcessor(OperationProcessor):
 
     class ConsumerThread(Daemon):
 
+        RETRIES = 10
+        RETRY_WAIT = 30
+
         def __init__(self,
                      processor: 'AsyncOperationProcessor',
                      sleep_time: float,
@@ -85,8 +92,27 @@ class AsyncOperationProcessor(OperationProcessor):
             batch = self._processor._queue.get_batch(self._batch_size)
             if not batch:
                 return
-            # TODO: Handle errors
-            self._processor._backend.execute_operations(self._processor._experiment_uuid, [op.op for op in batch])
+            # TODO: Handle Metadata errors
+            for retry in range(1, self.RETRIES):
+                try:
+                    self._processor._backend.execute_operations(self._processor._experiment_uuid,
+                                                                [op.op for op in batch])
+                    break
+                except ConnectionLost:
+                    if retry >= self.RETRIES:
+                        click.echo("Experiencing connection interruptions. Killing Neptune asynchronous thread. "
+                                   "All data all safe on disk.",
+                                   sys.stderr)
+                        raise
+                    click.echo("Experiencing connection interruptions. Reestablishing communication with Neptune.",
+                               sys.stderr)
+                    sleep(self.RETRY_WAIT)
+                except Exception:
+                    click.echo("Unexpected error occurred. Killing Neptune asynchronous thread. "
+                               "All data all safe on disk.",
+                               sys.stderr)
+                    raise
+
             self._processor._consumed_version = batch[-1].version
             if self._processor._waiting_for_version > 0:
                 if self._processor._consumed_version >= self._processor._waiting_for_version:

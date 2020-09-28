@@ -30,13 +30,25 @@ class OperationsPreprocessor:
     def __init__(self):
         self._accumulators = dict()
 
-    def process(self, operations: List[Operation]) -> List[Operation]:
+    def process(self, operations: List[Operation]):
         for op in operations:
             path_str = path_to_str(op.path)
             self._accumulators.get(path_str, _OperationsAccumulator(op.path)).visit(op)
         result = []
         for acc in self._accumulators.values():
             result.extend(acc.get_operations())
+        return result
+
+    def get_operations(self) -> List[Operation]:
+        result = []
+        for acc in self._accumulators.values():
+            result.extend(acc.get_operations())
+        return result
+
+    def get_errors(self) -> List[MetadataInconsistency]:
+        result = []
+        for acc in self._accumulators.values():
+            result.extend(acc.get_errors())
         return result
 
 
@@ -62,12 +74,18 @@ class _OperationsAccumulator(OperationVisitor[None]):
     def get_operations(self) -> List[Operation]:
         return self._delete_ops + self._modify_ops
 
+    def get_errors(self) -> List[MetadataInconsistency]:
+        return self._errors
+
     def _process_modify_op(self,
                            expected_type: _DataType,
                            op: Operation,
                            modifier: Callable[[List[Operation], Operation], List[Operation]]) -> None:
 
         if self._type and self._type != expected_type:
+            # This case should never happen since inconsistencies on data types are verified on user api.
+            # So such operations should not appear in the queue without delete operation between them.
+            # Still we want to support this case to avoid some unclear dependencies and assumptions.
             self._errors.append(MetadataInconsistency(
                 "Cannot perform {} operation on {}: Attribute is not a {}".format(
                     op.__class__.__name__,
@@ -140,7 +158,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
             else:
                 # This case is tricky. There was no delete operation, but some modifications was performed.
                 # We do not know if this attribute exists on server side and we do not want a delete op to fail.
-                # So we need to send a single modification before delete so be sure a delete op is valid.
+                # So we need to send a single modification before delete to be sure a delete op is valid.
                 self._delete_ops = [self._modify_ops[0], op]
                 self._modify_ops = []
                 self._type = None
