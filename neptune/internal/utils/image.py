@@ -50,19 +50,14 @@ def get_image_content(image):
         try:
             from matplotlib import figure
             if isinstance(image, figure.Figure):
-                return _get_pil_image_data(_figure_to_pil_image(image))
+                return _get_pil_image_data(image)
         except ImportError:
             pass
 
     raise InvalidChannelValue(expected_type='image', actual_type=type(image).__name__)
 
 
-def _get_pil_image_data(image):
+def _get_pil_image_data(figure):
     with io.BytesIO() as image_buffer:
-        image.save(image_buffer, format='PNG')
+        figure.savefig(image_buffer, format='png', bbox_inches="tight")
         return image_buffer.getvalue()
-
-
-def _figure_to_pil_image(figure):
-    figure.canvas.draw()
-    return Image.frombytes('RGB', figure.canvas.get_width_height(), figure.canvas.tostring_rgb())
