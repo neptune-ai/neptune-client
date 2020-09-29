@@ -28,15 +28,20 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError
+from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, \
+    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
+from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
+from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
+from neptune.alpha.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
     create_swagger_client, verify_client_version, update_session_proxies
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import Operation, UploadFile
 from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils.paths import path_to_str
 from neptune.alpha.types.value import Value
 from neptune.alpha.version import version as neptune_client_version
 from neptune.internal.storage.storage_utils import UploadEntry
@@ -117,19 +122,41 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ProjectNotFound(project_id=project_uuid)
 
     # TODO: Return errors to OperationProcessor
-    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
+    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
+        errors = []
+
+        operations_preprocessor = OperationsPreprocessor()
+        operations_preprocessor.process(operations)
+        combined_operations = operations_preprocessor.get_operations()
+        errors.extend(operations_preprocessor.get_errors())
+
         upload_operations, other_operations = [], []
-        for op in operations:
+        for op in combined_operations:
             (upload_operations if isinstance(op, UploadFile) else other_operations).append(op)
 
         if other_operations:
-            self._execute_operations(experiment_uuid, other_operations)
+            errors.extend(self._execute_operations(experiment_uuid, other_operations))
         if upload_operations:
-            self._upload_files(experiment_uuid, upload_operations)
+            errors.extend(self._upload_files(experiment_uuid, upload_operations))
+
+        return errors
 
     @with_api_exceptions_handler
-    def _execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
-        pass
+    def _execute_operations(self,
+                            experiment_uuid: uuid.UUID,
+                            operations: List[Operation]) -> List[MetadataInconsistency]:
+        kwargs = {
+            'experimentId': str(experiment_uuid),
+            'operations': [{
+                'path': path_to_str(op.path),
+                OperationApiNameVisitor().visit(op): OperationApiObjectConverter().convert(op)
+            } for op in operations]
+        }
+        try:
+            result = self.leaderboard_client.api.sendOperations(**kwargs).response().result
+            return [MetadataInconsistency(err.errorDescription) for err in result]
+        except HTTPNotFound:
+            raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
     # Do not use @with_api_exceptions_handler. It should be used internally.
     def _upload_files(self, experiment_uuid: uuid.UUID, operations: List[UploadFile]) -> List[FileUploadError]:
@@ -141,7 +168,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             return '/'.join(op.path) + ext
 
         upload_entries = [UploadEntry(op.file_path, get_destination(op)) for op in operations]
-        # TODO: Handle errors
         return upload_file_attributes(experiment_uuid=experiment_uuid,
                                       upload_entries=upload_entries,
                                       swagger_client=self.leaderboard_client)
