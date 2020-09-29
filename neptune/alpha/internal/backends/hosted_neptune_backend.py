@@ -28,8 +28,8 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, ExperimentUUIDNotFound, \
-    MetadataInconsistency, NeptuneException
+from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, \
+    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor

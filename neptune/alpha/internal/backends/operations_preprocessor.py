@@ -33,7 +33,7 @@ class OperationsPreprocessor:
     def process(self, operations: List[Operation]):
         for op in operations:
             path_str = path_to_str(op.path)
-            self._accumulators.get(path_str, _OperationsAccumulator(op.path)).visit(op)
+            self._accumulators.setdefault(path_str, _OperationsAccumulator(op.path)).visit(op)
         result = []
         for acc in self._accumulators.values():
             result.extend(acc.get_operations())
@@ -53,12 +53,12 @@ class OperationsPreprocessor:
 
 
 class _DataType(Enum):
-    FLOAT = "Float",
-    STRING = "String",
+    FLOAT = "Float"
+    STRING = "String"
     FILE = "File"
-    FLOAT_SERIES = "Float Series",
-    STRING_SERIES = "String Series",
-    IMAGE_SERIES = "Image Series",
+    FLOAT_SERIES = "Float Series"
+    STRING_SERIES = "String Series"
+    IMAGE_SERIES = "Image Series"
     STRING_SET = "String Set"
 
 
@@ -94,9 +94,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
         else:
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
-
-    def visit(self, op: Operation) -> None:
-        return op.accept(self)
 
     def visit_assign_float(self, op: AssignFloat) -> None:
         self._process_modify_op(_DataType.FLOAT, op, self._assign_modifier())
@@ -200,9 +197,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
     @staticmethod
     def _add_modifier():
         # We do not optimize it on client side for now. It should not be often operation.
-        return lambda ops, op: ops + op
+        return lambda ops, op: ops + [op]
 
     @staticmethod
     def _remove_modifier():
         # We do not optimize it on client side for now. It should not be often operation.
-        return lambda ops, op: ops + op
+        return lambda ops, op: ops + [op]

@@ -22,10 +22,11 @@ from packaging.version import Version
 
 from neptune.internal.storage.storage_utils import UploadEntry
 
-from neptune.alpha.exceptions import CannotResolveHostname, UnsupportedClientVersion
+from neptune.alpha.exceptions import CannotResolveHostname, UnsupportedClientVersion, FileUploadError, \
+    MetadataInconsistency
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import UploadFile, LogImages, AssignString
+from neptune.alpha.internal.operation import UploadFile, AssignString, LogFloats
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
@@ -44,25 +45,53 @@ class TestHostedNeptuneBackend(unittest.TestCase):
     @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attributes')
     def test_execute_operations(self, upload_mock, swagger_client_factory):
         # given
-        self._get_swagger_client_mock(swagger_client_factory)
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
         exp_uuid = uuid.uuid4()
 
+        response_error = MagicMock()
+        response_error.errorDescription = "error1"
+        swagger_client.api.sendOperations().response().result = [response_error]
+        swagger_client.api.sendOperations.reset_mock()
+        upload_mock.return_value = [FileUploadError("file1", "error2")]
+
         # when
-        backend.execute_operations(
+        result = backend.execute_operations(
             experiment_uuid=exp_uuid,
             operations=[
                 UploadFile(
                     path=['some', 'files', 'some_file'],
                     file_path='path_to_file'
                 ),
-                LogImages(MagicMock(), MagicMock()),
-                AssignString(MagicMock(), MagicMock()),
+                LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
+                AssignString(["properties", "name"], "some text"),
                 UploadFile(
                     path=['some', 'other', 'file.txt'],
                     file_path='other/file/path.txt'
                 )
             ]
+        )
+
+        # than
+        swagger_client.api.sendOperations.assert_called_once_with(
+            **{
+                'experimentId': str(exp_uuid),
+                'operations': [{
+                    'path': "images/img1",
+                    'logFloats': {
+                        'entries': [{
+                            'value': 1,
+                            'step': 2,
+                            'timestampMilliseconds': 3000
+                        }]
+                    }
+                }, {
+                    'path': "properties/name",
+                    'assignString': {
+                        'value': "some text"
+                    }
+                }]
+            }
         )
 
         upload_mock.assert_called_once_with(
@@ -73,6 +102,8 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             ],
             swagger_client=backend.leaderboard_client
         )
+
+        self.assertEqual([MetadataInconsistency("error1"), FileUploadError("file1", "error2")], result)
 
     @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attributes')
     def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
