@@ -41,13 +41,13 @@ class OperationsPreprocessor:
 
     def get_operations(self) -> List[Operation]:
         result = []
-        for acc in self._accumulators.values():
+        for _, acc in sorted(self._accumulators.items()):
             result.extend(acc.get_operations())
         return result
 
     def get_errors(self) -> List[MetadataInconsistency]:
         result = []
-        for acc in self._accumulators.values():
+        for _, acc in sorted(self._accumulators.items()):
             result.extend(acc.get_errors())
         return result
 

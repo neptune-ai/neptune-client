@@ -45,6 +45,7 @@ _logger = logging.getLogger(__name__)
 def with_api_exceptions_handler(func):
 
     def wrapper(*args, **kwargs):
+        last_exception = None
         for retry in range(0, 3):
             try:
                 return func(*args, **kwargs)
@@ -52,8 +53,9 @@ def with_api_exceptions_handler(func):
                 raise SSLError() from e
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway):
+                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway) as e:
                 time.sleep(2 ** retry)
+                last_exception = e
                 continue
             except HTTPServerError as e:
                 raise InternalServerError() from e
@@ -73,6 +75,7 @@ def with_api_exceptions_handler(func):
                         HTTPServiceUnavailable.status_code,
                         HTTPGatewayTimeout.status_code):
                     time.sleep(2 ** retry)
+                    last_exception = e
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
                     raise InternalServerError() from e
@@ -84,7 +87,7 @@ def with_api_exceptions_handler(func):
                     raise ClientHttpError(status_code) from e
                 else:
                     raise
-        raise ConnectionLost()
+        raise ConnectionLost() from last_exception
 
     return wrapper
 
