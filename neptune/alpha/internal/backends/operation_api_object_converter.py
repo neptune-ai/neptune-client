@@ -36,7 +36,7 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
             'value': op.value
         }
 
-    def visit_upload_file(self, op: UploadFile) -> dict:
+    def visit_upload_file(self, _: UploadFile) -> dict:
         raise InternalClientError("Specialized endpoint should be used to upload file attribute")
 
     def visit_log_floats(self, op: LogFloats) -> dict:
@@ -68,13 +68,13 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
             } for value in op.values]
         }
 
-    def visit_clear_float_log(self, op: ClearFloatLog) -> dict:
+    def visit_clear_float_log(self, _: ClearFloatLog) -> dict:
         return {}
 
-    def visit_clear_string_log(self, op: ClearStringLog) -> dict:
+    def visit_clear_string_log(self, _: ClearStringLog) -> dict:
         return {}
 
-    def visit_clear_image_log(self, op: ClearImageLog) -> dict:
+    def visit_clear_image_log(self, _: ClearImageLog) -> dict:
         return {}
 
     def visit_add_strings(self, op: AddStrings) -> dict:
@@ -87,8 +87,8 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
             'values': list(op.values)
         }
 
-    def visit_delete_attribute(self, op: DeleteAttribute) -> dict:
+    def visit_delete_attribute(self, _: DeleteAttribute) -> dict:
         return {}
 
-    def visit_clear_string_set(self, op: ClearStringSet) -> dict:
+    def visit_clear_string_set(self, _: ClearStringSet) -> dict:
         return {}

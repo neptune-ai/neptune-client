@@ -26,41 +26,41 @@ class OperationApiNameVisitor(OperationVisitor[str]):
     def visit(self, op: Operation) -> str:
         return op.accept(self)
 
-    def visit_assign_float(self, op: AssignFloat) -> str:
+    def visit_assign_float(self, _: AssignFloat) -> str:
         return "assignFloat"
 
-    def visit_assign_string(self, op: AssignString) -> str:
+    def visit_assign_string(self, _: AssignString) -> str:
         return "assignString"
 
-    def visit_upload_file(self, op: UploadFile) -> str:
+    def visit_upload_file(self, _: UploadFile) -> str:
         raise InternalClientError("Specialized endpoint should be used to upload file attribute")
 
-    def visit_log_floats(self, op: LogFloats) -> str:
+    def visit_log_floats(self, _: LogFloats) -> str:
         return "logFloats"
 
-    def visit_log_strings(self, op: LogStrings) -> str:
+    def visit_log_strings(self, _: LogStrings) -> str:
         return "logStrings"
 
-    def visit_log_images(self, op: LogImages) -> str:
+    def visit_log_images(self, _: LogImages) -> str:
         return "logImages"
 
-    def visit_clear_float_log(self, op: ClearFloatLog) -> str:
+    def visit_clear_float_log(self, _: ClearFloatLog) -> str:
         return "clearFloatSeries"
 
-    def visit_clear_string_log(self, op: ClearStringLog) -> str:
+    def visit_clear_string_log(self, _: ClearStringLog) -> str:
         return "clearStringSeries"
 
-    def visit_clear_image_log(self, op: ClearImageLog) -> str:
+    def visit_clear_image_log(self, _: ClearImageLog) -> str:
         return "clearImageSeries"
 
-    def visit_add_strings(self, op: AddStrings) -> str:
+    def visit_add_strings(self, _: AddStrings) -> str:
         return "insertStrings"
 
-    def visit_remove_strings(self, op: RemoveStrings) -> str:
+    def visit_remove_strings(self, _: RemoveStrings) -> str:
         return "removeStrings"
 
-    def visit_delete_attribute(self, op: DeleteAttribute) -> str:
+    def visit_delete_attribute(self, _: DeleteAttribute) -> str:
         return "deleteAttribute"
 
-    def visit_clear_string_set(self, op: ClearStringSet) -> str:
+    def visit_clear_string_set(self, _: ClearStringSet) -> str:
         return "clearStringSet"
