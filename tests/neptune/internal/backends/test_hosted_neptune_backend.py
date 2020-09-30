@@ -98,6 +98,9 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             'bool': False,
             'float': 1.23,
             'int': int(12),
+            'inf': float('inf'),
+            '-inf': float('-inf'),
+            'nan': float('nan'),
             'list': [123, 'abc', ['def']],
             'obj': some_object
         })
@@ -108,6 +111,9 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             ApiParameter(id=some_uuid, name='bool', parameterType='string', value='False'),
             ApiParameter(id=some_uuid, name='float', parameterType='double', value='1.23'),
             ApiParameter(id=some_uuid, name='int', parameterType='double', value='12'),
+            ApiParameter(id=some_uuid, name='inf', parameterType='string', value='Infinity'),
+            ApiParameter(id=some_uuid, name='-inf', parameterType='string', value='-Infinity'),
+            ApiParameter(id=some_uuid, name='nan', parameterType='string', value='NaN'),
             ApiParameter(id=some_uuid, name='list', parameterType='string', value="[123, 'abc', ['def']]"),
             ApiParameter(id=some_uuid, name='obj', parameterType='string', value=str(some_object))
         }
