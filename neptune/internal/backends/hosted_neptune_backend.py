@@ -13,8 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# pylint: disable=too-many-lines
+
 import io
+import json
 import logging
+import math
 import os
 import platform
 import socket
@@ -52,7 +57,7 @@ from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
-from neptune.utils import is_float, with_api_exceptions_handler, update_session_proxies
+from neptune.utils import with_api_exceptions_handler, update_session_proxies
 from neptune.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
 
 _logger = logging.getLogger(__name__)
@@ -770,19 +775,31 @@ class HostedNeptuneBackend(Backend):
 
         return items
 
+    def _get_parameter_with_type(self, parameter):
+        string_type = 'string'
+        double_type = 'double'
+        if isinstance(parameter, bool):
+            return (string_type, str(parameter))
+        elif isinstance(parameter, float) or isinstance(parameter, int):
+            if math.isinf(parameter) or math.isnan(parameter):
+                return (string_type, json.dumps(parameter))
+            else:
+                return (double_type, str(parameter))
+        else:
+            return (string_type, str(parameter))
+
     def _convert_to_api_parameters(self, raw_params):
         Parameter = self.backend_swagger_client.get_model('Parameter')
 
         params = []
         for name, value in raw_params.items():
-            parameter_type = 'double' if is_float(str(value)) and not isinstance(value, six.string_types) else 'string'
-
+            (parameter_type, string_value) = self._get_parameter_with_type(value)
             params.append(
                 Parameter(
                     id=str(uuid.uuid4()),
                     name=name,
                     parameterType=parameter_type,
-                    value=str(value)
+                    value=string_value
                 )
             )
 
