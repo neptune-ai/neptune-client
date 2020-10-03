@@ -19,7 +19,7 @@ from neptune import envs
 class NeptuneException(Exception):
     BASE_MESSAGE = """\n
 Neptune team here, seems like there are some problems, sorry.
-No worries thought, in most cases you can fix them by:
+In most cases you can get it to work by:
     - Finding an answer in the docs -> https://docs.neptune.ai
     - Getting help from the team (we are friendly) -> https://docs.neptune.ai/getting-started/getting-help.html
     """
