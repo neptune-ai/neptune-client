@@ -23,7 +23,6 @@ In most cases you can get it to work by:
     - Finding an answer in the docs -> https://docs.neptune.ai
     - Getting help from the team (we are friendly) -> https://docs.neptune.ai/getting-started/getting-help.html
     """
-    pass
 
 
 class Uninitialized(NeptuneException):
@@ -200,8 +199,5 @@ class UnsupportedClientVersion(NeptuneException):
         - Problem -> This client version ({}) is not supported.
         - Solution - > Please install neptune-client{}. Simply run `pip install neptune-client --upgrade`. 
         - Relevant docs page -> https://docs.neptune.ai/getting-started/getting-help.html
-            """.format(
-            version,
-            "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion)
-        )
+        """.format(version, "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion))
         super(UnsupportedClientVersion, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
