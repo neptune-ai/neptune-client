@@ -93,15 +93,15 @@ class AsyncOperationProcessor(OperationProcessor):
             if not batch:
                 return
             # TODO: Handle Metadata errors
-            for retry in range(1, self.RETRIES):
+            for retry in range(0, self.RETRIES):
                 try:
                     self._processor._backend.execute_operations(self._processor._experiment_uuid,
                                                                 [op.op for op in batch])
                     break
                 except ConnectionLost:
-                    if retry >= self.RETRIES:
+                    if retry >= self.RETRIES - 1:
                         click.echo("Experiencing connection interruptions. Killing Neptune asynchronous thread. "
-                                   "All data all safe on disk.",
+                                   "All data are safe on disk.",
                                    sys.stderr)
                         raise
                     click.echo("Experiencing connection interruptions. Reestablishing communication with Neptune.",
@@ -109,7 +109,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     sleep(self.RETRY_WAIT)
                 except Exception:
                     click.echo("Unexpected error occurred. Killing Neptune asynchronous thread. "
-                               "All data all safe on disk.",
+                               "All data are safe on disk.",
                                sys.stderr)
                     raise
 
