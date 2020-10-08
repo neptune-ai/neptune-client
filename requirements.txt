@@ -1,4 +1,4 @@
-bravado
+bravado>=10.6.2
 click>=7.0
 future>=0.17.1
 py3nvml
