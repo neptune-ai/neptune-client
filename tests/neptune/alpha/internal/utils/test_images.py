@@ -118,7 +118,7 @@ class TestImage(unittest.TestCase):
     @staticmethod
     def _encode_figure(figure: Figure) -> str:
         with io.BytesIO() as image_buffer:
-            figure.savefig(image_buffer, format='PNG')
+            figure.savefig(image_buffer, format='PNG', bbox_inches="tight")
             return base64.b64encode(image_buffer.getvalue()).decode('utf-8')
 
     @staticmethod

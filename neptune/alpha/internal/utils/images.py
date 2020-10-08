@@ -103,5 +103,5 @@ def _get_pil_image_data(image: PILImage) -> bytes:
 
 def _get_figure_image_data(figure: MPLFigure) -> bytes:
     with io.BytesIO() as image_buffer:
-        figure.savefig(image_buffer, format='png')
+        figure.savefig(image_buffer, format='png', bbox_inches="tight")
         return image_buffer.getvalue()

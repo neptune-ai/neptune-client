@@ -28,7 +28,7 @@ import requests
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
     HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
-    HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError
+    HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError, HTTPTooManyRequests
 from bravado.http_client import HttpClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
@@ -53,7 +53,8 @@ def with_api_exceptions_handler(func):
                 raise SSLError() from e
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway) as e:
+                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway,
+                    HTTPTooManyRequests) as e:
                 time.sleep(2 ** retry)
                 last_exception = e
                 continue
@@ -73,7 +74,8 @@ def with_api_exceptions_handler(func):
                         HTTPRequestTimeout.status_code,
                         HTTPBadGateway.status_code,
                         HTTPServiceUnavailable.status_code,
-                        HTTPGatewayTimeout.status_code):
+                        HTTPGatewayTimeout.status_code,
+                        HTTPTooManyRequests.status_code):
                     time.sleep(2 ** retry)
                     last_exception = e
                     continue
