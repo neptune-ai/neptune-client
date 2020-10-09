@@ -50,7 +50,7 @@ before you ran:
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
     
-{correct}Get help{end}: https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """.format(**STYLES)
         super(NeptuneUninitializedException, self).__init__(message)
 
@@ -109,7 +109,7 @@ To install run:
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/installation/index.html
     
-{correct}Get help{end}: https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """.format(**{'library': library, **STYLES})
         super(NeptuneLibraryNotInstalledException, self).__init__(message)
 
@@ -143,7 +143,7 @@ Looks like you forgot to run:
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
-{correct}Get help{end}: https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """.format(**STYLES)
         super(NeptuneNoExperimentContextException, self).__init__(message)
 
@@ -193,7 +193,7 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
-{correct}Get help{end}: https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """.format(**{'env_api_token': envs.API_TOKEN_ENV_NAME, **STYLES})
         super(NeptuneMissingApiTokenException, self).__init__(message)
 
@@ -240,7 +240,7 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/workspace-project-and-user-management/index.html
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
     
-{correct}Get help{end}: https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """.format(**{'env_project': envs.PROJECT_ENV_NAME, **STYLES})
         super(NeptuneMissingProjectQualifiedNameException, self).__init__(message)
 
@@ -276,7 +276,7 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/workspace-project-and-user-management/index.html
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
-{correct}Get help{end}: https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """.format(**{'project_qualified_name': project_qualified_name, **STYLES})
         super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message)
 
