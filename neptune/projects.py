@@ -27,7 +27,7 @@ import pandas as pd
 import six
 
 from neptune.envs import NOTEBOOK_ID_ENV_NAME, NOTEBOOK_PATH_ENV_NAME
-from neptune.exceptions import NoExperimentContext
+from neptune.exceptions import NeptuneNoExperimentContextException
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
@@ -609,7 +609,7 @@ class Project(object):
             if self._experiments_stack:
                 return self._experiments_stack[-1]
             else:
-                raise NoExperimentContext()
+                raise NeptuneNoExperimentContextException()
 
     def _push_new_experiment(self, new_experiment):
         with self.__lock:

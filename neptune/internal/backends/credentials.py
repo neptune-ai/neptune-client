@@ -21,7 +21,7 @@ import os
 
 from neptune import envs
 from neptune.api_exceptions import InvalidApiKey
-from neptune.exceptions import MissingApiToken
+from neptune.exceptions import NeptuneMissingApiTokenException
 
 _logger = logging.getLogger(__name__)
 
@@ -66,7 +66,7 @@ class Credentials(object):
 
         self._api_token = api_token
         if self.api_token is None:
-            raise MissingApiToken()
+            raise NeptuneMissingApiTokenException()
 
         token_dict = self._api_token_to_dict(self.api_token)
         self._token_origin_address = token_dict['api_address']

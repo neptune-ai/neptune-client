@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import warnings
 
 from neptune import envs
 
@@ -53,14 +52,6 @@ You may also want to check the following docs pages:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """.format(**STYLES)
         super(NeptuneUninitializedException, self).__init__(message)
-
-
-def Uninitialized():
-    message = """
-{warning}Uninitialized was renamed to NeptuneUninitializedException and will be removed in the future releases.{end}
-""".format(**STYLES)
-    warnings.warn(message)
-    return NeptuneUninitializedException()
 
 
 class FileNotFound(NeptuneException):
@@ -114,14 +105,6 @@ You may also want to check the following docs pages:
         super(NeptuneLibraryNotInstalledException, self).__init__(message)
 
 
-def LibraryNotInstalled(library):
-    message = """
-{warning}LibraryNotInstalled was renamed to NeptuneLibraryNotInstalledException and will be removed in the future releases.{end}
-""".format(**STYLES)
-    warnings.warn(message)
-    return NeptuneLibraryNotInstalledException(library)
-
-
 class InvalidChannelValue(NeptuneException):
     def __init__(self, expected_type, actual_type):
         super(InvalidChannelValue, self).__init__(
@@ -146,14 +129,6 @@ You may also want to check the following docs pages:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """.format(**STYLES)
         super(NeptuneNoExperimentContextException, self).__init__(message)
-
-
-def NoExperimentContext():
-    message = """
-{warning}NoExperimentContext was renamed to NeptuneNoExperimentContextException and will be removed in the future releases.{end}
-""".format(**STYLES)
-    warnings.warn(message)
-    return NeptuneNoExperimentContextException()
 
 
 class NeptuneMissingApiTokenException(NeptuneException):
@@ -198,14 +173,6 @@ You may also want to check the following docs pages:
         super(NeptuneMissingApiTokenException, self).__init__(message)
 
 
-def MissingApiToken():
-    message = """
-{warning}MissingApiToken was renamed to NeptuneMissingApiTokenException and will be removed in the future releases.{end}
-""".format(**STYLES)
-    warnings.warn(message)
-    return NeptuneNoExperimentContextException()
-
-
 class NeptuneMissingProjectQualifiedNameException(NeptuneException):
     def __init__(self):
         message = """
@@ -245,14 +212,6 @@ You may also want to check the following docs pages:
         super(NeptuneMissingProjectQualifiedNameException, self).__init__(message)
 
 
-def MissingProjectQualifiedName():
-    message = """
-{warning}MissingProjectQualifiedName was renamed to NeptuneMissingProjectQualifiedNameException and will be removed in the future releases.{end}
-""".format(**STYLES)
-    warnings.warn(message)
-    return NeptuneMissingProjectQualifiedNameException()
-
-
 class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
     def __init__(self, project_qualified_name):
         message = """
@@ -281,21 +240,13 @@ You may also want to check the following docs pages:
         super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message)
 
 
-def IncorrectProjectQualifiedName(project_qualified_name):
-    message = """
-{warning}IncorrectProjectQualifiedName was renamed to NeptuneIncorrectProjectQualifiedNameException and will be removed in the future releases.{end}
-""".format(**STYLES)
-    warnings.warn(message)
-    return NeptuneIncorrectProjectQualifiedNameException(project_qualified_name)
-
-
 class InvalidNeptuneBackend(NeptuneException):
     def __init__(self, provided_backend_name):
         super(InvalidNeptuneBackend, self).__init__(
             'Unknown {} "{}". '
             'Use this environment variable to modify neptune-client behaviour at runtime, '
             'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
-            .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
+                .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
 
 
 class DeprecatedApiToken(NeptuneException):
