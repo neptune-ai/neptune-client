@@ -113,7 +113,8 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
         :class:`~neptune.projects.Project` object that is used to create or list experiments, notebooks, etc.
 
     Raises:
-        `NeptuneMissingApiTokenException`: When ``api_token`` is None and ``NEPTUNE_API_TOKEN`` environment variable was not set.
+        `NeptuneMissingApiTokenException`: When ``api_token`` is None
+            and ``NEPTUNE_API_TOKEN`` environment variable was not set.
         `NeptuneMissingProjectQualifiedNameException`: When ``project_qualified_name`` is None
             and ``NEPTUNE_PROJECT`` environment variable was not set.
         `InvalidApiKey`: When given ``api_token`` is malformed.

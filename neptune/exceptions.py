@@ -246,7 +246,7 @@ class InvalidNeptuneBackend(NeptuneException):
             'Unknown {} "{}". '
             'Use this environment variable to modify neptune-client behaviour at runtime, '
             'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
-                .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
+            .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
 
 
 class DeprecatedApiToken(NeptuneException):
