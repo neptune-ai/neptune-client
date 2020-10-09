@@ -93,9 +93,29 @@ class NoChannelValue(NeptuneException):
         super(NoChannelValue, self).__init__('No channel value provided.')
 
 
-class LibraryNotInstalled(NeptuneException):
+class NeptuneLibraryNotInstalledException(NeptuneException):
     def __init__(self, library):
-        super(LibraryNotInstalled, self).__init__("Library {} is not installed".format(library))
+        message = """
+{h1}     
+----NeptuneLibraryNotInstalledException---------------------------------------------------------------------------------
+{end}
+Looks like library {library} wasn't installed.
+
+To install run:
+    {bash}pip install{library}{end}
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/getting-started/installation/index.html
+""".format(**{'library': library, **STYLES})
+        super(LibraryNotInstalled, self).__init__(message)
+
+
+def LibraryNotInstalled():
+    message = """
+{warning}LibraryNotInstalled was renamed to NeptuneLibraryNotInstalledException and will be removed in the future releases.{end}
+""".format(**STYLES)
+    warnings.warn(message)
+    return NeptuneLibraryNotInstalledException()
 
 
 class InvalidChannelValue(NeptuneException):
@@ -146,7 +166,7 @@ There are two options two add it:
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
-Pass the token to `neptune.init()` via `api_token` argument:
+Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
     {python}neptune.init(api_token='YOUR_LONG_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
@@ -160,7 +180,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
         {bash}set {env_api_token}=YOUR_LONG_TOKEN{end}
         
-and skip the `api_token` argument of `neptune.init()`: 
+and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}: 
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
     
 You may also want to check the following docs pages:
@@ -191,7 +211,7 @@ There are two options two add it:
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
-Pass it to `neptune.init()` via `project_qualified_name` argument:
+Pass it to {bold}neptune.init(){end} via {bold}project_qualified_name{end} argument:
     {python}neptune.init(api_token='YOUR_LONG_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
@@ -205,7 +225,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
        {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
 
-and skip the `project_qualified_name` argument of `neptune.init()`: 
+and skip the {bold}project_qualified_name{end} argument of {bold}neptune.init(){end}: 
     {python}neptune.init(api_token='YOUR_LONG_TOKEN'){end}
 
 You may also want to check the following docs pages:
@@ -225,7 +245,7 @@ def MissingProjectQualifiedName():
 
 class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
     def __init__(self, project_qualified_name):
-        message = """                                                            
+        message = """
 {h1}
 ----NeptuneIncorrectProjectQualifiedNameException-----------------------------------------------------------------------
 {end}
