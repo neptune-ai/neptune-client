@@ -107,7 +107,7 @@ To install run:
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/installation/index.html
 """.format(**{'library': library, **STYLES})
-        super(LibraryNotInstalled, self).__init__(message)
+        super(NeptuneLibraryNotInstalledException, self).__init__(message)
 
 
 def LibraryNotInstalled(library):
