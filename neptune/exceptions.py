@@ -13,191 +13,275 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import warnings
+
 from neptune import envs
+
+STYLES = {'h1': '\033[95m',
+          'h2': '\033[94m',
+          'python': '\033[96m',
+          'bash': '\033[95m',
+          'warning': '\033[93m',
+          'correct': '\033[92m',
+          'fail': '\033[91m',
+          'bold': '\033[1m',
+          'underline': '\033[4m',
+          'end': '\033[0m'}
 
 
 class NeptuneException(Exception):
-    BASE_MESSAGE = """\n
-Neptune team here, seems like there are some problems, sorry.
-In most cases you can get it to work by:
-    - Finding an answer in the docs -> https://docs.neptune.ai
-    - Getting help from the team (we are friendly) -> https://docs.neptune.ai/getting-started/getting-help.html
-    """
+    pass
 
 
-class Uninitialized(NeptuneException):
+class NeptuneUninitializedException(NeptuneException):
     def __init__(self):
-        message = """This particular error is about:
-    - Problem -> You must initialize `neptune` object before you start logging to it. 
-    - Solution -> Run `neptune.init()`. Remember to specify the `project_qualified_name' and 'api_token'. 
-    - Relevant docs page -> https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
-    """
-        super(Uninitialized, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        message = """
+{h1}     
+----NeptuneUninitializedException---------------------------------------------------------------------------------------
+{end}
+You must initialize neptune-client before you create an experiment.
+
+Looks like you forgot to add:
+    {python}neptune.init(api_token='YOUR_LONG_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    
+before you ran:
+    {python}neptune.create_experiment(){end}
+    
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+""".format(**STYLES)
+        super(NeptuneUninitializedException, self).__init__(message)
+
+
+def Uninitialized():
+    message = """
+{warning}Uninitialized was renamed to NeptuneUninitializedException and will be removed in the future releases.{end}
+""".format(**STYLES)
+    warnings.warn(message)
+    return NeptuneUninitializedException()
 
 
 class FileNotFound(NeptuneException):
     def __init__(self, path):
-        message = """This particular error is about:
-    - Problem -> File {} doesn't exist.
-    - Solution - > Make sure that the path to the file is correct. 
-    - Relevant docs page -> https://docs.neptune.ai/logging-and-managing-experiment-results/index.html
-        """.format(path)
-        super(FileNotFound, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(FileNotFound, self).__init__("File {} doesn't exist.".format(path))
 
 
 class NotAFile(NeptuneException):
     def __init__(self, path):
-        message = """This particular error is about:
-    - Problem -> Path {} is not a file.
-    - Solution - > Check if the path you specified is a file and not a directory. 
-    - Relevant docs page -> https://docs.neptune.ai/logging-and-managing-experiment-results/index.html
-            """.format(path)
-        super(NotAFile, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(NotAFile, self).__init__("Path {} is not a file.".format(path))
 
 
 class NotADirectory(NeptuneException):
     def __init__(self, path):
-        message = """This particular error is about:
-    - Problem -> Path {} is not a directory.
-    - Solution - > Check if the path you specified is a directory and not a file. 
-    - Relevant docs page -> https://docs.neptune.ai/logging-and-managing-experiment-results/index.html
-                """.format(path)
-        super(NotADirectory, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(NotADirectory, self).__init__("Path {} is not a directory.".format(path))
 
 
 class InvalidNotebookPath(NeptuneException):
     def __init__(self, path):
-        message = """This particular error is about:
-    - Problem -> File {} is not a valid notebook.
-    - Solution - > Check if the file you chose ends with .ipynb.
-    - Relevant docs page -> https://docs.neptune.ai/keep-track-of-jupyter-notebooks/index.html#managing-notebooks-in-neptune-using-the-cli
-        """.format(path)
-        super(InvalidNotebookPath, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(InvalidNotebookPath, self).__init__(
+            "File {} is not a valid notebook. Should end with .ipynb.".format(path))
 
 
 class InvalidChannelX(NeptuneException):
     def __init__(self, x):
-        message = """This particular error is about:
-    - Problem -> Invalid channel X-coordinate: '{}'. The sequence of X-coordinates must be strictly increasing.
-    - Solution - > Make sure that you don't log multiple values of a metric at the same step x. You can log explicitly with neptune.log_metric('metric_name', x=step, y=metric_value).
-    - Relevant docs page -> https://docs.neptune.ai/api-reference/neptune/experiments/index.html?highlight=log_metric#neptune.experiments.Experiment.log_metric
-        """.format(x)
-        super(InvalidChannelX, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(InvalidChannelX, self).__init__(
+            "Invalid channel X-coordinate: '{}'. The sequence of X-coordinates must be strictly increasing.".format(x))
 
 
 class NoChannelValue(NeptuneException):
     def __init__(self):
-        message = """This particular error is about:
-    - Problem -> No channel value provided.
-    - Solution - > You need to log some values before you fetch them. You can do that with `neptune.log_metric()`. 
-    - Relevant docs page -> https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment-data/index.html
-        """
-        super(NoChannelValue, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(NoChannelValue, self).__init__('No channel value provided.')
 
 
 class LibraryNotInstalled(NeptuneException):
     def __init__(self, library):
-        message = """This particular error is about:
-    - Problem -> Library {0} is not installed.
-    - Solution - > You need to install the library first. Running `pip install {0}` will do the trick. 
-    - Relevant docs page -> https://docs.neptune.ai/getting-started/installation/index.html
-        """.format(library)
-        super(LibraryNotInstalled, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(LibraryNotInstalled, self).__init__("Library {} is not installed".format(library))
 
 
 class InvalidChannelValue(NeptuneException):
     def __init__(self, expected_type, actual_type):
-        message = """This particular error is about:
-    - Problem -> Invalid channel value type. Expected: {expected}, actual: {actual}.
-    - Solution - > You need to log objects with appropriate function. 
-                    - `neptune.log_metric()` for metrics, 
-                    - `neptune.log_image()` for images,
-                    - `neptune.log_text()` for text,
-                    - `neptune.log_artifact()` for files,
-    - Relevant docs page -> https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment-data/what-can-you-log-to-experiments.html
-         """.format(expected=expected_type, actual=actual_type)
-        super(InvalidChannelValue, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(InvalidChannelValue, self).__init__(
+            'Invalid channel value type. Expected: {expected}, actual: {actual}.'.format(
+                expected=expected_type, actual=actual_type))
 
 
-class NoExperimentContext(NeptuneException):
+class NeptuneNoExperimentContextException(NeptuneException):
     def __init__(self):
-        message = """This particular error is about:
-    - Problem -> Unable to find current active experiment. 
-    - Solution - > You need to create an experiment before you log things. Run `neptune.create_experiment()`. 
-    - Relevant docs page -> https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
-        """
-        super(NoExperimentContext, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        message = """
+{h1}  
+----NeptuneNoExperimentContextException---------------------------------------------------------------------------------
+{end}
+Neptune couldn't find an active experiment.
+
+Looks like you forgot to run:
+    {python}neptune.create_experiment(){end}
+    
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+""".format(**STYLES)
+        super(NeptuneNoExperimentContextException, self).__init__(message)
 
 
-class MissingApiToken(NeptuneException):
+def NoExperimentContext():
+    message = """
+{warning}NoExperimentContext was renamed to NeptuneNoExperimentContextException and will be removed in the future releases.{end}
+""".format(**STYLES)
+    warnings.warn(message)
+    return NeptuneNoExperimentContextException()
+
+
+class NeptuneMissingApiTokenException(NeptuneException):
     def __init__(self):
-        message = """This particular error is about:
-    - Problem -> Missing API token.
-    - Solution - > Use "{}" environment variable or pass it as an argument to neptune.init.
-    - Relevant docs page -> https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
-            """.format(envs.API_TOKEN_ENV_NAME)
-        super(MissingApiToken, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        message = """
+{h1}
+----NeptuneMissingApiTokenException-------------------------------------------------------------------------------------
+{end}
+Neptune client couldn't find your API token.
+
+Learn how to get it in this docs page:
+https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+
+There are two options two add it:
+    - specify it in your code 
+    - set an environment variable in your operating system.
+
+{h2}CODE{end}
+Pass the token to `neptune.init()` via `api_token` argument:
+    {python}neptune.init(api_token='YOUR_LONG_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+
+{h2}ENVIRONMENT VARIABLE{end}
+or export or set an environment variable depending on your operating system: 
+
+    {correct}Linux/Unix{end}
+    In your terminal run:
+        {bash}export {env_api_token}=YOUR_LONG_TOKEN{end}
+        
+    {correct}Windows{end}
+    In your CMD run:
+        {bash}set {env_api_token}=YOUR_LONG_TOKEN{end}
+        
+and skip the `api_token` argument of `neptune.init()`: 
+    {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+""".format(**{'env_api_token': envs.API_TOKEN_ENV_NAME, **STYLES})
+        super(NeptuneMissingApiTokenException, self).__init__(message)
 
 
-class MissingProjectQualifiedName(NeptuneException):
+def MissingApiToken():
+    message = """
+{warning}MissingApiToken was renamed to NeptuneMissingApiTokenException and will be removed in the future releases.{end}
+""".format(**STYLES)
+    warnings.warn(message)
+    return NeptuneNoExperimentContextException()
+
+
+class NeptuneMissingProjectQualifiedNameException(NeptuneException):
     def __init__(self):
-        message = """This particular error is about:
-    - Problem -> Missing project qualified name.
-    - Solution - > Use "{}" environment variable or pass it as a `project_qualified_name` argument.
-    - Relevant docs page -> https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
-        """.format(envs.PROJECT_ENV_NAME)
-        super(MissingProjectQualifiedName, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        message = """
+{h1}
+----NeptuneMissingProjectQualifiedNameException-------------------------------------------------------------------------
+{end}
+Neptune client couldn't find your project name.
+
+There are two options two add it:
+    - specify it in your code 
+    - set an environment variable in your operating system.
+
+{h2}CODE{end}
+Pass it to `neptune.init()` via `project_qualified_name` argument:
+    {python}neptune.init(api_token='YOUR_LONG_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+
+{h2}ENVIRONMENT VARIABLE{end}
+or export or set an environment variable depending on your operating system: 
+
+    {correct}Linux/Unix{end}
+    In your terminal run:
+       {bash}export {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
+
+    {correct}Windows{end}
+    In your CMD run:
+       {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
+
+and skip the `project_qualified_name` argument of `neptune.init()`: 
+    {python}neptune.init(api_token='YOUR_LONG_TOKEN'){end}
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/workspace-project-and-user-management/index.html
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+""".format(**{'env_project': envs.PROJECT_ENV_NAME, **STYLES})
+        super(NeptuneMissingProjectQualifiedNameException, self).__init__(message)
 
 
-class IncorrectProjectQualifiedName(NeptuneException):
+def MissingProjectQualifiedName():
+    message = """
+{warning}MissingProjectQualifiedName was renamed to NeptuneMissingProjectQualifiedNameException and will be removed in the future releases.{end}
+""".format(**STYLES)
+    warnings.warn(message)
+    return NeptuneMissingProjectQualifiedNameException()
+
+
+class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
     def __init__(self, project_qualified_name):
-        message = """This particular error is about:
-    - Problem -> Incorrect project qualified name "{}". 
-    - Solution - > Should be in format "workspace/project_name".
-    - Relevant docs pages: 
-        - Quickstart -> https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
-        - Projects in Neptune -> https://docs.neptune.ai/workspace-project-and-user-management/projects/index.html
-        """.format(project_qualified_name)
-        super(IncorrectProjectQualifiedName, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        message = """                                                            
+{h1}
+----NeptuneIncorrectProjectQualifiedNameException-----------------------------------------------------------------------
+{end}
+Project qualified name {fail}{project_qualified_name}{end} you specified was incorrect.
+
+The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+It has two parts:
+    - {correct}WORKSPACE{end}: which can be your username or your organization name
+    - {correct}PROJECT_NAME{end}: which is the actual project name you chose 
+
+For example, a project {correct}jakub-czakon/blog-hpo{end} parts are:
+    - {correct}jakub-czakon{end}: a {underline}WORKSPACE{end} my username
+    - {correct}blog-hpo{end}: a {underline}PROJECT_NAME{end} a project name
+    
+The URL to this project looks like this: https://ui.neptune.ai/jakub-czakon/blog-hpo 
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/workspace-project-and-user-management/index.html
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+""".format(**{'project_qualified_name': project_qualified_name, **STYLES})
+        super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message)
+
+
+def IncorrectProjectQualifiedName(project_qualified_name):
+    message = """
+{warning}IncorrectProjectQualifiedName was renamed to NeptuneIncorrectProjectQualifiedNameException and will be removed in the future releases.{end}
+""".format(**STYLES)
+    warnings.warn(message)
+    return NeptuneIncorrectProjectQualifiedNameException(project_qualified_name)
 
 
 class InvalidNeptuneBackend(NeptuneException):
     def __init__(self, provided_backend_name):
-        message = """This particular error is about:
-    - Problem -> Unknown {0} "{1}". e.g. using {0}=offline allows you to run your code without logging anything to Neptune.
-    - Solution - > Specify the correct backend when you initialize neptune or via environment variable. You can choose:
-        - Hosted Backed -> neptune.init(backend=HostedNeptuneBackend(proxies=...)) or `export NEPTUNE_BACKEND=hosted`
-        - Offline Backed -> neptune.init(backend=OfflineBackend(proxies=...)) or `export NEPTUNE_BACKEND=offline`
-    - Relevant docs page -> https://docs.neptune.ai/api-reference/neptune/index.html#neptune.init
-            """.format(envs.BACKEND, provided_backend_name)
-        super(InvalidNeptuneBackend, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(InvalidNeptuneBackend, self).__init__(
+            'Unknown {} "{}". '
+            'Use this environment variable to modify neptune-client behaviour at runtime, '
+            'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
+                .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
 
 
 class DeprecatedApiToken(NeptuneException):
     def __init__(self, app_url):
-        message = """This particular error is about:
-        - Problem -> Your API token is deprecated.
-        - Solution - > Please visit {} to get a new one.
-        - Relevant docs page -> https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
-            """.format(app_url)
-        super(DeprecatedApiToken, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(DeprecatedApiToken, self).__init__(
+            "Your API token is deprecated. Please visit {} to get a new one.".format(app_url))
 
 
 class CannotResolveHostname(NeptuneException):
     def __init__(self, host):
-        message = """This particular error is about:
-        - Problem -> Cannot resolve hostname {}.
-        - Solution - > Please contact Neptune support.
-        - Relevant docs page -> https://docs.neptune.ai/getting-started/getting-help.html
-            """.format(host)
-        super(CannotResolveHostname, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(CannotResolveHostname, self).__init__(
+            "Cannot resolve hostname {}. Please contact Neptune support.".format(host))
 
 
 class UnsupportedClientVersion(NeptuneException):
     def __init__(self, version, minVersion, maxVersion):
-        message = """This particular error is about:
-        - Problem -> This client version ({}) is not supported.
-        - Solution - > Please install neptune-client{}. Simply run `pip install neptune-client --upgrade`. 
-        - Relevant docs page -> https://docs.neptune.ai/getting-started/getting-help.html
-        """.format(version, "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion))
-        super(UnsupportedClientVersion, self).__init__('\n'.join([NeptuneException.BASE_MESSAGE, message]))
+        super(UnsupportedClientVersion, self).__init__(
+            "This client version ({}) is not supported. Please install neptune-client{}".format(
+                version,
+                "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion)
+            ))
