@@ -13,19 +13,49 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import platform
 
 from neptune import envs
 
-STYLES = {'h1': '\033[95m',
-          'h2': '\033[94m',
-          'python': '\033[96m',
-          'bash': '\033[95m',
-          'warning': '\033[93m',
-          'correct': '\033[92m',
-          'fail': '\033[91m',
-          'bold': '\033[1m',
-          'underline': '\033[4m',
-          'end': '\033[0m'}
+UNIX_STYLES = {'h1': '\033[95m',
+               'h2': '\033[94m',
+               'python': '\033[96m',
+               'bash': '\033[95m',
+               'warning': '\033[93m',
+               'correct': '\033[92m',
+               'fail': '\033[91m',
+               'bold': '\033[1m',
+               'underline': '\033[4m',
+               'end': '\033[0m'}
+
+WINDOWS_STYLES = {'h1': '',
+                  'h2': '',
+                  'python': '',
+                  'bash': '',
+                  'warning': '',
+                  'correct': '',
+                  'fail': '',
+                  'bold': '',
+                  'underline': '',
+                  'end': ''}
+
+EMPTY_STYLES = {'h1': '',
+                'h2': '',
+                'python': '',
+                'bash': '',
+                'warning': '',
+                'correct': '',
+                'fail': '',
+                'bold': '',
+                'underline': '',
+                'end': ''}
+
+if platform.system() in ['Linux', 'Darwin']:
+    STYLES = UNIX_STYLES
+elif platform.system() == 'Windows':
+    STYLES = WINDOWS_STYLES
+else:
+    STYLES = EMPTY_STYLES
 
 
 class NeptuneException(Exception):
@@ -150,7 +180,7 @@ There are two options to add it:
 Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
-{h2}ENVIRONMENT VARIABLE{end} {correct}RECOMMENDED{end}
+{h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
 or export or set an environment variable depending on your operating system: 
 
     {correct}Linux/Unix{end}
