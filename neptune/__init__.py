@@ -17,9 +17,10 @@ import logging
 import os
 import threading
 
-from neptune import envs
 from neptune import constants
-from neptune.exceptions import MissingProjectQualifiedName, Uninitialized, InvalidNeptuneBackend
+from neptune import envs
+from neptune.exceptions import NeptuneMissingProjectQualifiedNameException, NeptuneUninitializedException, \
+    InvalidNeptuneBackend
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.backends.offline_backend import OfflineBackend
 from neptune.projects import Project
@@ -112,8 +113,9 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
         :class:`~neptune.projects.Project` object that is used to create or list experiments, notebooks, etc.
 
     Raises:
-        `MissingApiToken`: When ``api_token`` is None and ``NEPTUNE_API_TOKEN`` environment variable was not set.
-        `MissingProjectQualifiedName`: When ``project_qualified_name`` is None
+        `NeptuneMissingApiTokenException`: When ``api_token`` is None
+            and ``NEPTUNE_API_TOKEN`` environment variable was not set.
+        `NeptuneMissingProjectQualifiedNameException`: When ``project_qualified_name`` is None
             and ``NEPTUNE_PROJECT`` environment variable was not set.
         `InvalidApiKey`: When given ``api_token`` is malformed.
         `Unauthorized`: When given ``api_token`` is invalid.
@@ -153,7 +155,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
         session = Session(backend=backend)
 
         if project_qualified_name is None:
-            raise MissingProjectQualifiedName()
+            raise NeptuneMissingProjectQualifiedNameException()
 
         project = session.get_project(project_qualified_name)
 
@@ -176,7 +178,7 @@ def set_project(project_qualified_name):
         :class:`~neptune.projects.Project` object that is used to create or list experiments, notebooks, etc.
 
     Raises:
-        `MissingApiToken`: When library was not initialized previously by ``init`` call and
+        `NeptuneMissingApiTokenException`: When library was not initialized previously by ``init`` call and
             ``NEPTUNE_API_TOKEN`` environment variable is not set.
 
     Examples:
@@ -223,7 +225,7 @@ def create_experiment(name=None,
     # pylint: disable=global-statement
     global project
     if project is None:
-        raise Uninitialized()
+        raise NeptuneUninitializedException()
 
     return project.create_experiment(
         name=name,
@@ -249,7 +251,7 @@ def get_experiment():
     # pylint: disable=global-statement
     global project
     if project is None:
-        raise Uninitialized()
+        raise NeptuneUninitializedException()
 
     # pylint: disable=protected-access
     return project._get_current_experiment()
