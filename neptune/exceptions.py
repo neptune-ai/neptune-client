@@ -41,7 +41,7 @@ class NeptuneUninitializedException(NeptuneException):
 You must initialize neptune-client before you create an experiment.
 
 Looks like you forgot to add:
-    {python}neptune.init(api_token='YOUR_API_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
     
 before you ran:
     {python}neptune.create_experiment(){end}
@@ -148,7 +148,7 @@ There are two options to add it:
 
 {h2}CODE{end}
 Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
-    {python}neptune.init(api_token='YOUR_API_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}RECOMMENDED{end}
 or export or set an environment variable depending on your operating system: 
@@ -187,7 +187,7 @@ There are two options two add it:
 
 {h2}CODE{end}
 Pass it to {bold}neptune.init(){end} via {bold}project_qualified_name{end} argument:
-    {python}neptune.init(api_token='YOUR_API_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
 or export or set an environment variable depending on your operating system: 
