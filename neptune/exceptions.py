@@ -131,8 +131,9 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/installation/index.html
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
-""".format(**{'library': library, **STYLES})
-        super(NeptuneLibraryNotInstalledException, self).__init__(message)
+"""
+        inputs = dict(list({'library': library}.items()) + list(STYLES.items()))
+        super(NeptuneLibraryNotInstalledException, self).__init__(message.format(**inputs))
 
 
 class InvalidChannelValue(NeptuneException):
