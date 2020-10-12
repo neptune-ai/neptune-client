@@ -41,7 +41,7 @@ class NeptuneUninitializedException(NeptuneException):
 You must initialize neptune-client before you create an experiment.
 
 Looks like you forgot to add:
-    {python}neptune.init(api_token='YOUR_LONG_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init(api_token='YOUR_API_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
     
 before you ran:
     {python}neptune.create_experiment(){end}
@@ -95,7 +95,7 @@ class NeptuneLibraryNotInstalledException(NeptuneException):
 Looks like library {library} wasn't installed.
 
 To install run:
-    {bash}pip install{library}{end}
+    {bash}pip install {library}{end}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/installation/index.html
@@ -142,24 +142,24 @@ Neptune client couldn't find your API token.
 Learn how to get it in this docs page:
 https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
 
-There are two options two add it:
+There are two options to add it:
     - specify it in your code 
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
 Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
-    {python}neptune.init(api_token='YOUR_LONG_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init(api_token='YOUR_API_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
 
-{h2}ENVIRONMENT VARIABLE{end}
+{h2}ENVIRONMENT VARIABLE{end} {correct}RECOMMENDED{end}
 or export or set an environment variable depending on your operating system: 
 
     {correct}Linux/Unix{end}
     In your terminal run:
-        {bash}export {env_api_token}=YOUR_LONG_TOKEN{end}
+        {bash}export {env_api_token}=YOUR_API_TOKEN{end}
         
     {correct}Windows{end}
     In your CMD run:
-        {bash}set {env_api_token}=YOUR_LONG_TOKEN{end}
+        {bash}set {env_api_token}=YOUR_API_TOKEN{end}
         
 and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}: 
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
@@ -187,7 +187,7 @@ There are two options two add it:
 
 {h2}CODE{end}
 Pass it to {bold}neptune.init(){end} via {bold}project_qualified_name{end} argument:
-    {python}neptune.init(api_token='YOUR_LONG_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init(api_token='YOUR_API_TOKEN', project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
 or export or set an environment variable depending on your operating system: 
@@ -201,7 +201,7 @@ or export or set an environment variable depending on your operating system:
        {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
 
 and skip the {bold}project_qualified_name{end} argument of {bold}neptune.init(){end}: 
-    {python}neptune.init(api_token='YOUR_LONG_TOKEN'){end}
+    {python}neptune.init(api_token='YOUR_API_TOKEN'){end}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/workspace-project-and-user-management/index.html
@@ -218,18 +218,18 @@ class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
 {h1}
 ----NeptuneIncorrectProjectQualifiedNameException-----------------------------------------------------------------------
 {end}
-Project qualified name {fail}{project_qualified_name}{end} you specified was incorrect.
+Project qualified name {fail}"{project_qualified_name}"{end} you specified was incorrect.
 
 The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
 It has two parts:
     - {correct}WORKSPACE{end}: which can be your username or your organization name
     - {correct}PROJECT_NAME{end}: which is the actual project name you chose 
 
-For example, a project {correct}jakub-czakon/blog-hpo{end} parts are:
-    - {correct}jakub-czakon{end}: a {underline}WORKSPACE{end} my username
-    - {correct}blog-hpo{end}: a {underline}PROJECT_NAME{end} a project name
+For example, a project {correct}neptune-ai/credit-default-prediction{end} parts are:
+    - {correct}neptune-ai{end}: {underline}WORKSPACE{end} our company organization name
+    - {correct}credit-default-prediction{end}: {underline}PROJECT_NAME{end} a project name
     
-The URL to this project looks like this: https://ui.neptune.ai/jakub-czakon/blog-hpo 
+The URL to this project looks like this: https://ui.neptune.ai/neptune-ai/credit-default-prediction
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/workspace-project-and-user-management/index.html
