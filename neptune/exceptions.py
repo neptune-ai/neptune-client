@@ -157,8 +157,8 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
-""".format(**STYLES)
-        super(NeptuneNoExperimentContextException, self).__init__(message)
+"""
+        super(NeptuneNoExperimentContextException, self).__init__(message.format(**STYLES))
 
 
 class NeptuneMissingApiTokenException(NeptuneException):
@@ -199,8 +199,9 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
-""".format(**{'env_api_token': envs.API_TOKEN_ENV_NAME, **STYLES})
-        super(NeptuneMissingApiTokenException, self).__init__(message)
+"""
+        inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
+        super(NeptuneMissingApiTokenException, self).__init__(message.format(**inputs))
 
 
 class NeptuneMissingProjectQualifiedNameException(NeptuneException):
@@ -238,8 +239,9 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
-""".format(**{'env_project': envs.PROJECT_ENV_NAME, **STYLES})
-        super(NeptuneMissingProjectQualifiedNameException, self).__init__(message)
+"""
+        inputs = dict(list({'env_project': envs.PROJECT_ENV_NAME}.items()) + list(STYLES.items()))
+        super(NeptuneMissingProjectQualifiedNameException, self).__init__(message.format(**inputs))
 
 
 class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
@@ -266,8 +268,9 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
-""".format(**{'project_qualified_name': project_qualified_name, **STYLES})
-        super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message)
+"""
+        inputs = dict(list({'project_qualified_name': project_qualified_name}.items()) + list(STYLES.items()))
+        super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message.format(**inputs))
 
 
 class InvalidNeptuneBackend(NeptuneException):
