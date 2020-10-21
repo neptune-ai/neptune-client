@@ -36,6 +36,15 @@ class TestHostedNeptuneObject(unittest.TestCase):
         self.assertEqual(objectUnderTest.foo, objectUnderTest)
         self.assertEqual(objectUnderTest.bar(some_value), objectUnderTest)
 
+    def test_attributes_fall_back_on_getitem(self):
+        # given
+        objectUnderTest = NoopObject()
+        some_value = 42
+
+        # then
+        self.assertEqual(objectUnderTest['foo'], objectUnderTest)
+        self.assertEqual(objectUnderTest['bar'](some_value), objectUnderTest)
+
     def test_noop_object_callable(self):
         # given
         objectUnderTest = NoopObject()
