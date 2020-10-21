@@ -56,6 +56,7 @@ def init(
     credentials = Credentials()
 
     if connection_mode == "async":
+        # TODO Initialize backend in async thread
         backend = HostedNeptuneBackend(credentials)
     elif connection_mode == "sync":
         backend = HostedNeptuneBackend(credentials)

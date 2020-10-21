@@ -153,7 +153,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             } for op in operations]
         }
         try:
-            result = self.leaderboard_client.api.sendOperations(**kwargs).response().result
+            result = self.leaderboard_client.api.executeOperations(**kwargs).response().result
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
