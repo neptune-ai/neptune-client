@@ -84,9 +84,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return self._experiments[experiment_uuid].get(path)
 
     def get_structure(self, experiment_uuid: uuid.UUID) -> List[ApiAttribute]:
-        if experiment_uuid not in self._experiments:
-            raise ExperimentUUIDNotFound(experiment_uuid)
-        exp = self._experiments[experiment_uuid]
+        return None
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
 
