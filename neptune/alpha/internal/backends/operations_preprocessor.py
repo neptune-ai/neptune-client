@@ -18,8 +18,9 @@ from typing import List, TypeVar, Callable
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, UploadFile, LogFloats, LogStrings, \
-    LogImages, ClearFloatLog, ClearStringLog, ClearImageLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet
-from neptune.alpha.internal.operation_visitor import OperationVisitor
+    LogImages, ClearFloatLog, ClearStringLog, ClearImageLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, \
+    AssignDatetime
+from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
 from neptune.alpha.internal.utils.paths import path_to_str
 
 T = TypeVar("T")
@@ -56,6 +57,7 @@ class _DataType(Enum):
     FLOAT = "Float"
     STRING = "String"
     FILE = "File"
+    DATETIME = "Datetime"
     FLOAT_SERIES = "Float Series"
     STRING_SERIES = "String Series"
     IMAGE_SERIES = "Image Series"
@@ -100,6 +102,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_assign_string(self, op: AssignString) -> None:
         self._process_modify_op(_DataType.STRING, op, self._assign_modifier())
+
+    def visit_assign_datetime(self, op: AssignDatetime) -> None:
+        self._process_modify_op(_DataType.DATETIME, op, self._assign_modifier())
 
     def visit_upload_file(self, op: UploadFile) -> None:
         self._process_modify_op(_DataType.FILE, op, self._assign_modifier())

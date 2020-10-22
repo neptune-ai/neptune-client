@@ -17,27 +17,33 @@
 import os
 import platform
 import uuid
-
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, TypeVar
 
 import urllib3
-
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
 from packaging import version
 
+from neptune.alpha.attributes.atoms.file import File as FileAttr
+from neptune.alpha.attributes.atoms.float import Float as FloatAttr
+from neptune.alpha.attributes.atoms.string import String as StringAttr
+from neptune.alpha.attributes.series.float_series import FloatSeries as FloatSeriesAttr
+from neptune.alpha.attributes.series.string_series import StringSeries as StringSeriesAttr
+from neptune.alpha.attributes.series.image_series import ImageSeries as ImageSeriesAttr
+from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
+from neptune.alpha.attributes.attribute import Attribute as Attr
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, \
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException
-from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment
+from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
+from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
 from neptune.alpha.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
     create_swagger_client, verify_client_version, update_session_proxies
-from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import Operation, UploadFile
 from neptune.alpha.internal.utils import verify_type
@@ -175,6 +181,17 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         pass
+
+    @with_api_exceptions_handler
+    def get_structure(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
+        params = {
+            'experimentId': str(experiment_uuid),
+        }
+        try:
+            experiment = self.leaderboard_client.api.getExperiment(**params).response().result
+            return [Attribute(attr.name, AttributeType(attr.type)) for attr in experiment.attributes]
+        except HTTPNotFound:
+            raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
     @with_api_exceptions_handler
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:

@@ -17,8 +17,8 @@
 from neptune.alpha.exceptions import InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile
-from neptune.alpha.internal.operation_visitor import OperationVisitor
+    ClearImageLog, UploadFile, AssignDatetime
+from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
 
 
 class OperationApiNameVisitor(OperationVisitor[str]):
@@ -31,6 +31,9 @@ class OperationApiNameVisitor(OperationVisitor[str]):
 
     def visit_assign_string(self, _: AssignString) -> str:
         return "assignString"
+
+    def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
+        return "assignDatetime"
 
     def visit_upload_file(self, _: UploadFile) -> str:
         raise InternalClientError("Specialized endpoint should be used to upload file attribute")

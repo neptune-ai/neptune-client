@@ -15,13 +15,11 @@
 #
 import abc
 import uuid
-
 from typing import List
 
-from neptune.alpha.types.value import Value
-
-from neptune.alpha.internal.backends.api_model import Project, Experiment
+from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute
 from neptune.alpha.internal.operation import Operation
+from neptune.alpha.types.value import Value
 
 
 class NeptuneBackend:
@@ -43,4 +41,8 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
+        pass
+
+    @abc.abstractmethod
+    def get_structure(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
         pass

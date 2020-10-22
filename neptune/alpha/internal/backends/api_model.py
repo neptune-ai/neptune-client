@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import uuid
+from enum import Enum
 from typing import Optional
 
 from packaging.version import Version
@@ -68,3 +69,21 @@ class ClientConfig(object):
     @property
     def max_compatible_version(self) -> Optional[Version]:
         return self._max_compatible_version
+
+
+class AttributeType(Enum):
+    FLOAT = "float"
+    STRING = "string"
+    DATETIME = "datetime"
+    FILE = "file"
+    FLOAT_SERIES = "floatSeries"
+    STRING_SERIES = "stringSeries"
+    IMAGE_SERIES = "imageSeries"
+    STRING_SET = "stringSet"
+
+
+class Attribute:
+
+    def __init__(self, _path: str, _type: AttributeType):
+        self.path = _path
+        self.type = _type

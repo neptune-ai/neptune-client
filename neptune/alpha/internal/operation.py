@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import abc
+from datetime import datetime
 from typing import List, TypeVar, Generic, Optional, Set
 
 from typing import TYPE_CHECKING
@@ -126,6 +127,34 @@ class AssignString(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'AssignString':
         return AssignString(data["path"], data["value"])
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.value == other.value
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.value))
+
+
+class AssignDatetime(Operation):
+
+    def __init__(self, path: List[str], value: datetime):
+        super().__init__(path)
+        self.value = value
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_assign_datetime(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["value"] = self.value
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'AssignDatetime':
+        return AssignDatetime(data["path"], data["value"])
 
     def __eq__(self, other):
         if type(other) is type(self):

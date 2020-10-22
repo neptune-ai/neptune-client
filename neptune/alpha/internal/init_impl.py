@@ -63,7 +63,7 @@ def init(
     elif connection_mode == "offline":
         backend = NeptuneBackendMock(credentials)
     else:
-        raise ValueError('connection_mode should be on of ["async", "sync", "offline"]')
+        raise ValueError('connection_mode should be one of ["async", "sync", "offline"]')
 
     project_obj = backend.get_project(project)
     exp = backend.create_experiment(project_obj.uuid)

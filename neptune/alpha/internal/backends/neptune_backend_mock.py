@@ -17,21 +17,24 @@
 import uuid
 from typing import Optional, List
 
+from neptune.alpha.attributes.attribute import Attribute
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.alpha.internal.backends.api_model import Project, Experiment
+from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute
+from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
-from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     AssignString, AssignFloat, \
     LogStrings, LogFloats, LogImages, \
     ClearFloatLog, ClearStringLog, ClearStringSet, ClearImageLog, \
     RemoveStrings, AddStrings, \
-    UploadFile
-from neptune.alpha.internal.operation_visitor import OperationVisitor
+    UploadFile, AssignDatetime
+from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
+from neptune.alpha.types.atoms.datetime import Datetime
+from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
-from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.series.float_series import FloatSeries
 from neptune.alpha.types.series.image_series import ImageSeries
 from neptune.alpha.types.series.string_series import StringSeries
@@ -60,10 +63,10 @@ class NeptuneBackendMock(NeptuneBackend):
         for op in operations:
             self._execute_operation(experiment_uuid, op)
 
-    def _execute_operation(self, exp_uuid: uuid.UUID, op: Operation) -> None:
-        if exp_uuid not in self._experiments:
-            raise ExperimentUUIDNotFound(exp_uuid)
-        exp = self._experiments[exp_uuid]
+    def _execute_operation(self, experiment_uuid: uuid.UUID, op: Operation) -> None:
+        if experiment_uuid not in self._experiments:
+            raise ExperimentUUIDNotFound(experiment_uuid)
+        exp = self._experiments[experiment_uuid]
         val = exp.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):
@@ -80,6 +83,11 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         return self._experiments[experiment_uuid].get(path)
 
+    def get_structure(self, experiment_uuid: uuid.UUID) -> List[ApiAttribute]:
+        if experiment_uuid not in self._experiments:
+            raise ExperimentUUIDNotFound(experiment_uuid)
+        exp = self._experiments[experiment_uuid]
+
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
 
         def __init__(self, path: List[str], current_value: Optional[Value]):
@@ -95,6 +103,11 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, String):
                 raise self._create_type_error("assign", String.__name__)
             return String(op.value)
+
+        def visit_assign_datetime(self, op: AssignDatetime) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Datetime):
+                raise self._create_type_error("assign", Datetime.__name__)
+            return Datetime(op.value)
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
