@@ -114,17 +114,19 @@ class Experiment(Handler):
     def _define_attribute(self, _path: List[str], _type: AttributeType):
         if _type == AttributeType.FLOAT:
             self._structure.set(_path, FloatAttr(self, _path))
-        if _type == "string":
+        if _type == AttributeType.STRING:
             self._structure.set(_path, StringAttr(self, _path))
-        if _type == "file":
+        if _type == AttributeType.DATETIME:
+            self._structure.set(_path, DatetimeAttr(self, _path))
+        if _type == AttributeType.FILE:
             self._structure.set(_path, FileAttr(self, _path))
-        if _type == "floatSeries":
+        if _type == AttributeType.FLOAT_SERIES:
             self._structure.set(_path, FloatSeriesAttr(self, _path))
-        if _type == "stringSeries":
+        if _type == AttributeType.STRING_SERIES:
             self._structure.set(_path, StringSeriesAttr(self, _path))
-        if _type == "imageSeries":
+        if _type == AttributeType.IMAGE_SERIES:
             self._structure.set(_path, ImageSeriesAttr(self, _path))
-        if _type == "stringSet":
+        if _type == AttributeType.STRING_SET:
             self._structure.set(_path, StringSetAttr(self, _path))
 
     def _prepare_sys_namespace(self):
