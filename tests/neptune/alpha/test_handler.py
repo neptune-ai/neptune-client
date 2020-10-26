@@ -70,7 +70,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
         self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
-        now = now + timedelta(seconds=3)
+        now = now + timedelta(seconds=3, microseconds=500000)
         exp['some/num/val'].assign(FloatVal(15))
         exp['some/str/val'].assign(StringVal("other text"), wait=False)
         exp['some/datetime/val'].assign(DatetimeVal(now), wait=True)
