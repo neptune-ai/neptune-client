@@ -29,6 +29,8 @@ class Datetime(Atom):
         verify_type("value", value, (DatetimeVal, datetime))
         if isinstance(value, DatetimeVal):
             value = value.value
+        else:
+            value = value.replace(microsecond=1000*int(value.microsecond/1000))
         with self._experiment.lock():
             self._enqueue_operation(AssignDatetime(self._path, value), wait)
 

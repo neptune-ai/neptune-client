@@ -27,7 +27,7 @@ Ret = TypeVar('Ret')
 class Datetime(Atom):
 
     def __init__(self, value: datetime):
-        self.value = value
+        self.value = value.replace(microsecond=1000*int(value.microsecond/1000))
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_datetime(self)

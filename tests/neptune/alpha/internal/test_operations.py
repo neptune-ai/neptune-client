@@ -33,10 +33,11 @@ class TestOperations(unittest.TestCase):
 
     @staticmethod
     def _list_objects():
+        now = datetime.now()
         return [
             AssignFloat(TestOperations._random_path(), 5),
             AssignString(TestOperations._random_path(), "a\rsdf\thr"),
-            AssignDatetime(TestOperations._random_path(), datetime.now()),
+            AssignDatetime(TestOperations._random_path(), now.replace(microsecond=1000*int(now.microsecond/1000))),
             UploadFile(TestOperations._random_path(), "file/path/f/txt"),
             LogFloats(TestOperations._random_path(), [
                 LogFloats.ValueType(5, 4, 500),

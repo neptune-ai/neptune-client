@@ -142,7 +142,7 @@ class AssignDatetime(Operation):
 
     def __init__(self, path: List[str], value: datetime):
         super().__init__(path)
-        self.value = datetime.fromtimestamp(int(1000 * value.timestamp()) / 1000)
+        self.value = value
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_datetime(self)
