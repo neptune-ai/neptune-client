@@ -13,11 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import threading
 import time
 
 import jwt
 from bravado.requests_client import Authenticator
-from oauthlib.oauth2 import TokenExpiredError
+from oauthlib.oauth2 import TokenExpiredError, OAuth2Error
 from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
 
@@ -25,9 +26,11 @@ from neptune.utils import with_api_exceptions_handler, update_session_proxies
 
 
 class NeptuneAuth(AuthBase):
+    __LOCK = threading.RLock()
 
-    def __init__(self, session):
-        self.session = session
+    def __init__(self, session_factory):
+        self.session_factory = session_factory
+        self.session = session_factory()
         self.token_expires_at = 0
 
     def __call__(self, r):
@@ -51,6 +54,16 @@ class NeptuneAuth(AuthBase):
             self._refresh_token()
 
     def _refresh_token(self):
+        with self.__LOCK:
+            try:
+                self._refresh_session_token()
+            except OAuth2Error:
+                # for some reason oauth session is no longer valid. Retry by creating new fresh session
+                # we can safely ignore this error, as it will be thrown again if it's persistent
+                self.session = self.session_factory()
+                self._refresh_session_token()
+
+    def _refresh_session_token(self):
         self.session.refresh_token(self.session.auto_refresh_url, verify=self.session.verify)
         if self.session.token is not None and self.session.token.get('access_token') is not None:
             decoded_json_token = jwt.decode(self.session.token.get('access_token'), verify=False)
@@ -59,29 +72,35 @@ class NeptuneAuth(AuthBase):
 
 class NeptuneAuthenticator(Authenticator):
 
-    def __init__(self, auth_tokens, ssl_verify, proxies):
+    def __init__(self, api_token, backend_client, ssl_verify, proxies):
         super(NeptuneAuthenticator, self).__init__(host='')
-        decoded_json_token = jwt.decode(auth_tokens.accessToken, verify=False)
-        expires_at = decoded_json_token.get(u'exp')
-        client_name = decoded_json_token.get(u'azp')
-        refresh_url = u'{realm_url}/protocol/openid-connect/token'.format(realm_url=decoded_json_token.get(u'iss'))
-        token = {
-            u'access_token': auth_tokens.accessToken,
-            u'refresh_token': auth_tokens.refreshToken,
-            u'expires_in': expires_at - time.time()
-        }
-        session = OAuth2Session(
-            client_id=client_name,
-            token=token,
-            auto_refresh_url=refresh_url,
-            auto_refresh_kwargs={'client_id': client_name},
-            token_updater=_no_token_updater
-        )
-        session.verify = ssl_verify
 
-        update_session_proxies(session, proxies)
+        # We need to pass a lambda to be able to re-create fresh session at any time when needed
+        def session_factory():
+            auth_tokens = backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
+            decoded_json_token = jwt.decode(auth_tokens.accessToken, verify=False)
+            expires_at = decoded_json_token.get(u'exp')
+            client_name = decoded_json_token.get(u'azp')
+            refresh_url = u'{realm_url}/protocol/openid-connect/token'.format(realm_url=decoded_json_token.get(u'iss'))
+            token = {
+                u'access_token': auth_tokens.accessToken,
+                u'refresh_token': auth_tokens.refreshToken,
+                u'expires_in': expires_at - time.time()
+            }
 
-        self.auth = NeptuneAuth(session)
+            session = OAuth2Session(
+                client_id=client_name,
+                token=token,
+                auto_refresh_url=refresh_url,
+                auto_refresh_kwargs={'client_id': client_name},
+                token_updater=_no_token_updater
+            )
+            session.verify = ssl_verify
+
+            update_session_proxies(session, proxies)
+            return session
+
+        self.auth = NeptuneAuth(session_factory)
 
     def matches(self, url):
         return True
