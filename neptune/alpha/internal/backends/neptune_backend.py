@@ -44,5 +44,5 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_structure(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
+    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
         pass

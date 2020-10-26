@@ -17,7 +17,7 @@
 import os
 import platform
 import uuid
-from typing import List, Optional, Dict, TypeVar
+from typing import List, Optional, Dict
 
 import urllib3
 from bravado.client import SwaggerClient
@@ -25,14 +25,6 @@ from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
 from packaging import version
 
-from neptune.alpha.attributes.atoms.file import File as FileAttr
-from neptune.alpha.attributes.atoms.float import Float as FloatAttr
-from neptune.alpha.attributes.atoms.string import String as StringAttr
-from neptune.alpha.attributes.series.float_series import FloatSeries as FloatSeriesAttr
-from neptune.alpha.attributes.series.string_series import StringSeries as StringSeriesAttr
-from neptune.alpha.attributes.series.image_series import ImageSeries as ImageSeriesAttr
-from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
-from neptune.alpha.attributes.attribute import Attribute as Attr
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, \
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException
@@ -183,7 +175,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         pass
 
     @with_api_exceptions_handler
-    def get_structure(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
+    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
         params = {
             'experimentId': str(experiment_uuid),
         }

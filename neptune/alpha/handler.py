@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from datetime import datetime
 from typing import TYPE_CHECKING, Union
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
@@ -48,8 +48,8 @@ class Handler:
         else:
             raise AttributeError()
 
-    def assign(self, value: Union[Value, int, float, str], wait: bool = False) -> None:
-        verify_type("value", value, (Value, int, float, str))
+    def assign(self, value: Union[Value, int, float, str, datetime], wait: bool = False) -> None:
+        verify_type("value", value, (Value, int, float, str, datetime))
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
             if attr:

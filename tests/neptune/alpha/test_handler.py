@@ -17,11 +17,14 @@ import os
 import unittest
 
 # pylint: disable=protected-access
+from datetime import datetime, timedelta
 
 from neptune.alpha import init, ANONYMOUS
+from neptune.alpha.attributes.atoms.datetime import Datetime
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.alpha.types.atoms.float import Float as FloatVal
 from neptune.alpha.types.atoms.string import String as StringVal
+from neptune.alpha.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.alpha.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.alpha.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.alpha.types.sets.string_set import StringSet as StringSetVal
@@ -42,29 +45,41 @@ class TestHandler(unittest.TestCase):
 
     def test_set(self):
         exp = init(connection_mode="offline", flush_period=0.5)
+        now = datetime.now()
         exp['some/num/val'] = 5
         exp['some/str/val'] = "some text"
+        exp['some/datetime/val'] = now
         exp.wait()
         self.assertEqual(exp['some/num/val'].get(), 5)
         self.assertEqual(exp['some/str/val'].get(), "some text")
+        self.assertEqual(exp['some/datetime/val'].get(), now)
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
+        self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
     def test_assign_atom(self):
         exp = init(connection_mode="offline", flush_period=0.5)
+        now = datetime.now()
         exp['some/num/val'].assign(5)
         exp['some/str/val'].assign("some text", wait=True)
+        exp['some/datetime/val'].assign(now)
         self.assertEqual(exp['some/num/val'].get(), 5)
         self.assertEqual(exp['some/str/val'].get(), "some text")
+        self.assertEqual(exp['some/datetime/val'].get(), now)
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
+        self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
+        now = now + timedelta(seconds=3)
         exp['some/num/val'].assign(FloatVal(15))
-        exp['some/str/val'].assign(StringVal("other text"), wait=True)
+        exp['some/str/val'].assign(StringVal("other text"), wait=False)
+        exp['some/datetime/val'].assign(DatetimeVal(now), wait=True)
         self.assertEqual(exp['some/num/val'].get(), 15)
         self.assertEqual(exp['some/str/val'].get(), "other text")
+        self.assertEqual(exp['some/datetime/val'].get(), now)
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
+        self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
     def test_save_file(self):
         exp = init(connection_mode="offline", flush_period=0.5)

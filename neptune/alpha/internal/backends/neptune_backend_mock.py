@@ -17,10 +17,9 @@
 import uuid
 from typing import Optional, List
 
-from neptune.alpha.attributes.attribute import Attribute
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
-from neptune.alpha.internal.backends.api_model import Project, Experiment
 from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute
+from neptune.alpha.internal.backends.api_model import Project, Experiment, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -30,7 +29,7 @@ from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     ClearFloatLog, ClearStringLog, ClearStringSet, ClearImageLog, \
     RemoveStrings, AddStrings, \
     UploadFile, AssignDatetime
-from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
+from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.atoms.float import Float
@@ -40,6 +39,7 @@ from neptune.alpha.types.series.image_series import ImageSeries
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.types.sets.string_set import StringSet
 from neptune.alpha.types.value import Value
+from neptune.alpha.types.value_visitor import ValueVisitor
 
 
 class NeptuneBackendMock(NeptuneBackend):
@@ -47,6 +47,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def __init__(self, credentials: Credentials):
         # pylint: disable=unused-argument
         self._experiments = dict()
+        self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
 
     def get_display_address(self) -> str:
         return "OFFLINE"
@@ -83,8 +84,45 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         return self._experiments[experiment_uuid].get(path)
 
-    def get_structure(self, experiment_uuid: uuid.UUID) -> List[ApiAttribute]:
-        return None
+    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[ApiAttribute]:
+        if experiment_uuid not in self._experiments:
+            raise ExperimentUUIDNotFound(experiment_uuid)
+        exp = self._experiments[experiment_uuid]
+        return list(self._generate_attributes(None, exp.get_structure()))
+
+    def _generate_attributes(self, base_path: str, values: dict):
+        for key, value_or_dict in values.items():
+            new_path = base_path + '/' + key if base_path is not None else key
+            if isinstance(value_or_dict, dict):
+                yield from self._generate_attributes(new_path, value_or_dict)
+            else:
+                yield ApiAttribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
+
+    class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
+
+        def visit_float(self, value: Float) -> AttributeType:
+            return AttributeType.FLOAT
+
+        def visit_string(self, value: String) -> AttributeType:
+            return AttributeType.STRING
+
+        def visit_datetime(self, value: Datetime) -> AttributeType:
+            return AttributeType.DATETIME
+
+        def visit_file(self, value: File) -> AttributeType:
+            return AttributeType.FILE
+
+        def visit_float_series(self, value: FloatSeries) -> AttributeType:
+            return AttributeType.FLOAT_SERIES
+
+        def visit_string_series(self, value: StringSeries) -> AttributeType:
+            return AttributeType.STRING_SERIES
+
+        def visit_image_series(self, value: ImageSeries) -> AttributeType:
+            return AttributeType.IMAGE_SERIES
+
+        def visit_string_set(self, value: StringSet) -> AttributeType:
+            return AttributeType.STRING_SET
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
 

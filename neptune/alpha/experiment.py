@@ -16,6 +16,7 @@
 
 import threading
 import uuid
+from datetime import datetime
 from typing import Dict, Any, Union, List
 
 from neptune.alpha.attributes.atoms.file import File as FileAttr
@@ -39,6 +40,7 @@ from neptune.alpha.internal.operation_processors.operation_processor import Oper
 from neptune.alpha.internal.utils.paths import parse_path
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
+from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.value import Value
 
 
@@ -63,11 +65,13 @@ class Experiment(Handler):
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
 
-    def define(self, path: str, value: Union[Value, int, float, str], wait: bool = False) -> Attribute:
+    def define(self, path: str, value: Union[Value, int, float, str, datetime], wait: bool = False) -> Attribute:
         if isinstance(value, (int, float)):
             value = Float(value)
         elif isinstance(value, str):
             value = String(value)
+        elif isinstance(value, datetime):
+            value = Datetime(value)
         parsed_path = parse_path(path)
 
         with self._lock:
@@ -105,11 +109,10 @@ class Experiment(Handler):
         with self._lock:
             if wait:
                 self._op_processor.wait()
-            attributes = self._backend.get_structure(self._uuid)
-            if attributes is not None:
-                self._structure.clear()
-                for attribute in attributes:
-                    self._define_attribute(parse_path(attribute.path), attribute.type)
+            attributes = self._backend.get_attributes(self._uuid)
+            self._structure.clear()
+            for attribute in attributes:
+                self._define_attribute(parse_path(attribute.path), attribute.type)
 
     def _define_attribute(self, _path: List[str], _type: AttributeType):
         if _type == AttributeType.FLOAT:

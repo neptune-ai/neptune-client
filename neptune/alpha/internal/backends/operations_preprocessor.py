@@ -18,9 +18,9 @@ from typing import List, TypeVar, Callable
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, UploadFile, LogFloats, LogStrings, \
-    LogImages, ClearFloatLog, ClearStringLog, ClearImageLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, \
-    AssignDatetime
-from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
+    LogImages, ClearFloatLog, ClearStringLog, ClearImageLog, AddStrings, RemoveStrings, DeleteAttribute, \
+    ClearStringSet, AssignDatetime
+from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.internal.utils.paths import path_to_str
 
 T = TypeVar("T")
