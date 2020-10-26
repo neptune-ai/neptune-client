@@ -84,22 +84,29 @@ class HostedNeptuneBackend(Backend):
             ssl_verify = False
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
+        # for session re-creation we need to keep an authenticator-free version of http client
+        self._http_client_for_token = RequestsClient(ssl_verify=ssl_verify)
 
         update_session_proxies(self._http_client.session, proxies)
+        update_session_proxies(self._http_client_for_token.session, proxies)
 
         config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
         # We don't need to be able to resolve Neptune host if we use proxy
         if proxies is None:
             self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
 
-        backend_client = self._get_swagger_client('{}/api/backend/swagger.json'.format(config_api_url))
+        # this backend client is used only for initial configuration and session re-creation
+        backend_client = self._get_swagger_client(
+            '{}/api/backend/swagger.json'.format(config_api_url),
+            self._http_client_for_token
+        )
         self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
 
         self._verify_version()
 
-        self._set_swagger_clients(self._client_config, config_api_url, backend_client)
+        self._set_swagger_clients(self._client_config)
 
-        self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies)
+        self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies, backend_client)
         self._http_client.authenticator = self.authenticator
 
         user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
@@ -924,7 +931,7 @@ class HostedNeptuneBackend(Backend):
         return response
 
     @with_api_exceptions_handler
-    def _get_swagger_client(self, url):
+    def _get_swagger_client(self, url, http_client):
         return SwaggerClient.from_url(
             url,
             config=dict(
@@ -933,12 +940,13 @@ class HostedNeptuneBackend(Backend):
                 validate_responses=False,
                 formats=[uuid_format]
             ),
-            http_client=self._http_client)
+            http_client=http_client)
 
     @with_api_exceptions_handler
-    def _create_authenticator(self, api_token, ssl_verify, proxies):
+    def _create_authenticator(self, api_token, ssl_verify, proxies, backend_client):
         return NeptuneAuthenticator(
-            self.backend_swagger_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result,
+            api_token,
+            backend_client,
             ssl_verify,
             proxies)
 
@@ -992,14 +1000,15 @@ class HostedNeptuneBackend(Backend):
                     self._client_config.min_recommended_version, self.client_lib_version),
                 sys.stderr)
 
-    def _set_swagger_clients(self, client_config, client_config_api_addr, client_config_backend_client):
-        self.backend_swagger_client = (
-            client_config_backend_client if client_config_api_addr == client_config.api_url
-            else self._get_swagger_client('{}/api/backend/swagger.json'.format(client_config.api_url))
+    def _set_swagger_clients(self, client_config):
+        self.backend_swagger_client = self._get_swagger_client(
+            '{}/api/backend/swagger.json'.format(client_config.api_url),
+            self._http_client
         )
 
         self.leaderboard_swagger_client = self._get_swagger_client(
-            '{}/api/leaderboard/swagger.json'.format(client_config.api_url)
+            '{}/api/leaderboard/swagger.json'.format(client_config.api_url),
+            self._http_client
         )
 
     def _verify_host_resolution(self, api_url, app_url):
