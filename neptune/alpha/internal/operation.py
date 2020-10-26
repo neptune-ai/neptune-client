@@ -142,19 +142,19 @@ class AssignDatetime(Operation):
 
     def __init__(self, path: List[str], value: datetime):
         super().__init__(path)
-        self.value = value
+        self.value = datetime.fromtimestamp(int(1000 * value.timestamp()) / 1000)
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_datetime(self)
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["value"] = self.value
+        ret["value"] = int(1000 * self.value.timestamp())
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'AssignDatetime':
-        return AssignDatetime(data["path"], data["value"])
+        return AssignDatetime(data["path"], datetime.fromtimestamp(data["value"] / 1000))
 
     def __eq__(self, other):
         if type(other) is type(self):
