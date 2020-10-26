@@ -90,7 +90,7 @@ class NeptuneBackendMock(NeptuneBackend):
         exp = self._experiments[experiment_uuid]
         return list(self._generate_attributes(None, exp.get_structure()))
 
-    def _generate_attributes(self, base_path: str, values: dict):
+    def _generate_attributes(self, base_path: Optional[str], values: dict):
         for key, value_or_dict in values.items():
             new_path = base_path + '/' + key if base_path is not None else key
             if isinstance(value_or_dict, dict):
@@ -100,28 +100,28 @@ class NeptuneBackendMock(NeptuneBackend):
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 
-        def visit_float(self, value: Float) -> AttributeType:
+        def visit_float(self, _: Float) -> AttributeType:
             return AttributeType.FLOAT
 
-        def visit_string(self, value: String) -> AttributeType:
+        def visit_string(self, _: String) -> AttributeType:
             return AttributeType.STRING
 
-        def visit_datetime(self, value: Datetime) -> AttributeType:
+        def visit_datetime(self, _: Datetime) -> AttributeType:
             return AttributeType.DATETIME
 
-        def visit_file(self, value: File) -> AttributeType:
+        def visit_file(self, _: File) -> AttributeType:
             return AttributeType.FILE
 
-        def visit_float_series(self, value: FloatSeries) -> AttributeType:
+        def visit_float_series(self, _: FloatSeries) -> AttributeType:
             return AttributeType.FLOAT_SERIES
 
-        def visit_string_series(self, value: StringSeries) -> AttributeType:
+        def visit_string_series(self, _: StringSeries) -> AttributeType:
             return AttributeType.STRING_SERIES
 
-        def visit_image_series(self, value: ImageSeries) -> AttributeType:
+        def visit_image_series(self, _: ImageSeries) -> AttributeType:
             return AttributeType.IMAGE_SERIES
 
-        def visit_string_set(self, value: StringSet) -> AttributeType:
+        def visit_string_set(self, _: StringSet) -> AttributeType:
             return AttributeType.STRING_SET
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):

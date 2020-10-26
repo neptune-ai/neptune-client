@@ -32,7 +32,7 @@ class OperationApiNameVisitor(OperationVisitor[str]):
     def visit_assign_string(self, _: AssignString) -> str:
         return "assignString"
 
-    def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
+    def visit_assign_datetime(self, _: AssignDatetime) -> Ret:
         return "assignDatetime"
 
     def visit_upload_file(self, _: UploadFile) -> str:
