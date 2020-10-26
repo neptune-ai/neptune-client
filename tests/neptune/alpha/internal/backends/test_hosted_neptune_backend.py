@@ -51,8 +51,8 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
-        swagger_client.api.sendOperations().response().result = [response_error]
-        swagger_client.api.sendOperations.reset_mock()
+        swagger_client.api.executeOperations().response().result = [response_error]
+        swagger_client.api.executeOperations.reset_mock()
         upload_mock.return_value = [FileUploadError("file1", "error2")]
 
         # when
@@ -73,7 +73,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         )
 
         # than
-        swagger_client.api.sendOperations.assert_called_once_with(
+        swagger_client.api.executeOperations.assert_called_once_with(
             **{
                 'experimentId': str(exp_uuid),
                 'operations': [{
