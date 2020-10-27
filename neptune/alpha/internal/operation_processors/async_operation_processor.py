@@ -26,6 +26,7 @@ from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.operation import Operation, VersionedOperation
 from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.alpha.internal.threading.daemon import Daemon
+from neptune.alpha.internal.utils.experiment_offset import ExperimentOffset
 
 # pylint: disable=protected-access
 
@@ -36,11 +37,13 @@ class AsyncOperationProcessor(OperationProcessor):
                  experiment_uuid: uuid.UUID,
                  queue: StorageQueue[VersionedOperation],
                  backend: NeptuneBackend,
+                 experiment_offset: ExperimentOffset,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
         self._experiment_uuid = experiment_uuid
         self._queue = queue
         self._backend = backend
+        self._experiment_offset = experiment_offset
         self._last_version = 0
         self._consumed_version = 0
         self._waiting_for_version = 0
@@ -98,6 +101,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 try:
                     self._processor._backend.execute_operations(self._processor._experiment_uuid,
                                                                 [op.op for op in batch])
+                    self._processor._experiment_offset.write(batch[-1].version)
                     break
                 except ConnectionLost:
                     if retry >= self.RETRIES - 1:

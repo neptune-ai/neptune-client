@@ -16,6 +16,7 @@
 
 import os
 
+from pathlib import Path
 from typing import Optional
 
 import click
@@ -33,6 +34,7 @@ from neptune.alpha.internal.operation import VersionedOperation
 from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.alpha.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, \
     StderrCaptureBackgroundJob
+from neptune.alpha.internal.utils.experiment_offset import ExperimentOffset
 from neptune.alpha.version import version as parsed_version
 from neptune.alpha.experiment import Experiment
 
@@ -69,13 +71,15 @@ def init(
     exp = backend.create_experiment(project_obj.uuid)
 
     if connection_mode == "async":
+        experiment_path = ".neptune/{}".format(exp.uuid)
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
-            DiskQueue(".neptune/{}".format(exp.uuid),
+            DiskQueue(experiment_path,
                       "operations",
                       VersionedOperation.to_dict,
                       VersionedOperation.from_dict),
             backend,
+            ExperimentOffset(Path(experiment_path)),
             sleep_time=flush_period)
     elif connection_mode == "sync":
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
