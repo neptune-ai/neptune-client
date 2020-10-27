@@ -15,9 +15,8 @@
 #
 from typing import Dict, Any, Optional, List, TypeVar, Generic
 
-from neptune.alpha.internal.utils.paths import path_to_str
-
 from neptune.alpha.exceptions import MetadataInconsistency
+from neptune.alpha.internal.utils.paths import path_to_str
 
 T = TypeVar('T')
 
@@ -83,3 +82,6 @@ class ExperimentStructure(Generic[T]):
             self._pop_impl(ref[head], tail, attr_path)
             if not ref[head]:
                 del ref[head]
+
+    def clear(self):
+        self._structure.clear()

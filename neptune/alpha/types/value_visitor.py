@@ -16,6 +16,7 @@
 import abc
 from typing import TypeVar, Generic
 
+from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
 from neptune.alpha.types.atoms.file import File
@@ -39,6 +40,10 @@ class ValueVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_string(self, value: String) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_datetime(self, value: Datetime) -> Ret:
         pass
 
     @abc.abstractmethod

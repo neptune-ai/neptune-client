@@ -61,6 +61,7 @@ class AsyncOperationProcessor(OperationProcessor):
         if self._consumed_version >= self._waiting_for_version:
             self._waiting_for_version = 0
             return
+        self._consumer.wake_up()
         self._waiting_event.wait()
         self._waiting_event.clear()
 

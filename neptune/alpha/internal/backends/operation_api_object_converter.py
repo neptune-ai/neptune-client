@@ -17,8 +17,8 @@
 from neptune.alpha.exceptions import InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile
-from neptune.alpha.internal.operation_visitor import OperationVisitor
+    ClearImageLog, UploadFile, AssignDatetime
+from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
 
 
 class OperationApiObjectConverter(OperationVisitor[dict]):
@@ -32,6 +32,11 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
         }
 
     def visit_assign_string(self, op: AssignString) -> dict:
+        return {
+            'value': op.value
+        }
+
+    def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
         return {
             'value': op.value
         }

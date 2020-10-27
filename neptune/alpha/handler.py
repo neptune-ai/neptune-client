@@ -13,21 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+from datetime import datetime
 from typing import TYPE_CHECKING, Union
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
-
-from neptune.alpha.types.value import Value
-from neptune.alpha.types.atoms.file import File
-
-from neptune.alpha.types.sets.string_set import StringSet
-
-from neptune.alpha.types.series.string_series import StringSeries
-
-from neptune.alpha.types.series.float_series import FloatSeries
-
 from neptune.alpha.internal.utils.paths import join_paths
+from neptune.alpha.types.atoms.file import File
+from neptune.alpha.types.series.float_series import FloatSeries
+from neptune.alpha.types.series.string_series import StringSeries
+from neptune.alpha.types.sets.string_set import StringSet
+from neptune.alpha.types.value import Value
 
 if TYPE_CHECKING:
     from neptune.alpha.experiment import Experiment
@@ -53,8 +48,8 @@ class Handler:
         else:
             raise AttributeError()
 
-    def assign(self, value: Union[Value, int, float, str], wait: bool = False) -> None:
-        verify_type("value", value, (Value, int, float, str))
+    def assign(self, value: Union[Value, int, float, str, datetime], wait: bool = False) -> None:
+        verify_type("value", value, (Value, int, float, str, datetime))
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
             if attr:
