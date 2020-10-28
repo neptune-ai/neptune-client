@@ -26,7 +26,7 @@ from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import VersionedOperation
 from neptune.alpha.internal.utils.json_file_splitter import JsonFileSplitter
-from neptune.alpha.internal.utils.experiment_offset import ExperimentOffset
+from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 
 epilog = """
 Neptune stores experiment data on disk. In case an experiment is running offline
@@ -72,7 +72,7 @@ backend = HostedNeptuneBackend(Credentials())
 
 def report_get_experiment_error(experimentId: str, status_code: int, skipping: bool):
     comment = "Skipping experiment." if skipping else "Please try again later or contact Neptune team."
-    print("Getting experiment {}: server responded with status code {}. {}"
+    print("Warning: Getting experiment {}: server responded with status code {}. {}"
           .format(experimentId, status_code, comment), file=sys.stderr)
 
 def get_experiment(experimentId: str):
@@ -89,8 +89,8 @@ def get_qualified_name(experiment):
     return "{}/{}/{}".format(experiment.organizationName, experiment.projectName, experiment.shortId)
 
 def is_experiment_synced(experiment_path: Path):
-    experiment_offset = ExperimentOffset(experiment_path)
-    synced_offset = experiment_offset.read()
+    sync_offset_file = SyncOffsetFile(experiment_path)
+    sync_offset = sync_offset_file.read()
     operation_files = sorted(experiment_path.glob('operations-*.log'))
     if not operation_files:
         return True
@@ -104,7 +104,7 @@ def is_experiment_synced(experiment_path: Path):
         json_dict = json_file_splitter.get()
     last_version = last_versioned_operation['version']
 
-    return synced_offset >= last_version
+    return sync_offset >= last_version
 
 def partition_experiments(path: Path):
     synced_experiment_uuids = []
@@ -158,25 +158,25 @@ def sync_experiment(path, qualified_experiment_name):
     experiment_uuid = path.name
     print('Synchronising ', qualified_experiment_name)
     disk_queue = DiskQueue(str(path), 'operations', VersionedOperation.to_dict, VersionedOperation.from_dict)
-    experiment_offset = ExperimentOffset(path)
-    sent_offset = experiment_offset.read()
+    sync_offset_file = SyncOffsetFile(path)
+    sync_offset = sync_offset_file.read()
     while True:
         batch = disk_queue.get_batch(1000)
         if not batch:
             print('Synchronization of experiment {} completed.'.format(qualified_experiment_name))
             return
-        if batch[0].version > sent_offset:
+        if batch[0].version > sync_offset:
             pass
-        elif batch[-1].version <= sent_offset:
+        elif batch[-1].version <= sync_offset:
             continue
         else:
             for i, operation in enumerate(batch):
-                if operation.version > sent_offset:
+                if operation.version > sync_offset:
                     batch = batch[i:]
                     break
         backend.execute_operations(experiment_uuid, [op.op for op in batch])
-        experiment_offset.write(batch[-1].version)
-        sent_offset = batch[-1].version
+        sync_offset_file.write(batch[-1].version)
+        sync_offset = batch[-1].version
 
 def sync_all_experiments(path):
     for experiment_path in path.iterdir():
@@ -189,7 +189,11 @@ def sync_selected_experiments(path, qualified_experiment_names):
     for name in qualified_experiment_names:
         experiment = get_experiment(name)
         if experiment:
-            sync_experiment(path / experiment.uuid, name)
+            experiment_path = path / experiment.uuid
+            if experiment_path.exists():
+                sync_experiment(experiment_path, name)
+            else:
+                print("Warning: Experiment '{}' does not exist in location {}".format(name, path), file=sys.stderr)
 
 def main():
     args = parser.parse_args()
@@ -216,7 +220,6 @@ def main():
 
     if args.action == 'list':
         list_experiments(path, *partition_experiments(path))
-        # TODO: add last send location, compare with log, predicate: is exp sync
     elif args.action == 'sync' and qualified_experiment_names:
         sync_selected_experiments(path, qualified_experiment_names)
     elif args.action == 'sync' and not qualified_experiment_names:

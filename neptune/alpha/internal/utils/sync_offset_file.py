@@ -16,7 +16,7 @@
 
 from pathlib import Path
 
-class ExperimentOffset:
+class SyncOffsetFile:
     def __init__(self, experiment_path: Path):
         self._file = open(experiment_path / 'offset', 'a+b')
 

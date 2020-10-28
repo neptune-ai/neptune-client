@@ -19,8 +19,8 @@ from tempfile import TemporaryDirectory
 
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.utils.experiment_offset import ExperimentOffset
-from neptune.alpha.internal.utils import experiment_offset
+from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
+from neptune.alpha.internal.utils import sync_offset_file
 from neptune.alpha.sync import partition_experiments, list_experiments
 
 # hubert3@stage
@@ -43,10 +43,10 @@ for path in experiment_paths:
     last_operations.flush()
     last_operations.close()
 
-experiment_offset = ExperimentOffset(experiment_paths[0])
-experiment_offset.write(1)
+sync_offset_file = SyncOffsetFile(experiment_paths[0])
+sync_offset_file.write(1)
 
-experiment_offset = ExperimentOffset(experiment_paths[1])
-experiment_offset.write(0)
+sync_offset_file = SyncOffsetFile(experiment_paths[1])
+sync_offset_file.write(0)
 
 print(list_experiments(base_path, *partition_experiments(base_path)))
