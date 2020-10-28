@@ -18,7 +18,7 @@ import uuid
 from typing import Optional, List
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
-from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute, ExperimentApiModel
+from neptune.alpha.internal.backends.api_model import Attribute, ExperimentApiModel
 from neptune.alpha.internal.backends.api_model import Project, Experiment, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -55,12 +55,35 @@ class NeptuneBackendMock(NeptuneBackend):
         return Project(uuid.uuid4(), "sandbox", "workspace")
 
     def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
-        new_uuid = uuid.uuid4()
-        self._experiments[new_uuid] = ExperimentStructure[Value]()
-        return Experiment(new_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
+        new_experiment_uuid = uuid.uuid4()
+        self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
+        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
 
     def get_experiment(self, experiment_id: str) -> ExperimentApiModel:
         return ExperimentApiModel(str(uuid.uuid4()), 'NPT-111', 'workspace', 'sandbox')
+
+    def get_experiment_with_attributes(self, project_id: str, experiment_id: str) -> (Experiment, List[Attribute]):
+        project_uuid = uuid.uuid4()
+        new_experiment_uuid = uuid.uuid4()
+        self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
+        experiment = Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
+
+        attributes: List[Attribute] = []
+        attributes.append(Attribute("sys/id", AttributeType.STRING))
+        attributes.append(Attribute("sys/owner", AttributeType.STRING))
+        attributes.append(Attribute("sys/name", AttributeType.STRING))
+        attributes.append(Attribute("sys/description", AttributeType.STRING))
+        attributes.append(Attribute("sys/hostname", AttributeType.STRING))
+        attributes.append(Attribute("sys/creation_time", AttributeType.DATETIME))
+        attributes.append(Attribute("sys/modification_time", AttributeType.DATETIME))
+        attributes.append(Attribute("sys/size", AttributeType.FLOAT))
+        attributes.append(Attribute("sys/tags", AttributeType.STRING_SET))
+        attributes.append(Attribute("sys/notebook/id", AttributeType.STRING))
+        attributes.append(Attribute("sys/notebook/name", AttributeType.STRING))
+        attributes.append(Attribute("sys/notebook/checkpoint/id", AttributeType.STRING))
+        attributes.append(Attribute("sys/notebook/checkpoint/name", AttributeType.STRING))
+
+        return experiment, attributes
 
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         for op in operations:
@@ -86,7 +109,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         return self._experiments[experiment_uuid].get(path)
 
-    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[ApiAttribute]:
+    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
         if experiment_uuid not in self._experiments:
             raise ExperimentUUIDNotFound(experiment_uuid)
         exp = self._experiments[experiment_uuid]
@@ -98,7 +121,7 @@ class NeptuneBackendMock(NeptuneBackend):
             if isinstance(value_or_dict, dict):
                 yield from self._generate_attributes(new_path, value_or_dict)
             else:
-                yield ApiAttribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
+                yield Attribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 

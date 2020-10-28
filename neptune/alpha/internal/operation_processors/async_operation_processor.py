@@ -17,7 +17,6 @@ import sys
 import uuid
 from threading import Event
 from time import time, sleep
-
 import click
 
 from neptune.alpha.exceptions import ConnectionLost

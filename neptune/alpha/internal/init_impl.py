@@ -46,6 +46,7 @@ __version__ = str(parsed_version)
 
 def init(
         project: Optional[str] = None,
+        experiment: Optional[str] = None,
         connection_mode: str = "async",
         capture_stdout: bool = True,
         capture_stderr: bool = True,
@@ -72,7 +73,11 @@ def init(
         raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
 
     project_obj = backend.get_project(project)
-    exp = backend.create_experiment(project_obj.uuid)
+    if experiment:
+        exp, initial_attributes = backend.get_experiment_with_attributes(project, experiment)
+    else:
+        exp = backend.create_experiment(project_obj.uuid)
+        initial_attributes = None
 
     if connection_mode == "async":
         experiment_path = "{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, exp.uuid)
@@ -114,4 +119,4 @@ def init(
         exp_id=exp.id
     ))
 
-    return Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
+    return Experiment(exp.uuid, backend, operation_processor, initial_attributes, BackgroundJobList(background_jobs))

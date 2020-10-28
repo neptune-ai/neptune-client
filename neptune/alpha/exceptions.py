@@ -83,6 +83,11 @@ class ExperimentUUIDNotFound(NeptuneException):
         super().__init__("Experiment with UUID {} not found. Could be deleted.".format(exp_uuid))
 
 
+class ExperimentIdNotFound(NeptuneException):
+    def __init__(self, exp_id: str):
+        super().__init__("Experiment with id {} not found in the project. Could be deleted.".format(exp_id))
+
+
 class MissingProject(NeptuneException):
     def __init__(self):
         super().__init__('Missing project identifier. Use "{}" environment variable or pass it as an argument'.format(

@@ -17,7 +17,7 @@
 import threading
 import uuid
 from datetime import datetime
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Optional
 
 from neptune.alpha.attributes.atoms.file import File as FileAttr
 from neptune.alpha.attributes.atoms.float import Float as FloatAttr
@@ -31,7 +31,7 @@ from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.handler import Handler
 from neptune.alpha.internal.attribute_setter_value_visitor import AttributeSetterValueVisitor
-from neptune.alpha.internal.backends.api_model import AttributeType
+from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.background_job import BackgroundJob
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -51,7 +51,9 @@ class Experiment(Handler):
             _uuid: uuid.UUID,
             backend: NeptuneBackend,
             op_processor: OperationProcessor,
-            background_job: BackgroundJob):
+            initial_attributes: Optional[List[ApiAttribute]],
+            background_job: BackgroundJob
+    ):
         super().__init__(self, path="")
         self._uuid = _uuid
         self._backend = backend
@@ -59,8 +61,14 @@ class Experiment(Handler):
         self._bg_job = background_job
         self._structure = ExperimentStructure[Attribute]()
         self._lock = threading.RLock()
+
+        if initial_attributes is not None:
+            for attribute in initial_attributes:
+                self._define_attribute(parse_path(attribute.path), attribute.type)
+        else:
+            self._prepare_sys_namespace()
+
         self._bg_job.start(self)
-        self._prepare_sys_namespace()
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
@@ -157,6 +165,6 @@ class Experiment(Handler):
         self._structure.set(sys_size, FloatAttr(self, sys_size))
         self._structure.set(sys_tags, StringSetAttr(self, sys_tags))
         self._structure.set(sys_notebook_id, StringAttr(self, sys_notebook_id))
-        self._structure.set(sys_notebook_checkpoint_name, StringAttr(self, sys_notebook_name))
+        self._structure.set(sys_notebook_name, StringAttr(self, sys_notebook_name))
         self._structure.set(sys_notebook_checkpoint_id, StringAttr(self, sys_notebook_checkpoint_id))
         self._structure.set(sys_notebook_checkpoint_name, StringAttr(self, sys_notebook_checkpoint_name))

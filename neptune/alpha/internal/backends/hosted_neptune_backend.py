@@ -27,7 +27,7 @@ from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, \
-    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound
+    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentIdNotFound, ExperimentNotFound
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
@@ -135,6 +135,21 @@ class HostedNeptuneBackend(NeptuneBackend):
             return Experiment(uuid.UUID(experiment.id), experiment.shortId, project_uuid)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
+
+    @with_api_exceptions_handler
+    def get_experiment_with_attributes(self, project_id: str, experiment_id: str) -> (Experiment, List[Attribute]):
+        params = {
+            'experimentId': project_id + '/' + experiment_id
+        }
+        try:
+            exp = self.leaderboard_client.api.getExperiment(**params).response().result
+
+            experiment = Experiment(uuid.UUID(exp.id), exp.shortId, uuid.UUID(exp.projectId))
+            attributes = [Attribute(attr.name, AttributeType(attr.type)) for attr in exp.attributes]
+
+            return experiment, attributes
+        except HTTPNotFound:
+            raise ExperimentIdNotFound(exp_id=experiment_id)
 
     # TODO: Return errors to OperationProcessor
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
