@@ -17,6 +17,7 @@
 import argparse
 import uuid
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Optional, Tuple, Any
 
@@ -29,9 +30,11 @@ from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import VersionedOperation
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 
+
 #######################################################################################################################
 # Argument parser
 #######################################################################################################################
+
 
 epilog = """
 Neptune stores experiment data on disk. In case an experiment is running offline
@@ -72,19 +75,24 @@ parser.add_argument('-l', '--location', default='.', metavar='experiment-directo
 parser.add_argument('-e', '--experiment', action='append', metavar='qualified-experiment-name',
                     help="Qualified name ('workspace/project/short-id') of an experiment to synchronize.")
 
+
 #######################################################################################################################
-# Dynamically-generated class stubs
+# Stubs of dynamically-generated classes for type checking and mocking in tests
 #######################################################################################################################
 
+
+@dataclass
 class Experiment:
     uuid: str
     shortId: str
     organizationName: str
     projectName: str
 
+
 #######################################################################################################################
 # Experiment utilities
 #######################################################################################################################
+
 
 # Set in the __main__ block, patched in tests
 backend: NeptuneBackend = None
@@ -118,27 +126,28 @@ def is_valid_uuid(val: Any) -> bool:
     except ValueError:
         return False
 
+
 #######################################################################################################################
 # Listing experiments to be synchronized
 #######################################################################################################################
 
+
 def is_experiment_synced(experiment_path: Path) -> bool:
     sync_offset_file = SyncOffsetFile(experiment_path)
     sync_offset = sync_offset_file.read()
-    
+
     disk_queue = DiskQueue(str(experiment_path), OPERATIONS_DISK_QUEUE_PREFIX,
                            VersionedOperation.to_dict, VersionedOperation.from_dict)
-    last_operation = None
-    operation = None
+    previous_operation = None
     while True:
-        last_operation = operation
         operation = disk_queue.get()
         if not operation:
             break
-    if not last_operation:
+        previous_operation = operation
+    if not previous_operation:
         return True
 
-    return sync_offset >= last_operation.version
+    return sync_offset >= previous_operation.version
 
 
 def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Experiment]]:
@@ -164,12 +173,12 @@ def list_experiments(path: Path, synced_experiments: List[Experiment], unsynced_
     if unsynced_experiments:
         print('Unsynchronised experiments:')
         for experiment in unsynced_experiments:
-            print('- ', get_qualified_name(experiment))
+            print('-', get_qualified_name(experiment))
 
     if synced_experiments:
         print('Synchronised experiments:')
         for experiment in synced_experiments:
-            print('- ', get_qualified_name(experiment))
+            print('-', get_qualified_name(experiment))
 
     if not unsynced_experiments:
         print()
@@ -182,9 +191,11 @@ def list_experiments(path: Path, synced_experiments: List[Experiment], unsynced_
     print()
     print(list_experiments_follow_up_prompt)
 
+
 #######################################################################################################################
 # Follow-up prompt when listing experiments
 #######################################################################################################################
+
 
 list_experiments_follow_up_prompt = '''You can run:
 
@@ -196,13 +207,15 @@ $ python -m neptune.alpha.sync sync --experiment org/proj/PRJ-XXX
 
 to synchronise the given experiment.'''
 
+
 #######################################################################################################################
 # Experiment synchronization
 #######################################################################################################################
 
+
 def sync_experiment(path: Path, qualified_experiment_name: str) -> None:
     experiment_uuid = path.name
-    print('Synchronising ', qualified_experiment_name)
+    print('Synchronising', qualified_experiment_name)
 
     disk_queue = DiskQueue(str(path), OPERATIONS_DISK_QUEUE_PREFIX,
                            VersionedOperation.to_dict, VersionedOperation.from_dict)
@@ -230,7 +243,7 @@ def sync_experiment(path: Path, qualified_experiment_name: str) -> None:
 
 def sync_all_experiments(path: Path) -> None:
     for experiment_path in path.iterdir():
-        if is_valid_uuid(experiment_path.name):
+        if is_valid_uuid(experiment_path.name) and not is_experiment_synced(experiment_path):
             experiment_uuid = experiment_path.name
             experiment = get_experiment(experiment_uuid)
             if experiment:
@@ -247,9 +260,11 @@ def sync_selected_experiments(path: Path, qualified_experiment_names: List[str])
             else:
                 print("Warning: Experiment '{}' does not exist in location {}".format(name, path), file=sys.stderr)
 
+
 #######################################################################################################################
 # Entrypoint for the CLI utility
 #######################################################################################################################
+
 
 def main():
     args = parser.parse_args()
