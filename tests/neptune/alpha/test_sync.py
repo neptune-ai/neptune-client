@@ -19,8 +19,6 @@
 import uuid
 from random import randint
 
-import pytest
-
 import neptune.alpha.sync
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.internal.operation import Operation
@@ -32,39 +30,36 @@ def an_experiment():
     return Experiment(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 142)), 'org', 'proj')
 
 
-@pytest.fixture
-def experiment_factory():
-    def f(tmp_path):
-        unsync_exp = an_experiment()
-        sync_exp = an_experiment()
-        experiments = (unsync_exp, sync_exp)
+def prepare_experiments(tmp_path):
+    unsync_exp = an_experiment()
+    sync_exp = an_experiment()
+    experiments = (unsync_exp, sync_exp)
 
+    for exp in experiments:
+        exp_path = tmp_path / exp.uuid
+        exp_path.mkdir()
+        logfile_path = exp_path / 'operations-0.log'
+        with open(logfile_path, 'w') as logfile:
+            logfile.write('{"version":0,"op":{}}{"version":1,"op":{}}')
+            logfile.flush()
+
+    sync_offset_file = SyncOffsetFile(tmp_path / unsync_exp.uuid)
+    sync_offset_file.write(0)
+
+    sync_offset_file = SyncOffsetFile(tmp_path / sync_exp.uuid)
+    sync_offset_file.write(1)
+
+    def get_experiment_impl(experiment_id):
         for exp in experiments:
-            exp_path = tmp_path / exp.uuid
-            exp_path.mkdir()
-            logfile_path = exp_path / 'operations-0.log'
-            with open(logfile_path, 'w') as logfile:
-                logfile.write('{"version":0,"op":{}}{"version":1,"op":{}}')
-                logfile.flush()
+            if experiment_id in (exp.uuid, get_qualified_name(exp)):
+                return exp
 
-        sync_offset_file = SyncOffsetFile(tmp_path / unsync_exp.uuid)
-        sync_offset_file.write(0)
-
-        sync_offset_file = SyncOffsetFile(tmp_path / sync_exp.uuid)
-        sync_offset_file.write(1)
-
-        def get_experiment_impl(experiment_id):
-            for exp in experiments:
-                if experiment_id in (exp.uuid, get_qualified_name(exp)):
-                    return exp
-
-        return (unsync_exp, sync_exp, get_experiment_impl)
-    return f
+    return unsync_exp, sync_exp, get_experiment_impl
 
 
-def test_list_experiments(experiment_factory, tmp_path, monkeypatch, mocker, capsys):
+def test_list_experiments(tmp_path, monkeypatch, mocker, capsys):
     # given
-    unsync_exp, sync_exp, get_experiment_impl = experiment_factory(tmp_path)
+    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
 
     # and
     monkeypatch.setattr(neptune.alpha.sync, 'get_experiment', mocker.MagicMock(side_effect=get_experiment_impl))
@@ -84,9 +79,9 @@ def test_list_experiments(experiment_factory, tmp_path, monkeypatch, mocker, cap
     assert 'Synchronised experiments:\n- {}'.format(get_qualified_name(sync_exp)) in captured.out
     assert 'Unsynchronised experiments:\n- {}'.format(get_qualified_name(unsync_exp)) in captured.out
 
-def test_sync_all_experiments(experiment_factory, tmp_path, monkeypatch, mocker, capsys):
+def test_sync_all_experiments(tmp_path, monkeypatch, mocker, capsys):
     # given
-    unsync_exp, sync_exp, get_experiment_impl = experiment_factory(tmp_path)
+    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
 
     # and
     execute_operations_mock = mocker.MagicMock()
@@ -108,9 +103,9 @@ def test_sync_all_experiments(experiment_factory, tmp_path, monkeypatch, mocker,
     # and
     execute_operations_mock.assert_called_once_with(unsync_exp.uuid, ['some-op'])
 
-def test_sync_selected_experiments(experiment_factory, tmp_path, monkeypatch, mocker, capsys):
+def test_sync_selected_experiments(tmp_path, monkeypatch, mocker, capsys):
     # given
-    unsync_exp, sync_exp, get_experiment_impl = experiment_factory(tmp_path)
+    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
 
     # and
     execute_operations_mock = mocker.MagicMock()
