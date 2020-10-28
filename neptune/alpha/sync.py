@@ -15,18 +15,23 @@
 #
 
 import argparse
+import uuid
 import sys
-
 from pathlib import Path
+from typing import List, Optional, Tuple, Any
 
 from bravado.exception import HTTPError
-
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_FOLDER, OPERATIONS_DISK_QUEUE_PREFIX
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import VersionedOperation
-from neptune.alpha.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
+
+#######################################################################################################################
+# Argument parser
+#######################################################################################################################
 
 epilog = """
 Neptune stores experiment data on disk. In case an experiment is running offline
@@ -55,6 +60,7 @@ Examples:
   python -m neptune.alpha.sync sync --experiment workspace/project/NPT-42 --experiment workspace/project/NPT-43
 """
 
+
 parser = argparse.ArgumentParser(
     description='Synchronizes experiments with unsent data with the server',
     epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -66,16 +72,31 @@ parser.add_argument('-l', '--location', default='.', metavar='experiment-directo
 parser.add_argument('-e', '--experiment', action='append', metavar='qualified-experiment-name',
                     help="Qualified name ('workspace/project/short-id') of an experiment to synchronize.")
 
-NEPTUNE_EXPERIMENT_FOLDER = '.neptune'
+#######################################################################################################################
+# Dynamically-generated class stubs
+#######################################################################################################################
 
-backend = HostedNeptuneBackend(Credentials())
+class Experiment:
+    uuid: str
+    shortId: str
+    organizationName: str
+    projectName: str
 
-def report_get_experiment_error(experimentId: str, status_code: int, skipping: bool):
+#######################################################################################################################
+# Experiment utilities
+#######################################################################################################################
+
+# Set in the __main__ block, patched in tests
+backend: NeptuneBackend = None
+
+
+def report_get_experiment_error(experimentId: str, status_code: int, skipping: bool) -> None:
     comment = "Skipping experiment." if skipping else "Please try again later or contact Neptune team."
     print("Warning: Getting experiment {}: server responded with status code {}. {}"
           .format(experimentId, status_code, comment), file=sys.stderr)
 
-def get_experiment(experimentId: str):
+
+def get_experiment(experimentId: str) -> Optional[Experiment]:
     try:
         response = backend.leaderboard_client.api.getExperiment(experimentId=experimentId).response()
         return response.result
@@ -85,50 +106,57 @@ def get_experiment(experimentId: str):
         else:
             report_get_experiment_error(experimentId, e.status_code, skipping=False)
 
-def get_qualified_name(experiment):
+
+def get_qualified_name(experiment: Experiment) -> str:
     return "{}/{}/{}".format(experiment.organizationName, experiment.projectName, experiment.shortId)
 
-def is_experiment_synced(experiment_path: Path):
+
+def is_valid_uuid(val: Any) -> bool:
+    try:
+        uuid.UUID(val)
+        return True
+    except ValueError:
+        return False
+
+#######################################################################################################################
+# Listing experiments to be synchronized
+#######################################################################################################################
+
+def is_experiment_synced(experiment_path: Path) -> bool:
     sync_offset_file = SyncOffsetFile(experiment_path)
     sync_offset = sync_offset_file.read()
-    operation_files = sorted(experiment_path.glob('operations-*.log'))
-    if not operation_files:
+    
+    disk_queue = DiskQueue(str(experiment_path), OPERATIONS_DISK_QUEUE_PREFIX,
+                           VersionedOperation.to_dict, VersionedOperation.from_dict)
+    last_operation = None
+    operation = None
+    while True:
+        last_operation = operation
+        operation = disk_queue.get()
+        if not operation:
+            break
+    if not last_operation:
         return True
-    last_operations_filename = operation_files[-1]
 
-    # assuming that last operation file always has at least one operation in it
-    json_file_splitter = JsonFileSplitter(last_operations_filename)
-    json_dict = json_file_splitter.get()
-    while json_dict:
-        last_versioned_operation = json_dict
-        json_dict = json_file_splitter.get()
-    last_version = last_versioned_operation['version']
+    return sync_offset >= last_operation.version
 
-    return sync_offset >= last_version
 
-def partition_experiments(path: Path):
+def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Experiment]]:
     synced_experiment_uuids = []
     unsynced_experiment_uuids = []
-    for experiment_path in path.iterdir():
-        if is_experiment_synced(experiment_path):
-            synced_experiment_uuids.append(experiment_path.name)
-        else:
-            unsynced_experiment_uuids.append(experiment_path.name)
+    for experiment_path in base_path.iterdir():
+        if is_valid_uuid(experiment_path.name):
+            experiment_uuid = experiment_path.name
+            if is_experiment_synced(experiment_path):
+                synced_experiment_uuids.append(experiment_uuid)
+            else:
+                unsynced_experiment_uuids.append(experiment_uuid)
     synced_experiments = [experiment for experiment in map(get_experiment, synced_experiment_uuids) if experiment]
     unsynced_experiments = [experiment for experiment in map(get_experiment, unsynced_experiment_uuids) if experiment]
     return (synced_experiments, unsynced_experiments)
 
-list_experiments_follow_up_prompt = '''You can run:
 
-$ python -m neptune.alpha.sync sync
-
-to synchronise all experiment in the current directory, or
-
-$ python -m neptune.alpha.sync sync --experiment org/proj/PRJ-XXX
-
-to synchronise the given experiment.'''
-
-def list_experiments(path, synced_experiments, unsynced_experiments):
+def list_experiments(path: Path, synced_experiments: List[Experiment], unsynced_experiments: List[Experiment]) -> None:
     if not synced_experiments and not unsynced_experiments:
         print('There are no Neptune experiments in ', path)
         sys.exit(1)
@@ -154,12 +182,33 @@ def list_experiments(path, synced_experiments, unsynced_experiments):
     print()
     print(list_experiments_follow_up_prompt)
 
-def sync_experiment(path, qualified_experiment_name):
+#######################################################################################################################
+# Follow-up prompt when listing experiments
+#######################################################################################################################
+
+list_experiments_follow_up_prompt = '''You can run:
+
+$ python -m neptune.alpha.sync sync
+
+to synchronise all experiment in the current directory, or
+
+$ python -m neptune.alpha.sync sync --experiment org/proj/PRJ-XXX
+
+to synchronise the given experiment.'''
+
+#######################################################################################################################
+# Experiment synchronization
+#######################################################################################################################
+
+def sync_experiment(path: Path, qualified_experiment_name: str) -> None:
     experiment_uuid = path.name
     print('Synchronising ', qualified_experiment_name)
-    disk_queue = DiskQueue(str(path), 'operations', VersionedOperation.to_dict, VersionedOperation.from_dict)
+
+    disk_queue = DiskQueue(str(path), OPERATIONS_DISK_QUEUE_PREFIX,
+                           VersionedOperation.to_dict, VersionedOperation.from_dict)
     sync_offset_file = SyncOffsetFile(path)
     sync_offset = sync_offset_file.read()
+
     while True:
         batch = disk_queue.get_batch(1000)
         if not batch:
@@ -178,14 +227,17 @@ def sync_experiment(path, qualified_experiment_name):
         sync_offset_file.write(batch[-1].version)
         sync_offset = batch[-1].version
 
-def sync_all_experiments(path):
-    for experiment_path in path.iterdir():
-        experiment_uuid = experiment_path.name
-        experiment = get_experiment(experiment_uuid)
-        if experiment:
-            sync_experiment(experiment_path, get_qualified_name(experiment))
 
-def sync_selected_experiments(path, qualified_experiment_names):
+def sync_all_experiments(path: Path) -> None:
+    for experiment_path in path.iterdir():
+        if is_valid_uuid(experiment_path.name):
+            experiment_uuid = experiment_path.name
+            experiment = get_experiment(experiment_uuid)
+            if experiment:
+                sync_experiment(experiment_path, get_qualified_name(experiment))
+
+
+def sync_selected_experiments(path: Path, qualified_experiment_names: List[str]) -> None:
     for name in qualified_experiment_names:
         experiment = get_experiment(name)
         if experiment:
@@ -194,6 +246,10 @@ def sync_selected_experiments(path, qualified_experiment_names):
                 sync_experiment(experiment_path, name)
             else:
                 print("Warning: Experiment '{}' does not exist in location {}".format(name, path), file=sys.stderr)
+
+#######################################################################################################################
+# Entrypoint for the CLI utility
+#######################################################################################################################
 
 def main():
     args = parser.parse_args()
@@ -207,7 +263,7 @@ def main():
     # check if path exists and contains a '.neptune' folder
     if (path / NEPTUNE_EXPERIMENT_FOLDER).is_dir():
         path = path / NEPTUNE_EXPERIMENT_FOLDER
-    elif path.name == NEPTUNE_EXPERIMENT_FOLDER and path.exists():
+    elif path.name == NEPTUNE_EXPERIMENT_FOLDER and path.is_dir():
         pass
     else:
         error_message = \
@@ -226,4 +282,5 @@ def main():
         sync_all_experiments(path)
 
 if __name__ == '__main__':
+    backend = HostedNeptuneBackend(Credentials())
     main()

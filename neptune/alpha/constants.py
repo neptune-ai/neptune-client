@@ -20,3 +20,7 @@ ANONYMOUS = 'ANONYMOUS'
 
 ANONYMOUS_API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYW' \
                       'kiLCJhcGlfa2V5IjoiYjcwNmJjOGYtNzZmOS00YzJlLTkzOWQtNGJhMDM2ZjkzMmU0In0='
+
+NEPTUNE_EXPERIMENT_FOLDER = '.neptune'
+
+OPERATIONS_DISK_QUEUE_PREFIX = 'operations'

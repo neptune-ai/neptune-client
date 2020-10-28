@@ -21,6 +21,7 @@ from typing import Optional
 
 import click
 
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_FOLDER, OPERATIONS_DISK_QUEUE_PREFIX
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import MissingProject
 from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
@@ -71,11 +72,11 @@ def init(
     exp = backend.create_experiment(project_obj.uuid)
 
     if connection_mode == "async":
-        experiment_path = ".neptune/{}".format(exp.uuid)
+        experiment_path = "{}/{}".format(NEPTUNE_EXPERIMENT_FOLDER, exp.uuid)
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
             DiskQueue(experiment_path,
-                      "operations",
+                      OPERATIONS_DISK_QUEUE_PREFIX,
                       VersionedOperation.to_dict,
                       VersionedOperation.from_dict),
             backend,
