@@ -15,16 +15,21 @@
 #
 
 from pathlib import Path
+from typing import Optional
+
 
 class SyncOffsetFile:
     def __init__(self, experiment_path: Path):
-        self._file = open(experiment_path / 'offset', 'a+b')
+        self._file = open(experiment_path / 'offset', 'a+')
 
-    def write(self, offset):
-        self._file.seek(0)
-        self._file.write(offset.to_bytes(4, byteorder='big'))
+    def write(self, offset: int) -> None:
+        self._file.truncate()
+        self._file.write(str(offset))
         self._file.flush()
 
-    def read(self):
+    def read(self) -> Optional[int]:
         self._file.seek(0)
-        return int.from_bytes(self._file.read(), byteorder='big')
+        content = self._file.read()
+        if not content:
+            return None
+        return int(content)
