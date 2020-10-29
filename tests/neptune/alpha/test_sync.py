@@ -20,6 +20,8 @@ import uuid
 from random import randint
 
 import neptune.alpha.sync
+from neptune.alpha.constants import OPERATIONS_DISK_QUEUE_PREFIX
+from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.sync import partition_experiments, Experiment, get_qualified_name, list_experiments, \
@@ -38,10 +40,9 @@ def prepare_experiments(tmp_path):
     for exp in experiments:
         exp_path = tmp_path / exp.uuid
         exp_path.mkdir()
-        logfile_path = exp_path / 'operations-0.log'
-        with open(logfile_path, 'w') as logfile:
-            logfile.write('{"version":0,"op":{}}{"version":1,"op":{}}')
-            logfile.flush()
+        queue = DiskQueue(str(exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
+        queue.put({'version': 0, 'op': 'op-0'})
+        queue.put({'version': 1, 'op': 'op-1'})
 
     sync_offset_file = SyncOffsetFile(tmp_path / unsync_exp.uuid)
     sync_offset_file.write(0)
@@ -87,7 +88,7 @@ def test_sync_all_experiments(tmp_path, mocker, capsys):
     mocker.patch.object(neptune.alpha.sync, 'get_experiment', get_experiment_impl)
     mocker.patch.object(neptune.alpha.sync, 'backend')
     mocker.patch.object(neptune.alpha.sync.backend, 'execute_operations')
-    mocker.patch.object(Operation, 'from_dict', lambda _: 'some-op')
+    mocker.patch.object(Operation, 'from_dict', lambda x: x)
 
     # when
     sync_all_experiments(tmp_path)
@@ -101,7 +102,7 @@ def test_sync_all_experiments(tmp_path, mocker, capsys):
 
     # and
     # pylint: disable=no-member
-    neptune.alpha.sync.backend.execute_operations.assert_called_once_with(unsync_exp.uuid, ['some-op'])
+    neptune.alpha.sync.backend.execute_operations.assert_called_once_with(unsync_exp.uuid, ['op-1'])
 
 def test_sync_selected_experiments(tmp_path, mocker, capsys):
     # given
@@ -111,7 +112,7 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     mocker.patch.object(neptune.alpha.sync, 'get_experiment', get_experiment_impl)
     mocker.patch.object(neptune.alpha.sync, 'backend')
     mocker.patch.object(neptune.alpha.sync.backend, 'execute_operations')
-    mocker.patch.object(Operation, 'from_dict', lambda _: 'some-op')
+    mocker.patch.object(Operation, 'from_dict', lambda x: x)
 
     # when
     sync_selected_experiments(tmp_path, [get_qualified_name(sync_exp)])
