@@ -21,7 +21,6 @@ from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError,
 from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute
 from neptune.alpha.internal.backends.api_model import Project, Experiment, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
-from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     AssignString, AssignFloat, \
@@ -44,7 +43,7 @@ from neptune.alpha.types.value_visitor import ValueVisitor
 
 class NeptuneBackendMock(NeptuneBackend):
 
-    def __init__(self, credentials: Credentials):
+    def __init__(self):
         # pylint: disable=unused-argument
         self._experiments = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()

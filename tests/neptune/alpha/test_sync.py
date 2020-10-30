@@ -30,7 +30,7 @@ from neptune.alpha.sync import partition_experiments, Experiment, get_qualified_
 
 
 def an_experiment():
-    return Experiment(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 142)), 'org', 'proj')
+    return Experiment(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj')
 
 
 def prepare_experiments(tmp_path):

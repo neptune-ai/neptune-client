@@ -59,17 +59,15 @@ def init(
     if not project:
         raise MissingProject()
 
-    credentials = Credentials()
-
     if connection_mode == "async":
         # TODO Initialize backend in async thread
-        backend = HostedNeptuneBackend(credentials)
+        backend = HostedNeptuneBackend(Credentials())
     elif connection_mode == "sync":
-        backend = HostedNeptuneBackend(credentials)
+        backend = HostedNeptuneBackend(Credentials())
     elif connection_mode == "debug":
-        backend = NeptuneBackendMock(credentials)
+        backend = NeptuneBackendMock()
     elif connection_mode == "offline":
-        backend = NeptuneBackendMock(credentials)
+        backend = NeptuneBackendMock()
     else:
         raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
 

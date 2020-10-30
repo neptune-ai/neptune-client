@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-import argparse
 import logging
 import os
 import sys
+import textwrap
 import uuid
 from dataclasses import dataclass
 from functools import partial
@@ -25,6 +25,7 @@ from itertools import filterfalse
 from pathlib import Path
 from typing import Collection, Iterable, List, Optional, Tuple, Any
 
+import click
 from bravado.exception import HTTPError
 
 from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY
@@ -37,57 +38,6 @@ from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import VersionedOperation
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
-
-
-#######################################################################################################################
-# Argument parser
-#######################################################################################################################
-
-
-epilog = """
-Neptune stores experiment data on disk. In case an experiment is running offline
-or network is unavailable as the experiment runs, experiment data can be synchronized
-with the server with this utility.
-
-If you run experiments from directory D, then Neptune stores experiment data in
-'D/.neptune' folder. You can specify any directory which contains a '.neptune' folder
-for synchronization.
-
-Examples:
-
-  # Synchronize all experiments in the current directory
-  python -m neptune.alpha.sync
-
-  # Synchronize all experiments in the given location
-  python -m neptune.alpha.sync --location foo/bar
-
-  # Synchronize only experiments "NPT-42" and "NPT-43" in "workspace/project" in the current directory
-  python -m neptune.alpha.sync --experiment workspace/project/NPT-42 --experiment workspace/project/NPT-43
-  
-  # List unsynchronized experiments in the current directory without actually syncing
-  python -m neptune.alpha.sync --list
-
-  # List unsynchronized experiments in directory "foo/bar" without actually syncing
-  python -m neptune.alpha.sync --list --location foo/bar
-
-  # Synchronise all experiment in the current directory, sending offline experiments to project "workspace/project"
-  python -m neptune.alpha.sync --project workspace/project
-
-  # Synchronize only the offline experiment with UUID a1561719-b425-4000-a65a-b5efb044d6bb to project "workspace/project"
-  python -m neptune.alpha.sync --project workspace/project --experiment a1561719-b425-4000-a65a-b5efb044d6bb
-"""
-
-
-parser = argparse.ArgumentParser(description='Synchronizes experiments with unsent data with the server',
-                                 epilog=epilog, formatter_class=argparse.RawDescriptionHelpFormatter)
-parser.add_argument('--list', action='store_true',
-                    help='list unsynchronized experiments in the given directory without actually syncing')
-parser.add_argument('-l', '--location', default='.', metavar='experiment-directory',
-                    help="path to the directory containing a '.neptune' folder with stored experiments")
-parser.add_argument('-e', '--experiment', action='append', metavar='experiment-name',
-                    help="experiment name (workspace/project/short-id or UUID for offline experiments) to synchronize.")
-parser.add_argument('-p', '--project', metavar='experiment-name',
-                    help="project name (workspace/project) where offline experiments will be sent")
 
 
 #######################################################################################################################
@@ -108,7 +58,7 @@ class Experiment:
 #######################################################################################################################
 
 
-# Set in the __main__ block, patched in tests
+# Set in CLI entry points block, patched in tests
 backend: NeptuneBackend = None
 
 
@@ -185,6 +135,8 @@ def is_experiment_synced(experiment_path: Path) -> bool:
 
 def get_offline_experiments_ids(base_path: Path) -> List[str]:
     result = []
+    if not (base_path / OFFLINE_DIRECTORY).is_dir():
+        return []
     for experiment_path in (base_path / OFFLINE_DIRECTORY).iterdir():
         if is_valid_uuid(experiment_path.name):
             result.append(experiment_path.name)
@@ -206,11 +158,20 @@ def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Exper
     return synced_experiments, unsynced_experiments
 
 
+offline_experiment_explainer = '''
+Experiments which run offline are not created on the server, are not assigned to projects,
+and they are identified by UUIDs like the ones above instead of serial numbers.
+When synchronizing offline experiments, please specify the workspace and project using the "--project"
+flag. Alternatively, you can set the environment variable
+{} to the target workpspace/project. See the examples below.
+'''.format(PROJECT_ENV_NAME)
+
+
 def list_experiments(path: Path, synced_experiments: Collection[Experiment],
                      unsynced_experiments: Collection[Experiment], offline_experiments_ids: Collection[str]) -> None:
 
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
-        print('There are no Neptune experiments in ', path)
+        print('There are no Neptune experiments in', path)
         sys.exit(1)
 
     if unsynced_experiments:
@@ -228,11 +189,7 @@ def list_experiments(path: Path, synced_experiments: Collection[Experiment],
         for experiment_id in offline_experiments_ids:
             print('-', experiment_id)
         print()
-        print('Experiments which run offline are not created on the server, are not assigned to projects,\n'
-              'and they are identified by UUIDs like the ones above instead of serial numbers.\n'
-              'When synchronizing offline experiments, please specify the workspace and project using the "--project"\n'
-              'flag. Alternatively, you can set the environment variable\n'
-              '{} to the target workpspace/project. See the examples below.'.format(PROJECT_ENV_NAME))
+        print(textwrap.fill(offline_experiment_explainer, width=90))
 
     if not unsynced_experiments:
         print()
@@ -243,7 +200,7 @@ def list_experiments(path: Path, synced_experiments: Collection[Experiment],
         print('There are no synchronized experiments in ', path)
 
     print()
-    print('Please run with the --help flag to see example commands')
+    print('Please run with the `neptune sync --help` to see example commands.')
 
 
 #######################################################################################################################
@@ -356,39 +313,94 @@ def sync_all_experiments(base_path: Path, project_name: Optional[str]) -> None:
 #######################################################################################################################
 
 
-def main():
-    args = parser.parse_args()
-
-    # get base path
-    if args.location:
-        path = Path.cwd() / Path(args.location)
-    else:
-        path = Path.cwd()
-
+# pylint: disable=unused-argument
+def get_neptune_path(ctx, param, path: str) -> Path:
     # check if path exists and contains a '.neptune' folder
+    path = Path(path)
     if (path / NEPTUNE_EXPERIMENT_DIRECTORY).is_dir():
-        path = path / NEPTUNE_EXPERIMENT_DIRECTORY
+        return path / NEPTUNE_EXPERIMENT_DIRECTORY
     elif path.name == NEPTUNE_EXPERIMENT_DIRECTORY and path.is_dir():
-        pass
+        return path
     else:
-        error_message = \
-            ("Path {} does not contain a '{}' folder. Please specify a path to a folder with Neptune experiments."
-             .format(path, NEPTUNE_EXPERIMENT_DIRECTORY))
-        print(error_message, file=sys.stderr)
-        sys.exit(1)
-
-    experiment_names = args.experiment
-
-    if args.list:
-        synced_experiments, unsynced_experiments = partition_experiments(path)
-        offline_experiments_ids = get_offline_experiments_ids(path)
-        list_experiments(path, synced_experiments, unsynced_experiments, offline_experiments_ids)
-    elif experiment_names:
-        sync_selected_experiments(path, args.project, experiment_names)
-    else:
-        sync_all_experiments(path, args.project)
+        raise click.BadParameter("Path {} does not contain a '{}' folder.".format(path, NEPTUNE_EXPERIMENT_DIRECTORY))
 
 
-if __name__ == '__main__':
+path_option = click.option('-p', '--path', type=click.Path(exists=True, file_okay=False, resolve_path=True),
+                           default=Path.cwd(), callback=get_neptune_path, metavar='<location>',
+                           help="path to a directory containing a '.neptune' folder with stored experiments")
+
+
+@click.command()
+@path_option
+def status(path: Path) -> None:
+    """List unsynchronized experiments in the given directory.
+
+    Neptune stores experiment data on disk in '.neptune' directories. In case an experiment runs offline
+    or network is unavailable as the experiment runs, experiment data can be synchronized
+    with the server with this command line utility.
+
+    Examples:
+
+    \b
+    # List unsynchronized experiments in the current directory
+    neptune status  # TODO while in alpha: python -m neptune.alpha.cli status
+
+    \b
+    # List unsynchronized experiments in directory "foo/bar" without actually syncing
+    neptune status --path foo/bar
+    """
+
+    # pylint: disable=global-statement
+    global backend
     backend = HostedNeptuneBackend(Credentials())
-    main()
+
+    synced_experiments, unsynced_experiments = partition_experiments(path)
+    offline_experiments_ids = get_offline_experiments_ids(path)
+    list_experiments(path, synced_experiments, unsynced_experiments, offline_experiments_ids)
+
+
+@click.command()
+@path_option
+@click.option('-e', '--experiment', 'experiment_names', multiple=True, metavar='<experiment-name>',
+              help="experiment name (workspace/project/short-id or UUID for offline experiments) to synchronize.")
+@click.option('-p', '--project', 'project_name', multiple=True, metavar='project-name',
+              help="project name (workspace/project) where offline experiments will be sent")
+def sync(path: Path, experiment_names: List[str], project_name: Optional[str]):
+    """Synchronizes experiments with unsent data with the server.
+
+    Neptune stores experiment data on disk in '.neptune' directories. In case an experiment runs offline
+    or network is unavailable as the experiment runs, experiment data can be synchronized
+    with the server with this command line utility.
+
+    Examples:
+
+    \b
+    # Synchronize all experiments in the current directory
+    neptune sync # TODO while in alpha: python -m neptune.alpha.cli sync
+
+    \b
+    # Synchronize all experiments in the given path
+    neptune sync --path foo/bar
+
+    \b
+    # Synchronize only experiments "NPT-42" and "NPT-43" in "workspace/project" in the current directory
+    neptune sync --experiment workspace/project/NPT-42 --experiment workspace/project/NPT-43
+
+    \b
+    # Synchronise all experiment in the current directory, sending offline experiments to project "workspace/project"
+    neptune sync --project workspace/project
+
+    \b
+    # Synchronize only the offline experiment with UUID a1561719-b425-4000-a65a-b5efb044d6bb
+    # to project "workspace/project"
+    neptune sync --project workspace/project --experiment a1561719-b425-4000-a65a-b5efb044d6bb
+    """
+
+    # pylint: disable=global-statement
+    global backend
+    backend = HostedNeptuneBackend(Credentials())
+
+    if experiment_names:
+        sync_selected_experiments(path, project_name, experiment_names)
+    else:
+        sync_all_experiments(path, project_name)

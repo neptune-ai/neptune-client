@@ -13,3 +13,4 @@ websocket-client>=0.35.0
 GitPython>=2.0.8
 packaging
 urllib3
+dataclasses==0.6
