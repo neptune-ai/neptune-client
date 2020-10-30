@@ -62,10 +62,10 @@ class Experiment:
 backend: NeptuneBackend = None
 
 
-def report_get_experiment_error(experimentId: str, status_code: int, skipping: bool) -> None:
+def report_get_experiment_error(experiment_id: str, status_code: int, skipping: bool) -> None:
     comment = "Skipping experiment." if skipping else "Please try again later or contact Neptune team."
-    print("Warning: Getting experiment {}: server responded with status code {}. {}"
-          .format(experimentId, status_code, comment), file=sys.stderr)
+    click.echo("Warning: Getting experiment {}: server responded with status code {}. {}"
+               .format(experiment_id, status_code, comment), file=sys.stderr)
 
 
 def get_experiment(experiment_id: str) -> Optional[Experiment]:
@@ -79,20 +79,27 @@ def get_experiment(experiment_id: str) -> Optional[Experiment]:
             report_get_experiment_error(experiment_id, e.status_code, skipping=False)
 
 
+project_name_missing_message = (
+    'Project name not provided, so skipping synchronization of offline experiments. '
+    'To synchronize offline experiment, specify the project name with the --project flag '
+    'or by setting the {} environment variable.'.format(PROJECT_ENV_NAME))
+
+
+def project_not_found_message(project_name: str) -> str:
+    return ('Project {} not found, so skipping synchronization of offline experiments. '.format(project_name) +
+            'Please ensure you specified the correct project name with the --project flag ' +
+            'or with the {} environment variable, or contact Neptune for support.'.format(PROJECT_ENV_NAME))
+
+
 def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
     project_name = project_name_flag or os.getenv(PROJECT_ENV_NAME)
     if not project_name:
-        print('Project name not provided, so skipping synchronization of offline experiments.\n'
-              'To synchronize offline experiment, specify the project name with the --project flag\n'
-              'or by setting the {} environment variable.'.format(PROJECT_ENV_NAME), file=sys.stderr)
+        click.echo(textwrap.fill(project_name_missing_message), file=sys.stderr)
         return None
     try:
         return backend.get_project(project_name)
     except ProjectNotFound:
-        print('Project {} not found, so skipping synchronization of offline experiments.\n'.format(project_name) +
-              'Please ensure you specified the correct project name with the --project flag\n' +
-              'or with the {} environment variable, or contact Neptune for support.\n'.format(PROJECT_ENV_NAME),
-              file=sys.stderr)
+        click.echo(textwrap.fill(project_not_found_message(project_name)), file=sys.stderr)
         return None
 
 
@@ -171,36 +178,42 @@ def list_experiments(path: Path, synced_experiments: Collection[Experiment],
                      unsynced_experiments: Collection[Experiment], offline_experiments_ids: Collection[str]) -> None:
 
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
-        print('There are no Neptune experiments in', path)
+        click.echo('There are no Neptune experiments in {}'.format(path))
         sys.exit(1)
 
     if unsynced_experiments:
-        print('Unsynchronized experiments:')
+        click.echo('Unsynchronized experiments:')
         for experiment in unsynced_experiments:
-            print('-', get_qualified_name(experiment))
+            click.echo('- {}'.format(get_qualified_name(experiment)))
 
     if synced_experiments:
-        print('Synchronized experiments:')
+        click.echo('Synchronized experiments:')
         for experiment in synced_experiments:
-            print('-', get_qualified_name(experiment))
+            click.echo('- {}'.format(get_qualified_name(experiment)))
 
     if offline_experiments_ids:
-        print('Unsynchronized offline experiments:')
+        click.echo('Unsynchronized offline experiments:')
         for experiment_id in offline_experiments_ids:
-            print('-', experiment_id)
-        print()
-        print(textwrap.fill(offline_experiment_explainer, width=90))
+            click.echo('- {}'.format(experiment_id))
+        click.echo()
+        click.echo(textwrap.fill(offline_experiment_explainer, width=90))
 
     if not unsynced_experiments:
-        print()
-        print('There are no unsynchronized experiments in ', path)
+        click.echo()
+        click.echo('There are no unsynchronized experiments in {}'.format(path))
 
     if not synced_experiments:
-        print()
-        print('There are no synchronized experiments in ', path)
+        click.echo()
+        click.echo('There are no synchronized experiments in {}'.format(path))
 
-    print()
-    print('Please run with the `neptune sync --help` to see example commands.')
+    click.echo()
+    click.echo('Please run with the `neptune sync --help` to see example commands.')
+
+
+def synchronization_status(path: Path) -> None:
+    synced_experiments, unsynced_experiments = partition_experiments(path)
+    offline_experiments_ids = get_offline_experiments_ids(path)
+    list_experiments(path, synced_experiments, unsynced_experiments, offline_experiments_ids)
 
 
 #######################################################################################################################
@@ -210,7 +223,7 @@ def list_experiments(path: Path, synced_experiments: Collection[Experiment],
 
 def sync_experiment(path: Path, qualified_experiment_name: str) -> None:
     experiment_uuid = uuid.UUID(path.name)
-    print('Synchronising', qualified_experiment_name)
+    click.echo('Synchronising {}'.format(qualified_experiment_name))
 
     disk_queue = DiskQueue(str(path), OPERATIONS_DISK_QUEUE_PREFIX,
                            VersionedOperation.to_dict, VersionedOperation.from_dict)
@@ -220,7 +233,7 @@ def sync_experiment(path: Path, qualified_experiment_name: str) -> None:
     while True:
         batch = disk_queue.get_batch(1000)
         if not batch:
-            print('Synchronization of experiment {} completed.'.format(qualified_experiment_name))
+            click.echo('Synchronization of experiment {} completed.'.format(qualified_experiment_name))
             return
         if batch[0].version > sync_offset:
             pass
@@ -253,7 +266,7 @@ def sync_selected_registered_experiments(path: Path, qualified_experiment_names:
             if experiment_path.exists():
                 sync_experiment(experiment_path, name)
             else:
-                print("Warning: Experiment '{}' does not exist in location {}".format(name, path), file=sys.stderr)
+                click.echo("Warning: Experiment '{}' does not exist in location {}".format(name, path), file=sys.stderr)
 
 
 def register_offline_experiment(project: Project) -> Optional[Experiment]:
@@ -261,8 +274,9 @@ def register_offline_experiment(project: Project) -> Optional[Experiment]:
         experiment = backend.create_experiment(project.uuid)
         return Experiment(str(experiment.uuid), experiment.id, project.workspace, project.name)
     except Exception as e:
-        print('Exception occurred while trying to create an experiment on the Neptune server. Please try again later',
-              file=sys.stderr)
+        click.echo('Exception occurred while trying to create an experiment '
+                   'on the Neptune server. Please try again later',
+                   file=sys.stderr)
         logging.exception(e)
         return None
 
@@ -277,7 +291,7 @@ def register_offline_experiments(base_path: Path, project: Project,
     for experiment_uuid in offline_experiments_ids:
         experiment = register_offline_experiment(project)
         move_offline_experiment(base_path, experiment_uuid, experiment.uuid)
-        print('Offline experiment {} registered as {}'.format(experiment_uuid, get_qualified_name(experiment)))
+        click.echo('Offline experiment {} registered as {}'.format(experiment_uuid, get_qualified_name(experiment)))
         result.append(experiment)
     return result
 
@@ -354,9 +368,7 @@ def status(path: Path) -> None:
     global backend
     backend = HostedNeptuneBackend(Credentials())
 
-    synced_experiments, unsynced_experiments = partition_experiments(path)
-    offline_experiments_ids = get_offline_experiments_ids(path)
-    list_experiments(path, synced_experiments, unsynced_experiments, offline_experiments_ids)
+    synchronization_status(path)
 
 
 @click.command()

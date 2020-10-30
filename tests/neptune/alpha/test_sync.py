@@ -16,39 +16,43 @@
 
 # pylint: disable=redefined-outer-name
 
+import os
 import uuid
 from random import randint
 
+import pytest
+
 import neptune.alpha.sync
 from neptune.alpha.constants import OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY
+from neptune.alpha.exceptions import ProjectNotFound
 from neptune.alpha.internal.backends.api_model import Project
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.internal.operation import Operation
-from neptune.alpha.sync import partition_experiments, Experiment, get_qualified_name, list_experiments, \
-    sync_selected_experiments, get_offline_experiments_ids, sync_all_experiments
+from neptune.alpha.sync import Experiment, get_qualified_name, \
+    sync_selected_experiments, sync_all_experiments, synchronization_status, get_project
 
 
 def an_experiment():
     return Experiment(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj')
 
 
-def prepare_experiments(tmp_path):
+def prepare_experiments(path):
     unsync_exp = an_experiment()
     sync_exp = an_experiment()
     registered_experiments = (unsync_exp, sync_exp)
 
     for exp in registered_experiments:
-        exp_path = tmp_path / exp.uuid
+        exp_path = path / exp.uuid
         exp_path.mkdir()
         queue = DiskQueue(str(exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
         queue.put({'version': 0, 'op': 'op-0'})
         queue.put({'version': 1, 'op': 'op-1'})
 
-    sync_offset_file = SyncOffsetFile(tmp_path / unsync_exp.uuid)
+    sync_offset_file = SyncOffsetFile(path / unsync_exp.uuid)
     sync_offset_file.write(0)
 
-    sync_offset_file = SyncOffsetFile(tmp_path / sync_exp.uuid)
+    sync_offset_file = SyncOffsetFile(path / sync_exp.uuid)
     sync_offset_file.write(1)
 
     def get_experiment_impl(experiment_id):
@@ -56,36 +60,34 @@ def prepare_experiments(tmp_path):
             if experiment_id in (exp.uuid, get_qualified_name(exp)):
                 return exp
 
+    return unsync_exp, sync_exp, get_experiment_impl
+
+
+def prepare_offline_experiment(path):
     offline_exp_uuid = str(uuid.uuid4())
-    offline_exp_path = tmp_path / OFFLINE_DIRECTORY / offline_exp_uuid
+    offline_exp_path = path / OFFLINE_DIRECTORY / offline_exp_uuid
     offline_exp_path.mkdir(parents=True)
 
     queue = DiskQueue(str(offline_exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
     queue.put({'version': 0, 'op': 'op-0'})
     queue.put({'version': 1, 'op': 'op-1'})
 
-    return unsync_exp, sync_exp, offline_exp_uuid, get_experiment_impl
+    return offline_exp_uuid
 
 
 def test_list_experiments(tmp_path, mocker, capsys):
     # given
-    unsync_exp, sync_exp, offline_exp_uuid, get_experiment_impl = prepare_experiments(tmp_path)
+    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
+    offline_exp_uuid = prepare_offline_experiment(tmp_path)
 
     # and
     mocker.patch.object(neptune.alpha.sync, 'get_experiment', get_experiment_impl)
     mocker.patch.object(Operation, 'from_dict')
 
     # when
-    synced_experiments, unsynced_experiments = partition_experiments(tmp_path)
-    offline_experiments_ids = get_offline_experiments_ids(tmp_path)
-    list_experiments(tmp_path, synced_experiments, unsynced_experiments, offline_experiments_ids)
+    synchronization_status(tmp_path)
 
     # then
-    assert synced_experiments == [sync_exp]
-    assert unsynced_experiments == [unsync_exp]
-    assert offline_experiments_ids == [offline_exp_uuid]
-
-    # and
     captured = capsys.readouterr()
     assert captured.err == ''
     assert 'Synchronized experiments:\n- {}'.format(get_qualified_name(sync_exp)) in captured.out
@@ -93,9 +95,21 @@ def test_list_experiments(tmp_path, mocker, capsys):
     assert 'Unsynchronized offline experiments:\n- {}'.format(offline_exp_uuid) in captured.out
 
 
+def test_list_experiments_when_no_experiment(tmp_path, capsys):
+    # when
+    with pytest.raises(SystemExit):
+        synchronization_status(tmp_path)
+
+    # then
+    captured = capsys.readouterr()
+    assert captured.err == ''
+    assert 'There are no Neptune experiments' in captured.out
+
+
 def test_sync_all_experiments(tmp_path, mocker, capsys):
     # given
-    unsync_exp, sync_exp, offline_exp_uuid, get_experiment_impl = prepare_experiments(tmp_path)
+    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
+    offline_exp_uuid = prepare_offline_experiment(tmp_path)
     registered_offline_experiment = an_experiment()
 
     # and
@@ -129,7 +143,8 @@ def test_sync_all_experiments(tmp_path, mocker, capsys):
 
 def test_sync_selected_experiments(tmp_path, mocker, capsys):
     # given
-    unsync_exp, sync_exp, offline_exp_uuid, get_experiment_impl = prepare_experiments(tmp_path)
+    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
+    offline_exp_uuid = prepare_offline_experiment(tmp_path)
     registered_offline_experiment = an_experiment()
 
     def get_experiment_impl_(experiment_id: str):
@@ -164,3 +179,36 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     # pylint: disable=no-member
     neptune.alpha.sync.backend.execute_operations \
         .assert_called_with(uuid.UUID(registered_offline_experiment.uuid), ['op-1'])
+
+
+def test_get_project_no_name_set(mocker):
+    # given
+    mocker.patch.object(os, 'getenv')
+    os.getenv.return_value = None
+
+    # expect
+    assert get_project(None) is None
+
+
+def test_get_project_project_not_found(mocker):
+    # given
+    mocker.patch.object(neptune.alpha.sync, 'backend')
+    mocker.patch.object(neptune.alpha.sync.backend, 'get_project')
+    neptune.alpha.sync.backend.get_project.side_effect = ProjectNotFound('foo')
+
+    # expect
+    assert get_project('foo') is None
+
+
+def test_sync_non_existent_experiment(tmp_path, mocker, capsys):
+    # given
+    mocker.patch.object(neptune.alpha.sync, 'get_project')
+    mocker.patch.object(neptune.alpha.sync, 'get_experiment')
+    neptune.alpha.sync.get_experiment.return_value = an_experiment()
+
+    # when
+    sync_selected_experiments(tmp_path, 'foo', ['bar'])
+
+    # then
+    captured = capsys.readouterr()
+    assert "Warning: Experiment 'bar' does not exist in location" in captured.err
