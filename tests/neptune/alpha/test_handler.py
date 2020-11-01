@@ -44,7 +44,7 @@ class TestHandler(unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     def test_set(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         now = datetime.now()
         exp['some/num/val'] = 5
         exp['some/str/val'] = "some text"
@@ -58,7 +58,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
     def test_assign_atom(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         now = datetime.now()
         exp['some/num/val'].assign(5)
         exp['some/str/val'].assign("some text", wait=True)
@@ -82,13 +82,13 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
     def test_save_file(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/file'].save("path/to/other/file.txt")
         # TODO: Test download
         self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
 
     def test_assign_series(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/val'].assign(FloatSeriesVal([1, 2, 0, 10]))
         exp['some/str/val'].assign(StringSeriesVal(["text1", "text2"]), wait=True)
         # TODO: Assert fetching value
@@ -102,7 +102,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
 
     def test_log(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/val'].log(5)
         exp['some/str/val'].log("some text")
         # TODO: Assert fetching value
@@ -110,7 +110,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
 
     def test_assign_set(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/str/val'].assign(StringSetVal(["tag1", "tag2"]), wait=True)
         self.assertEqual(exp['some/str/val'].get(), {"tag1", "tag2"})
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
@@ -120,13 +120,13 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
 
     def test_add(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/str/val'].add("some text", "something else", wait=True)
         self.assertEqual(exp['some/str/val'].get(), {"some text", "something else"})
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
 
     def test_pop(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/val'].assign(3, wait=True)
         self.assertIn('some', exp.get_structure())
         ns = exp['some']
@@ -134,7 +134,7 @@ class TestHandler(unittest.TestCase):
         self.assertNotIn('some', exp.get_structure())
 
     def test_del(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/val'].assign(3)
         self.assertIn('some', exp.get_structure())
         ns = exp['some']
@@ -142,7 +142,7 @@ class TestHandler(unittest.TestCase):
         self.assertNotIn('some', exp.get_structure())
 
     def test_lookup(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         ns = exp['some/ns']
         ns['val'] = 5
         exp.wait()
@@ -154,6 +154,6 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(ns['some/value'].get(), 3)
 
     def test_attribute_error(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         with self.assertRaises(AttributeError):
             exp['var'].something()
