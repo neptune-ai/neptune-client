@@ -35,7 +35,8 @@ from neptune.git_info import GitInfo
 
 _logger = logging.getLogger(__name__)
 
-IS_WINDOWS = hasattr(sys, 'getwindowsversion')
+IS_WINDOWS = sys.platform == 'win32'
+IS_MACOS = sys.platform == 'darwin'
 
 
 def map_values(f_value, dictionary):

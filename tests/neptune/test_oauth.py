@@ -93,7 +93,7 @@ class TestNeptuneAuthenticator(unittest.TestCase):
         auth_tokens = MagicMock()
         auth_tokens.accessToken = an_access_token()
         auth_tokens.refreshToken = a_refresh_token()
-        decoded_access_token = jwt.decode(auth_tokens.accessToken, SECRET)
+        decoded_access_token = jwt.decode(auth_tokens.accessToken, SECRET, options={'verify_exp': False})
 
         backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result = auth_tokens
 

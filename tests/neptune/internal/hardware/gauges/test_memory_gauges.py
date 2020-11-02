@@ -18,7 +18,7 @@ import unittest
 import psutil
 
 from neptune.internal.hardware.gauges.memory import CGroupMemoryUsageGauge, SystemMemoryUsageGauge
-from neptune.utils import IS_WINDOWS
+from neptune.utils import IS_WINDOWS, IS_MACOS
 
 
 class TestMemoryGauges(unittest.TestCase):
@@ -37,7 +37,7 @@ class TestMemoryGauges(unittest.TestCase):
         self.assertLess(memory_gb, self.system_memory_gb)
         self.assertEqual(float, type(memory_gb))
 
-    @unittest.skipIf(IS_WINDOWS, "Windows doesn't have cgroups")
+    @unittest.skipIf(IS_WINDOWS or IS_MACOS, "Windows and MacOS don't have cgroups")
     def test_cgroup_memory_gauge(self):
         # given
         gauge = CGroupMemoryUsageGauge()
