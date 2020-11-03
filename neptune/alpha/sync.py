@@ -19,38 +19,22 @@ import os
 import sys
 import textwrap
 import uuid
-from dataclasses import dataclass
-from functools import partial
-from itertools import filterfalse
 from pathlib import Path
 from typing import Collection, Iterable, List, Optional, Tuple, Any
 
 import click
-from bravado.exception import HTTPError
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY, \
+    OFFLINE_NAME_PREFIX
 from neptune.alpha.envs import PROJECT_ENV_NAME
-from neptune.alpha.exceptions import ProjectNotFound
-from neptune.alpha.internal.backends.api_model import Project
+from neptune.alpha.exceptions import ProjectNotFound, NeptuneException
+from neptune.alpha.internal.backends.api_model import Project, ExperimentApiModel
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import VersionedOperation
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
-
-
-#######################################################################################################################
-# Stubs of dynamically-generated classes for type checking and mocking in tests
-#######################################################################################################################
-
-
-@dataclass
-class Experiment:
-    uuid: str
-    shortId: str
-    organizationName: str
-    projectName: str
 
 
 #######################################################################################################################
@@ -68,15 +52,12 @@ def report_get_experiment_error(experiment_id: str, status_code: int, skipping: 
                .format(experiment_id, status_code, comment), file=sys.stderr)
 
 
-def get_experiment(experiment_id: str) -> Optional[Experiment]:
+def get_experiment(experiment_id: str) -> Optional[ExperimentApiModel]:
     try:
-        response = backend.leaderboard_client.api.getExperiment(experimentId=experiment_id).response()
-        return response.result
-    except HTTPError as e:
-        if e.status_code in (401, 403, 404):
-            report_get_experiment_error(experiment_id, e.status_code, skipping=True)
-        else:
-            report_get_experiment_error(experiment_id, e.status_code, skipping=False)
+        return backend.get_experiment(experiment_id)
+    except NeptuneException as e:
+        click.echo('Exception while fetching experiment {}. Skipping experiment.'.format(experiment_id), err=True)
+        logging.exception(e)
 
 
 project_name_missing_message = (
@@ -103,7 +84,7 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
         return None
 
 
-def get_qualified_name(experiment: Experiment) -> str:
+def get_qualified_name(experiment: ExperimentApiModel) -> str:
     return "{}/{}/{}".format(experiment.organizationName, experiment.projectName, experiment.shortId)
 
 
@@ -130,7 +111,7 @@ def is_experiment_synced(experiment_path: Path) -> bool:
                            VersionedOperation.to_dict, VersionedOperation.from_dict)
     previous_operation = None
     while True:
-        operation = disk_queue.get()
+        operation = disk_queue.get(dry_run=True)
         if not operation:
             break
         previous_operation = operation
@@ -150,7 +131,7 @@ def get_offline_experiments_ids(base_path: Path) -> List[str]:
     return result
 
 
-def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Experiment]]:
+def partition_experiments(base_path: Path) -> Tuple[List[ExperimentApiModel], List[ExperimentApiModel]]:
     synced_experiment_uuids = []
     unsynced_experiment_uuids = []
     for experiment_path in base_path.iterdir():
@@ -166,16 +147,17 @@ def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Exper
 
 
 offline_experiment_explainer = '''
-Experiments which run offline are not created on the server, are not assigned to projects,
-and they are identified by UUIDs like the ones above instead of serial numbers.
+Experiments which run offline are not created on the server and they are not assigned to projects;
+instead, they are identified by UUIDs like the ones above.
 When synchronizing offline experiments, please specify the workspace and project using the "--project"
 flag. Alternatively, you can set the environment variable
-{} to the target workpspace/project. See the examples below.
+{} to the target workspace/project. See the examples below.
 '''.format(PROJECT_ENV_NAME)
 
 
-def list_experiments(path: Path, synced_experiments: Collection[Experiment],
-                     unsynced_experiments: Collection[Experiment], offline_experiments_ids: Collection[str]) -> None:
+def list_experiments(path: Path, synced_experiments: Collection[ExperimentApiModel],
+                     unsynced_experiments: Collection[ExperimentApiModel], offline_experiments_ids: Collection[str])\
+                     -> None:
 
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
         click.echo('There are no Neptune experiments in {}'.format(path))
@@ -194,7 +176,7 @@ def list_experiments(path: Path, synced_experiments: Collection[Experiment],
     if offline_experiments_ids:
         click.echo('Unsynchronized offline experiments:')
         for experiment_id in offline_experiments_ids:
-            click.echo('- {}'.format(experiment_id))
+            click.echo('- {}{}'.format(OFFLINE_NAME_PREFIX, experiment_id))
         click.echo()
         click.echo(textwrap.fill(offline_experiment_explainer, width=90))
 
@@ -269,10 +251,10 @@ def sync_selected_registered_experiments(path: Path, qualified_experiment_names:
                 click.echo("Warning: Experiment '{}' does not exist in location {}".format(name, path), file=sys.stderr)
 
 
-def register_offline_experiment(project: Project) -> Optional[Experiment]:
+def register_offline_experiment(project: Project) -> Optional[ExperimentApiModel]:
     try:
         experiment = backend.create_experiment(project.uuid)
-        return Experiment(str(experiment.uuid), experiment.id, project.workspace, project.name)
+        return ExperimentApiModel(str(experiment.uuid), experiment.id, project.workspace, project.name)
     except Exception as e:
         click.echo('Exception occurred while trying to create an experiment '
                    'on the Neptune server. Please try again later',
@@ -286,25 +268,30 @@ def move_offline_experiment(base_path: Path, offline_uuid: str, server_uuid: str
 
 
 def register_offline_experiments(base_path: Path, project: Project,
-                                 offline_experiments_ids: Iterable[str]) -> List[Experiment]:
+                                 offline_experiments_ids: Iterable[str]) -> List[ExperimentApiModel]:
     result = []
     for experiment_uuid in offline_experiments_ids:
-        experiment = register_offline_experiment(project)
-        move_offline_experiment(base_path, experiment_uuid, experiment.uuid)
-        click.echo('Offline experiment {} registered as {}'.format(experiment_uuid, get_qualified_name(experiment)))
-        result.append(experiment)
+        if (base_path / OFFLINE_DIRECTORY / experiment_uuid).is_dir():
+            experiment = register_offline_experiment(project)
+            if experiment:
+                move_offline_experiment(base_path, experiment_uuid, experiment.uuid)
+                click.echo('Offline experiment {} registered as {}'
+                           .format(experiment_uuid, get_qualified_name(experiment)))
+                result.append(experiment)
+        else:
+            click.echo('Offline experiment with UUID {} not found on disk.'.format(experiment_uuid), err=True)
     return result
 
 
-def references_offline_experiment(base_path: Path, name: str) -> bool:
-    return is_valid_uuid(name) and (base_path / OFFLINE_DIRECTORY / name).is_dir()
+def is_offline_experiment_name(name: str) -> bool:
+    return name.startswith(OFFLINE_NAME_PREFIX) and is_valid_uuid(name[len(OFFLINE_NAME_PREFIX):])
 
 
 def sync_selected_experiments(base_path: Path, project_name: Optional[str],
                               experiment_names: Collection[str]) -> None:
-    f = partial(references_offline_experiment, base_path)
-    offline_experiment_ids = list(filter(f, experiment_names))
-    other_experiment_names = list(filterfalse(f, experiment_names))
+    offline_experiment_ids = [name[len(OFFLINE_NAME_PREFIX):] for name in experiment_names
+                              if is_offline_experiment_name(name)]
+    other_experiment_names = [name for name in experiment_names if not is_offline_experiment_name(name)]
     if offline_experiment_ids:
         project = get_project(project_name)
         if project:
@@ -357,7 +344,7 @@ def status(path: Path) -> None:
 
     \b
     # List unsynchronized experiments in the current directory
-    neptune status  # TODO while in alpha: python -m neptune.alpha.cli status
+    neptune status
 
     \b
     # List unsynchronized experiments in directory "foo/bar" without actually syncing

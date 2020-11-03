@@ -18,7 +18,7 @@ import uuid
 from typing import Optional, List
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
-from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute
+from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute, ExperimentApiModel
 from neptune.alpha.internal.backends.api_model import Project, Experiment, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -43,7 +43,7 @@ from neptune.alpha.types.value_visitor import ValueVisitor
 
 class NeptuneBackendMock(NeptuneBackend):
 
-    def __init__(self):
+    def __init__(self, credentials=None):
         # pylint: disable=unused-argument
         self._experiments = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
@@ -58,6 +58,9 @@ class NeptuneBackendMock(NeptuneBackend):
         new_uuid = uuid.uuid4()
         self._experiments[new_uuid] = ExperimentStructure[Value]()
         return Experiment(new_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
+
+    def get_experiment(self, experiment_id: str) -> ExperimentApiModel:
+        return ExperimentApiModel(str(uuid.uuid4()), 'NPT-111', 'workspace', 'sandbox')
 
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         for op in operations:

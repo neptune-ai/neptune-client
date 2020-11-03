@@ -29,12 +29,12 @@ from neptune.alpha.internal.backends.api_model import Project
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.internal.operation import Operation
-from neptune.alpha.sync import Experiment, get_qualified_name, \
+from neptune.alpha.sync import ExperimentApiModel, get_qualified_name, \
     sync_selected_experiments, sync_all_experiments, synchronization_status, get_project
 
 
 def an_experiment():
-    return Experiment(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj')
+    return ExperimentApiModel(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj')
 
 
 def prepare_experiments(path):
@@ -92,7 +92,7 @@ def test_list_experiments(tmp_path, mocker, capsys):
     assert captured.err == ''
     assert 'Synchronized experiments:\n- {}'.format(get_qualified_name(sync_exp)) in captured.out
     assert 'Unsynchronized experiments:\n- {}'.format(get_qualified_name(unsync_exp)) in captured.out
-    assert 'Unsynchronized offline experiments:\n- {}'.format(offline_exp_uuid) in captured.out
+    assert 'Unsynchronized offline experiments:\n- offline/{}'.format(offline_exp_uuid) in captured.out
 
 
 def test_list_experiments_when_no_experiment(tmp_path, capsys):
@@ -163,7 +163,7 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     mocker.patch.object(Operation, 'from_dict', lambda x: x)
 
     # when
-    sync_selected_experiments(tmp_path, 'some-name', [get_qualified_name(sync_exp), offline_exp_uuid])
+    sync_selected_experiments(tmp_path, 'some-name', [get_qualified_name(sync_exp), 'offline/' + offline_exp_uuid])
 
     # then
     captured = capsys.readouterr()
