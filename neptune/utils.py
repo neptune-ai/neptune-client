@@ -29,14 +29,14 @@ from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPF
     HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
     HTTPGatewayTimeout, HTTPBadGateway
 
-from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, \
-    Unauthorized, SSLError
+from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, Unauthorized, SSLError
 from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotAFile
 from neptune.git_info import GitInfo
 
 _logger = logging.getLogger(__name__)
 
-IS_WINDOWS = hasattr(sys, 'getwindowsversion')
+IS_WINDOWS = sys.platform == 'win32'
+IS_MACOS = sys.platform == 'darwin'
 
 
 def map_values(f_value, dictionary):

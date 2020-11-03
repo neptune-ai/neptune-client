@@ -24,7 +24,7 @@ import pandas as pd
 from mock import MagicMock, patch
 from munch import Munch
 
-from neptune.exceptions import NoExperimentContext
+from neptune.exceptions import NeptuneNoExperimentContextException
 from neptune.experiments import Experiment
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
@@ -220,7 +220,7 @@ class TestProject(unittest.TestCase):
     # pylint: disable=protected-access
     def test_empty_stack(self):
         # expect
-        with self.assertRaises(NoExperimentContext):
+        with self.assertRaises(NeptuneNoExperimentContextException):
             self.project._get_current_experiment()
 
     def test_create_experiment_with_relative_upload_sources(self):

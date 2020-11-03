@@ -32,7 +32,7 @@ class TestNeptuneAuth(unittest.TestCase):
 
         self.session = MagicMock()
         self.session.token = dict()
-        self.neptune_auth = NeptuneAuth(self.session)
+        self.neptune_auth = NeptuneAuth(lambda: self.session)
         self.neptune_auth.token_expires_at = time.time() + 60
         self.request = a_request()
 
@@ -87,10 +87,15 @@ class TestNeptuneAuthenticator(unittest.TestCase):
     @patch('neptune.oauth.time')
     def test_apply_oauth2_session_to_request(self, time_mock, session_mock):
         # given
+        api_token = MagicMock()
+        backend_client = MagicMock()
+
         auth_tokens = MagicMock()
         auth_tokens.accessToken = an_access_token()
         auth_tokens.refreshToken = a_refresh_token()
-        decoded_access_token = jwt.decode(auth_tokens.accessToken, SECRET)
+        decoded_access_token = jwt.decode(auth_tokens.accessToken, SECRET, options={'verify_exp': False})
+
+        backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result = auth_tokens
 
         # and
         now = time.time()
@@ -102,7 +107,7 @@ class TestNeptuneAuthenticator(unittest.TestCase):
         session.token = dict()
 
         # and
-        neptune_authenticator = NeptuneAuthenticator(auth_tokens, False, None)
+        neptune_authenticator = NeptuneAuthenticator(api_token, backend_client, False, None)
         request = a_request()
 
         # when

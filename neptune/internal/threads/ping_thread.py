@@ -39,6 +39,6 @@ class PingThread(NeptuneThread):
                 # A 422 error means that we tried to ping the job after marking it as completed.
                 # In this case, this thread is not needed anymore.
                 break
-            except Exception as e:
-                _logger.debug('Unexpected error in ping thread: %s', e)
+            except Exception:
+                _logger.exception('Unexpected error in ping thread.')
             self._interrupted.wait(self.PING_INTERVAL_SECS)

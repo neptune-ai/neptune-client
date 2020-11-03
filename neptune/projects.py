@@ -27,7 +27,7 @@ import pandas as pd
 import six
 
 from neptune.envs import NOTEBOOK_ID_ENV_NAME, NOTEBOOK_PATH_ENV_NAME
-from neptune.exceptions import NoExperimentContext
+from neptune.exceptions import NeptuneNoExperimentContextException
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
@@ -45,7 +45,7 @@ class Project(object):
     Args:
         backend (:class:`~neptune.Backend`, required): A Backend object.
         internal_id (:obj:`str`, required): UUID of the project.
-        namespace (:obj:`str`, required): It can either be your organization or user name.
+        namespace (:obj:`str`, required): It can either be your workspace or user name.
         name (:obj:`str`, required): project name.
 
     Note:
@@ -283,9 +283,9 @@ class Project(object):
                     * If ``abort_callback=callable``, then ``callable`` is executed when `abort experiment` action
                       in the Web application is triggered.
 
-            logger (:obj:`logging.handlers` or `None`, optional, default is ``None``):
-                If `handler <https://docs.python.org/3.6/library/logging.handlers.html>`_
-                to `Python logger` is passed, new experiment's `text log`
+            logger (:obj:`logging.Logger` or `None`, optional, default is ``None``):
+                If Python's `Logger <https://docs.python.org/3/library/logging.html#logging.Logger>`_
+                is passed, new experiment's `text log`
                 (see: :meth:`~neptune.experiments.Experiment.log_text`) with name `"logger"` is created.
                 Each time `Python logger` logs new data, it is automatically sent to the `"logger"` in experiment.
                 As a results all data from `Python logger` are in the `Logs` tab in the experiment.
@@ -609,7 +609,7 @@ class Project(object):
             if self._experiments_stack:
                 return self._experiments_stack[-1]
             else:
-                raise NoExperimentContext()
+                raise NeptuneNoExperimentContextException()
 
     def _push_new_experiment(self, new_experiment):
         with self.__lock:
