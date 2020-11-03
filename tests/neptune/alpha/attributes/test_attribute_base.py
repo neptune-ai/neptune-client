@@ -30,7 +30,7 @@ class TestAttributeBase(unittest.TestCase):
 
     @staticmethod
     def _create_experiment(backend, op_processor):
-        return Experiment(uuid.uuid4(), backend, op_processor, None, MagicMock())
+        return Experiment(uuid.uuid4(), backend, op_processor, MagicMock(), resume=False)
 
     @staticmethod
     def _random_path():

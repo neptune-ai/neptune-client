@@ -74,10 +74,9 @@ def init(
 
     project_obj = backend.get_project(project)
     if experiment:
-        exp, initial_attributes = backend.get_experiment_with_attributes(project, experiment)
+        exp = backend.get_experiment(project + '/' + experiment)
     else:
         exp = backend.create_experiment(project_obj.uuid)
-        initial_attributes = None
 
     if connection_mode == "async":
         experiment_path = "{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, exp.uuid)
@@ -119,4 +118,10 @@ def init(
         exp_id=exp.id
     ))
 
-    return Experiment(exp.uuid, backend, operation_processor, initial_attributes, BackgroundJobList(background_jobs))
+    return Experiment(
+        exp.uuid,
+        backend,
+        operation_processor,
+        BackgroundJobList(background_jobs),
+        resume=experiment is not None
+    )

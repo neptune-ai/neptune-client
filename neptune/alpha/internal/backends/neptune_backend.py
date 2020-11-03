@@ -44,7 +44,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_experiment_with_attributes(self, project_id: str, experiment_id: str) -> (Experiment, List[Attribute]):
+    def get_experiment(self, experiment_id: str) -> Experiment:
         pass
 
     @abc.abstractmethod

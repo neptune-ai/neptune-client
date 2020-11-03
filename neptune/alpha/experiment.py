@@ -17,7 +17,7 @@
 import threading
 import uuid
 from datetime import datetime
-from typing import Dict, Any, Union, List, Optional
+from typing import Dict, Any, Union, List
 
 from neptune.alpha.attributes.atoms.file import File as FileAttr
 from neptune.alpha.attributes.atoms.float import Float as FloatAttr
@@ -31,7 +31,7 @@ from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.handler import Handler
 from neptune.alpha.internal.attribute_setter_value_visitor import AttributeSetterValueVisitor
-from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute, AttributeType
+from neptune.alpha.internal.backends.api_model import AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.background_job import BackgroundJob
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -48,23 +48,22 @@ class Experiment(Handler):
 
     def __init__(
             self,
-            _uuid: uuid.UUID,
+            uuid: uuid.UUID,
             backend: NeptuneBackend,
             op_processor: OperationProcessor,
-            initial_attributes: Optional[List[ApiAttribute]],
-            background_job: BackgroundJob
+            background_job: BackgroundJob,
+            resume: bool
     ):
         super().__init__(self, path="")
-        self._uuid = _uuid
+        self._uuid = uuid
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
         self._structure = ExperimentStructure[Attribute]()
         self._lock = threading.RLock()
 
-        if initial_attributes is not None:
-            for attribute in initial_attributes:
-                self._define_attribute(parse_path(attribute.path), attribute.type)
+        if resume:
+            self.sync()
         else:
             self._prepare_sys_namespace()
 

@@ -57,33 +57,15 @@ class NeptuneBackendMock(NeptuneBackend):
     def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
-        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
+        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1))
 
     def get_experiment(self, experiment_id: str) -> ExperimentApiModel:
         return ExperimentApiModel(str(uuid.uuid4()), 'NPT-111', 'workspace', 'sandbox')
 
-    def get_experiment_with_attributes(self, project_id: str, experiment_id: str) -> (Experiment, List[Attribute]):
-        project_uuid = uuid.uuid4()
+    def get_experiment_with_attributes(self, experiment_id: str) -> Experiment:
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
-        experiment = Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
-
-        attributes: List[Attribute] = []
-        attributes.append(Attribute("sys/id", AttributeType.STRING))
-        attributes.append(Attribute("sys/owner", AttributeType.STRING))
-        attributes.append(Attribute("sys/name", AttributeType.STRING))
-        attributes.append(Attribute("sys/description", AttributeType.STRING))
-        attributes.append(Attribute("sys/hostname", AttributeType.STRING))
-        attributes.append(Attribute("sys/creation_time", AttributeType.DATETIME))
-        attributes.append(Attribute("sys/modification_time", AttributeType.DATETIME))
-        attributes.append(Attribute("sys/size", AttributeType.FLOAT))
-        attributes.append(Attribute("sys/tags", AttributeType.STRING_SET))
-        attributes.append(Attribute("sys/notebook/id", AttributeType.STRING))
-        attributes.append(Attribute("sys/notebook/name", AttributeType.STRING))
-        attributes.append(Attribute("sys/notebook/checkpoint/id", AttributeType.STRING))
-        attributes.append(Attribute("sys/notebook/checkpoint/name", AttributeType.STRING))
-
-        return experiment, attributes
+        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1))
 
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         for op in operations:

@@ -132,22 +132,18 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         try:
             experiment = self.leaderboard_client.api.createExperiment(**kwargs).response().result
-            return Experiment(uuid.UUID(experiment.id), experiment.shortId, project_uuid)
+            return Experiment(uuid.UUID(experiment.id), experiment.shortId)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
 
     @with_api_exceptions_handler
-    def get_experiment_with_attributes(self, project_id: str, experiment_id: str) -> (Experiment, List[Attribute]):
+    def get_experiment(self, experiment_id: str) -> Experiment:
         params = {
-            'experimentId': project_id + '/' + experiment_id
+            'experimentId': experiment_id
         }
         try:
             exp = self.leaderboard_client.api.getExperiment(**params).response().result
-
-            experiment = Experiment(uuid.UUID(exp.id), exp.shortId, uuid.UUID(exp.projectId))
-            attributes = [Attribute(attr.name, AttributeType(attr.type)) for attr in exp.attributes]
-
-            return experiment, attributes
+            return Experiment(uuid.UUID(exp.id), exp.shortId)
         except HTTPNotFound:
             raise ExperimentIdNotFound(exp_id=experiment_id)
 
@@ -212,7 +208,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             'experimentId': str(experiment_uuid),
         }
         try:
-            experiment = self.leaderboard_client.api.getExperiment(**params).response().result
+            experiment = self.leaderboard_client.api.getExperimentWithAttributes(**params).response().result
             return [Attribute(attr.name, AttributeType(attr.type)) for attr in experiment.attributes]
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)

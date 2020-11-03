@@ -31,10 +31,9 @@ class Project:
 
 class Experiment:
 
-    def __init__(self, _uuid: uuid.UUID, _id: str, project_uuid: uuid.UUID):
+    def __init__(self, _uuid: uuid.UUID, _id: str):
         self.uuid = _uuid
         self.id = _id
-        self.project_uuid = project_uuid
 
 
 @dataclass
