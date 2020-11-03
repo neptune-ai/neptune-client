@@ -87,6 +87,12 @@ class HostedNeptuneBackend(Backend):
         # for session re-creation we need to keep an authenticator-free version of http client
         self._http_client_for_token = RequestsClient(ssl_verify=ssl_verify)
 
+        user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
+            lib_version=self.client_lib_version,
+            system=platform.platform(),
+            python_version=platform.python_version())
+        self._http_client.session.headers.update({'User-Agent': user_agent})
+
         update_session_proxies(self._http_client.session, proxies)
         update_session_proxies(self._http_client_for_token.session, proxies)
 
@@ -108,12 +114,6 @@ class HostedNeptuneBackend(Backend):
 
         self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies, backend_client)
         self._http_client.authenticator = self.authenticator
-
-        user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
-            lib_version=self.client_lib_version,
-            system=platform.platform(),
-            python_version=platform.python_version())
-        self._http_client.session.headers.update({'User-Agent': user_agent})
 
     @property
     def api_address(self):
