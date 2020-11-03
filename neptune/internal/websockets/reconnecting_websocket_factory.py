@@ -27,7 +27,10 @@ class ReconnectingWebsocketFactory(object):
     def create(self, shutdown_condition):
         url = self._experiment_url(self._base_address, self._experiment_id)
         return ReconnectingWebsocket(
-            url=url, oauth2_session=self._backend.authenticator.auth.session, shutdown_event=shutdown_condition)
+            url=url,
+            oauth2_session=self._backend.authenticator.auth.session,
+            shutdown_event=shutdown_condition,
+            proxies=self._backend.proxies)
 
     @staticmethod
     def _experiment_url(base_address, experiment_id):

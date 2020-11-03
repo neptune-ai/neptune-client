@@ -20,7 +20,7 @@ from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.exceptions import IncorrectProjectQualifiedName
+from neptune.exceptions import NeptuneIncorrectProjectQualifiedNameException
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
 
@@ -165,26 +165,26 @@ class Session(object):
             raise ProjectNotFound(project_qualified_name)
 
         if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project_qualified_name):
-            raise IncorrectProjectQualifiedName(project_qualified_name)
+            raise NeptuneIncorrectProjectQualifiedNameException(project_qualified_name)
 
         return self._backend.get_project(project_qualified_name)
 
     def get_projects(self, namespace):
-        """Get all projects that you have permissions to see in given organization
+        """Get all projects that you have permissions to see in given workspace.
 
         | This method gets you all available projects names and their
           corresponding :class:`~neptune.projects.Project` objects.
-        | Both private and public projects may be returned for the organization.
+        | Both private and public projects may be returned for the workspace.
           If you have role in private project, it is included.
-        | You can retrieve all the public projects that belong to any user or organization,
-          as long as you know their username or organization name.
+        | You can retrieve all the public projects that belong to any user or workspace,
+          as long as you know their username or workspace name.
 
         Args:
-            namespace (:obj:`str`): It can either be name of the organization or username.
+            namespace (:obj:`str`): It can either be name of the workspace or username.
 
         Returns:
             :obj:`OrderedDict`
-                | **keys** are ``project_qualified_name`` that is: *'organization/project_name'*
+                | **keys** are ``project_qualified_name`` that is: *'workspace/project_name'*
                 | **values** are corresponding :class:`~neptune.projects.Project` objects.
 
         Raises:
@@ -199,8 +199,8 @@ class Session(object):
                 session = Session()
 
                 # Now, you can list all the projects available for a selected namespace.
-                # You can use `YOUR_NAMESPACE` which is your organization or user name.
-                # You can also list public projects created by other organizations.
+                # You can use `YOUR_NAMESPACE` which is your workspace or user name.
+                # You can also list public projects created in other workspaces.
                 # For example you can use the `neptune-ai` namespace.
 
                 session.get_projects('neptune-ai')

@@ -64,18 +64,28 @@ class HostedNeptuneBackend(NeptuneBackend):
         if proxies is None:
             verify_host_resolution(config_api_url)
 
-        self.backend_client = create_swagger_client(config_api_url + self.BACKEND_SWAGGER_PATH, self._http_client)
-        self._client_config = self._get_client_config(self.backend_client)
+        token_http_client = self._create_http_client(ssl_verify, proxies)
+        token_client = create_swagger_client(config_api_url + self.BACKEND_SWAGGER_PATH,
+                                             token_http_client)
+
+        self._client_config = self._get_client_config(token_client)
         verify_client_version(self._client_config, neptune_client_version)
 
         if config_api_url != self._client_config.api_url:
-            self.backend_client = create_swagger_client(self._client_config.api_url + self.BACKEND_SWAGGER_PATH,
-                                                        self._http_client)
+            token_client = create_swagger_client(self._client_config.api_url + self.BACKEND_SWAGGER_PATH,
+                                                 token_http_client)
+
+        self.backend_client = create_swagger_client(self._client_config.api_url + self.BACKEND_SWAGGER_PATH,
+                                                    self._http_client)
         self.leaderboard_client = create_swagger_client(self._client_config.api_url + self.LEADERBOARD_SWAGGER_PATH,
                                                         self._http_client)
 
         # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
-        self._http_client.authenticator = NeptuneAuthenticator(self._get_auth_tokens(), ssl_verify, proxies)
+        self._http_client.authenticator = NeptuneAuthenticator(
+            self.credentials.api_token,
+            token_client,
+            ssl_verify,
+            proxies)
 
         user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
             lib_version=neptune_client_version,
@@ -209,9 +219,3 @@ class HostedNeptuneBackend(NeptuneBackend):
         http_client = RequestsClient(ssl_verify=ssl_verify)
         update_session_proxies(http_client.session, proxies)
         return http_client
-
-    @with_api_exceptions_handler
-    def _get_auth_tokens(self) -> dict:
-        return self.backend_client.api.exchangeApiToken(
-            X_Neptune_Api_Token=self.credentials.api_token
-        ).response().result
