@@ -24,7 +24,7 @@ from PIL import Image
 from uuid import uuid4
 import numpy
 
-from neptune.internal.utils.image import get_image_content, _get_pil_image_data
+from neptune.internal.utils.image import get_image_content, _get_pil_image_data, _get_figure_as_image
 
 
 class TestImage(unittest.TestCase):
@@ -102,4 +102,4 @@ class TestImage(unittest.TestCase):
         expected_image = Image.frombytes('RGB', figure.canvas.get_width_height(), figure.canvas.tostring_rgb())
 
         # expect
-        self.assertEqual(get_image_content(figure), _get_pil_image_data(expected_image))
+        self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))

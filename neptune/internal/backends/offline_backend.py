@@ -35,6 +35,10 @@ class OfflineBackend(Backend):
     def display_address(self):
         return 'OFFLINE'
 
+    @property
+    def proxies(self):
+        return None
+
     def get_project(self, project_qualified_name):
         return NoopObject()
 
@@ -131,14 +135,17 @@ class OfflineBackend(Backend):
 
 class NoopObject(object):
 
-    def __getattribute__(self, item):
-        return NoopObject()
+    def __getattr__(self, name):
+        return self
+
+    def __getitem__(self, key):
+        return self
 
     def __call__(self, *args, **kwargs):
-        return NoopObject()
+        return self
 
     def __enter__(self):
-        return NoopObject()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
