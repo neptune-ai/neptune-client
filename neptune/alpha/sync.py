@@ -20,7 +20,7 @@ import sys
 import textwrap
 import uuid
 from pathlib import Path
-from typing import Collection, Iterable, List, Optional, Tuple, Any
+from typing import Sequence, Iterable, List, Optional, Tuple, Any
 
 import click
 
@@ -155,8 +155,8 @@ flag. Alternatively, you can set the environment variable
 '''.format(PROJECT_ENV_NAME)
 
 
-def list_experiments(path: Path, synced_experiments: Collection[ExperimentApiModel],
-                     unsynced_experiments: Collection[ExperimentApiModel], offline_experiments_ids: Collection[str])\
+def list_experiments(path: Path, synced_experiments: Sequence[ExperimentApiModel],
+                     unsynced_experiments: Sequence[ExperimentApiModel], offline_experiments_ids: Sequence[str])\
                      -> None:
 
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
@@ -240,7 +240,7 @@ def sync_all_registered_experiments(path: Path) -> None:
                 sync_experiment(experiment_path, get_qualified_name(experiment))
 
 
-def sync_selected_registered_experiments(path: Path, qualified_experiment_names: Collection[str]) -> None:
+def sync_selected_registered_experiments(path: Path, qualified_experiment_names: Sequence[str]) -> None:
     for name in qualified_experiment_names:
         experiment = get_experiment(name)
         if experiment:
@@ -288,7 +288,7 @@ def is_offline_experiment_name(name: str) -> bool:
 
 
 def sync_selected_experiments(base_path: Path, project_name: Optional[str],
-                              experiment_names: Collection[str]) -> None:
+                              experiment_names: Sequence[str]) -> None:
     offline_experiment_ids = [name[len(OFFLINE_NAME_PREFIX):] for name in experiment_names
                               if is_offline_experiment_name(name)]
     other_experiment_names = [name for name in experiment_names if not is_offline_experiment_name(name)]
