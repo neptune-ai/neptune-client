@@ -16,6 +16,7 @@
 
 # pylint: disable=protected-access
 import os
+import unittest
 
 from mock import MagicMock
 
@@ -23,10 +24,12 @@ from neptune.alpha.internal.operation import UploadFile
 from neptune.alpha.attributes.atoms.file import File, FileVal
 
 from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
+from neptune.utils import IS_WINDOWS
 
 
 class TestFile(TestAttributeBase):
 
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_assign(self):
         value_and_expected = [
             ("some/path", os.getcwd() + "/some/path"),
@@ -46,6 +49,7 @@ class TestFile(TestAttributeBase):
             with self.assertRaises(TypeError):
                 File(MagicMock(), MagicMock()).assign(value)
 
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_save(self):
         value_and_expected = [
             ("some/path", os.getcwd() + "/some/path")

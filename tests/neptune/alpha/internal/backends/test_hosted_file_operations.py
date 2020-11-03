@@ -23,6 +23,7 @@ from mock import MagicMock, patch
 from neptune.alpha.exceptions import FileUploadError
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
 from neptune.internal.storage.storage_utils import UploadEntry
+from neptune.utils import IS_WINDOWS
 
 
 @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
@@ -30,6 +31,7 @@ from neptune.internal.storage.storage_utils import UploadEntry
 class TestHostedFileOperations(unittest.TestCase):
     # pylint:disable=protected-access
 
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_single_file(self, upload_loop, _):
         # given
         exp_uuid = uuid.uuid4()
@@ -56,6 +58,7 @@ class TestHostedFileOperations(unittest.TestCase):
             }
         )
 
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_multiple_files(self, _, raw_upload):
         # given
         exp_uuid = uuid.uuid4()
@@ -87,6 +90,7 @@ class TestHostedFileOperations(unittest.TestCase):
             }
         )
 
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_missing_files_or_directory(self, _, raw_upload):
         # given
         exp_uuid = uuid.uuid4()

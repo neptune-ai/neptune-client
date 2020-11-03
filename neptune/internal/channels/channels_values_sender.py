@@ -114,10 +114,12 @@ class ChannelsValuesSendingThread(NeptuneThread):
             except Empty:
                 self._sleep_time = 0
 
+            image_values_batch_size = sum([len(v.channel_value.y['image_value']['data'] or [])
+                                           for v in self._values_batch
+                                           if v.channel_type == ChannelType.IMAGE.value])
             if self._sleep_time <= 0 \
                     or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH \
-                    or sum([len(v.channel_value.y['image_value']['data']) for v in self._values_batch if
-                            v.channel_type == ChannelType.IMAGE.value]) >= self._MAX_IMAGE_VALUES_BATCH_SIZE:  # pylint:disable=line-too-long
+                    or image_values_batch_size >= self._MAX_IMAGE_VALUES_BATCH_SIZE:  # pylint:disable=line-too-long
                 self._process_batch()
 
         self._process_batch()
@@ -128,8 +130,8 @@ class ChannelsValuesSendingThread(NeptuneThread):
             try:
                 self._send_values(self._values_batch)
                 self._values_batch = []
-            except (NeptuneException, IOError) as e:
-                _logger.warning('Failed to send channel value: %s', e)
+            except (NeptuneException, IOError):
+                _logger.exception('Failed to send channel value.')
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
     def _send_values(self, queued_channels_values):
@@ -158,5 +160,5 @@ class ChannelsValuesSendingThread(NeptuneThread):
                 message = e.response.json()["message"]
             finally:
                 _logger.warning('Failed to send channel value: %s', message)
-        except (NeptuneException, IOError) as e:
-            _logger.warning('Failed to send channel value: %s', e)
+        except (NeptuneException, IOError):
+            _logger.exception('Failed to send channel value.')

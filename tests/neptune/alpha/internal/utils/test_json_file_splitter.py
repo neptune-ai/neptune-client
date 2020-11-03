@@ -18,10 +18,12 @@ import unittest
 from tempfile import NamedTemporaryFile
 
 from neptune.alpha.internal.utils.json_file_splitter import JsonFileSplitter
+from neptune.utils import IS_WINDOWS
 
 
 class TestJsonFileSplitter(unittest.TestCase):
 
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_simple_file(self):
         content = """
 {
@@ -42,6 +44,7 @@ class TestJsonFileSplitter(unittest.TestCase):
             self.assertEqual(splitter.get(), None)
             splitter.close()
 
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_append(self):
         content1 = """
             {
@@ -77,6 +80,7 @@ class TestJsonFileSplitter(unittest.TestCase):
             self.assertEqual(splitter.get(), None)
             splitter.close()
 
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_append_cut_json(self):
         content1 = """
             {
