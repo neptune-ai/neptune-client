@@ -15,6 +15,7 @@
 #
 from __future__ import unicode_literals
 
+import threading
 import time
 import unittest
 
@@ -213,17 +214,20 @@ class TestChannelsValuesSender(unittest.TestCase):
                           for i in range(0, 3)]
 
         # and
+        semaphore = threading.Semaphore(0)
+        # pylint: disable=protected-access
+        self._EXPERIMENT._send_channels_values.side_effect = lambda _: semaphore.release()
+
+        # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
 
         # when
         for channel_value in numeric_values:
             channels_values_sender.send(self._NUMERIC_CHANNEL.name, self._NUMERIC_CHANNEL.channelType, channel_value)
 
-        # and
-        time.sleep(self.__TIMEOUT * 10)
-
         # then
         # pylint: disable=protected-access
+        semaphore.acquire()
         self._EXPERIMENT._send_channels_values.assert_called_with([ChannelIdWithValues(
             channel_id=self._NUMERIC_CHANNEL.id,
             channel_values=numeric_values
