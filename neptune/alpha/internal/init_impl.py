@@ -118,10 +118,7 @@ def init(
         exp_id=exp.id
     ))
 
-    return Experiment(
-        exp.uuid,
-        backend,
-        operation_processor,
-        BackgroundJobList(background_jobs),
-        resume=experiment is not None
-    )
+    _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
+    _experiment.sync()
+    _experiment.start()
+    return _experiment

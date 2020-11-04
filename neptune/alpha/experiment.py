@@ -48,25 +48,20 @@ class Experiment(Handler):
 
     def __init__(
             self,
-            uuid: uuid.UUID,
+            _uuid: uuid.UUID,
             backend: NeptuneBackend,
             op_processor: OperationProcessor,
-            background_job: BackgroundJob,
-            resume: bool
+            background_job: BackgroundJob
     ):
         super().__init__(self, path="")
-        self._uuid = uuid
+        self._uuid = _uuid
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
         self._structure = ExperimentStructure[Attribute]()
         self._lock = threading.RLock()
 
-        if resume:
-            self.sync()
-        else:
-            self._prepare_sys_namespace()
-
+    def start(self):
         self._bg_job.start(self)
 
     def get_structure(self) -> Dict[str, Any]:
@@ -138,32 +133,3 @@ class Experiment(Handler):
             self._structure.set(_path, ImageSeriesAttr(self, _path))
         if _type == AttributeType.STRING_SET:
             self._structure.set(_path, StringSetAttr(self, _path))
-
-    def _prepare_sys_namespace(self):
-        sys_id = ["sys", "id"]
-        sys_owner = ["sys", "owner"]
-        sys_name = ["sys", "name"]
-        sys_description = ["sys", "description"]
-        sys_hostname = ["sys", "hostname"]
-        sys_creation_time = ["sys", "creation_time"]
-        sys_modification_time = ["sys", "modification_time"]
-        sys_size = ["sys", "size"]
-        sys_tags = ["sys", "tags"]
-        sys_notebook_id = ["sys", "notebook", "id"]
-        sys_notebook_name = ["sys", "notebook", "name"]
-        sys_notebook_checkpoint_id = ["sys", "notebook", "checkpoint", "id"]
-        sys_notebook_checkpoint_name = ["sys", "notebook", "checkpoint", "name"]
-
-        self._structure.set(sys_id, StringAttr(self, sys_id))
-        self._structure.set(sys_owner, StringAttr(self, sys_owner))
-        self._structure.set(sys_name, StringAttr(self, sys_name))
-        self._structure.set(sys_description, StringAttr(self, sys_description))
-        self._structure.set(sys_hostname, StringAttr(self, sys_hostname))
-        self._structure.set(sys_creation_time, DatetimeAttr(self, sys_creation_time))
-        self._structure.set(sys_modification_time, DatetimeAttr(self, sys_modification_time))
-        self._structure.set(sys_size, FloatAttr(self, sys_size))
-        self._structure.set(sys_tags, StringSetAttr(self, sys_tags))
-        self._structure.set(sys_notebook_id, StringAttr(self, sys_notebook_id))
-        self._structure.set(sys_notebook_name, StringAttr(self, sys_notebook_name))
-        self._structure.set(sys_notebook_checkpoint_id, StringAttr(self, sys_notebook_checkpoint_id))
-        self._structure.set(sys_notebook_checkpoint_name, StringAttr(self, sys_notebook_checkpoint_name))
