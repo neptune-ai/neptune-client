@@ -65,7 +65,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_experiment_with_attributes(self, experiment_id: str) -> Experiment:
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
-        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1))
+        return Experiment(new_experiment_uuid, experiment_id[experiment_id.rfind('/') + 1:])
 
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         for op in operations:
