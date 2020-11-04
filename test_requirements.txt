@@ -9,3 +9,4 @@ pytest-cov==2.6.1
 pytest-xdist==1.25.0
 tox==3.6.1
 matplotlib
+pytest-mock==3.3.1

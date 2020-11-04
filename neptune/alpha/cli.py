@@ -14,17 +14,21 @@
 # limitations under the License.
 #
 
-"""Constants used by Neptune"""
 
-ANONYMOUS = 'ANONYMOUS'
+import click
 
-ANONYMOUS_API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYW' \
-                      'kiLCJhcGlfa2V5IjoiYjcwNmJjOGYtNzZmOS00YzJlLTkzOWQtNGJhMDM2ZjkzMmU0In0='
+from .sync import sync, status
 
-NEPTUNE_EXPERIMENT_DIRECTORY = '.neptune'
 
-OFFLINE_DIRECTORY = 'offline'
+@click.group()
+def main():
+    pass
 
-OFFLINE_NAME_PREFIX = 'offline/'
 
-OPERATIONS_DISK_QUEUE_PREFIX = 'operations'
+main.add_command(sync)
+main.add_command(status)
+
+
+# TODO once the new client is released, this file should be registered as a command line entry point
+if __name__ == '__main__':
+    main()

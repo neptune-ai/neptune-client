@@ -29,11 +29,11 @@ class StorageQueue(Generic[T]):
         pass
 
     @abc.abstractmethod
-    def get(self) -> T:
+    def get(self, dry_run=False) -> T:
         pass
 
     @abc.abstractmethod
-    def get_batch(self, size: int) -> List[T]:
+    def get_batch(self, size: int, dry_run=False) -> List[T]:
         pass
 
     @abc.abstractmethod

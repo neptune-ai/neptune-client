@@ -62,13 +62,14 @@ class DiskQueue(StorageQueue[T]):
         self._writer.write(_json + "\n")
         self._file_size += len(_json) + 1
 
-    def get(self) -> Optional[T]:
+    def get(self, dry_run=False) -> Optional[T]:
         _json = self._reader.get()
         if not _json:
             if self._read_file_idx >= self._write_file_idx:
                 return None
             self._reader.close()
-            os.remove(self._current_read_log_file())
+            if not dry_run:
+                os.remove(self._current_read_log_file())
             self._read_file_idx += 1
             self._reader = JsonFileSplitter(self._current_read_log_file())
             return self.get()
@@ -77,10 +78,10 @@ class DiskQueue(StorageQueue[T]):
         except Exception as e:
             raise MalformedOperation from e
 
-    def get_batch(self, size: int) -> List[T]:
+    def get_batch(self, size: int, dry_run=False) -> List[T]:
         ret = []
         for _ in range(0, size):
-            obj = self.get()
+            obj = self.get(dry_run=dry_run)
             if not obj:
                 return ret
             ret.append(obj)

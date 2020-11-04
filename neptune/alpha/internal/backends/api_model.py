@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import uuid
+from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 
@@ -34,6 +35,14 @@ class Experiment:
         self.uuid = _uuid
         self.id = _id
         self.project_uuid = project_uuid
+
+
+@dataclass
+class ExperimentApiModel:
+    uuid: str
+    shortId: str
+    organizationName: str
+    projectName: str
 
 
 class ClientConfig(object):

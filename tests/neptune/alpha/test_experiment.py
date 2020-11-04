@@ -31,30 +31,30 @@ class TestExperiment(unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     def test_define(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/value", Float(5), wait=True)
         self.assertEqual(exp.get_structure()['some']['path']['value'].get(), 5)
 
     def test_define_string(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/value", String("Some string"), wait=True)
         self.assertEqual(exp.get_structure()['some']['path']['value'].get(), "Some string")
 
     def test_define_few_variables(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"), wait=True)
         self.assertEqual(exp.get_structure()['some']['path']['num'].get(), 3)
         self.assertEqual(exp.get_structure()['some']['path']['text'].get(), "Some text")
 
     def test_define_conflict(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/value", Float(5))
         with self.assertRaises(MetadataInconsistency):
             exp.define("some/path/value", Float(1))
 
     def test_pop(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"))
         exp.pop("some/path/text")
@@ -62,7 +62,7 @@ class TestExperiment(unittest.TestCase):
         self.assertTrue('text' not in exp.get_structure()['some']['path'])
 
     def test_experiment_as_handler(self):
-        exp = init(connection_mode="offline", flush_period=0.5)
+        exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"))
         handler = exp['some/path']

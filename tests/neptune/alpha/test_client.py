@@ -40,7 +40,7 @@ class TestClient(unittest.TestCase):
             init(connection_mode='srtgj')
 
     def test_offline_mode(self):
-        exp = init(connection_mode='offline')
+        exp = init(connection_mode='debug')
         exp["some/variable"] = 13
         self.assertEqual(13, exp["some/variable"].get())
         self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))

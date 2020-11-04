@@ -14,17 +14,22 @@
 # limitations under the License.
 #
 
-"""Constants used by Neptune"""
+from pathlib import Path
+from typing import Optional
 
-ANONYMOUS = 'ANONYMOUS'
 
-ANONYMOUS_API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYW' \
-                      'kiLCJhcGlfa2V5IjoiYjcwNmJjOGYtNzZmOS00YzJlLTkzOWQtNGJhMDM2ZjkzMmU0In0='
+class SyncOffsetFile:
+    def __init__(self, experiment_path: Path):
+        self._file = open(experiment_path / 'offset', 'a+')
 
-NEPTUNE_EXPERIMENT_DIRECTORY = '.neptune'
+    def write(self, offset: int) -> None:
+        self._file.truncate()
+        self._file.write(str(offset))
+        self._file.flush()
 
-OFFLINE_DIRECTORY = 'offline'
-
-OFFLINE_NAME_PREFIX = 'offline/'
-
-OPERATIONS_DISK_QUEUE_PREFIX = 'operations'
+    def read(self) -> Optional[int]:
+        self._file.seek(0)
+        content = self._file.read()
+        if not content:
+            return None
+        return int(content)

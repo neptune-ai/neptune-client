@@ -27,7 +27,7 @@ from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, \
-    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException
+    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
@@ -105,6 +105,13 @@ class HostedNeptuneBackend(NeptuneBackend):
             return Project(uuid.UUID(project.id), project.name, project.organizationName)
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
+
+    @with_api_exceptions_handler
+    def get_experiment(self, experiment_id: str):
+        try:
+            return self.leaderboard_client.api.getExperiment(experimentId=experiment_id).response().result
+        except HTTPNotFound:
+            raise ExperimentNotFound(experiment_id)
 
     @with_api_exceptions_handler
     def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:

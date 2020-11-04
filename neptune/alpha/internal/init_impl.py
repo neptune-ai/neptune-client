@@ -16,10 +16,12 @@
 
 import os
 
+from pathlib import Path
 from typing import Optional
 
 import click
 
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import MissingProject
 from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
@@ -31,8 +33,10 @@ from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import VersionedOperation
 from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
+from neptune.alpha.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.alpha.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, \
     StderrCaptureBackgroundJob
+from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.version import version as parsed_version
 from neptune.alpha.experiment import Experiment
 
@@ -50,39 +54,50 @@ def init(
 
     if not project:
         project = os.getenv(PROJECT_ENV_NAME)
+    if connection_mode == 'offline':
+        project = 'offline-project-placeholder'
     if not project:
         raise MissingProject()
 
-    credentials = Credentials()
-
     if connection_mode == "async":
         # TODO Initialize backend in async thread
-        backend = HostedNeptuneBackend(credentials)
+        backend = HostedNeptuneBackend(Credentials())
     elif connection_mode == "sync":
-        backend = HostedNeptuneBackend(credentials)
+        backend = HostedNeptuneBackend(Credentials())
+    elif connection_mode == "debug":
+        backend = NeptuneBackendMock()
     elif connection_mode == "offline":
-        backend = NeptuneBackendMock(credentials)
+        backend = NeptuneBackendMock()
     else:
-        raise ValueError('connection_mode should be one of ["async", "sync", "offline"]')
+        raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
 
     project_obj = backend.get_project(project)
     exp = backend.create_experiment(project_obj.uuid)
 
     if connection_mode == "async":
+        experiment_path = "{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, exp.uuid)
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
-            DiskQueue(".neptune/{}".format(exp.uuid),
-                      "operations",
+            DiskQueue(experiment_path,
+                      OPERATIONS_DISK_QUEUE_PREFIX,
                       VersionedOperation.to_dict,
                       VersionedOperation.from_dict),
             backend,
+            SyncOffsetFile(Path(experiment_path)),
             sleep_time=flush_period)
     elif connection_mode == "sync":
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
-    elif connection_mode == "offline":
+    elif connection_mode == "debug":
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
+    elif connection_mode == "offline":
+        experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
+        storage_queue = DiskQueue(experiment_path,
+                                  OPERATIONS_DISK_QUEUE_PREFIX,
+                                  VersionedOperation.to_dict,
+                                  VersionedOperation.from_dict)
+        operation_processor = OfflineOperationProcessor(storage_queue)
     else:
-        raise ValueError('connection_mode should be on of ["async", "sync", "offline"]')
+        raise ValueError('connection_mode should be on of ["async", "sync", "offline", "debug"]')
 
     background_jobs = []
     if capture_hardware_metrics:

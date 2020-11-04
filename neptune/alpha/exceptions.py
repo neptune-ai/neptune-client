@@ -72,6 +72,12 @@ class ProjectNotFound(NeptuneException):
         super().__init__("Project {} not found.".format(project_id))
 
 
+class ExperimentNotFound(NeptuneException):
+
+    def __init__(self, experiment_id: str) -> None:
+        super().__init__("Experiment {} not found.".format(experiment_id))
+
+
 class ExperimentUUIDNotFound(NeptuneException):
     def __init__(self, exp_uuid: uuid.UUID):
         super().__init__("Experiment with UUID {} not found. Could be deleted.".format(exp_uuid))
@@ -139,3 +145,8 @@ class Unauthorized(NeptuneApiException):
 class Forbidden(NeptuneApiException):
     def __init__(self):
         super().__init__('You have no permissions to access this resource.')
+
+
+class OfflineModeFetchException(NeptuneException):
+    def __init__(self):
+        super().__init__('It is not possible to fetch data from the server in offline mode')
