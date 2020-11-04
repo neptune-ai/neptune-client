@@ -20,6 +20,7 @@ import time
 import unittest
 
 import mock
+import pytest
 
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender, ChannelsValuesSendingThread
@@ -207,6 +208,7 @@ class TestChannelsValuesSender(unittest.TestCase):
 
     __TIMEOUT = 0.1
 
+    @pytest.mark.timeout(10 * __TIMEOUT)
     @mock.patch('neptune.internal.channels.channels_values_sender.ChannelsValuesSendingThread._SLEEP_TIME', __TIMEOUT)
     def test_send_when_waiting_for_next_value_timed_out(self):
         # given
