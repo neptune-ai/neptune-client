@@ -15,10 +15,12 @@
 #
 from __future__ import unicode_literals
 
+import threading
 import time
 import unittest
 
 import mock
+import pytest
 
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender, ChannelsValuesSendingThread
@@ -206,11 +208,19 @@ class TestChannelsValuesSender(unittest.TestCase):
 
     __TIMEOUT = 0.1
 
+    # Using pytest-timeout because Python 2.7 does not support timeouts on acquiring semaphores.
+    # Can be refactored once Python 2 support is dropped.
+    @pytest.mark.timeout(10 * __TIMEOUT)
     @mock.patch('neptune.internal.channels.channels_values_sender.ChannelsValuesSendingThread._SLEEP_TIME', __TIMEOUT)
     def test_send_when_waiting_for_next_value_timed_out(self):
         # given
         numeric_values = [ChannelValue(x=i, y=i, ts=self._TS + i)
                           for i in range(0, 3)]
+
+        # and
+        semaphore = threading.Semaphore(0)
+        # pylint: disable=protected-access
+        self._EXPERIMENT._send_channels_values.side_effect = lambda _: semaphore.release()
 
         # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
@@ -219,11 +229,9 @@ class TestChannelsValuesSender(unittest.TestCase):
         for channel_value in numeric_values:
             channels_values_sender.send(self._NUMERIC_CHANNEL.name, self._NUMERIC_CHANNEL.channelType, channel_value)
 
-        # and
-        time.sleep(self.__TIMEOUT * 2)
-
         # then
         # pylint: disable=protected-access
+        semaphore.acquire()
         self._EXPERIMENT._send_channels_values.assert_called_with([ChannelIdWithValues(
             channel_id=self._NUMERIC_CHANNEL.id,
             channel_values=numeric_values
