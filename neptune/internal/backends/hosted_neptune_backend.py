@@ -92,6 +92,7 @@ class HostedNeptuneBackend(Backend):
             system=platform.platform(),
             python_version=platform.python_version())
         self._http_client.session.headers.update({'User-Agent': user_agent})
+        self._http_client_for_token.session.headers.update({'User-Agent': user_agent})
 
         update_session_proxies(self._http_client.session, proxies)
         update_session_proxies(self._http_client_for_token.session, proxies)
