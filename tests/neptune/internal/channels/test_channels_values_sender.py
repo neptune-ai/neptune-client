@@ -220,7 +220,7 @@ class TestChannelsValuesSender(unittest.TestCase):
             channels_values_sender.send(self._NUMERIC_CHANNEL.name, self._NUMERIC_CHANNEL.channelType, channel_value)
 
         # and
-        time.sleep(self.__TIMEOUT * 2)
+        time.sleep(self.__TIMEOUT * 10)
 
         # then
         # pylint: disable=protected-access
