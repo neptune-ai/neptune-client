@@ -113,9 +113,9 @@ def init(
 
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
         base_url=backend.get_display_address(),
-        workspace=project_obj.workspace,
-        project=project_obj.name,
-        exp_id=exp.id
+        workspace=exp.workspace,
+        project=exp.project_name,
+        exp_id=exp.short_id
     ))
 
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))

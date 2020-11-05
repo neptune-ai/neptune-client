@@ -67,7 +67,8 @@ class TestClient(unittest.TestCase):
         self.assertIn("operations-0.log", os.listdir(".neptune/{}".format(exp._uuid)))
 
     @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_experiment",
-           new=lambda _, _id: Experiment(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94"))
+           new=lambda _, _id:
+           Experiment(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94", "workspace", "sandbox"))
     @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
            new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)])
     def test_resume(self):

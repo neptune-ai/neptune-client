@@ -27,7 +27,7 @@ from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, \
-    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentIdNotFound, ExperimentNotFound
+    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
@@ -109,7 +109,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id: str):
         try:
-            return self.leaderboard_client.api.getExperiment(experimentId=experiment_id).response().result
+            exp = self.leaderboard_client.api.getExperiment(experimentId=experiment_id).response().result
+            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName)
         except HTTPNotFound:
             raise ExperimentNotFound(experiment_id)
 
@@ -131,21 +132,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            experiment = self.leaderboard_client.api.createExperiment(**kwargs).response().result
-            return Experiment(uuid.UUID(experiment.id), experiment.shortId)
+            exp = self.leaderboard_client.api.createExperiment(**kwargs).response().result
+            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
-
-    @with_api_exceptions_handler
-    def get_experiment(self, experiment_id: str) -> Experiment:
-        params = {
-            'experimentId': experiment_id
-        }
-        try:
-            exp = self.leaderboard_client.api.getExperiment(**params).response().result
-            return Experiment(uuid.UUID(exp.id), exp.shortId)
-        except HTTPNotFound:
-            raise ExperimentIdNotFound(exp_id=experiment_id)
 
     # TODO: Return errors to OperationProcessor
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:

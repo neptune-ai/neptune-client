@@ -27,14 +27,14 @@ from neptune.alpha.constants import OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECT
 from neptune.alpha.exceptions import ProjectNotFound
 from neptune.alpha.internal.backends.api_model import Project
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
-from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.internal.operation import Operation
-from neptune.alpha.sync import ExperimentApiModel, get_qualified_name, \
+from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
+from neptune.alpha.sync import Experiment, get_qualified_name, \
     sync_selected_experiments, sync_all_experiments, synchronization_status, get_project
 
 
 def an_experiment():
-    return ExperimentApiModel(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj')
+    return Experiment(uuid.uuid4(), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj')
 
 
 def prepare_experiments(path):
@@ -43,21 +43,21 @@ def prepare_experiments(path):
     registered_experiments = (unsync_exp, sync_exp)
 
     for exp in registered_experiments:
-        exp_path = path / exp.uuid
+        exp_path = path / str(exp.uuid)
         exp_path.mkdir()
         queue = DiskQueue(str(exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
         queue.put({'version': 0, 'op': 'op-0'})
         queue.put({'version': 1, 'op': 'op-1'})
 
-    sync_offset_file = SyncOffsetFile(path / unsync_exp.uuid)
+    sync_offset_file = SyncOffsetFile(path / str(unsync_exp.uuid))
     sync_offset_file.write(0)
 
-    sync_offset_file = SyncOffsetFile(path / sync_exp.uuid)
+    sync_offset_file = SyncOffsetFile(path / str(sync_exp.uuid))
     sync_offset_file.write(1)
 
     def get_experiment_impl(experiment_id):
         for exp in registered_experiments:
-            if experiment_id in (exp.uuid, get_qualified_name(exp)):
+            if experiment_id in (str(exp.uuid), get_qualified_name(exp)):
                 return exp
 
     return unsync_exp, sync_exp, get_experiment_impl
@@ -136,8 +136,8 @@ def test_sync_all_experiments(tmp_path, mocker, capsys):
     # and
     # pylint: disable=no-member
     neptune.alpha.sync.backend.execute_operations.has_calls([
-        mocker.call(uuid.UUID(unsync_exp.uuid), ['op-1']),
-        mocker.call(uuid.UUID(registered_offline_experiment.uuid), ['op-1'])
+        mocker.call(unsync_exp.uuid, ['op-1']),
+        mocker.call(registered_offline_experiment.uuid, ['op-1'])
     ], any_order=True)
 
 
@@ -148,7 +148,7 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     registered_offline_experiment = an_experiment()
 
     def get_experiment_impl_(experiment_id: str):
-        if experiment_id in (registered_offline_experiment.uuid, get_qualified_name(registered_offline_experiment)):
+        if experiment_id in (str(registered_offline_experiment.uuid), get_qualified_name(registered_offline_experiment)):
             return registered_offline_experiment
         else:
             return get_experiment_impl(experiment_id)
@@ -178,7 +178,7 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     # and
     # pylint: disable=no-member
     neptune.alpha.sync.backend.execute_operations \
-        .assert_called_with(uuid.UUID(registered_offline_experiment.uuid), ['op-1'])
+        .assert_called_with(registered_offline_experiment.uuid, ['op-1'])
 
 
 def test_get_project_no_name_set(mocker):

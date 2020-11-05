@@ -18,8 +18,7 @@ import uuid
 from typing import Optional, List
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
-from neptune.alpha.internal.backends.api_model import Attribute, ExperimentApiModel
-from neptune.alpha.internal.backends.api_model import Project, Experiment, AttributeType
+from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
@@ -57,15 +56,10 @@ class NeptuneBackendMock(NeptuneBackend):
     def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
-        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1))
+        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1), 'workspace', 'sandbox')
 
-    def get_experiment(self, experiment_id: str) -> ExperimentApiModel:
-        return ExperimentApiModel(str(uuid.uuid4()), 'NPT-111', 'workspace', 'sandbox')
-
-    def get_experiment_with_attributes(self, experiment_id: str) -> Experiment:
-        new_experiment_uuid = uuid.uuid4()
-        self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
-        return Experiment(new_experiment_uuid, experiment_id[experiment_id.rfind('/') + 1:])
+    def get_experiment(self, experiment_id: str) -> Experiment:
+        return Experiment(uuid.uuid4(), 'SAN-123', 'workspace', 'sandbox')
 
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         for op in operations:
