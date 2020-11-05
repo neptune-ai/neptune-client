@@ -145,11 +145,11 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     # given
     unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
     offline_exp_uuid = prepare_offline_experiment(tmp_path)
-    registered_offline_experiment = an_experiment()
+    registered_offline_exp = an_experiment()
 
     def get_experiment_impl_(experiment_id: str):
-        if experiment_id in (str(registered_offline_experiment.uuid), get_qualified_name(registered_offline_experiment)):
-            return registered_offline_experiment
+        if experiment_id in (str(registered_offline_exp.uuid), get_qualified_name(registered_offline_exp)):
+            return registered_offline_exp
         else:
             return get_experiment_impl(experiment_id)
 
@@ -159,7 +159,7 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     mocker.patch.object(neptune.alpha.sync.backend, 'execute_operations')
     mocker.patch.object(neptune.alpha.sync.backend, 'get_project',
                         lambda _: Project(uuid.uuid4(), 'project', 'workspace'))
-    mocker.patch.object(neptune.alpha.sync, 'register_offline_experiment', lambda _: registered_offline_experiment)
+    mocker.patch.object(neptune.alpha.sync, 'register_offline_experiment', lambda _: registered_offline_exp)
     mocker.patch.object(Operation, 'from_dict', lambda x: x)
 
     # when
@@ -170,15 +170,15 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     assert captured.err == ''
     assert 'Synchronising {}'.format(get_qualified_name(sync_exp)) in captured.out
     assert 'Synchronization of experiment {} completed.'.format(get_qualified_name(sync_exp)) in captured.out
-    assert 'Synchronising {}'.format(get_qualified_name(registered_offline_experiment)) in captured.out
-    assert 'Synchronization of experiment {} completed.'.format(get_qualified_name(registered_offline_experiment)) \
+    assert 'Synchronising {}'.format(get_qualified_name(registered_offline_exp)) in captured.out
+    assert 'Synchronization of experiment {} completed.'.format(get_qualified_name(registered_offline_exp)) \
            in captured.out
     assert 'Synchronising {}'.format(get_qualified_name(unsync_exp)) not in captured.out
 
     # and
     # pylint: disable=no-member
     neptune.alpha.sync.backend.execute_operations \
-        .assert_called_with(registered_offline_experiment.uuid, ['op-1'])
+        .assert_called_with(registered_offline_exp.uuid, ['op-1'])
 
 
 def test_get_project_no_name_set(mocker):
