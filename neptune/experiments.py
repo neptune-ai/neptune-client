@@ -348,6 +348,11 @@ class Experiment(object):
         if not is_float(y):
             raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
 
+        # there is an issue that a Tensor can be casted to float but cannot be checked by math.isinf or math.isnan
+        y = float(y)
+        if x is not None:
+            x = float(x)
+
         if is_nan_or_inf(y):
             _logger.warning(
                 'Invalid metric value: %s for channel %s. '
@@ -411,6 +416,10 @@ class Experiment(object):
             Warning is printed to ``stdout``.
         """
         x, y = self._get_valid_x_y(x, y)
+
+        # there is an issue that a Tensor can be casted to float but cannot be checked by math.isinf or math.isnan
+        if x is not None:
+            x = float(x)
 
         if x is not None and is_nan_or_inf(x):
             x = None
@@ -532,6 +541,10 @@ class Experiment(object):
             Only images up to 15MB are supported. Larger files will not be logged to Neptune.
         """
         x, y = self._get_valid_x_y(x, y)
+
+        # there is an issue that a Tensor can be casted to float but cannot be checked by math.isinf or math.isnan
+        if x is not None:
+            x = float(x)
 
         if x is not None and is_nan_or_inf(x):
             x = None
