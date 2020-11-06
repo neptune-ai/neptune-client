@@ -8,5 +8,6 @@ pytest==4.6.5
 pytest-cov==2.6.1
 pytest-xdist==1.25.0
 tox==3.6.1
+pytest-timeout==1.4.2
 matplotlib
 pytest-mock==3.3.1
