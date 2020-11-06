@@ -5,7 +5,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest] #, macos-latest, windows-latest]
+        # Windows builds fail because of the file header check - not clear what causes this.
+        # There are no pylint-file-header issues about this, and Windows builds succeed in the old domain
+        os: [ubuntu-latest, macos-latest] #, windows-latest]
         python-version: [3.6, 3.7, 3.8]
     steps:
       - uses: actions/checkout@v2
