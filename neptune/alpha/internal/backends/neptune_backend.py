@@ -17,7 +17,7 @@ import abc
 import uuid
 from typing import List
 
-from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, ExperimentApiModel
+from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.types.value import Value
 
@@ -32,7 +32,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_experiment(self, experiment_id: str) -> ExperimentApiModel:
+    def get_experiment(self, experiment_id: str) -> Experiment:
         pass
 
     @abc.abstractmethod

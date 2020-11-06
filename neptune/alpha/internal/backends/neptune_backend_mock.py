@@ -18,8 +18,7 @@ import uuid
 from typing import Optional, List
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
-from neptune.alpha.internal.backends.api_model import Attribute as ApiAttribute, ExperimentApiModel
-from neptune.alpha.internal.backends.api_model import Project, Experiment, AttributeType
+from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
@@ -55,12 +54,12 @@ class NeptuneBackendMock(NeptuneBackend):
         return Project(uuid.uuid4(), "sandbox", "workspace")
 
     def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
-        new_uuid = uuid.uuid4()
-        self._experiments[new_uuid] = ExperimentStructure[Value]()
-        return Experiment(new_uuid, "SAN-{}".format(len(self._experiments) + 1), project_uuid)
+        new_experiment_uuid = uuid.uuid4()
+        self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
+        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1), 'workspace', 'sandbox')
 
-    def get_experiment(self, experiment_id: str) -> ExperimentApiModel:
-        return ExperimentApiModel(str(uuid.uuid4()), 'NPT-111', 'workspace', 'sandbox')
+    def get_experiment(self, experiment_id: str) -> Experiment:
+        return Experiment(uuid.uuid4(), 'SAN-123', 'workspace', 'sandbox')
 
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         for op in operations:
@@ -86,7 +85,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         return self._experiments[experiment_uuid].get(path)
 
-    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[ApiAttribute]:
+    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
         if experiment_uuid not in self._experiments:
             raise ExperimentUUIDNotFound(experiment_uuid)
         exp = self._experiments[experiment_uuid]
@@ -98,7 +97,7 @@ class NeptuneBackendMock(NeptuneBackend):
             if isinstance(value_or_dict, dict):
                 yield from self._generate_attributes(new_path, value_or_dict)
             else:
-                yield ApiAttribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
+                yield Attribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 

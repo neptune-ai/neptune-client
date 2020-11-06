@@ -29,20 +29,12 @@ class Project:
         self.workspace = workspace
 
 
-class Experiment:
-
-    def __init__(self, _uuid: uuid.UUID, _id: str, project_uuid: uuid.UUID):
-        self.uuid = _uuid
-        self.id = _id
-        self.project_uuid = project_uuid
-
-
 @dataclass
-class ExperimentApiModel:
-    uuid: str
-    shortId: str
-    organizationName: str
-    projectName: str
+class Experiment:
+    uuid: uuid.UUID
+    short_id: str
+    workspace: str
+    project_name: str
 
 
 class ClientConfig(object):

@@ -18,12 +18,15 @@
 
 import os
 import unittest
+import uuid
 
 from mock import patch
 
 from neptune.alpha import init, ANONYMOUS
+from neptune.alpha.attributes.atoms import String
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.alpha.exceptions import MetadataInconsistency
+from neptune.alpha.internal.backends.api_model import Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
 
@@ -62,3 +65,13 @@ class TestClient(unittest.TestCase):
         self.assertEqual(13, exp["some/variable"].get())
         self.assertIn(str(exp._uuid), os.listdir(".neptune"))
         self.assertIn("operations-0.log", os.listdir(".neptune/{}".format(exp._uuid)))
+
+    @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_experiment",
+           new=lambda _, _id:
+           Experiment(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94", "workspace", "sandbox"))
+    @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+           new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)])
+    def test_resume(self):
+        exp = init(flush_period=0.5, experiment="SAN-94")
+        self.assertEqual(exp._uuid, uuid.UUID('12345678-1234-5678-1234-567812345678'))
+        self.assertIsInstance(exp.get_structure()["test"], String)

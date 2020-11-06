@@ -46,6 +46,7 @@ __version__ = str(parsed_version)
 
 def init(
         project: Optional[str] = None,
+        experiment: Optional[str] = None,
         connection_mode: str = "async",
         capture_stdout: bool = True,
         capture_stderr: bool = True,
@@ -72,7 +73,10 @@ def init(
         raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
 
     project_obj = backend.get_project(project)
-    exp = backend.create_experiment(project_obj.uuid)
+    if experiment:
+        exp = backend.get_experiment(project + '/' + experiment)
+    else:
+        exp = backend.create_experiment(project_obj.uuid)
 
     if connection_mode == "async":
         experiment_path = "{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, exp.uuid)
@@ -109,9 +113,12 @@ def init(
 
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
         base_url=backend.get_display_address(),
-        workspace=project_obj.workspace,
-        project=project_obj.name,
-        exp_id=exp.id
+        workspace=exp.workspace,
+        project=exp.project_name,
+        exp_id=exp.short_id
     ))
 
-    return Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
+    _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
+    _experiment.sync()
+    _experiment.start()
+    return _experiment

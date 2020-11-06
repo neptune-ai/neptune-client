@@ -91,7 +91,7 @@ class DiskQueue(StorageQueue[T]):
         self._writer.flush()
 
     def is_overflowing(self) -> bool:
-        # Some heurisitc.
+        # Some heuristic.
         return self._write_file_idx > self._read_file_idx + 1 or (
             self._write_file_idx > self._read_file_idx and self._writer.tell() >= self._max_file_size / 2)
 

@@ -38,7 +38,7 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
 
     def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
         return {
-            'value': op.value
+            'valueMilliseconds': int(1000 * op.value.timestamp())
         }
 
     def visit_upload_file(self, _: UploadFile) -> dict:

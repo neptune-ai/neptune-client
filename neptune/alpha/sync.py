@@ -28,7 +28,7 @@ from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DIS
     OFFLINE_NAME_PREFIX
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import ProjectNotFound, NeptuneException
-from neptune.alpha.internal.backends.api_model import Project, ExperimentApiModel
+from neptune.alpha.internal.backends.api_model import Project, Experiment
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
@@ -52,7 +52,7 @@ def report_get_experiment_error(experiment_id: str, status_code: int, skipping: 
                .format(experiment_id, status_code, comment), file=sys.stderr)
 
 
-def get_experiment(experiment_id: str) -> Optional[ExperimentApiModel]:
+def get_experiment(experiment_id: str) -> Optional[Experiment]:
     try:
         return backend.get_experiment(experiment_id)
     except NeptuneException as e:
@@ -84,8 +84,8 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
         return None
 
 
-def get_qualified_name(experiment: ExperimentApiModel) -> str:
-    return "{}/{}/{}".format(experiment.organizationName, experiment.projectName, experiment.shortId)
+def get_qualified_name(experiment: Experiment) -> str:
+    return "{}/{}/{}".format(experiment.workspace, experiment.project_name, experiment.short_id)
 
 
 def is_valid_uuid(val: Any) -> bool:
@@ -131,7 +131,7 @@ def get_offline_experiments_ids(base_path: Path) -> List[str]:
     return result
 
 
-def partition_experiments(base_path: Path) -> Tuple[List[ExperimentApiModel], List[ExperimentApiModel]]:
+def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Experiment]]:
     synced_experiment_uuids = []
     unsynced_experiment_uuids = []
     for experiment_path in base_path.iterdir():
@@ -155,8 +155,8 @@ flag. Alternatively, you can set the environment variable
 '''.format(PROJECT_ENV_NAME)
 
 
-def list_experiments(path: Path, synced_experiments: Sequence[ExperimentApiModel],
-                     unsynced_experiments: Sequence[ExperimentApiModel], offline_experiments_ids: Sequence[str])\
+def list_experiments(path: Path, synced_experiments: Sequence[Experiment],
+                     unsynced_experiments: Sequence[Experiment], offline_experiments_ids: Sequence[str])\
                      -> None:
 
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
@@ -244,17 +244,16 @@ def sync_selected_registered_experiments(path: Path, qualified_experiment_names:
     for name in qualified_experiment_names:
         experiment = get_experiment(name)
         if experiment:
-            experiment_path = path / experiment.uuid
+            experiment_path = path / str(experiment.uuid)
             if experiment_path.exists():
                 sync_experiment(experiment_path, name)
             else:
                 click.echo("Warning: Experiment '{}' does not exist in location {}".format(name, path), file=sys.stderr)
 
 
-def register_offline_experiment(project: Project) -> Optional[ExperimentApiModel]:
+def register_offline_experiment(project: Project) -> Optional[Experiment]:
     try:
-        experiment = backend.create_experiment(project.uuid)
-        return ExperimentApiModel(str(experiment.uuid), experiment.id, project.workspace, project.name)
+        return backend.create_experiment(project.uuid)
     except Exception as e:
         click.echo('Exception occurred while trying to create an experiment '
                    'on the Neptune server. Please try again later',
@@ -268,13 +267,13 @@ def move_offline_experiment(base_path: Path, offline_uuid: str, server_uuid: str
 
 
 def register_offline_experiments(base_path: Path, project: Project,
-                                 offline_experiments_ids: Iterable[str]) -> List[ExperimentApiModel]:
+                                 offline_experiments_ids: Iterable[str]) -> List[Experiment]:
     result = []
     for experiment_uuid in offline_experiments_ids:
         if (base_path / OFFLINE_DIRECTORY / experiment_uuid).is_dir():
             experiment = register_offline_experiment(project)
             if experiment:
-                move_offline_experiment(base_path, experiment_uuid, experiment.uuid)
+                move_offline_experiment(base_path, experiment_uuid, str(experiment.uuid))
                 click.echo('Offline experiment {} registered as {}'
                            .format(experiment_uuid, get_qualified_name(experiment)))
                 result.append(experiment)
