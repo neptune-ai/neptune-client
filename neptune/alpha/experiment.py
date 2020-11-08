@@ -85,6 +85,9 @@ class Experiment(Handler):
             self._structure.set(parsed_path, attr)
             return attr
 
+    def ping(self):
+        self._backend.execute_operations(self._uuid, [])
+
     def get_attribute(self, path: str) -> Attribute:
         with self._lock:
             return self._structure.get(parse_path(path))
