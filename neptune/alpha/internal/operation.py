@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import abc
+from dataclasses import dataclass
 from datetime import datetime
 from typing import List, TypeVar, Generic, Optional, Set
 
@@ -30,10 +31,10 @@ def all_subclasses(cls):
         [s for c in cls.__subclasses__() for s in all_subclasses(c)])
 
 
+@dataclass
 class Operation:
 
-    def __init__(self, path: List[str]):
-        self.path = path
+    path: List[str]
 
     @abc.abstractmethod
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -54,15 +55,6 @@ class Operation:
             raise ValueError("Malformed operation {} - unknown type {}".format(data, data["type"]))
         return sub_classes[data["type"]].from_dict(data)
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.path == other.path
-        else:
-            return False
-
-    def __hash__(self):
-        return hash(self.path)
-
 
 class VersionedOperation:
 
@@ -81,12 +73,10 @@ class VersionedOperation:
     def from_dict(data: dict) -> 'VersionedOperation':
         return VersionedOperation(Operation.from_dict(data["op"]), data["version"])
 
-
+@dataclass
 class AssignFloat(Operation):
 
-    def __init__(self, path: List[str], value: float):
-        super().__init__(path)
-        self.value = value
+    value: float
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_float(self)
@@ -100,21 +90,11 @@ class AssignFloat(Operation):
     def from_dict(data: dict) -> 'AssignFloat':
         return AssignFloat(data["path"], data["value"])
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.value == other.value
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.value))
-
-
+@dataclass
 class AssignString(Operation):
 
-    def __init__(self, path: List[str], value: str):
-        super().__init__(path)
-        self.value = value
+    value: str
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_string(self)
@@ -128,21 +108,11 @@ class AssignString(Operation):
     def from_dict(data: dict) -> 'AssignString':
         return AssignString(data["path"], data["value"])
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.value == other.value
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.value))
-
-
+@dataclass
 class AssignDatetime(Operation):
 
-    def __init__(self, path: List[str], value: datetime):
-        super().__init__(path)
-        self.value = value
+    value: datetime
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_datetime(self)
@@ -156,21 +126,11 @@ class AssignDatetime(Operation):
     def from_dict(data: dict) -> 'AssignDatetime':
         return AssignDatetime(data["path"], datetime.fromtimestamp(data["value"] / 1000))
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.value == other.value
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.value))
-
-
+@dataclass
 class UploadFile(Operation):
 
-    def __init__(self, path: List[str], file_path: str):
-        super().__init__(path)
-        self.file_path = file_path
+    file_path: str
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_upload_file(self)
@@ -184,22 +144,13 @@ class UploadFile(Operation):
     def from_dict(data: dict) -> 'UploadFile':
         return UploadFile(data["path"], data["file_path"])
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.file_path == other.file_path
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.file_path))
-
-
+@dataclass
 class LogSeriesValue(Generic[T]):
 
-    def __init__(self, value: T, step: Optional[float], ts: float):
-        self.value = value
-        self.step = step
-        self.ts = ts
+    value: T
+    step: Optional[float]
+    ts: float
 
     def to_dict(self) -> dict:
         return {
@@ -212,23 +163,13 @@ class LogSeriesValue(Generic[T]):
     def from_dict(data: dict) -> 'LogSeriesValue[T]':
         return LogSeriesValue[T](data["value"], data.get("step", None), data["ts"])
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return self.value == other.value and self.step == other.step and self.ts == other.ts
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((self.value, self.step, self.ts))
-
-
+@dataclass
 class LogFloats(Operation):
 
     ValueType = LogSeriesValue[float]
 
-    def __init__(self, path: List[str], values: List[ValueType]):
-        super().__init__(path)
-        self.values = values
+    values: List[ValueType]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_log_floats(self)
@@ -245,23 +186,13 @@ class LogFloats(Operation):
             [LogFloats.ValueType.from_dict(value) for value in data["values"]]
         )
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.values == other.values
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.values))
-
-
+@dataclass
 class LogStrings(Operation):
 
     ValueType = LogSeriesValue[str]
 
-    def __init__(self, path: List[str], values: List[ValueType]):
-        super().__init__(path)
-        self.values = values
+    values: List[ValueType]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_log_strings(self)
@@ -278,23 +209,13 @@ class LogStrings(Operation):
             [LogStrings.ValueType.from_dict(value) for value in data["values"]]
         )
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.values == other.values
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.values))
-
-
+@dataclass
 class LogImages(Operation):
 
     ValueType = LogSeriesValue[Optional[str]]
 
-    def __init__(self, path: List[str], values: List[ValueType]):
-        super().__init__(path)
-        self.values = values
+    values: List[ValueType]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_log_images(self)
@@ -311,16 +232,8 @@ class LogImages(Operation):
             [LogImages.ValueType.from_dict(value) for value in data["values"]]
         )
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.values == other.values
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.values))
-
-
+@dataclass
 class ClearFloatLog(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -331,6 +244,7 @@ class ClearFloatLog(Operation):
         return ClearFloatLog(data["path"])
 
 
+@dataclass
 class ClearStringLog(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -341,6 +255,7 @@ class ClearStringLog(Operation):
         return ClearStringLog(data["path"])
 
 
+@dataclass
 class ClearImageLog(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -351,14 +266,12 @@ class ClearImageLog(Operation):
         return ClearImageLog(data["path"])
 
 
+@dataclass
 class ConfigFloatSeries(Operation):
 
-    # pylint: disable=redefined-builtin
-    def __init__(self, path: List[str], min: Optional[float], max: Optional[float], unit: Optional[str]):
-        super().__init__(path)
-        self.min = min
-        self.max = max
-        self.unit = unit
+    min: Optional[float]
+    max: Optional[float]
+    unit: Optional[str]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_config_float_series(self)
@@ -374,21 +287,11 @@ class ConfigFloatSeries(Operation):
     def from_dict(data: dict) -> 'ConfigFloatSeries':
         return ConfigFloatSeries(data["path"], data["min"], data["max"], data["unit"])
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.min == other.min and self.max == other.max and self.unit == other.unit
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.min, self.max, self.unit))
-
-
+@dataclass
 class AddStrings(Operation):
 
-    def __init__(self, path: List[str], values: Set[str]):
-        super().__init__(path)
-        self.values = values
+    values: Set[str]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_add_strings(self)
@@ -402,21 +305,11 @@ class AddStrings(Operation):
     def from_dict(data: dict) -> 'AddStrings':
         return AddStrings(data["path"], set(data["values"]))
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.values == other.values
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.values))
-
-
+@dataclass
 class RemoveStrings(Operation):
 
-    def __init__(self, path: List[str], values: Set[str]):
-        super().__init__(path)
-        self.values = values
+    values: Set[str]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_remove_strings(self)
@@ -430,16 +323,8 @@ class RemoveStrings(Operation):
     def from_dict(data: dict) -> 'RemoveStrings':
         return RemoveStrings(data["path"], set(data["values"]))
 
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and self.values == other.values
-        else:
-            return False
 
-    def __hash__(self):
-        return hash((super().__hash__(), self.values))
-
-
+@dataclass
 class ClearStringSet(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -450,6 +335,7 @@ class ClearStringSet(Operation):
         return ClearStringSet(data["path"])
 
 
+@dataclass
 class DeleteAttribute(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
