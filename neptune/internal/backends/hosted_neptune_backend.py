@@ -984,17 +984,17 @@ class HostedNeptuneBackend(Backend):
                 "ERROR: Minimal supported client version is {} (installed: {}). Please upgrade neptune-client".format(
                     self._client_config.min_compatible_version, self.client_lib_version),
                 sys.stderr)
-            raise UnsupportedClientVersion(self.client_lib_version,
-                                           self._client_config.min_compatible_version,
-                                           self._client_config.max_compatible_version)
+            # raise UnsupportedClientVersion(self.client_lib_version,
+            #                               self._client_config.min_compatible_version,
+            #                               self._client_config.max_compatible_version)
         if self._client_config.max_compatible_version and self._client_config.max_compatible_version < parsed_version:
             click.echo(
                 "ERROR: Maximal supported client version is {} (installed: {}). Please downgrade neptune-client".format(
                     self._client_config.max_compatible_version, self.client_lib_version),
                 sys.stderr)
-            raise UnsupportedClientVersion(self.client_lib_version,
-                                           self._client_config.min_compatible_version,
-                                           self._client_config.max_compatible_version)
+            #raise UnsupportedClientVersion(self.client_lib_version,
+            #                               self._client_config.min_compatible_version,
+            #                               self._client_config.max_compatible_version)
         if self._client_config.min_recommended_version and self._client_config.min_recommended_version > parsed_version:
             click.echo(
                 "WARNING: There is a new version of neptune-client {} (installed: {}).".format(
