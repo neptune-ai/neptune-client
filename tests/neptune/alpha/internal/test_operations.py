@@ -57,6 +57,7 @@ class TestOperations(unittest.TestCase):
             ClearFloatLog(TestOperations._random_path()),
             ClearStringLog(TestOperations._random_path()),
             ClearImageLog(TestOperations._random_path()),
+            ConfigFloatSeries(TestOperations._random_path(), min=11, max=600, unit="kg/h"),
             AddStrings(TestOperations._random_path(), {"asef", "asrge4"}),
             RemoveStrings(TestOperations._random_path(), {"a\ne", "aeg\t4ger", "agrg"}),
             ClearStringSet(TestOperations._random_path()),

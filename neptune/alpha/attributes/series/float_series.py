@@ -20,7 +20,7 @@ from neptune.alpha.types.series.float_series import FloatSeries as FloatSeriesVa
 
 from neptune.alpha.internal.utils import verify_type
 
-from neptune.alpha.internal.operation import ClearFloatLog, LogFloats, Operation
+from neptune.alpha.internal.operation import ClearFloatLog, LogFloats, Operation, ConfigFloatSeries
 from neptune.alpha.attributes.series.series import Series
 
 Val = FloatSeriesVal
@@ -28,6 +28,18 @@ Data = Union[float, int]
 
 
 class FloatSeries(Series[Val, Data]):
+
+    # pylint: disable=redefined-builtin
+    def configure(self,
+                  min: Optional[Union[float, int]] = None,
+                  max: Optional[Union[float, int]] = None,
+                  unit: Optional[str] = None,
+                  wait: bool = False) -> None:
+        verify_type("min", min, (float, int))
+        verify_type("max", max, (float, int))
+        verify_type("unit", unit, str)
+        with self._experiment.lock():
+            self._enqueue_operation(ConfigFloatSeries(self._path, min, max, unit), wait)
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
         values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
@@ -38,6 +50,9 @@ class FloatSeries(Series[Val, Data]):
 
     def _get_clear_operation(self) -> Operation:
         return ClearFloatLog(self._path)
+
+    def _get_config_operation_from_value(self, value: Val) -> Optional[Operation]:
+        return ConfigFloatSeries(self._path, value.min, value.max, value.unit)
 
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)

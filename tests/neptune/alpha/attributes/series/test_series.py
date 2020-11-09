@@ -19,8 +19,9 @@ from typing import Optional
 
 from mock import MagicMock, call, patch
 
-from neptune.alpha.internal.operation import ClearFloatLog, LogFloats, Operation
+from neptune.alpha.internal.operation import ClearFloatLog, LogFloats, Operation, ConfigFloatSeries, ClearStringLog
 from neptune.alpha.attributes.series.float_series import FloatSeries, FloatSeriesVal
+from neptune.alpha.attributes.series.string_series import StringSeries, StringSeriesVal
 from neptune.alpha.attributes.series.series import Series
 
 from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
@@ -30,15 +31,16 @@ from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 class TestSeries(TestAttributeBase):
 
     def test_assign(self):
-        value = FloatSeriesVal([17, 3.6])
+        value = FloatSeriesVal([17, 3.6], min=0, max=100, unit="%")
         expected = [LogFloats.ValueType(17, None, self._now()), LogFloats.ValueType(3.6, None, self._now())]
 
         backend, processor = MagicMock(), MagicMock()
         exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
         var = FloatSeries(exp, path)
         var.assign(value, wait=wait)
-        self.assertEqual(2, processor.enqueue_operation.call_count)
+        self.assertEqual(3, processor.enqueue_operation.call_count)
         processor.enqueue_operation.assert_has_calls([
+            call(ConfigFloatSeries(path, min=0, max=100, unit="%"), False),
             call(ClearFloatLog(path), False),
             call(LogFloats(path, expected), wait)
         ])
@@ -46,9 +48,9 @@ class TestSeries(TestAttributeBase):
     def test_assign_empty(self):
         backend, processor = MagicMock(), MagicMock()
         exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
-        var = FloatSeries(exp, path)
-        var.assign(FloatSeriesVal([]), wait=wait)
-        processor.enqueue_operation.assert_called_once_with(ClearFloatLog(path), wait)
+        var = StringSeries(exp, path)
+        var.assign(StringSeriesVal([]), wait=wait)
+        processor.enqueue_operation.assert_called_once_with(ClearStringLog(path), wait)
 
     def test_log(self):
         value_and_expected = [

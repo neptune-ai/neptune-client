@@ -19,7 +19,7 @@ from typing import List, TypeVar, Callable
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, UploadFile, LogFloats, LogStrings, \
     LogImages, ClearFloatLog, ClearStringLog, ClearImageLog, AddStrings, RemoveStrings, DeleteAttribute, \
-    ClearStringSet, AssignDatetime
+    ClearStringSet, AssignDatetime, ConfigFloatSeries
 from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.internal.utils.paths import path_to_str
 
@@ -71,10 +71,11 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._type = None
         self._delete_ops = []
         self._modify_ops = []
+        self._config_ops = []
         self._errors = []
 
     def get_operations(self) -> List[Operation]:
-        return self._delete_ops + self._modify_ops
+        return self._delete_ops + self._modify_ops + self._config_ops
 
     def get_errors(self) -> List[MetadataInconsistency]:
         return self._errors
@@ -96,6 +97,21 @@ class _OperationsAccumulator(OperationVisitor[None]):
         else:
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
+
+    def _process_config_op(self, expected_type: _DataType, op: Operation) -> None:
+
+        if self._type and self._type != expected_type:
+            # This case should never happen since inconsistencies on data types are verified on user api.
+            # So such operations should not appear in the queue without delete operation between them.
+            # Still we want to support this case to avoid some unclear dependencies and assumptions.
+            self._errors.append(MetadataInconsistency(
+                "Cannot perform {} operation on {}: Attribute is not a {}".format(
+                    op.__class__.__name__,
+                    path_to_str(self._path),
+                    expected_type.value)))
+        else:
+            self._type = expected_type
+            self._config_ops = [op]
 
     def visit_assign_float(self, op: AssignFloat) -> None:
         self._process_modify_op(_DataType.FLOAT, op, self._assign_modifier())
@@ -151,11 +167,15 @@ class _OperationsAccumulator(OperationVisitor[None]):
     def visit_remove_strings(self, op: RemoveStrings) -> None:
         self._process_modify_op(_DataType.STRING_SET, op, self._remove_modifier())
 
+    def visit_config_float_series(self, op: ConfigFloatSeries) -> None:
+        self._process_config_op(_DataType.FLOAT_SERIES, op)
+
     def visit_delete_attribute(self, op: DeleteAttribute) -> None:
         if self._type:
             if self._delete_ops:
                 # Keep existing delete operation and simply clear all modification operations after it
                 self._modify_ops = []
+                self._config_ops = []
                 self._type = None
             else:
                 # This case is tricky. There was no delete operation, but some modifications was performed.
@@ -163,6 +183,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # So we need to send a single modification before delete to be sure a delete op is valid.
                 self._delete_ops = [self._modify_ops[0], op]
                 self._modify_ops = []
+                self._config_ops = []
                 self._type = None
         else:
             if self._delete_ops:

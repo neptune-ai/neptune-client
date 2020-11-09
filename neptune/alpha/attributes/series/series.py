@@ -54,6 +54,11 @@ class Series(Attribute, Generic[Val, Data]):
     def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
         pass
 
+    # pylint: disable=unused-argument
+    # pylint: disable=assignment-from-none
+    def _get_config_operation_from_value(self, value: Val) -> Optional[Operation]:
+        return None
+
     @abc.abstractmethod
     def _get_clear_operation(self) -> Operation:
         pass
@@ -66,7 +71,10 @@ class Series(Attribute, Generic[Val, Data]):
 
     def _assign_impl(self, value: Val, wait: bool = False) -> None:
         clear_op = self._get_clear_operation()
+        config_op = self._get_config_operation_from_value(value)
         with self._experiment.lock():
+            if config_op:
+                self._enqueue_operation(config_op, wait=False)
             if not value.values:
                 self._enqueue_operation(clear_op, wait=wait)
             else:

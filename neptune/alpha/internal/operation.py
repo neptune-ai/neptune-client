@@ -351,6 +351,39 @@ class ClearImageLog(Operation):
         return ClearImageLog(data["path"])
 
 
+class ConfigFloatSeries(Operation):
+
+    # pylint: disable=redefined-builtin
+    def __init__(self, path: List[str], min: Optional[float], max: Optional[float], unit: Optional[str]):
+        super().__init__(path)
+        self.min = min
+        self.max = max
+        self.unit = unit
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_config_float_series(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["min"] = self.min
+        ret["max"] = self.max
+        ret["unit"] = self.unit
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ConfigFloatSeries':
+        return ConfigFloatSeries(data["path"], data["min"], data["max"], data["unit"])
+
+    def __eq__(self, other):
+        if type(other) is type(self):
+            return super().__eq__(other) and self.min == other.min and self.max == other.max and self.unit == other.unit
+        else:
+            return False
+
+    def __hash__(self):
+        return hash((super().__hash__(), self.min, self.max, self.unit))
+
+
 class AddStrings(Operation):
 
     def __init__(self, path: List[str], values: Set[str]):

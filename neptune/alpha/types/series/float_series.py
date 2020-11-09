@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import TypeVar, Iterable, TYPE_CHECKING
+from typing import TypeVar, Iterable, TYPE_CHECKING, Optional, Union
 
 from neptune.alpha.types.series.series import Series
 
@@ -26,8 +26,16 @@ Ret = TypeVar('Ret')
 
 class FloatSeries(Series):
 
-    def __init__(self, values: Iterable[float]):
+    # pylint: disable=redefined-builtin
+    def __init__(self,
+                 values: Iterable[float],
+                 min: Optional[Union[float, int]] = None,
+                 max: Optional[Union[float, int]] = None,
+                 unit: Optional[str] = None):
         self._values = list(values)
+        self._min = min
+        self._max = max
+        self._unit = unit
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_float_series(self)
@@ -35,6 +43,18 @@ class FloatSeries(Series):
     @property
     def values(self):
         return self._values
+
+    @property
+    def min(self):
+        return self._min
+
+    @property
+    def max(self):
+        return self._max
+
+    @property
+    def unit(self):
+        return self._unit
 
     def __str__(self):
         return "FloatSeries({})".format(str(self.values))
