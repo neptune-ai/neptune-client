@@ -104,9 +104,11 @@ def init(
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline", "debug"]')
 
-    background_jobs = [PingBackgroundJob()]
+    background_jobs = []
     if capture_hardware_metrics:
         background_jobs.append(HardwareMetricReportingJob())
+    else:
+        background_jobs.append(PingBackgroundJob())
     if capture_stdout:
         background_jobs.append(StdoutCaptureBackgroundJob())
     if capture_stderr:
