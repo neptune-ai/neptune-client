@@ -21,7 +21,8 @@ import time
 from itertools import groupby
 from typing import TYPE_CHECKING
 
-from neptune.internal.hardware.metrics.metrics_container import MetricsContainer
+from neptune.alpha.types.series import FloatSeries
+
 from neptune.internal.hardware.metrics.reports.metric_reporter import MetricReporter
 from neptune.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
 from neptune.internal.hardware.metrics.metrics_factory import MetricsFactory
@@ -62,11 +63,15 @@ class HardwareMetricReportingJob(BackgroundJob):
         metrics_container = metrics_factory.create_metrics_container()
         metric_reporter = MetricReporterFactory(time.time()).create(metrics=metrics_container.metrics())
 
+        for metric in metrics_container.metrics():
+            for gauge in metric.gauges:
+                experiment.define(self.get_attribute_name(metric.resource_type, gauge.name()),
+                                  FloatSeries([], min=metric.min_value, max=metric.max_value, unit=metric.unit))
+
         self._thread = self.ReportingThread(
             self._period,
             experiment,
-            metric_reporter,
-            metrics_container)
+            metric_reporter)
         self._thread.start()
         self._started = True
 
@@ -78,27 +83,30 @@ class HardwareMetricReportingJob(BackgroundJob):
     def join(self):
         self._thread.join()
 
+    @staticmethod
+    def get_attribute_name(resource_type, gauge_name) -> str:
+        return "monitoring/hardware/{}/{}".format(resource_type, gauge_name)
+
     class ReportingThread(Daemon):
 
         def __init__(
                 self,
                 period: float,
                 experiment: 'Experiment',
-                metric_reporter: MetricReporter,
-                metrics_container: MetricsContainer):
+                metric_reporter: MetricReporter):
             super().__init__(sleep_time=period)
             self._experiment = experiment
             self._metric_reporter = metric_reporter
-            self._metrics_container = metrics_container
 
         def work(self) -> None:
-            prefix = "monitoring/hardware"
             metric_reports = self._metric_reporter.report(time.time())
             for report in metric_reports:
                 for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name):
                     # TODO: Avoid loop
                     for metric_value in metric_values:
-                        self._experiment["{}/{}/{}".format(prefix, report.metric.resource_type, gauge_name)].log(
+                        attr_name = HardwareMetricReportingJob.get_attribute_name(
+                            report.metric.resource_type, gauge_name)
+                        self._experiment[attr_name].log(
                             value=metric_value.value,
                             step=int(metric_value.running_time * 1000.0),
                             timestamp=metric_value.timestamp

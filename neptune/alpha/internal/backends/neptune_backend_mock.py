@@ -26,7 +26,7 @@ from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     LogStrings, LogFloats, LogImages, \
     ClearFloatLog, ClearStringLog, ClearStringSet, ClearImageLog, \
     RemoveStrings, AddStrings, \
-    UploadFile, AssignDatetime
+    UploadFile, AssignDatetime, ConfigFloatSeries
 from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.file import File
@@ -157,7 +157,10 @@ class NeptuneBackendMock(NeptuneBackend):
                 return FloatSeries(raw_values)
             if not isinstance(self._current_value, FloatSeries):
                 raise self._create_type_error("log", FloatSeries.__name__)
-            return FloatSeries(self._current_value.values + raw_values)
+            return FloatSeries(self._current_value.values + raw_values,
+                               min=self._current_value.min,
+                               max=self._current_value.max,
+                               unit=self._current_value.unit)
 
         def visit_log_strings(self, op: LogStrings) -> Optional[Value]:
             raw_values = [x.value for x in op.values]
@@ -181,7 +184,10 @@ class NeptuneBackendMock(NeptuneBackend):
                 return FloatSeries([])
             if not isinstance(self._current_value, FloatSeries):
                 raise self._create_type_error("clear", FloatSeries.__name__)
-            return FloatSeries([])
+            return FloatSeries([],
+                               min=self._current_value.min,
+                               max=self._current_value.max,
+                               unit=self._current_value.unit)
 
         def visit_clear_string_log(self, op: ClearStringLog) -> Optional[Value]:
             # pylint: disable=unused-argument
@@ -198,6 +204,13 @@ class NeptuneBackendMock(NeptuneBackend):
             if not isinstance(self._current_value, ImageSeries):
                 raise self._create_type_error("clear", ImageSeries.__name__)
             return ImageSeries([])
+
+        def visit_config_float_series(self, op: ConfigFloatSeries) -> Optional[Value]:
+            if self._current_value is None:
+                return FloatSeries([], min=op.min, max=op.max, unit=op.unit)
+            if not isinstance(self._current_value, FloatSeries):
+                raise self._create_type_error("log", FloatSeries.__name__)
+            return FloatSeries(self._current_value.values, min=op.min, max=op.max, unit=op.unit)
 
         def visit_add_strings(self, op: AddStrings) -> Optional[Value]:
             if self._current_value is None:

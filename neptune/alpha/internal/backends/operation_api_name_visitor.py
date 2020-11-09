@@ -17,7 +17,7 @@
 from neptune.alpha.exceptions import InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile, AssignDatetime
+    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries
 from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
 
 
@@ -55,6 +55,9 @@ class OperationApiNameVisitor(OperationVisitor[str]):
 
     def visit_clear_image_log(self, _: ClearImageLog) -> str:
         return "clearImageSeries"
+
+    def visit_config_float_series(self, _: ConfigFloatSeries) -> str:
+        return "configFloatSeries"
 
     def visit_add_strings(self, _: AddStrings) -> str:
         return "insertStrings"

@@ -19,7 +19,7 @@
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.alpha.internal.operation import AssignFloat, DeleteAttribute, AssignString, LogFloats, LogStrings, \
-    LogImages, ClearFloatLog, ClearImageLog, AddStrings, RemoveStrings, ClearStringSet
+    LogImages, ClearFloatLog, ClearImageLog, AddStrings, RemoveStrings, ClearStringSet, ConfigFloatSeries
 
 from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
@@ -118,6 +118,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         # when
         processor.process([
             LogFloats(["a"], [FLog(1, 2, 3)]),
+            ConfigFloatSeries(["a"], min=7, max=70, unit="%"),
             DeleteAttribute(["a"]),
             LogStrings(["a"], [SLog("111", 3, 4)]),
 
@@ -145,6 +146,11 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
             AssignString(["h"], "44"),
             LogFloats(["h"], [FLog(10, 20, 30), FLog(100, 200, 300)]),
+
+            LogFloats(["i"], [FLog(1, 2, 3)]),
+            ConfigFloatSeries(["i"], min=7, max=70, unit="%"),
+            ClearFloatLog(["i"]),
+            LogFloats(["i"], [FLog(10, 20, 30), FLog(100, 200, 300)]),
         ])
 
         # then
@@ -169,6 +175,10 @@ class TestOperationsPreprocessor(TestAttributeBase):
             ClearImageLog(["g"]),
 
             AssignString(["h"], "44"),
+
+            ClearFloatLog(["i"]),
+            LogFloats(["i"], [FLog(10, 20, 30), FLog(100, 200, 300)]),
+            ConfigFloatSeries(["i"], min=7, max=70, unit="%"),
         ])
         self.assertEqual(processor.get_errors(), [
             MetadataInconsistency("Cannot perform LogFloats operation on h: Attribute is not a Float Series")
