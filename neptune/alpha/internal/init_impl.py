@@ -39,6 +39,7 @@ from neptune.alpha.internal.operation_processors.sync_operation_processor import
 from neptune.alpha.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.alpha.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, \
     StderrCaptureBackgroundJob
+from neptune.alpha.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.version import version as parsed_version
 from neptune.alpha.experiment import Experiment
@@ -120,6 +121,8 @@ def init(
     background_jobs = []
     if capture_hardware_metrics:
         background_jobs.append(HardwareMetricReportingJob())
+    else:
+        background_jobs.append(PingBackgroundJob())
     if capture_stdout:
         background_jobs.append(StdoutCaptureBackgroundJob())
     if capture_stderr:
