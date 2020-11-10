@@ -21,18 +21,18 @@ import mock
 from mock import MagicMock, patch
 
 from neptune.alpha.exceptions import FileUploadError
-from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
+from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes, \
+    _get_content_disposition_filename
 from neptune.internal.storage.storage_utils import UploadEntry
 from neptune.utils import IS_WINDOWS
 
 
-@patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
-@patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
 class TestHostedFileOperations(unittest.TestCase):
     # pylint:disable=protected-access
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    def test_single_file(self, upload_loop, _):
+    @patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
+    def test_single_file(self, upload_loop):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
@@ -50,7 +50,7 @@ class TestHostedFileOperations(unittest.TestCase):
         upload_loop.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
             url="ui.neptune.ai/uploadPath",
-            data=mock.ANY,
+            file_chunk_stream=mock.ANY,
             query_params={
                 "experimentIdentifier": str(exp_uuid),
                 "resource": "attributes",
@@ -58,8 +58,9 @@ class TestHostedFileOperations(unittest.TestCase):
             }
         )
 
+    @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    def test_multiple_files(self, _, raw_upload):
+    def test_multiple_files(self, raw_upload):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
@@ -83,15 +84,15 @@ class TestHostedFileOperations(unittest.TestCase):
             http_client=swagger_mock.swagger_spec.http_client,
             url="ui.neptune.ai/uploadTarStream",
             data=mock.ANY,
-            headers=dict(),
             query_params={
                 "experimentIdentifier": str(exp_uuid),
                 "resource": "attributes",
             }
         )
 
+    @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    def test_missing_files_or_directory(self, _, raw_upload):
+    def test_missing_files_or_directory(self, raw_upload):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
@@ -123,12 +124,22 @@ class TestHostedFileOperations(unittest.TestCase):
             http_client=swagger_mock.swagger_spec.http_client,
             url="ui.neptune.ai/uploadTarStream",
             data=mock.ANY,
-            headers=dict(),
             query_params={
                 "experimentIdentifier": str(exp_uuid),
                 "resource": "attributes",
             }
         )
+
+    def test_get_content_disposition_filename(self):
+        # given
+        response_mock = MagicMock()
+        response_mock.headers = {'Content-Disposition': 'attachment; filename=sample.file'}
+
+        # when
+        filename = _get_content_disposition_filename(response_mock)
+
+        # then
+        self.assertEqual(filename, "sample.file")
 
     @staticmethod
     def _get_swagger_mock():

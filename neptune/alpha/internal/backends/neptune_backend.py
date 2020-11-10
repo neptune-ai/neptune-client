@@ -15,7 +15,7 @@
 #
 import abc
 import uuid
-from typing import List
+from typing import List, Optional
 
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute
 from neptune.alpha.internal.operation import Operation
@@ -49,4 +49,8 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
+        pass
+
+    @abc.abstractmethod
+    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], file_path: Optional[str] = None):
         pass

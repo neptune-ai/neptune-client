@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import os
 import platform
 import uuid
@@ -26,10 +25,10 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, FileUploadError, \
+from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, \
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
-from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attributes
+from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
@@ -42,7 +41,6 @@ from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.internal.utils.paths import path_to_str
 from neptune.alpha.types.value import Value
 from neptune.alpha.version import version as neptune_client_version
-from neptune.internal.storage.storage_utils import UploadEntry
 from neptune.oauth import NeptuneAuthenticator
 
 
@@ -152,8 +150,16 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         if other_operations:
             errors.extend(self._execute_operations(experiment_uuid, other_operations))
-        if upload_operations:
-            errors.extend(self._upload_files(experiment_uuid, upload_operations))
+
+        for upload_file in upload_operations:
+            error = upload_file_attribute(
+                swagger_client=self.leaderboard_client,
+                experiment_uuid=experiment_uuid,
+                attribute=path_to_str(upload_file.path),
+                file_path=upload_file.file_path)
+            if error is not None:
+                print(error)
+                errors.append(error)
 
         return errors
 
@@ -174,20 +180,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
-    # Do not use @with_api_exceptions_handler. It should be used internally.
-    def _upload_files(self, experiment_uuid: uuid.UUID, operations: List[UploadFile]) -> List[FileUploadError]:
-        def get_destination(op: UploadFile) -> str:
-            try:
-                ext = op.file_path[op.file_path.rindex("."):]
-            except ValueError:
-                ext = ""
-            return '/'.join(op.path) + ext
-
-        upload_entries = [UploadEntry(op.file_path, get_destination(op)) for op in operations]
-        return upload_file_attributes(experiment_uuid=experiment_uuid,
-                                      upload_entries=upload_entries,
-                                      swagger_client=self.leaderboard_client)
-
     @with_api_exceptions_handler
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         pass
@@ -198,10 +190,17 @@ class HostedNeptuneBackend(NeptuneBackend):
             'experimentId': str(experiment_uuid),
         }
         try:
-            experiment = self.leaderboard_client.api.getExperimentWithAttributes(**params).response().result
+            experiment = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
             return [Attribute(attr.name, AttributeType(attr.type)) for attr in experiment.attributes]
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
+
+    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], file_path: Optional[str] = None):
+        download_file_attribute(
+            swagger_client=self.leaderboard_client,
+            experiment_uuid=experiment_uuid,
+            attribute=path_to_str(path),
+            file_path=file_path)
 
     @with_api_exceptions_handler
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:

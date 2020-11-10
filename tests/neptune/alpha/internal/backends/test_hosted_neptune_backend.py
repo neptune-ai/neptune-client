@@ -17,10 +17,9 @@ import socket
 import unittest
 import uuid
 
+from unittest.mock import call
 from mock import MagicMock, patch
 from packaging.version import Version
-
-from neptune.internal.storage.storage_utils import UploadEntry
 
 from neptune.alpha.exceptions import CannotResolveHostname, UnsupportedClientVersion, FileUploadError, \
     MetadataInconsistency
@@ -42,7 +41,7 @@ credentials = Credentials(API_TOKEN)
 class TestHostedNeptuneBackend(unittest.TestCase):
     # pylint:disable=protected-access
 
-    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attributes')
+    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attribute')
     def test_execute_operations(self, upload_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -53,7 +52,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         response_error.errorDescription = "error1"
         swagger_client.api.executeOperations().response().result = [response_error]
         swagger_client.api.executeOperations.reset_mock()
-        upload_mock.return_value = [FileUploadError("file1", "error2")]
+        upload_mock.return_value = FileUploadError("file1", "error2")
 
         # when
         result = backend.execute_operations(
@@ -94,18 +93,24 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             }
         )
 
-        upload_mock.assert_called_once_with(
-            experiment_uuid=exp_uuid,
-            upload_entries=[
-                UploadEntry("path_to_file", "some/files/some_file"),
-                UploadEntry("other/file/path.txt", "some/other/file.txt.txt"),
-            ],
-            swagger_client=backend.leaderboard_client
-        )
+        upload_mock.assert_has_calls([
+            call(swagger_client=backend.leaderboard_client,
+                 experiment_uuid=exp_uuid,
+                 attribute="some/other/file.txt",
+                 file_path="other/file/path.txt"),
+            call(swagger_client=backend.leaderboard_client,
+                 experiment_uuid=exp_uuid,
+                 attribute="some/files/some_file",
+                 file_path="path_to_file")
+        ], any_order=True)
 
-        self.assertEqual([MetadataInconsistency("error1"), FileUploadError("file1", "error2")], result)
+        self.assertEqual([
+            MetadataInconsistency("error1"),
+            FileUploadError("file1", "error2"),
+            FileUploadError("file1", "error2")
+        ], result)
 
-    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attributes')
+    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attribute')
     def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
@@ -131,15 +136,21 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             ]
         )
 
-        upload_mock.assert_called_once_with(
-            experiment_uuid=exp_uuid,
-            upload_entries=[
-                UploadEntry("/path/to/file", "some/path/1/var"),
-                UploadEntry("/some.file/with.dots.txt", "some/path/2/var.txt"),
-                UploadEntry("/path/to/some_image.jpeg", "some/path/3/var.jpeg"),
-            ],
-            swagger_client=backend.leaderboard_client
-        )
+        upload_mock.assert_has_calls([
+            call(swagger_client=backend.leaderboard_client,
+                 experiment_uuid=exp_uuid,
+                 attribute="some/path/1/var",
+                 file_path="/path/to/file"),
+            call(swagger_client=backend.leaderboard_client,
+                 experiment_uuid=exp_uuid,
+                 attribute="some/path/2/var",
+                 file_path="/some.file/with.dots.txt"),
+            call(
+                swagger_client=backend.leaderboard_client,
+                experiment_uuid=exp_uuid,
+                attribute="some/path/3/var",
+                file_path="/path/to/some_image.jpeg")
+        ], any_order=True)
 
     @patch('neptune.alpha.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_ok(self, swagger_client_factory):
