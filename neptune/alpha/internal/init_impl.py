@@ -17,9 +17,12 @@
 import os
 
 from pathlib import Path
+from platform import node as get_hostname
 from typing import Optional
 
 import click
+
+from neptune.alpha.internal.utils import verify_type
 
 from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
@@ -48,10 +51,21 @@ def init(
         project: Optional[str] = None,
         experiment: Optional[str] = None,
         connection_mode: str = "async",
+        name: str = "Untitled",
+        description: str = "",
         capture_stdout: bool = True,
         capture_stderr: bool = True,
         capture_hardware_metrics: bool = True,
         flush_period: float = 5) -> Experiment:
+    verify_type("project", project, (str, type(None)))
+    verify_type("experiment", experiment, (str, type(None)))
+    verify_type("connection_mode", connection_mode, str)
+    verify_type("name", name, str)
+    verify_type("description", description, str)
+    verify_type("capture_stdout", capture_stdout, bool)
+    verify_type("capture_stderr", capture_stderr, bool)
+    verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
+    verify_type("flush_period", flush_period, (int, float))
 
     if not project:
         project = os.getenv(PROJECT_ENV_NAME)
@@ -119,6 +133,9 @@ def init(
     ))
 
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
-    _experiment.sync()
+    _experiment["sys/name"] = name
+    _experiment["sys/description"] = description
+    _experiment["sys/hostname"] = get_hostname()
+    _experiment.sync(wait=True)
     _experiment.start()
     return _experiment
