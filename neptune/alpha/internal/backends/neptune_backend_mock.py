@@ -100,10 +100,10 @@ class NeptuneBackendMock(NeptuneBackend):
             else:
                 yield Attribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
 
-    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], file_path: Optional[str] = None):
+    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         source_file_value: File = self._experiments[experiment_uuid].get(path)
         source_path = source_file_value.file_path
-        target_path = os.path.abspath(file_path or os.path.basename(source_path))
+        target_path = os.path.abspath(destination or os.path.basename(source_path))
         if source_path != target_path:
             copyfile(source_path, target_path)
 

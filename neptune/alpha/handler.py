@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from datetime import datetime
-from typing import TYPE_CHECKING, Union, Optional
+from typing import TYPE_CHECKING, Union
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.internal.utils.paths import join_paths
@@ -59,14 +59,6 @@ class Handler:
 
     def save(self, value: str, wait: bool = False) -> None:
         self.assign(File(value), wait)
-
-    def download(self, path: Optional[str] = None):
-        verify_type("path", path, (str, type(None)))
-        attr = self._experiment.get_attribute(self._path)
-        if attr:
-            attr.download(path)
-        else:
-            raise AttributeError()
 
     # TODO: Support Image value
     def log(self, value: Union[int, float, str], step=None, timestamp=None, wait: bool = False) -> None:

@@ -17,10 +17,11 @@ import io
 import os
 import uuid
 from typing import List, Optional, Dict
+from urllib.parse import urlencode
 
+from bravado.client import SwaggerClient
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
-from bravado.client import SwaggerClient
 
 from neptune.alpha.exceptions import FileUploadError
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler
@@ -84,6 +85,7 @@ def upload_file_attributes(experiment_uuid: uuid.UUID,
                 upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
                                 url=url,
                                 data=io.BytesIO(data),
+                                headers={"Content-Type": "application/octet-stream"},
                                 query_params={
                                     "experimentIdentifier": str(experiment_uuid),
                                     "resource": "attributes",
@@ -138,9 +140,7 @@ def upload_raw_data(http_client: RequestsClient,
     for key, val in (path_params or dict()).items():
         url = url.replace("{" + key + "}", val)
     if query_params:
-        url = url + "?"
-        for key, val in query_params.items():
-            url = url + key + "=" + val + "&"
+        url = url + "?" + urlencode(list(query_params.items()))
 
     session = http_client.session
     request = http_client.authenticator.apply(Request(method='POST', url=url, data=data, headers=headers))
@@ -153,14 +153,14 @@ def upload_raw_data(http_client: RequestsClient,
 def download_file_attribute(swagger_client: SwaggerClient,
                             experiment_uuid: uuid.UUID,
                             attribute: str,
-                            file_path: Optional[str] = None):
+                            destination: Optional[str] = None):
     response = _download_raw_data(
         http_client=swagger_client.swagger_spec.http_client,
         url=swagger_client.swagger_spec.api_url + swagger_client.api.downloadAttribute.operation.path_name,
         headers={"Accept": "application/octet-stream"},
         query_params={"experimentId": str(experiment_uuid), "attribute": attribute})
     with response:
-        with open(file_path or _get_content_disposition_filename(response), "wb") as f:
+        with open(destination or _get_content_disposition_filename(response), "wb") as f:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     f.write(chunk)
@@ -180,9 +180,7 @@ def _download_raw_data(http_client: RequestsClient,
     for key, val in (path_params or dict()).items():
         url = url.replace("{" + key + "}", val)
     if query_params:
-        url = url + "?"
-        for key, val in query_params.items():
-            url = url + key + "=" + val + "&"
+        url = url + "?" + urlencode(list(query_params.items()))
 
     session = http_client.session
     request = http_client.authenticator.apply(Request(method='GET', url=url, headers=headers))

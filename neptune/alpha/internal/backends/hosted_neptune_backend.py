@@ -194,12 +194,12 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
-    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], file_path: Optional[str] = None):
+    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         download_file_attribute(
             swagger_client=self.leaderboard_client,
             experiment_uuid=experiment_uuid,
             attribute=path_to_str(path),
-            file_path=file_path)
+            destination=destination)
 
     @with_api_exceptions_handler
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:

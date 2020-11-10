@@ -52,5 +52,5 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], file_path: Optional[str] = None):
+    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         pass

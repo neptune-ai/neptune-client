@@ -145,11 +145,10 @@ class TestHostedNeptuneBackend(unittest.TestCase):
                  experiment_uuid=exp_uuid,
                  attribute="some/path/2/var",
                  file_path="/some.file/with.dots.txt"),
-            call(
-                swagger_client=backend.leaderboard_client,
-                experiment_uuid=exp_uuid,
-                attribute="some/path/3/var",
-                file_path="/path/to/some_image.jpeg")
+            call(swagger_client=backend.leaderboard_client,
+                 experiment_uuid=exp_uuid,
+                 attribute="some/path/3/var",
+                 file_path="/path/to/some_image.jpeg")
         ], any_order=True)
 
     @patch('neptune.alpha.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))

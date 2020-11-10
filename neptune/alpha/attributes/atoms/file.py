@@ -38,6 +38,6 @@ class File(Atom):
         verify_type("path", path, str)
         self.assign(FileVal(path), wait)
 
-    def download(self, path: Optional[str] = None) -> None:
-        verify_type("path", path, (str, type(None)))
-        self._backend.download_file(self._experiment_uuid, self._path, path)
+    def download(self, destination: Optional[str] = None) -> None:
+        verify_type("destination", destination, (str, type(None)))
+        self._backend.download_file(self._experiment_uuid, self._path, destination)
