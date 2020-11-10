@@ -16,21 +16,45 @@
 import io
 import os
 import uuid
-from typing import List
+from typing import List, Optional, Dict
+from urllib.parse import urlencode
 
-import requests
 from bravado.client import SwaggerClient
+from bravado.requests_client import RequestsClient
+from requests import Request, Response
 
 from neptune.alpha.exceptions import FileUploadError
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler
-from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream
-from neptune.internal.storage.storage_utils import scan_unique_upload_entries, \
-    split_upload_files, UploadEntry
+from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
+from neptune.internal.storage.storage_utils import scan_unique_upload_entries, split_upload_files, UploadEntry
 
 
+def upload_file_attribute(swagger_client: SwaggerClient,
+                          experiment_uuid: uuid.UUID,
+                          attribute: str,
+                          file_path: str
+                          ) -> Optional[FileUploadError]:
+    if not os.path.isfile(file_path):
+        return FileUploadError(file_path, "Path not found or is a not a file.")
+    try:
+        url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadAttribute.operation.path_name
+        _upload_loop(http_client=swagger_client.swagger_spec.http_client,
+                     url=url,
+                     file_chunk_stream=FileChunkStream(UploadEntry(file_path, file_path)),
+                     query_params={
+                         "experimentId": str(experiment_uuid),
+                         "attribute": attribute,
+                         "filename": os.path.basename(file_path)
+                     })
+    except Exception as e:
+        return FileUploadError(file_path, getattr(e, 'message', repr(e)))
+
+
+# NOT USED RIGHT NOW: USE IN FILE SETS OR DELETE
 def upload_file_attributes(experiment_uuid: uuid.UUID,
                            upload_entries: List[UploadEntry],
-                           swagger_client: SwaggerClient) -> List[FileUploadError]:
+                           swagger_client: SwaggerClient
+                           ) -> List[FileUploadError]:
     result = []
     existing_entries = []
 
@@ -61,17 +85,17 @@ def upload_file_attributes(experiment_uuid: uuid.UUID,
                 upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
                                 url=url,
                                 data=io.BytesIO(data),
-                                headers=dict(),
+                                headers={"Content-Type": "application/octet-stream"},
                                 query_params={
                                     "experimentIdentifier": str(experiment_uuid),
                                     "resource": "attributes",
                                 })
             else:
-                file_chunk_stream = FileChunkStream(package.items[0])
                 url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadPath.operation.path_name
+                file_chunk_stream = FileChunkStream(package.items[0])
                 _upload_loop(http_client=swagger_client.swagger_spec.http_client,
                              url=url,
-                             data=file_chunk_stream,
+                             file_chunk_stream=file_chunk_stream,
                              query_params={
                                  "experimentIdentifier": str(experiment_uuid),
                                  "resource": "attributes",
@@ -84,53 +108,83 @@ def upload_file_attributes(experiment_uuid: uuid.UUID,
         return [FileUploadError(entry.source_path, msg) for entry in upload_entries]
 
 
-def _upload_loop(data, **kwargs):
-    ret = None
-    for part in data.generate():
-        part_to_send = part.get_data()
-        ret = _upload_loop_chunk(part, part_to_send, data, **kwargs)
+def _upload_loop(file_chunk_stream: FileChunkStream, **kwargs):
+    for chunk in file_chunk_stream.generate():
+        _upload_loop_chunk(chunk, file_chunk_stream, **kwargs)
 
-    data.close()
-    return ret
+    file_chunk_stream.close()
 
 
-def _upload_loop_chunk(part, part_to_send, data, **kwargs):
-    if data.length is not None:
-        binary_range = "bytes=%d-%d/%d" % (part.start, part.end - 1, data.length)
+def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, **kwargs):
+    if file_chunk_stream.length is not None:
+        binary_range = "bytes=%d-%d/%d" % (chunk.start, chunk.end - 1, file_chunk_stream.length)
     else:
-        binary_range = "bytes=%d-%d" % (part.start, part.end - 1)
+        binary_range = "bytes=%d-%d" % (chunk.start, chunk.end - 1)
     headers = {
-        "Content-Filename": data.filename,
+        "Content-Filename": file_chunk_stream.filename,
         "X-Range": binary_range,
+        "Content-Type": "application/octet-stream"
     }
-    if data.permissions is not None:
-        headers["X-File-Permissions"] = data.permissions
-    return upload_raw_data(data=part_to_send, headers=headers, **kwargs)
+    if file_chunk_stream.permissions is not None:
+        headers["X-File-Permissions"] = file_chunk_stream.permissions
+    upload_raw_data(data=chunk.get_data(), headers=headers, **kwargs)
 
 
 @with_api_exceptions_handler
-def upload_raw_data(http_client, url, data, headers, path_params=None, query_params=None):
-    url = url + "?"
-
+def upload_raw_data(http_client: RequestsClient,
+                    url: str,
+                    data,
+                    path_params: Optional[Dict[str, str]] = None,
+                    query_params: Optional[Dict[str, str]] = None,
+                    headers: Optional[Dict[str, str]] = None):
     for key, val in (path_params or dict()).items():
         url = url.replace("{" + key + "}", val)
-
-    for key, val in (query_params or dict()).items():
-        url = url + key + "=" + val + "&"
-
-    headers["Content-Type"] = "application/octet-stream"
+    if query_params:
+        url = url + "?" + urlencode(list(query_params.items()))
 
     session = http_client.session
-
-    request = http_client.authenticator.apply(
-        requests.Request(
-            method='POST',
-            url=url,
-            data=data,
-            headers=headers
-        )
-    )
+    request = http_client.authenticator.apply(Request(method='POST', url=url, data=data, headers=headers))
 
     response = session.send(session.prepare_request(request))
+    response.raise_for_status()
+
+
+@with_api_exceptions_handler
+def download_file_attribute(swagger_client: SwaggerClient,
+                            experiment_uuid: uuid.UUID,
+                            attribute: str,
+                            destination: Optional[str] = None):
+    response = _download_raw_data(
+        http_client=swagger_client.swagger_spec.http_client,
+        url=swagger_client.swagger_spec.api_url + swagger_client.api.downloadAttribute.operation.path_name,
+        headers={"Accept": "application/octet-stream"},
+        query_params={"experimentId": str(experiment_uuid), "attribute": attribute})
+    with response:
+        with open(destination or _get_content_disposition_filename(response), "wb") as f:
+            for chunk in response.iter_content(chunk_size=1024 * 1024):
+                if chunk:
+                    f.write(chunk)
+
+
+def _get_content_disposition_filename(response: Response) -> str:
+    content_disposition = response.headers['Content-Disposition']
+    return content_disposition[content_disposition.rfind("filename=")+9:]
+
+
+def _download_raw_data(http_client: RequestsClient,
+                       url: str,
+                       path_params: Optional[Dict[str, str]] = None,
+                       query_params: Optional[Dict[str, str]] = None,
+                       headers: Optional[Dict[str, str]] = None
+                       ) -> Response:
+    for key, val in (path_params or dict()).items():
+        url = url.replace("{" + key + "}", val)
+    if query_params:
+        url = url + "?" + urlencode(list(query_params.items()))
+
+    session = http_client.session
+    request = http_client.authenticator.apply(Request(method='GET', url=url, headers=headers))
+
+    response = session.send(session.prepare_request(request), stream=True)
     response.raise_for_status()
     return response

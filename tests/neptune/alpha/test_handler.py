@@ -15,25 +15,25 @@
 #
 import os
 import unittest
-
 # pylint: disable=protected-access
 from datetime import datetime, timedelta
+from unittest.mock import patch
 
 from neptune.alpha import init, ANONYMOUS
 from neptune.alpha.attributes.atoms.datetime import Datetime
-from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.alpha.types.atoms.float import Float as FloatVal
-from neptune.alpha.types.atoms.string import String as StringVal
-from neptune.alpha.types.atoms.datetime import Datetime as DatetimeVal
-from neptune.alpha.types.series.float_series import FloatSeries as FloatSeriesVal
-from neptune.alpha.types.series.string_series import StringSeries as StringSeriesVal
-from neptune.alpha.types.sets.string_set import StringSet as StringSetVal
+from neptune.alpha.attributes.atoms.file import File
 from neptune.alpha.attributes.atoms.float import Float
 from neptune.alpha.attributes.atoms.string import String
-from neptune.alpha.attributes.atoms.file import File
 from neptune.alpha.attributes.series.float_series import FloatSeries
 from neptune.alpha.attributes.series.string_series import StringSeries
 from neptune.alpha.attributes.sets.string_set import StringSet
+from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
+from neptune.alpha.types.atoms.datetime import Datetime as DatetimeVal
+from neptune.alpha.types.atoms.float import Float as FloatVal
+from neptune.alpha.types.atoms.string import String as StringVal
+from neptune.alpha.types.series.float_series import FloatSeries as FloatSeriesVal
+from neptune.alpha.types.series.string_series import StringSeries as StringSeriesVal
+from neptune.alpha.types.sets.string_set import StringSet as StringSetVal
 
 
 class TestHandler(unittest.TestCase):
@@ -81,11 +81,27 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
         self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
-    def test_save_file(self):
+    @patch('neptune.alpha.internal.backends.neptune_backend_mock.copyfile')
+    def test_save_download_file(self, copyfile_mock):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/file'].save("path/to/other/file.txt")
-        # TODO: Test download
         self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
+
+        exp['some/num/file'].download("path/to/download/alternative_file.txt")
+        copyfile_mock.assert_called_with(
+            os.path.abspath("path/to/other/file.txt"), os.path.abspath("path/to/download/alternative_file.txt"))
+        copyfile_mock.reset_mock()
+
+        exp['some/num/file'].download()
+        copyfile_mock.assert_called_with(
+            os.path.abspath("path/to/other/file.txt"), os.path.abspath("file.txt"))
+        copyfile_mock.reset_mock()
+
+        exp['some/num/file'].download("path/to/other/file.txt")
+        copyfile_mock.assert_not_called()
+
+        with self.assertRaises(TypeError):
+            exp['some/num/file'].download(123)
 
     def test_assign_series(self):
         exp = init(connection_mode="debug", flush_period=0.5)

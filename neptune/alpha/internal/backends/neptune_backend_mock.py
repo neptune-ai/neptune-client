@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import os
 import uuid
-from typing import Optional, List
+from typing import Optional, List, Dict
+from shutil import copyfile
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
@@ -44,7 +45,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def __init__(self, credentials=None):
         # pylint: disable=unused-argument
-        self._experiments = dict()
+        self._experiments: Dict[uuid.UUID, ExperimentStructure[Value]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
 
     def get_display_address(self) -> str:
@@ -98,6 +99,13 @@ class NeptuneBackendMock(NeptuneBackend):
                 yield from self._generate_attributes(new_path, value_or_dict)
             else:
                 yield Attribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
+
+    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+        source_file_value: File = self._experiments[experiment_uuid].get(path)
+        source_path = source_file_value.file_path
+        target_path = os.path.abspath(destination or os.path.basename(source_path))
+        if source_path != target_path:
+            copyfile(source_path, target_path)
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 

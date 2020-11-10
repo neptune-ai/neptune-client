@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import os
-from typing import Union
+from typing import Union, Optional
 
 from neptune.alpha.internal.utils import verify_type
 
@@ -37,3 +37,7 @@ class File(Atom):
     def save(self, path: str, wait: bool = False) -> None:
         verify_type("path", path, str)
         self.assign(FileVal(path), wait)
+
+    def download(self, destination: Optional[str] = None) -> None:
+        verify_type("destination", destination, (str, type(None)))
+        self._backend.download_file(self._experiment_uuid, self._path, destination)
