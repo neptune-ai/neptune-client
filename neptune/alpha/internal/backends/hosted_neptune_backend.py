@@ -158,7 +158,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                 attribute=path_to_str(upload_file.path),
                 file_path=upload_file.file_path)
             if error is not None:
-                print(error)
                 errors.append(error)
 
         return errors
