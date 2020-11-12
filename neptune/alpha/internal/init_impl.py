@@ -18,11 +18,11 @@ import os
 
 from pathlib import Path
 from platform import node as get_hostname
-from typing import Optional
+from typing import Optional, List
 
 import click
 
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, verify_collection_type
 
 from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
@@ -39,6 +39,7 @@ from neptune.alpha.internal.operation_processors.sync_operation_processor import
 from neptune.alpha.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.alpha.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, \
     StderrCaptureBackgroundJob
+from neptune.alpha.internal.utils.git import get_git_info, discover_git_repo_location
 from neptune.alpha.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.version import version as parsed_version
@@ -54,6 +55,7 @@ def init(
         connection_mode: str = "async",
         name: str = "Untitled",
         description: str = "",
+        tags: List[str] = None,
         capture_stdout: bool = True,
         capture_stderr: bool = True,
         capture_hardware_metrics: bool = True,
@@ -67,6 +69,8 @@ def init(
     verify_type("capture_stderr", capture_stderr, bool)
     verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
     verify_type("flush_period", flush_period, (int, float))
+    if tags:
+        verify_collection_type("tags", tags, str)
 
     if not project:
         project = os.getenv(PROJECT_ENV_NAME)
@@ -91,7 +95,8 @@ def init(
     if experiment:
         exp = backend.get_experiment(project + '/' + experiment)
     else:
-        exp = backend.create_experiment(project_obj.uuid)
+        git_ref = get_git_info(discover_git_repo_location())
+        exp = backend.create_experiment(project_obj.uuid, git_ref)
 
     if connection_mode == "async":
         experiment_path = "{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, exp.uuid)
@@ -128,6 +133,15 @@ def init(
     if capture_stderr:
         background_jobs.append(StderrCaptureBackgroundJob())
 
+    _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
+    _experiment.sync(wait=False)
+    _experiment["sys/name"] = name
+    _experiment["sys/description"] = description
+    _experiment["sys/hostname"] = get_hostname()
+    if tags:
+        _experiment["sys/tags"] = tags
+    _experiment.start()
+
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
         base_url=backend.get_display_address(),
         workspace=exp.workspace,
@@ -135,10 +149,4 @@ def init(
         exp_id=exp.short_id
     ))
 
-    _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
-    _experiment["sys/name"] = name
-    _experiment["sys/description"] = description
-    _experiment["sys/hostname"] = get_hostname()
-    _experiment.sync(wait=True)
-    _experiment.start()
     return _experiment

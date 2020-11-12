@@ -13,25 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import abc
 
-from neptune.alpha.internal.operation import Operation
+from neptune.alpha.attributes.atoms.atom import Atom
+from neptune.alpha.exceptions import MetadataInconsistency
+from neptune.alpha.types.atoms import GitRef as GitRefVal
 
 
-class OperationProcessor:
+class GitRef(Atom):
 
-    @abc.abstractmethod
-    def enqueue_operation(self, op: Operation, wait: bool) -> None:
-        pass
-
-    @abc.abstractmethod
-    def wait(self) -> None:
-        pass
-
-    @abc.abstractmethod
-    def start(self):
-        pass
-
-    @abc.abstractmethod
-    def stop(self):
-        pass
+    def get(self) -> GitRefVal:
+        # pylint: disable=protected-access
+        val = self._backend.get_attribute(self._experiment_uuid, self._path)
+        if not isinstance(val, GitRefVal):
+            raise MetadataInconsistency("Attribute {} is not a GitRef".format(self._path))
+        return val

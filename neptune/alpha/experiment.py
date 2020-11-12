@@ -17,10 +17,11 @@
 import threading
 import uuid
 from datetime import datetime
-from typing import Dict, Any, Union, List
+from typing import Dict, Any, Union, List, Optional
 
 from neptune.alpha.attributes.atoms.file import File as FileAttr
 from neptune.alpha.attributes.atoms.float import Float as FloatAttr
+from neptune.alpha.attributes.atoms.git_ref import GitRef as GitRefAttr
 from neptune.alpha.attributes.atoms.string import String as StringAttr
 from neptune.alpha.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.alpha.attributes.attribute import Attribute
@@ -62,6 +63,7 @@ class Experiment(Handler):
         self._lock = threading.RLock()
 
     def start(self):
+        self._op_processor.start()
         self._bg_job.start(self)
 
     def get_structure(self) -> Dict[str, Any]:
@@ -88,7 +90,7 @@ class Experiment(Handler):
     def ping(self):
         self._backend.execute_operations(self._uuid, [])
 
-    def get_attribute(self, path: str) -> Attribute:
+    def get_attribute(self, path: str) -> Optional[Attribute]:
         with self._lock:
             return self._structure.get(parse_path(path))
 
@@ -136,3 +138,5 @@ class Experiment(Handler):
             self._structure.set(_path, ImageSeriesAttr(self, _path))
         if _type == AttributeType.STRING_SET:
             self._structure.set(_path, StringSetAttr(self, _path))
+        if _type == AttributeType.GIT_REF:
+            self._structure.set(_path, GitRefAttr(self, _path))

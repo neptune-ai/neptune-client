@@ -150,3 +150,8 @@ class Forbidden(NeptuneApiException):
 class OfflineModeFetchException(NeptuneException):
     def __init__(self):
         super().__init__('It is not possible to fetch data from the server in offline mode')
+
+
+class OperationNotSupported(NeptuneException):
+    def __init__(self, message: str):
+        super().__init__('Operation not supported: {}'.format(message))

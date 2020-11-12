@@ -19,6 +19,7 @@ from typing import List, Optional
 
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute
 from neptune.alpha.internal.operation import Operation
+from neptune.alpha.types.atoms import GitRef
 from neptune.alpha.types.value import Value
 
 
@@ -40,7 +41,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
+    def create_experiment(self, project_uuid: uuid.UUID, git_ref: Optional[GitRef] = None) -> Experiment:
         pass
 
     @abc.abstractmethod

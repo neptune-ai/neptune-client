@@ -39,6 +39,7 @@ from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import Operation, UploadFile
 from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.internal.utils.paths import path_to_str
+from neptune.alpha.types.atoms import GitRef
 from neptune.alpha.types.value import Value
 from neptune.alpha.version import version as neptune_client_version
 from neptune.oauth import NeptuneAuthenticator
@@ -113,15 +114,26 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ExperimentNotFound(experiment_id)
 
     @with_api_exceptions_handler
-    def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
+    def create_experiment(self, project_uuid: uuid.UUID, git_ref: Optional[GitRef] = None) -> Experiment:
         verify_type("project_uuid", project_uuid, uuid.UUID)
+
+        git_info = {
+            "commit": {
+                "commitId": git_ref.commit_id,
+                "message": git_ref.message,
+                "authorName": git_ref.author_name,
+                "authorEmail": git_ref.author_email,
+                "commitDate": git_ref.commit_date
+            },
+            "repositoryDirty": git_ref.dirty,
+            "currentBranch": git_ref.branch,
+            "remotes": git_ref.remotes
+        } if git_ref else None
 
         params = {
             "projectIdentifier": str(project_uuid),
-            "name": "Untitled",
-            "parameters": [],
-            "properties": [],
-            "tags": [],
+            "cliVersion": str(neptune_client_version),
+            "gitInfo": git_info
         }
 
         kwargs = {
@@ -181,6 +193,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
+        # TODO Implement me
         pass
 
     @with_api_exceptions_handler
@@ -195,11 +208,14 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
     def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
-        download_file_attribute(
-            swagger_client=self.leaderboard_client,
-            experiment_uuid=experiment_uuid,
-            attribute=path_to_str(path),
-            destination=destination)
+        try:
+            download_file_attribute(
+                swagger_client=self.leaderboard_client,
+                experiment_uuid=experiment_uuid,
+                attribute=path_to_str(path),
+                destination=destination)
+        except HTTPNotFound:
+            raise MetadataInconsistency("File attribute {} not found".format(path_to_str(path)))
 
     @with_api_exceptions_handler
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:

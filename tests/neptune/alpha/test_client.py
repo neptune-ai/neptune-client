@@ -42,7 +42,7 @@ class TestClient(unittest.TestCase):
         with self.assertRaises(ValueError):
             init(connection_mode='srtgj')
 
-    def test_offline_mode(self):
+    def test_debug_mode(self):
         exp = init(connection_mode='debug')
         exp["some/variable"] = 13
         self.assertEqual(13, exp["some/variable"].get())
