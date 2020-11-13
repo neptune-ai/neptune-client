@@ -15,6 +15,7 @@
 #
 import os
 import uuid
+from datetime import datetime
 from typing import Optional, List, Dict
 from shutil import copyfile
 
@@ -29,6 +30,7 @@ from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     RemoveStrings, AddStrings, \
     UploadFile, AssignDatetime, ConfigFloatSeries
 from neptune.alpha.internal.operation_visitor import OperationVisitor
+from neptune.alpha.types.atoms import GitRef
 from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.atoms.float import Float
@@ -54,10 +56,16 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_project(self, project_id: str) -> Project:
         return Project(uuid.uuid4(), "sandbox", "workspace")
 
-    def create_experiment(self, project_uuid: uuid.UUID) -> Experiment:
+    def create_experiment(self, project_uuid: uuid.UUID, git_ref: Optional[GitRef] = None) -> Experiment:
+        short_id = "SAN-{}".format(len(self._experiments) + 1)
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
-        return Experiment(new_experiment_uuid, "SAN-{}".format(len(self._experiments) + 1), 'workspace', 'sandbox')
+        self._experiments[new_experiment_uuid].set(["sys", "id"], String(short_id))
+        self._experiments[new_experiment_uuid].set(["sys", "creation_time"], Datetime(datetime.now()))
+        self._experiments[new_experiment_uuid].set(["sys", "modification_time"], Datetime(datetime.now()))
+        if git_ref:
+            self._experiments[new_experiment_uuid].set(["sys", "git"], git_ref)
+        return Experiment(new_experiment_uuid, short_id, 'workspace', 'sandbox')
 
     def get_experiment(self, experiment_id: str) -> Experiment:
         return Experiment(uuid.uuid4(), 'SAN-123', 'workspace', 'sandbox')
@@ -132,6 +140,9 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_string_set(self, _: StringSet) -> AttributeType:
             return AttributeType.STRING_SET
+
+        def visit_git_ref(self, _: GitRef) -> AttributeType:
+            return AttributeType.GIT_REF
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
 

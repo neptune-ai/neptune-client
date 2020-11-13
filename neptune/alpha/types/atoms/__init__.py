@@ -17,3 +17,4 @@
 from .float import Float
 from .file import File
 from .string import String
+from .git_ref import GitRef

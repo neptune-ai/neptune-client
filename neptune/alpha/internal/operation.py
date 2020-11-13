@@ -19,6 +19,7 @@ from datetime import datetime
 from typing import List, TypeVar, Generic, Optional, Set
 
 from typing import TYPE_CHECKING
+
 if TYPE_CHECKING:
     from neptune.alpha.internal.operation_visitor import OperationVisitor
 

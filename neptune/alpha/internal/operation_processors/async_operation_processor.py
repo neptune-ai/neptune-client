@@ -48,7 +48,6 @@ class AsyncOperationProcessor(OperationProcessor):
         self._waiting_for_version = 0
         self._waiting_event = Event()
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
-        self._consumer.start()
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         self._last_version += 1
@@ -66,6 +65,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumer.wake_up()
         self._waiting_event.wait()
         self._waiting_event.clear()
+
+    def start(self):
+        self._consumer.start()
 
     def stop(self):
         self._consumer.interrupt()

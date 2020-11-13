@@ -65,8 +65,9 @@ class HardwareMetricReportingJob(BackgroundJob):
 
         for metric in metrics_container.metrics():
             for gauge in metric.gauges:
-                experiment.define(self.get_attribute_name(metric.resource_type, gauge.name()),
-                                  FloatSeries([], min=metric.min_value, max=metric.max_value, unit=metric.unit))
+                path = self.get_attribute_name(metric.resource_type, gauge.name())
+                if not experiment.get_attribute(path):
+                    experiment[path] = FloatSeries([], min=metric.min_value, max=metric.max_value, unit=metric.unit)
 
         self._thread = self.ReportingThread(
             self._period,
