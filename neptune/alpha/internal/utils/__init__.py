@@ -26,15 +26,20 @@ def replace_patch_version(version: str):
 
 def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
     try:
-        type_name = (" or ".join(t.__name__ for t in expected_type)
-                     if isinstance(expected_type, tuple)
-                     else expected_type.__name__)
+        if isinstance(expected_type, tuple):
+            type_name = " or ".join(get_type_name(t) for t in expected_type)
+        else:
+            type_name = get_type_name(expected_type)
     except Exception as e:
         # Just to be sure that nothing weird will be raised here
         raise TypeError("Incorrect type of {}".format(var_name)) from e
 
     if not isinstance(var, expected_type):
         raise TypeError("{} must be a {} (was {})".format(var_name, type_name, type(var)))
+
+
+def get_type_name(type: Union[type, tuple]):
+    return type.__name__ if hasattr(type, '__name__') else str(type)
 
 
 def verify_collection_type(var_name: str, var, expected_type: Union[type, tuple]):

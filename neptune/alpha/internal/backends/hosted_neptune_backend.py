@@ -28,7 +28,8 @@ from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, \
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
-from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute
+from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
+    upload_file_attributes
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
@@ -36,7 +37,7 @@ from neptune.alpha.internal.backends.operations_preprocessor import OperationsPr
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
     create_swagger_client, verify_client_version, update_session_proxies
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import Operation, UploadFile
+from neptune.alpha.internal.operation import Operation, UploadFile, UploadFileSet
 from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.internal.utils.paths import path_to_str
 from neptune.alpha.types.atoms import GitRef
@@ -153,24 +154,31 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         operations_preprocessor = OperationsPreprocessor()
         operations_preprocessor.process(operations)
-        combined_operations = operations_preprocessor.get_operations()
         errors.extend(operations_preprocessor.get_errors())
 
         upload_operations, other_operations = [], []
-        for op in combined_operations:
-            (upload_operations if isinstance(op, UploadFile) else other_operations).append(op)
+        for op in operations_preprocessor.get_operations():
+            (upload_operations if isinstance(op, (UploadFile, UploadFileSet)) else other_operations).append(op)
 
         if other_operations:
             errors.extend(self._execute_operations(experiment_uuid, other_operations))
 
-        for upload_file in upload_operations:
-            error = upload_file_attribute(
-                swagger_client=self.leaderboard_client,
-                experiment_uuid=experiment_uuid,
-                attribute=path_to_str(upload_file.path),
-                file_path=upload_file.file_path)
-            if error is not None:
-                errors.append(error)
+        for op in upload_operations:
+            if isinstance(op, UploadFile):
+                error = upload_file_attribute(
+                    swagger_client=self.leaderboard_client,
+                    experiment_uuid=experiment_uuid,
+                    attribute=path_to_str(op.path),
+                    file_path=op.file_path)
+                if error is not None:
+                    errors.append(error)
+            else:
+                errors.extend(upload_file_attributes(
+                    swagger_client=self.leaderboard_client,
+                    experiment_uuid=experiment_uuid,
+                    attribute=path_to_str(op.path),
+                    file_globs=op.file_globs,
+                    reset=True))
 
         return errors
 

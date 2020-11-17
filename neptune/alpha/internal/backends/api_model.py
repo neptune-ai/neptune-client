@@ -77,6 +77,7 @@ class AttributeType(Enum):
     STRING = "string"
     DATETIME = "datetime"
     FILE = "file"
+    FILE_SET = "fileSet"
     FLOAT_SERIES = "floatSeries"
     STRING_SERIES = "stringSeries"
     IMAGE_SERIES = "imageSeries"

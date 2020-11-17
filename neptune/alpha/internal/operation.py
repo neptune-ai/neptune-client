@@ -16,7 +16,7 @@
 import abc
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, TypeVar, Generic, Optional, Set
+from typing import List, TypeVar, Generic, Optional, Set, Sequence
 
 from typing import TYPE_CHECKING
 
@@ -144,6 +144,24 @@ class UploadFile(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'UploadFile':
         return UploadFile(data["path"], data["file_path"])
+
+
+@dataclass
+class UploadFileSet(Operation):
+
+    file_globs: Sequence[str]
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_upload_file_set(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["file_globs"] = ','.join(self.file_globs)
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'UploadFileSet':
+        return UploadFileSet(data["path"], data["file_globs"].split(","))
 
 
 @dataclass

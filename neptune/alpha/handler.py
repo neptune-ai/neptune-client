@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from datetime import datetime
-from typing import TYPE_CHECKING, Union, Iterable
+from typing import TYPE_CHECKING, Union, Iterable, Sequence
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.internal.utils.paths import join_paths, parse_path
@@ -22,6 +22,7 @@ from neptune.alpha.attributes.series.float_series import FloatSeries
 from neptune.alpha.attributes.series.string_series import StringSeries
 from neptune.alpha.attributes.sets.string_set import StringSet
 from neptune.alpha.types.atoms.file import File
+from neptune.alpha.types.file_set import FileSet
 from neptune.alpha.types.value import Value
 
 if TYPE_CHECKING:
@@ -59,6 +60,9 @@ class Handler:
 
     def save(self, value: str, wait: bool = False) -> None:
         self.assign(File(value), wait)
+
+    def save_files(self, value: Union[str, Sequence[str]], wait: bool = False) -> None:
+        self.assign(FileSet(value), wait)
 
     # TODO: Support Image value
     def log(self, value: Union[int, float, str], step=None, timestamp=None, wait: bool = False) -> None:

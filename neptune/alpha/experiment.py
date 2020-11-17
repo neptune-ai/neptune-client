@@ -23,6 +23,7 @@ from typing import Dict, Any, Union, List, Optional
 import atexit
 
 from neptune.alpha.attributes.atoms.file import File as FileAttr
+from neptune.alpha.attributes.file_set import FileSet as FileSetAttr
 from neptune.alpha.attributes.atoms.float import Float as FloatAttr
 from neptune.alpha.attributes.atoms.git_ref import GitRef as GitRefAttr
 from neptune.alpha.attributes.atoms.string import String as StringAttr
@@ -146,6 +147,8 @@ class Experiment(Handler):
             self._structure.set(_path, DatetimeAttr(self, _path))
         if _type == AttributeType.FILE:
             self._structure.set(_path, FileAttr(self, _path))
+        if _type == AttributeType.FILE_SET:
+            self._structure.set(_path, FileSetAttr(self, _path))
         if _type == AttributeType.FLOAT_SERIES:
             self._structure.set(_path, FloatSeriesAttr(self, _path))
         if _type == AttributeType.STRING_SERIES:
