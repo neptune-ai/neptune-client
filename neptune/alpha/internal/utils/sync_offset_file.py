@@ -20,7 +20,9 @@ from typing import Optional
 
 class SyncOffsetFile:
     def __init__(self, experiment_path: Path):
-        self._file = open(experiment_path / 'offset', 'w+')
+        offset_file_path = experiment_path / 'offset'
+        mode = 'r+' if offset_file_path.exists() else 'w+'
+        self._file = open(offset_file_path, mode)
 
     def write(self, offset: int) -> None:
         self._file.seek(0)
