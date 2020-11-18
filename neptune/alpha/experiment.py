@@ -80,7 +80,7 @@ class Experiment(Handler):
         self._bg_job.stop()
         self._bg_job.join(seconds)
         with self._lock:
-            sec_left = None if not seconds else seconds - (time.time() - ts)
+            sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
 
     def get_structure(self) -> Dict[str, Any]:
