@@ -38,8 +38,8 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
         raise TypeError("{} must be a {} (was {})".format(var_name, type_name, type(var)))
 
 
-def get_type_name(type: Union[type, tuple]):
-    return type.__name__ if hasattr(type, '__name__') else str(type)
+def get_type_name(_type: Union[type, tuple]):
+    return _type.__name__ if hasattr(_type, '__name__') else str(_type)
 
 
 def verify_collection_type(var_name: str, var, expected_type: Union[type, tuple]):

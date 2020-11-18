@@ -41,7 +41,7 @@ from neptune.alpha.types.series.image_series import ImageSeries
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.types.sets.string_set import StringSet
 from neptune.alpha.types.value import Value
-from neptune.alpha.types.value_visitor import ValueVisitor
+from neptune.alpha.types.value_visitor import ValueVisitor, Ret
 
 
 class NeptuneBackendMock(NeptuneBackend):
@@ -129,6 +129,9 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_file(self, _: File) -> AttributeType:
             return AttributeType.FILE
+
+        def visit_file_set(self, value: FileSet) -> Ret:
+            return AttributeType.FILE_SET
 
         def visit_float_series(self, _: FloatSeries) -> AttributeType:
             return AttributeType.FLOAT_SERIES

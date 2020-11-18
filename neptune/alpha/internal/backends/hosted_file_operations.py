@@ -63,7 +63,12 @@ def upload_file_attributes(swagger_client: SwaggerClient,
 
     expanded_files = set()
     for file_glob in file_globs:
-        expanded_files |= set(glob(file_glob))
+        expanded_file_glob = set(glob(file_glob))
+        if expanded_file_glob:
+            expanded_files |= expanded_file_glob
+        else:
+            result.append(FileUploadError(file_glob, "No files found for a path."))
+
     absolute_paths = list(os.path.abspath(expanded_file) for expanded_file in expanded_files)
     try:
         common_root = os.path.commonpath(absolute_paths)
