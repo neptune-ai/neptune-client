@@ -82,6 +82,7 @@ class AttributeType(Enum):
     IMAGE_SERIES = "imageSeries"
     STRING_SET = "stringSet"
     GIT_REF = "gitRef"
+    EXPERIMENT_STATE = "experimentState"
 
 
 class Attribute:

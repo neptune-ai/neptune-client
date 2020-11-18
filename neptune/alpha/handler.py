@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 from datetime import datetime
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Union, Iterable
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
-from neptune.alpha.internal.utils.paths import join_paths
+from neptune.alpha.internal.utils.paths import join_paths, parse_path
+from neptune.alpha.attributes.series.float_series import FloatSeries
+from neptune.alpha.attributes.series.string_series import StringSeries
+from neptune.alpha.attributes.sets.string_set import StringSet
 from neptune.alpha.types.atoms.file import File
-from neptune.alpha.types.series.float_series import FloatSeries
-from neptune.alpha.types.series.string_series import StringSeries
-from neptune.alpha.types.sets.string_set import StringSet
 from neptune.alpha.types.value import Value
 
 if TYPE_CHECKING:
@@ -67,24 +67,22 @@ class Handler:
         verify_type("timestamp", step, (int, float, type(None)))
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
-            if attr:
-                attr.log(value, step=step, timestamp=timestamp, wait=wait)
-            else:
+            if not attr:
                 if isinstance(value, (float, int)):
-                    val = FloatSeries([value])
+                    attr = FloatSeries(self._experiment, parse_path(self._path))
                 elif isinstance(value, str):
-                    val = StringSeries([value])
-                self._experiment.define(self._path, val, wait)
+                    attr = StringSeries(self._experiment, parse_path(self._path))
+                self._experiment.set_attribute(self._path, attr)
+            attr.log(value, step=step, timestamp=timestamp, wait=wait)
 
-    def add(self, *values: str, wait: bool = False) -> None:
-        verify_collection_type("value", values, str)
+    def add(self, values: Iterable[str], wait: bool = False) -> None:
+        verify_collection_type("values", values, str)
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
-            if attr:
-                attr.add(values, wait)
-            else:
-                val = StringSet(values)
-                self._experiment.define(self._path, val, wait)
+            if not attr:
+                attr = StringSet(self._experiment, parse_path(self._path))
+                self._experiment.set_attribute(self._path, attr)
+            attr.add(values, wait)
 
     def pop(self, path: str, wait: bool = False) -> None:
         verify_type("path", path, str)

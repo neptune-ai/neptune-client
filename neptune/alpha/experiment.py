@@ -31,7 +31,7 @@ from neptune.alpha.attributes.series.string_series import StringSeries as String
 from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.handler import Handler
-from neptune.alpha.internal.attribute_setter_value_visitor import AttributeSetterValueVisitor
+from neptune.alpha.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.alpha.internal.backends.api_model import AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.background_job import BackgroundJob
@@ -82,9 +82,9 @@ class Experiment(Handler):
             old_attr = self._structure.get(parsed_path)
             if old_attr:
                 raise MetadataInconsistency("Attribute {} is already defined".format(path))
-            visitor = AttributeSetterValueVisitor(self, parsed_path, wait)
-            attr = visitor.visit(value)
+            attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
             self._structure.set(parsed_path, attr)
+            attr.assign(value, wait)
             return attr
 
     def ping(self):
@@ -93,6 +93,10 @@ class Experiment(Handler):
     def get_attribute(self, path: str) -> Optional[Attribute]:
         with self._lock:
             return self._structure.get(parse_path(path))
+
+    def set_attribute(self, path: str, attribute: Attribute) -> Optional[Attribute]:
+        with self._lock:
+            return self._structure.set(parse_path(path), attribute)
 
     def pop(self, path: str, wait: bool = False):
         with self._lock:
@@ -140,3 +144,5 @@ class Experiment(Handler):
             self._structure.set(_path, StringSetAttr(self, _path))
         if _type == AttributeType.GIT_REF:
             self._structure.set(_path, GitRefAttr(self, _path))
+        if _type == AttributeType.EXPERIMENT_STATE:
+            self._structure.set(_path, StringAttr(self, _path))

@@ -137,7 +137,7 @@ class TestHandler(unittest.TestCase):
 
     def test_add(self):
         exp = init(connection_mode="debug", flush_period=0.5)
-        exp['some/str/val'].add("some text", "something else", wait=True)
+        exp['some/str/val'].add(["some text", "something else"], wait=True)
         self.assertEqual(exp['some/str/val'].get(), {"some text", "something else"})
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
 

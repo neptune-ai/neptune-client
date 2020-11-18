@@ -40,52 +40,35 @@ if TYPE_CHECKING:
     from neptune.alpha import Experiment
 
 
-class AttributeSetterValueVisitor(ValueVisitor[Attribute]):
+class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
-    def __init__(self, _experiment: 'Experiment', path: List[str], wait: bool = False):
+    def __init__(self, _experiment: 'Experiment', path: List[str]):
         self._experiment = _experiment
         self._path = path
-        self._wait = wait
 
-    def visit_float(self, value: Float) -> Attribute:
-        attr = FloatAttr(self._experiment, self._path)
-        attr.assign(value, self._wait)
-        return attr
+    def visit_float(self, _: Float) -> Attribute:
+        return FloatAttr(self._experiment, self._path)
 
-    def visit_string(self, value: String) -> Attribute:
-        attr = StringAttr(self._experiment, self._path)
-        attr.assign(value, self._wait)
-        return attr
+    def visit_string(self, _: String) -> Attribute:
+        return StringAttr(self._experiment, self._path)
 
-    def visit_datetime(self, value: Datetime) -> Attribute:
-        attr = DatetimeAttr(self._experiment, self._path)
-        attr.assign(value, self._wait)
-        return attr
+    def visit_datetime(self, _: Datetime) -> Attribute:
+        return DatetimeAttr(self._experiment, self._path)
 
-    def visit_file(self, value: File) -> Attribute:
-        attr = FileAttr(self._experiment, self._path)
-        attr.assign(value, self._wait)
-        return attr
+    def visit_file(self, _: File) -> Attribute:
+        return FileAttr(self._experiment, self._path)
 
-    def visit_float_series(self, value: FloatSeries) -> Attribute:
-        attr = FloatSeriesAttr(self._experiment, self._path)
-        attr.assign(value, self._wait)
-        return attr
+    def visit_float_series(self, _: FloatSeries) -> Attribute:
+        return FloatSeriesAttr(self._experiment, self._path)
 
-    def visit_string_series(self, value: StringSeries) -> Attribute:
-        attr = StringSeriesAttr(self._experiment, self._path)
-        attr.assign(value, self._wait)
-        return attr
+    def visit_string_series(self, _: StringSeries) -> Attribute:
+        return StringSeriesAttr(self._experiment, self._path)
 
-    def visit_image_series(self, value: ImageSeries) -> Attribute:
-        attr = ImageSeriesAttr(self._experiment, self._path)
-        attr.assign(value, self._wait)
-        return attr
+    def visit_image_series(self, _: ImageSeries) -> Attribute:
+        return ImageSeriesAttr(self._experiment, self._path)
 
-    def visit_string_set(self, value: StringSet) -> Attribute:
-        attr = StringSetAttr(self._experiment, self._path)
-        attr.assign(value, self._wait)
-        return attr
+    def visit_string_set(self, _: StringSet) -> Attribute:
+        return StringSetAttr(self._experiment, self._path)
 
-    def visit_git_ref(self, value: GitRef) -> Attribute:
+    def visit_git_ref(self, _: GitRef) -> Attribute:
         raise OperationNotSupported("Cannot create custom attribute of type GitRef")
