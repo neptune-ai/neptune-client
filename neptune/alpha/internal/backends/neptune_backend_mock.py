@@ -130,7 +130,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_file(self, _: File) -> AttributeType:
             return AttributeType.FILE
 
-        def visit_file_set(self, value: FileSet) -> Ret:
+        def visit_file_set(self, value: FileSet) -> AttributeType:
             return AttributeType.FILE_SET
 
         def visit_float_series(self, _: FloatSeries) -> AttributeType:
