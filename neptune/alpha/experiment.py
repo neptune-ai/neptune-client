@@ -15,9 +15,12 @@
 #
 
 import threading
+import time
 import uuid
 from datetime import datetime
 from typing import Dict, Any, Union, List, Optional
+
+import atexit
 
 from neptune.alpha.attributes.atoms.file import File as FileAttr
 from neptune.alpha.attributes.atoms.float import Float as FloatAttr
@@ -61,10 +64,24 @@ class Experiment(Handler):
         self._bg_job = background_job
         self._structure = ExperimentStructure[Attribute]()
         self._lock = threading.RLock()
+        self._started = False
 
     def start(self):
+        atexit.register(self._shutdown_hook)
         self._op_processor.start()
         self._bg_job.start(self)
+        self._started = True
+
+    def stop(self, seconds: Optional[float] = None):
+        if not self._started:
+            return
+        self._started = False
+        ts = time.time()
+        self._bg_job.stop()
+        self._bg_job.join(seconds)
+        with self._lock:
+            sec_left = None if not seconds else seconds - (time.time() - ts)
+            self._op_processor.stop(sec_left)
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
@@ -111,11 +128,6 @@ class Experiment(Handler):
         with self._lock:
             self._op_processor.wait()
 
-    def close(self):
-        with self._lock:
-            self._bg_job.stop()
-            self._op_processor.stop()
-
     def sync(self, wait: bool = True):
         with self._lock:
             if wait:
@@ -146,3 +158,6 @@ class Experiment(Handler):
             self._structure.set(_path, GitRefAttr(self, _path))
         if _type == AttributeType.EXPERIMENT_STATE:
             self._structure.set(_path, StringAttr(self, _path))
+
+    def _shutdown_hook(self):
+        self.stop()

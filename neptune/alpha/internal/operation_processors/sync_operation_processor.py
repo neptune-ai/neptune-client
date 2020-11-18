@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import uuid
+from typing import Optional
 
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.operation import Operation
@@ -37,5 +38,5 @@ class SyncOperationProcessor(OperationProcessor):
     def start(self):
         pass
 
-    def stop(self):
+    def stop(self, seconds: Optional[float] = None):
         pass

@@ -17,6 +17,8 @@ import sys
 import uuid
 from threading import Event
 from time import time, sleep
+from typing import Optional, List
+
 import click
 
 from neptune.alpha.exceptions import ConnectionLost
@@ -69,10 +71,17 @@ class AsyncOperationProcessor(OperationProcessor):
     def start(self):
         self._consumer.start()
 
-    def stop(self):
+    def stop(self, seconds: Optional[float] = None):
+        ts = time()
+        self._queue.flush()
+        self._consumer.disable_sleep()
+        self._consumer.wake_up()
+        self._queue.wait_for_empty(seconds)
         self._consumer.interrupt()
-        self._consumer.join()
-        self._queue.close()
+        sec_left = None if not seconds else seconds - (time() - ts)
+        self._consumer.join(sec_left)
+        # Do not close queue. According to specification only synchronization thread should be stopped.
+        # self._queue.close()
 
     class ConsumerThread(Daemon):
 
@@ -94,9 +103,13 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._last_flush = ts
                 self._processor._queue.flush()
 
-            batch = self._processor._queue.get_batch(self._batch_size)
-            if not batch:
-                return
+            while True:
+                batch = self._processor._queue.get_batch(self._batch_size)
+                if not batch:
+                    return
+                self.process_batch(batch)
+
+        def process_batch(self, batch: List[VersionedOperation]) -> None:
             # TODO: Handle Metadata errors
             for retry in range(0, self.RETRIES):
                 try:

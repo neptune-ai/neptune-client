@@ -19,7 +19,7 @@ import os
 import time
 
 from itertools import groupby
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from neptune.alpha.types.series import FloatSeries
 
@@ -81,8 +81,8 @@ class HardwareMetricReportingJob(BackgroundJob):
             return
         self._thread.interrupt()
 
-    def join(self):
-        self._thread.join()
+    def join(self, seconds: Optional[float] = None):
+        self._thread.join(seconds)
 
     @staticmethod
     def get_attribute_name(resource_type, gauge_name) -> str:

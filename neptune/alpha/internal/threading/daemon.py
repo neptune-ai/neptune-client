@@ -32,12 +32,16 @@ class Daemon(threading.Thread):
     def wake_up(self):
         self._event.set()
 
+    def disable_sleep(self):
+        self._sleep_time = 0
+
     def run(self):
-        while True:
+        while True and not self._interrupted:
             self.work()
             if self._sleep_time > 0 and not self._interrupted:
                 self._event.wait(timeout=self._sleep_time)
                 self._event.clear()
+
             if self._interrupted:
                 break
 

@@ -16,7 +16,7 @@
 
 import abc
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
     from neptune.alpha.experiment import Experiment
@@ -33,5 +33,5 @@ class BackgroundJob:
         pass
 
     @abc.abstractmethod
-    def join(self):
+    def join(self, seconds: Optional[float] = None):
         pass

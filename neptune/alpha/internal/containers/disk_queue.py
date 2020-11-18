@@ -15,6 +15,7 @@
 #
 import json
 import os
+from threading import Event
 from typing import TypeVar, List, Callable, Optional
 
 from neptune.alpha.exceptions import MalformedOperation
@@ -40,6 +41,7 @@ class DiskQueue(StorageQueue[T]):
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
+        self._event_empty = Event()
 
         try:
             os.makedirs(self._dir_path)
@@ -53,6 +55,7 @@ class DiskQueue(StorageQueue[T]):
         self._file_size = 0
 
     def put(self, obj: T) -> None:
+        self._event_empty.clear()
         _json = json.dumps(self._to_dict(obj))
         if self._file_size + len(_json) > self._max_file_size:
             self._writer.close()
@@ -66,6 +69,7 @@ class DiskQueue(StorageQueue[T]):
         _json = self._reader.get()
         if not _json:
             if self._read_file_idx >= self._write_file_idx:
+                self._event_empty.set()
                 return None
             self._reader.close()
             if not dry_run:
@@ -98,6 +102,10 @@ class DiskQueue(StorageQueue[T]):
     def close(self):
         self._reader.close()
         self._writer.close()
+
+    def wait_for_empty(self, seconds: Optional[float] = None):
+        self._event_empty.wait(seconds)
+        self._event_empty.clear()
 
     def _current_read_log_file(self) -> str:
         return "{}/{}-{}.log".format(self._dir_path, self._log_files_name, self._read_file_idx)

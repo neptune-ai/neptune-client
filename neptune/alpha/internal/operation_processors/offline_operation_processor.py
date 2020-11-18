@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Optional
 
 from neptune.alpha.internal.containers.storage_queue import StorageQueue
 from neptune.alpha.internal.operation import Operation, VersionedOperation
@@ -36,5 +37,5 @@ class OfflineOperationProcessor(OperationProcessor):
     def start(self):
         pass
 
-    def stop(self):
+    def stop(self, seconds: Optional[float] = None):
         pass

@@ -15,7 +15,7 @@
 #
 
 import abc
-from typing import Generic, TypeVar, List
+from typing import Generic, TypeVar, List, Optional
 
 T = TypeVar('T')
 
@@ -46,4 +46,8 @@ class StorageQueue(Generic[T]):
 
     @abc.abstractmethod
     def close(self):
+        pass
+
+    @abc.abstractmethod
+    def wait_for_empty(self, seconds: Optional[float] = None):
         pass
