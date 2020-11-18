@@ -16,8 +16,8 @@
 import os
 import uuid
 from datetime import datetime
-from typing import Optional, List, Dict
 from shutil import copyfile
+from typing import Optional, List, Dict
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
@@ -41,7 +41,7 @@ from neptune.alpha.types.series.image_series import ImageSeries
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.types.sets.string_set import StringSet
 from neptune.alpha.types.value import Value
-from neptune.alpha.types.value_visitor import ValueVisitor, Ret
+from neptune.alpha.types.value_visitor import ValueVisitor
 
 
 class NeptuneBackendMock(NeptuneBackend):
