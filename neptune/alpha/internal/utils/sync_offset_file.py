@@ -20,11 +20,12 @@ from typing import Optional
 
 class SyncOffsetFile:
     def __init__(self, experiment_path: Path):
-        self._file = open(experiment_path / 'offset', 'a+')
+        self._file = open(experiment_path / 'offset', 'w+')
 
     def write(self, offset: int) -> None:
-        self._file.truncate()
+        self._file.seek(0)
         self._file.write(str(offset))
+        self._file.truncate()
         self._file.flush()
 
     def read(self) -> Optional[int]:
