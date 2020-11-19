@@ -21,7 +21,6 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 import mock
 from mock import MagicMock, patch
 
-from neptune.alpha.exceptions import FileUploadError
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_attributes, \
     download_file_attribute, _get_content_disposition_filename
 from neptune.utils import IS_WINDOWS
