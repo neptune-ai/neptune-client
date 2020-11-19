@@ -16,7 +16,7 @@
 
 import logging
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from neptune.alpha.internal.background_job import BackgroundJob
 from neptune.alpha.internal.threading.daemon import Daemon
@@ -44,8 +44,8 @@ class PingBackgroundJob(BackgroundJob):
             return
         self._thread.interrupt()
 
-    def join(self):
-        self._thread.join()
+    def join(self, seconds: Optional[float] = None):
+        self._thread.join(seconds)
 
     class ReportingThread(Daemon):
 

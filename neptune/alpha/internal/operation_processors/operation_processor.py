@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import abc
+from typing import Optional
 
 from neptune.alpha.internal.operation import Operation
 
@@ -33,5 +34,5 @@ class OperationProcessor:
         pass
 
     @abc.abstractmethod
-    def stop(self):
+    def stop(self, seconds: Optional[float] = None):
         pass

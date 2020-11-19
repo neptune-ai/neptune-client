@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from neptune.alpha.internal.background_job import BackgroundJob
 from neptune.alpha.internal.streams.std_stream_capture_logger import StdoutCaptureLogger, StderrCaptureLogger
@@ -35,7 +35,7 @@ class StdoutCaptureBackgroundJob(BackgroundJob):
     def stop(self):
         self._logger.close()
 
-    def join(self):
+    def join(self, seconds: Optional[float] = None):
         pass
 
 
@@ -51,5 +51,5 @@ class StderrCaptureBackgroundJob(BackgroundJob):
     def stop(self):
         self._logger.close()
 
-    def join(self):
+    def join(self, seconds: Optional[float] = None):
         pass

@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, TYPE_CHECKING
+import time
+from typing import List, TYPE_CHECKING, Optional
 
 from neptune.alpha.internal.background_job import BackgroundJob
 
@@ -34,6 +35,8 @@ class BackgroundJobList(BackgroundJob):
         for job in self._jobs:
             job.stop()
 
-    def join(self):
+    def join(self, seconds: Optional[float] = None):
+        ts = time.time()
         for job in self._jobs:
-            job.join()
+            sec_left = None if seconds is None else seconds - (time.time() - ts)
+            job.join(sec_left)
