@@ -25,7 +25,7 @@ from typing import Sequence, Iterable, List, Optional, Tuple, Any
 import click
 
 from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY, \
-    OFFLINE_NAME_PREFIX
+    OFFLINE_NAME_PREFIX, ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import ProjectNotFound, NeptuneException
 from neptune.alpha.internal.backends.api_model import Project, Experiment
@@ -100,14 +100,17 @@ def is_valid_uuid(val: Any) -> bool:
 # Listing experiments to be synchronized
 #######################################################################################################################
 
-
 def is_experiment_synced(experiment_path: Path) -> bool:
-    sync_offset_file = SyncOffsetFile(experiment_path)
+    return all(is_execution_synced(execution_path) for execution_path in experiment_path.iterdir())
+
+
+def is_execution_synced(execution_path: Path) -> bool:
+    sync_offset_file = SyncOffsetFile(execution_path)
     sync_offset = sync_offset_file.read()
     if sync_offset is None:
         return False
 
-    disk_queue = DiskQueue(str(experiment_path), OPERATIONS_DISK_QUEUE_PREFIX,
+    disk_queue = DiskQueue(str(execution_path), OPERATIONS_DISK_QUEUE_PREFIX,
                            VersionedOperation.to_dict, VersionedOperation.from_dict)
     previous_operation = None
     while True:
@@ -134,7 +137,7 @@ def get_offline_experiments_ids(base_path: Path) -> List[str]:
 def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Experiment]]:
     synced_experiment_uuids = []
     unsynced_experiment_uuids = []
-    for experiment_path in base_path.iterdir():
+    for experiment_path in (base_path / ASYNC_DIRECTORY).iterdir():
         if is_valid_uuid(experiment_path.name):
             experiment_uuid = experiment_path.name
             if is_experiment_synced(experiment_path):
@@ -155,12 +158,12 @@ flag. Alternatively, you can set the environment variable
 '''.format(PROJECT_ENV_NAME)
 
 
-def list_experiments(path: Path, synced_experiments: Sequence[Experiment],
+def list_experiments(base_path: Path, synced_experiments: Sequence[Experiment],
                      unsynced_experiments: Sequence[Experiment], offline_experiments_ids: Sequence[str])\
                      -> None:
 
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
-        click.echo('There are no Neptune experiments in {}'.format(path))
+        click.echo('There are no Neptune experiments in {}'.format(base_path))
         sys.exit(1)
 
     if unsynced_experiments:
@@ -182,20 +185,20 @@ def list_experiments(path: Path, synced_experiments: Sequence[Experiment],
 
     if not unsynced_experiments:
         click.echo()
-        click.echo('There are no unsynchronized experiments in {}'.format(path))
+        click.echo('There are no unsynchronized experiments in {}'.format(base_path))
 
     if not synced_experiments:
         click.echo()
-        click.echo('There are no synchronized experiments in {}'.format(path))
+        click.echo('There are no synchronized experiments in {}'.format(base_path))
 
     click.echo()
     click.echo('Please run with the `neptune sync --help` to see example commands.')
 
 
-def synchronization_status(path: Path) -> None:
-    synced_experiments, unsynced_experiments = partition_experiments(path)
-    offline_experiments_ids = get_offline_experiments_ids(path)
-    list_experiments(path, synced_experiments, unsynced_experiments, offline_experiments_ids)
+def synchronization_status(base_path: Path) -> None:
+    synced_experiments, unsynced_experiments = partition_experiments(base_path)
+    offline_experiments_ids = get_offline_experiments_ids(base_path)
+    list_experiments(base_path, synced_experiments, unsynced_experiments, offline_experiments_ids)
 
 
 #######################################################################################################################
@@ -203,19 +206,23 @@ def synchronization_status(path: Path) -> None:
 #######################################################################################################################
 
 
-def sync_experiment(path: Path, qualified_experiment_name: str) -> None:
-    experiment_uuid = uuid.UUID(path.name)
+def sync_experiment(experiment_path: Path, qualified_experiment_name: str) -> None:
+    experiment_uuid = uuid.UUID(experiment_path.name)
     click.echo('Synchronising {}'.format(qualified_experiment_name))
+    for execution_path in experiment_path.iterdir():
+        sync_execution(execution_path, experiment_uuid)
+    click.echo('Synchronization of experiment {} completed.'.format(qualified_experiment_name))
 
-    disk_queue = DiskQueue(str(path), OPERATIONS_DISK_QUEUE_PREFIX,
+
+def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID) -> None:
+    disk_queue = DiskQueue(str(execution_path), OPERATIONS_DISK_QUEUE_PREFIX,
                            VersionedOperation.to_dict, VersionedOperation.from_dict)
-    sync_offset_file = SyncOffsetFile(path)
+    sync_offset_file = SyncOffsetFile(execution_path)
     sync_offset = sync_offset_file.read() or 0
 
     while True:
         batch = disk_queue.get_batch(1000)
         if not batch:
-            click.echo('Synchronization of experiment {} completed.'.format(qualified_experiment_name))
             return
         if batch[0].version > sync_offset:
             pass
@@ -231,8 +238,8 @@ def sync_experiment(path: Path, qualified_experiment_name: str) -> None:
         sync_offset = batch[-1].version
 
 
-def sync_all_registered_experiments(path: Path) -> None:
-    for experiment_path in path.iterdir():
+def sync_all_registered_experiments(base_path: Path) -> None:
+    for experiment_path in (base_path / ASYNC_DIRECTORY).iterdir():
         if is_valid_uuid(experiment_path.name) and not is_experiment_synced(experiment_path):
             experiment_uuid = experiment_path.name
             experiment = get_experiment(experiment_uuid)
@@ -240,15 +247,16 @@ def sync_all_registered_experiments(path: Path) -> None:
                 sync_experiment(experiment_path, get_qualified_name(experiment))
 
 
-def sync_selected_registered_experiments(path: Path, qualified_experiment_names: Sequence[str]) -> None:
+def sync_selected_registered_experiments(base_path: Path, qualified_experiment_names: Sequence[str]) -> None:
     for name in qualified_experiment_names:
         experiment = get_experiment(name)
         if experiment:
-            experiment_path = path / str(experiment.uuid)
+            experiment_path = base_path / ASYNC_DIRECTORY / str(experiment.uuid)
             if experiment_path.exists():
                 sync_experiment(experiment_path, name)
             else:
-                click.echo("Warning: Experiment '{}' does not exist in location {}".format(name, path), file=sys.stderr)
+                click.echo("Warning: Experiment '{}' does not exist in location {}".format(name, base_path),
+                           file=sys.stderr)
 
 
 def register_offline_experiment(project: Project) -> Optional[Experiment]:
@@ -263,7 +271,8 @@ def register_offline_experiment(project: Project) -> Optional[Experiment]:
 
 
 def move_offline_experiment(base_path: Path, offline_uuid: str, server_uuid: str) -> None:
-    (base_path / OFFLINE_DIRECTORY / offline_uuid).rename(base_path / server_uuid)
+    (base_path / ASYNC_DIRECTORY / server_uuid).mkdir(parents=True)
+    (base_path / OFFLINE_DIRECTORY / offline_uuid).rename(base_path / ASYNC_DIRECTORY / server_uuid / "exec-0-offline")
 
 
 def register_offline_experiments(base_path: Path, project: Project,
@@ -273,7 +282,7 @@ def register_offline_experiments(base_path: Path, project: Project,
         if (base_path / OFFLINE_DIRECTORY / experiment_uuid).is_dir():
             experiment = register_offline_experiment(project)
             if experiment:
-                move_offline_experiment(base_path, experiment_uuid, str(experiment.uuid))
+                move_offline_experiment(base_path, offline_uuid=experiment_uuid, server_uuid=str(experiment.uuid))
                 click.echo('Offline experiment {} registered as {}'
                            .format(experiment_uuid, get_qualified_name(experiment)))
                 result.append(experiment)

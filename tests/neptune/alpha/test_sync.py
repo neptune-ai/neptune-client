@@ -42,17 +42,19 @@ def prepare_experiments(path):
     sync_exp = an_experiment()
     registered_experiments = (unsync_exp, sync_exp)
 
+    execution_id = "exec-0"
+
     for exp in registered_experiments:
-        exp_path = path / str(exp.uuid)
-        exp_path.mkdir()
+        exp_path = path / "async" / str(exp.uuid) / execution_id
+        exp_path.mkdir(parents=True)
         queue = DiskQueue(str(exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
         queue.put({'version': 0, 'op': 'op-0'})
         queue.put({'version': 1, 'op': 'op-1'})
 
-    sync_offset_file = SyncOffsetFile(path / str(unsync_exp.uuid))
+    sync_offset_file = SyncOffsetFile(path / "async" / str(unsync_exp.uuid) / execution_id)
     sync_offset_file.write(0)
 
-    sync_offset_file = SyncOffsetFile(path / str(sync_exp.uuid))
+    sync_offset_file = SyncOffsetFile(path / "async" / str(sync_exp.uuid) / execution_id)
     sync_offset_file.write(1)
 
     def get_experiment_impl(experiment_id):
@@ -96,6 +98,7 @@ def test_list_experiments(tmp_path, mocker, capsys):
 
 
 def test_list_experiments_when_no_experiment(tmp_path, capsys):
+    (tmp_path / "async").mkdir()
     # when
     with pytest.raises(SystemExit):
         synchronization_status(tmp_path)
