@@ -151,9 +151,7 @@ class TestHostedFileOperations(unittest.TestCase):
                 "reset": "True"
             })
 
-        self.assertEqual([
-            FileUploadError(os.path.abspath("missing_file"), "No files found for a path."),
-        ], result)
+        self.assertEqual([], result)
 
 
     def test_get_content_disposition_filename(self):
