@@ -63,11 +63,7 @@ def upload_file_attributes(swagger_client: SwaggerClient,
 
     expanded_files = set()
     for file_glob in file_globs:
-        expanded_file_glob = set(glob(file_glob))
-        if expanded_file_glob:
-            expanded_files |= expanded_file_glob
-        else:
-            result.append(FileUploadError(file_glob, "No files found for a path."))
+        expanded_files |= set(glob(file_glob))
 
     absolute_paths = list(os.path.abspath(expanded_file) for expanded_file in expanded_files)
     try:
@@ -87,14 +83,14 @@ def upload_file_attributes(swagger_client: SwaggerClient,
     try:
         unique_upload_entries = scan_unique_upload_entries(upload_entries)
         for package in split_upload_files(unique_upload_entries):
-            if package.is_empty():
+            if package.is_empty() and not reset:
                 continue
 
             uploading_multiple_entries = package.len > 1
             creating_a_single_empty_dir = package.len == 1 and not package.items[0].is_stream() \
                                           and os.path.isdir(package.items[0].source_path)
 
-            if uploading_multiple_entries or creating_a_single_empty_dir:
+            if uploading_multiple_entries or creating_a_single_empty_dir or package.is_empty():
                 data = compress_to_tar_gz_in_memory(upload_entries=package.items)
                 url = swagger_client.swagger_spec.api_url \
                       + swagger_client.api.uploadFileSetAttributeTar.operation.path_name
