@@ -36,7 +36,7 @@ from neptune.alpha.types.series.float_series import FloatSeries
 from neptune.alpha.types.series.image_series import ImageSeries
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.types.sets.string_set import StringSet
-from neptune.alpha.types.value_visitor import ValueVisitor, Ret
+from neptune.alpha.types.value_visitor import ValueVisitor
 
 if TYPE_CHECKING:
     from neptune.alpha import Experiment
