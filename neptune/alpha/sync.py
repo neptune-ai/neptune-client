@@ -210,10 +210,11 @@ def sync_experiment(experiment_path: Path, qualified_experiment_name: str) -> No
     experiment_uuid = uuid.UUID(experiment_path.name)
     click.echo('Synchronising {}'.format(qualified_experiment_name))
     for execution_path in experiment_path.iterdir():
-        sync_execution(execution_path, experiment_uuid, qualified_experiment_name)
+        sync_execution(execution_path, experiment_uuid)
+    click.echo('Synchronization of experiment {} completed.'.format(qualified_experiment_name))
 
 
-def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID, qualified_experiment_name: str) -> None:
+def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID) -> None:
     disk_queue = DiskQueue(str(execution_path), OPERATIONS_DISK_QUEUE_PREFIX,
                            VersionedOperation.to_dict, VersionedOperation.from_dict)
     sync_offset_file = SyncOffsetFile(execution_path)
@@ -222,7 +223,6 @@ def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID, qualified_e
     while True:
         batch = disk_queue.get_batch(1000)
         if not batch:
-            click.echo('Synchronization of experiment {} completed.'.format(qualified_experiment_name))
             return
         if batch[0].version > sync_offset:
             pass
@@ -271,7 +271,8 @@ def register_offline_experiment(project: Project) -> Optional[Experiment]:
 
 
 def move_offline_experiment(base_path: Path, offline_uuid: str, server_uuid: str) -> None:
-    (base_path / OFFLINE_DIRECTORY / offline_uuid).rename(base_path / ASYNC_DIRECTORY / server_uuid)
+    (base_path / ASYNC_DIRECTORY / server_uuid).mkdir(parents=True)
+    (base_path / OFFLINE_DIRECTORY / offline_uuid).rename(base_path / ASYNC_DIRECTORY / server_uuid / "exec-0-offline")
 
 
 def register_offline_experiments(base_path: Path, project: Project,
