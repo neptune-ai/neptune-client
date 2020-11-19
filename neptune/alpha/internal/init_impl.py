@@ -15,6 +15,7 @@
 #
 
 import os
+from datetime import datetime
 
 from pathlib import Path
 from platform import node as get_hostname
@@ -24,7 +25,8 @@ import click
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY, \
+    ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import MissingProject
 from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
@@ -99,21 +101,27 @@ def init(
         exp = backend.create_experiment(project_obj.uuid, git_ref)
 
     if connection_mode == "async":
-        experiment_path = "{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, exp.uuid)
+        experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, ASYNC_DIRECTORY, exp.uuid)
+        try:
+            execution_id = len(os.listdir(experiment_path))
+        except FileNotFoundError:
+            execution_id = 0
+        execution_path = "{}/exec-{}-{}".format(experiment_path, execution_id, datetime.now())
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
-            DiskQueue(experiment_path,
+            DiskQueue(execution_path,
                       OPERATIONS_DISK_QUEUE_PREFIX,
                       VersionedOperation.to_dict,
                       VersionedOperation.from_dict),
             backend,
-            SyncOffsetFile(Path(experiment_path)),
+            SyncOffsetFile(Path(execution_path)),
             sleep_time=flush_period)
     elif connection_mode == "sync":
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
     elif connection_mode == "debug":
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
     elif connection_mode == "offline":
+        # Experiment was returned by mocked backend and has some random UUID.
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
         storage_queue = DiskQueue(experiment_path,
                                   OPERATIONS_DISK_QUEUE_PREFIX,

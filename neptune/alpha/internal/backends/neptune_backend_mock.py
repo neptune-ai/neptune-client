@@ -19,7 +19,8 @@ from datetime import datetime
 from shutil import copyfile
 from typing import Optional, List, Dict
 
-from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
+from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound, \
+    ExperimentNotFound
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -58,7 +59,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return Project(uuid.uuid4(), "sandbox", "workspace")
 
     def create_experiment(self, project_uuid: uuid.UUID, git_ref: Optional[GitRef] = None) -> Experiment:
-        short_id = "SAN-{}".format(len(self._experiments) + 1)
+        short_id = "OFFLINE-{}".format(len(self._experiments) + 1)
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
         self._experiments[new_experiment_uuid].set(["sys", "id"], String(short_id))
@@ -69,7 +70,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return Experiment(new_experiment_uuid, short_id, 'workspace', 'sandbox')
 
     def get_experiment(self, experiment_id: str) -> Experiment:
-        return Experiment(uuid.uuid4(), 'SAN-123', 'workspace', 'sandbox')
+        raise ExperimentNotFound(experiment_id)
 
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
         for op in operations:
