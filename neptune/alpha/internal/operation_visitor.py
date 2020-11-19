@@ -18,7 +18,7 @@ from typing import TypeVar, Generic
 
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries
+    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet
 
 Ret = TypeVar('Ret')
 
@@ -42,6 +42,10 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_upload_file(self, op: UploadFile) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_upload_file_set(self, op: UploadFileSet) -> Ret:
         pass
 
     @abc.abstractmethod

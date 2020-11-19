@@ -39,6 +39,7 @@ class TestOperations(unittest.TestCase):
             AssignString(TestOperations._random_path(), "a\rsdf\thr"),
             AssignDatetime(TestOperations._random_path(), now.replace(microsecond=1000*int(now.microsecond/1000))),
             UploadFile(TestOperations._random_path(), "file/path/f/txt"),
+            UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"]),
             LogFloats(TestOperations._random_path(), [
                 LogFloats.ValueType(5, 4, 500),
                 LogFloats.ValueType(3, None, 1000),

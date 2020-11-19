@@ -17,6 +17,7 @@ from typing import List, TYPE_CHECKING
 
 from neptune.alpha.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.alpha.attributes.atoms.file import File as FileAttr
+from neptune.alpha.attributes.file_set import FileSet as FileSetAttr
 from neptune.alpha.attributes.atoms.float import Float as FloatAttr
 from neptune.alpha.attributes.atoms.string import String as StringAttr
 from neptune.alpha.attributes.attribute import Attribute
@@ -30,6 +31,7 @@ from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
+from neptune.alpha.types.file_set import FileSet
 from neptune.alpha.types.series.float_series import FloatSeries
 from neptune.alpha.types.series.image_series import ImageSeries
 from neptune.alpha.types.series.string_series import StringSeries
@@ -57,6 +59,9 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
     def visit_file(self, _: File) -> Attribute:
         return FileAttr(self._experiment, self._path)
+
+    def visit_file_set(self, _: FileSet) -> Attribute:
+        return FileSetAttr(self._experiment, self._path)
 
     def visit_float_series(self, _: FloatSeries) -> Attribute:
         return FloatSeriesAttr(self._experiment, self._path)

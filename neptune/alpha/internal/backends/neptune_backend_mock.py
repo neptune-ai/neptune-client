@@ -16,8 +16,8 @@
 import os
 import uuid
 from datetime import datetime
-from typing import Optional, List, Dict
 from shutil import copyfile
+from typing import Optional, List, Dict
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
@@ -28,13 +28,14 @@ from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     LogStrings, LogFloats, LogImages, \
     ClearFloatLog, ClearStringLog, ClearStringSet, ClearImageLog, \
     RemoveStrings, AddStrings, \
-    UploadFile, AssignDatetime, ConfigFloatSeries
+    UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet
 from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.types.atoms import GitRef
 from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
+from neptune.alpha.types.file_set import FileSet
 from neptune.alpha.types.series.float_series import FloatSeries
 from neptune.alpha.types.series.image_series import ImageSeries
 from neptune.alpha.types.series.string_series import StringSeries
@@ -129,6 +130,9 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_file(self, _: File) -> AttributeType:
             return AttributeType.FILE
 
+        def visit_file_set(self, _: FileSet) -> AttributeType:
+            return AttributeType.FILE_SET
+
         def visit_float_series(self, _: FloatSeries) -> AttributeType:
             return AttributeType.FLOAT_SERIES
 
@@ -169,6 +173,11 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("save", File.__name__)
             return File(op.file_path)
+
+        def visit_upload_file_set(self, op: UploadFileSet) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, FileSet):
+                raise self._create_type_error("save", FileSet.__name__)
+            return FileSet(op.file_globs)
 
         def visit_log_floats(self, op: LogFloats) -> Optional[Value]:
             raw_values = [x.value for x in op.values]

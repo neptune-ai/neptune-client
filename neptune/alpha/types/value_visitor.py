@@ -21,6 +21,7 @@ from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
 from neptune.alpha.types.atoms.file import File
+from neptune.alpha.types.file_set import FileSet
 from neptune.alpha.types.series.float_series import FloatSeries
 from neptune.alpha.types.series.image_series import ImageSeries
 from neptune.alpha.types.series.string_series import StringSeries
@@ -49,6 +50,10 @@ class ValueVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_file(self, value: File) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_file_set(self, value: FileSet) -> Ret:
         pass
 
     @abc.abstractmethod

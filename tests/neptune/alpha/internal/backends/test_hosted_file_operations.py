@@ -21,10 +21,8 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 import mock
 from mock import MagicMock, patch
 
-from neptune.alpha.exceptions import FileUploadError
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_attributes, \
     download_file_attribute, _get_content_disposition_filename
-from neptune.internal.storage.storage_utils import UploadEntry
 from neptune.utils import IS_WINDOWS
 
 
@@ -33,7 +31,7 @@ class TestHostedFileOperations(unittest.TestCase):
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
-    def test_upload_attribute(self, upload_loop):
+    def test_upload_file_attribute(self, upload_loop_mock):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
@@ -44,12 +42,11 @@ class TestHostedFileOperations(unittest.TestCase):
                 swagger_client=swagger_mock,
                 experiment_uuid=exp_uuid,
                 attribute="target/path.txt",
-                file_path=f.name
-            )
+                file_path=f.name)
 
         # then
         self.assertEqual(None, result)
-        upload_loop.assert_called_once_with(
+        upload_loop_mock.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
             url="ui.neptune.ai/attributes/upload",
             file_chunk_stream=mock.ANY,
@@ -57,110 +54,104 @@ class TestHostedFileOperations(unittest.TestCase):
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
                 "filename": os.path.basename(f.name)
-            }
-        )
+            })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
-    def test_single_file(self, upload_loop):
+    @patch('neptune.alpha.internal.backends.hosted_file_operations.glob',
+           new=lambda path: [path.replace('*', 'file.txt')])
+    def test_upload_single_file_in_file_set_attribute(self, upload_loop_mock):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
 
         # when
-        with NamedTemporaryFile("w") as f:
+        with NamedTemporaryFile("w") as temp_file:
             result = upload_file_attributes(
+                swagger_client=swagger_mock,
                 experiment_uuid=exp_uuid,
-                upload_entries=[UploadEntry(f.name, "target/path.txt")],
-                swagger_client=swagger_mock
-            )
+                attribute="some/attribute",
+                file_globs=[temp_file.name],
+                reset=True)
 
         # then
         self.assertEqual([], result)
-        upload_loop.assert_called_once_with(
+        upload_loop_mock.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/uploadPath",
+            url="ui.neptune.ai/uploadFileSetChunk",
             file_chunk_stream=mock.ANY,
             query_params={
-                "experimentIdentifier": str(exp_uuid),
-                "resource": "attributes",
-                "pathParam": "target/path.txt"
-            }
-        )
+                "experimentId": str(exp_uuid),
+                "attribute": "some/attribute",
+                "reset": "True",
+                "path": os.path.basename(temp_file.name)
+            })
 
-    @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    def test_multiple_files(self, raw_upload):
+    @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
+    @patch('neptune.alpha.internal.backends.hosted_file_operations.glob',
+           new=lambda path: [path.replace('*', 'file.txt')])
+    def test_upload_multiple_files_in_file_set_attribute(self, upload_raw_data_mock):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
 
         # when
-        with NamedTemporaryFile("w") as file1:
-            with NamedTemporaryFile("w") as file2:
+        with NamedTemporaryFile("w") as temp_file_1:
+            with NamedTemporaryFile("w") as temp_file_2:
                 result = upload_file_attributes(
+                    swagger_client=swagger_mock,
                     experiment_uuid=exp_uuid,
-                    upload_entries=[
-                        UploadEntry(file1.name, "target/path1.txt"),
-                        UploadEntry(file2.name, "target/path3.txt"),
-                    ],
-                    swagger_client=swagger_mock
-                )
+                    attribute="some/attribute",
+                    file_globs=[temp_file_1.name, temp_file_2.name],
+                    reset=True)
 
         # then
         self.assertEqual([], result)
 
-        raw_upload.assert_called_once_with(
+        upload_raw_data_mock.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/uploadTarStream",
+            url="ui.neptune.ai/uploadFileSetTar",
             data=mock.ANY,
             headers={"Content-Type": "application/octet-stream"},
             query_params={
-                "experimentIdentifier": str(exp_uuid),
-                "resource": "attributes",
-            }
-        )
+                "experimentId": str(exp_uuid),
+                "attribute": "some/attribute",
+                "reset": "True"
+            })
 
-    @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    def test_missing_files_or_directory(self, raw_upload):
+    @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
+    def test_missing_files_or_directory(self, upload_raw_data_mock):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
 
         # when
-        with NamedTemporaryFile("w") as file1:
-            with NamedTemporaryFile("w") as file2:
-                with TemporaryDirectory() as dirpath:
+        with NamedTemporaryFile("w") as temp_file_1:
+            with NamedTemporaryFile("w") as temp_file_2:
+                with TemporaryDirectory() as temp_dir:
                     result = upload_file_attributes(
+                        swagger_client=swagger_mock,
                         experiment_uuid=exp_uuid,
-                        upload_entries=[
-                            UploadEntry(file1.name, "target/path1.txt"),
-                            UploadEntry("missing1", "target/path2.txt"),
-                            UploadEntry(file2.name, "target/path3.txt"),
-                            UploadEntry("missing2", "target/path4.txt"),
-                            UploadEntry(dirpath, "target/path5.txt"),
-                        ],
-                        swagger_client=swagger_mock
-                    )
+                        attribute="some/attribute",
+                        file_globs=[temp_file_1.name, temp_file_2.name, os.path.abspath("missing_file"), temp_dir],
+                        reset=True)
 
         # then
-        self.assertEqual([
-            FileUploadError("missing1", "Path not found or is a not a file."),
-            FileUploadError("missing2", "Path not found or is a not a file."),
-            FileUploadError(dirpath, "Path not found or is a not a file.")
-        ], result)
-
-        raw_upload.assert_called_once_with(
+        upload_raw_data_mock.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/uploadTarStream",
+            url="ui.neptune.ai/uploadFileSetTar",
             data=mock.ANY,
             headers={"Content-Type": "application/octet-stream"},
             query_params={
-                "experimentIdentifier": str(exp_uuid),
-                "resource": "attributes",
-            }
-        )
+                "experimentId": str(exp_uuid),
+                "attribute": "some/attribute",
+                "reset": "True"
+            })
+
+        self.assertEqual([], result)
+
 
     def test_get_content_disposition_filename(self):
         # given
@@ -193,15 +184,15 @@ class TestHostedFileOperations(unittest.TestCase):
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "some/attribute"
-            }
-        )
+            })
 
     @staticmethod
     def _get_swagger_mock():
         swagger_mock = MagicMock()
         swagger_mock.swagger_spec.http_client = MagicMock()
         swagger_mock.swagger_spec.api_url = "ui.neptune.ai"
-        swagger_mock.api.uploadTarStream.operation.path_name = "/uploadTarStream"
+        swagger_mock.api.uploadFileSetAttributeChunk.operation.path_name = "/uploadFileSetChunk"
+        swagger_mock.api.uploadFileSetAttributeTar.operation.path_name = "/uploadFileSetTar"
         swagger_mock.api.uploadPath.operation.path_name = "/uploadPath"
         swagger_mock.api.uploadAttribute.operation.path_name = "/attributes/upload"
         swagger_mock.api.downloadAttribute.operation.path_name = "/attributes/download"
