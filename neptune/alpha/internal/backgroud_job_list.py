@@ -37,7 +37,6 @@ class BackgroundJobList(BackgroundJob):
 
     def join(self, seconds: Optional[float] = None):
         ts = time.time()
-        sec_left = seconds
         for job in self._jobs:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             job.join(sec_left)

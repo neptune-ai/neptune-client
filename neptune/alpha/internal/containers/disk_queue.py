@@ -42,6 +42,7 @@ class DiskQueue(StorageQueue[T]):
         self._from_dict = from_dict
         self._max_file_size = max_file_size
         self._event_empty = Event()
+        self._event_empty.set()
 
         try:
             os.makedirs(self._dir_path)
@@ -105,7 +106,6 @@ class DiskQueue(StorageQueue[T]):
 
     def wait_for_empty(self, seconds: Optional[float] = None):
         self._event_empty.wait(seconds)
-        self._event_empty.clear()
 
     def _current_read_log_file(self) -> str:
         return "{}/{}-{}.log".format(self._dir_path, self._log_files_name, self._read_file_idx)

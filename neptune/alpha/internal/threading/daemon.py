@@ -42,9 +42,6 @@ class Daemon(threading.Thread):
                 self._event.wait(timeout=self._sleep_time)
                 self._event.clear()
 
-            if self._interrupted:
-                break
-
     @abc.abstractmethod
     def work(self):
         pass

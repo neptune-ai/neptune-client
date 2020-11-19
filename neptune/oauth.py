@@ -64,6 +64,8 @@ class NeptuneAuth(AuthBase):
                 self._refresh_session_token()
 
     def _refresh_session_token(self):
+        print("************")
+        print(self.session.token)
         self.session.refresh_token(self.session.auto_refresh_url, verify=self.session.verify)
         if self.session.token is not None and self.session.token.get('access_token') is not None:
             decoded_json_token = jwt.decode(self.session.token.get('access_token'), verify=False)
