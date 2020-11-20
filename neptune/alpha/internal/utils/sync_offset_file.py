@@ -19,10 +19,12 @@ from typing import Optional
 
 
 class SyncOffsetFile:
-    def __init__(self, experiment_path: Path):
-        offset_file_path = experiment_path / 'offset'
-        mode = 'r+' if offset_file_path.exists() else 'w+'
-        self._file = open(offset_file_path, mode)
+    def __init__(self, filename: str, default: int = None):
+        path = Path(filename)
+        mode = 'r+' if path.exists() else 'w+'
+        self._file = open(path, mode)
+        self._default = default
+        self._last = self.read()
 
     def write(self, offset: int) -> None:
         self._file.seek(0)
@@ -34,5 +36,8 @@ class SyncOffsetFile:
         self._file.seek(0)
         content = self._file.read()
         if not content:
-            return None
+            return self._default
         return int(content)
+
+    def read_local(self) -> Optional[int]:
+        return self._last

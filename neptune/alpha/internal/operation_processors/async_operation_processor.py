@@ -38,13 +38,12 @@ class AsyncOperationProcessor(OperationProcessor):
                  experiment_uuid: uuid.UUID,
                  queue: StorageQueue[VersionedOperation],
                  backend: NeptuneBackend,
-                 sync_offset_file: SyncOffsetFile,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
         self._experiment_uuid = experiment_uuid
         self._queue = queue
         self._backend = backend
-        self._sync_offset_file = sync_offset_file
+        self._batch_size = batch_size
         self._last_version = 0
         self._consumed_version = 0
         self._waiting_for_version = 0
@@ -54,7 +53,7 @@ class AsyncOperationProcessor(OperationProcessor):
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         self._last_version += 1
         self._queue.put(VersionedOperation(op, self._last_version))
-        if self._queue.is_overflowing():
+        if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
         if wait:
             self.wait()
@@ -115,7 +114,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 try:
                     self._processor._backend.execute_operations(self._processor._experiment_uuid,
                                                                 [op.op for op in batch])
-                    self._processor._sync_offset_file.write(batch[-1].version)
+                    self._processor._queue.ack(batch[-1].version)
                     break
                 except ConnectionLost:
                     if retry >= self.RETRIES - 1:

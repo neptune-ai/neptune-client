@@ -29,11 +29,11 @@ class StorageQueue(Generic[T]):
         pass
 
     @abc.abstractmethod
-    def get(self, dry_run=False) -> T:
+    def get(self) -> T:
         pass
 
     @abc.abstractmethod
-    def get_batch(self, size: int, dry_run=False) -> List[T]:
+    def get_batch(self, size: int) -> List[T]:
         pass
 
     @abc.abstractmethod
@@ -49,5 +49,17 @@ class StorageQueue(Generic[T]):
         pass
 
     @abc.abstractmethod
-    def wait_for_empty(self, seconds: Optional[float] = None):
+    def wait_for_empty(self, seconds: Optional[float] = None) -> None:
+        pass
+
+    @abc.abstractmethod
+    def ack(self, version: int) -> None:
+        pass
+
+    @abc.abstractmethod
+    def is_empty(self) -> bool:
+        pass
+
+    @abc.abstractmethod
+    def size(self) -> int:
         pass

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 import os
 from datetime import datetime
 
@@ -50,13 +50,15 @@ from neptune.alpha.experiment import Experiment
 
 __version__ = str(parsed_version)
 
+_logger = logging.getLogger(__name__)
+
 
 def init(
         project: Optional[str] = None,
         experiment: Optional[str] = None,
         connection_mode: str = "async",
-        name: str = "Untitled",
-        description: str = "",
+        name: Optional[str] = None,
+        description: Optional[str] = None,
         tags: List[str] = None,
         capture_stdout: bool = True,
         capture_stderr: bool = True,
@@ -65,14 +67,18 @@ def init(
     verify_type("project", project, (str, type(None)))
     verify_type("experiment", experiment, (str, type(None)))
     verify_type("connection_mode", connection_mode, str)
-    verify_type("name", name, str)
-    verify_type("description", description, str)
+    verify_type("name", name, (str, type(None)))
+    verify_type("description", description, (str, type(None)))
     verify_type("capture_stdout", capture_stdout, bool)
     verify_type("capture_stderr", capture_stderr, bool)
     verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
     verify_type("flush_period", flush_period, (int, float))
     if tags:
         verify_collection_type("tags", tags, str)
+
+    name = "Untitled" if experiment is None and name is None else None
+    description = "" if experiment is None and description is None else None
+    hostname = get_hostname() if experiment is None else None
 
     if not project:
         project = os.getenv(PROJECT_ENV_NAME)
@@ -112,7 +118,8 @@ def init(
             DiskQueue(execution_path,
                       OPERATIONS_DISK_QUEUE_PREFIX,
                       VersionedOperation.to_dict,
-                      VersionedOperation.from_dict),
+                      VersionedOperation.from_dict,
+                      VersionedOperation.version),
             backend,
             SyncOffsetFile(Path(execution_path)),
             sleep_time=flush_period)
@@ -126,14 +133,19 @@ def init(
         storage_queue = DiskQueue(experiment_path,
                                   OPERATIONS_DISK_QUEUE_PREFIX,
                                   VersionedOperation.to_dict,
-                                  VersionedOperation.from_dict)
+                                  VersionedOperation.from_dict,
+                                  VersionedOperation.version)
         operation_processor = OfflineOperationProcessor(storage_queue)
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline", "debug"]')
 
     background_jobs = []
     if capture_hardware_metrics:
-        background_jobs.append(HardwareMetricReportingJob())
+        if HardwareMetricReportingJob.requirements_installed():
+            background_jobs.append(HardwareMetricReportingJob())
+        else:
+            _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
+            background_jobs.append(PingBackgroundJob())
     else:
         background_jobs.append(PingBackgroundJob())
     if capture_stdout:
@@ -143,11 +155,16 @@ def init(
 
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
     _experiment.sync(wait=False)
-    _experiment["sys/name"] = name
-    _experiment["sys/description"] = description
-    _experiment["sys/hostname"] = get_hostname()
+
+    if name:
+        _experiment["sys/name"] = name
+    if description:
+        _experiment["sys/description"] = description
+    if hostname is None:
+        _experiment["sys/hostname"] = hostname
     if tags:
         _experiment["sys/tags"] = tags
+
     _experiment.start()
 
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
