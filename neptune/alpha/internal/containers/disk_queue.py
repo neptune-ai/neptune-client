@@ -19,7 +19,7 @@ import os
 from glob import glob
 from pathlib import Path
 from threading import Event
-from typing import TypeVar, List, Callable, Optional
+from typing import TypeVar, List, Callable, Optional, Tuple
 
 from neptune.alpha.exceptions import MalformedOperation
 from neptune.alpha.internal.containers.storage_queue import StorageQueue
@@ -38,100 +38,112 @@ class DiskQueue(StorageQueue[T]):
     def __init__(
             self,
             dir_path: Path,
-            log_files_name: str,
             to_dict: Callable[[T], dict],
             from_dict: Callable[[dict], T],
-            version_getter: [Callable[[T], int]],
             max_file_size: int = 64 * 1024**2):
         self._dir_path = dir_path
-        self._log_files_name = log_files_name
         self._to_dict = to_dict
         self._from_dict = from_dict
-        self._version_getter = version_getter
         self._max_file_size = max_file_size
+
         self._event_empty = Event()
         self._event_empty.set()
-        self._last_ack_file = SyncOffsetFile(dir_path / "last_ack_version")
-        self._last_put_file = SyncOffsetFile(dir_path / "last_put_version")
 
         try:
             os.makedirs(self._dir_path)
         except FileExistsError:
             pass
 
-        self._read_file_idx, self._write_file_idx = self._get_first_and_last_log_file_index()
+        self._last_ack_file = SyncOffsetFile(dir_path / "last_ack_version", default=0)
+        self._last_put_file = SyncOffsetFile(dir_path / "last_put_version", default=0)
 
-        self._writer = open(self._get_log_file(self._write_file_idx), "a")
-        self._reader = JsonFileSplitter(self._get_log_file(self._read_file_idx))
+        self._read_file_version, self._write_file_version = self._get_first_and_last_log_file_version()
+        self._writer = open(self._get_log_file(self._write_file_version), "a")
+        self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
         self._file_size = 0
+        self._should_skip_to_ack = True
 
-    def put(self, obj: T) -> None:
+    def put(self, obj: T) -> int:
+        version = self._last_put_file.read_local() + 1
         self._event_empty.clear()
-        _json = json.dumps(self._to_dict(obj))
+        _json = json.dumps(self._serialize(obj, version))
         if self._file_size + len(_json) > self._max_file_size:
             self._writer.close()
-            self._write_file_idx += 1
-            self._writer = open(self._get_log_file(self._write_file_idx), "a")
+            self._writer = open(self._get_log_file(version), "a")
             self._file_size = 0
+            self._write_file_version = version
         self._writer.write(_json + "\n")
-        self._last_put_file.write(self._version_getter(obj))
+        self._last_put_file.write(version)
         self._file_size += len(_json) + 1
+        return version
 
-    def get(self) -> Optional[T]:
-        last_ack_version = self._last_ack_file.read_local()
+    def get(self) -> Tuple[Optional[T], int]:
+        if self._should_skip_to_ack:
+            self._should_skip_to_ack = False
+            return self._skip_and_get()
+        else:
+            return self._get()
+
+    def _skip_and_get(self) -> Tuple[Optional[T], int]:
+        ack_version = self._last_ack_file.read_local()
         while True:
-            obj = self._get()
+            obj, ver = self._get()
             if obj is None:
-                return None
-            current_version = self._version_getter(obj)
-            if current_version > last_ack_version:
-                if current_version > last_ack_version + 1:
-                    _logger.warning("Possible data loss. Last acknowledged operation version: {}, next: {}",
-                                    last_ack_version, current_version)
-                return obj
+                return None, ver
+            if ver > ack_version:
+                if ver > ack_version + 1:
+                    _logger.warning("Possible data loss. Last acknowledged operation version: %d, next: %d",
+                                    ack_version, ver)
+                return obj, ver
 
-    def _get(self) -> Optional[T]:
+    def _get(self) -> Tuple[Optional[T], int]:
         _json = self._reader.get()
         if not _json:
-            if self._read_file_idx >= self._write_file_idx:
+            if self._read_file_version >= self._write_file_version:
                 self._event_empty.set()
-                return None
+                return None, self._last_put_file.read_local()
             self._reader.close()
-            os.remove(self._get_log_file(self._read_file_idx))
-            self._read_file_idx += 1
-            self._reader = JsonFileSplitter(self._get_log_file(self._read_file_idx))
-            return self.get()
+            self._read_file_version = self._next_file_version(self._read_file_version)
+            self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
+            # It is safe. Max recursion level is 2.
+            return self._get()
         try:
-            return self._from_dict(_json)
+            return self._deserialize(_json)
         except Exception as e:
             raise MalformedOperation from e
 
-    def get_batch(self, size: int) -> List[T]:
-        ret = []
-        for _ in range(0, size):
-            obj = self.get()
+    def get_batch(self, size: int) -> Tuple[List[T], int]:
+        first, ver = self.get()
+        if not first:
+            return [], ver
+        ret = [first]
+        for _ in range(0, size - 1):
+            obj, ver = self._get()
             if not obj:
-                return ret
+                break
             ret.append(obj)
-        return ret
+        return ret, ver
 
     def flush(self):
         self._writer.flush()
 
-    def is_overflowing(self) -> bool:
-        # Some heuristic.
-        return self._write_file_idx > self._read_file_idx + 1 or (
-            self._write_file_idx > self._read_file_idx and self._writer.tell() >= self._max_file_size / 2)
-
     def close(self):
         self._reader.close()
         self._writer.close()
+        self._last_ack_file.close()
+        self._last_put_file.close()
 
     def wait_for_empty(self, seconds: Optional[float] = None) -> None:
         self._event_empty.wait(seconds)
 
     def ack(self, version: int) -> None:
         self._last_ack_file.write(version)
+        log_versions = self._get_all_file_versions()
+        for i in range(0, len(log_versions) - 1):
+            if log_versions[i + 1] <= version:
+                os.remove(self._get_log_file(log_versions[i]))
+            else:
+                break
 
     def is_empty(self) -> bool:
         return self.size() == 0
@@ -140,11 +152,30 @@ class DiskQueue(StorageQueue[T]):
         return self._last_put_file.read_local() - self._last_ack_file.read_local()
 
     def _get_log_file(self, index: int) -> str:
-        return "{}/{}-{}.log".format(self._dir_path, self._log_files_name, index)
+        return "{}/data-{}.log".format(self._dir_path, index)
 
-    def _get_first_and_last_log_file_index(self) -> (int, int):
-        log_files = glob("{}/{}-*.log".format(self._dir_path, self._log_files_name))
+    def _get_all_file_versions(self):
+        log_files = glob("{}/data-*.log".format(self._dir_path))
         if not log_files:
-            return 0, 0
-        log_indices = [int(file[len(str(self._dir_path)) + 1:-4]) for file in log_files]
-        return min(log_indices), max(log_indices)
+            return 1, 1
+        return sorted([int(file[len(str(self._dir_path)) + 6:-4]) for file in log_files])
+
+    def _get_first_and_last_log_file_version(self) -> (int, int):
+        log_versions = self._get_all_file_versions()
+        return min(log_versions), max(log_versions)
+
+    def _next_file_version(self, version: int) -> int:
+        log_versions = self._get_all_file_versions()
+        for i, val in enumerate(log_versions):
+            if val == version:
+                return log_versions[i + 1]
+        raise ValueError("Missing log file with version > {}".format(version))
+
+    def _serialize(self, obj: T, version: int) -> dict:
+        return {
+            "obj": self._to_dict(obj),
+            "version": version
+        }
+
+    def _deserialize(self, data: dict) -> Tuple[T, int]:
+        return self._from_dict(data["obj"]), data["version"]

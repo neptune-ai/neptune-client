@@ -16,20 +16,18 @@
 from typing import Optional
 
 from neptune.alpha.internal.containers.storage_queue import StorageQueue
-from neptune.alpha.internal.operation import Operation, VersionedOperation
+from neptune.alpha.internal.operation import Operation
 from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
 
 
 class OfflineOperationProcessor(OperationProcessor):
 
-    def __init__(self, queue: StorageQueue[VersionedOperation]):
+    def __init__(self, queue: StorageQueue[Operation]):
         self._queue = queue
-        self._last_version = 0
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument
-        self._last_version += 1
-        self._queue.put(VersionedOperation(op, self._last_version))
+        self._queue.put(op)
 
     def wait(self):
         pass

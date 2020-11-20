@@ -24,7 +24,7 @@ from typing import Sequence, Iterable, List, Optional, Tuple, Any
 
 import click
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY, \
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
     OFFLINE_NAME_PREFIX, ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import ProjectNotFound, NeptuneException
@@ -33,7 +33,7 @@ from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptune
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import VersionedOperation
+from neptune.alpha.internal.operation import Operation
 
 
 #######################################################################################################################
@@ -104,8 +104,7 @@ def is_experiment_synced(experiment_path: Path) -> bool:
 
 
 def is_execution_synced(execution_path: Path) -> bool:
-    disk_queue = DiskQueue(execution_path, OPERATIONS_DISK_QUEUE_PREFIX,
-                           VersionedOperation.to_dict, VersionedOperation.from_dict, VersionedOperation.version)
+    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict)
     return disk_queue.is_empty()
 
 
@@ -200,11 +199,10 @@ def sync_experiment(experiment_path: Path, qualified_experiment_name: str) -> No
 
 
 def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID) -> None:
-    disk_queue = DiskQueue(execution_path, OPERATIONS_DISK_QUEUE_PREFIX,
-                           VersionedOperation.to_dict, VersionedOperation.from_dict, VersionedOperation.version)
-    batch = disk_queue.get_batch(1000)
-    backend.execute_operations(experiment_uuid, [op.op for op in batch])
-    disk_queue.ack(batch[-1].version)
+    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict)
+    batch, version = disk_queue.get_batch(1000)
+    backend.execute_operations(experiment_uuid, batch)
+    disk_queue.ack(version)
 
 
 def sync_all_registered_experiments(base_path: Path) -> None:

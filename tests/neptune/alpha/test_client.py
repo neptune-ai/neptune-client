@@ -65,7 +65,7 @@ class TestClient(unittest.TestCase):
         self.assertEqual(13, exp["some/variable"].get())
         self.assertIn(str(exp._uuid), os.listdir(".neptune/async"))
         execution_dir = os.listdir(".neptune/async/{}".format(exp._uuid))[0]
-        self.assertIn("operations-0.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))
+        self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))
 
     @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_experiment",
            new=lambda _, _id:

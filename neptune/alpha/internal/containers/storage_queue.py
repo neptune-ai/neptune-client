@@ -15,7 +15,7 @@
 #
 
 import abc
-from typing import Generic, TypeVar, List, Optional
+from typing import Generic, TypeVar, List, Optional, Tuple
 
 T = TypeVar('T')
 
@@ -25,23 +25,19 @@ class StorageQueue(Generic[T]):
     # NOTICE: All implementations should be thread-safe as long as there is only one consumer and one producer.
 
     @abc.abstractmethod
-    def put(self, obj: T) -> None:
+    def put(self, obj: T) -> int:
         pass
 
     @abc.abstractmethod
-    def get(self) -> T:
+    def get(self) -> Tuple[Optional[T], int]:
         pass
 
     @abc.abstractmethod
-    def get_batch(self, size: int) -> List[T]:
+    def get_batch(self, size: int) -> Tuple[Optional[List[T]], int]:
         pass
 
     @abc.abstractmethod
     def flush(self) -> None:
-        pass
-
-    @abc.abstractmethod
-    def is_overflowing(self) -> bool:
         pass
 
     @abc.abstractmethod

@@ -30,6 +30,7 @@ class SyncOffsetFile:
         self._file.write(str(offset))
         self._file.truncate()
         self._file.flush()
+        self._last = offset
 
     def read(self) -> Optional[int]:
         self._file.seek(0)
@@ -40,3 +41,6 @@ class SyncOffsetFile:
 
     def read_local(self) -> Optional[int]:
         return self._last
+
+    def close(self):
+        self._file.close()

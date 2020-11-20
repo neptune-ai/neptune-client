@@ -22,10 +22,11 @@ from platform import node as get_hostname
 from typing import Optional, List
 
 import click
+from neptune.alpha.internal.operation import Operation
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY, \
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
     ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import MissingProject
@@ -36,7 +37,6 @@ from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptune
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import VersionedOperation
 from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.alpha.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.alpha.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, \
@@ -114,11 +114,7 @@ def init(
         execution_path = "{}/exec-{}-{}".format(experiment_path, execution_id, datetime.now())
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
-            DiskQueue(Path(execution_path),
-                      OPERATIONS_DISK_QUEUE_PREFIX,
-                      VersionedOperation.to_dict,
-                      VersionedOperation.from_dict,
-                      VersionedOperation.version),
+            DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
             backend,
             sleep_time=flush_period)
     elif connection_mode == "sync":
@@ -128,11 +124,7 @@ def init(
     elif connection_mode == "offline":
         # Experiment was returned by mocked backend and has some random UUID.
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
-        storage_queue = DiskQueue(Path(experiment_path),
-                                  OPERATIONS_DISK_QUEUE_PREFIX,
-                                  VersionedOperation.to_dict,
-                                  VersionedOperation.from_dict,
-                                  VersionedOperation.version)
+        storage_queue = DiskQueue(Path(experiment_path), lambda x: x.to_dict(), Operation.from_dict)
         operation_processor = OfflineOperationProcessor(storage_queue)
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline", "debug"]')
@@ -158,7 +150,7 @@ def init(
         _experiment["sys/name"] = name
     if description:
         _experiment["sys/description"] = description
-    if hostname is None:
+    if hostname:
         _experiment["sys/hostname"] = hostname
     if tags:
         _experiment["sys/tags"] = tags

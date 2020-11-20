@@ -27,5 +27,3 @@ OFFLINE_DIRECTORY = 'offline'
 ASYNC_DIRECTORY = 'async'
 
 OFFLINE_NAME_PREFIX = 'offline/'
-
-OPERATIONS_DISK_QUEUE_PREFIX = 'operations'

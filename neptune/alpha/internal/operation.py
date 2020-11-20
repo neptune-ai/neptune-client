@@ -58,24 +58,6 @@ class Operation:
 
 
 @dataclass
-class VersionedOperation:
-
-    op: Operation
-    version: int
-
-    @staticmethod
-    def to_dict(obj: 'VersionedOperation') -> dict:
-        return {
-            "op": obj.op.to_dict(),
-            "version": obj.version
-        }
-
-    @staticmethod
-    def from_dict(data: dict) -> 'VersionedOperation':
-        return VersionedOperation(Operation.from_dict(data["op"]), data["version"])
-
-
-@dataclass
 class AssignFloat(Operation):
 
     value: float
