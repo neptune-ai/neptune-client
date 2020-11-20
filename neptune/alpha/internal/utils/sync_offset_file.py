@@ -19,8 +19,7 @@ from typing import Optional
 
 
 class SyncOffsetFile:
-    def __init__(self, filename: str, default: int = None):
-        path = Path(filename)
+    def __init__(self, path: Path, default: int = None):
         mode = 'r+' if path.exists() else 'w+'
         self._file = open(path, mode)
         self._default = default

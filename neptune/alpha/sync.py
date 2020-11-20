@@ -34,7 +34,6 @@ from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import VersionedOperation
-from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 
 
 #######################################################################################################################
@@ -105,7 +104,7 @@ def is_experiment_synced(experiment_path: Path) -> bool:
 
 
 def is_execution_synced(execution_path: Path) -> bool:
-    disk_queue = DiskQueue(str(execution_path), OPERATIONS_DISK_QUEUE_PREFIX,
+    disk_queue = DiskQueue(execution_path, OPERATIONS_DISK_QUEUE_PREFIX,
                            VersionedOperation.to_dict, VersionedOperation.from_dict, VersionedOperation.version)
     return disk_queue.is_empty()
 
@@ -201,7 +200,7 @@ def sync_experiment(experiment_path: Path, qualified_experiment_name: str) -> No
 
 
 def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID) -> None:
-    disk_queue = DiskQueue(str(execution_path), OPERATIONS_DISK_QUEUE_PREFIX,
+    disk_queue = DiskQueue(execution_path, OPERATIONS_DISK_QUEUE_PREFIX,
                            VersionedOperation.to_dict, VersionedOperation.from_dict, VersionedOperation.version)
     batch = disk_queue.get_batch(1000)
     backend.execute_operations(experiment_uuid, [op.op for op in batch])

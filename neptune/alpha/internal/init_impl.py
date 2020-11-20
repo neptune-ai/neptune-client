@@ -43,7 +43,6 @@ from neptune.alpha.internal.streams.std_capture_background_job import StdoutCapt
     StderrCaptureBackgroundJob
 from neptune.alpha.internal.utils.git import get_git_info, discover_git_repo_location
 from neptune.alpha.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.version import version as parsed_version
 from neptune.alpha.experiment import Experiment
 
@@ -115,13 +114,12 @@ def init(
         execution_path = "{}/exec-{}-{}".format(experiment_path, execution_id, datetime.now())
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
-            DiskQueue(execution_path,
+            DiskQueue(Path(execution_path),
                       OPERATIONS_DISK_QUEUE_PREFIX,
                       VersionedOperation.to_dict,
                       VersionedOperation.from_dict,
                       VersionedOperation.version),
             backend,
-            SyncOffsetFile(Path(execution_path)),
             sleep_time=flush_period)
     elif connection_mode == "sync":
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
@@ -130,7 +128,7 @@ def init(
     elif connection_mode == "offline":
         # Experiment was returned by mocked backend and has some random UUID.
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
-        storage_queue = DiskQueue(experiment_path,
+        storage_queue = DiskQueue(Path(experiment_path),
                                   OPERATIONS_DISK_QUEUE_PREFIX,
                                   VersionedOperation.to_dict,
                                   VersionedOperation.from_dict,

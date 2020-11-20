@@ -47,7 +47,7 @@ def prepare_experiments(path):
     for exp in registered_experiments:
         exp_path = path / "async" / str(exp.uuid) / execution_id
         exp_path.mkdir(parents=True)
-        queue = DiskQueue(str(exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
+        queue = DiskQueue(exp_path, OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
         queue.put({'version': 0, 'op': 'op-0'})
         queue.put({'version': 1, 'op': 'op-1'})
 
@@ -70,7 +70,7 @@ def prepare_offline_experiment(path):
     offline_exp_path = path / OFFLINE_DIRECTORY / offline_exp_uuid
     offline_exp_path.mkdir(parents=True)
 
-    queue = DiskQueue(str(offline_exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
+    queue = DiskQueue(offline_exp_path, OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
     queue.put({'version': 0, 'op': 'op-0'})
     queue.put({'version': 1, 'op': 'op-1'})
 

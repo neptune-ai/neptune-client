@@ -27,7 +27,6 @@ from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.operation import Operation, VersionedOperation
 from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.alpha.internal.threading.daemon import Daemon
-from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 
 # pylint: disable=protected-access
 

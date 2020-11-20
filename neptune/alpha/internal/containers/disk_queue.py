@@ -17,6 +17,7 @@ import json
 import logging
 import os
 from glob import glob
+from pathlib import Path
 from threading import Event
 from typing import TypeVar, List, Callable, Optional
 
@@ -36,7 +37,7 @@ class DiskQueue(StorageQueue[T]):
 
     def __init__(
             self,
-            dir_path: str,
+            dir_path: Path,
             log_files_name: str,
             to_dict: Callable[[T], dict],
             from_dict: Callable[[dict], T],
@@ -50,8 +51,8 @@ class DiskQueue(StorageQueue[T]):
         self._max_file_size = max_file_size
         self._event_empty = Event()
         self._event_empty.set()
-        self._last_ack_file = SyncOffsetFile("last_ack_version")
-        self._last_put_file = SyncOffsetFile("last_put_version")
+        self._last_ack_file = SyncOffsetFile(dir_path / "last_ack_version")
+        self._last_put_file = SyncOffsetFile(dir_path / "last_put_version")
 
         try:
             os.makedirs(self._dir_path)
@@ -85,7 +86,7 @@ class DiskQueue(StorageQueue[T]):
             current_version = self._version_getter(obj)
             if current_version > last_ack_version:
                 if current_version > last_ack_version + 1:
-                    _logger.warning("Possible data lost. Last acknowledged operation version: {}, next: {}",
+                    _logger.warning("Possible data loss. Last acknowledged operation version: {}, next: {}",
                                     last_ack_version, current_version)
                 return obj
 
@@ -145,5 +146,5 @@ class DiskQueue(StorageQueue[T]):
         log_files = glob("{}/{}-*.log".format(self._dir_path, self._log_files_name))
         if not log_files:
             return 0, 0
-        log_indices = [int(file[len(self._dir_path) + 1:-4]) for file in log_files]
+        log_indices = [int(file[len(str(self._dir_path)) + 1:-4]) for file in log_files]
         return min(log_indices), max(log_indices)
