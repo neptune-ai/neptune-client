@@ -22,7 +22,7 @@ import mock
 from mock import MagicMock, patch
 
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
-    download_file_attribute, _get_content_disposition_filename
+    download_file_attribute, _get_content_disposition_filename, download_zip
 from neptune.utils import IS_WINDOWS
 
 
@@ -185,6 +185,26 @@ class TestHostedFileOperations(unittest.TestCase):
                 "attribute": "some/attribute"
             })
 
+    @patch('neptune.alpha.internal.backends.hosted_file_operations._download_raw_data')
+    def test_download_zip(self, download_raw):
+        # given
+        swagger_mock = self._get_swagger_mock()
+        download_id = uuid.uuid4()
+
+        # when
+        download_zip(swagger_client=swagger_mock,
+                     download_id=download_id,
+                     destination=None)
+
+        # then
+        download_raw.assert_called_once_with(
+            http_client=swagger_mock.swagger_spec.http_client,
+            url="ui.neptune.ai/download",
+            headers={"Accept": "application/zip"},
+            query_params={
+                "id": str(download_id)
+            })
+
     @staticmethod
     def _get_swagger_mock():
         swagger_mock = MagicMock()
@@ -195,6 +215,8 @@ class TestHostedFileOperations(unittest.TestCase):
         swagger_mock.api.uploadPath.operation.path_name = "/uploadPath"
         swagger_mock.api.uploadAttribute.operation.path_name = "/attributes/upload"
         swagger_mock.api.downloadAttribute.operation.path_name = "/attributes/download"
+        swagger_mock.api.downloadFileSetAttributeZip.operation.path_name = "/attributes/downloadFileSetZip"
+        swagger_mock.api.download.operation.path_name = "/download"
         return swagger_mock
 
 

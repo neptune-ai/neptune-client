@@ -65,7 +65,12 @@ class Handler:
         self.assign(File(value), wait)
 
     def save_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
-        self.assign(FileSet(value), wait)
+        with self._experiment.lock():
+            attr = self._experiment.get_attribute(self._path)
+            if attr:
+                attr.save_files(value, wait)
+            else:
+                self._experiment.define(self._path, FileSet(value), wait)
 
     def log(self, value: Union[int, float, str, Image], step=None, timestamp=None, wait: bool = False) -> None:
         verify_type("value", value, (int, float, str, Image))

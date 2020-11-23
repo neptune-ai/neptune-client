@@ -17,7 +17,7 @@ import io
 import os
 import uuid
 from glob import glob
-from typing import List, Optional, Dict, Iterable
+from typing import List, Optional, Dict, Iterable, Set
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
@@ -58,30 +58,10 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                               file_globs: Iterable[str],
                               reset: bool,
                               ) -> List[FileUploadError]:
+    unique_upload_entries = get_unique_upload_entries(file_globs)
     result: List[FileUploadError] = []
-    upload_entries: List[UploadEntry] = []
-
-    expanded_files = set()
-    for file_glob in file_globs:
-        expanded_files |= set(glob(file_glob))
-
-    absolute_paths = list(os.path.abspath(expanded_file) for expanded_file in expanded_files)
-    try:
-        common_root = os.path.commonpath(absolute_paths)
-    except ValueError:
-        for absolute_path in absolute_paths:
-            upload_entries.append(UploadEntry(absolute_path, normalize_file_name(absolute_path)))
-    else:
-        if os.path.isfile(common_root):
-            common_root = os.path.dirname(common_root)
-        if common_root.startswith(os.getcwd() + os.sep):
-            common_root = os.getcwd()
-        for absolute_path in absolute_paths:
-            upload_entries.append(UploadEntry(absolute_path, normalize_file_name(
-                os.path.relpath(absolute_path, common_root))))
 
     try:
-        unique_upload_entries = scan_unique_upload_entries(upload_entries)
         for package in split_upload_files(unique_upload_entries):
             if package.is_empty() and not reset:
                 continue
@@ -122,7 +102,31 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
         return result
     except Exception as e:
         msg = getattr(e, 'message', repr(e))
-        return [FileUploadError(entry.source_path, msg) for entry in upload_entries]
+        return [FileUploadError(entry.source_path, msg) for entry in unique_upload_entries]
+
+
+def get_unique_upload_entries(file_globs: Iterable[str]) -> Set[UploadEntry]:
+    expanded_paths: Set[str] = set()
+    for file_glob in file_globs:
+        expanded_paths |= set(glob(file_glob))
+    absolute_paths = list(os.path.abspath(expanded_file) for expanded_file in expanded_paths)
+
+    upload_entries: List[UploadEntry] = []
+    try:
+        common_root = os.path.commonpath(absolute_paths)
+    except ValueError:
+        for absolute_path in absolute_paths:
+            upload_entries.append(UploadEntry(absolute_path, normalize_file_name(absolute_path)))
+    else:
+        if os.path.isfile(common_root):
+            common_root = os.path.dirname(common_root)
+        if common_root.startswith(os.getcwd() + os.sep):
+            common_root = os.getcwd()
+        for absolute_path in absolute_paths:
+            upload_entries.append(UploadEntry(absolute_path, normalize_file_name(
+                os.path.relpath(absolute_path, common_root))))
+
+    return scan_unique_upload_entries(upload_entries)
 
 
 def _upload_loop(file_chunk_stream: FileChunkStream, **kwargs):
@@ -154,10 +158,7 @@ def upload_raw_data(http_client: RequestsClient,
                     path_params: Optional[Dict[str, str]] = None,
                     query_params: Optional[Dict[str, str]] = None,
                     headers: Optional[Dict[str, str]] = None):
-    for key, val in (path_params or dict()).items():
-        url = url.replace("{" + key + "}", val)
-    if query_params:
-        url = url + "?" + urlencode(list(query_params.items()))
+    url = _generate_url(url=url, path_params=path_params, query_params=query_params)
 
     session = http_client.session
     request = http_client.authenticator.apply(Request(method='POST', url=url, data=data, headers=headers))
@@ -176,8 +177,30 @@ def download_file_attribute(swagger_client: SwaggerClient,
         url=swagger_client.swagger_spec.api_url + swagger_client.api.downloadAttribute.operation.path_name,
         headers={"Accept": "application/octet-stream"},
         query_params={"experimentId": str(experiment_uuid), "attribute": attribute})
+    _store_response_as_file(response, destination)
+
+
+@with_api_exceptions_handler
+def download_zip(swagger_client: SwaggerClient,
+                 download_id: uuid.UUID,
+                 destination: Optional[str] = None):
+    response = _download_raw_data(
+        http_client=swagger_client.swagger_spec.http_client,
+        url=swagger_client.swagger_spec.api_url + swagger_client.api.download.operation.path_name,
+        headers={"Accept": "application/zip"},
+        query_params={"id": str(download_id)})
+    _store_response_as_file(response, destination)
+
+
+def _store_response_as_file(response: Response, destination: Optional[str] = None):
+    if destination is None:
+        target_file = _get_content_disposition_filename(response)
+    elif os.path.isdir(destination):
+        target_file = os.path.join(destination, _get_content_disposition_filename(response))
+    else:
+        target_file = destination
     with response:
-        with open(destination or _get_content_disposition_filename(response), "wb") as f:
+        with open(target_file, "wb") as f:
             for chunk in response.iter_content(chunk_size=1024 * 1024):
                 if chunk:
                     f.write(chunk)
@@ -185,7 +208,7 @@ def download_file_attribute(swagger_client: SwaggerClient,
 
 def _get_content_disposition_filename(response: Response) -> str:
     content_disposition = response.headers['Content-Disposition']
-    return content_disposition[content_disposition.rfind("filename=")+9:]
+    return content_disposition[content_disposition.rfind("filename=") + 9:]
 
 
 def _download_raw_data(http_client: RequestsClient,
@@ -194,10 +217,7 @@ def _download_raw_data(http_client: RequestsClient,
                        query_params: Optional[Dict[str, str]] = None,
                        headers: Optional[Dict[str, str]] = None
                        ) -> Response:
-    for key, val in (path_params or dict()).items():
-        url = url.replace("{" + key + "}", val)
-    if query_params:
-        url = url + "?" + urlencode(list(query_params.items()))
+    url = _generate_url(url=url, path_params=path_params, query_params=query_params)
 
     session = http_client.session
     request = http_client.authenticator.apply(Request(method='GET', url=url, headers=headers))
@@ -205,3 +225,14 @@ def _download_raw_data(http_client: RequestsClient,
     response = session.send(session.prepare_request(request), stream=True)
     response.raise_for_status()
     return response
+
+
+def _generate_url(url: str,
+                  path_params: Optional[Dict[str, str]] = None,
+                  query_params: Optional[Dict[str, str]] = None,
+                  ) -> str:
+    for key, val in (path_params or dict()).items():
+        url = url.replace("{" + key + "}", val)
+    if query_params:
+        url = url + "?" + urlencode(list(query_params.items()))
+    return url

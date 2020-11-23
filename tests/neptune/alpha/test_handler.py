@@ -103,6 +103,18 @@ class TestHandler(unittest.TestCase):
         with self.assertRaises(TypeError):
             exp['some/num/file'].download(123)
 
+    @patch('neptune.alpha.internal.backends.hosted_file_operations.glob',
+           new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.alpha.internal.backends.neptune_backend_mock.ZipFile.write')
+    def test_save_files_download_zip(self, zip_write_mock):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        exp['some/artifacts'].save_files("path/to/file.txt")
+        exp['some/artifacts'].save_files("path/to/other/*")
+        exp['some/artifacts'].download_zip()
+
+        zip_write_mock.assert_any_call(os.path.abspath("path/to/file.txt"), "path/to/file.txt")
+        zip_write_mock.assert_any_call(os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt")
+
     def test_assign_series(self):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/val'].assign(FloatSeriesVal([1, 2, 0, 10]))

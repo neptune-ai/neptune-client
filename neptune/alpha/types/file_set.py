@@ -15,7 +15,7 @@
 #
 from typing import TypeVar, TYPE_CHECKING, Union, List, Iterable
 
-from neptune.alpha.internal.utils import verify_collection_type
+from neptune.alpha.internal.utils import verify_collection_type, verify_type
 from neptune.alpha.types.value import Value
 
 if TYPE_CHECKING:
@@ -27,6 +27,7 @@ Ret = TypeVar('Ret')
 class FileSet(Value):
 
     def __init__(self, file_globs: Union[str, Iterable[str]]):
+        verify_type("file_globs", file_globs, (str, Iterable))
         if isinstance(file_globs, str):
             file_globs = [file_globs]
         else:

@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 import os
-from typing import Union, Iterable
+from typing import Union, Iterable, Optional
 
 from neptune.alpha.attributes.attribute import Attribute
 from neptune.alpha.internal.operation import UploadFileSet
-from neptune.alpha.internal.utils import verify_collection_type
+from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.types.file_set import FileSet as FileSetVal
 
 
@@ -28,6 +28,7 @@ from neptune.alpha.types.file_set import FileSet as FileSetVal
 class FileSet(Attribute):
 
     def assign(self, value: Union[FileSetVal, str, Iterable[str]], wait: bool = False) -> None:
+        verify_type("value", value, (FileSetVal, str, Iterable))
         if isinstance(value, FileSetVal):
             value = value.file_globs
         elif isinstance(value, str):
@@ -48,7 +49,6 @@ class FileSet(Attribute):
             abs_file_globs = list(os.path.abspath(file_glob) for file_glob in globs)
             self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=reset), wait)
 
-
-    # def download(self, destination: Optional[str] = None) -> None:
-    #     verify_type("destination", destination, (str, type(None)))
-    #     self._backend.download_file(self._experiment_uuid, self._path, destination)
+    def download_zip(self, destination: Optional[str] = None) -> None:
+        verify_type("destination", destination, (str, type(None)))
+        self._backend.download_file_set(self._experiment_uuid, self._path, destination)
