@@ -16,11 +16,14 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Union, Iterable, Sequence
 
+from neptune.alpha.attributes.series import ImageSeries
+
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.internal.utils.paths import join_paths, parse_path
 from neptune.alpha.attributes.series.float_series import FloatSeries
 from neptune.alpha.attributes.series.string_series import StringSeries
 from neptune.alpha.attributes.sets.string_set import StringSet
+from neptune.alpha.types.series.image import Image
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.file_set import FileSet
 from neptune.alpha.types.value import Value
@@ -64,9 +67,8 @@ class Handler:
     def save_files(self, value: Union[str, Sequence[str]], wait: bool = False) -> None:
         self.assign(FileSet(value), wait)
 
-    # TODO: Support Image value
-    def log(self, value: Union[int, float, str], step=None, timestamp=None, wait: bool = False) -> None:
-        verify_type("value", value, (int, float, str))
+    def log(self, value: Union[int, float, str, Image], step=None, timestamp=None, wait: bool = False) -> None:
+        verify_type("value", value, (int, float, str, Image))
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", step, (int, float, type(None)))
         with self._experiment.lock():
@@ -76,6 +78,8 @@ class Handler:
                     attr = FloatSeries(self._experiment, parse_path(self._path))
                 elif isinstance(value, str):
                     attr = StringSeries(self._experiment, parse_path(self._path))
+                elif isinstance(value, Image):
+                    attr = ImageSeries(self._experiment, parse_path(self._path))
                 self._experiment.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait)
 

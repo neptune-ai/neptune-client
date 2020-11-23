@@ -49,7 +49,7 @@ from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.value import Value
 
 
-class Experiment(Handler):
+class Experiment:
 
     def __init__(
             self,
@@ -58,7 +58,6 @@ class Experiment(Handler):
             op_processor: OperationProcessor,
             background_job: BackgroundJob
     ):
-        super().__init__(self, path="")
         self._uuid = _uuid
         self._backend = backend
         self._op_processor = op_processor
@@ -66,6 +65,12 @@ class Experiment(Handler):
         self._structure = ExperimentStructure[Attribute]()
         self._lock = threading.RLock()
         self._started = False
+
+    def __getitem__(self, path: str) -> 'Handler':
+        return Handler(self, path)
+
+    def __setitem__(self, key: str, value) -> None:
+        self.__getitem__(key).assign(value)
 
     def start(self):
         atexit.register(self._shutdown_hook)

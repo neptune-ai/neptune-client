@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import json
+from io import StringIO
 from json import JSONDecodeError
 from typing import Optional
 
@@ -21,12 +22,12 @@ from typing import Optional
 class JsonFileSplitter:
 
     # TODO: experiment with larger buffer sizes
-    BUFFER_SIZE = 4096
+    BUFFER_SIZE = 64 * 1024
 
     def __init__(self, file_path: str):
         self._file = open(file_path, "r")
         self._decoder = json.JSONDecoder(strict=False)
-        self._buffer = ""
+        self._buffer = StringIO()
         self._start_pos = 0
 
     def close(self) -> None:
@@ -43,14 +44,20 @@ class JsonFileSplitter:
                 return None
 
     def _read_data(self):
+        if self._start_pos > 0:
+            new_buffer = StringIO()
+            new_buffer.write(self._buffer.getvalue()[self._start_pos:])
+            self._buffer.close()
+            self._buffer = new_buffer
+            self._start_pos = 0
+
         data = self._file.read(self.BUFFER_SIZE)
-        if not data:
-            return
-        self._buffer = self._buffer[self._start_pos:] + data
-        self._start_pos = 0
+        while data:
+            self._buffer.write(data)
+            data = self._file.read(self.BUFFER_SIZE)
 
     def _decode(self):
-        self._start_pos = self._buffer.index("{", self._start_pos)
-        data, end = self._decoder.raw_decode(self._buffer, self._start_pos)
+        self._start_pos = self._buffer.getvalue().index("{", self._start_pos)
+        data, end = self._decoder.raw_decode(self._buffer.getvalue(), self._start_pos)
         self._start_pos = end
         return data
