@@ -75,8 +75,8 @@ def init(
     if tags:
         verify_collection_type("tags", tags, str)
 
-    name = "Untitled" if experiment is None and name is None else None
-    description = "" if experiment is None and description is None else None
+    name = "Untitled" if experiment is None and name is None else name
+    description = "" if experiment is None and description is None else description
     hostname = get_hostname() if experiment is None else None
 
     if not project:
@@ -146,13 +146,13 @@ def init(
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
     _experiment.sync(wait=False)
 
-    if name:
+    if name is not None:
         _experiment["sys/name"] = name
-    if description:
+    if description is not None:
         _experiment["sys/description"] = description
-    if hostname:
+    if hostname is not None:
         _experiment["sys/hostname"] = hostname
-    if tags:
+    if tags is not None:
         _experiment["sys/tags"] = tags
 
     _experiment.start()
