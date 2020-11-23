@@ -17,6 +17,8 @@ import abc
 import uuid
 from typing import List, Optional
 
+from neptune.alpha.exceptions import NeptuneException
+
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.types.atoms import GitRef
@@ -45,7 +47,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
+    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
         pass
 
     @abc.abstractmethod

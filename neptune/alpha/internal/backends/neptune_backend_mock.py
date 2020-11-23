@@ -20,7 +20,7 @@ from shutil import copyfile
 from typing import Optional, List, Dict
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound, \
-    ExperimentNotFound
+    ExperimentNotFound, NeptuneException
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -72,9 +72,14 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_experiment(self, experiment_id: str) -> Experiment:
         raise ExperimentNotFound(experiment_id)
 
-    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> None:
+    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
+        result = []
         for op in operations:
-            self._execute_operation(experiment_uuid, op)
+            try:
+                self._execute_operation(experiment_uuid, op)
+            except NeptuneException as e:
+                result.append(e)
+        return result
 
     def _execute_operation(self, experiment_uuid: uuid.UUID, op: Operation) -> None:
         if experiment_uuid not in self._experiments:

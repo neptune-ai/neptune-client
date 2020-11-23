@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import sys
 import uuid
 from threading import Event
@@ -29,6 +30,8 @@ from neptune.alpha.internal.operation_processors.operation_processor import Oper
 from neptune.alpha.internal.threading.daemon import Daemon
 
 # pylint: disable=protected-access
+
+_logger = logging.getLogger(__name__)
 
 
 class AsyncOperationProcessor(OperationProcessor):
@@ -110,8 +113,10 @@ class AsyncOperationProcessor(OperationProcessor):
             # TODO: Handle Metadata errors
             for retry in range(0, self.RETRIES):
                 try:
-                    self._processor._backend.execute_operations(self._processor._experiment_uuid, batch)
+                    result = self._processor._backend.execute_operations(self._processor._experiment_uuid, batch)
                     self._processor._queue.ack(version)
+                    for error in result:
+                        _logger.error("Error occurred during asynchronous operation processing: %s", error)
                     break
                 except ConnectionLost:
                     if retry >= self.RETRIES - 1:
