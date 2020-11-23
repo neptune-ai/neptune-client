@@ -72,9 +72,9 @@ class TestFileChunkStream(unittest.TestCase):
         # then
         self.assertEqual(stream.length, None)
         self.assertEqual(chunks, [
-            FileChunk(u"ABCDEFGHIJ", 0, 10),
-            FileChunk(u"KLMNOPRSTU", 10, 20),
-            FileChunk(u"WXYZ", 20, 24)
+            FileChunk(b"ABCDEFGHIJ", 0, 10),
+            FileChunk(b"KLMNOPRSTU", 10, 20),
+            FileChunk(b"WXYZ", 20, 24)
         ])
 
 

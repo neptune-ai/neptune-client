@@ -579,6 +579,9 @@ class Experiment(object):
                 A destination path.
                 If ``None`` is passed, an artifact file name will be used.
 
+        Note:
+            If you provide `io.StringIO`, it will be encoded in 'utf-8' before sent to Neptune.
+
         Raises:
             `FileNotFound`: When ``artifact`` file was not found.
             `StorageLimitReached`: When storage limit in the project has been reached.
