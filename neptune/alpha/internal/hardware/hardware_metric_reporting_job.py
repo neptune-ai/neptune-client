@@ -49,11 +49,11 @@ class HardwareMetricReportingJob(BackgroundJob):
         self._thread = None
         self._started = False
 
-    def start(self, experiment: 'Experiment'):
-        if not SystemMonitor.requirements_installed():
-            _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
-            return
+    @staticmethod
+    def requirements_installed() -> bool:
+        return SystemMonitor.requirements_installed()
 
+    def start(self, experiment: 'Experiment'):
         gauge_mode = GaugeMode.CGROUP if in_docker() else GaugeMode.SYSTEM
         system_resource_info = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(), gpu_monitor=GPUMonitor(), os_environ=os.environ

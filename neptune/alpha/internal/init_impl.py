@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 import os
 from datetime import datetime
 
@@ -22,10 +22,11 @@ from platform import node as get_hostname
 from typing import Optional, List
 
 import click
+from neptune.alpha.internal.operation import Operation
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY, \
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
     ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import MissingProject
@@ -36,27 +37,27 @@ from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptune
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import VersionedOperation
 from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.alpha.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.alpha.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, \
     StderrCaptureBackgroundJob
 from neptune.alpha.internal.utils.git import get_git_info, discover_git_repo_location
 from neptune.alpha.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.alpha.version import version as parsed_version
 from neptune.alpha.experiment import Experiment
 
 
 __version__ = str(parsed_version)
 
+_logger = logging.getLogger(__name__)
+
 
 def init(
         project: Optional[str] = None,
         experiment: Optional[str] = None,
         connection_mode: str = "async",
-        name: str = "Untitled",
-        description: str = "",
+        name: Optional[str] = None,
+        description: Optional[str] = None,
         tags: List[str] = None,
         capture_stdout: bool = True,
         capture_stderr: bool = True,
@@ -65,14 +66,18 @@ def init(
     verify_type("project", project, (str, type(None)))
     verify_type("experiment", experiment, (str, type(None)))
     verify_type("connection_mode", connection_mode, str)
-    verify_type("name", name, str)
-    verify_type("description", description, str)
+    verify_type("name", name, (str, type(None)))
+    verify_type("description", description, (str, type(None)))
     verify_type("capture_stdout", capture_stdout, bool)
     verify_type("capture_stderr", capture_stderr, bool)
     verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
     verify_type("flush_period", flush_period, (int, float))
     if tags:
         verify_collection_type("tags", tags, str)
+
+    name = "Untitled" if experiment is None and name is None else None
+    description = "" if experiment is None and description is None else None
+    hostname = get_hostname() if experiment is None else None
 
     if not project:
         project = os.getenv(PROJECT_ENV_NAME)
@@ -109,12 +114,8 @@ def init(
         execution_path = "{}/exec-{}-{}".format(experiment_path, execution_id, datetime.now())
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
-            DiskQueue(execution_path,
-                      OPERATIONS_DISK_QUEUE_PREFIX,
-                      VersionedOperation.to_dict,
-                      VersionedOperation.from_dict),
+            DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
             backend,
-            SyncOffsetFile(Path(execution_path)),
             sleep_time=flush_period)
     elif connection_mode == "sync":
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
@@ -123,17 +124,18 @@ def init(
     elif connection_mode == "offline":
         # Experiment was returned by mocked backend and has some random UUID.
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
-        storage_queue = DiskQueue(experiment_path,
-                                  OPERATIONS_DISK_QUEUE_PREFIX,
-                                  VersionedOperation.to_dict,
-                                  VersionedOperation.from_dict)
+        storage_queue = DiskQueue(Path(experiment_path), lambda x: x.to_dict(), Operation.from_dict)
         operation_processor = OfflineOperationProcessor(storage_queue)
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline", "debug"]')
 
     background_jobs = []
     if capture_hardware_metrics:
-        background_jobs.append(HardwareMetricReportingJob())
+        if HardwareMetricReportingJob.requirements_installed():
+            background_jobs.append(HardwareMetricReportingJob())
+        else:
+            _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
+            background_jobs.append(PingBackgroundJob())
     else:
         background_jobs.append(PingBackgroundJob())
     if capture_stdout:
@@ -143,11 +145,16 @@ def init(
 
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
     _experiment.sync(wait=False)
-    _experiment["sys/name"] = name
-    _experiment["sys/description"] = description
-    _experiment["sys/hostname"] = get_hostname()
+
+    if name:
+        _experiment["sys/name"] = name
+    if description:
+        _experiment["sys/description"] = description
+    if hostname:
+        _experiment["sys/hostname"] = hostname
     if tags:
         _experiment["sys/tags"] = tags
+
     _experiment.start()
 
     click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(

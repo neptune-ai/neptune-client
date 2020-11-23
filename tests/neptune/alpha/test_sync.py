@@ -23,7 +23,7 @@ from random import randint
 import pytest
 
 import neptune.alpha.sync
-from neptune.alpha.constants import OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY
+from neptune.alpha.constants import OFFLINE_DIRECTORY
 from neptune.alpha.exceptions import ProjectNotFound
 from neptune.alpha.internal.backends.api_model import Project
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
@@ -47,15 +47,15 @@ def prepare_experiments(path):
     for exp in registered_experiments:
         exp_path = path / "async" / str(exp.uuid) / execution_id
         exp_path.mkdir(parents=True)
-        queue = DiskQueue(str(exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
-        queue.put({'version': 0, 'op': 'op-0'})
-        queue.put({'version': 1, 'op': 'op-1'})
+        queue = DiskQueue(exp_path, lambda x: x, lambda x: x)
+        queue.put('op-0')
+        queue.put('op-1')
 
-    sync_offset_file = SyncOffsetFile(path / "async" / str(unsync_exp.uuid) / execution_id)
-    sync_offset_file.write(0)
+    SyncOffsetFile(path / "async" / str(unsync_exp.uuid) / execution_id / "last_ack_version").write(1)
+    SyncOffsetFile(path / "async" / str(unsync_exp.uuid) / execution_id / "last_put_version").write(2)
 
-    sync_offset_file = SyncOffsetFile(path / "async" / str(sync_exp.uuid) / execution_id)
-    sync_offset_file.write(1)
+    SyncOffsetFile(path / "async" / str(sync_exp.uuid) / execution_id / "last_ack_version").write(2)
+    SyncOffsetFile(path / "async" / str(sync_exp.uuid) / execution_id / "last_put_version").write(2)
 
     def get_experiment_impl(experiment_id):
         for exp in registered_experiments:
@@ -70,9 +70,10 @@ def prepare_offline_experiment(path):
     offline_exp_path = path / OFFLINE_DIRECTORY / offline_exp_uuid
     offline_exp_path.mkdir(parents=True)
 
-    queue = DiskQueue(str(offline_exp_path), OPERATIONS_DISK_QUEUE_PREFIX, lambda x: x, lambda x: x)
-    queue.put({'version': 0, 'op': 'op-0'})
-    queue.put({'version': 1, 'op': 'op-1'})
+    queue = DiskQueue(offline_exp_path, lambda x: x, lambda x: x)
+    queue.put('op-0')
+    queue.put('op-1')
+    SyncOffsetFile(path / OFFLINE_DIRECTORY / offline_exp_uuid / "last_put_version").write(2)
 
     return offline_exp_uuid
 
@@ -181,7 +182,7 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
     # and
     # pylint: disable=no-member
     neptune.alpha.sync.backend.execute_operations \
-        .assert_called_with(registered_offline_exp.uuid, ['op-1'])
+        .assert_called_with(registered_offline_exp.uuid, ['op-0', 'op-1'])
 
 
 def test_get_project_no_name_set(mocker):

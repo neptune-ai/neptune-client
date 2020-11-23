@@ -152,7 +152,6 @@ class TestHostedFileOperations(unittest.TestCase):
 
         self.assertEqual([], result)
 
-
     def test_get_content_disposition_filename(self):
         # given
         response_mock = MagicMock()

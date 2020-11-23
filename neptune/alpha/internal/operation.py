@@ -57,23 +57,6 @@ class Operation:
         return sub_classes[data["type"]].from_dict(data)
 
 
-class VersionedOperation:
-
-    def __init__(self, op: Operation, version: int):
-        self.op = op
-        self.version = version
-
-    @staticmethod
-    def to_dict(obj: 'VersionedOperation') -> dict:
-        return {
-            "op": obj.op.to_dict(),
-            "version": obj.version
-        }
-
-    @staticmethod
-    def from_dict(data: dict) -> 'VersionedOperation':
-        return VersionedOperation(Operation.from_dict(data["op"]), data["version"])
-
 @dataclass
 class AssignFloat(Operation):
 

@@ -24,10 +24,9 @@ import click
 from neptune.alpha.exceptions import ConnectionLost
 from neptune.alpha.internal.containers.storage_queue import StorageQueue
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
-from neptune.alpha.internal.operation import Operation, VersionedOperation
+from neptune.alpha.internal.operation import Operation
 from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.alpha.internal.threading.daemon import Daemon
-from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
 
 # pylint: disable=protected-access
 
@@ -36,15 +35,14 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def __init__(self,
                  experiment_uuid: uuid.UUID,
-                 queue: StorageQueue[VersionedOperation],
+                 queue: StorageQueue[Operation],
                  backend: NeptuneBackend,
-                 sync_offset_file: SyncOffsetFile,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
         self._experiment_uuid = experiment_uuid
         self._queue = queue
         self._backend = backend
-        self._sync_offset_file = sync_offset_file
+        self._batch_size = batch_size
         self._last_version = 0
         self._consumed_version = 0
         self._waiting_for_version = 0
@@ -52,9 +50,8 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
-        self._last_version += 1
-        self._queue.put(VersionedOperation(op, self._last_version))
-        if self._queue.is_overflowing():
+        self._last_version = self._queue.put(op)
+        if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
         if wait:
             self.wait()
@@ -104,18 +101,17 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._processor._queue.flush()
 
             while True:
-                batch = self._processor._queue.get_batch(self._batch_size)
+                batch, version = self._processor._queue.get_batch(self._batch_size)
                 if not batch:
                     return
-                self.process_batch(batch)
+                self.process_batch(batch, version)
 
-        def process_batch(self, batch: List[VersionedOperation]) -> None:
+        def process_batch(self, batch: List[Operation], version: int) -> None:
             # TODO: Handle Metadata errors
             for retry in range(0, self.RETRIES):
                 try:
-                    self._processor._backend.execute_operations(self._processor._experiment_uuid,
-                                                                [op.op for op in batch])
-                    self._processor._sync_offset_file.write(batch[-1].version)
+                    self._processor._backend.execute_operations(self._processor._experiment_uuid, batch)
+                    self._processor._queue.ack(version)
                     break
                 except ConnectionLost:
                     if retry >= self.RETRIES - 1:
@@ -132,7 +128,7 @@ class AsyncOperationProcessor(OperationProcessor):
                                sys.stderr)
                     raise
 
-            self._processor._consumed_version = batch[-1].version
+            self._processor._consumed_version = version
             if self._processor._waiting_for_version > 0:
                 if self._processor._consumed_version >= self._processor._waiting_for_version:
                     self._processor._waiting_for_version = 0

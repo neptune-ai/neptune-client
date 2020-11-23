@@ -14,8 +14,10 @@
 # limitations under the License.
 #
 
-import os
+import random
 import unittest
+from glob import glob
+from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
@@ -35,46 +37,63 @@ class TestDiskQueue(unittest.TestCase):
 
     def test_put(self):
         with TemporaryDirectory() as dirpath:
-            queue = DiskQueue[TestDiskQueue.Obj](dirpath, "operations", self._serializer, self._deserializer)
+            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer)
             obj = TestDiskQueue.Obj(5, "test")
             queue.put(obj)
             queue.flush()
-            self.assertEqual(queue.get(), obj)
+            self.assertEqual(queue.get(), (obj, 1))
             queue.close()
 
     def test_multiple_files(self):
         with TemporaryDirectory() as dirpath:
-            queue = DiskQueue[TestDiskQueue.Obj](dirpath,
-                                                 "operations",
-                                                 self._serializer,
-                                                 self._deserializer,
-                                                 max_file_size=100)
-            for i in range(0, 100):
+            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=300)
+            for i in range(1, 101):
                 obj = TestDiskQueue.Obj(i, str(i))
                 queue.put(obj)
             queue.flush()
-            for i in range(0, 100):
-                self.assertEqual(queue.get(), TestDiskQueue.Obj(i, str(i)))
+            for i in range(1, 101):
+                self.assertEqual(queue.get(), (TestDiskQueue.Obj(i, str(i)), i))
             queue.close()
-            self.assertTrue(queue._write_file_idx > 10)
-            self.assertEqual(set(os.listdir(dirpath)),
-                             {"operations-{}.log".format(queue._write_file_idx)})
+            self.assertTrue(queue._read_file_version > 90)
+            self.assertTrue(queue._write_file_version > 90)
+            self.assertTrue(len(glob(dirpath + "/data-*.log")) > 10)
 
     def test_get_batch(self):
         with TemporaryDirectory() as dirpath:
-            queue = DiskQueue[TestDiskQueue.Obj](dirpath,
-                                                 "operations",
-                                                 self._serializer,
-                                                 self._deserializer,
-                                                 max_file_size=100)
-            for i in range(0, 90):
+            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=100)
+            for i in range(1, 91):
                 obj = TestDiskQueue.Obj(i, str(i))
                 queue.put(obj)
             queue.flush()
-            self.assertEqual(queue.get_batch(25), [TestDiskQueue.Obj(i, str(i)) for i in range(0, 25)])
-            self.assertEqual(queue.get_batch(25), [TestDiskQueue.Obj(i, str(i)) for i in range(25, 50)])
-            self.assertEqual(queue.get_batch(25), [TestDiskQueue.Obj(i, str(i)) for i in range(50, 75)])
-            self.assertEqual(queue.get_batch(25), [TestDiskQueue.Obj(i, str(i)) for i in range(75, 90)])
+            self.assertEqual(queue.get_batch(25), ([TestDiskQueue.Obj(i, str(i)) for i in range(1, 26)], 25))
+            self.assertEqual(queue.get_batch(25), ([TestDiskQueue.Obj(i, str(i)) for i in range(26, 51)], 50))
+            self.assertEqual(queue.get_batch(25), ([TestDiskQueue.Obj(i, str(i)) for i in range(51, 76)], 75))
+            self.assertEqual(queue.get_batch(25), ([TestDiskQueue.Obj(i, str(i)) for i in range(76, 91)], 90))
+            queue.close()
+
+    def test_resuming_queue(self):
+        with TemporaryDirectory() as dirpath:
+            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=999)
+            for i in range(1, 501):
+                obj = TestDiskQueue.Obj(i, str(i))
+                queue.put(obj)
+            queue.flush()
+            _, version = queue.get_batch(random.randrange(300, 400))
+            version_to_ack = version - random.randrange(100, 200)
+            queue.ack(version_to_ack)
+
+            self.assertTrue(queue._read_file_version > 100)
+            self.assertTrue(queue._write_file_version > 450)
+            data_files = glob(dirpath + "/data-*.log")
+            self.assertTrue(len(data_files) > 10)
+            data_files_versions = [int(file[len(dirpath + "/data-"):-len(".log")]) for file in data_files]
+            self.assertTrue(len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1)
+            queue.close()
+
+            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=200)
+            for i in range(version_to_ack + 1, 501):
+                self.assertEqual(queue.get(), (TestDiskQueue.Obj(i, str(i)), i))
+
             queue.close()
 
     @staticmethod
@@ -84,3 +103,7 @@ class TestDiskQueue(unittest.TestCase):
     @staticmethod
     def _deserializer(obj: dict) -> 'TestDiskQueue.Obj':
         return TestDiskQueue.Obj(obj['num'], obj['txt'])
+
+    @staticmethod
+    def _version_getter(obj: 'TestDiskQueue.Obj') -> int:
+        return obj.num

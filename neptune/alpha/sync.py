@@ -24,7 +24,7 @@ from typing import Sequence, Iterable, List, Optional, Tuple, Any
 
 import click
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OPERATIONS_DISK_QUEUE_PREFIX, OFFLINE_DIRECTORY, \
+from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
     OFFLINE_NAME_PREFIX, ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import ProjectNotFound, NeptuneException
@@ -33,8 +33,7 @@ from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptune
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import VersionedOperation
-from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
+from neptune.alpha.internal.operation import Operation
 
 
 #######################################################################################################################
@@ -105,23 +104,8 @@ def is_experiment_synced(experiment_path: Path) -> bool:
 
 
 def is_execution_synced(execution_path: Path) -> bool:
-    sync_offset_file = SyncOffsetFile(execution_path)
-    sync_offset = sync_offset_file.read()
-    if sync_offset is None:
-        return False
-
-    disk_queue = DiskQueue(str(execution_path), OPERATIONS_DISK_QUEUE_PREFIX,
-                           VersionedOperation.to_dict, VersionedOperation.from_dict)
-    previous_operation = None
-    while True:
-        operation = disk_queue.get(dry_run=True)
-        if not operation:
-            break
-        previous_operation = operation
-    if not previous_operation:
-        return True
-
-    return sync_offset >= previous_operation.version
+    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict)
+    return disk_queue.is_empty()
 
 
 def get_offline_experiments_ids(base_path: Path) -> List[str]:
@@ -215,27 +199,10 @@ def sync_experiment(experiment_path: Path, qualified_experiment_name: str) -> No
 
 
 def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID) -> None:
-    disk_queue = DiskQueue(str(execution_path), OPERATIONS_DISK_QUEUE_PREFIX,
-                           VersionedOperation.to_dict, VersionedOperation.from_dict)
-    sync_offset_file = SyncOffsetFile(execution_path)
-    sync_offset = sync_offset_file.read() or 0
-
-    while True:
-        batch = disk_queue.get_batch(1000)
-        if not batch:
-            return
-        if batch[0].version > sync_offset:
-            pass
-        elif batch[-1].version <= sync_offset:
-            continue
-        else:
-            for i, operation in enumerate(batch):
-                if operation.version > sync_offset:
-                    batch = batch[i:]
-                    break
-        backend.execute_operations(experiment_uuid, [op.op for op in batch])
-        sync_offset_file.write(batch[-1].version)
-        sync_offset = batch[-1].version
+    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict)
+    batch, version = disk_queue.get_batch(1000)
+    backend.execute_operations(experiment_uuid, batch)
+    disk_queue.ack(version)
 
 
 def sync_all_registered_experiments(base_path: Path) -> None:
