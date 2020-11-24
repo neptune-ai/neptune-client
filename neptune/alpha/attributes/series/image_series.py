@@ -17,29 +17,31 @@
 from typing import Optional
 
 from neptune.alpha.internal.utils import verify_type
-from neptune.alpha.internal.utils.images import get_image_content
+from neptune.alpha.types.series.image import Image
 
-from neptune.alpha.types.series.image_series import ImageSeries as ImageSeriesVal, ImageAcceptedTypes
+from neptune.alpha.types.series.image_series import ImageSeries as ImageSeriesVal
 
 from neptune.alpha.internal.operation import LogImages, ClearImageLog, Operation
 from neptune.alpha.attributes.series.series import Series
 
 Val = ImageSeriesVal
-Data = ImageAcceptedTypes
+Data = Image
 
 
 class ImageSeries(Series[Val, Data]):
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
-        values = [LogImages.ValueType(val, step=step, ts=timestamp) for val in value.values]
+        values = [LogImages.ValueType(val.content, step=step, ts=timestamp) for val in value.values]
         return LogImages(self._path, values)
 
     def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
-        content = get_image_content(data)
-        return LogImages(self._path, [LogImages.ValueType(content, step, timestamp)])
+        return LogImages(self._path, [LogImages.ValueType(data.content, step, timestamp)])
 
     def _get_clear_operation(self) -> Operation:
         return ClearImageLog(self._path)
 
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)
+
+    def _verify_data_type(self, data) -> None:
+        verify_type("data", data, Image)

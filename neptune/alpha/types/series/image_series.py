@@ -14,9 +14,11 @@
 # limitations under the License.
 #
 
-from typing import TypeVar, Iterable, TYPE_CHECKING
+from typing import TypeVar, Iterable, TYPE_CHECKING, List
 
-from neptune.alpha.internal.utils.images import ImageAcceptedTypes, get_image_content
+from neptune.alpha.internal.utils import verify_collection_type
+
+from neptune.alpha.types.series.image import Image
 from neptune.alpha.types.series.series import Series
 
 if TYPE_CHECKING:
@@ -27,14 +29,15 @@ Ret = TypeVar('Ret')
 
 class ImageSeries(Series):
 
-    def __init__(self, values: Iterable[ImageAcceptedTypes]):
-        self._values = [get_image_content(value) for value in values]
+    def __init__(self, values: Iterable[Image]):
+        verify_collection_type("values", values, Image)
+        self._values = list(values)
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_image_series(self)
 
     @property
-    def values(self):
+    def values(self) -> List[Image]:
         return self._values
 
     def __str__(self):

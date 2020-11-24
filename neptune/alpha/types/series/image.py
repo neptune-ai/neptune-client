@@ -14,17 +14,10 @@
 # limitations under the License.
 #
 
-from .atoms.float import Float
-from .atoms.string import String
-from .atoms.datetime import Datetime
-from .atoms.file import File
-from .atoms.git_ref import GitRef
+from neptune.alpha.internal.utils.images import ImageAcceptedTypes, get_image_content
 
-from .series.float_series import FloatSeries
-from .series.string_series import StringSeries
-from .series.image_series import ImageSeries
-from .series.image import Image
 
-from .sets.string_set import StringSet
+class Image:
 
-from .file_set import FileSet
+    def __init__(self, value: ImageAcceptedTypes):
+        self.content: ImageAcceptedTypes = get_image_content(value)
