@@ -62,7 +62,7 @@ class JsonFileSplitter:
 
     def _decode(self, data: str):
         start = self._json_start(data)
-        while start is not None and start < len(data):
+        while start is not None:
             try:
                 json_data, start = self._decoder.raw_decode(data, start)
             except JSONDecodeError:
@@ -77,7 +77,7 @@ class JsonFileSplitter:
         try:
             return data.index("{", start)
         except ValueError:
-            return len(data)
+            return None
 
     def _reset_part_buffer(self) -> str:
         data = self._part_buffer.getvalue()
