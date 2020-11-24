@@ -42,7 +42,7 @@ class Daemon(threading.Thread):
     def run(self):
         self._is_running = True
         try:
-            while True and not self._interrupted:
+            while not self._interrupted:
                 self.work()
                 if self._sleep_time > 0 and not self._interrupted:
                     self._event.wait(timeout=self._sleep_time)
