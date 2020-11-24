@@ -24,6 +24,7 @@ class Daemon(threading.Thread):
         self._sleep_time = sleep_time
         self._interrupted = False
         self._event = threading.Event()
+        self._is_running = False
 
     def interrupt(self):
         self._interrupted = True
@@ -35,12 +36,19 @@ class Daemon(threading.Thread):
     def disable_sleep(self):
         self._sleep_time = 0
 
+    def is_running(self) -> bool:
+        return self._is_running
+
     def run(self):
-        while True and not self._interrupted:
-            self.work()
-            if self._sleep_time > 0 and not self._interrupted:
-                self._event.wait(timeout=self._sleep_time)
-                self._event.clear()
+        self._is_running = True
+        try:
+            while True and not self._interrupted:
+                self.work()
+                if self._sleep_time > 0 and not self._interrupted:
+                    self._event.wait(timeout=self._sleep_time)
+                    self._event.clear()
+        finally:
+            self._is_running = False
 
     @abc.abstractmethod
     def work(self):

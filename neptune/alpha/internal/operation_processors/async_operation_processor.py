@@ -74,10 +74,11 @@ class AsyncOperationProcessor(OperationProcessor):
     def stop(self, seconds: Optional[float] = None):
         ts = time()
         self._queue.flush()
-        self._consumer.disable_sleep()
-        self._consumer.wake_up()
-        self._queue.wait_for_empty(seconds)
-        self._consumer.interrupt()
+        if self._consumer.is_running():
+            self._consumer.disable_sleep()
+            self._consumer.wake_up()
+            self._queue.wait_for_empty(seconds)
+            self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
         # Do not close queue. According to specification only synchronization thread should be stopped.
