@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import json
+from collections import deque
 from io import StringIO
 from json import JSONDecodeError
 from typing import Optional
@@ -21,43 +22,67 @@ from typing import Optional
 
 class JsonFileSplitter:
 
-    # TODO: experiment with larger buffer sizes
     BUFFER_SIZE = 64 * 1024
+    MAX_PART_READ = 8 * 1024
 
     def __init__(self, file_path: str):
         self._file = open(file_path, "r")
         self._decoder = json.JSONDecoder(strict=False)
-        self._buffer = StringIO()
+        self._part_buffer = StringIO()
+        self._part_read = 0
+        self._parsed_queue = deque()
         self._start_pos = 0
 
     def close(self) -> None:
         self._file.close()
+        self._part_buffer.close()
 
     def get(self) -> Optional[dict]:
-        try:
-            return self._decode()
-        except (JSONDecodeError, ValueError):
-            self._read_data()
-            try:
-                return self._decode()
-            except (JSONDecodeError, ValueError):
-                return None
+        if self._parsed_queue:
+            return self._parsed_queue.popleft()
+        self._read_data()
+        if self._parsed_queue:
+            return self._parsed_queue.popleft()
 
     def _read_data(self):
-        if self._start_pos > 0:
-            new_buffer = StringIO()
-            new_buffer.write(self._buffer.getvalue()[self._start_pos:])
-            self._buffer.close()
-            self._buffer = new_buffer
-            self._start_pos = 0
-
-        data = self._file.read(self.BUFFER_SIZE)
-        while data:
-            self._buffer.write(data)
+        if self._part_read < self.MAX_PART_READ:
             data = self._file.read(self.BUFFER_SIZE)
+            if not data:
+                return
+            if self._part_read > 0:
+                data = self._reset_part_buffer() + data
+            self._decode(data)
 
-    def _decode(self):
-        self._start_pos = self._buffer.getvalue().index("{", self._start_pos)
-        data, end = self._decoder.raw_decode(self._buffer.getvalue(), self._start_pos)
-        self._start_pos = end
+        if not self._parsed_queue:
+            data = self._file.read(self.BUFFER_SIZE)
+            while data:
+                self._part_buffer.write(data)
+                data = self._file.read(self.BUFFER_SIZE)
+            data = self._reset_part_buffer()
+            self._decode(data)
+
+    def _decode(self, data: str):
+        start = self._json_start(data)
+        while start < len(data):
+            try:
+                json_data, start = self._decoder.raw_decode(data, start)
+                start = self._json_start(data, start)
+                self._parsed_queue.append(json_data)
+            except JSONDecodeError:
+                self._part_read = len(data) - start
+                self._part_buffer.write(data[start:])
+                break
+
+    @staticmethod
+    def _json_start(data: str, start: int = 0) -> int:
+        try:
+            return data.index("{", start)
+        except ValueError:
+            return len(data)
+
+    def _reset_part_buffer(self) -> str:
+        data = self._part_buffer.getvalue()
+        self._part_buffer.close()
+        self._part_buffer = StringIO()
+        self._part_read = 0
         return data

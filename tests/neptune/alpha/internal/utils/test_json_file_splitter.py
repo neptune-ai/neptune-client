@@ -18,12 +18,10 @@ import unittest
 from tempfile import NamedTemporaryFile
 
 from neptune.alpha.internal.utils.json_file_splitter import JsonFileSplitter
-from neptune.utils import IS_WINDOWS
 
 
 class TestJsonFileSplitter(unittest.TestCase):
 
-    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_simple_file(self):
         content = """
 {
@@ -44,7 +42,6 @@ class TestJsonFileSplitter(unittest.TestCase):
             self.assertEqual(splitter.get(), None)
             splitter.close()
 
-    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_append(self):
         content1 = """
             {
@@ -80,7 +77,6 @@ class TestJsonFileSplitter(unittest.TestCase):
             self.assertEqual(splitter.get(), None)
             splitter.close()
 
-    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_append_cut_json(self):
         content1 = """
             {
@@ -107,6 +103,28 @@ class TestJsonFileSplitter(unittest.TestCase):
             file.flush()
             self.assertEqual(splitter.get(), {"a": 155, "r": "something"})
             self.assertEqual(splitter.get(), {"a": {"b": [1, 2, 3]}})
+            self.assertEqual(splitter.get(), None)
+            splitter.close()
+
+    def test_big_json(self):
+        content = """
+{
+    "a": 5,
+    "b": "text"
+}
+{
+    "a": "%s",
+    "b": "%s"
+}
+{}
+""".lstrip() % ("x" * JsonFileSplitter.BUFFER_SIZE * 2, "y" * JsonFileSplitter.BUFFER_SIZE * 2)
+
+        with self._create_file(content) as file:
+            splitter = JsonFileSplitter(file.name)
+            self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
+            self.assertEqual(splitter.get(), {"a": "x" * JsonFileSplitter.BUFFER_SIZE * 2,
+                                              "b": "y" * JsonFileSplitter.BUFFER_SIZE * 2})
+            self.assertEqual(splitter.get(), {})
             self.assertEqual(splitter.get(), None)
             splitter.close()
 
