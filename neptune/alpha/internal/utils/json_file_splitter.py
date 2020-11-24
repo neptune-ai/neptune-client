@@ -29,7 +29,6 @@ class JsonFileSplitter:
         self._file = open(file_path, "r")
         self._decoder = json.JSONDecoder(strict=False)
         self._part_buffer = StringIO()
-        self._part_read = 0
         self._parsed_queue = deque()
         self._start_pos = 0
 
@@ -45,11 +44,11 @@ class JsonFileSplitter:
             return self._parsed_queue.popleft()
 
     def _read_data(self):
-        if self._part_read < self.MAX_PART_READ:
+        if self._part_buffer.tell() < self.MAX_PART_READ:
             data = self._file.read(self.BUFFER_SIZE)
             if not data:
                 return
-            if self._part_read > 0:
+            if self._part_buffer.tell() > 0:
                 data = self._reset_part_buffer() + data
             self._decode(data)
 
@@ -67,7 +66,6 @@ class JsonFileSplitter:
             try:
                 json_data, start = self._decoder.raw_decode(data, start)
             except JSONDecodeError:
-                self._part_read = len(data) - start
                 self._part_buffer.write(data[start:])
                 break
             else:
@@ -85,5 +83,4 @@ class JsonFileSplitter:
         data = self._part_buffer.getvalue()
         self._part_buffer.close()
         self._part_buffer = StringIO()
-        self._part_read = 0
         return data
