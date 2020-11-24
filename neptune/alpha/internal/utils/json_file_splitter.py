@@ -63,18 +63,19 @@ class JsonFileSplitter:
 
     def _decode(self, data: str):
         start = self._json_start(data)
-        while start < len(data):
+        while start is not None and start < len(data):
             try:
                 json_data, start = self._decoder.raw_decode(data, start)
-                start = self._json_start(data, start)
-                self._parsed_queue.append(json_data)
             except JSONDecodeError:
                 self._part_read = len(data) - start
                 self._part_buffer.write(data[start:])
                 break
+            else:
+                self._parsed_queue.append(json_data)
+                start = self._json_start(data, start)
 
     @staticmethod
-    def _json_start(data: str, start: int = 0) -> int:
+    def _json_start(data: str, start: int = 0) -> Optional[int]:
         try:
             return data.index("{", start)
         except ValueError:
