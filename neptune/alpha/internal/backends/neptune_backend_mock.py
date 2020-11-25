@@ -181,9 +181,11 @@ class NeptuneBackendMock(NeptuneBackend):
             return File(op.file_path)
 
         def visit_upload_file_set(self, op: UploadFileSet) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(self._current_value, FileSet):
+            if self._current_value is None or op.reset:
+                return FileSet(op.file_globs)
+            if not isinstance(self._current_value, FileSet):
                 raise self._create_type_error("save", FileSet.__name__)
-            return FileSet(op.file_globs)
+            return FileSet(self._current_value.file_globs + op.file_globs)
 
         def visit_log_floats(self, op: LogFloats) -> Optional[Value]:
             raw_values = [x.value for x in op.values]
