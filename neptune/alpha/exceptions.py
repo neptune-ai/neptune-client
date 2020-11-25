@@ -155,3 +155,8 @@ class OfflineModeFetchException(NeptuneException):
 class OperationNotSupported(NeptuneException):
     def __init__(self, message: str):
         super().__init__('Operation not supported: {}'.format(message))
+
+
+class NotAlphaProjectException(NeptuneException):
+    def __init__(self, project: str):
+        super().__init__('{} is not Alpha Neptune Project. Use old neptune-client from neptune package'.format(project))

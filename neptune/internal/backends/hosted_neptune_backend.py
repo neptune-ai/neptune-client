@@ -49,7 +49,8 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
 from neptune.internal.backends.client_config import ClientConfig
-from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
+from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion, \
+    AlphaProjectException
 from neptune.experiments import Experiment
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.utils.http import extract_response_field
@@ -134,6 +135,8 @@ class HostedNeptuneBackend(Backend):
             project = self.backend_swagger_client.api.getProject(
                 projectIdentifier=project_qualified_name
             ).response().result
+            if project.version > 1:
+                raise AlphaProjectException(project_qualified_name)
 
             return Project(
                 backend=self,
