@@ -52,12 +52,12 @@ def upload_file_attribute(swagger_client: SwaggerClient,
         return FileUploadError(file_path, getattr(e, 'message', repr(e)))
 
 
-def upload_file_attributes(swagger_client: SwaggerClient,
-                           experiment_uuid: uuid.UUID,
-                           attribute: str,
-                           file_globs: Sequence[str],
-                           reset: bool,
-                           ) -> List[FileUploadError]:
+def upload_file_set_attribute(swagger_client: SwaggerClient,
+                              experiment_uuid: uuid.UUID,
+                              attribute: str,
+                              file_globs: Sequence[str],
+                              reset: bool,
+                              ) -> List[FileUploadError]:
     result: List[FileUploadError] = []
     upload_entries: List[UploadEntry] = []
 

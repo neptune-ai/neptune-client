@@ -21,7 +21,7 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 import mock
 from mock import MagicMock, patch
 
-from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_attributes, \
+from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
     download_file_attribute, _get_content_disposition_filename
 from neptune.utils import IS_WINDOWS
 
@@ -67,7 +67,7 @@ class TestHostedFileOperations(unittest.TestCase):
 
         # when
         with NamedTemporaryFile("w") as temp_file:
-            result = upload_file_attributes(
+            result = upload_file_set_attribute(
                 swagger_client=swagger_mock,
                 experiment_uuid=exp_uuid,
                 attribute="some/attribute",
@@ -99,7 +99,7 @@ class TestHostedFileOperations(unittest.TestCase):
         # when
         with NamedTemporaryFile("w") as temp_file_1:
             with NamedTemporaryFile("w") as temp_file_2:
-                result = upload_file_attributes(
+                result = upload_file_set_attribute(
                     swagger_client=swagger_mock,
                     experiment_uuid=exp_uuid,
                     attribute="some/attribute",
@@ -131,7 +131,7 @@ class TestHostedFileOperations(unittest.TestCase):
         with NamedTemporaryFile("w") as temp_file_1:
             with NamedTemporaryFile("w") as temp_file_2:
                 with TemporaryDirectory() as temp_dir:
-                    result = upload_file_attributes(
+                    result = upload_file_set_attribute(
                         swagger_client=swagger_mock,
                         experiment_uuid=exp_uuid,
                         attribute="some/attribute",

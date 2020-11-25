@@ -15,13 +15,16 @@
 #
 import logging
 import os
+import sys
 from datetime import datetime
 
 from pathlib import Path
 from platform import node as get_hostname
-from typing import Optional, List
+from typing import Optional, List, Union
 
 import click
+from neptune.utils import is_ipython
+
 from neptune.alpha.internal.operation import Operation
 
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
@@ -58,7 +61,8 @@ def init(
         connection_mode: str = "async",
         name: Optional[str] = None,
         description: Optional[str] = None,
-        tags: List[str] = None,
+        tags: Optional[Union[List[str], str]] = None,
+        source_files: Optional[Union[List[str], str]] = None,
         capture_stdout: bool = True,
         capture_stderr: bool = True,
         capture_hardware_metrics: bool = True,
@@ -72,8 +76,16 @@ def init(
     verify_type("capture_stderr", capture_stderr, bool)
     verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
     verify_type("flush_period", flush_period, (int, float))
-    if tags:
-        verify_collection_type("tags", tags, str)
+    if tags is not None:
+        if isinstance(tags, str):
+            tags = [tags]
+        else:
+            verify_collection_type("tags", tags, str)
+    if source_files is not None:
+        if isinstance(source_files, str):
+            source_files = [source_files]
+        else:
+            verify_collection_type("source_files", source_files, str)
 
     name = "Untitled" if experiment is None and name is None else name
     description = "" if experiment is None and description is None else description
@@ -154,6 +166,12 @@ def init(
         _experiment["sys/hostname"] = hostname
     if tags is not None:
         _experiment["sys/tags"] = tags
+
+    if source_files is None:
+        if not is_ipython() and os.path.isfile(sys.argv[0]):
+            _experiment["sys/source_code"].save_files(sys.argv[0])
+    else:
+        _experiment["sys/source_code"].save_files(source_files)
 
     _experiment.start()
 

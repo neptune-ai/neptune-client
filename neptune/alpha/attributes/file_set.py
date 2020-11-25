@@ -18,7 +18,7 @@ from typing import Union, Sequence
 
 from neptune.alpha.attributes.attribute import Attribute
 from neptune.alpha.internal.operation import UploadFileSet
-from neptune.alpha.internal.utils import verify_type, verify_collection_type
+from neptune.alpha.internal.utils import verify_collection_type
 from neptune.alpha.types.file_set import FileSet as FileSetVal
 
 
@@ -28,7 +28,6 @@ from neptune.alpha.types.file_set import FileSet as FileSetVal
 class FileSet(Attribute):
 
     def assign(self, value: Union[FileSetVal, str, Sequence[str]], wait: bool = False) -> None:
-        verify_type("value", value, (FileSetVal, str, Sequence[str]))
         if isinstance(value, FileSetVal):
             value = value.file_globs
         elif isinstance(value, str):
@@ -37,10 +36,16 @@ class FileSet(Attribute):
             verify_collection_type("value", value, str)
         with self._experiment.lock():
             abs_file_globs = list(os.path.abspath(file_glob) for file_glob in value)
-            self._enqueue_operation(UploadFileSet(self._path, abs_file_globs), wait)
+            self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=True), wait)
 
     def save_files(self, globs: Union[str, Sequence[str]], wait: bool = False) -> None:
-        self.assign(FileSetVal(globs), wait)
+        if isinstance(globs, str):
+            globs = [globs]
+        else:
+            verify_collection_type("globs", globs, str)
+        with self._experiment.lock():
+            abs_file_globs = list(os.path.abspath(file_glob) for file_glob in globs)
+            self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=False), wait)
 
     # def download(self, destination: Optional[str] = None) -> None:
     #     verify_type("destination", destination, (str, type(None)))

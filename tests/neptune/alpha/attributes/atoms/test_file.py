@@ -74,7 +74,7 @@ class TestFile(TestAttributeBase):
             exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
             var = FileSet(exp, path)
             var.save_files(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected, False), wait)
 
     def test_save_type_error(self):
         values = [55, None, [], FileVal]

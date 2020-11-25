@@ -133,6 +133,7 @@ class UploadFile(Operation):
 class UploadFileSet(Operation):
 
     file_globs: Sequence[str]
+    reset: bool
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_upload_file_set(self)
@@ -140,11 +141,12 @@ class UploadFileSet(Operation):
     def to_dict(self) -> dict:
         ret = super().to_dict()
         ret["file_globs"] = ','.join(self.file_globs)
+        ret["reset"] = str(self.reset)
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'UploadFileSet':
-        return UploadFileSet(data["path"], data["file_globs"].split(","))
+        return UploadFileSet(data["path"], data["file_globs"].split(","), data["reset"] != str(False))
 
 
 @dataclass
