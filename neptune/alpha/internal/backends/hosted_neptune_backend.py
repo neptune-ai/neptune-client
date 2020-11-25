@@ -26,7 +26,7 @@ from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, \
-    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound
+    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
     upload_file_attributes
@@ -102,6 +102,8 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         try:
             project = self.backend_client.api.getProject(projectIdentifier=project_id).response().result
+            if project.version < 2:
+                raise NotAlphaProjectException(project_id)
             return Project(uuid.UUID(project.id), project.name, project.organizationName)
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
@@ -227,7 +229,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:
-        config = backend_client.api.getClientConfig(X_Neptune_Api_Token=self.credentials.api_token).response().result
+        config = backend_client.api.getClientConfig(
+            X_Neptune_Api_Token=self.credentials.api_token,
+            alpha="true"
+        ).response().result
 
         if hasattr(config, "pyLibVersions"):
             min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
