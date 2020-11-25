@@ -25,11 +25,12 @@ from neptune.alpha.internal.operation import *
 class TestOperations(unittest.TestCase):
 
     def test_serialization_to_dict(self):
-        classes = [cls.__name__ for cls in all_subclasses(Operation)]
+        classes = {cls.__name__ for cls in all_subclasses(Operation)}
         for obj in self._list_objects():
-            classes.remove(obj.__class__.__name__)
+            if obj.__class__.__name__ in classes:
+                classes.remove(obj.__class__.__name__)
             self.assertEqual(obj.__dict__, Operation.from_dict(json.loads(json.dumps(obj.to_dict()))).__dict__)
-        self.assertEqual(classes, [])
+        self.assertEqual(classes, set())
 
     @staticmethod
     def _list_objects():
@@ -39,7 +40,8 @@ class TestOperations(unittest.TestCase):
             AssignString(TestOperations._random_path(), "a\rsdf\thr"),
             AssignDatetime(TestOperations._random_path(), now.replace(microsecond=1000*int(now.microsecond/1000))),
             UploadFile(TestOperations._random_path(), "file/path/f/txt"),
-            UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"]),
+            UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], True),
+            UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], False),
             LogFloats(TestOperations._random_path(), [
                 LogFloats.ValueType(5, 4, 500),
                 LogFloats.ValueType(3, None, 1000),

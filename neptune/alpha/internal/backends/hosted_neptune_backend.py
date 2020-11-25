@@ -26,10 +26,11 @@ from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, \
-    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException
+    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException, \
+    InternalClientError
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
-    upload_file_attributes
+    upload_file_set_attribute
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
@@ -174,13 +175,15 @@ class HostedNeptuneBackend(NeptuneBackend):
                     file_path=op.file_path)
                 if error is not None:
                     errors.append(error)
-            else:
-                errors.extend(upload_file_attributes(
+            elif isinstance(op, UploadFileSet):
+                errors.extend(upload_file_set_attribute(
                     swagger_client=self.leaderboard_client,
                     experiment_uuid=experiment_uuid,
                     attribute=path_to_str(op.path),
                     file_globs=op.file_globs,
-                    reset=True))
+                    reset=op.reset))
+            else:
+                raise InternalClientError("Upload operation in neither File or FileSet")
 
         return errors
 

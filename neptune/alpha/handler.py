@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from datetime import datetime
-from typing import TYPE_CHECKING, Union, Iterable, Sequence
+from typing import TYPE_CHECKING, Union, Iterable
 
 from neptune.alpha.attributes.series import ImageSeries
 
@@ -64,7 +64,7 @@ class Handler:
     def save(self, value: str, wait: bool = False) -> None:
         self.assign(File(value), wait)
 
-    def save_files(self, value: Union[str, Sequence[str]], wait: bool = False) -> None:
+    def save_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         self.assign(FileSet(value), wait)
 
     def log(self, value: Union[int, float, str, Image], step=None, timestamp=None, wait: bool = False) -> None:
