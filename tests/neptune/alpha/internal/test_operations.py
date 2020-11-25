@@ -25,11 +25,12 @@ from neptune.alpha.internal.operation import *
 class TestOperations(unittest.TestCase):
 
     def test_serialization_to_dict(self):
-        classes = [cls.__name__ for cls in all_subclasses(Operation)]
+        classes = {cls.__name__ for cls in all_subclasses(Operation)}
         for obj in self._list_objects():
-            classes.remove(obj.__class__.__name__)
+            if obj.__class__.__name__ in classes:
+                classes.remove(obj.__class__.__name__)
             self.assertEqual(obj.__dict__, Operation.from_dict(json.loads(json.dumps(obj.to_dict()))).__dict__)
-        self.assertEqual(classes, [])
+        self.assertEqual(classes, set())
 
     @staticmethod
     def _list_objects():

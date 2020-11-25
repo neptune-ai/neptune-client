@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import os
-from typing import Union, Sequence
+from typing import Union, Iterable
 
 from neptune.alpha.attributes.attribute import Attribute
 from neptune.alpha.internal.operation import UploadFileSet
@@ -27,25 +27,27 @@ from neptune.alpha.types.file_set import FileSet as FileSetVal
 
 class FileSet(Attribute):
 
-    def assign(self, value: Union[FileSetVal, str, Sequence[str]], wait: bool = False) -> None:
+    def assign(self, value: Union[FileSetVal, str, Iterable[str]], wait: bool = False) -> None:
         if isinstance(value, FileSetVal):
             value = value.file_globs
         elif isinstance(value, str):
             value = [value]
         else:
             verify_collection_type("value", value, str)
-        with self._experiment.lock():
-            abs_file_globs = list(os.path.abspath(file_glob) for file_glob in value)
-            self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=True), wait)
+        self._enqueue_upload_operation(value, reset=True, wait=wait)
 
-    def save_files(self, globs: Union[str, Sequence[str]], wait: bool = False) -> None:
+    def save_files(self, globs: Union[str, Iterable[str]], wait: bool = False) -> None:
         if isinstance(globs, str):
             globs = [globs]
         else:
             verify_collection_type("globs", globs, str)
+        self._enqueue_upload_operation(globs, reset=False, wait=wait)
+
+    def _enqueue_upload_operation(self, globs: Iterable[str], reset: bool, wait: bool):
         with self._experiment.lock():
             abs_file_globs = list(os.path.abspath(file_glob) for file_glob in globs)
-            self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=False), wait)
+            self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=reset), wait)
+
 
     # def download(self, destination: Optional[str] = None) -> None:
     #     verify_type("destination", destination, (str, type(None)))

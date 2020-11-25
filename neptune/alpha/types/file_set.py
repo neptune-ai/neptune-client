@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import TypeVar, TYPE_CHECKING, Sequence, Union
+from typing import TypeVar, TYPE_CHECKING, Union, List, Iterable
 
-from neptune.alpha.internal.utils import verify_type, verify_collection_type
+from neptune.alpha.internal.utils import verify_collection_type
 from neptune.alpha.types.value import Value
 
 if TYPE_CHECKING:
@@ -26,13 +26,12 @@ Ret = TypeVar('Ret')
 
 class FileSet(Value):
 
-    def __init__(self, file_globs: Union[str, Sequence[str]]):
-        verify_type("file_globs", file_globs, (str, Sequence[str]))
+    def __init__(self, file_globs: Union[str, Iterable[str]]):
         if isinstance(file_globs, str):
-            self.file_globs = [file_globs]
+            file_globs = [file_globs]
         else:
             verify_collection_type("file_globs", file_globs, str)
-            self.file_globs = file_globs
+        self.file_globs: List[str] = list(file_globs)
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_file_set(self)
