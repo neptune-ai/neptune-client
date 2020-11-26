@@ -15,7 +15,7 @@
 #
 
 import uuid
-from typing import Union, Optional
+from typing import Union, Optional, List
 
 from packaging.version import Version
 
@@ -55,6 +55,11 @@ class FileNotFound(NeptuneException):
 class FileUploadError(NeptuneException):
     def __init__(self, filename: str, msg: str):
         super().__init__("Cannot upload file {}: {}".format(filename, msg))
+
+
+class FileSetUploadError(NeptuneException):
+    def __init__(self, globs: List[str], msg: str):
+        super().__init__("Cannot upload file set {}: {}".format(globs, msg))
 
 
 class InternalClientError(NeptuneException):

@@ -52,7 +52,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         response_error.errorDescription = "error1"
         swagger_client.api.executeOperations().response().result = [response_error]
         swagger_client.api.executeOperations.reset_mock()
-        upload_mock.return_value = FileUploadError("file1", "error2")
+        upload_mock.side_effect = FileUploadError("file1", "error2")
 
         # when
         result = backend.execute_operations(

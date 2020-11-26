@@ -22,7 +22,7 @@ import mock
 from mock import MagicMock, patch
 
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
-    download_file_attribute, _get_content_disposition_filename, download_zip
+    download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, download_zip
 from neptune.utils import IS_WINDOWS
 
 
@@ -35,21 +35,22 @@ class TestHostedFileOperations(unittest.TestCase):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
+        upload_loop_mock.return_value = b'null'
 
         # when
         with NamedTemporaryFile("w") as f:
-            result = upload_file_attribute(
+            upload_file_attribute(
                 swagger_client=swagger_mock,
                 experiment_uuid=exp_uuid,
                 attribute="target/path.txt",
                 file_path=f.name)
 
         # then
-        self.assertEqual(None, result)
         upload_loop_mock.assert_called_once_with(
+            file_chunk_stream=mock.ANY,
+            response_handler=_attribute_upload_response_handler,
             http_client=swagger_mock.swagger_spec.http_client,
             url="ui.neptune.ai/attributes/upload",
-            file_chunk_stream=mock.ANY,
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
@@ -64,10 +65,11 @@ class TestHostedFileOperations(unittest.TestCase):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
+        upload_loop_mock.return_value = b'null'
 
         # when
         with NamedTemporaryFile("w") as temp_file:
-            result = upload_file_set_attribute(
+            upload_file_set_attribute(
                 swagger_client=swagger_mock,
                 experiment_uuid=exp_uuid,
                 attribute="some/attribute",
@@ -75,11 +77,11 @@ class TestHostedFileOperations(unittest.TestCase):
                 reset=True)
 
         # then
-        self.assertEqual([], result)
         upload_loop_mock.assert_called_once_with(
+            file_chunk_stream=mock.ANY,
+            response_handler=_attribute_upload_response_handler,
             http_client=swagger_mock.swagger_spec.http_client,
             url="ui.neptune.ai/uploadFileSetChunk",
-            file_chunk_stream=mock.ANY,
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "some/attribute",
@@ -95,11 +97,12 @@ class TestHostedFileOperations(unittest.TestCase):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
+        upload_raw_data_mock.return_value = b'null'
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:
             with NamedTemporaryFile("w") as temp_file_2:
-                result = upload_file_set_attribute(
+                upload_file_set_attribute(
                     swagger_client=swagger_mock,
                     experiment_uuid=exp_uuid,
                     attribute="some/attribute",
@@ -107,8 +110,6 @@ class TestHostedFileOperations(unittest.TestCase):
                     reset=True)
 
         # then
-        self.assertEqual([], result)
-
         upload_raw_data_mock.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
             url="ui.neptune.ai/uploadFileSetTar",
@@ -126,12 +127,13 @@ class TestHostedFileOperations(unittest.TestCase):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
+        upload_raw_data_mock.return_value = b'null'
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:
             with NamedTemporaryFile("w") as temp_file_2:
                 with TemporaryDirectory() as temp_dir:
-                    result = upload_file_set_attribute(
+                    upload_file_set_attribute(
                         swagger_client=swagger_mock,
                         experiment_uuid=exp_uuid,
                         attribute="some/attribute",
@@ -149,8 +151,6 @@ class TestHostedFileOperations(unittest.TestCase):
                 "attribute": "some/attribute",
                 "reset": "True"
             })
-
-        self.assertEqual([], result)
 
     def test_get_content_disposition_filename(self):
         # given

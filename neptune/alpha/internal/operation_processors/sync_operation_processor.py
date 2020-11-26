@@ -29,8 +29,9 @@ class SyncOperationProcessor(OperationProcessor):
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument
-        # TODO: Handle metadata errors
-        self._backend.execute_operations(self._experiment_uuid, [op])
+        errors = self._backend.execute_operations(self._experiment_uuid, [op])
+        if errors:
+            raise errors[0]
 
     def wait(self):
         pass

@@ -168,20 +168,24 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         for op in upload_operations:
             if isinstance(op, UploadFile):
-                error = upload_file_attribute(
-                    swagger_client=self.leaderboard_client,
-                    experiment_uuid=experiment_uuid,
-                    attribute=path_to_str(op.path),
-                    file_path=op.file_path)
-                if error is not None:
-                    errors.append(error)
+                try:
+                    upload_file_attribute(
+                        swagger_client=self.leaderboard_client,
+                        experiment_uuid=experiment_uuid,
+                        attribute=path_to_str(op.path),
+                        file_path=op.file_path)
+                except NeptuneException as e:
+                    errors.append(e)
             elif isinstance(op, UploadFileSet):
-                errors.extend(upload_file_set_attribute(
-                    swagger_client=self.leaderboard_client,
-                    experiment_uuid=experiment_uuid,
-                    attribute=path_to_str(op.path),
-                    file_globs=op.file_globs,
-                    reset=op.reset))
+                try:
+                    upload_file_set_attribute(
+                        swagger_client=self.leaderboard_client,
+                        experiment_uuid=experiment_uuid,
+                        attribute=path_to_str(op.path),
+                        file_globs=op.file_globs,
+                        reset=op.reset)
+                except NeptuneException as e:
+                    errors.append(e)
             else:
                 raise InternalClientError("Upload operation in neither File or FileSet")
 
