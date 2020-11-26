@@ -17,7 +17,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Set
+from typing import Optional, List, Set
 
 from packaging.version import Version
 
@@ -92,6 +92,12 @@ class Attribute:
     def __init__(self, _path: str, _type: AttributeType):
         self.path = _path
         self.type = _type
+
+
+@dataclass
+class Leaderboard:
+    experiments: List[uuid.UUID]
+    total_experiments: int
 
 
 @dataclass

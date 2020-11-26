@@ -29,7 +29,8 @@ from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, 
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException, \
     InternalClientError
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType, \
-    FloatAttribute, StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
+    FloatAttribute, StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, \
+    StringSetAttribute, Leaderboard
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
     upload_file_set_attribute, download_zip
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
@@ -343,6 +344,21 @@ class HostedNeptuneBackend(NeptuneBackend):
             min_compatible_version=version.parse(min_compatible) if min_compatible else None,
             max_compatible_version=version.parse(max_compatible) if max_compatible else None
         )
+
+    @with_api_exceptions_handler
+    def get_leaderboard(self, project_id: uuid.UUID, offset: int, limit: int) -> Leaderboard:
+        params = {
+            'projectIdentifier': str(project_id),
+            'offset': offset,
+            'limit': limit
+        }
+        try:
+            leaderboard = self.leaderboard_client.api.getLeaderboard(**params).response().result
+            return Leaderboard(
+                experiments=[entry.id for entry in leaderboard.entries],
+                total_experiments=leaderboard.totalItemCount)
+        except HTTPNotFound:
+            raise ProjectNotFound(project_id)
 
     @staticmethod
     def _create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
