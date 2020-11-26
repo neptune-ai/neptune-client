@@ -30,7 +30,7 @@ from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, 
     InternalClientError
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
-    upload_file_set_attribute
+    upload_file_set_attribute, download_zip
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
@@ -229,6 +229,27 @@ class HostedNeptuneBackend(NeptuneBackend):
                 destination=destination)
         except HTTPNotFound:
             raise MetadataInconsistency("File attribute {} not found".format(path_to_str(path)))
+
+    def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+        download_request = self._get_file_set_download_request(experiment_uuid, path)
+        try:
+            download_zip(
+                swagger_client=self.leaderboard_client,
+                download_id=download_request.id,
+                destination=destination)
+        except HTTPNotFound:
+            raise MetadataInconsistency("File attribute {} not found".format(path_to_str(path)))
+
+    @with_api_exceptions_handler
+    def _get_file_set_download_request(self, experiment_uuid: uuid.UUID, path: List[str]):
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            return self.leaderboard_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
+        except HTTPNotFound:
+            raise MetadataInconsistency("File set attribute {} not found".format(path_to_str(path)))
 
     @with_api_exceptions_handler
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:

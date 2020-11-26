@@ -18,10 +18,12 @@ import uuid
 from datetime import datetime
 from shutil import copyfile
 from typing import Optional, List, Dict
+from zipfile import ZipFile
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound, \
     ExperimentNotFound, NeptuneException
 from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
+from neptune.alpha.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
@@ -121,6 +123,22 @@ class NeptuneBackendMock(NeptuneBackend):
         target_path = os.path.abspath(destination or os.path.basename(source_path))
         if source_path != target_path:
             copyfile(source_path, target_path)
+
+    def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+        source_file_set_value: FileSet = self._experiments[experiment_uuid].get(path)
+
+        if destination is None:
+            target_file = path[-1] + ".zip"
+        elif os.path.isdir(destination):
+            target_file = os.path.join(destination, path[-1] + ".zip")
+        else:
+            target_file = destination
+
+        upload_entries = get_unique_upload_entries(source_file_set_value.file_globs)
+
+        with ZipFile(target_file, 'w') as zipObj:
+            for upload_entry in upload_entries:
+                zipObj.write(upload_entry.source_path, upload_entry.target_path)
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 

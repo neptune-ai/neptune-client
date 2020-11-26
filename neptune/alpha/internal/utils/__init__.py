@@ -14,10 +14,9 @@
 # limitations under the License.
 #
 import base64
-from typing import Union, List, Set, Tuple, TypeVar
+from typing import Union, TypeVar, Iterable
 
 T = TypeVar('T')
-Collection = Union[List[T], Set[T], Tuple[T]]
 
 
 def replace_patch_version(version: str):
