@@ -186,6 +186,7 @@ class TestHostedFileOperations(unittest.TestCase):
             })
 
     @patch('neptune.alpha.internal.backends.hosted_file_operations._download_raw_data')
+    @patch('neptune.alpha.internal.backends.hosted_file_operations._get_download_url', new=lambda _, _id: "some_url")
     def test_download_zip(self, download_raw):
         # given
         swagger_mock = self._get_swagger_mock()
@@ -199,11 +200,8 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         download_raw.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/download",
-            headers={"Accept": "application/zip"},
-            query_params={
-                "id": str(download_id)
-            })
+            url="some_url",
+            headers={"Accept": "application/zip"})
 
     @staticmethod
     def _get_swagger_mock():
@@ -215,6 +213,7 @@ class TestHostedFileOperations(unittest.TestCase):
         swagger_mock.api.uploadPath.operation.path_name = "/uploadPath"
         swagger_mock.api.uploadAttribute.operation.path_name = "/attributes/upload"
         swagger_mock.api.downloadAttribute.operation.path_name = "/attributes/download"
+        swagger_mock.api.downloadFileSetAttributeZip.operation.path_name = "/attributes/downloadFileSetZip"
         swagger_mock.api.downloadFileSetAttributeZip.operation.path_name = "/attributes/downloadFileSetZip"
         swagger_mock.api.download.operation.path_name = "/download"
         return swagger_mock

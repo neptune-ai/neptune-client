@@ -17,6 +17,7 @@ import os
 import unittest
 # pylint: disable=protected-access
 from datetime import datetime, timedelta
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 from neptune.alpha import init, ANONYMOUS
@@ -110,7 +111,10 @@ class TestHandler(unittest.TestCase):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/artifacts'].save_files("path/to/file.txt")
         exp['some/artifacts'].save_files("path/to/other/*")
-        exp['some/artifacts'].download_zip()
+
+        with TemporaryDirectory() as temp_dir:
+            exp['some/artifacts'].download_zip(temp_dir)
+            exp['some/artifacts'].download_zip(temp_dir)
 
         zip_write_mock.assert_any_call(os.path.abspath("path/to/file.txt"), "path/to/file.txt")
         zip_write_mock.assert_any_call(os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt")

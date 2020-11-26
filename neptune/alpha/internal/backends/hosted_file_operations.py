@@ -15,6 +15,7 @@
 #
 import io
 import os
+import time
 import uuid
 from glob import glob
 from typing import List, Optional, Dict, Iterable, Set
@@ -184,12 +185,24 @@ def download_file_attribute(swagger_client: SwaggerClient,
 def download_zip(swagger_client: SwaggerClient,
                  download_id: uuid.UUID,
                  destination: Optional[str] = None):
+    download_url: Optional[str] = _get_download_url(swagger_client, download_id)
+    next_sleep = 0.5
+    while download_url is None:
+        time.sleep(next_sleep)
+        next_sleep = min(2 * next_sleep, 5)
+        download_url = _get_download_url(swagger_client, download_id)
+
     response = _download_raw_data(
         http_client=swagger_client.swagger_spec.http_client,
-        url=swagger_client.swagger_spec.api_url + swagger_client.api.download.operation.path_name,
-        headers={"Accept": "application/zip"},
-        query_params={"id": str(download_id)})
+        url=download_url,
+        headers={"Accept": "application/zip"})
     _store_response_as_file(response, destination)
+
+
+def _get_download_url(swagger_client: SwaggerClient, download_id: uuid.UUID):
+    params = {"id": str(download_id)}
+    download_request = swagger_client.api.getDownloadPrepareRequest(**params).response().result
+    return download_request.downloadUrl
 
 
 def _store_response_as_file(response: Response, destination: Optional[str] = None):
