@@ -14,18 +14,19 @@
 # limitations under the License.
 #
 import io
+import json
 import os
 import time
 import uuid
 from glob import glob
-from typing import List, Optional, Dict, Iterable, Set
+from typing import List, Optional, Dict, Iterable, Callable, Set
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
-from neptune.alpha.exceptions import FileUploadError
+from neptune.alpha.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, FileSetUploadError
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
 from neptune.internal.storage.storage_utils import scan_unique_upload_entries, split_upload_files, UploadEntry, \
@@ -35,22 +36,24 @@ from neptune.internal.storage.storage_utils import scan_unique_upload_entries, s
 def upload_file_attribute(swagger_client: SwaggerClient,
                           experiment_uuid: uuid.UUID,
                           attribute: str,
-                          file_path: str
-                          ) -> Optional[FileUploadError]:
+                          file_path: str) -> None:
     if not os.path.isfile(file_path):
-        return FileUploadError(file_path, "Path not found or is a not a file.")
+        raise FileUploadError(file_path, "Path not found or is a not a file.")
     try:
         url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadAttribute.operation.path_name
-        _upload_loop(http_client=swagger_client.swagger_spec.http_client,
+        _upload_loop(file_chunk_stream=FileChunkStream(UploadEntry(file_path, file_path)),
+                     response_handler=_attribute_upload_response_handler,
+                     http_client=swagger_client.swagger_spec.http_client,
                      url=url,
-                     file_chunk_stream=FileChunkStream(UploadEntry(file_path, file_path)),
                      query_params={
                          "experimentId": str(experiment_uuid),
                          "attribute": attribute,
                          "filename": os.path.basename(file_path)
                      })
+    except MetadataInconsistency:
+        raise
     except Exception as e:
-        return FileUploadError(file_path, getattr(e, 'message', repr(e)))
+        raise FileUploadError(file_path, getattr(e, 'message', repr(e)))
 
 
 def upload_file_set_attribute(swagger_client: SwaggerClient,
@@ -58,9 +61,8 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                               attribute: str,
                               file_globs: Iterable[str],
                               reset: bool,
-                              ) -> List[FileUploadError]:
+                              ) -> None:
     unique_upload_entries = get_unique_upload_entries(file_globs)
-    result: List[FileUploadError] = []
 
     try:
         for package in split_upload_files(unique_upload_entries):
@@ -75,22 +77,24 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                 data = compress_to_tar_gz_in_memory(upload_entries=package.items)
                 url = swagger_client.swagger_spec.api_url \
                       + swagger_client.api.uploadFileSetAttributeTar.operation.path_name
-                upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
-                                url=url,
-                                data=io.BytesIO(data),
-                                headers={"Content-Type": "application/octet-stream"},
-                                query_params={
-                                    "experimentId": str(experiment_uuid),
-                                    "attribute": attribute,
-                                    "reset": str(reset)
-                                })
+                result = upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
+                                         url=url,
+                                         data=io.BytesIO(data),
+                                         headers={"Content-Type": "application/octet-stream"},
+                                         query_params={
+                                             "experimentId": str(experiment_uuid),
+                                             "attribute": attribute,
+                                             "reset": str(reset)
+                                         })
+                _attribute_upload_response_handler(result)
             else:
                 url = swagger_client.swagger_spec.api_url \
                       + swagger_client.api.uploadFileSetAttributeChunk.operation.path_name
                 file_chunk_stream = FileChunkStream(package.items[0])
-                _upload_loop(http_client=swagger_client.swagger_spec.http_client,
+                _upload_loop(file_chunk_stream=file_chunk_stream,
+                             response_handler=_attribute_upload_response_handler,
+                             http_client=swagger_client.swagger_spec.http_client,
                              url=url,
-                             file_chunk_stream=file_chunk_stream,
                              query_params={
                                  "experimentId": str(experiment_uuid),
                                  "attribute": attribute,
@@ -99,11 +103,11 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                              })
 
             reset = False
-
-        return result
+    except MetadataInconsistency:
+        raise
     except Exception as e:
         msg = getattr(e, 'message', repr(e))
-        return [FileUploadError(entry.source_path, msg) for entry in unique_upload_entries]
+        raise FileSetUploadError(list(file_globs), msg)
 
 
 def get_unique_upload_entries(file_globs: Iterable[str]) -> Set[UploadEntry]:
@@ -129,10 +133,21 @@ def get_unique_upload_entries(file_globs: Iterable[str]) -> Set[UploadEntry]:
 
     return scan_unique_upload_entries(upload_entries)
 
+def _attribute_upload_response_handler(result: bytes) -> None:
+    parsed = json.loads(result)
+    if isinstance(parsed, type(None)):
+        return
+    if isinstance(parsed, dict):
+        if "errorDescription" in parsed:
+            raise MetadataInconsistency(parsed["errorDescription"])
+        else:
+            InternalClientError("Unexpected response from server: {}".format(bytes))
 
-def _upload_loop(file_chunk_stream: FileChunkStream, **kwargs):
+
+def _upload_loop(file_chunk_stream: FileChunkStream, response_handler: Callable[[bytes], None], **kwargs):
     for chunk in file_chunk_stream.generate():
-        _upload_loop_chunk(chunk, file_chunk_stream, **kwargs)
+        result = _upload_loop_chunk(chunk, file_chunk_stream, **kwargs)
+        response_handler(result)
 
     file_chunk_stream.close()
 
@@ -149,7 +164,7 @@ def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, **k
     }
     if file_chunk_stream.permissions is not None:
         headers["X-File-Permissions"] = file_chunk_stream.permissions
-    upload_raw_data(data=chunk.get_data(), headers=headers, **kwargs)
+    return upload_raw_data(data=chunk.get_data(), headers=headers, **kwargs)
 
 
 @with_api_exceptions_handler
@@ -166,6 +181,7 @@ def upload_raw_data(http_client: RequestsClient,
 
     response = session.send(session.prepare_request(request))
     response.raise_for_status()
+    return response.content
 
 
 @with_api_exceptions_handler
