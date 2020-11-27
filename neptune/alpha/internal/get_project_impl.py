@@ -15,7 +15,7 @@
 #
 import logging
 import os
-from typing import Optional
+from typing import Optional, Union, Iterable
 
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import MissingProject
@@ -31,8 +31,13 @@ __version__ = str(parsed_version)
 _logger = logging.getLogger(__name__)
 
 
-def get_table(page: int = 0, page_size: int = 100) -> Leaderboard:
-    return get_project().get_table(page, page_size)
+def get_table(_id: Optional[Union[str, Iterable[str]]] = None,
+              state: Optional[Union[str, Iterable[str]]] = None,
+              owner: Optional[Union[str, Iterable[str]]] = None,
+              tag: Optional[Union[str, Iterable[str]]] = None,
+              min_running_time: Optional[int] = None
+              ) -> Leaderboard:
+    return get_project().get_table(_id=_id, state=state, owner=owner, tag=tag, min_running_time=min_running_time)
 
 
 def get_project(name: Optional[str] = None) -> Project:

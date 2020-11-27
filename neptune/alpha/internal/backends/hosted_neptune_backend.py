@@ -16,7 +16,7 @@
 import os
 import platform
 import uuid
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Iterable
 
 import urllib3
 from bravado.client import SwaggerClient
@@ -29,8 +29,8 @@ from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, 
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException, \
     InternalClientError
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType, \
-    FloatAttribute, StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, \
-    StringSetAttribute, Leaderboard
+    Leaderboard, LeaderboardEntry, AttributeWithProperties, FloatAttribute, StringAttribute, DatetimeAttribute, \
+    FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
     upload_file_set_attribute, download_zip
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
@@ -211,12 +211,15 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
+        def to_attribute(attr) -> Attribute:
+            return Attribute(attr.name, AttributeType(attr.type))
+
         params = {
             'experimentId': str(experiment_uuid),
         }
         try:
             experiment = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
-            return [Attribute(attr.name, AttributeType(attr.type)) for attr in experiment.attributes]
+            return [to_attribute(attr) for attr in experiment.attributes]
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
@@ -346,17 +349,36 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
 
     @with_api_exceptions_handler
-    def get_leaderboard(self, project_id: uuid.UUID, offset: int, limit: int) -> Leaderboard:
-        params = {
-            'projectIdentifier': str(project_id),
-            'offset': offset,
-            'limit': limit
-        }
+    def get_leaderboard(self, project_id: uuid.UUID,
+                        _id: Optional[Iterable[str]] = None,
+                        state: Optional[Iterable[str]] = None,
+                        owner: Optional[Iterable[str]] = None,
+                        tags: Optional[Iterable[str]] = None,
+                        min_running_time: Optional[int] = None
+                        ) -> List[LeaderboardEntry]:
+
+        def get_portion(limit, offset):
+            return self.leaderboard_client.api.getLeaderboard(
+                projectIdentifier=str(project_id),
+                shortId=_id, state=state, owner=owner, tags=tags, tagsMode='and',
+                minRunningTimeSeconds=min_running_time,
+                sortBy=['shortId'], sortFieldType=['string'], sortDirection=['ascending'],
+                limit=limit, offset=offset
+            ).response().result.entries
+
+        def to_attribute_with_properties(attribute) -> AttributeWithProperties:
+            properties = attribute.__getitem__("{}Properties".format(attribute.type))
+            return AttributeWithProperties(
+                attribute.name,
+                AttributeType(attribute.type),
+                properties
+            )
+
+        def to_leaderboard_entry(entry) -> LeaderboardEntry:
+            return LeaderboardEntry(entry.id, [to_attribute_with_properties(attr) for attr in entry.attributes])
+
         try:
-            leaderboard = self.leaderboard_client.api.getLeaderboard(**params).response().result
-            return Leaderboard(
-                experiments=[entry.id for entry in leaderboard.entries],
-                total_experiments=leaderboard.totalItemCount)
+            return [to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=100)]
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
 
@@ -365,3 +387,12 @@ class HostedNeptuneBackend(NeptuneBackend):
         http_client = RequestsClient(ssl_verify=ssl_verify)
         update_session_proxies(http_client.session, proxies)
         return http_client
+
+    @staticmethod
+    def _get_all_items(get_portion, step):
+        items = []
+        previous_items = None
+        while previous_items is None or len(previous_items) >= step:
+            previous_items = get_portion(limit=step, offset=len(items))
+            items += previous_items
+        return items

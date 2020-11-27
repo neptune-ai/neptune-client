@@ -15,8 +15,10 @@
 #
 
 import uuid
+from typing import Union, Optional, Iterable
 
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.leaderboard import Leaderboard
 
 
@@ -28,11 +30,29 @@ class Project:
         self._uuid = _uuid
         self._backend = backend
 
-    def get_table(self, page: int = 0, page_size: int = 100) -> Leaderboard:
-        if page < 0:
-            raise ValueError("Page must be 0 or greater.")
-        if page_size < 1:
-            raise ValueError("Page size must greater than 0.")
+    def get_table(self,
+                  _id: Optional[Union[str, Iterable[str]]] = None,
+                  state: Optional[Union[str, Iterable[str]]] = None,
+                  owner: Optional[Union[str, Iterable[str]]] = None,
+                  tag: Optional[Union[str, Iterable[str]]] = None,
+                  min_running_time: Optional[int] = None
+                  ) -> Leaderboard:
+        _id = self._as_list("_id", _id)
+        state = self._as_list("state", state)
+        owner = self._as_list("owner", owner)
+        tags = self._as_list("tag", tag)
+        verify_type("min_running_time", min_running_time, (type(None), int))
 
-        leaderboard = self._backend.get_leaderboard(self._uuid, page * page_size, page_size)
-        return Leaderboard(leaderboard.experiments, leaderboard.total_experiments)
+        leaderboard_entries = self._backend.get_leaderboard(self._uuid, _id, state, owner, tags, min_running_time)
+
+        return Leaderboard(self._backend, leaderboard_entries)
+
+    @staticmethod
+    def _as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Optional[Iterable[str]]:
+        verify_type(name, value, (type(None), str, Iterable))
+        if value is None:
+            return None
+        if isinstance(value, str):
+            return [value]
+        verify_collection_type(name, value, str)
+        return value

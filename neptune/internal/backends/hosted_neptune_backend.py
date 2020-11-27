@@ -780,6 +780,7 @@ class HostedNeptuneBackend(Backend):
         items = []
 
         previous_items = None
+        previous_items = None
         while previous_items is None or len(previous_items) >= step:
             previous_items = get_portion(limit=step, offset=len(items))
             items += previous_items
