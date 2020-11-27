@@ -40,7 +40,8 @@ class TestImage(unittest.TestCase):
         # given
         filename = "{}/image.png".format(self.TEST_DIR)
         image_array = numpy.random.rand(200, 300, 3)
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+        scaled_array = image_array * 255
+        expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
         expected_image.save(filename)
 
         # expect
@@ -49,7 +50,8 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_pil_image(self):
         # given
         image_array = numpy.random.rand(200, 300, 3)
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+        scaled_array = image_array * 255
+        expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(expected_image), _get_pil_image_data(expected_image))
@@ -57,7 +59,8 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_2d_grayscale_array(self):
         # given
         image_array = numpy.random.rand(200, 300)
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+        scaled_array = image_array * 255
+        expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
@@ -69,11 +72,12 @@ class TestImage(unittest.TestCase):
             [[3], [4]],
             [[5], [6]]
         ])
-        expected_image = Image.fromarray(numpy.array([
+        expected_array = numpy.array([
             [1, 2],
             [3, 4],
             [5, 6]
-        ]).astype(numpy.uint8))
+        ]) * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
@@ -81,7 +85,8 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_rgb_array(self):
         # given
         image_array = numpy.random.rand(200, 300, 3)
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+        scaled_array = image_array * 255
+        expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
@@ -89,7 +94,8 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_rgba_array(self):
         # given
         image_array = numpy.random.rand(200, 300, 4)
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+        scaled_array = image_array * 255
+        expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))

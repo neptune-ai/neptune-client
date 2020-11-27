@@ -336,6 +336,16 @@ class Experiment(object):
                 experiment.log_metric('accuracy', 1, 0.65)
                 experiment.log_metric('accuracy', 2, 0.8)
 
+                # Common invocation, logging loss tensor in PyTorch
+                loss = torch.Tensor([0.89])
+                experiment.log_metric('log-loss', loss)
+
+                # Common invocation, logging metric tensor in Tensorflow
+                acc = tf.constant([0.93])
+                experiment.log_metric('accuracy', acc)
+                f1_score = tf.constant(0.78)
+                experiment.log_metric('f1_score', f1_score)
+
         Note:
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.

@@ -74,7 +74,7 @@ def _get_pil_image_data(image):
 
 
 def _get_numpy_as_image(array):
-    array *= 255.
+    array *= 255
     shape = array.shape
     if len(shape) == 2:
         return _get_pil_image_data(Image.fromarray(array.astype(numpy.uint8)))
