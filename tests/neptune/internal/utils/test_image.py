@@ -21,7 +21,6 @@ import matplotlib
 
 matplotlib.use('agg')
 from matplotlib import pyplot
-import torch
 from PIL import Image
 from uuid import uuid4
 import numpy
@@ -112,13 +111,15 @@ class TestImage(unittest.TestCase):
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
 
     def test_get_image_content_from_torch_tensor(self):
-        # given
-        image_tensor = torch.rand(200, 300, 3)
-        expected_array = image_tensor.numpy() * 255
-        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+        if sys.version_info[0] >= 3:
+            import torch # pylint: disable=C0415
+            # given
+            image_tensor = torch.rand(200, 300, 3)
+            expected_array = image_tensor.numpy() * 255
+            expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
-        # expect
-        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
+            # expect
+            self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_tensorflow_tensor(self):
         if sys.version_info[0] >= 3:
