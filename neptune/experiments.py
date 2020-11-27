@@ -463,8 +463,10 @@ class Experiment(object):
                     * if last dimension is 1 - interpreted as grayscale image
                     * if last dimension is 3 - interpreted as RGB image
                     * if last dimension is 4 - interpreted as RGBA image
-                * :obj:`torch.tensor` with values in the [0, 1] range - tensor is converted to :obj:`numpy.array` and logged.
-                * :obj:`tensorflow.tensor` with values in [0, 1] range - tensor is converted to :obj:`numpy.array` and logged.
+                * :obj:`torch.tensor` with values in the [0, 1] range.
+                    :obj:`torch.tensor`  is converted to :obj:`numpy.array` via `.numpy()` method and logged.
+                * :obj:`tensorflow.tensor` with values in [0, 1] range.
+                    :obj:`tensorflow.tensor` is converted to :obj:`numpy.array` via `.numpy()` method and logged.
 
             image_name (:obj:`str`, optional, default is ``None``): Image name
             description (:obj:`str`, optional, default is ``None``): Image description
