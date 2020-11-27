@@ -28,7 +28,7 @@ import numpy
 from neptune.internal.utils.image import get_image_content, _get_pil_image_data, _get_figure_as_image
 
 
-# pylint: disable=C0415
+# pylint: disable=C0415, E0012
 
 
 class TestImage(unittest.TestCase):
