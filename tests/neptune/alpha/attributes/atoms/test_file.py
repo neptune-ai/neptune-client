@@ -38,8 +38,8 @@ class TestFile(TestAttributeBase):
         ]
 
         for value, expected in value_and_expected:
-            backend, processor = MagicMock(), MagicMock()
-            exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+            processor = MagicMock()
+            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = File(exp, path)
             var.assign(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(UploadFile(path, expected), wait)
@@ -57,8 +57,8 @@ class TestFile(TestAttributeBase):
         ]
 
         for value, expected in value_and_expected:
-            backend, processor = MagicMock(), MagicMock()
-            exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+            processor = MagicMock()
+            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = File(exp, path)
             var.save(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(UploadFile(path, expected), wait)
@@ -70,8 +70,8 @@ class TestFile(TestAttributeBase):
         ]
 
         for value, expected in value_and_expected:
-            backend, processor = MagicMock(), MagicMock()
-            exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+            processor = MagicMock()
+            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = FileSet(exp, path)
             var.save_files(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected, False), wait)

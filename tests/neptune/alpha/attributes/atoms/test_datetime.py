@@ -19,7 +19,6 @@ from datetime import datetime
 
 from mock import MagicMock
 
-from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AssignDatetime
 from neptune.alpha.attributes.atoms.datetime import Datetime, DatetimeVal
 
@@ -36,8 +35,8 @@ class TestDatetime(TestAttributeBase):
         ]
 
         for value, expected in value_and_expected:
-            backend, processor = MagicMock(), MagicMock()
-            exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+            processor = MagicMock()
+            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = Datetime(exp, path)
             var.assign(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(AssignDatetime(path, expected), wait)
@@ -49,17 +48,9 @@ class TestDatetime(TestAttributeBase):
                 Datetime(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
+        exp, path = self._create_experiment(), self._random_path()
+        var = Datetime(exp, path)
         now = datetime.now()
-        backend, processor = MagicMock(), MagicMock()
-        exp, path = self._create_experiment(backend, processor), self._random_path()
-        var = Datetime(exp, path)
-        backend.get_attribute.return_value = DatetimeVal(now)
-        self.assertEqual(now.replace(microsecond=1000*int(now.microsecond/1000)), var.get())
-
-    def test_get_wrong_type(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path = self._create_experiment(backend, processor), self._random_path()
-        var = Datetime(exp, path)
-        backend.get_attribute.return_value = 5
-        with self.assertRaises(MetadataInconsistency):
-            var.get()
+        now = now.replace(microsecond=int(now.microsecond/1000)*1000)
+        var.assign(now)
+        self.assertEqual(now, var.get())

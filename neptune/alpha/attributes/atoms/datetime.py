@@ -17,7 +17,6 @@ from datetime import datetime
 from typing import Union
 
 from neptune.alpha.attributes.atoms.atom import Atom
-from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AssignDatetime
 from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.types.atoms.datetime import Datetime as DatetimeVal
@@ -36,7 +35,5 @@ class Datetime(Atom):
 
     def get(self) -> datetime:
         # pylint: disable=protected-access
-        val = self._backend.get_attribute(self._experiment_uuid, self._path)
-        if not isinstance(val, DatetimeVal):
-            raise MetadataInconsistency("Attribute {} is not a Datetime".format(self._path))
+        val = self._backend.get_datetime_attribute(self._experiment_uuid, self._path)
         return val.value

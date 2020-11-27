@@ -44,3 +44,8 @@ class StringSeries(Series[Val, Data]):
 
     def _verify_data_type(self, data) -> None:
         verify_type("data", data, Data)
+
+    def get_last(self) -> str:
+        # pylint: disable=protected-access
+        val = self._backend.get_string_series_attribute(self._experiment_uuid, self._path)
+        return val.last

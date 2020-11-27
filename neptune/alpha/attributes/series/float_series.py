@@ -59,3 +59,8 @@ class FloatSeries(Series[Val, Data]):
 
     def _verify_data_type(self, data) -> None:
         verify_type("data", data, (float, int))
+
+    def get_last(self) -> float:
+        # pylint: disable=protected-access
+        val = self._backend.get_float_series_attribute(self._experiment_uuid, self._path)
+        return val.last

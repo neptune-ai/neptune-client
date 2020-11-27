@@ -15,8 +15,9 @@
 #
 import uuid
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
-from typing import Optional
+from typing import Optional, Set
 
 from packaging.version import Version
 
@@ -91,3 +92,33 @@ class Attribute:
     def __init__(self, _path: str, _type: AttributeType):
         self.path = _path
         self.type = _type
+
+
+@dataclass
+class FloatAttribute:
+    value: float
+
+
+@dataclass
+class StringAttribute:
+    value: str
+
+
+@dataclass
+class DatetimeAttribute:
+    value: datetime
+
+
+@dataclass
+class FloatSeriesAttribute:
+    last: Optional[float]
+
+
+@dataclass
+class StringSeriesAttribute:
+    last: Optional[str]
+
+
+@dataclass
+class StringSetAttribute:
+    values: Set[str]

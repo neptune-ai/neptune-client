@@ -17,7 +17,6 @@ from typing import Union
 
 from neptune.alpha.internal.utils import verify_type
 
-from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AssignFloat
 from neptune.alpha.types.atoms.float import Float as FloatVal
 from neptune.alpha.attributes.atoms.atom import Atom
@@ -34,7 +33,5 @@ class Float(Atom):
 
     def get(self) -> float:
         # pylint: disable=protected-access
-        val = self._backend.get_attribute(self._experiment_uuid, self._path)
-        if not isinstance(val, FloatVal):
-            raise MetadataInconsistency("Attribute {} is not a Float".format(self._path))
+        val = self._backend.get_float_attribute(self._experiment_uuid, self._path)
         return val.value

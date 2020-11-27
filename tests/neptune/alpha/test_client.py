@@ -25,7 +25,7 @@ from mock import patch
 from neptune.alpha import init, ANONYMOUS
 from neptune.alpha.attributes.atoms import String
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.alpha.exceptions import MetadataInconsistency
+from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException
 from neptune.alpha.internal.backends.api_model import Experiment, Attribute, AttributeType
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
@@ -47,6 +47,14 @@ class TestClient(unittest.TestCase):
         exp["some/variable"] = 13
         self.assertEqual(13, exp["some/variable"].get())
         self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
+
+    def test_offline_mode(self):
+        exp = init(connection_mode='offline')
+        exp["some/variable"] = 13
+        with self.assertRaises(OfflineModeFetchException):
+            exp["some/variable"].get()
+        self.assertIn(str(exp._uuid), os.listdir(".neptune/offline"))
+        self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(exp._uuid)))
 
     def test_sync_mode(self):
         exp = init(connection_mode='sync')

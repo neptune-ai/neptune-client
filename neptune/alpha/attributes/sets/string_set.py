@@ -19,7 +19,6 @@ import typing
 
 from neptune.alpha.internal.utils import verify_type
 
-from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AddStrings, RemoveStrings, ClearStringSet
 from neptune.alpha.types.sets.string_set import StringSet as StringSetVal
 from neptune.alpha.attributes.sets.set import Set
@@ -50,7 +49,5 @@ class StringSet(Set):
 
     def get(self) -> typing.Set[str]:
         # pylint: disable=protected-access
-        val = self._backend.get_attribute(self._experiment_uuid, self._path)
-        if  not isinstance(val, StringSetVal):
-            raise MetadataInconsistency("Attribute {} is not a StringSet".format(self._path))
+        val = self._backend.get_string_set_attribute(self._experiment_uuid, self._path)
         return val.values

@@ -19,10 +19,10 @@ from typing import List, Optional
 
 from neptune.alpha.exceptions import NeptuneException
 
-from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute
+from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, FloatAttribute, StringAttribute, \
+    DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.types.atoms import GitRef
-from neptune.alpha.types.value import Value
 
 
 class NeptuneBackend:
@@ -36,10 +36,6 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_experiment(self, experiment_id: str) -> Experiment:
-        pass
-
-    @abc.abstractmethod
-    def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
         pass
 
     @abc.abstractmethod
@@ -60,4 +56,28 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+        pass
+
+    @abc.abstractmethod
+    def get_float_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_string_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_datetime_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_float_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_string_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_string_set_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
         pass
