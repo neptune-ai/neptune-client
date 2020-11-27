@@ -28,6 +28,9 @@ import numpy
 from neptune.internal.utils.image import get_image_content, _get_pil_image_data, _get_figure_as_image
 
 
+# pylint: disable=C0415
+
+
 class TestImage(unittest.TestCase):
     TEST_DIR = "/tmp/neptune/{}".format(uuid4())
 

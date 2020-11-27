@@ -23,6 +23,9 @@ from PIL import Image
 from neptune.exceptions import FileNotFound, InvalidChannelValue
 
 
+# pylint: disable=C0415
+
+
 def get_image_content(image):
     if isinstance(image, six.string_types):
         if not os.path.exists(image):
