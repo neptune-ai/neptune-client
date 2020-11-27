@@ -38,21 +38,21 @@ def get_image_content(image):
 
     else:
         try:
-            from matplotlib import figure # pylint: disable=C0415
+            from matplotlib import figure
             if isinstance(image, figure.Figure):
                 return _get_figure_as_image(image)
         except ImportError:
             pass
 
         try:
-            import torch # pylint: disable=C0415
+            import torch
             if isinstance(image, torch.Tensor):
                 return _get_numpy_as_image(image.numpy())
         except ImportError:
             pass
 
         try:
-            import tensorflow # pylint: disable=C0415
+            import tensorflow
             if isinstance(image, tensorflow.Tensor):
                 return _get_numpy_as_image(image.numpy())
         except ImportError:
