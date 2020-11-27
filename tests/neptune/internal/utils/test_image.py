@@ -17,9 +17,11 @@ import os
 import unittest
 
 import matplotlib
+
 matplotlib.use('agg')
 from matplotlib import pyplot
-
+import torch
+import tensorflow as tf
 from PIL import Image
 from uuid import uuid4
 import numpy
@@ -28,7 +30,6 @@ from neptune.internal.utils.image import get_image_content, _get_pil_image_data,
 
 
 class TestImage(unittest.TestCase):
-
     TEST_DIR = "/tmp/neptune/{}".format(uuid4())
 
     def setUp(self):
@@ -38,7 +39,7 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_string(self):
         # given
         filename = "{}/image.png".format(self.TEST_DIR)
-        image_array = numpy.random.rand(200, 300, 3)*255
+        image_array = numpy.random.rand(200, 300, 3)
         expected_image = Image.fromarray(image_array.astype(numpy.uint8))
         expected_image.save(filename)
 
@@ -47,7 +48,7 @@ class TestImage(unittest.TestCase):
 
     def test_get_image_content_from_pil_image(self):
         # given
-        image_array = numpy.random.rand(200, 300, 3)*255
+        image_array = numpy.random.rand(200, 300, 3)
         expected_image = Image.fromarray(image_array.astype(numpy.uint8))
 
         # expect
@@ -55,7 +56,7 @@ class TestImage(unittest.TestCase):
 
     def test_get_image_content_from_2d_grayscale_array(self):
         # given
-        image_array = numpy.random.rand(200, 300)*255
+        image_array = numpy.random.rand(200, 300)
         expected_image = Image.fromarray(image_array.astype(numpy.uint8))
 
         # expect
@@ -79,7 +80,7 @@ class TestImage(unittest.TestCase):
 
     def test_get_image_content_from_rgb_array(self):
         # given
-        image_array = numpy.random.rand(200, 300, 3)*255
+        image_array = numpy.random.rand(200, 300, 3)
         expected_image = Image.fromarray(image_array.astype(numpy.uint8))
 
         # expect
@@ -87,7 +88,7 @@ class TestImage(unittest.TestCase):
 
     def test_get_image_content_from_rgba_array(self):
         # given
-        image_array = numpy.random.rand(200, 300, 4)*255
+        image_array = numpy.random.rand(200, 300, 4)
         expected_image = Image.fromarray(image_array.astype(numpy.uint8))
 
         # expect
@@ -103,3 +104,21 @@ class TestImage(unittest.TestCase):
 
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
+
+    def test_get_image_content_from_torch_tensor(self):
+        # given
+        image_tensor = torch.rand(200, 300, 3)
+        expected_array = image_tensor.numpy() * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+
+        # expect
+        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
+
+    def test_get_image_content_from_tensorflow_tensor(self):
+        # given
+        image_tensor = tf.random.uniform(shape=[200, 300, 3])
+        expected_array = image_tensor.numpy() * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+
+        # expect
+        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))

@@ -10,3 +10,5 @@ pytest-xdist==1.25.0
 tox==3.6.1
 pytest-timeout==1.4.2
 matplotlib
+torch
+tensorflow
