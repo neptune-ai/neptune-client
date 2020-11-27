@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import sys
 import unittest
 
 import matplotlib
@@ -21,7 +22,6 @@ import matplotlib
 matplotlib.use('agg')
 from matplotlib import pyplot
 import torch
-import tensorflow as tf
 from PIL import Image
 from uuid import uuid4
 import numpy
@@ -121,10 +121,14 @@ class TestImage(unittest.TestCase):
         self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_tensorflow_tensor(self):
-        # given
-        image_tensor = tf.random.uniform(shape=[200, 300, 3])
-        expected_array = image_tensor.numpy() * 255
-        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+        if sys.version_info[0] >= 3:
+            import tensorflow as tf # pylint: disable=C0415
+            # given
+            image_tensor = tf.random.uniform(shape=[200, 300, 3])
+            expected_array = image_tensor.numpy() * 255
+            expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
-        # expect
-        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
+            # expect
+            self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
+        else:
+            pass
