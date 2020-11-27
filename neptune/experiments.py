@@ -457,12 +457,14 @@ class Experiment(object):
                 * :obj:`matplotlib.figure.Figure`
                   `Matplotlib 3.1.1 docs <https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.figure.Figure.html>`_
                 * :obj:`str` - path to image file
-                * 2-dimensional :obj:`numpy.array` - interpreted as grayscale image
-                * 3-dimensional :obj:`numpy.array` - behavior depends on last dimension
+                * 2-dimensional :obj:`numpy.array` with values in the [0, 1] range - interpreted as grayscale image
+                * 3-dimensional :obj:`numpy.array` with values in the [0, 1] range - behavior depends on last dimension
 
                     * if last dimension is 1 - interpreted as grayscale image
                     * if last dimension is 3 - interpreted as RGB image
                     * if last dimension is 4 - interpreted as RGBA image
+                * :obj:`torch.tensor` with values in the [0, 1] range - tensor is converted to :obj:`numpy.array` and logged.
+                * :obj:`tensorflow.tensor` with values in [0, 1] range - tensor is converted to :obj:`numpy.array` and logged.
 
             image_name (:obj:`str`, optional, default is ``None``): Image name
             description (:obj:`str`, optional, default is ``None``): Image description
@@ -500,6 +502,14 @@ class Experiment(object):
                 # 3d RGBA array
                 array = numpy.random.rand(300, 200, 4)*255
                 experiment.log_image('fig', array)
+
+                # torch tensor
+                tensor = torch.rand(10, 20)
+                experiment.log_image('fig', tensor)
+
+                # tensorflow tensor
+                tensor = tensorflow.random.uniform(shape=[10, 20])
+                experiment.log_image('fig', tensor)
 
                 # matplotlib figure example 1
                 from matplotlib import pyplot

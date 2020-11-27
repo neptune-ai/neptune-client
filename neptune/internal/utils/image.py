@@ -16,9 +16,9 @@
 import io
 import os
 
-from PIL import Image
 import numpy
 import six
+from PIL import Image
 
 from neptune.exceptions import FileNotFound, InvalidChannelValue
 
@@ -31,17 +31,7 @@ def get_image_content(image):
             return image_file.read()
 
     elif isinstance(image, numpy.ndarray):
-        shape = image.shape
-        if len(shape) == 2:
-            return _get_pil_image_data(Image.fromarray(image.astype(numpy.uint8)))
-        if len(shape) == 3:
-            if shape[2] == 1:
-                array2d = numpy.array([[col[0] for col in row] for row in image])
-                return _get_pil_image_data(Image.fromarray(array2d.astype(numpy.uint8)))
-            if shape[2] in (3, 4):
-                return _get_pil_image_data(Image.fromarray(image.astype(numpy.uint8)))
-        raise ValueError("Incorrect size of numpy.ndarray. Should be 2-dimensional or"
-                         "3-dimensional with 3rd dimension of size 1, 3 or 4.")
+        return _get_numpy_as_image(image)
 
     elif isinstance(image, Image.Image):
         return _get_pil_image_data(image)
@@ -54,6 +44,20 @@ def get_image_content(image):
         except ImportError:
             pass
 
+        try:
+            import torch
+            if isinstance(image, torch.Tensor):
+                return _get_numpy_as_image(image.numpy())
+        except ImportError:
+            pass
+
+        try:
+            import tensorflow
+            if isinstance(image, tensorflow.Tensor):
+                return _get_numpy_as_image(image.numpy())
+        except ImportError:
+            pass
+
     raise InvalidChannelValue(expected_type='image', actual_type=type(image).__name__)
 
 
@@ -62,7 +66,23 @@ def _get_figure_as_image(figure):
         figure.savefig(image_buffer, format='png', bbox_inches="tight")
         return image_buffer.getvalue()
 
+
 def _get_pil_image_data(image):
     with io.BytesIO() as image_buffer:
         image.save(image_buffer, format='PNG')
         return image_buffer.getvalue()
+
+
+def _get_numpy_as_image(array):
+    array *= 255.
+    shape = array.shape
+    if len(shape) == 2:
+        return _get_pil_image_data(Image.fromarray(array.astype(numpy.uint8)))
+    if len(shape) == 3:
+        if shape[2] == 1:
+            array2d = numpy.array([[col[0] for col in row] for row in array])
+            return _get_pil_image_data(Image.fromarray(array2d.astype(numpy.uint8)))
+        if shape[2] in (3, 4):
+            return _get_pil_image_data(Image.fromarray(array.astype(numpy.uint8)))
+    raise ValueError("Incorrect size of numpy.ndarray. Should be 2-dimensional or"
+                     "3-dimensional with 3rd dimension of size 1, 3 or 4.")
