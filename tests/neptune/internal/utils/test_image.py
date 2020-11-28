@@ -28,9 +28,6 @@ import numpy
 from neptune.internal.utils.image import get_image_content, _get_pil_image_data, _get_figure_as_image
 
 
-# pylint: disable=C0415, E0012
-
-
 class TestImage(unittest.TestCase):
     TEST_DIR = "/tmp/neptune/{}".format(uuid4())
 
@@ -115,7 +112,7 @@ class TestImage(unittest.TestCase):
 
     def test_get_image_content_from_torch_tensor(self):
         if sys.version_info[0] >= 3:
-            import torch
+            import torch # pylint: disable=C0415
             # given
             image_tensor = torch.rand(200, 300, 3)
             expected_array = image_tensor.numpy() * 255
@@ -126,7 +123,7 @@ class TestImage(unittest.TestCase):
 
     def test_get_image_content_from_tensorflow_tensor(self):
         if sys.version_info[0] >= 3:
-            import tensorflow as tf
+            import tensorflow as tf # pylint: disable=C0415
             # given
             image_tensor = tf.random.uniform(shape=[200, 300, 3])
             expected_array = image_tensor.numpy() * 255
