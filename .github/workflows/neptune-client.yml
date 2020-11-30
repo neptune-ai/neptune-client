@@ -15,7 +15,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r requirements.txt
-          pip install -r test_requirements.txt
+          pip install -f https://download.pytorch.org/whl/torch_stable.html -r test_requirements.txt
+
       - name: Build and test
         run : |
           python -m pylint -j 0 -f parseable neptune tests
