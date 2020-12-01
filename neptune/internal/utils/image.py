@@ -50,7 +50,7 @@ def get_image_content(image):
             try:
                 import torch # pylint: disable=C0415
                 if isinstance(image, torch.Tensor):
-                    return _get_numpy_as_image(image.numpy())
+                    return _get_numpy_as_image(image.detach().numpy())
             except ImportError:
                 pass
 
