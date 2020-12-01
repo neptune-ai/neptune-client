@@ -77,7 +77,7 @@ class FileChunkStream(object):
                 last_offset = new_offset
             else:
                 if last_offset == 0:
-                    yield FileChunk(chunk, 0, 0)
+                    yield FileChunk(b'', 0, 0)
                 break
 
     def close(self):

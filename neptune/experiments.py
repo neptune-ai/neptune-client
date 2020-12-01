@@ -580,7 +580,11 @@ class Experiment(object):
                 If ``None`` is passed, an artifact file name will be used.
 
         Note:
-            If you provide `io.StringIO`, it will be encoded in 'utf-8' before sent to Neptune.
+            If you use in-memory buffers like `io.StringIO` or `io.BytesIO`, remember that in typical case when you
+            write to such a buffer, it's current position is set to the end of the stream, so in order to read it's
+            content, you need to move back it's position to the beginning.
+            We recommend to call seek(0) on the in-memory buffers before passing it to Neptune.
+            Additionally, if you provide `io.StringIO`, it will be encoded in 'utf-8' before sent to Neptune.
 
         Raises:
             `FileNotFound`: When ``artifact`` file was not found.
