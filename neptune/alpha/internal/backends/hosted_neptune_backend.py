@@ -28,7 +28,8 @@ from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, \
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException, \
     InternalClientError
-from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType
+from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType, \
+    FloatAttribute, StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
     upload_file_set_attribute, download_zip
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
@@ -42,7 +43,6 @@ from neptune.alpha.internal.operation import Operation, UploadFile, UploadFileSe
 from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.internal.utils.paths import path_to_str
 from neptune.alpha.types.atoms import GitRef
-from neptune.alpha.types.value import Value
 from neptune.alpha.version import version as neptune_client_version
 from neptune.oauth import NeptuneAuthenticator
 
@@ -209,11 +209,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
     @with_api_exceptions_handler
-    def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
-        # TODO Implement me
-        pass
-
-    @with_api_exceptions_handler
     def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
         params = {
             'experimentId': str(experiment_uuid),
@@ -243,6 +238,78 @@ class HostedNeptuneBackend(NeptuneBackend):
                 destination=destination)
         except HTTPNotFound:
             raise MetadataInconsistency("File attribute {} not found".format(path_to_str(path)))
+
+    @with_api_exceptions_handler
+    def get_float_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getFloatAttribute(**params).response().result
+            return FloatAttribute(result.value)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_string_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getStringAttribute(**params).response().result
+            return StringAttribute(result.value)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_datetime_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getDatetimeAttribute(**params).response().result
+            return DatetimeAttribute(result.value)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_float_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getFloatSeriesAttribute(**params).response().result
+            return FloatSeriesAttribute(result.last)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_string_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getStringSeriesAttribute(**params).response().result
+            return StringSeriesAttribute(result.last)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_string_set_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
+            return StringSetAttribute(result.values)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
 
     @with_api_exceptions_handler
     def _get_file_set_download_request(self, experiment_uuid: uuid.UUID, path: List[str]):

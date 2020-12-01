@@ -17,7 +17,6 @@
 # pylint: disable=protected-access
 from mock import MagicMock, call
 
-from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import ClearStringSet, AddStrings, RemoveStrings
 from neptune.alpha.attributes.sets.string_set import StringSet, StringSetVal
 
@@ -30,8 +29,8 @@ class TestStringSet(TestAttributeBase):
         value = StringSetVal(["ert", "qwe"])
         expected = {"ert", "qwe"}
 
-        backend, processor = MagicMock(), MagicMock()
-        exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+        processor = MagicMock()
+        exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
         var = StringSet(exp, path)
         var.assign(value, wait=wait)
         self.assertEqual(2, processor.enqueue_operation.call_count)
@@ -41,8 +40,8 @@ class TestStringSet(TestAttributeBase):
         ])
 
     def test_assign_empty(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+        processor = MagicMock()
+        exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
         var = StringSet(exp, path)
         var.assign(StringSetVal([]), wait=wait)
         processor.enqueue_operation.assert_called_once_with(ClearStringSet(path), wait)
@@ -54,37 +53,30 @@ class TestStringSet(TestAttributeBase):
                 StringSet(MagicMock(), MagicMock()).assign(value)
 
     def test_add(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+        processor = MagicMock()
+        exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
         var = StringSet(exp, path)
         var.add(["a", "bb", "ccc"], wait=wait)
         processor.enqueue_operation.assert_called_once_with(AddStrings(path, {"a", "bb", "ccc"}), wait)
 
     def test_remove(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+        processor = MagicMock()
+        exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
         var = StringSet(exp, path)
         var.remove(["a", "bb", "ccc"], wait=wait)
         processor.enqueue_operation.assert_called_once_with(RemoveStrings(path, {"a", "bb", "ccc"}), wait)
 
     def test_clear(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+        processor = MagicMock()
+        exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
         var = StringSet(exp, path)
         var.clear(wait=wait)
         processor.enqueue_operation.assert_called_once_with(ClearStringSet(path), wait)
 
     def test_get(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path = self._create_experiment(backend, processor), self._random_path()
+        exp, path = self._create_experiment(), self._random_path()
         var = StringSet(exp, path)
-        backend.get_attribute.return_value = StringSetVal(["text", "str"])
-        self.assertEqual({"text", "str"}, var.get())
-
-    def test_get_wrong_type(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path = self._create_experiment(backend, processor), self._random_path()
-        var = StringSet(exp, path)
-        backend.get_attribute.return_value = {"x"}
-        with self.assertRaises(MetadataInconsistency):
-            var.get()
+        var.add(["abc", "xyz"])
+        var.remove(["abc"])
+        var.add(["hej", "lol"])
+        self.assertEqual({"xyz", "hej", "lol"}, var.get())

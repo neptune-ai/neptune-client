@@ -18,7 +18,6 @@
 
 from mock import MagicMock
 
-from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AssignString
 from neptune.alpha.attributes.atoms.string import String, StringVal
 
@@ -34,8 +33,8 @@ class TestString(TestAttributeBase):
         ]
 
         for value, expected in value_and_expected:
-            backend, processor = MagicMock(), MagicMock()
-            exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+            processor = MagicMock()
+            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = String(exp, path)
             var.assign(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(AssignString(path, expected), wait)
@@ -47,16 +46,7 @@ class TestString(TestAttributeBase):
                 String(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path = self._create_experiment(backend, processor), self._random_path()
+        exp, path = self._create_experiment(), self._random_path()
         var = String(exp, path)
-        backend.get_attribute.return_value = StringVal("text")
-        self.assertEqual("text", var.get())
-
-    def test_get_wrong_type(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path = self._create_experiment(backend, processor), self._random_path()
-        var = String(exp, path)
-        backend.get_attribute.return_value = 5
-        with self.assertRaises(MetadataInconsistency):
-            var.get()
+        var.assign("adfh")
+        self.assertEqual("adfh", var.get())

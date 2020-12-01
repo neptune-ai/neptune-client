@@ -37,3 +37,10 @@ class TestStringSeries(TestAttributeBase):
         for value in values:
             with self.assertRaises(TypeError):
                 StringSeries(MagicMock(), MagicMock()).assign(value)
+
+    def test_get(self):
+        exp, path = self._create_experiment(), self._random_path()
+        var = StringSeries(exp, path)
+        var.log("asdfhadh")
+        var.log("hej!")
+        self.assertEqual("hej!", var.get_last())

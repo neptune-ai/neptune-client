@@ -17,8 +17,6 @@
 # pylint: disable=protected-access
 
 from mock import MagicMock
-
-from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.operation import AssignFloat
 from neptune.alpha.attributes.atoms.float import Float, FloatVal
 
@@ -36,8 +34,8 @@ class TestFloat(TestAttributeBase):
         ]
 
         for value, expected in value_and_expected:
-            backend, processor = MagicMock(), MagicMock()
-            exp, path, wait = self._create_experiment(backend, processor), self._random_path(), self._random_wait()
+            processor = MagicMock()
+            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = Float(exp, path)
             var.assign(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(AssignFloat(path, expected), wait)
@@ -49,16 +47,7 @@ class TestFloat(TestAttributeBase):
                 Float(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path = self._create_experiment(backend, processor), self._random_path()
+        exp, path = self._create_experiment(), self._random_path()
         var = Float(exp, path)
-        backend.get_attribute.return_value = FloatVal(5)
+        var.assign(5)
         self.assertEqual(5, var.get())
-
-    def test_get_wrong_type(self):
-        backend, processor = MagicMock(), MagicMock()
-        exp, path = self._create_experiment(backend, processor), self._random_path()
-        var = Float(exp, path)
-        backend.get_attribute.return_value = "text"
-        with self.assertRaises(MetadataInconsistency):
-            var.get()

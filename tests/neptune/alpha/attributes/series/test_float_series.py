@@ -37,3 +37,10 @@ class TestFloatSeries(TestAttributeBase):
         for value in values:
             with self.assertRaises(TypeError):
                 FloatSeries(MagicMock(), MagicMock()).log(value)
+
+    def test_get(self):
+        exp, path = self._create_experiment(), self._random_path()
+        var = FloatSeries(exp, path)
+        var.log(5)
+        var.log(34)
+        self.assertEqual(34, var.get_last())

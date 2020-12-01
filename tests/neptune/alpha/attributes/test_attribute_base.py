@@ -17,8 +17,14 @@ import random
 import time
 import unittest
 import uuid
+from typing import Optional
 
 from mock import MagicMock
+from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
+
+from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
+
+from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
 from neptune.alpha.experiment import Experiment
 
@@ -29,8 +35,12 @@ _now = time.time()
 class TestAttributeBase(unittest.TestCase):
 
     @staticmethod
-    def _create_experiment(backend, op_processor):
-        _experiment = Experiment(uuid.uuid4(), backend, op_processor, MagicMock())
+    def _create_experiment(processor: Optional[OperationProcessor] = None):
+        backend = NeptuneBackendMock()
+        exp = backend.create_experiment(uuid.uuid4())
+        if processor is None:
+            processor = SyncOperationProcessor(exp.uuid, backend)
+        _experiment = Experiment(exp.uuid, backend, processor, MagicMock())
         _experiment.sync()
         _experiment.start()
         return _experiment

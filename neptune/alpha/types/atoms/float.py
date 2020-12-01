@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from dataclasses import dataclass
 from typing import TypeVar, TYPE_CHECKING
 
 from neptune.alpha.types.atoms.atom import Atom
@@ -23,10 +24,10 @@ if TYPE_CHECKING:
 Ret = TypeVar('Ret')
 
 
+@dataclass
 class Float(Atom):
 
-    def __init__(self, value: float):
-        self.value = value
+    value: float
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_float(self)

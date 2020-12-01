@@ -17,12 +17,15 @@ import os
 import uuid
 from datetime import datetime
 from shutil import copyfile
-from typing import Optional, List, Dict
+from typing import Optional, List, Dict, TypeVar, Type
 from zipfile import ZipFile
+
+from neptune.alpha.internal.utils.paths import path_to_str
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound, \
     ExperimentNotFound, NeptuneException
-from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType
+from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType, FloatAttribute, \
+    StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
 from neptune.alpha.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -46,6 +49,8 @@ from neptune.alpha.types.sets.string_set import StringSet
 from neptune.alpha.types.value import Value
 from neptune.alpha.types.value_visitor import ValueVisitor
 
+Val = TypeVar('Val', bound=Value)
+
 
 class NeptuneBackendMock(NeptuneBackend):
 
@@ -65,6 +70,10 @@ class NeptuneBackendMock(NeptuneBackend):
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
         self._experiments[new_experiment_uuid].set(["sys", "id"], String(short_id))
+        self._experiments[new_experiment_uuid].set(["sys", "state"], String("running"))
+        self._experiments[new_experiment_uuid].set(["sys", "owner"], String("offline_user"))
+        self._experiments[new_experiment_uuid].set(["sys", "size"], Float(0))
+        self._experiments[new_experiment_uuid].set(["sys", "tags"], StringSet(set()))
         self._experiments[new_experiment_uuid].set(["sys", "creation_time"], Datetime(datetime.now()))
         self._experiments[new_experiment_uuid].set(["sys", "modification_time"], Datetime(datetime.now()))
         if git_ref:
@@ -99,9 +108,6 @@ class NeptuneBackendMock(NeptuneBackend):
             exp.set(op.path, new_val)
         else:
             exp.pop(op.path)
-
-    def get_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> Value:
-        return self._experiments[experiment_uuid].get(path)
 
     def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
         if experiment_uuid not in self._experiments:
@@ -139,6 +145,41 @@ class NeptuneBackendMock(NeptuneBackend):
         with ZipFile(target_file, 'w') as zipObj:
             for upload_entry in upload_entries:
                 zipObj.write(upload_entry.source_path, upload_entry.target_path)
+
+    def get_float_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+        val = self._get_attribute(experiment_uuid, path, Float)
+        return FloatAttribute(val.value)
+
+    def get_string_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
+        val = self._get_attribute(experiment_uuid, path, String)
+        return StringAttribute(val.value)
+
+    def get_datetime_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+        val = self._get_attribute(experiment_uuid, path, Datetime)
+        return DatetimeAttribute(val.value)
+
+    def get_float_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
+        val = self._get_attribute(experiment_uuid, path, FloatSeries)
+        return FloatSeriesAttribute(val.values[-1] if val.values else None)
+
+    def get_string_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
+        val = self._get_attribute(experiment_uuid, path, StringSeries)
+        return StringSeriesAttribute(val.values[-1] if val.values else None)
+
+    def get_string_set_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
+        val = self._get_attribute(experiment_uuid, path, StringSet)
+        return StringSetAttribute(val.values)
+
+    def _get_attribute(self, experiment_uuid: uuid.UUID, path: List[str], expected_type: Type[Val]) -> Val:
+        if experiment_uuid not in self._experiments:
+            raise ExperimentUUIDNotFound(experiment_uuid)
+        value: Optional[Value] = self._experiments[experiment_uuid].get(path)
+        str_path = path_to_str(path)
+        if value is None:
+            raise MetadataInconsistency("Attribute {} not found".format(str_path))
+        if isinstance(value, expected_type):
+            return value
+        raise MetadataInconsistency("Attribute {} is not {}".format(str_path, type.__name__))
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 

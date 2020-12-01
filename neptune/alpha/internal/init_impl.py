@@ -23,6 +23,8 @@ from platform import node as get_hostname
 from typing import Optional, List, Union
 
 import click
+
+from neptune.alpha.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
 from neptune.utils import is_ipython
 
 from neptune.alpha.internal.operation import Operation
@@ -54,11 +56,16 @@ __version__ = str(parsed_version)
 
 _logger = logging.getLogger(__name__)
 
+OFFLINE = "offline"
+DEBUG = "debug"
+ASYNC = "async"
+SYNC = "sync"
+
 
 def init(
         project: Optional[str] = None,
         experiment: Optional[str] = None,
-        connection_mode: str = "async",
+        connection_mode: str = ASYNC,
         name: Optional[str] = None,
         description: Optional[str] = None,
         tags: Optional[Union[List[str], str]] = None,
@@ -98,15 +105,15 @@ def init(
     if not project:
         raise MissingProject()
 
-    if connection_mode == "async":
+    if connection_mode == ASYNC:
         # TODO Initialize backend in async thread
         backend = HostedNeptuneBackend(Credentials())
-    elif connection_mode == "sync":
+    elif connection_mode == SYNC:
         backend = HostedNeptuneBackend(Credentials())
-    elif connection_mode == "debug":
+    elif connection_mode == DEBUG:
         backend = NeptuneBackendMock()
-    elif connection_mode == "offline":
-        backend = NeptuneBackendMock()
+    elif connection_mode == OFFLINE:
+        backend = OfflineNeptuneBackend()
     else:
         raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
 
@@ -117,7 +124,7 @@ def init(
         git_ref = get_git_info(discover_git_repo_location())
         exp = backend.create_experiment(project_obj.uuid, git_ref)
 
-    if connection_mode == "async":
+    if connection_mode == ASYNC:
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, ASYNC_DIRECTORY, exp.uuid)
         try:
             execution_id = len(os.listdir(experiment_path))
@@ -129,11 +136,11 @@ def init(
             DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
             backend,
             sleep_time=flush_period)
-    elif connection_mode == "sync":
+    elif connection_mode == SYNC:
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
-    elif connection_mode == "debug":
+    elif connection_mode == DEBUG:
         operation_processor = SyncOperationProcessor(exp.uuid, backend)
-    elif connection_mode == "offline":
+    elif connection_mode == OFFLINE:
         # Experiment was returned by mocked backend and has some random UUID.
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
         storage_queue = DiskQueue(Path(experiment_path), lambda x: x.to_dict(), Operation.from_dict)
@@ -156,7 +163,8 @@ def init(
         background_jobs.append(StderrCaptureBackgroundJob())
 
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
-    _experiment.sync(wait=False)
+    if connection_mode != OFFLINE:
+        _experiment.sync(wait=False)
 
     if name is not None:
         _experiment["sys/name"] = name
