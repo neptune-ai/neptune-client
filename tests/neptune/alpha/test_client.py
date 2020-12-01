@@ -118,7 +118,7 @@ class TestClient(unittest.TestCase):
         backend_mock.get_leaderboard = Mock(return_value=[empty_entry, filled_entry])
 
         # when
-        df = get_project().get_table().as_pandas()
+        df = get_project().get_experiments_table().as_pandas()
 
         # then
         self.assertEqual("idle", df['experiment/state'][1])
@@ -167,7 +167,7 @@ class TestClient(unittest.TestCase):
         backend_mock.get_leaderboard = Mock(return_value=[LeaderboardEntry(exp_id, attributes)])
 
         # when
-        exp = get_project().get_table().as_experiments()[0]
+        exp = get_project().get_experiments_table().as_experiments()[0]
 
         # then
         self.assertEqual("idle", exp['experiment/state'].get())

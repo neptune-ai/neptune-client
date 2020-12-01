@@ -353,29 +353,29 @@ class HostedNeptuneBackend(NeptuneBackend):
                         _id: Optional[Iterable[str]] = None,
                         state: Optional[Iterable[str]] = None,
                         owner: Optional[Iterable[str]] = None,
-                        tags: Optional[Iterable[str]] = None,
-                        min_running_time: Optional[int] = None
+                        tags: Optional[Iterable[str]] = None
                         ) -> List[LeaderboardEntry]:
 
         def get_portion(limit, offset):
             return self.leaderboard_client.api.getLeaderboard(
                 projectIdentifier=str(project_id),
                 shortId=_id, state=state, owner=owner, tags=tags, tagsMode='and',
-                minRunningTimeSeconds=min_running_time,
                 sortBy=['shortId'], sortFieldType=['string'], sortDirection=['ascending'],
                 limit=limit, offset=offset
             ).response().result.entries
 
-        def to_attribute_with_properties(attribute) -> AttributeWithProperties:
-            properties = attribute.__getitem__("{}Properties".format(attribute.type))
-            return AttributeWithProperties(
-                attribute.name,
-                AttributeType(attribute.type),
-                properties
-            )
-
         def to_leaderboard_entry(entry) -> LeaderboardEntry:
-            return LeaderboardEntry(entry.id, [to_attribute_with_properties(attr) for attr in entry.attributes])
+            supported_attribute_types = {item.value for item in AttributeType}
+            attributes: List[AttributeWithProperties] = []
+            for attr in entry.attributes:
+                if attr.type in supported_attribute_types:
+                    properties = attr.__getitem__("{}Properties".format(attr.type))
+                    attributes.append(AttributeWithProperties(
+                        attr.name,
+                        AttributeType(attr.type),
+                        properties
+                    ))
+            return LeaderboardEntry(entry.id, attributes)
 
         try:
             return [to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=100)]

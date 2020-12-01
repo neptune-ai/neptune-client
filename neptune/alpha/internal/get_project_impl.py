@@ -22,7 +22,7 @@ from neptune.alpha.exceptions import MissingProject
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.utils import verify_type
-from neptune.alpha.leaderboard import Leaderboard
+from neptune.alpha.experiments_table import ExperimentsTable
 from neptune.alpha.project import Project
 from neptune.alpha.version import version as parsed_version
 
@@ -31,13 +31,13 @@ __version__ = str(parsed_version)
 _logger = logging.getLogger(__name__)
 
 
-def get_table(_id: Optional[Union[str, Iterable[str]]] = None,
-              state: Optional[Union[str, Iterable[str]]] = None,
-              owner: Optional[Union[str, Iterable[str]]] = None,
-              tag: Optional[Union[str, Iterable[str]]] = None,
-              min_running_time: Optional[int] = None
-              ) -> Leaderboard:
-    return get_project().get_table(_id=_id, state=state, owner=owner, tag=tag, min_running_time=min_running_time)
+# pylint:disable=redefined-builtin
+def get_experiments_table(id: Optional[Union[str, Iterable[str]]] = None,
+                          state: Optional[Union[str, Iterable[str]]] = None,
+                          owner: Optional[Union[str, Iterable[str]]] = None,
+                          tag: Optional[Union[str, Iterable[str]]] = None
+                          ) -> ExperimentsTable:
+    return get_project().get_experiments_table(id=id, state=state, owner=owner, tag=tag)
 
 
 def get_project(name: Optional[str] = None) -> Project:

@@ -19,7 +19,7 @@ from typing import Union, Optional, Iterable
 
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
-from neptune.alpha.leaderboard import Leaderboard
+from neptune.alpha.experiments_table import ExperimentsTable
 
 
 class Project:
@@ -30,22 +30,21 @@ class Project:
         self._uuid = _uuid
         self._backend = backend
 
-    def get_table(self,
-                  _id: Optional[Union[str, Iterable[str]]] = None,
-                  state: Optional[Union[str, Iterable[str]]] = None,
-                  owner: Optional[Union[str, Iterable[str]]] = None,
-                  tag: Optional[Union[str, Iterable[str]]] = None,
-                  min_running_time: Optional[int] = None
-                  ) -> Leaderboard:
-        _id = self._as_list("_id", _id)
+    # pylint:disable=redefined-builtin
+    def get_experiments_table(self,
+                              id: Optional[Union[str, Iterable[str]]] = None,
+                              state: Optional[Union[str, Iterable[str]]] = None,
+                              owner: Optional[Union[str, Iterable[str]]] = None,
+                              tag: Optional[Union[str, Iterable[str]]] = None
+                              ) -> ExperimentsTable:
+        id = self._as_list("id", id)
         state = self._as_list("state", state)
         owner = self._as_list("owner", owner)
         tags = self._as_list("tag", tag)
-        verify_type("min_running_time", min_running_time, (type(None), int))
 
-        leaderboard_entries = self._backend.get_leaderboard(self._uuid, _id, state, owner, tags, min_running_time)
+        leaderboard_entries = self._backend.get_leaderboard(self._uuid, id, state, owner, tags)
 
-        return Leaderboard(self._backend, leaderboard_entries)
+        return ExperimentsTable(self._backend, leaderboard_entries)
 
     @staticmethod
     def _as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Optional[Iterable[str]]:
