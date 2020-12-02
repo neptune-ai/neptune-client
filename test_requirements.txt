@@ -13,5 +13,5 @@ pytest-timeout==1.4.2
 matplotlib
 
 # torch installation differes depending on the OS; on Windows, a fixed version is required
-torch; platform_system != 'Windows' and python_version >= '3.0'
-torch==1.7.0; platform_system == 'Windows' and python_version >= '3.0'
+torch; platform_system != 'Windows' and python_version >= '3.6'
+torch==1.7.0; platform_system == 'Windows' and python_version >= '3.6'
