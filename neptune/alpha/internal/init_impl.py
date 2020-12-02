@@ -177,9 +177,9 @@ def init(
 
     if source_files is None:
         if not is_ipython() and os.path.isfile(sys.argv[0]):
-            _experiment["sys/source_code"].save_files(sys.argv[0])
+            _experiment["source_code/files"].save_files(sys.argv[0])
     else:
-        _experiment["sys/source_code"].save_files(source_files)
+        _experiment["source_code/files"].save_files(source_files)
 
     _experiment.start()
 
