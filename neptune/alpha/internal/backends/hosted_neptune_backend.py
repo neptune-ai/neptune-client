@@ -29,7 +29,7 @@ from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, 
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException, \
     InternalClientError
 from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType, \
-    Leaderboard, LeaderboardEntry, AttributeWithProperties, FloatAttribute, StringAttribute, DatetimeAttribute, \
+    LeaderboardEntry, AttributeWithProperties, FloatAttribute, StringAttribute, DatetimeAttribute, \
     FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
     upload_file_set_attribute, download_zip
