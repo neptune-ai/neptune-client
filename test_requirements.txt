@@ -12,6 +12,5 @@ tox==3.6.1
 pytest-timeout==1.4.2
 matplotlib
 
-# torch installation differes depending on the OS; on Windows, a fixed version is required
+# Installing Torch on Windows increases the test duration by ~10 minutes
 torch; platform_system != 'Windows' and python_version >= '3.6'
-torch==1.7.0; platform_system == 'Windows' and python_version >= '3.6'

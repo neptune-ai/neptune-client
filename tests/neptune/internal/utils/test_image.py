@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import platform
 import sys
 import unittest
 
@@ -110,7 +111,7 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
 
-    @unittest.skipIf(sys.version_info < (3, 6), reason="Torch isn't built for older Pythons")
+    @unittest.skipIf(platform.system() == 'Windows', reason="Installing Torch on Windows takes too long")
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
         # given
