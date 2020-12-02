@@ -173,7 +173,7 @@ def init(
     if hostname is not None:
         _experiment["sys/hostname"] = hostname
     if tags is not None:
-        _experiment["sys/tags"] = tags
+        _experiment["sys/tags"].add(tags)
 
     if source_files is None:
         if not is_ipython() and os.path.isfile(sys.argv[0]):
