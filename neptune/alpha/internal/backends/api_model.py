@@ -17,7 +17,7 @@ import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Optional, Set
+from typing import Optional, List, Set, Any
 
 from packaging.version import Version
 
@@ -85,13 +85,26 @@ class AttributeType(Enum):
     STRING_SET = "stringSet"
     GIT_REF = "gitRef"
     EXPERIMENT_STATE = "experimentState"
+    NOTEBOOK_REF = "notebookRef"
 
 
+@dataclass
 class Attribute:
+    path: str
+    type: AttributeType
 
-    def __init__(self, _path: str, _type: AttributeType):
-        self.path = _path
-        self.type = _type
+
+@dataclass
+class AttributeWithProperties:
+    path: str
+    type: AttributeType
+    properties: Any
+
+
+@dataclass
+class LeaderboardEntry:
+    id: uuid.UUID
+    attributes: List[AttributeWithProperties]
 
 
 @dataclass
