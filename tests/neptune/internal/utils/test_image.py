@@ -111,7 +111,8 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
 
-    @unittest.skipIf(platform.system() == 'Windows', reason="Installing Torch on Windows takes too long")
+    @unittest.skipIf(platform.system() == 'Windows' or sys.version_info < (3, 6),
+                     reason="Installing Torch on Windows takes too long and 3.5 is not supported")
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
         # given
