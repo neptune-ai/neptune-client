@@ -110,26 +110,24 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
 
+    @unittest.skipIf(sys.version_info < (3, 6), reason="Torch isn't built for older Pythons")
     def test_get_image_content_from_torch_tensor(self):
-        if sys.version_info[0] >= 3:
-            import torch # pylint: disable=C0415
-            # given
-            image_tensor = torch.rand(200, 300, 3)
-            expected_array = image_tensor.numpy() * 255
-            expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+        import torch  # pylint: disable=C0415
+        # given
+        image_tensor = torch.rand(200, 300, 3)
+        expected_array = image_tensor.numpy() * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
-            # expect
-            self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
+        # expect
+        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
 
+    @unittest.skipIf(sys.version_info < (3, 6), reason="Tensorflow isn't built for older Pythons")
     def test_get_image_content_from_tensorflow_tensor(self):
-        if sys.version_info[0] >= 3:
-            import tensorflow as tf # pylint: disable=C0415
-            # given
-            image_tensor = tf.random.uniform(shape=[200, 300, 3])
-            expected_array = image_tensor.numpy() * 255
-            expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+        import tensorflow as tf  # pylint: disable=C0415
+        # given
+        image_tensor = tf.random.uniform(shape=[200, 300, 3])
+        expected_array = image_tensor.numpy() * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
-            # expect
-            self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
-        else:
-            pass
+        # expect
+        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
