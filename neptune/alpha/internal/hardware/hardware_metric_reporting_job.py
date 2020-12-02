@@ -94,7 +94,7 @@ class HardwareMetricReportingJob(BackgroundJob):
     def get_attribute_name(self, resource_type, gauge_name) -> str:
         gauges_count = self._gauges_in_resource.get(resource_type, None)
         if gauges_count is None or gauges_count != 1:
-            return "monitoring/{}-{}".format(resource_type, gauge_name).lower()
+            return "monitoring/{}_{}".format(resource_type, gauge_name).lower()
         return "monitoring/{}".format(resource_type).lower()
 
     class ReportingThread(Daemon):
