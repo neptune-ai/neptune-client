@@ -88,7 +88,7 @@ class HardwareMetricReportingJob(BackgroundJob):
 
     @staticmethod
     def get_attribute_name(resource_type, gauge_name) -> str:
-        return "monitoring/hardware/{}/{}".format(resource_type, gauge_name)
+        return "monitoring/{}-{}".format(resource_type, gauge_name)
 
     class ReportingThread(Daemon):
 
