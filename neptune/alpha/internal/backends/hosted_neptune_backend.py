@@ -18,6 +18,7 @@ import platform
 import uuid
 from typing import List, Optional, Dict, Iterable
 
+import click
 import urllib3
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
@@ -103,7 +104,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         verify_type("project_id", project_id, str)
 
         try:
-            project = self.backend_client.api.getProject(projectIdentifier=project_id).response().result
+            response = self.backend_client.api.getProject(projectIdentifier=project_id).response()
+            warning = response.metadata.headers.get('X-Server-Warning')
+            if warning:
+                click.echo(warning)  # TODO print in color once colored exceptions are added
+            project = response.result
             if project.version < 2:
                 raise NotAlphaProjectException(project_id)
             return Project(uuid.UUID(project.id), project.name, project.organizationName)
