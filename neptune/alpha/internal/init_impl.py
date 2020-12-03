@@ -33,7 +33,7 @@ from neptune.alpha.internal.utils import verify_type, verify_collection_type
 
 from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
     ASYNC_DIRECTORY
-from neptune.alpha.envs import PROJECT_ENV_NAME
+from neptune.alpha.envs import PROJECT_ENV_NAME, CUSTOM_EXP_ID_ENV_NAME
 from neptune.alpha.exceptions import MissingProject
 from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
 from neptune.alpha.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
@@ -65,6 +65,7 @@ SYNC = "sync"
 def init(
         project: Optional[str] = None,
         experiment: Optional[str] = None,
+        custom_experiment_id: Optional[str] = None,
         connection_mode: str = ASYNC,
         name: Optional[str] = None,
         description: Optional[str] = None,
@@ -76,6 +77,7 @@ def init(
         flush_period: float = 5) -> Experiment:
     verify_type("project", project, (str, type(None)))
     verify_type("experiment", experiment, (str, type(None)))
+    verify_type("custom_experiment_id", custom_experiment_id, (str, type(None)))
     verify_type("connection_mode", connection_mode, str)
     verify_type("name", name, (str, type(None)))
     verify_type("description", description, (str, type(None)))
@@ -122,7 +124,12 @@ def init(
         exp = backend.get_experiment(project + '/' + experiment)
     else:
         git_ref = get_git_info(discover_git_repo_location())
-        exp = backend.create_experiment(project_obj.uuid, git_ref)
+        if not custom_experiment_id:
+            custom_experiment_id = os.getenv(CUSTOM_EXP_ID_ENV_NAME)
+        if custom_experiment_id and len(custom_experiment_id) > 32:
+            _logger.warning('Given custom_experiment_id exceeds 32 characters and it will be ignored.')
+            custom_experiment_id = None
+        exp = backend.create_experiment(project_obj.uuid, git_ref, custom_experiment_id)
 
     if connection_mode == ASYNC:
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, ASYNC_DIRECTORY, exp.uuid)
