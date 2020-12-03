@@ -15,7 +15,6 @@
 #
 import io
 import os
-import sys
 
 import numpy
 import six
@@ -45,21 +44,19 @@ def get_image_content(image):
         except ImportError:
             pass
 
-        if sys.version_info[0] >= 3:
+        try:
+            import torch # pylint: disable=C0415
+            if isinstance(image, torch.Tensor):
+                return _get_numpy_as_image(image.detach().numpy())
+        except ImportError:
+            pass
 
-            try:
-                import torch # pylint: disable=C0415
-                if isinstance(image, torch.Tensor):
-                    return _get_numpy_as_image(image.detach().numpy())
-            except ImportError:
-                pass
-
-            try:
-                import tensorflow # pylint: disable=C0415
-                if isinstance(image, tensorflow.Tensor):
-                    return _get_numpy_as_image(image.numpy())
-            except ImportError:
-                pass
+        try:
+            import tensorflow # pylint: disable=C0415
+            if isinstance(image, tensorflow.Tensor):
+                return _get_numpy_as_image(image.numpy())
+        except ImportError:
+            pass
 
     raise InvalidChannelValue(expected_type='image', actual_type=type(image).__name__)
 
