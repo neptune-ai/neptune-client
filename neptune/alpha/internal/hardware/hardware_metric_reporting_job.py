@@ -19,7 +19,7 @@ import os
 import time
 
 from itertools import groupby
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Dict
 
 from neptune.alpha.types.series import FloatSeries
 
@@ -48,6 +48,7 @@ class HardwareMetricReportingJob(BackgroundJob):
         self._period = period
         self._thread = None
         self._started = False
+        self._gauges_in_resource: Dict[str, int] = dict()
 
     @staticmethod
     def requirements_installed() -> bool:
@@ -64,12 +65,16 @@ class HardwareMetricReportingJob(BackgroundJob):
         metric_reporter = MetricReporterFactory(time.time()).create(metrics=metrics_container.metrics())
 
         for metric in metrics_container.metrics():
+            self._gauges_in_resource[metric.resource_type] = len(metric.gauges)
+
+        for metric in metrics_container.metrics():
             for gauge in metric.gauges:
                 path = self.get_attribute_name(metric.resource_type, gauge.name())
                 if not experiment.get_attribute(path):
                     experiment[path] = FloatSeries([], min=metric.min_value, max=metric.max_value, unit=metric.unit)
 
         self._thread = self.ReportingThread(
+            self,
             self._period,
             experiment,
             metric_reporter)
@@ -86,18 +91,22 @@ class HardwareMetricReportingJob(BackgroundJob):
             return
         self._thread.join(seconds)
 
-    @staticmethod
-    def get_attribute_name(resource_type, gauge_name) -> str:
-        return "monitoring/{}-{}".format(resource_type, gauge_name)
+    def get_attribute_name(self, resource_type, gauge_name) -> str:
+        gauges_count = self._gauges_in_resource.get(resource_type, None)
+        if gauges_count is None or gauges_count != 1:
+            return "monitoring/{}_{}".format(resource_type, gauge_name).lower()
+        return "monitoring/{}".format(resource_type).lower()
 
     class ReportingThread(Daemon):
 
         def __init__(
                 self,
+                outer: 'HardwareMetricReportingJob',
                 period: float,
                 experiment: 'Experiment',
                 metric_reporter: MetricReporter):
             super().__init__(sleep_time=period)
+            self._outer = outer
             self._experiment = experiment
             self._metric_reporter = metric_reporter
 
@@ -107,8 +116,7 @@ class HardwareMetricReportingJob(BackgroundJob):
                 for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name):
                     # TODO: Avoid loop
                     for metric_value in metric_values:
-                        attr_name = HardwareMetricReportingJob.get_attribute_name(
-                            report.metric.resource_type, gauge_name)
+                        attr_name = self._outer.get_attribute_name(report.metric.resource_type, gauge_name)
                         self._experiment[attr_name].log(
                             value=metric_value.value,
                             step=int(metric_value.running_time * 1000.0),
