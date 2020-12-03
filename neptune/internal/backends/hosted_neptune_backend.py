@@ -49,7 +49,7 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
 from neptune.internal.backends.client_config import ClientConfig
-from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
+from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion, STYLES
 from neptune.experiments import Experiment
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.utils.http import extract_response_field
@@ -131,9 +131,11 @@ class HostedNeptuneBackend(Backend):
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
-            project = self.backend_swagger_client.api.getProject(
-                projectIdentifier=project_qualified_name
-            ).response().result
+            response = self.backend_swagger_client.api.getProject(projectIdentifier=project_qualified_name).response()
+            warning = response.metadata.headers.get('X-Server-Warning')
+            if warning:
+                click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
+            project = response.result
 
             return Project(
                 backend=self,
