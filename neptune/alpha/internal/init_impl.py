@@ -124,8 +124,7 @@ def init(
         exp = backend.get_experiment(project + '/' + experiment)
     else:
         git_ref = get_git_info(discover_git_repo_location())
-        if not custom_experiment_id:
-            custom_experiment_id = os.getenv(CUSTOM_EXP_ID_ENV_NAME)
+        custom_experiment_id = custom_experiment_id or os.getenv(CUSTOM_EXP_ID_ENV_NAME)
         if custom_experiment_id and len(custom_experiment_id) > 32:
             _logger.warning('Given custom_experiment_id exceeds 32 characters and it will be ignored.')
             custom_experiment_id = None
