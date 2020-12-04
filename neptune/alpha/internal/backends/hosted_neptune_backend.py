@@ -124,7 +124,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ExperimentNotFound(experiment_id)
 
     @with_api_exceptions_handler
-    def create_experiment(self, project_uuid: uuid.UUID, git_ref: Optional[GitRef] = None) -> Experiment:
+    def create_experiment(self,
+                          project_uuid: uuid.UUID,
+                          git_ref: Optional[GitRef] = None,
+                          custom_experiment_id: Optional[str] = None
+                          ) -> Experiment:
         verify_type("project_uuid", project_uuid, uuid.UUID)
 
         git_info = {
@@ -143,7 +147,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             "projectIdentifier": str(project_uuid),
             "cliVersion": str(neptune_client_version),
-            "gitInfo": git_info
+            "gitInfo": git_info,
+            "customId": custom_experiment_id
         }
 
         kwargs = {

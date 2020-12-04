@@ -65,7 +65,11 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_project(self, project_id: str) -> Project:
         return Project(uuid.uuid4(), "sandbox", "workspace")
 
-    def create_experiment(self, project_uuid: uuid.UUID, git_ref: Optional[GitRef] = None) -> Experiment:
+    def create_experiment(self,
+                          project_uuid: uuid.UUID,
+                          git_ref: Optional[GitRef] = None,
+                          custom_experiment_id: Optional[str] = None
+                          ) -> Experiment:
         short_id = "OFFLINE-{}".format(len(self._experiments) + 1)
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()

@@ -39,7 +39,11 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def create_experiment(self, project_uuid: uuid.UUID, git_ref: Optional[GitRef] = None) -> Experiment:
+    def create_experiment(self,
+                          project_uuid: uuid.UUID,
+                          git_ref: Optional[GitRef] = None,
+                          custom_experiment_id: Optional[str] = None
+                          ) -> Experiment:
         pass
 
     @abc.abstractmethod
