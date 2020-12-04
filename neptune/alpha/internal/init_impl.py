@@ -74,6 +74,7 @@ def init(
         capture_stdout: bool = True,
         capture_stderr: bool = True,
         capture_hardware_metrics: bool = True,
+        monitoring_namespace: str = "monitoring",
         flush_period: float = 5) -> Experiment:
     verify_type("project", project, (str, type(None)))
     verify_type("experiment", experiment, (str, type(None)))
@@ -84,6 +85,7 @@ def init(
     verify_type("capture_stdout", capture_stdout, bool)
     verify_type("capture_stderr", capture_stderr, bool)
     verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
+    verify_type("monitoring_namespace", monitoring_namespace, str)
     verify_type("flush_period", flush_period, (int, float))
     if tags is not None:
         if isinstance(tags, str):
@@ -157,16 +159,16 @@ def init(
     background_jobs = []
     if capture_hardware_metrics:
         if HardwareMetricReportingJob.requirements_installed():
-            background_jobs.append(HardwareMetricReportingJob())
+            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
         else:
             _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
             background_jobs.append(PingBackgroundJob())
     else:
         background_jobs.append(PingBackgroundJob())
     if capture_stdout:
-        background_jobs.append(StdoutCaptureBackgroundJob())
+        background_jobs.append(StdoutCaptureBackgroundJob(attribute_name="{}/stdout".format(monitoring_namespace)))
     if capture_stderr:
-        background_jobs.append(StderrCaptureBackgroundJob())
+        background_jobs.append(StderrCaptureBackgroundJob(attribute_name="{}/stderr".format(monitoring_namespace)))
 
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
     if connection_mode != OFFLINE:
