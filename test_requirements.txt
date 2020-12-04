@@ -4,7 +4,7 @@ psutil==5.6.6
 pylint==1.9.4; python_version < '3.0'
 pylint==2.4.2; python_version >= '3.0'
 pylintfileheader==0.0.2
-pytest==4.6.5
+pytest>=5.0
 pytest-cov==2.6.1
 pytest-xdist==1.25.0
 tox==3.6.1
