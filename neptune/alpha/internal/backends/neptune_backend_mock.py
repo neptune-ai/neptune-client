@@ -77,7 +77,7 @@ class NeptuneBackendMock(NeptuneBackend):
         self._experiments[new_experiment_uuid].set(["sys", "creation_time"], Datetime(datetime.now()))
         self._experiments[new_experiment_uuid].set(["sys", "modification_time"], Datetime(datetime.now()))
         if git_ref:
-            self._experiments[new_experiment_uuid].set(["sys", "git"], git_ref)
+            self._experiments[new_experiment_uuid].set(["source_code", "git"], git_ref)
         return Experiment(new_experiment_uuid, short_id, 'workspace', 'sandbox')
 
     def get_experiment(self, experiment_id: str) -> Experiment:
