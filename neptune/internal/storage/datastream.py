@@ -18,7 +18,6 @@ import io
 import os
 import stat
 import tarfile
-import six
 
 from future.builtins import object
 
@@ -32,14 +31,7 @@ class FileChunk(object):
         self.end = end
 
     def get_data(self):
-        if isinstance(self.data, str):
-            # pylint: disable=undefined-variable
-            if six.PY3:
-                return io.StringIO(self.data)
-            else:
-                return io.StringIO(unicode(self.data))
-        else:
-            return io.BytesIO(self.data)
+        return io.BytesIO(self.data)
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -78,12 +70,14 @@ class FileChunkStream(object):
         while True:
             chunk = self.fobj.read(chunk_size)
             if chunk:
+                if isinstance(chunk, str):
+                    chunk = chunk.encode('utf-8')
                 new_offset = last_offset + len(chunk)
                 yield FileChunk(chunk, last_offset, new_offset)
                 last_offset = new_offset
             else:
                 if last_offset == 0:
-                    yield FileChunk(chunk, 0, 0)
+                    yield FileChunk(b'', 0, 0)
                 break
 
     def close(self):

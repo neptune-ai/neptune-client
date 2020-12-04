@@ -336,6 +336,16 @@ class Experiment(object):
                 experiment.log_metric('accuracy', 1, 0.65)
                 experiment.log_metric('accuracy', 2, 0.8)
 
+                # Common invocation, logging loss tensor in PyTorch
+                loss = torch.Tensor([0.89])
+                experiment.log_metric('log-loss', loss)
+
+                # Common invocation, logging metric tensor in Tensorflow
+                acc = tf.constant([0.93])
+                experiment.log_metric('accuracy', acc)
+                f1_score = tf.constant(0.78)
+                experiment.log_metric('f1_score', f1_score)
+
         Note:
             For efficiency, logs are uploaded in batches via a queue.
             Hence, if you log a lot of data, you may experience slight delays in Neptune web application.
@@ -457,12 +467,16 @@ class Experiment(object):
                 * :obj:`matplotlib.figure.Figure`
                   `Matplotlib 3.1.1 docs <https://matplotlib.org/3.1.1/api/_as_gen/matplotlib.figure.Figure.html>`_
                 * :obj:`str` - path to image file
-                * 2-dimensional :obj:`numpy.array` - interpreted as grayscale image
-                * 3-dimensional :obj:`numpy.array` - behavior depends on last dimension
+                * 2-dimensional :obj:`numpy.array` with values in the [0, 1] range - interpreted as grayscale image
+                * 3-dimensional :obj:`numpy.array` with values in the [0, 1] range - behavior depends on last dimension
 
                     * if last dimension is 1 - interpreted as grayscale image
                     * if last dimension is 3 - interpreted as RGB image
                     * if last dimension is 4 - interpreted as RGBA image
+                * :obj:`torch.tensor` with values in the [0, 1] range.
+                    :obj:`torch.tensor`  is converted to :obj:`numpy.array` via `.numpy()` method and logged.
+                * :obj:`tensorflow.tensor` with values in [0, 1] range.
+                    :obj:`tensorflow.tensor` is converted to :obj:`numpy.array` via `.numpy()` method and logged.
 
             image_name (:obj:`str`, optional, default is ``None``): Image name
             description (:obj:`str`, optional, default is ``None``): Image description
@@ -500,6 +514,14 @@ class Experiment(object):
                 # 3d RGBA array
                 array = numpy.random.rand(300, 200, 4)*255
                 experiment.log_image('fig', array)
+
+                # torch tensor
+                tensor = torch.rand(10, 20)
+                experiment.log_image('fig', tensor)
+
+                # tensorflow tensor
+                tensor = tensorflow.random.uniform(shape=[10, 20])
+                experiment.log_image('fig', tensor)
 
                 # matplotlib figure example 1
                 from matplotlib import pyplot
@@ -578,6 +600,13 @@ class Experiment(object):
             destination (:obj:`str`, optional, default is ``None``):
                 A destination path.
                 If ``None`` is passed, an artifact file name will be used.
+
+        Note:
+            If you use in-memory buffers like `io.StringIO` or `io.BytesIO`, remember that in typical case when you
+            write to such a buffer, it's current position is set to the end of the stream, so in order to read it's
+            content, you need to move back it's position to the beginning.
+            We recommend to call seek(0) on the in-memory buffers before passing it to Neptune.
+            Additionally, if you provide `io.StringIO`, it will be encoded in 'utf-8' before sent to Neptune.
 
         Raises:
             `FileNotFound`: When ``artifact`` file was not found.
