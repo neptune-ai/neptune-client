@@ -23,5 +23,5 @@ class Logger(object):
         self._experiment = experiment
         self._attribute_name = attribute_name
 
-    def log(self, msg: str, *args, **kwargs):
-        self._experiment[self._attribute_name].log(msg.format(args, kwargs))
+    def log(self, msg: str):
+        self._experiment[self._attribute_name].log(msg)

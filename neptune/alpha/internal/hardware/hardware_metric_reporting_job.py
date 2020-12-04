@@ -119,6 +119,5 @@ class HardwareMetricReportingJob(BackgroundJob):
                         attr_name = self._outer.get_attribute_name(report.metric.resource_type, gauge_name)
                         self._experiment[attr_name].log(
                             value=metric_value.value,
-                            step=int(metric_value.running_time * 1000.0),
                             timestamp=metric_value.timestamp
                         )

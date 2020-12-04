@@ -17,5 +17,5 @@
 from neptune.alpha.attributes.atoms.atom import Atom
 
 
-class GitRef(Atom):
+class ExperimentState(Atom):
     pass

@@ -22,6 +22,7 @@ from typing import Dict, Any, Union, List, Optional
 
 import atexit
 
+from neptune.alpha.attributes.atoms.experiment_state import ExperimentState as ExperimentStateAttr
 from neptune.alpha.attributes.atoms.file import File as FileAttr
 from neptune.alpha.attributes.file_set import FileSet as FileSetAttr
 from neptune.alpha.attributes.atoms.float import Float as FloatAttr
@@ -165,7 +166,7 @@ class Experiment:
         if _type == AttributeType.GIT_REF:
             self._structure.set(_path, GitRefAttr(self, _path))
         if _type == AttributeType.EXPERIMENT_STATE:
-            self._structure.set(_path, StringAttr(self, _path))
+            self._structure.set(_path, ExperimentStateAttr(self, _path))
 
     def _shutdown_hook(self):
         self.stop()
