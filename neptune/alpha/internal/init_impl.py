@@ -139,6 +139,7 @@ def init(
         except FileNotFoundError:
             execution_id = 0
         execution_path = "{}/exec-{}-{}".format(experiment_path, execution_id, datetime.now())
+        execution_path = execution_path.replace(" ", "_").replace(":", ".")
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
             DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
