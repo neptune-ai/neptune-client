@@ -18,7 +18,7 @@ import os
 import unittest
 
 from neptune.alpha.envs import API_TOKEN_ENV_NAME
-from neptune.alpha.exceptions import InvalidApiKey
+from neptune.alpha.exceptions import NeptuneInvalidApiTokenException
 from neptune.alpha.internal.credentials import Credentials
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
@@ -49,7 +49,7 @@ class TestCredentials(unittest.TestCase):
 
     def test_raise_invalid_token(self):
         # expect
-        with self.assertRaises(InvalidApiKey):
+        with self.assertRaises(NeptuneInvalidApiTokenException):
             Credentials("INVALID_TOKEN")
 
     def test_raise_invalid_token_from_env(self):
@@ -57,5 +57,5 @@ class TestCredentials(unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = "INVALID_TOKEN"
 
         # expect
-        with self.assertRaises(InvalidApiKey):
+        with self.assertRaises(NeptuneInvalidApiTokenException):
             Credentials()

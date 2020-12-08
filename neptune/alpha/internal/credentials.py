@@ -21,7 +21,7 @@ from typing import Optional, Dict
 
 from neptune.alpha import envs
 from neptune.alpha import ANONYMOUS, ANONYMOUS_API_TOKEN
-from neptune.alpha.exceptions import InvalidApiKey, MissingApiToken
+from neptune.alpha.exceptions import NeptuneInvalidApiTokenException, NeptuneMissingApiTokenException
 
 
 class Credentials(object):
@@ -35,12 +35,12 @@ class Credentials(object):
 
         self._api_token = api_token
         if self.api_token is None:
-            raise MissingApiToken()
+            raise NeptuneMissingApiTokenException()
 
         token_dict = self._api_token_to_dict(self.api_token)
         # TODO: Consider renaming 'api_address' (breaking backward compatibility)
         if 'api_address' not in token_dict:
-            raise InvalidApiKey()
+            raise NeptuneInvalidApiTokenException()
         self._token_origin_address = token_dict['api_address']
         self._api_url = token_dict['api_url'] if 'api_url' in token_dict else None
 
@@ -61,4 +61,4 @@ class Credentials(object):
         try:
             return json.loads(base64.b64decode(api_token.encode()).decode("utf-8"))
         except Exception:
-            raise InvalidApiKey()
+            raise NeptuneInvalidApiTokenException()

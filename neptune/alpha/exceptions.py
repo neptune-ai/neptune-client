@@ -21,6 +21,7 @@ from packaging.version import Version
 
 from neptune.alpha import envs
 from neptune.alpha.internal.utils import replace_patch_version
+from neptune.exceptions import STYLES
 
 
 class NeptuneException(Exception):
@@ -88,23 +89,160 @@ class ExperimentUUIDNotFound(NeptuneException):
         super().__init__("Experiment with UUID {} not found. Could be deleted.".format(exp_uuid))
 
 
-class MissingProject(NeptuneException):
+class NeptuneMissingProjectNameException(NeptuneException):
     def __init__(self):
-        super().__init__('Missing project identifier. Use "{}" environment variable or pass it as an argument'.format(
-            envs.PROJECT_ENV_NAME))
+        message = """
+{h1}
+----NeptuneMissingProjectNameException-------------------------------------------------------------------------
+{end}
+Neptune client couldn't find your project name.
+
+There are two options two add it:
+    - specify it in your code 
+    - set an environment variable in your operating system.
+
+{h2}CODE{end}
+Pass it to {bold}neptune.init(){end} via {bold}project{end} argument:
+    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
+
+{h2}ENVIRONMENT VARIABLE{end}
+or export or set an environment variable depending on your operating system: 
+
+    {correct}Linux/Unix{end}
+    In your terminal run:
+       {bash}export {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
+
+    {correct}Windows{end}
+    In your CMD run:
+       {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
+
+and skip the {bold}project{end} argument of {bold}neptune.init(){end}: 
+    {python}neptune.init(){end}
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/workspace-project-and-user-management/index.html
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+"""
+        inputs = dict(list({'env_project': envs.PROJECT_ENV_NAME}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
-class MissingApiToken(NeptuneException):
+class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
+    def __init__(self, project):
+        message = """
+{h1}
+----NeptuneIncorrectProjectQualifiedNameException-----------------------------------------------------------------------
+{end}
+Project qualified name {fail}"{project}"{end} you specified was incorrect.
+
+The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+It has two parts:
+    - {correct}WORKSPACE{end}: which can be your username or your organization name
+    - {correct}PROJECT_NAME{end}: which is the actual project name you chose 
+
+For example, a project {correct}neptune-ai/credit-default-prediction{end} parts are:
+    - {correct}neptune-ai{end}: {underline}WORKSPACE{end} our company organization name
+    - {correct}credit-default-prediction{end}: {underline}PROJECT_NAME{end} a project name
+
+The URL to this project looks like this: https://ui.neptune.ai/neptune-ai/credit-default-prediction
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/workspace-project-and-user-management/index.html
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+"""
+        inputs = dict(list({'project': project}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
+
+
+class NeptuneMissingApiTokenException(NeptuneException):
     def __init__(self):
-        super().__init__(
-            'Missing API token. Use "{}" environment variable or pass it as an argument to neptune.init. '
-            'Open this link to get your API token https://ui.neptune.ai/get_my_api_token'.format(
-                envs.API_TOKEN_ENV_NAME))
+        message = """
+{h1}
+----NeptuneMissingApiTokenException-------------------------------------------------------------------------------------
+{end}
+Neptune client couldn't find your API token.
+
+Learn how to get it in this docs page:
+https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+
+There are two options to add it:
+    - specify it in your code 
+    - set an environment variable in your operating system.
+
+{h2}CODE{end}
+Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
+    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
+
+{h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
+or export or set an environment variable depending on your operating system: 
+
+    {correct}Linux/Unix{end}
+    In your terminal run:
+        {bash}export {env_api_token}="YOUR_API_TOKEN"{end}
+
+    {correct}Windows{end}
+    In your CMD run:
+        {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
+
+and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}: 
+    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+"""
+        inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
-class InvalidApiKey(NeptuneException):
+class NeptuneInvalidApiTokenException(NeptuneException):
     def __init__(self):
-        super().__init__('The provided API key is invalid.')
+        message = """
+{h1}
+----NeptuneInvalidApiTokenException-------------------------------------------------------------------------------------
+{end}
+Provided API token is invalid.
+Make sure you copied and provided your API token correctly.
+
+Learn how to get it in this docs page:
+https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+
+There are two options to add it:
+    - specify it in your code 
+    - set an environment variable in your operating system.
+
+{h2}CODE{end}
+Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
+    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
+
+{h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
+or export or set an environment variable depending on your operating system: 
+
+    {correct}Linux/Unix{end}
+    In your terminal run:
+        {bash}export {env_api_token}="YOUR_API_TOKEN"{end}
+
+    {correct}Windows{end}
+    In your CMD run:
+        {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
+
+and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}: 
+    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+"""
+        inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class UnsupportedClientVersion(NeptuneException):

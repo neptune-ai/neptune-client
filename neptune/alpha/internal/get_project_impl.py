@@ -18,7 +18,7 @@ import os
 from typing import Optional, Union, Iterable
 
 from neptune.alpha.envs import PROJECT_ENV_NAME
-from neptune.alpha.exceptions import MissingProject
+from neptune.alpha.exceptions import NeptuneMissingProjectNameException
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.utils import verify_type
@@ -46,7 +46,7 @@ def get_project(name: Optional[str] = None) -> Project:
     if not name:
         name = os.getenv(PROJECT_ENV_NAME)
     if not name:
-        raise MissingProject()
+        raise NeptuneMissingProjectNameException()
 
     backend = HostedNeptuneBackend(Credentials())
 
