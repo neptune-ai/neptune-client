@@ -15,6 +15,7 @@
 #
 import logging
 import os
+import re
 import sys
 from datetime import datetime
 
@@ -23,6 +24,7 @@ from platform import node as get_hostname
 from typing import Optional, List, Union
 
 import click
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 from neptune.alpha.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
 from neptune.utils import is_ipython
@@ -34,7 +36,7 @@ from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
     ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME, CUSTOM_EXP_ID_ENV_NAME
-from neptune.alpha.exceptions import MissingProject
+from neptune.alpha.exceptions import NeptuneMissingProjectNameException, NeptuneIncorrectProjectQualifiedNameException
 from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
 from neptune.alpha.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.alpha.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
@@ -104,13 +106,6 @@ def init(
     description = "" if experiment is None and description is None else description
     hostname = get_hostname() if experiment is None else None
 
-    if not project:
-        project = os.getenv(PROJECT_ENV_NAME)
-    if connection_mode == 'offline':
-        project = 'offline-project-placeholder'
-    if not project:
-        raise MissingProject()
-
     if connection_mode == ASYNC:
         # TODO Initialize backend in async thread
         backend = HostedNeptuneBackend(Credentials(api_token=api_token))
@@ -122,6 +117,16 @@ def init(
         backend = OfflineNeptuneBackend()
     else:
         raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
+
+    if not project:
+        project = os.getenv(PROJECT_ENV_NAME)
+    elif connection_mode == 'offline':
+        project = 'offline/project-placeholder'
+
+    if not project:
+        raise NeptuneMissingProjectNameException()
+    if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
+        raise NeptuneIncorrectProjectQualifiedNameException(project)
 
     project_obj = backend.get_project(project)
     if experiment:
