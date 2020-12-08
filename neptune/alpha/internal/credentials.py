@@ -26,7 +26,7 @@ from neptune.alpha.exceptions import InvalidApiKey, MissingApiToken
 
 class Credentials(object):
 
-    def __init__(self, api_token: str = None):
+    def __init__(self, api_token: Optional[str] = None):
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
 

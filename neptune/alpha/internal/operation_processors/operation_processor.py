@@ -30,6 +30,10 @@ class OperationProcessor:
         pass
 
     @abc.abstractmethod
+    def flush(self):
+        pass
+
+    @abc.abstractmethod
     def start(self):
         pass
 
