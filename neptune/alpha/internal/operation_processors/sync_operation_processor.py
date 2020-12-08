@@ -36,6 +36,9 @@ class SyncOperationProcessor(OperationProcessor):
     def wait(self):
         pass
 
+    def flush(self):
+        pass
+
     def start(self):
         pass
 

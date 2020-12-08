@@ -60,6 +60,7 @@ class AsyncOperationProcessor(OperationProcessor):
             self.wait()
 
     def wait(self):
+        self.flush()
         self._waiting_for_version = self._last_version
         if self._consumed_version >= self._waiting_for_version:
             self._waiting_for_version = 0
@@ -67,6 +68,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumer.wake_up()
         self._waiting_event.wait()
         self._waiting_event.clear()
+
+    def flush(self):
+        self._queue.flush()
 
     def start(self):
         self._consumer.start()

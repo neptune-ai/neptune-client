@@ -30,7 +30,10 @@ class OfflineOperationProcessor(OperationProcessor):
         self._queue.put(op)
 
     def wait(self):
-        pass
+        self.flush()
+
+    def flush(self):
+        self._queue.flush()
 
     def start(self):
         pass

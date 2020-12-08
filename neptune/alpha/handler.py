@@ -68,8 +68,10 @@ class Handler:
             attr = self._experiment.get_attribute(self._path)
             if not attr:
                 attr = FileSet(self._experiment, parse_path(self._path))
+                attr.save_files(value, wait)
                 self._experiment.set_attribute(self._path, attr)
-            attr.save_files(value, wait)
+            else:
+                attr.save_files(value, wait)
 
     def log(self, value: Union[int, float, str, Image], step=None, timestamp=None, wait: bool = False) -> None:
         verify_type("value", value, (int, float, str, Image))
@@ -84,8 +86,10 @@ class Handler:
                     attr = StringSeries(self._experiment, parse_path(self._path))
                 elif isinstance(value, Image):
                     attr = ImageSeries(self._experiment, parse_path(self._path))
+                attr.log(value, step=step, timestamp=timestamp, wait=wait)
                 self._experiment.set_attribute(self._path, attr)
-            attr.log(value, step=step, timestamp=timestamp, wait=wait)
+            else:
+                attr.log(value, step=step, timestamp=timestamp, wait=wait)
 
     def add(self, values: Iterable[str], wait: bool = False) -> None:
         verify_collection_type("values", values, str)
@@ -93,8 +97,10 @@ class Handler:
             attr = self._experiment.get_attribute(self._path)
             if not attr:
                 attr = StringSet(self._experiment, parse_path(self._path))
+                attr.add(values, wait)
                 self._experiment.set_attribute(self._path, attr)
-            attr.add(values, wait)
+            else:
+                attr.add(values, wait)
 
     def pop(self, path: str, wait: bool = False) -> None:
         verify_type("path", path, str)

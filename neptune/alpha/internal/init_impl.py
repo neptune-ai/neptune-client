@@ -64,6 +64,7 @@ SYNC = "sync"
 
 def init(
         project: Optional[str] = None,
+        api_token: Optional[str] = None,
         experiment: Optional[str] = None,
         custom_experiment_id: Optional[str] = None,
         connection_mode: str = ASYNC,
@@ -77,6 +78,7 @@ def init(
         monitoring_namespace: str = "monitoring",
         flush_period: float = 5) -> Experiment:
     verify_type("project", project, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
     verify_type("experiment", experiment, (str, type(None)))
     verify_type("custom_experiment_id", custom_experiment_id, (str, type(None)))
     verify_type("connection_mode", connection_mode, str)
@@ -111,9 +113,9 @@ def init(
 
     if connection_mode == ASYNC:
         # TODO Initialize backend in async thread
-        backend = HostedNeptuneBackend(Credentials())
+        backend = HostedNeptuneBackend(Credentials(api_token=api_token))
     elif connection_mode == SYNC:
-        backend = HostedNeptuneBackend(Credentials())
+        backend = HostedNeptuneBackend(Credentials(api_token=api_token))
     elif connection_mode == DEBUG:
         backend = NeptuneBackendMock()
     elif connection_mode == OFFLINE:

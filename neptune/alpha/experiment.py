@@ -17,10 +17,13 @@
 import threading
 import time
 import uuid
+from contextlib import AbstractContextManager
 from datetime import datetime
 from typing import Dict, Any, Union, List, Optional
 
 import atexit
+
+from neptune.alpha.internal.utils import verify_type
 
 from neptune.alpha.attributes.atoms.experiment_state import ExperimentState as ExperimentStateAttr
 from neptune.alpha.attributes.atoms.file import File as FileAttr
@@ -50,7 +53,7 @@ from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.value import Value
 
 
-class Experiment:
+class Experiment(AbstractContextManager):
 
     def __init__(
             self,
@@ -67,11 +70,17 @@ class Experiment:
         self._lock = threading.RLock()
         self._started = False
 
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.stop()
+
     def __getitem__(self, path: str) -> 'Handler':
         return Handler(self, path)
 
     def __setitem__(self, key: str, value) -> None:
         self.__getitem__(key).assign(value)
+
+    def __delitem__(self, path) -> None:
+        self.pop(path)
 
     def start(self):
         atexit.register(self._shutdown_hook)
@@ -79,7 +88,8 @@ class Experiment:
         self._bg_job.start(self)
         self._started = True
 
-    def stop(self, seconds: Optional[float] = None):
+    def stop(self, seconds: Optional[Union[float, int]] = None):
+        verify_type("seconds", seconds, (float, int, type(None)))
         if not self._started:
             return
         self._started = False
@@ -107,8 +117,8 @@ class Experiment:
             if old_attr:
                 raise MetadataInconsistency("Attribute {} is already defined".format(path))
             attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
-            self._structure.set(parsed_path, attr)
             attr.assign(value, wait)
+            self._structure.set(parsed_path, attr)
             return attr
 
     def ping(self):
@@ -123,17 +133,21 @@ class Experiment:
             return self._structure.set(parse_path(path), attribute)
 
     def pop(self, path: str, wait: bool = False):
+        verify_type("path", path, str)
         with self._lock:
             parsed_path = parse_path(path)
-            self._structure.pop(parsed_path)
             self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
+            self._structure.pop(parsed_path)
 
     def lock(self) -> threading.RLock:
         return self._lock
 
-    def wait(self):
+    def wait(self, disk_only=False):
         with self._lock:
-            self._op_processor.wait()
+            if disk_only:
+                self._op_processor.flush()
+            else:
+                self._op_processor.wait()
 
     def sync(self, wait: bool = True):
         with self._lock:
