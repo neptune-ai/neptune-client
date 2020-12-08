@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import threading
 import time
+import traceback
 import uuid
 from contextlib import AbstractContextManager
 from datetime import datetime
@@ -71,6 +71,7 @@ class Experiment(AbstractContextManager):
         self._started = False
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        traceback.print_exception(exc_type, exc_val, exc_tb)
         self.stop()
 
     def __getitem__(self, path: str) -> 'Handler':
