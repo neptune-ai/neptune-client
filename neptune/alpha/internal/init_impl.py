@@ -24,6 +24,8 @@ from platform import node as get_hostname
 from typing import Optional, List, Union
 
 import click
+from neptune.alpha.types.series.string_series import StringSeries
+
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 from neptune.alpha.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
@@ -164,6 +166,9 @@ def init(
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline", "debug"]')
 
+    stdout_path = "{}/stdout".format(monitoring_namespace)
+    stderr_path = "{}/stderr".format(monitoring_namespace)
+
     background_jobs = []
     if capture_hardware_metrics:
         if HardwareMetricReportingJob.requirements_installed():
@@ -174,9 +179,9 @@ def init(
     else:
         background_jobs.append(PingBackgroundJob())
     if capture_stdout:
-        background_jobs.append(StdoutCaptureBackgroundJob(attribute_name="{}/stdout".format(monitoring_namespace)))
+        background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
     if capture_stderr:
-        background_jobs.append(StderrCaptureBackgroundJob(attribute_name="{}/stderr".format(monitoring_namespace)))
+        background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
 
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
     if connection_mode != OFFLINE:
@@ -190,6 +195,10 @@ def init(
         _experiment["sys/hostname"] = hostname
     if tags is not None:
         _experiment["sys/tags"].add(tags)
+    if capture_stdout and experiment is None:
+        _experiment.define(stdout_path, StringSeries([]))
+    if capture_stderr and experiment is None:
+        _experiment.define(stderr_path, StringSeries([]))
 
     if source_files is None:
         if not is_ipython() and os.path.isfile(sys.argv[0]):
