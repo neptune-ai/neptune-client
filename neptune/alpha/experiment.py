@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import atexit
 import threading
 import time
 import traceback
@@ -21,35 +22,32 @@ from contextlib import AbstractContextManager
 from datetime import datetime
 from typing import Dict, Any, Union, List, Optional
 
-import atexit
-
-from neptune.alpha.internal.utils import verify_type
-
+from neptune.alpha.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.alpha.attributes.atoms.experiment_state import ExperimentState as ExperimentStateAttr
 from neptune.alpha.attributes.atoms.file import File as FileAttr
-from neptune.alpha.attributes.file_set import FileSet as FileSetAttr
 from neptune.alpha.attributes.atoms.float import Float as FloatAttr
 from neptune.alpha.attributes.atoms.git_ref import GitRef as GitRefAttr
 from neptune.alpha.attributes.atoms.string import String as StringAttr
-from neptune.alpha.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.alpha.attributes.attribute import Attribute
+from neptune.alpha.attributes.file_set import FileSet as FileSetAttr
 from neptune.alpha.attributes.series.float_series import FloatSeries as FloatSeriesAttr
 from neptune.alpha.attributes.series.image_series import ImageSeries as ImageSeriesAttr
 from neptune.alpha.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.handler import Handler
-from neptune.alpha.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.alpha.internal.backends.api_model import AttributeType
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.background_job import BackgroundJob
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.operation import DeleteAttribute
 from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.internal.utils.paths import parse_path
+from neptune.alpha.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
-from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.value import Value
 
 
@@ -121,9 +119,6 @@ class Experiment(AbstractContextManager):
             attr.assign(value, wait)
             self._structure.set(parsed_path, attr)
             return attr
-
-    def ping(self):
-        self._backend.execute_operations(self._uuid, [])
 
     def get_attribute(self, path: str) -> Optional[Attribute]:
         with self._lock:
