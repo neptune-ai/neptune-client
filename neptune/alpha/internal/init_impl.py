@@ -175,9 +175,7 @@ def init(
             background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
         else:
             _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
-            background_jobs.append(PingBackgroundJob())
-    else:
-        background_jobs.append(PingBackgroundJob())
+    background_jobs.append(PingBackgroundJob())
     if capture_stdout:
         background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
     if capture_stderr:
