@@ -15,11 +15,11 @@
 #
 import abc
 import time
-from typing import Optional, TypeVar, Generic
+from typing import Optional, TypeVar, Generic, Union, Iterable
 
 from neptune.alpha.internal.operation import Operation
 
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, is_collection
 
 from neptune.alpha.types.series.series import Series as SeriesVal
 
@@ -35,14 +35,6 @@ class Series(Attribute, Generic[Val, Data]):
         self._verify_value_type(value)
         self._assign_impl(value, wait)
 
-    def log(self,
-            data: Data,
-            step: Optional[float] = None,
-            timestamp: Optional[float] = None,
-            wait: bool = False) -> None:
-        self._verify_data_type(data)
-        self._log_impl(data, step, timestamp, wait)
-
     def clear(self, wait: bool = False) -> None:
         self._clear_impl(wait)
 
@@ -51,7 +43,10 @@ class Series(Attribute, Generic[Val, Data]):
         pass
 
     @abc.abstractmethod
-    def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
+    def _get_log_operation_from_data(self,
+                                     data_list: Iterable[Data],
+                                     step: Optional[float],
+                                     timestamp: float) -> Operation:
         pass
 
     # pylint: disable=unused-argument
@@ -82,11 +77,20 @@ class Series(Attribute, Generic[Val, Data]):
                 ts = time.time()
                 self._enqueue_operation(self._get_log_operation_from_value(value, None, ts), wait=wait)
 
-    def _log_impl(self,
-                  data: Data,
-                  step: Optional[float] = None,
-                  timestamp: Optional[float] = None,
-                  wait: bool = False) -> None:
+    def log(self,
+            value: Union[Data, Iterable],
+            step: Optional[float] = None,
+            timestamp: Optional[float] = None,
+            wait: bool = False) -> None:
+        if is_collection(value):
+            if step is not None and len(value) > 1:
+                raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
+            value = list(value)
+        else:
+            value = [value]
+
+        self._verify_data_type(value)
+
         if step is not None:
             verify_type("step", step, (float, int))
         if timestamp is not None:
@@ -95,7 +99,7 @@ class Series(Attribute, Generic[Val, Data]):
         if not timestamp:
             timestamp = time.time()
 
-        op = self._get_log_operation_from_data(data, step, timestamp)
+        op = self._get_log_operation_from_data(value, step, timestamp)
 
         with self._experiment.lock():
             self._enqueue_operation(op, wait)

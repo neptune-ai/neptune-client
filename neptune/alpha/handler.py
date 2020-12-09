@@ -16,12 +16,14 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Union, Iterable
 
+from more_itertools.more import first
+
 from neptune.alpha.attributes.file_set import FileSet
 from neptune.alpha.attributes.series import ImageSeries
 from neptune.alpha.attributes.series.float_series import FloatSeries
 from neptune.alpha.attributes.series.string_series import StringSeries
 from neptune.alpha.attributes.sets.string_set import StringSet
-from neptune.alpha.internal.utils import verify_type, verify_collection_type
+from neptune.alpha.internal.utils import verify_type, is_collection
 from neptune.alpha.internal.utils.paths import join_paths, parse_path
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.series.image import Image
@@ -73,26 +75,39 @@ class Handler:
             else:
                 attr.save_files(value, wait)
 
-    def log(self, value: Union[int, float, str, Image], step=None, timestamp=None, wait: bool = False) -> None:
-        verify_type("value", value, (int, float, str, Image))
+    def log(self,
+            value: Union[int, float, str, Image, Iterable[int], Iterable[float], Iterable[str], Iterable[Image]],
+            step=None,
+            timestamp=None,
+            wait: bool = False) -> None:
+        verify_type("value", value, (int, float, str, Image, Iterable))
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", step, (int, float, type(None)))
+
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
             if not attr:
-                if isinstance(value, (float, int)):
+                if is_collection(value):
+                    if value:
+                        first_value = first(value)
+                    else:
+                        raise ValueError("Cannot deduce value type: `value` cannot be empty")
+                else:
+                    first_value = value
+
+                if isinstance(first_value, (float, int)):
                     attr = FloatSeries(self._experiment, parse_path(self._path))
-                elif isinstance(value, str):
+                elif isinstance(first_value, str):
                     attr = StringSeries(self._experiment, parse_path(self._path))
-                elif isinstance(value, Image):
+                elif isinstance(first_value, Image):
                     attr = ImageSeries(self._experiment, parse_path(self._path))
                 attr.log(value, step=step, timestamp=timestamp, wait=wait)
                 self._experiment.set_attribute(self._path, attr)
             else:
                 attr.log(value, step=step, timestamp=timestamp, wait=wait)
 
-    def add(self, values: Iterable[str], wait: bool = False) -> None:
-        verify_collection_type("values", values, str)
+    def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
+        verify_type("values", values, (str, Iterable))
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
             if not attr:

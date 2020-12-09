@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from typing import Optional
+from typing import Optional, Iterable
 
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.types.series.image import Image
 
 from neptune.alpha.types.series.image_series import ImageSeries as ImageSeriesVal
@@ -34,8 +34,11 @@ class ImageSeries(Series[Val, Data]):
         values = [LogImages.ValueType(val.content, step=step, ts=timestamp) for val in value.values]
         return LogImages(self._path, values)
 
-    def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
-        return LogImages(self._path, [LogImages.ValueType(data.content, step, timestamp)])
+    def _get_log_operation_from_data(self,
+                                     data_list: Iterable[Data],
+                                     step: Optional[float],
+                                     timestamp: float) -> Operation:
+        return LogImages(self._path, [LogImages.ValueType(data.content, step, timestamp) for data in data_list])
 
     def _get_clear_operation(self) -> Operation:
         return ClearImageLog(self._path)
@@ -43,5 +46,5 @@ class ImageSeries(Series[Val, Data]):
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)
 
-    def _verify_data_type(self, data) -> None:
-        verify_type("data", data, Image)
+    def _verify_data_type(self, data: Iterable) -> None:
+        verify_collection_type("data", data, Image)

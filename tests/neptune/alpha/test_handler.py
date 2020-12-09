@@ -20,18 +20,21 @@ from datetime import datetime, timedelta
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
+import PIL
+from neptune.alpha.attributes.series import ImageSeries
+
 from neptune.alpha import init, ANONYMOUS
 from neptune.alpha.attributes.atoms.datetime import Datetime
 from neptune.alpha.attributes.atoms.file import File
 from neptune.alpha.attributes.atoms.float import Float
 from neptune.alpha.attributes.atoms.string import String
-from neptune.alpha.attributes.series.float_series import FloatSeries
-from neptune.alpha.attributes.series.string_series import StringSeries
 from neptune.alpha.attributes.sets.string_set import StringSet
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
+from neptune.alpha.types import Image
 from neptune.alpha.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.alpha.types.atoms.float import Float as FloatVal
 from neptune.alpha.types.atoms.string import String as StringVal
+from neptune.alpha.types.series.image_series import ImageSeries as ImageSeriesVal
 from neptune.alpha.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.alpha.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.alpha.types.sets.string_set import StringSet as StringSetVal
@@ -123,23 +126,70 @@ class TestHandler(unittest.TestCase):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/val'].assign(FloatSeriesVal([1, 2, 0, 10]))
         exp['some/str/val'].assign(StringSeriesVal(["text1", "text2"]), wait=True)
-        # TODO: Assert fetching value
-        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeries)
-        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
+        exp['some/img/val'].assign(ImageSeriesVal([Image(PIL.Image.new('RGB', (10, 15), color='red'))]))
+        self.assertEqual(exp['some']['num']['val'].get_last(), 10)
+        self.assertEqual(exp['some']['str']['val'].get_last(), "text2")
+        self.assertIsInstance(exp.get_structure()['some']['img']['val'], ImageSeries)
 
         exp['some/num/val'].assign(FloatSeriesVal([122, 543, 2, 5]))
         exp['some/str/val'].assign(StringSeriesVal(["other 1", "other 2", "other 3"]), wait=True)
-        # TODO: Assert fetching value
-        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeries)
-        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
+        self.assertEqual(exp['some']['num']['val'].get_last(), 5)
+        self.assertEqual(exp['some']['str']['val'].get_last(), "other 3")
 
     def test_log(self):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/val'].log(5)
         exp['some/str/val'].log("some text")
-        # TODO: Assert fetching value
-        self.assertIsInstance(exp.get_structure()['some']['num']['val'], FloatSeries)
-        self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSeries)
+        exp['some/img/val'].log(Image(PIL.Image.new('RGB', (60, 30), color='red')))
+        self.assertEqual(exp['some']['num']['val'].get_last(), 5)
+        self.assertEqual(exp['some']['str']['val'].get_last(), "some text")
+        self.assertIsInstance(exp.get_structure()['some']['img']['val'], ImageSeries)
+
+    def test_log_many_values(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        exp['some/num/val'].log([5, 10, 15])
+        exp['some/str/val'].log(["some text", "other"])
+        exp['some/img/val'].log([Image(PIL.Image.new('RGB', (60, 30), color='red')),
+                                 Image(PIL.Image.new('RGB', (20, 90), color='red'))])
+        self.assertEqual(exp['some']['num']['val'].get_last(), 15)
+        self.assertEqual(exp['some']['str']['val'].get_last(), "other")
+        self.assertIsInstance(exp.get_structure()['some']['img']['val'], ImageSeries)
+
+    def test_log_value_errors(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        img = Image(PIL.Image.new('RGB', (60, 30), color='red'))
+
+        with self.assertRaises(ValueError):
+            exp['x'].log([])
+        with self.assertRaises(TypeError):
+            exp['x'].log(["str", 5])
+        with self.assertRaises(ValueError):
+            exp['x'].log([5, 10], step=10)
+
+        exp['some/num/val'].log([5], step=1)
+        exp['some/num/val'].log([])
+        with self.assertRaises(TypeError):
+            exp['some/num/val'].log("str")
+        with self.assertRaises(TypeError):
+            exp['some/num/val'].log(img)
+
+        exp['some/str/val'].log(["str"], step=1)
+        exp['some/str/val'].log([])
+        with self.assertRaises(TypeError):
+            exp['some/str/val'].log(5)
+        with self.assertRaises(TypeError):
+            exp['some/str/val'].log(img)
+
+        exp['some/img/val'].log([img], step=1)
+        exp['some/img/val'].log([])
+        with self.assertRaises(TypeError):
+            exp['some/img/val'].log(5)
+        with self.assertRaises(TypeError):
+            exp['some/img/val'].log("str")
+
+        self.assertEqual(exp['some']['num']['val'].get_last(), 5)
+        self.assertEqual(exp['some']['str']['val'].get_last(), "str")
+        self.assertIsInstance(exp.get_structure()['some']['img']['val'], ImageSeries)
 
     def test_assign_set(self):
         exp = init(connection_mode="debug", flush_period=0.5)
@@ -153,8 +203,13 @@ class TestHandler(unittest.TestCase):
 
     def test_add(self):
         exp = init(connection_mode="debug", flush_period=0.5)
+
         exp['some/str/val'].add(["some text", "something else"], wait=True)
         self.assertEqual(exp['some/str/val'].get(), {"some text", "something else"})
+
+        exp['some/str/val'].add("one more", wait=True)
+        self.assertEqual(exp['some/str/val'].get(), {"some text", "something else", "one more"})
+
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
 
     def test_pop(self):

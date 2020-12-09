@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from typing import Iterable
+from typing import Iterable, Union
 import typing
 
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, verify_collection_type, is_collection
 
 from neptune.alpha.internal.operation import AddStrings, RemoveStrings, ClearStringSet
 from neptune.alpha.types.sets.string_set import StringSet as StringSetVal
@@ -35,11 +35,13 @@ class StringSet(Set):
                 self._enqueue_operation(ClearStringSet(self._path), wait=False)
                 self._enqueue_operation(AddStrings(self._path, value.values), wait=wait)
 
-    def add(self, values: Iterable[str], wait: bool = False):
+    def add(self, values: Union[str, Iterable[str]], wait: bool = False):
+        values = self._to_proper_value_type(values)
         with self._experiment.lock():
             self._enqueue_operation(AddStrings(self._path, set(values)), wait)
 
-    def remove(self, values: Iterable[str], wait: bool = False):
+    def remove(self, values: Union[str, Iterable[str]], wait: bool = False):
+        values = self._to_proper_value_type(values)
         with self._experiment.lock():
             self._enqueue_operation(RemoveStrings(self._path, set(values)), wait)
 
@@ -51,3 +53,12 @@ class StringSet(Set):
         # pylint: disable=protected-access
         val = self._backend.get_string_set_attribute(self._experiment_uuid, self._path)
         return val.values
+
+    @staticmethod
+    def _to_proper_value_type(values: Union[str, Iterable[str]]) -> Iterable[str]:
+        if is_collection(values):
+            verify_collection_type("values", values, str)
+            return list(values)
+        else:
+            verify_type("values", values, str)
+            return [values]

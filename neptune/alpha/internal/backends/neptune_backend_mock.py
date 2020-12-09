@@ -36,6 +36,7 @@ from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     RemoveStrings, AddStrings, \
     UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet
 from neptune.alpha.internal.operation_visitor import OperationVisitor
+from neptune.alpha.types import Image
 from neptune.alpha.types.atoms import GitRef
 from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.file import File
@@ -270,7 +271,7 @@ class NeptuneBackendMock(NeptuneBackend):
             return StringSeries(self._current_value.values + raw_values)
 
         def visit_log_images(self, op: LogImages) -> Optional[Value]:
-            raw_values = [x.value for x in op.values]
+            raw_values = [Image(content=x.value) for x in op.values]
             if self._current_value is None:
                 return ImageSeries(raw_values)
             if not isinstance(self._current_value, ImageSeries):
