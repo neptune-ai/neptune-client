@@ -78,7 +78,7 @@ class Series(Attribute, Generic[Val, Data]):
                 self._enqueue_operation(self._get_log_operation_from_value(value, None, ts), wait=wait)
 
     def log(self,
-            value: Union[Data, Iterable],
+            value: Union[Data, Iterable[Data]],
             step: Optional[float] = None,
             timestamp: Optional[float] = None,
             wait: bool = False) -> None:

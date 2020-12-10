@@ -16,14 +16,12 @@
 from datetime import datetime
 from typing import TYPE_CHECKING, Union, Iterable
 
-from more_itertools.more import first
-
 from neptune.alpha.attributes.file_set import FileSet
 from neptune.alpha.attributes.series import ImageSeries
 from neptune.alpha.attributes.series.float_series import FloatSeries
 from neptune.alpha.attributes.series.string_series import StringSeries
 from neptune.alpha.attributes.sets.string_set import StringSet
-from neptune.alpha.internal.utils import verify_type, is_collection
+from neptune.alpha.internal.utils import verify_type, is_collection, verify_collection_type
 from neptune.alpha.internal.utils.paths import join_paths, parse_path
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.series.image import Image
@@ -88,8 +86,9 @@ class Handler:
             attr = self._experiment.get_attribute(self._path)
             if not attr:
                 if is_collection(value):
+                    verify_collection_type("value", value, (int, float, str, Image))
                     if value:
-                        first_value = first(value)
+                        first_value = next(iter(value))
                     else:
                         raise ValueError("Cannot deduce value type: `value` cannot be empty")
                 else:

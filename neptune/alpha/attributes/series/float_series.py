@@ -60,7 +60,7 @@ class FloatSeries(Series[Val, Data]):
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)
 
-    def _verify_data_type(self, data: Iterable) -> None:
+    def _verify_data_type(self, data: Iterable[Data]) -> None:
         verify_collection_type("data", data, (float, int))
 
     def get_last(self) -> float:
