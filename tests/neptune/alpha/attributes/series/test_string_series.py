@@ -33,10 +33,10 @@ class TestStringSeries(TestAttributeBase):
                 StringSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_log_type_error(self):
-        values = [[5.], ["text"], [], 55, None]
+        values = [[5.], [[]], ["", 5], 55, None]
         for value in values:
             with self.assertRaises(TypeError):
-                StringSeries(MagicMock(), MagicMock()).assign(value)
+                StringSeries(MagicMock(), MagicMock()).log(value)
 
     def test_get(self):
         exp, path = self._create_experiment(), self._random_path()

@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-from typing import Optional
+from typing import Optional, Iterable
 
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, verify_collection_type
 
 from neptune.alpha.types.series.string_series import StringSeries as StringSeriesVal
 
@@ -33,8 +33,11 @@ class StringSeries(Series[Val, Data]):
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in value.values]
         return LogStrings(self._path, values)
 
-    def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
-        return LogStrings(self._path, [LogStrings.ValueType(data, step, timestamp)])
+    def _get_log_operation_from_data(self,
+                                     data_list: Iterable[Data],
+                                     step: Optional[float],
+                                     timestamp: float) -> Operation:
+        return LogStrings(self._path, [LogStrings.ValueType(data, step, timestamp) for data in data_list])
 
     def _get_clear_operation(self) -> Operation:
         return ClearStringLog(self._path)
@@ -42,8 +45,8 @@ class StringSeries(Series[Val, Data]):
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)
 
-    def _verify_data_type(self, data) -> None:
-        verify_type("data", data, Data)
+    def _verify_data_type(self, data: Iterable[Data]) -> None:
+        verify_collection_type("data", data, Data)
 
     def get_last(self) -> str:
         # pylint: disable=protected-access

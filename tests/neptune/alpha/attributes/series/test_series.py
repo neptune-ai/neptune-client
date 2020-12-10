@@ -15,7 +15,7 @@
 #
 
 # pylint: disable=protected-access
-from typing import Optional
+from typing import Optional, Iterable
 
 from mock import MagicMock, call, patch
 
@@ -54,8 +54,18 @@ class TestSeries(TestAttributeBase):
 
     def test_log(self):
         value_and_expected = [
-            (13, LogFloats.ValueType(13, None, self._now())),
-            (15.3, LogFloats.ValueType(15.3, None, self._now()))
+            (13, [LogFloats.ValueType(13, None, self._now())]),
+            (15.3, [LogFloats.ValueType(15.3, None, self._now())]),
+            ([], []),
+            ([1, 9, 7], [LogFloats.ValueType(1, None, self._now()),
+                         LogFloats.ValueType(9, None, self._now()),
+                         LogFloats.ValueType(7, None, self._now())]),
+            ((1, 9, 7), [LogFloats.ValueType(1, None, self._now()),
+                         LogFloats.ValueType(9, None, self._now()),
+                         LogFloats.ValueType(7, None, self._now())]),
+            ({1, 9, 7}, [LogFloats.ValueType(1, None, self._now()),
+                         LogFloats.ValueType(9, None, self._now()),
+                         LogFloats.ValueType(7, None, self._now())])
         ]
 
         for value, expected in value_and_expected:
@@ -63,12 +73,15 @@ class TestSeries(TestAttributeBase):
             exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = FloatSeries(exp, path)
             var.log(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, expected), wait)
 
     def test_log_with_step(self):
         value_step_and_expected = [
             (13, 5.3, LogFloats.ValueType(13, 5.3, self._now())),
-            (15.3, 10, LogFloats.ValueType(15.3, 10, self._now()))
+            (15.3, 10, LogFloats.ValueType(15.3, 10, self._now())),
+            ([13], 5.3, LogFloats.ValueType(13, 5.3, self._now())),
+            ((13,), 5.3, LogFloats.ValueType(13, 5.3, self._now())),
+            ({13}, 5.3, LogFloats.ValueType(13, 5.3, self._now()))
         ]
 
         for value, step, expected in value_step_and_expected:
@@ -91,6 +104,20 @@ class TestSeries(TestAttributeBase):
             var.log(value, timestamp=ts, wait=wait)
             processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
 
+    def test_log_value_errors(self):
+        processor = MagicMock()
+        exp, path = self._create_experiment(processor), self._random_path()
+        attr = FloatSeries(exp, path)
+
+        with self.assertRaises(TypeError):
+            attr.log(["str", 5])
+        with self.assertRaises(ValueError):
+            attr.log([5, 10], step=10)
+        with self.assertRaises(TypeError):
+            attr.log(5, step="str")
+        with self.assertRaises(TypeError):
+            attr.log(5, timestamp="str")
+
     def test_clear(self):
         processor = MagicMock()
         exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
@@ -107,8 +134,11 @@ class TestSeries(TestAttributeBase):
             values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
             return LogFloats(self._path, values)
 
-        def _get_log_operation_from_data(self, data: int, step: Optional[float], timestamp: float) -> Operation:
-            return LogFloats(self._path, [LogFloats.ValueType(data, step, timestamp)])
+        def _get_log_operation_from_data(self,
+                                         data_list: Iterable[int],
+                                         step: Optional[float],
+                                         timestamp: float) -> Operation:
+            return LogFloats(self._path, [LogFloats.ValueType(data_list, step, timestamp)])
 
         def _get_clear_operation(self) -> Operation:
             return ClearFloatLog(self._path)

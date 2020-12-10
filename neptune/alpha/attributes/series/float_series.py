@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-from typing import Union, Optional
+from typing import Union, Optional, Iterable
 
 from neptune.alpha.types.series.float_series import FloatSeries as FloatSeriesVal
 
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, verify_collection_type
 
 from neptune.alpha.internal.operation import ClearFloatLog, LogFloats, Operation, ConfigFloatSeries
 from neptune.alpha.attributes.series.series import Series
@@ -45,8 +45,11 @@ class FloatSeries(Series[Val, Data]):
         values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
         return LogFloats(self._path, values)
 
-    def _get_log_operation_from_data(self, data: Data, step: Optional[float], timestamp: float) -> Operation:
-        return LogFloats(self._path, [LogFloats.ValueType(data, step, timestamp)])
+    def _get_log_operation_from_data(self,
+                                     data_list: Iterable[Data],
+                                     step: Optional[float],
+                                     timestamp: float) -> Operation:
+        return LogFloats(self._path, [LogFloats.ValueType(data, step, timestamp) for data in data_list])
 
     def _get_clear_operation(self) -> Operation:
         return ClearFloatLog(self._path)
@@ -57,8 +60,8 @@ class FloatSeries(Series[Val, Data]):
     def _verify_value_type(self, value) -> None:
         verify_type("value", value, Val)
 
-    def _verify_data_type(self, data) -> None:
-        verify_type("data", data, (float, int))
+    def _verify_data_type(self, data: Iterable[Data]) -> None:
+        verify_collection_type("data", data, (float, int))
 
     def get_last(self) -> float:
         # pylint: disable=protected-access

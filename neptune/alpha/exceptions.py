@@ -20,6 +20,7 @@ from typing import Union, Optional, List
 from packaging.version import Version
 
 from neptune.alpha import envs
+from neptune.alpha.envs import CUSTOM_EXP_ID_ENV_NAME
 from neptune.alpha.internal.utils import replace_patch_version
 from neptune.exceptions import STYLES
 
@@ -243,6 +244,15 @@ You may also want to check the following docs pages:
 """
         inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
+
+
+class NeptuneExperimentResumeAndCustomIdCollision(NeptuneException):
+    def __init__(self):
+        super().__init__("`experiment` and `custom_experiment_id` arguments of init() function are mutually exclusive. "
+                         "Make sure you have no {custom_id_env} environment variable defined "
+                         "and no value explicitly passed to `custom_experiment_id` argument "
+                         "if you meant to resume experiment."
+                         .format(custom_id_env=CUSTOM_EXP_ID_ENV_NAME))
 
 
 class UnsupportedClientVersion(NeptuneException):

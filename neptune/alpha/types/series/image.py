@@ -19,5 +19,10 @@ from neptune.alpha.internal.utils.images import ImageAcceptedTypes, get_image_co
 
 class Image:
 
-    def __init__(self, value: ImageAcceptedTypes):
-        self.content: ImageAcceptedTypes = get_image_content(value)
+    def __init__(self, value: ImageAcceptedTypes = None, content: str = None):
+        if content is not None:
+            self.content = content
+        elif value is not None:
+            self.content: ImageAcceptedTypes = get_image_content(value)
+        else:
+            raise ValueError("Parameter 'value' unfilled.")

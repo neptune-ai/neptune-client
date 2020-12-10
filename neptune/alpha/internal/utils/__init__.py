@@ -44,7 +44,11 @@ def get_type_name(_type: Union[type, tuple]):
 def verify_collection_type(var_name: str, var, expected_type: Union[type, tuple]):
     verify_type(var_name, var, (list, set, tuple))
     for value in var:
-        verify_type("elements of {}".format(var_name), value, expected_type)
+        verify_type("elements of collection '{}'".format(var_name), value, expected_type)
+
+
+def is_collection(var) -> bool:
+    return isinstance(var, (list, set, tuple))
 
 
 def base64_encode(data: bytes) -> str:

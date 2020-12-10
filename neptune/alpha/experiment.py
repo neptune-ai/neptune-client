@@ -128,6 +128,9 @@ class Experiment(AbstractContextManager):
         with self._lock:
             return self._structure.set(parse_path(path), attribute)
 
+    def exists(self, path: str) -> bool:
+        return self.get_attribute(path) is not None
+
     def pop(self, path: str, wait: bool = False):
         verify_type("path", path, str)
         with self._lock:

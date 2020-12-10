@@ -33,7 +33,7 @@ class TestStringSeries(TestAttributeBase):
                 ImageSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_log_type_error(self):
-        values = [[5.], ["text"], [], 55, None]
+        values = [[5.], ["text"], [[]], 55, None]
         for value in values:
             with self.assertRaises(TypeError):
                 ImageSeries(MagicMock(), MagicMock()).log(value)

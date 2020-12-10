@@ -33,7 +33,7 @@ class TestFloatSeries(TestAttributeBase):
                 FloatSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_log_type_error(self):
-        values = [[5.], ["text"], [], "string", None]
+        values = [["text"], [[]], [5, ""], "string", None]
         for value in values:
             with self.assertRaises(TypeError):
                 FloatSeries(MagicMock(), MagicMock()).log(value)
