@@ -19,6 +19,8 @@ import json
 import logging
 import os
 
+from neptune.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
+
 from neptune import envs
 from neptune.api_exceptions import InvalidApiKey
 from neptune.exceptions import NeptuneMissingApiTokenException
@@ -63,6 +65,9 @@ class Credentials(object):
     def __init__(self, api_token=None):
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
+
+        if api_token == ANONYMOUS:
+            api_token = ANONYMOUS_API_TOKEN
 
         self._api_token = api_token
         if self.api_token is None:
