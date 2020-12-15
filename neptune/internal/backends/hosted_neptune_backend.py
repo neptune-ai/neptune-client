@@ -639,7 +639,8 @@ class HostedNeptuneBackend(Backend):
         try:
             series = [gauge.name() for gauge in metric.gauges]
             system_metric_params = SystemMetricParams(
-                name=metric.name, description=metric.description, resourceType=metric.resource_type,
+                name=metric.name, description=metric.description,
+                resourceType=metric.resource_type.replace("MEMORY", "RAM"),
                 unit=metric.unit, min=metric.min_value, max=metric.max_value, series=series)
 
             metric_dto = self.backend_swagger_client.api.createSystemMetric(

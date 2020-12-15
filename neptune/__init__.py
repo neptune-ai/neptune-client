@@ -27,7 +27,7 @@ from neptune.projects import Project
 from neptune.sessions import Session
 from ._version import get_versions
 
-__version__ = get_versions()['version']
+__version__ = "1.0.0" #get_versions()['version']
 del get_versions
 
 session = None
