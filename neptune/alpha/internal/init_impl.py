@@ -203,10 +203,14 @@ def init(
     if capture_stderr and not _experiment.exists(stderr_path):
         _experiment.define(stderr_path, StringSeries([]))
 
-    if source_files is None:
-        if not is_ipython() and os.path.isfile(sys.argv[0]):
-            _experiment["source_code/files"].save_files(sys.argv[0])
-    else:
+    entrypoint = sys.argv[0] or None if not is_ipython() else None
+    if source_files is None and not is_ipython() and os.path.isfile(sys.argv[0]):
+        entrypoint = os.path.basename(sys.argv[0]).replace(os.sep, '/')
+        source_files = sys.argv[0]
+
+    if entrypoint is not None:
+        _experiment["source_code/entrypoint"] = entrypoint
+    if source_files is not None:
         _experiment["source_code/files"].save_files(source_files)
 
     _experiment.start()
