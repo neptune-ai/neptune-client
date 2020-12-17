@@ -14,9 +14,11 @@
 # limitations under the License.
 #
 import base64
+from io import IOBase
 import os
 from glob import glob
 from typing import Union, TypeVar, Iterable, List, Set, Optional
+from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 
 T = TypeVar('T')
 
@@ -37,6 +39,9 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
 
     if not isinstance(var, expected_type):
         raise TypeError("{} must be a {} (was {})".format(var_name, type_name, type(var)))
+
+    if isinstance(var, IOBase) and not hasattr(var, 'read'):
+        raise TypeError("{} is a stream, which does not implement read method".format(var_name))
 
 
 def get_type_name(_type: Union[type, tuple]):
@@ -74,3 +79,16 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
         return common_root
     except ValueError:
         return None
+
+
+def copy_stream_to_file(stream: IOBase, target_path: str):
+    with open(target_path, "wb") as target_file:
+        if stream.seekable():
+            stream.seek(0)
+        chunk = stream.read(64 * 1024)
+        while chunk:
+            if isinstance(chunk, str):
+                chunk = chunk.encode('utf-8')
+            target_file.write(chunk)
+
+            chunk = stream.read(BYTES_IN_ONE_MB)

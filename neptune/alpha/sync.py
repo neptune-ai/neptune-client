@@ -104,7 +104,7 @@ def is_experiment_synced(experiment_path: Path) -> bool:
 
 
 def is_execution_synced(execution_path: Path) -> bool:
-    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict)
+    disk_queue = DiskQueue(execution_path, lambda x, blob_supplier: x.to_dict(blob_supplier), Operation.from_dict)
     return disk_queue.is_empty()
 
 

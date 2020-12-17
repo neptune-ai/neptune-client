@@ -142,7 +142,7 @@ class TestClient(unittest.TestCase):
         self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")
 
     @patch("neptune.alpha.internal.get_project_impl.HostedNeptuneBackend")
-    def test_get_table_as_pands(self, backend_init_mock):
+    def test_get_table_as_pandas(self, backend_init_mock):
         # given
         backend_mock = Mock()
         backend_init_mock.return_value = backend_mock

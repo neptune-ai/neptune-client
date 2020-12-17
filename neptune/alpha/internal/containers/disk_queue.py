@@ -38,7 +38,7 @@ class DiskQueue(StorageQueue[T]):
     def __init__(
             self,
             dir_path: Path,
-            to_dict: Callable[[T], dict],
+            to_dict: Callable[[T, Callable[[], str]], dict],
             from_dict: Callable[[dict], T],
             max_file_size: int = 64 * 1024**2):
         self._dir_path = dir_path
@@ -104,7 +104,7 @@ class DiskQueue(StorageQueue[T]):
                 self._event_empty.set()
                 return None, self._last_put_file.read_local()
             self._reader.close()
-            self._read_file_version = self._next_file_version(self._read_file_version)
+            self._read_file_version = self._next_log_file_version(self._read_file_version)
             self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
             # It is safe. Max recursion level is 2.
             return self._get()
@@ -138,13 +138,14 @@ class DiskQueue(StorageQueue[T]):
         self._event_empty.wait(seconds)
 
     def ack(self, version: int) -> None:
-        self._last_ack_file.write(version)
-        log_versions = self._get_all_file_versions()
+        log_versions = self._get_all_log_file_versions()
         for i in range(0, len(log_versions) - 1):
             if log_versions[i + 1] <= version:
                 os.remove(self._get_log_file(log_versions[i]))
             else:
                 break
+        self._remove_old_blob_files(version)
+        self._last_ack_file.write(version)
 
     def is_empty(self) -> bool:
         return self.size() == 0
@@ -152,21 +153,31 @@ class DiskQueue(StorageQueue[T]):
     def size(self) -> int:
         return self._last_put_file.read_local() - self._last_ack_file.read_local()
 
+    def _get_blob_file(self, index: int) -> str:
+        return "{}/data-{}.blob".format(self._dir_path, index)
+
+    def _remove_old_blob_files(self, less_or_equal_version: int):
+        stream_files = glob("{}/data-*.blob".format(self._dir_path))
+        for file in stream_files:
+            version = int(file[len(str(self._dir_path)) + 6:-5])
+            if version <= less_or_equal_version:
+                os.remove(file)
+
     def _get_log_file(self, index: int) -> str:
         return "{}/data-{}.log".format(self._dir_path, index)
 
-    def _get_all_file_versions(self):
+    def _get_all_log_file_versions(self):
         log_files = glob("{}/data-*.log".format(self._dir_path))
         if not log_files:
             return 1, 1
         return sorted([int(file[len(str(self._dir_path)) + 6:-4]) for file in log_files])
 
     def _get_first_and_last_log_file_version(self) -> (int, int):
-        log_versions = self._get_all_file_versions()
+        log_versions = self._get_all_log_file_versions()
         return min(log_versions), max(log_versions)
 
-    def _next_file_version(self, version: int) -> int:
-        log_versions = self._get_all_file_versions()
+    def _next_log_file_version(self, version: int) -> int:
+        log_versions = self._get_all_log_file_versions()
         for i, val in enumerate(log_versions):
             if val == version:
                 return log_versions[i + 1]
@@ -174,7 +185,7 @@ class DiskQueue(StorageQueue[T]):
 
     def _serialize(self, obj: T, version: int) -> dict:
         return {
-            "obj": self._to_dict(obj),
+            "obj": self._to_dict(obj, lambda: self._get_blob_file(version)),
             "version": version
         }
 

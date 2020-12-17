@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import math
 import random
 import unittest
 from glob import glob
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from typing import Callable
 
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 
@@ -28,9 +29,10 @@ from neptune.alpha.internal.containers.disk_queue import DiskQueue
 class TestDiskQueue(unittest.TestCase):
 
     class Obj:
-        def __init__(self, num: int, txt: str):
+        def __init__(self, num: int, txt: str, use_blob_storage: bool = False):
             self.num = num
             self.txt = txt
+            self.use_blob_storage = use_blob_storage
 
         def __eq__(self, other):
             return isinstance(other, TestDiskQueue.Obj) and self.num == other.num and self.txt == other.txt
@@ -75,7 +77,7 @@ class TestDiskQueue(unittest.TestCase):
         with TemporaryDirectory() as dirpath:
             queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=999)
             for i in range(1, 501):
-                obj = TestDiskQueue.Obj(i, str(i))
+                obj = TestDiskQueue.Obj(i, str(i), (i % 50) == 0)
                 queue.put(obj)
             queue.flush()
             _, version = queue.get_batch(random.randrange(300, 400))
@@ -84,10 +86,17 @@ class TestDiskQueue(unittest.TestCase):
 
             self.assertTrue(queue._read_file_version > 100)
             self.assertTrue(queue._write_file_version > 450)
-            data_files = glob(dirpath + "/data-*.log")
-            self.assertTrue(len(data_files) > 10)
-            data_files_versions = [int(file[len(dirpath + "/data-"):-len(".log")]) for file in data_files]
-            self.assertTrue(len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1)
+
+            log_files = glob(dirpath + "/data-*.log")
+            self.assertTrue(len(log_files) > 10)
+            log_file_versions = [int(file[len(dirpath + "/data-"):-len(".log")]) for file in log_files]
+            self.assertTrue(len([ver for ver in log_file_versions if ver <= version_to_ack]) == 1)
+
+            blob_files = glob(dirpath + "/data-*.blob")
+            self.assertEqual(len(blob_files), math.ceil((500 - version_to_ack) / 50))
+            blob_file_versions = [int(file[len(dirpath + "/data-"):-len(".blob")]) for file in blob_files]
+            self.assertTrue(len([ver for ver in blob_file_versions if ver <= version_to_ack]) == 0)
+
             queue.close()
 
             queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=200)
@@ -97,7 +106,10 @@ class TestDiskQueue(unittest.TestCase):
             queue.close()
 
     @staticmethod
-    def _serializer(obj: 'TestDiskQueue.Obj') -> dict:
+    def _serializer(obj: 'TestDiskQueue.Obj', blob_storage_supplier: Callable[[], str]) -> dict:
+        if obj.use_blob_storage:
+            with open(blob_storage_supplier(), "w") as file:
+                file.write("test content")
         return obj.__dict__
 
     @staticmethod

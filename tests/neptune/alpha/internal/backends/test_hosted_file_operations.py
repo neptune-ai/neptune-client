@@ -16,6 +16,7 @@
 import os
 import unittest
 import uuid
+from io import StringIO
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import mock
@@ -43,7 +44,8 @@ class TestHostedFileOperations(unittest.TestCase):
                 swagger_client=swagger_mock,
                 experiment_uuid=exp_uuid,
                 attribute="target/path.txt",
-                file_path=f.name)
+                source=f.name,
+                target=os.path.basename(f.name))
 
         # then
         upload_loop_mock.assert_called_once_with(
@@ -55,6 +57,34 @@ class TestHostedFileOperations(unittest.TestCase):
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
                 "filename": os.path.basename(f.name)
+            })
+
+    @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
+    @patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
+    def test_upload_file_attribute_from_stream(self, upload_loop_mock):
+        # given
+        exp_uuid = uuid.uuid4()
+        swagger_mock = self._get_swagger_mock()
+        upload_loop_mock.return_value = b'null'
+
+        # when
+        upload_file_attribute(
+            swagger_client=swagger_mock,
+            experiment_uuid=exp_uuid,
+            attribute="target/path.txt",
+            source=StringIO("Some content of test stream"),
+            target="stream.txt")
+
+        # then
+        upload_loop_mock.assert_called_once_with(
+            file_chunk_stream=mock.ANY,
+            response_handler=_attribute_upload_response_handler,
+            http_client=swagger_mock.swagger_spec.http_client,
+            url="ui.neptune.ai/attributes/upload",
+            query_params={
+                "experimentId": str(exp_uuid),
+                "attribute": "target/path.txt",
+                "filename": "stream.txt"
             })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")

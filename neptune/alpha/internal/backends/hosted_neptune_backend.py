@@ -184,7 +184,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                         swagger_client=self.leaderboard_client,
                         experiment_uuid=experiment_uuid,
                         attribute=path_to_str(op.path),
-                        file_path=op.file_path)
+                        source=op.file_path or op.stream,
+                        target=op.file_name)
                 except NeptuneException as e:
                     errors.append(e)
             elif isinstance(op, UploadFileSet):

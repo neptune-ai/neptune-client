@@ -17,6 +17,7 @@ import os
 import unittest
 # pylint: disable=protected-access
 from datetime import datetime, timedelta
+from io import StringIO, BytesIO
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
@@ -86,26 +87,48 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
     @patch('neptune.alpha.internal.backends.neptune_backend_mock.copyfile')
-    def test_save_download_file(self, copyfile_mock):
+    def test_save_download_file(self, copy_mock):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/file'].save("path/to/other/file.txt")
         self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
 
         exp['some/num/file'].download("path/to/download/alternative_file.txt")
-        copyfile_mock.assert_called_with(
+        copy_mock.assert_called_with(
             os.path.abspath("path/to/other/file.txt"), os.path.abspath("path/to/download/alternative_file.txt"))
-        copyfile_mock.reset_mock()
+        copy_mock.reset_mock()
 
         exp['some/num/file'].download()
-        copyfile_mock.assert_called_with(
+        copy_mock.assert_called_with(
             os.path.abspath("path/to/other/file.txt"), os.path.abspath("file.txt"))
-        copyfile_mock.reset_mock()
+        copy_mock.reset_mock()
 
         exp['some/num/file'].download("path/to/other/file.txt")
-        copyfile_mock.assert_not_called()
+        copy_mock.assert_not_called()
 
         with self.assertRaises(TypeError):
             exp['some/num/file'].download(123)
+
+    @patch('neptune.alpha.internal.backends.neptune_backend_mock.copy_stream_to_file')
+    def test_save_download_text_stream(self, copy_mock):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        stream = StringIO("Some test content of the stream")
+
+        exp['some/num/file'] = stream
+        self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
+
+        exp['some/num/file'].download()
+        copy_mock.assert_called_with(stream, os.path.abspath('stream.txt'))
+
+    @patch('neptune.alpha.internal.backends.neptune_backend_mock.copy_stream_to_file')
+    def test_save_download_binary_stream(self, copy_mock):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        stream = BytesIO(b"Some test content of the stream")
+
+        exp['some/num/file'] = stream
+        self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
+
+        exp['some/num/file'].download()
+        copy_mock.assert_called_with(stream, os.path.abspath('stream.bin'))
 
     @patch('neptune.alpha.internal.utils.glob',
            new=lambda path: [path.replace('*', 'file.txt')])

@@ -17,6 +17,7 @@
 # pylint: disable=protected-access
 import os
 import unittest
+from io import StringIO, BytesIO
 
 from mock import MagicMock
 
@@ -32,17 +33,23 @@ class TestFile(TestAttributeBase):
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_assign(self):
-        value_and_expected = [
-            ("some/path", os.getcwd() + "/some/path"),
-            (FileVal("other/../other/file.txt"), os.getcwd() + "/other/file.txt")
+        text_stream = StringIO("Some text stream")
+        binary_stream = BytesIO(b"Some binary stream")
+        value_and_expected_params = [
+            ("some/path", "path", os.getcwd() + "/some/path", None),
+            (FileVal("other/../other/file.txt"), "file.txt", os.getcwd() + "/other/file.txt", None),
+            (text_stream, "stream.txt", None, text_stream),
+            (binary_stream, "stream.bin", None, binary_stream),
         ]
 
-        for value, expected in value_and_expected:
+        for value, expected_file_name, expected_file_path, expected_stream in value_and_expected_params:
             processor = MagicMock()
             exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = File(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(UploadFile(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(
+                UploadFile(path, expected_file_name, expected_file_path, expected_stream),
+                wait)
 
     def test_assign_type_error(self):
         values = [55, None, []]
@@ -61,7 +68,8 @@ class TestFile(TestAttributeBase):
             exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = File(exp, path)
             var.save(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(UploadFile(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(UploadFile(path, os.path.basename(value), expected),
+                                                                wait)
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_save_files(self):

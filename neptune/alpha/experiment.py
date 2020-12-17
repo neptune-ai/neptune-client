@@ -20,6 +20,7 @@ import traceback
 import uuid
 from contextlib import AbstractContextManager
 from datetime import datetime
+from io import IOBase
 from typing import Dict, Any, Union, List, Optional
 
 from neptune.alpha.attributes.atoms.datetime import Datetime as DatetimeAttr
@@ -48,6 +49,7 @@ from neptune.alpha.internal.value_to_attribute_visitor import ValueToAttributeVi
 from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
+from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.value import Value
 
 
@@ -102,13 +104,19 @@ class Experiment(AbstractContextManager):
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
 
-    def define(self, path: str, value: Union[Value, int, float, str, datetime], wait: bool = False) -> Attribute:
+    def define(self,
+               path: str,
+               value: Union[Value, int, float, str, datetime, IOBase],
+               wait: bool = False
+               ) -> Attribute:
         if isinstance(value, (int, float)):
             value = Float(value)
         elif isinstance(value, str):
             value = String(value)
         elif isinstance(value, datetime):
             value = Datetime(value)
+        elif isinstance(value, IOBase):
+            value = File(stream=value)
         parsed_path = parse_path(path)
 
         with self._lock:
