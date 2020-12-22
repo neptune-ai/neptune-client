@@ -200,9 +200,12 @@ def sync_experiment(experiment_path: Path, qualified_experiment_name: str) -> No
 
 def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID) -> None:
     disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict)
-    batch, version = disk_queue.get_batch(1000)
-    backend.execute_operations(experiment_uuid, batch)
-    disk_queue.ack(version)
+    while True:
+        batch, version = disk_queue.get_batch(1000)
+        if not batch:
+            break
+        backend.execute_operations(experiment_uuid, batch)
+        disk_queue.ack(version)
 
 
 def sync_all_registered_experiments(base_path: Path) -> None:
