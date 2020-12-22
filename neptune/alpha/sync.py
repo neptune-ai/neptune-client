@@ -349,6 +349,8 @@ def sync(path: Path, experiment_names: List[str], project_name: Optional[str]):
     or network is unavailable as the experiment runs, experiment data can be synchronized
     with the server with this command line utility.
 
+    You can list unsynchronized experiments with `neptune status`
+
     Examples:
 
     \b
@@ -368,9 +370,9 @@ def sync(path: Path, experiment_names: List[str], project_name: Optional[str]):
     neptune sync --project workspace/project
 
     \b
-    # Synchronize only the offline experiment with UUID a1561719-b425-4000-a65a-b5efb044d6bb
+    # Synchronize only the offline experiment with UUID offline/a1561719-b425-4000-a65a-b5efb044d6bb
     # to project "workspace/project"
-    neptune sync --project workspace/project --experiment a1561719-b425-4000-a65a-b5efb044d6bb
+    neptune sync --project workspace/project --experiment offline/a1561719-b425-4000-a65a-b5efb044d6bb
     """
 
     # pylint: disable=global-statement
