@@ -107,7 +107,7 @@ class TestHandler(unittest.TestCase):
         with self.assertRaises(TypeError):
             exp['some/num/file'].download(123)
 
-    @patch('neptune.alpha.internal.backends.hosted_file_operations.glob',
+    @patch('neptune.alpha.internal.utils.glob',
            new=lambda path: [path.replace('*', 'file.txt')])
     @patch('neptune.alpha.internal.backends.neptune_backend_mock.ZipFile.write')
     def test_save_files_download_zip(self, zip_write_mock):

@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 import base64
-from typing import Union, TypeVar, Iterable
+import os
+from glob import glob
+from typing import Union, TypeVar, Iterable, List, Set, Optional
 
 T = TypeVar('T')
 
@@ -53,3 +55,22 @@ def is_collection(var) -> bool:
 
 def base64_encode(data: bytes) -> str:
     return base64.b64encode(data).decode('utf-8')
+
+
+def get_absolute_paths(file_globs: Iterable[str]) -> List[str]:
+    expanded_paths: Set[str] = set()
+    for file_glob in file_globs:
+        expanded_paths |= set(glob(file_glob))
+    return list(os.path.abspath(expanded_file) for expanded_file in expanded_paths)
+
+
+def get_common_root(absolute_paths: List[str]) -> Optional[str]:
+    try:
+        common_root = os.path.commonpath(absolute_paths)
+        if os.path.isfile(common_root):
+            common_root = os.path.dirname(common_root)
+        if common_root.startswith(os.getcwd() + os.sep):
+            common_root = os.getcwd()
+        return common_root
+    except ValueError:
+        return None

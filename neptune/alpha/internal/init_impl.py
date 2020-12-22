@@ -18,44 +18,39 @@ import os
 import re
 import sys
 from datetime import datetime
-
 from pathlib import Path
 from platform import node as get_hostname
 from typing import Optional, List, Union
 
 import click
-from neptune.alpha.types.series.string_series import StringSeries
-
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-
-from neptune.alpha.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
-from neptune.utils import is_ipython
-
-from neptune.alpha.internal.operation import Operation
-
-from neptune.alpha.internal.utils import verify_type, verify_collection_type
 
 from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
     ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME, CUSTOM_EXP_ID_ENV_NAME
 from neptune.alpha.exceptions import NeptuneMissingProjectNameException, \
     NeptuneIncorrectProjectQualifiedNameException, NeptuneExperimentResumeAndCustomIdCollision
-from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
-from neptune.alpha.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
-from neptune.alpha.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
+from neptune.alpha.experiment import Experiment
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.alpha.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
+from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
+from neptune.alpha.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
+from neptune.alpha.internal.operation import Operation
+from neptune.alpha.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.alpha.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
+from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.alpha.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, \
     StderrCaptureBackgroundJob
+from neptune.alpha.internal.utils import verify_type, verify_collection_type, get_absolute_paths, get_common_root
 from neptune.alpha.internal.utils.git import get_git_info, discover_git_repo_location
 from neptune.alpha.internal.utils.ping_background_job import PingBackgroundJob
+from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.version import version as parsed_version
-from neptune.alpha.experiment import Experiment
-
+from neptune.internal.storage.storage_utils import normalize_file_name
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.utils import is_ipython
 
 __version__ = str(parsed_version)
 
@@ -203,13 +198,18 @@ def init(
     if capture_stderr and not _experiment.exists(stderr_path):
         _experiment.define(stderr_path, StringSeries([]))
 
-    entrypoint = sys.argv[0] or None if not is_ipython() else None
-    if source_files is None and not is_ipython() and os.path.isfile(sys.argv[0]):
-        entrypoint = os.path.basename(sys.argv[0]).replace(os.sep, '/')
-        source_files = sys.argv[0]
-
-    if entrypoint is not None:
+    if not is_ipython() and os.path.isfile(sys.argv[0]):
+        if source_files is None:
+            entrypoint = os.path.basename(sys.argv[0])
+            source_files = sys.argv[0]
+        else:
+            common_root = get_common_root(get_absolute_paths(source_files))
+            if common_root is not None:
+                entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(sys.argv[0]), common_root))
+            else:
+                entrypoint = os.path.basename(sys.argv[0])
         _experiment["source_code/entrypoint"] = entrypoint
+
     if source_files is not None:
         _experiment["source_code/files"].save_files(source_files)
 
