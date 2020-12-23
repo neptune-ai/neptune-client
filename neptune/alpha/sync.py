@@ -304,7 +304,7 @@ def get_neptune_path(ctx, param, path: str) -> Path:
         raise click.BadParameter("Path {} does not contain a '{}' folder.".format(path, NEPTUNE_EXPERIMENT_DIRECTORY))
 
 
-path_option = click.option('-p', '--path', type=click.Path(exists=True, file_okay=False, resolve_path=True),
+path_option = click.option('--path', type=click.Path(exists=True, file_okay=False, resolve_path=True),
                            default=Path.cwd(), callback=get_neptune_path, metavar='<location>',
                            help="path to a directory containing a '.neptune' folder with stored experiments")
 
