@@ -59,7 +59,6 @@ from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler, update_session_proxies
-from neptune.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
 
 _logger = logging.getLogger(__name__)
 
@@ -69,9 +68,6 @@ class HostedNeptuneBackend(Backend):
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
         self._proxies = proxies
-
-        if api_token == ANONYMOUS:
-            api_token = ANONYMOUS_API_TOKEN
 
         # This is not a top-level import because of circular dependencies
         from neptune import __version__
