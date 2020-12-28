@@ -59,8 +59,7 @@ class TestHostedFileOperations(unittest.TestCase):
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
-    @patch('neptune.alpha.internal.backends.hosted_file_operations.glob',
-           new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.alpha.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
     def test_upload_single_file_in_file_set_attribute(self, upload_loop_mock):
         # given
         exp_uuid = uuid.uuid4()
@@ -91,8 +90,7 @@ class TestHostedFileOperations(unittest.TestCase):
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
-    @patch('neptune.alpha.internal.backends.hosted_file_operations.glob',
-           new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.alpha.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
     def test_upload_multiple_files_in_file_set_attribute(self, upload_raw_data_mock):
         # given
         exp_uuid = uuid.uuid4()

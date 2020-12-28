@@ -18,7 +18,6 @@ import json
 import os
 import time
 import uuid
-from glob import glob
 from typing import List, Optional, Dict, Iterable, Callable, Set
 from urllib.parse import urlencode
 
@@ -28,6 +27,7 @@ from requests import Request, Response
 
 from neptune.alpha.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, FileSetUploadError
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler
+from neptune.alpha.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
 from neptune.internal.storage.storage_utils import scan_unique_upload_entries, split_upload_files, UploadEntry, \
     normalize_file_name
@@ -111,27 +111,20 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
 
 
 def get_unique_upload_entries(file_globs: Iterable[str]) -> Set[UploadEntry]:
-    expanded_paths: Set[str] = set()
-    for file_glob in file_globs:
-        expanded_paths |= set(glob(file_glob))
-    absolute_paths = list(os.path.abspath(expanded_file) for expanded_file in expanded_paths)
+    absolute_paths = get_absolute_paths(file_globs)
+    common_root = get_common_root(absolute_paths)
 
     upload_entries: List[UploadEntry] = []
-    try:
-        common_root = os.path.commonpath(absolute_paths)
-    except ValueError:
-        for absolute_path in absolute_paths:
-            upload_entries.append(UploadEntry(absolute_path, normalize_file_name(absolute_path)))
-    else:
-        if os.path.isfile(common_root):
-            common_root = os.path.dirname(common_root)
-        if common_root.startswith(os.getcwd() + os.sep):
-            common_root = os.getcwd()
+    if common_root is not None:
         for absolute_path in absolute_paths:
             upload_entries.append(UploadEntry(absolute_path, normalize_file_name(
                 os.path.relpath(absolute_path, common_root))))
+    else:
+        for absolute_path in absolute_paths:
+            upload_entries.append(UploadEntry(absolute_path, normalize_file_name(absolute_path)))
 
     return scan_unique_upload_entries(upload_entries)
+
 
 def _attribute_upload_response_handler(result: bytes) -> None:
     parsed = json.loads(result)
