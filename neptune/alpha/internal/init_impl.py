@@ -202,12 +202,14 @@ def init(
         if source_files is None:
             entrypoint = os.path.basename(sys.argv[0])
             source_files = sys.argv[0]
+        elif not source_files:
+            entrypoint = os.path.basename(sys.argv[0])
         else:
             common_root = get_common_root(get_absolute_paths(source_files))
             if common_root is not None:
                 entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(sys.argv[0]), common_root))
             else:
-                entrypoint = os.path.basename(sys.argv[0])
+                entrypoint = normalize_file_name(os.path.abspath(sys.argv[0]))
         _experiment["source_code/entrypoint"] = entrypoint
 
     if source_files is not None:

@@ -106,6 +106,9 @@ class TestClient(unittest.TestCase):
         exp = init(connection_mode='debug', source_files=["internal/*"])
         self.assertEqual(exp["source_code/entrypoint"].get(), "main.py")
 
+        exp = init(connection_mode='debug', source_files=["../other_dir/*"])
+        self.assertEqual(exp["source_code/entrypoint"].get(), "../main_dir/main.py")
+
     @patch("neptune.alpha.internal.init_impl.sys.argv", ["main.py"])
     @patch("neptune.alpha.internal.init_impl.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
@@ -117,13 +120,26 @@ class TestClient(unittest.TestCase):
         with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
-        exp = init(connection_mode='debug', source_files=["../*.*"])
+        exp = init(connection_mode='debug', source_files=["../*"])
         with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
-        exp = init(connection_mode='debug', source_files=["internal/*.*"])
+        exp = init(connection_mode='debug', source_files=["internal/*"])
         with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
+
+    @patch("neptune.alpha.internal.init_impl.sys.argv", ["main.py"])
+    @patch("neptune.alpha.internal.init_impl.os.path.isfile", new=lambda file: "." in file)
+    @patch('neptune.alpha.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.alpha.internal.utils.os.path.abspath',
+           new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
+    @patch("neptune.alpha.internal.init_impl.get_common_root", new=lambda _: None)
+    def test_entrypoint_without_common_root(self):
+        exp = init(connection_mode='debug', source_files=["../*"])
+        self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")
+
+        exp = init(connection_mode='debug', source_files=["internal/*"])
+        self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")
 
     @patch("neptune.alpha.internal.get_project_impl.HostedNeptuneBackend")
     def test_get_table_as_pands(self, backend_init_mock):
