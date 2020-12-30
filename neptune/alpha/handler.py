@@ -62,7 +62,7 @@ class Handler:
                 self._experiment.define(self._path, value, wait)
 
     def save(self, value: str, wait: bool = False) -> None:
-        self.assign(File(value), wait)
+        self.assign(File(file_path=value), wait)
 
     def save_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         with self._experiment.lock():

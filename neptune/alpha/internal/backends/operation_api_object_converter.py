@@ -17,7 +17,7 @@
 from neptune.alpha.exceptions import InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet
+    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent
 from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
 
 
@@ -44,8 +44,11 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
     def visit_upload_file(self, _: UploadFile) -> dict:
         raise InternalClientError("Specialized endpoint should be used to upload file attribute")
 
+    def visit_upload_file_content(self, _: UploadFileContent) -> dict:
+        raise InternalClientError("Specialized endpoint should be used to upload file attribute")
+
     def visit_upload_file_set(self, op: UploadFileSet) -> Ret:
-        raise InternalClientError("Specialized endpoints should be used to upload file attribute")
+        raise InternalClientError("Specialized endpoints should be used to upload file set attribute")
 
     def visit_log_floats(self, op: LogFloats) -> dict:
         return {

@@ -16,7 +16,6 @@
 import os
 import unittest
 import uuid
-from io import StringIO
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import mock
@@ -72,7 +71,7 @@ class TestHostedFileOperations(unittest.TestCase):
             swagger_client=swagger_mock,
             experiment_uuid=exp_uuid,
             attribute="target/path.txt",
-            source=StringIO("Some content of test stream"),
+            source=b"Some content of test stream",
             target="stream.txt")
 
         # then

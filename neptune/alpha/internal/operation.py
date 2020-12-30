@@ -16,11 +16,8 @@
 import abc
 from dataclasses import dataclass
 from datetime import datetime
-from io import IOBase
-from typing import List, TypeVar, Generic, Optional, Set, Callable
+from typing import List, TypeVar, Generic, Optional, Set
 from typing import TYPE_CHECKING
-
-from neptune.alpha.internal.utils import copy_stream_to_file
 
 if TYPE_CHECKING:
     from neptune.alpha.internal.operation_visitor import OperationVisitor
@@ -44,7 +41,7 @@ class Operation:
         pass
 
     # pylint: disable=unused-argument
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
+    def to_dict(self) -> dict:
         return {
             "type": self.__class__.__name__,
             "path": self.path
@@ -68,8 +65,8 @@ class AssignFloat(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_float(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["value"] = self.value
         return ret
 
@@ -86,8 +83,8 @@ class AssignString(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_string(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["value"] = self.value
         return ret
 
@@ -104,8 +101,8 @@ class AssignDatetime(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_datetime(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["value"] = int(1000 * self.value.timestamp())
         return ret
 
@@ -118,19 +115,13 @@ class AssignDatetime(Operation):
 class UploadFile(Operation):
 
     file_name: str
-    file_path: Optional[str] = None
-    stream: Optional[IOBase] = None
+    file_path: str
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_upload_file(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
-        if not self.file_path:
-            temp_file_path = blob_file_supplier()
-            copy_stream_to_file(self.stream, temp_file_path)
-            self.file_path = temp_file_path
-            self.stream = None
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["file_name"] = self.file_name
         ret["file_path"] = self.file_path
         return ret
@@ -138,6 +129,26 @@ class UploadFile(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'UploadFile':
         return UploadFile(data["path"], data["file_name"], data["file_path"])
+
+
+@dataclass
+class UploadFileContent(Operation):
+
+    file_name: str
+    file_content: str
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_upload_file_content(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["file_name"] = self.file_name
+        ret["file_content"] = self.file_content
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'UploadFileContent':
+        return UploadFileContent(data["path"], data["file_name"], data["file_content"])
 
 
 @dataclass
@@ -149,8 +160,8 @@ class UploadFileSet(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_upload_file_set(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["file_globs"] = self.file_globs
         ret["reset"] = str(self.reset)
         return ret
@@ -189,8 +200,8 @@ class LogFloats(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_log_floats(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["values"] = [value.to_dict() for value in self.values]
         return ret
 
@@ -212,8 +223,8 @@ class LogStrings(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_log_strings(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["values"] = [value.to_dict() for value in self.values]
         return ret
 
@@ -235,8 +246,8 @@ class LogImages(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_log_images(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["values"] = [value.to_dict() for value in self.values]
         return ret
 
@@ -291,8 +302,8 @@ class ConfigFloatSeries(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_config_float_series(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["min"] = self.min
         ret["max"] = self.max
         ret["unit"] = self.unit
@@ -311,8 +322,8 @@ class AddStrings(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_add_strings(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["values"] = list(self.values)
         return ret
 
@@ -329,8 +340,8 @@ class RemoveStrings(Operation):
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_remove_strings(self)
 
-    def to_dict(self, blob_file_supplier: Callable[[], str]) -> dict:
-        ret = super().to_dict(blob_file_supplier)
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
         ret["values"] = list(self.values)
         return ret
 

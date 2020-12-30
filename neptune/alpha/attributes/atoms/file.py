@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 import os
-from io import IOBase, TextIOBase
+from io import IOBase
 from typing import Union, Optional
 
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, get_stream_content
 
-from neptune.alpha.internal.operation import UploadFile
+from neptune.alpha.internal.operation import UploadFile, UploadFileContent
 from neptune.alpha.types.atoms.file import File as FileVal
 from neptune.alpha.attributes.atoms.atom import Atom
 
@@ -30,21 +30,21 @@ class File(Atom):
 
     def assign(self, value: Union[FileVal, str, IOBase], wait: bool = False) -> None:
         verify_type("value", value, (FileVal, str, IOBase))
-        if isinstance(value, FileVal):
-            if value.file_path is not None:
-                operation = UploadFile(self._path,
-                                       file_name=os.path.basename(value.file_path),
-                                       file_path=os.path.abspath(value.file_path))
-            else:
-                operation = UploadFile(self._path,
-                                       file_name="stream.txt" if isinstance(value.stream, TextIOBase) else "stream.bin",
-                                       stream=value.stream)
+
+        if isinstance(value, str):
+            value = FileVal(file_path=value)
         elif isinstance(value, IOBase):
+            file_content, file_name = get_stream_content(value)
+            value = FileVal(file_content=file_content, file_name=file_name)
+
+        if value.file_path is not None:
             operation = UploadFile(self._path,
-                                   file_name="stream.txt" if isinstance(value, TextIOBase) else "stream.bin",
-                                   stream=value)
+                                   file_name=value.file_name or os.path.basename(value.file_path),
+                                   file_path=os.path.abspath(value.file_path))
         else:
-            operation = UploadFile(self._path, file_name=os.path.basename(value), file_path=os.path.abspath(value))
+            operation = UploadFileContent(self._path,
+                                          file_name=value.file_name,
+                                          file_content=value.file_content)
 
         with self._experiment.lock():
             self._enqueue_operation(operation, wait)

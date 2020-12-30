@@ -16,12 +16,11 @@
 import os
 import uuid
 from datetime import datetime
-from io import TextIOBase
 from shutil import copyfile
 from typing import Optional, List, Dict, TypeVar, Type
 from zipfile import ZipFile
 
-from neptune.alpha.internal.utils import copy_stream_to_file
+from neptune.alpha.internal.utils import base64_decode
 from neptune.alpha.internal.utils.paths import path_to_str
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound, \
@@ -36,7 +35,7 @@ from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
     LogStrings, LogFloats, LogImages, \
     ClearFloatLog, ClearStringLog, ClearStringSet, ClearImageLog, \
     RemoveStrings, AddStrings, \
-    UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet
+    UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent
 from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.types import Image
 from neptune.alpha.types.atoms import GitRef
@@ -131,16 +130,13 @@ class NeptuneBackendMock(NeptuneBackend):
                 yield Attribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
 
     def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
-        source_file_value: File = self._experiments[experiment_uuid].get(path)
-        source_path = source_file_value.file_path
-        if source_path is not None:
-            target_path = os.path.abspath(destination or os.path.basename(source_path))
-            if source_path != target_path:
-                copyfile(source_path, target_path)
-        else:
-            file_name = "stream.txt" if isinstance(source_file_value.stream, TextIOBase) else "stream.bin"
-            target_path = os.path.abspath(destination or file_name)
-            copy_stream_to_file(source_file_value.stream, target_path)
+        value: File = self._experiments[experiment_uuid].get(path)
+        target_path = os.path.abspath(destination or value.file_name)
+        if value.file_content is not None:
+            with open(target_path, 'wb') as target_file:
+                target_file.write(base64_decode(value.file_content))
+        elif value.file_path != target_path:
+            copyfile(value.file_path, target_path)
 
     def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         source_file_set_value: FileSet = self._experiments[experiment_uuid].get(path)
@@ -249,7 +245,12 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("save", File.__name__)
-            return File(op.file_path, op.stream)
+            return File(file_path=op.file_path, file_name=op.file_name)
+
+        def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, File):
+                raise self._create_type_error("save", File.__name__)
+            return File(file_content=op.file_content, file_name=op.file_name)
 
         def visit_upload_file_set(self, op: UploadFileSet) -> Optional[Value]:
             if self._current_value is None or op.reset:

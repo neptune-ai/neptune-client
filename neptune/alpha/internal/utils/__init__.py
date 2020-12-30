@@ -14,13 +14,16 @@
 # limitations under the License.
 #
 import base64
-from io import IOBase
+from io import IOBase, StringIO
+import logging
 import os
 from glob import glob
 from typing import Union, TypeVar, Iterable, List, Set, Optional
 from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 
 T = TypeVar('T')
+
+_logger = logging.getLogger(__name__)
 
 
 def replace_patch_version(version: str):
@@ -62,6 +65,10 @@ def base64_encode(data: bytes) -> str:
     return base64.b64encode(data).decode('utf-8')
 
 
+def base64_decode(data: str) -> bytes:
+    return base64.b64decode(data.encode('utf-8'))
+
+
 def get_absolute_paths(file_globs: Iterable[str]) -> List[str]:
     expanded_paths: Set[str] = set()
     for file_glob in file_globs:
@@ -92,3 +99,22 @@ def copy_stream_to_file(stream: IOBase, target_path: str):
             target_file.write(chunk)
 
             chunk = stream.read(BYTES_IN_ONE_MB)
+
+
+STREAM_SIZE_LIMIT_MB = 15
+
+
+def get_stream_content(stream: IOBase) -> (Optional[str], str):
+    if stream.seekable():
+        stream.seek(0)
+    content = stream.read()
+    default_name = "stream.txt" if isinstance(content, str) else "stream.bin"
+
+    if len(content) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
+        _logger.warning('Your stream is larger than %dMB. Neptune supports saving files smaller than %dMB.',
+                        STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
+        return None, default_name
+
+    if isinstance(content, str):
+        content = content.encode('utf-8')
+    return base64_encode(content), default_name

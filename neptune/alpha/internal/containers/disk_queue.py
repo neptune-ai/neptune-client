@@ -38,7 +38,7 @@ class DiskQueue(StorageQueue[T]):
     def __init__(
             self,
             dir_path: Path,
-            to_dict: Callable[[T, Callable[[], str]], dict],
+            to_dict: Callable[[T], dict],
             from_dict: Callable[[dict], T],
             max_file_size: int = 64 * 1024**2):
         self._dir_path = dir_path
@@ -138,30 +138,19 @@ class DiskQueue(StorageQueue[T]):
         self._event_empty.wait(seconds)
 
     def ack(self, version: int) -> None:
+        self._last_ack_file.write(version)
         log_versions = self._get_all_log_file_versions()
         for i in range(0, len(log_versions) - 1):
             if log_versions[i + 1] <= version:
                 os.remove(self._get_log_file(log_versions[i]))
             else:
                 break
-        self._remove_old_blob_files(version)
-        self._last_ack_file.write(version)
 
     def is_empty(self) -> bool:
         return self.size() == 0
 
     def size(self) -> int:
         return self._last_put_file.read_local() - self._last_ack_file.read_local()
-
-    def _get_blob_file(self, index: int) -> str:
-        return "{}/data-{}.blob".format(self._dir_path, index)
-
-    def _remove_old_blob_files(self, less_or_equal_version: int):
-        stream_files = glob("{}/data-*.blob".format(self._dir_path))
-        for file in stream_files:
-            version = int(file[len(str(self._dir_path)) + 6:-5])
-            if version <= less_or_equal_version:
-                os.remove(file)
 
     def _get_log_file(self, index: int) -> str:
         return "{}/data-{}.log".format(self._dir_path, index)
@@ -185,7 +174,7 @@ class DiskQueue(StorageQueue[T]):
 
     def _serialize(self, obj: T, version: int) -> dict:
         return {
-            "obj": self._to_dict(obj, lambda: self._get_blob_file(version)),
+            "obj": self._to_dict(obj),
             "version": version
         }
 

@@ -17,8 +17,7 @@ import json
 import os
 import time
 import uuid
-from glob import glob
-from io import IOBase, BytesIO
+from io import BytesIO
 from typing import List, Optional, Dict, Iterable, Callable, Set, Union
 from urllib.parse import urlencode
 
@@ -37,14 +36,15 @@ from neptune.internal.storage.storage_utils import scan_unique_upload_entries, s
 def upload_file_attribute(swagger_client: SwaggerClient,
                           experiment_uuid: uuid.UUID,
                           attribute: str,
-                          source: Union[str, IOBase],
+                          source: Union[str, bytes],
                           target: str
                           ) -> None:
     if isinstance(source, str) and not os.path.isfile(source):
         raise FileUploadError(source, "Path not found or is a not a file.")
     try:
         url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadAttribute.operation.path_name
-        _upload_loop(file_chunk_stream=FileChunkStream(UploadEntry(source, target)),
+        upload_entry = UploadEntry(source if isinstance(source, str) else BytesIO(source), target)
+        _upload_loop(file_chunk_stream=FileChunkStream(upload_entry),
                      response_handler=_attribute_upload_response_handler,
                      http_client=swagger_client.swagger_spec.http_client,
                      url=url,

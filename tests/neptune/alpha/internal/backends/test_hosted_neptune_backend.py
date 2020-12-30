@@ -16,7 +16,6 @@
 import socket
 import unittest
 import uuid
-from io import StringIO, BytesIO
 
 from unittest.mock import call
 from mock import MagicMock, patch
@@ -26,7 +25,8 @@ from neptune.alpha.exceptions import CannotResolveHostname, UnsupportedClientVer
     MetadataInconsistency
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import UploadFile, AssignString, LogFloats
+from neptune.alpha.internal.operation import UploadFile, AssignString, LogFloats, UploadFileContent
+from neptune.alpha.internal.utils import base64_encode
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
@@ -54,8 +54,8 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         swagger_client.api.executeOperations().response().result = [response_error]
         swagger_client.api.executeOperations.reset_mock()
         upload_mock.side_effect = FileUploadError("file1", "error2")
-        text_stream = StringIO("Some streamed text")
-        binary_stream = BytesIO(b"Some streamed binary")
+        some_text = "Some streamed text"
+        some_binary = b"Some streamed binary"
 
         # when
         result = backend.execute_operations(
@@ -66,15 +66,15 @@ class TestHostedNeptuneBackend(unittest.TestCase):
                     file_name='path_to_file',
                     file_path='path_to_file'
                 ),
-                UploadFile(
+                UploadFileContent(
                     path=['some', 'files', 'some_text_stream'],
                     file_name="stream.txt",
-                    stream=text_stream
+                    file_content=base64_encode(some_text.encode('utf-8'))
                 ),
-                UploadFile(
+                UploadFileContent(
                     path=['some', 'files', 'some_binary_stream'],
                     file_name="stream.bin",
-                    stream=binary_stream
+                    file_content=base64_encode(some_binary)
                 ),
                 LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
                 AssignString(["properties", "name"], "some text"),
@@ -122,12 +122,12 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_text_stream",
-                 source=text_stream,
+                 source=some_text.encode('utf-8'),
                  target="stream.txt"),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_binary_stream",
-                 source=binary_stream,
+                 source=some_binary,
                  target="stream.bin")
         ], any_order=True)
 

@@ -47,7 +47,7 @@ def prepare_experiments(path):
     for exp in registered_experiments:
         exp_path = path / "async" / str(exp.uuid) / execution_id
         exp_path.mkdir(parents=True)
-        queue = DiskQueue(exp_path, lambda x, _: x, lambda x: x)
+        queue = DiskQueue(exp_path, lambda x: x, lambda x: x)
         queue.put('op-0')
         queue.put('op-1')
 
@@ -70,7 +70,7 @@ def prepare_offline_experiment(path):
     offline_exp_path = path / OFFLINE_DIRECTORY / offline_exp_uuid
     offline_exp_path.mkdir(parents=True)
 
-    queue = DiskQueue(offline_exp_path, lambda x, _: x, lambda x: x)
+    queue = DiskQueue(offline_exp_path, lambda x: x, lambda x: x)
     queue.put('op-0')
     queue.put('op-1')
     SyncOffsetFile(path / OFFLINE_DIRECTORY / offline_exp_uuid / "last_put_version").write(2)

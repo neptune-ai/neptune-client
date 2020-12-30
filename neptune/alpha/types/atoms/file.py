@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from io import IOBase
 from typing import TypeVar, TYPE_CHECKING, Optional
 
 from neptune.alpha.internal.utils import verify_type
@@ -27,11 +26,24 @@ Ret = TypeVar('Ret')
 
 class File(Atom):
 
-    def __init__(self, file_path: Optional[str] = None, stream: Optional[IOBase] = None):
+    def __init__(self,
+                 file_path: Optional[str] = None,
+                 file_content: Optional[str] = None,
+                 file_name: Optional[str] = None):
         verify_type("file_path", file_path, (str, type(None)))
-        verify_type("stream", stream, (IOBase, type(None)))
+        verify_type("file_content", file_content, (str, type(None)))
+        verify_type("file_name", file_name, (str, type(None)))
+
+        if file_path is not None and file_content is not None:
+            raise ValueError("file_path and file_content are mutually exclusive")
+        if file_path is None and file_content is None:
+            raise ValueError("file_path or file_content is required")
+        if file_content is not None and file_name is None:
+            raise ValueError("file_name is required if given file_content")
+
         self.file_path = file_path
-        self.stream = stream
+        self.file_content = file_content
+        self.file_name = file_name
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_file(self)

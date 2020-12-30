@@ -16,10 +16,8 @@
 import json
 import unittest
 import uuid
-from io import StringIO, BytesIO
-from tempfile import NamedTemporaryFile
-
 from neptune.alpha.internal.operation import *
+
 
 # pylint: disable=protected-access
 
@@ -27,25 +25,13 @@ from neptune.alpha.internal.operation import *
 class TestOperations(unittest.TestCase):
 
     def test_serialization_to_dict(self):
-        temp_files = []
-
-        def blob_supplier() -> str:
-            new_temp_file = NamedTemporaryFile("w")
-            temp_files.append(new_temp_file)
-            return new_temp_file.name
-
         classes = {cls.__name__ for cls in all_subclasses(Operation)}
         for obj in self._list_objects():
             if obj.__class__.__name__ in classes:
                 classes.remove(obj.__class__.__name__)
-            deserialized_obj = Operation.from_dict(json.loads(json.dumps(obj.to_dict(blob_supplier))))
+            deserialized_obj = Operation.from_dict(json.loads(json.dumps(obj.to_dict())))
             self.assertEqual(obj.__dict__, deserialized_obj.__dict__)
         self.assertEqual(classes, set())
-
-        for temp_file in temp_files:
-            with open(temp_file.name, "r") as file:
-                self.assertEqual(file.read(), "Test content")
-            temp_file.close()
 
     @staticmethod
     def _list_objects():
@@ -55,8 +41,7 @@ class TestOperations(unittest.TestCase):
             AssignString(TestOperations._random_path(), "a\rsdf\thr"),
             AssignDatetime(TestOperations._random_path(), now.replace(microsecond=1000*int(now.microsecond/1000))),
             UploadFile(TestOperations._random_path(), "f.txt", "file/path/f.txt"),
-            UploadFile(TestOperations._random_path(), "stream.txt", stream=StringIO("Test content")),
-            UploadFile(TestOperations._random_path(), "stream.bin", stream=BytesIO(b"Test content")),
+            UploadFileContent(TestOperations._random_path(), "stream.txt", "some base64"),
             UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], True),
             UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], False),
             LogFloats(TestOperations._random_path(), [
