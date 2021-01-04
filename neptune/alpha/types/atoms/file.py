@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 from typing import TypeVar, TYPE_CHECKING, Optional
 
 from neptune.alpha.internal.utils import verify_type
@@ -43,7 +44,7 @@ class File(Atom):
 
         self.file_path = file_path
         self.file_content = file_content
-        self.file_name = file_name
+        self.file_name = file_name or os.path.basename(file_path)
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_file(self)

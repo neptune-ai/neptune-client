@@ -38,13 +38,9 @@ class File(Atom):
             value = FileVal(file_content=file_content, file_name=file_name)
 
         if value.file_path is not None:
-            operation = UploadFile(self._path,
-                                   file_name=value.file_name or os.path.basename(value.file_path),
-                                   file_path=os.path.abspath(value.file_path))
+            operation = UploadFile(self._path, file_name=value.file_name, file_path=os.path.abspath(value.file_path))
         else:
-            operation = UploadFileContent(self._path,
-                                          file_name=value.file_name,
-                                          file_content=value.file_content)
+            operation = UploadFileContent(self._path, file_name=value.file_name, file_content=value.file_content)
 
         with self._experiment.lock():
             self._enqueue_operation(operation, wait)

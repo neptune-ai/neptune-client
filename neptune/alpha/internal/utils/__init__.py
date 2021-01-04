@@ -88,26 +88,13 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
         return None
 
 
-def copy_stream_to_file(stream: IOBase, target_path: str):
-    with open(target_path, "wb") as target_file:
-        if stream.seekable():
-            stream.seek(0)
-        chunk = stream.read(64 * 1024)
-        while chunk:
-            if isinstance(chunk, str):
-                chunk = chunk.encode('utf-8')
-            target_file.write(chunk)
-
-            chunk = stream.read(BYTES_IN_ONE_MB)
-
-
 STREAM_SIZE_LIMIT_MB = 15
 
 
 def get_stream_content(stream: IOBase) -> (Optional[str], str):
     if stream.seekable():
         stream.seek(0)
-    content = stream.read()
+    content = stream.read(STREAM_SIZE_LIMIT_MB * 1024 * 1024 + 1)
     default_name = "stream.txt" if isinstance(content, str) else "stream.bin"
 
     if len(content) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
