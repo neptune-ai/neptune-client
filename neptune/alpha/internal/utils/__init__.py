@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import base64
-from io import IOBase, StringIO
+from io import IOBase, StringIO, BytesIO
 import logging
 import os
 from glob import glob
@@ -94,14 +94,35 @@ STREAM_SIZE_LIMIT_MB = 15
 def get_stream_content(stream: IOBase) -> (Optional[str], str):
     if stream.seekable():
         stream.seek(0)
+
     content = stream.read(STREAM_SIZE_LIMIT_MB * 1024 * 1024 + 1)
     default_name = "stream.txt" if isinstance(content, str) else "stream.bin"
+    if isinstance(content, str):
+        content = content.encode('utf-8')
 
     if len(content) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
         _logger.warning('Your stream is larger than %dMB. Neptune supports saving files smaller than %dMB.',
                         STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
         return None, default_name
 
-    if isinstance(content, str):
-        content = content.encode('utf-8')
+    while True:
+        chunk = stream.read(1024 * 1024)
+        if chunk is None:
+            continue
+        elif not chunk:
+            break
+        else:
+            if not isinstance(content, BytesIO):
+                content = BytesIO(content)
+                content.seek(0, 2)
+            if isinstance(chunk, str):
+                chunk = chunk.encode('utf-8')
+            if content.tell() + len(chunk) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
+                _logger.warning('Your stream is larger than %dMB. Neptune supports saving files smaller than %dMB.',
+                                STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
+                return None, default_name
+            content.write(chunk)
+    if isinstance(content, BytesIO):
+        content = content.getvalue()
+
     return base64_encode(content), default_name
