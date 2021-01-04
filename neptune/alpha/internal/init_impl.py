@@ -160,7 +160,9 @@ def init(
     elif connection_mode == OFFLINE:
         # Experiment was returned by mocked backend and has some random UUID.
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
-        storage_queue = DiskQueue(Path(experiment_path), lambda x: x.to_dict(), Operation.from_dict)
+        storage_queue = DiskQueue(Path(experiment_path),
+                                  lambda x: x.to_dict(),
+                                  Operation.from_dict)
         operation_processor = OfflineOperationProcessor(storage_queue)
     else:
         raise ValueError('connection_mode should be on of ["async", "sync", "offline", "debug"]')

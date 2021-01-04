@@ -17,32 +17,36 @@
 # pylint: disable=protected-access
 import os
 import unittest
+from io import StringIO, BytesIO
 
 from mock import MagicMock
 
-from neptune.alpha.internal.operation import UploadFile, UploadFileSet
 from neptune.alpha.attributes.atoms.file import File, FileVal
 from neptune.alpha.attributes.file_set import FileSet, FileSetVal
-
-from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
+from neptune.alpha.internal.operation import UploadFile, UploadFileSet, UploadFileContent
+from neptune.alpha.internal.utils import base64_encode
 from neptune.utils import IS_WINDOWS
+from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFile(TestAttributeBase):
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_assign(self):
-        value_and_expected = [
-            ("some/path", os.getcwd() + "/some/path"),
-            (FileVal("other/../other/file.txt"), os.getcwd() + "/other/file.txt")
+        a_text = "Some text stream"
+        a_binary = b"Some binary stream"
+        value_and_operation_factory = [
+            (FileVal("other/../other/file.txt"), lambda _: UploadFile(_, "file.txt", os.getcwd() + "/other/file.txt")),
+            (StringIO(a_text), lambda _: UploadFileContent(_, "stream.txt", base64_encode(a_text.encode('utf-8')))),
+            (BytesIO(a_binary), lambda _: UploadFileContent(_, "stream.bin", base64_encode(a_binary))),
         ]
 
-        for value, expected in value_and_expected:
+        for value, operation_factory in value_and_operation_factory:
             processor = MagicMock()
             exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = File(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(UploadFile(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(operation_factory(path), wait)
 
     def test_assign_type_error(self):
         values = [55, None, []]
@@ -61,7 +65,8 @@ class TestFile(TestAttributeBase):
             exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = File(exp, path)
             var.save(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(UploadFile(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(UploadFile(path, os.path.basename(value), expected),
+                                                                wait)
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_save_files(self):

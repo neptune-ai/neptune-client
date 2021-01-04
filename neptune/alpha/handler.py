@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from datetime import datetime
+from io import IOBase
 from typing import TYPE_CHECKING, Union, Iterable
 
 from neptune.alpha.attributes.file_set import FileSet
@@ -51,8 +52,8 @@ class Handler:
         else:
             raise AttributeError()
 
-    def assign(self, value: Union[Value, int, float, str, datetime], wait: bool = False) -> None:
-        verify_type("value", value, (Value, int, float, str, datetime))
+    def assign(self, value: Union[Value, int, float, str, datetime, IOBase], wait: bool = False) -> None:
+        verify_type("value", value, (Value, int, float, str, datetime, IOBase))
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
             if attr:
@@ -61,7 +62,7 @@ class Handler:
                 self._experiment.define(self._path, value, wait)
 
     def save(self, value: str, wait: bool = False) -> None:
-        self.assign(File(value), wait)
+        self.assign(File(file_path=value), wait)
 
     def save_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         with self._experiment.lock():

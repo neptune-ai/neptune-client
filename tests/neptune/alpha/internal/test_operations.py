@@ -16,8 +16,8 @@
 import json
 import unittest
 import uuid
-
 from neptune.alpha.internal.operation import *
+
 
 # pylint: disable=protected-access
 
@@ -29,7 +29,8 @@ class TestOperations(unittest.TestCase):
         for obj in self._list_objects():
             if obj.__class__.__name__ in classes:
                 classes.remove(obj.__class__.__name__)
-            self.assertEqual(obj.__dict__, Operation.from_dict(json.loads(json.dumps(obj.to_dict()))).__dict__)
+            deserialized_obj = Operation.from_dict(json.loads(json.dumps(obj.to_dict())))
+            self.assertEqual(obj.__dict__, deserialized_obj.__dict__)
         self.assertEqual(classes, set())
 
     @staticmethod
@@ -39,7 +40,8 @@ class TestOperations(unittest.TestCase):
             AssignFloat(TestOperations._random_path(), 5),
             AssignString(TestOperations._random_path(), "a\rsdf\thr"),
             AssignDatetime(TestOperations._random_path(), now.replace(microsecond=1000*int(now.microsecond/1000))),
-            UploadFile(TestOperations._random_path(), "file/path/f/txt"),
+            UploadFile(TestOperations._random_path(), "f.txt", "file/path/f.txt"),
+            UploadFileContent(TestOperations._random_path(), "stream.txt", "some base64"),
             UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], True),
             UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], False),
             LogFloats(TestOperations._random_path(), [

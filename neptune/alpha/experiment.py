@@ -20,6 +20,7 @@ import traceback
 import uuid
 from contextlib import AbstractContextManager
 from datetime import datetime
+from io import IOBase
 from typing import Dict, Any, Union, List, Optional
 
 from neptune.alpha.attributes.atoms.datetime import Datetime as DatetimeAttr
@@ -42,12 +43,13 @@ from neptune.alpha.internal.background_job import BackgroundJob
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.operation import DeleteAttribute
 from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, get_stream_content
 from neptune.alpha.internal.utils.paths import parse_path
 from neptune.alpha.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
+from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.value import Value
 
 
@@ -102,13 +104,20 @@ class Experiment(AbstractContextManager):
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
 
-    def define(self, path: str, value: Union[Value, int, float, str, datetime], wait: bool = False) -> Attribute:
+    def define(self,
+               path: str,
+               value: Union[Value, int, float, str, datetime, IOBase],
+               wait: bool = False
+               ) -> Attribute:
         if isinstance(value, (int, float)):
             value = Float(value)
         elif isinstance(value, str):
             value = String(value)
         elif isinstance(value, datetime):
             value = Datetime(value)
+        elif isinstance(value, IOBase):
+            file_content, file_name = get_stream_content(value)
+            value = File(file_content=file_content, file_name=file_name)
         parsed_path = parse_path(path)
 
         with self._lock:

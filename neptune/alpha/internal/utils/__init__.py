@@ -14,11 +14,16 @@
 # limitations under the License.
 #
 import base64
+from io import IOBase, StringIO, BytesIO
+import logging
 import os
 from glob import glob
 from typing import Union, TypeVar, Iterable, List, Set, Optional
+from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 
 T = TypeVar('T')
+
+_logger = logging.getLogger(__name__)
 
 
 def replace_patch_version(version: str):
@@ -37,6 +42,9 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
 
     if not isinstance(var, expected_type):
         raise TypeError("{} must be a {} (was {})".format(var_name, type_name, type(var)))
+
+    if isinstance(var, IOBase) and not hasattr(var, 'read'):
+        raise TypeError("{} is a stream, which does not implement read method".format(var_name))
 
 
 def get_type_name(_type: Union[type, tuple]):
@@ -57,6 +65,10 @@ def base64_encode(data: bytes) -> str:
     return base64.b64encode(data).decode('utf-8')
 
 
+def base64_decode(data: str) -> bytes:
+    return base64.b64decode(data.encode('utf-8'))
+
+
 def get_absolute_paths(file_globs: Iterable[str]) -> List[str]:
     expanded_paths: Set[str] = set()
     for file_glob in file_globs:
@@ -74,3 +86,43 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
         return common_root
     except ValueError:
         return None
+
+
+STREAM_SIZE_LIMIT_MB = 15
+
+
+def get_stream_content(stream: IOBase) -> (Optional[str], str):
+    if stream.seekable():
+        stream.seek(0)
+
+    content = stream.read(STREAM_SIZE_LIMIT_MB * 1024 * 1024 + 1)
+    default_name = "stream.txt" if isinstance(content, str) else "stream.bin"
+    if isinstance(content, str):
+        content = content.encode('utf-8')
+
+    if len(content) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
+        _logger.warning('Your stream is larger than %dMB. Neptune supports saving files smaller than %dMB.',
+                        STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
+        return None, default_name
+
+    while True:
+        chunk = stream.read(1024 * 1024)
+        if chunk is None:
+            continue
+        elif not chunk:
+            break
+        else:
+            if not isinstance(content, BytesIO):
+                content = BytesIO(content)
+                content.seek(0, 2)
+            if isinstance(chunk, str):
+                chunk = chunk.encode('utf-8')
+            if content.tell() + len(chunk) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
+                _logger.warning('Your stream is larger than %dMB. Neptune supports saving files smaller than %dMB.',
+                                STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
+                return None, default_name
+            content.write(chunk)
+    if isinstance(content, BytesIO):
+        content = content.getvalue()
+
+    return base64_encode(content), default_name

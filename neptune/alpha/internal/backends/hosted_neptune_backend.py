@@ -41,8 +41,8 @@ from neptune.alpha.internal.backends.operations_preprocessor import OperationsPr
 from neptune.alpha.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
     create_swagger_client, verify_client_version, update_session_proxies
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import Operation, UploadFile, UploadFileSet
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.operation import Operation, UploadFile, UploadFileSet, UploadFileContent
+from neptune.alpha.internal.utils import verify_type, base64_decode
 from neptune.alpha.internal.utils.paths import path_to_str
 from neptune.alpha.types.atoms import GitRef
 from neptune.alpha.version import version as neptune_client_version
@@ -171,8 +171,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         errors.extend(operations_preprocessor.get_errors())
 
         upload_operations, other_operations = [], []
+        file_operations = (UploadFile, UploadFileContent, UploadFileSet)
         for op in operations_preprocessor.get_operations():
-            (upload_operations if isinstance(op, (UploadFile, UploadFileSet)) else other_operations).append(op)
+            (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
 
         if other_operations:
             errors.extend(self._execute_operations(experiment_uuid, other_operations))
@@ -184,7 +185,18 @@ class HostedNeptuneBackend(NeptuneBackend):
                         swagger_client=self.leaderboard_client,
                         experiment_uuid=experiment_uuid,
                         attribute=path_to_str(op.path),
-                        file_path=op.file_path)
+                        source=op.file_path,
+                        target=op.file_name)
+                except NeptuneException as e:
+                    errors.append(e)
+            elif isinstance(op, UploadFileContent):
+                try:
+                    upload_file_attribute(
+                        swagger_client=self.leaderboard_client,
+                        experiment_uuid=experiment_uuid,
+                        attribute=path_to_str(op.path),
+                        source=base64_decode(op.file_content),
+                        target=op.file_name)
                 except NeptuneException as e:
                     errors.append(e)
             elif isinstance(op, UploadFileSet):

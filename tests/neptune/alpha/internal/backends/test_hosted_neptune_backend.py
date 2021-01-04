@@ -25,7 +25,8 @@ from neptune.alpha.exceptions import CannotResolveHostname, UnsupportedClientVer
     MetadataInconsistency
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import UploadFile, AssignString, LogFloats
+from neptune.alpha.internal.operation import UploadFile, AssignString, LogFloats, UploadFileContent
+from neptune.alpha.internal.utils import base64_encode
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
@@ -53,6 +54,8 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         swagger_client.api.executeOperations().response().result = [response_error]
         swagger_client.api.executeOperations.reset_mock()
         upload_mock.side_effect = FileUploadError("file1", "error2")
+        some_text = "Some streamed text"
+        some_binary = b"Some streamed binary"
 
         # when
         result = backend.execute_operations(
@@ -60,12 +63,24 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             operations=[
                 UploadFile(
                     path=['some', 'files', 'some_file'],
+                    file_name='path_to_file',
                     file_path='path_to_file'
+                ),
+                UploadFileContent(
+                    path=['some', 'files', 'some_text_stream'],
+                    file_name="stream.txt",
+                    file_content=base64_encode(some_text.encode('utf-8'))
+                ),
+                UploadFileContent(
+                    path=['some', 'files', 'some_binary_stream'],
+                    file_name="stream.bin",
+                    file_content=base64_encode(some_binary)
                 ),
                 LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
                 AssignString(["properties", "name"], "some text"),
                 UploadFile(
                     path=['some', 'other', 'file.txt'],
+                    file_name="path.txt",
                     file_path='other/file/path.txt'
                 )
             ]
@@ -97,15 +112,29 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/other/file.txt",
-                 file_path="other/file/path.txt"),
+                 source="other/file/path.txt",
+                 target="path.txt"),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_file",
-                 file_path="path_to_file")
+                 source="path_to_file",
+                 target="path_to_file"),
+            call(swagger_client=backend.leaderboard_client,
+                 experiment_uuid=exp_uuid,
+                 attribute="some/files/some_text_stream",
+                 source=some_text.encode('utf-8'),
+                 target="stream.txt"),
+            call(swagger_client=backend.leaderboard_client,
+                 experiment_uuid=exp_uuid,
+                 attribute="some/files/some_binary_stream",
+                 source=some_binary,
+                 target="stream.bin")
         ], any_order=True)
 
         self.assertEqual([
             MetadataInconsistency("error1"),
+            FileUploadError("file1", "error2"),
+            FileUploadError("file1", "error2"),
             FileUploadError("file1", "error2"),
             FileUploadError("file1", "error2")
         ], result)
@@ -123,14 +152,17 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             operations=[
                 UploadFile(
                     path=['some', 'path', '1', "var"],
+                    file_name="file",
                     file_path='/path/to/file'
                 ),
                 UploadFile(
                     path=['some', 'path', '2', "var"],
+                    file_name="with.dots.txt",
                     file_path='/some.file/with.dots.txt'
                 ),
                 UploadFile(
                     path=['some', 'path', '3', "var"],
+                    file_name="some_image.jpeg",
                     file_path='/path/to/some_image.jpeg'
                 )
             ]
@@ -140,15 +172,18 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/path/1/var",
-                 file_path="/path/to/file"),
+                 source="/path/to/file",
+                 target="file"),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/path/2/var",
-                 file_path="/some.file/with.dots.txt"),
+                 source="/some.file/with.dots.txt",
+                 target="with.dots.txt"),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/path/3/var",
-                 file_path="/path/to/some_image.jpeg")
+                 source="/path/to/some_image.jpeg",
+                 target="some_image.jpeg")
         ], any_order=True)
 
     @patch('neptune.alpha.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))

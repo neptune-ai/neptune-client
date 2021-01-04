@@ -17,7 +17,6 @@ import abc
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, TypeVar, Generic, Optional, Set
-
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
@@ -41,6 +40,7 @@ class Operation:
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         pass
 
+    # pylint: disable=unused-argument
     def to_dict(self) -> dict:
         return {
             "type": self.__class__.__name__,
@@ -114,6 +114,7 @@ class AssignDatetime(Operation):
 @dataclass
 class UploadFile(Operation):
 
+    file_name: str
     file_path: str
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -121,12 +122,33 @@ class UploadFile(Operation):
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
+        ret["file_name"] = self.file_name
         ret["file_path"] = self.file_path
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'UploadFile':
-        return UploadFile(data["path"], data["file_path"])
+        return UploadFile(data["path"], data["file_name"], data["file_path"])
+
+
+@dataclass
+class UploadFileContent(Operation):
+
+    file_name: str
+    file_content: str
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_upload_file_content(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["file_name"] = self.file_name
+        ret["file_content"] = self.file_content
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'UploadFileContent':
+        return UploadFileContent(data["path"], data["file_name"], data["file_content"])
 
 
 @dataclass

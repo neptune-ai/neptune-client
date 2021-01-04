@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import io
 import json
 import os
 import time
 import uuid
-from typing import List, Optional, Dict, Iterable, Callable, Set
+from io import BytesIO
+from typing import List, Optional, Dict, Iterable, Callable, Set, Union
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
@@ -36,24 +36,27 @@ from neptune.internal.storage.storage_utils import scan_unique_upload_entries, s
 def upload_file_attribute(swagger_client: SwaggerClient,
                           experiment_uuid: uuid.UUID,
                           attribute: str,
-                          file_path: str) -> None:
-    if not os.path.isfile(file_path):
-        raise FileUploadError(file_path, "Path not found or is a not a file.")
+                          source: Union[str, bytes],
+                          target: str
+                          ) -> None:
+    if isinstance(source, str) and not os.path.isfile(source):
+        raise FileUploadError(source, "Path not found or is a not a file.")
     try:
         url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadAttribute.operation.path_name
-        _upload_loop(file_chunk_stream=FileChunkStream(UploadEntry(file_path, file_path)),
+        upload_entry = UploadEntry(source if isinstance(source, str) else BytesIO(source), target)
+        _upload_loop(file_chunk_stream=FileChunkStream(upload_entry),
                      response_handler=_attribute_upload_response_handler,
                      http_client=swagger_client.swagger_spec.http_client,
                      url=url,
                      query_params={
                          "experimentId": str(experiment_uuid),
                          "attribute": attribute,
-                         "filename": os.path.basename(file_path)
+                         "filename": target
                      })
     except MetadataInconsistency:
         raise
     except Exception as e:
-        raise FileUploadError(file_path, getattr(e, 'message', repr(e)))
+        raise FileUploadError(target, getattr(e, 'message', repr(e)))
 
 
 def upload_file_set_attribute(swagger_client: SwaggerClient,
@@ -79,7 +82,7 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                       + swagger_client.api.uploadFileSetAttributeTar.operation.path_name
                 result = upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
                                          url=url,
-                                         data=io.BytesIO(data),
+                                         data=BytesIO(data),
                                          headers={"Content-Type": "application/octet-stream"},
                                          query_params={
                                              "experimentId": str(experiment_uuid),

@@ -17,7 +17,8 @@ import os
 import unittest
 # pylint: disable=protected-access
 from datetime import datetime, timedelta
-from tempfile import TemporaryDirectory
+from io import StringIO, BytesIO
+from tempfile import TemporaryDirectory, NamedTemporaryFile
 from unittest.mock import patch
 
 import PIL
@@ -86,26 +87,53 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
     @patch('neptune.alpha.internal.backends.neptune_backend_mock.copyfile')
-    def test_save_download_file(self, copyfile_mock):
+    def test_save_download_file(self, copy_mock):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/num/file'].save("path/to/other/file.txt")
         self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
 
         exp['some/num/file'].download("path/to/download/alternative_file.txt")
-        copyfile_mock.assert_called_with(
+        copy_mock.assert_called_with(
             os.path.abspath("path/to/other/file.txt"), os.path.abspath("path/to/download/alternative_file.txt"))
-        copyfile_mock.reset_mock()
+        copy_mock.reset_mock()
 
         exp['some/num/file'].download()
-        copyfile_mock.assert_called_with(
+        copy_mock.assert_called_with(
             os.path.abspath("path/to/other/file.txt"), os.path.abspath("file.txt"))
-        copyfile_mock.reset_mock()
+        copy_mock.reset_mock()
 
         exp['some/num/file'].download("path/to/other/file.txt")
-        copyfile_mock.assert_not_called()
+        copy_mock.assert_not_called()
 
         with self.assertRaises(TypeError):
             exp['some/num/file'].download(123)
+
+    def test_save_download_text_stream_to_given_destination(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        data = "Some test content of the stream"
+
+        exp['some/num/file'] = StringIO(data)
+        self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
+
+        with NamedTemporaryFile("w") as temp_file:
+            exp['some/num/file'].download(temp_file.name)
+            with open(temp_file.name, "rt") as file:
+                self.assertEqual(file.read(), data)
+
+    def test_save_download_binary_stream_to_default_destination(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        data = b"Some test content of the stream"
+
+        exp['some/num/file'] = BytesIO(data)
+        self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
+
+        exp['some/num/file'].download()
+        with TemporaryDirectory() as temp_dir:
+            with patch('neptune.alpha.internal.backends.neptune_backend_mock.os.path.abspath') as abspath_mock:
+                abspath_mock.side_effect = lambda path: os.path.normpath(temp_dir + path)
+                exp['some/num/file'].download()
+            with open(temp_dir + 'stream.bin', "rb") as file:
+                self.assertEqual(file.read(), data)
 
     @patch('neptune.alpha.internal.utils.glob',
            new=lambda path: [path.replace('*', 'file.txt')])
