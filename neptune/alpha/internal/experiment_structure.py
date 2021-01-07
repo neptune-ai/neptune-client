@@ -32,10 +32,10 @@ class ExperimentStructure(Generic[T]):
     def get(self, path: List[str]) -> Optional[T]:
         ref = self._structure
 
-        for part in path:
+        for index, part in enumerate(path):
             if not isinstance(ref, dict):
                 raise MetadataInconsistency("Cannot access path '{}': '{}' is already defined as an attribute, "
-                                            "not a namespace".format(path_to_str(path), part))
+                                            "not a namespace".format(path_to_str(path), path_to_str(path[:index])))
             if part not in ref:
                 return None
             ref = ref[part]
