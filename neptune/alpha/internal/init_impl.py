@@ -219,11 +219,14 @@ def init(
 
     _experiment.start()
 
-    click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
-        base_url=backend.get_display_address(),
-        workspace=exp.workspace,
-        project=exp.project_name,
-        exp_id=exp.short_id
-    ))
+    if connection_mode == OFFLINE:
+        click.echo("offline/{}.".format(exp.uuid))
+    else:
+        click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
+            base_url=backend.get_display_address(),
+            workspace=exp.workspace,
+            project=exp.project_name,
+            exp_id=exp.short_id
+        ))
 
     return _experiment
