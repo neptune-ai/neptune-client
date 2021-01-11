@@ -5,7 +5,7 @@ py3nvml
 oauthlib>=2.1.0
 pandas
 Pillow>=1.1.6
-PyJWT<2.0.0
+PyJWT>=2.0.0
 requests>=2.20.0
 requests-oauthlib>=1.0.0
 six>=1.12.0
