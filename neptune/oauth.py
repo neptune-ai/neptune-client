@@ -24,8 +24,14 @@ from requests_oauthlib import OAuth2Session
 
 from neptune.utils import with_api_exceptions_handler, update_session_proxies
 
-
-_decoding_options = {"verify_signature": False, 'verify_aud': False}
+_decoding_options = {
+    "verify_signature": False,
+    "verify_exp": False,
+    "verify_nbf": False,
+    "verify_iat": False,
+    "verify_aud": False,
+    "verify_iss": False
+}
 
 
 class NeptuneAuth(AuthBase):
