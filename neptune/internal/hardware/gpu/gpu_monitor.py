@@ -17,7 +17,7 @@
 import logging
 import time
 
-from py3nvml.py3nvml import NVMLError, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, \
+from neptune.vendor.pynvml import NVMLError, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, \
     nvmlDeviceGetUtilizationRates, nvmlInit
 
 _logger = logging.getLogger(__name__)
