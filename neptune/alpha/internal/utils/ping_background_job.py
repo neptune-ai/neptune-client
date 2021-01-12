@@ -15,7 +15,6 @@
 #
 
 import logging
-from datetime import datetime
 
 from typing import TYPE_CHECKING, Optional
 
@@ -60,4 +59,4 @@ class PingBackgroundJob(BackgroundJob):
             self._experiment = experiment
 
         def work(self) -> None:
-            self._experiment["sys/ping_time"] = datetime.now()
+            self._experiment.ping()
