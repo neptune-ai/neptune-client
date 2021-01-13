@@ -83,6 +83,9 @@ class Experiment(AbstractContextManager):
     def __delitem__(self, path) -> None:
         self.pop(path)
 
+    def ping(self):
+        self._backend.ping_experiment(self._uuid)
+
     def start(self):
         atexit.register(self._shutdown_hook)
         self._op_processor.start()

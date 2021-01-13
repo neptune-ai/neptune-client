@@ -46,6 +46,9 @@ class NeptuneBackend:
                           ) -> Experiment:
         pass
 
+    def ping_experiment(self, experiment_uuid: uuid.UUID):
+        pass
+
     @abc.abstractmethod
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
         pass
