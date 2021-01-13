@@ -340,7 +340,7 @@ def status(path: Path) -> None:
 @path_option
 @click.option('-e', '--experiment', 'experiment_names', multiple=True, metavar='<experiment-name>',
               help="experiment name (workspace/project/short-id or UUID for offline experiments) to synchronize.")
-@click.option('-p', '--project', 'project_name', multiple=True, metavar='project-name',
+@click.option('-p', '--project', 'project_name', multiple=False, metavar='project-name',
               help="project name (workspace/project) where offline experiments will be sent")
 def sync(path: Path, experiment_names: List[str], project_name: Optional[str]):
     """Synchronizes experiments with unsent data with the server.
