@@ -21,13 +21,13 @@ from neptune import constants
 from neptune import envs
 from neptune.exceptions import NeptuneMissingProjectQualifiedNameException, NeptuneUninitializedException, \
     InvalidNeptuneBackend
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.backends.offline_backend import OfflineBackend
+from neptune.internal.backends import backend_factory
 from neptune.projects import Project
 from neptune.sessions import Session
 from ._version import get_versions
 
-__version__ = "1.0.0" #get_versions()['version']
+__version__ = "1.0.0"  # get_versions()['version']
+
 del get_versions
 
 session = None
@@ -136,6 +136,8 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
     if project_qualified_name is None:
         project_qualified_name = os.getenv(envs.PROJECT_ENV_NAME)
+        if project_qualified_name is None:
+            raise NeptuneMissingProjectQualifiedNameException()
 
     # pylint: disable=global-statement
     with __lock:
@@ -143,20 +145,13 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
         if backend is None:
             backend_name = os.getenv(envs.BACKEND)
-            if backend_name == 'offline':
-                backend = OfflineBackend()
-
-            elif backend_name is None:
-                backend = HostedNeptuneBackend(api_token, proxies)
-
-            else:
-                raise InvalidNeptuneBackend(backend_name)
+            backend = backend_factory(
+                backend_name=backend_name,
+                api_token=api_token,
+                proxies=proxies,
+            )
 
         session = Session(backend=backend)
-
-        if project_qualified_name is None:
-            raise NeptuneMissingProjectQualifiedNameException()
-
         project = session.get_project(project_qualified_name)
 
         return project

@@ -953,12 +953,14 @@ class HostedNeptuneBackend(Backend):
             ssl_verify,
             proxies)
 
+    @staticmethod
+    def _get_client_config_args(api_token):
+        return dict(X_Neptune_Api_Token=api_token)
+
     @with_api_exceptions_handler
     def _create_client_config(self, api_token, backend_client):
-        config = backend_client.api.getClientConfig(X_Neptune_Api_Token=api_token).response().result
-        min_recommended = None
-        min_compatible = None
-        max_compatible = None
+        client_config_args = self._get_client_config_args(api_token)
+        config = backend_client.api.getClientConfig(**client_config_args).response().result
 
         if hasattr(config, "pyLibVersions"):
             min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
