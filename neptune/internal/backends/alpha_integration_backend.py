@@ -135,7 +135,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
-        experiment = self.leaderboard_swagger_client.api.getExperiment(experimentId=experiment_id).response().result
         return NonCallableMagicMock()
 
     def create_hardware_metric(self, experiment, metric):
