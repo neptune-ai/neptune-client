@@ -3,7 +3,6 @@
 [![Build Status](https://travis-ci.org/neptune-ai/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-client)
 
 # Overview
-
 Neptune is an experiment tracking hub that brings organization and collaboration to your data science team. 
 
 It works with any:
