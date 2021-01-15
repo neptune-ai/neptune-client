@@ -62,6 +62,9 @@ class GPUMonitor(object):
         except NVMLError as e:
             timestamp = time.time()
             if timestamp - GPUMonitor.nvml_error_time > GPUMonitor.nvml_error_period:
-                _logger.warning("NVMLError: %s - GPU usage metrics may not be reported.", e)
+                warning = "Info (NVML): %s. GPU usage metrics may not be reported. For more information, " \
+                          "see https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment" \
+                          "-data.html#hardware-consumption "
+                _logger.warning(warning, e)
                 GPUMonitor.nvml_error_time = timestamp
             return default
