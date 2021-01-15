@@ -94,16 +94,14 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         try:
             params = {
                 "projectIdentifier": str(project.internal_id),
-                "cliVersion": '1.0.0a0',  # TODO
+                "cliVersion": self.client_lib_version,
                 "gitInfo": git_info,
-                "customId": None,  # TODO
-                # "customId": name,
+                "customId": name,
             }
 
             kwargs = {
                 'experimentCreationParams': params,
-                # 'X-Neptune-CliVersion': self.client_lib_version
-                'X-Neptune-CliVersion': '1.0.0a0'
+                'X-Neptune-CliVersion': self.client_lib_version,
             }
             api_experiment = self.leaderboard_swagger_client.api.createExperiment(**kwargs).response().result
 
