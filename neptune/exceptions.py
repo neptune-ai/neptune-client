@@ -62,6 +62,13 @@ class NeptuneException(Exception):
     pass
 
 
+class AlphaProjectException(NeptuneException):
+    def __init__(self, project):
+        super(AlphaProjectException).__init__(
+            '{} is Alpha Neptune Project. Use neptune.alpha module from alpha version of neptune-client library'
+            .format(project))
+
+
 class NeptuneUninitializedException(NeptuneException):
     def __init__(self):
         message = """
