@@ -62,6 +62,14 @@ class NeptuneException(Exception):
     pass
 
 
+class AlphaProjectException(NeptuneException):
+    def __init__(self, project):
+        super(AlphaProjectException).__init__(
+            'You are trying to create an experiment in an alpha-enabled project ({}). '
+            'In order to work with this project you need to use the alpha version of the neptune-client - '
+            'https://docs-alpha.neptune.ai/instalation.'.format(project))
+
+
 class NeptuneUninitializedException(NeptuneException):
     def __init__(self):
         message = """
