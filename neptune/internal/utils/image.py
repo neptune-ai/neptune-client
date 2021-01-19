@@ -85,4 +85,4 @@ def _get_numpy_as_image(array):
         if shape[2] in (3, 4):
             return _get_pil_image_data(Image.fromarray(array.astype(numpy.uint8)))
     raise ValueError("Incorrect size of numpy.ndarray. Should be 2-dimensional or"
-                     "3-dimensional with 3rd dimension of size 1, 3 or 4.")
+                     " 3-dimensional with 3rd dimension of size 1, 3 or 4.")
