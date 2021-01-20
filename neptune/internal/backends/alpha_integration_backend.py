@@ -24,6 +24,7 @@ from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEnt
 from mock import NonCallableMagicMock
 
 from neptune.alpha.internal import operation as alpha_operation
+from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.utils import paths as alpha_path_utils
@@ -34,6 +35,7 @@ from neptune.api_exceptions import (
 )
 from neptune.exceptions import STYLES
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.utils.alpha_integration import MONITORING_ATTRIBUTE_SPACE
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import AlphaChannelWithLastValue
 from neptune.projects import Project
@@ -46,7 +48,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
     def __init__(self, api_token=None, proxies=None):
         super().__init__(api_token, proxies)
         self._alpha_backend = AlphaHostedNeptuneBackend(AlphaCredentials(api_token=api_token))
-        self._system_channels = list()
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
@@ -188,16 +189,41 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
     def get_system_channels(self, experiment):
-        return self._system_channels
+        params = {
+            'experimentId': experiment.internal_id,
+        }
+        try:
+            experiment = self.leaderboard_swagger_client.api.getExperimentAttributes(**params).response().result
+            return [
+                AlphaChannelWithLastValue(
+                    ch_id=attr.stringSeriesProperties.attributeName,
+                    ch_name=alpha_path_utils.parse_path(attr.stringSeriesProperties.attributeName)[-1],
+                    ch_type=attr.stringSeriesProperties.attributeType,
+                )
+                for attr in experiment.attributes
+                if (attr.type == AlphaAttributeType.STRING_SERIES.value
+                    and attr.name.startswith(MONITORING_ATTRIBUTE_SPACE))
+            ]
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
     def create_system_channel(self, experiment, name, channel_type):
-        new_channel = AlphaChannelWithLastValue(
-            ch_id=f'monitoring/{name}',
-            ch_name=name,
-            ch_type=channel_type,
+        dummy_log_string = alpha_operation.LogStrings(
+            path=alpha_path_utils.parse_path(f'{MONITORING_ATTRIBUTE_SPACE}{name}'),
+            values=[],
         )
-        self._system_channels.append(new_channel)
-        return new_channel
+        # pylint: disable=unused-variable
+        errors = self._alpha_backend.execute_operations(
+            experiment_uuid=uuid.UUID(experiment.internal_id),
+            operations=[dummy_log_string],
+        )
+        system_channels = self.get_system_channels(experiment)
+        for channel in system_channels:
+            if channel.name == name:
+                return channel
+        raise Exception()
 
     def upload_experiment_source(self, experiment, data, progress_indicator):
         # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
