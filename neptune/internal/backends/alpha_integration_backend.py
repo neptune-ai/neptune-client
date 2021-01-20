@@ -15,17 +15,27 @@
 #
 
 import logging
+import uuid
 
 import click
+import dateutil
 import six
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity
 from mock import NonCallableMagicMock
 
-from neptune.api_exceptions import ExperimentLimitReached, \
-    ExperimentValidationError, ProjectNotFound
+from neptune.alpha.internal import operation as alpha_operation
+from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
+from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
+from neptune.alpha.internal.utils import paths as alpha_path_utils
+from neptune.api_exceptions import (
+    ExperimentLimitReached,
+    ExperimentValidationError,
+    ProjectNotFound, ExperimentNotFound,
+)
 from neptune.exceptions import STYLES
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.utils.http import extract_response_field
+from neptune.model import AlphaChannelWithLastValue
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
@@ -33,6 +43,11 @@ _logger = logging.getLogger(__name__)
 
 
 class AlphaIntegrationBackend(HostedNeptuneBackend):
+    def __init__(self, api_token=None, proxies=None):
+        super().__init__(api_token, proxies)
+        self._alpha_backend = AlphaHostedNeptuneBackend(AlphaCredentials(api_token=api_token))
+        self._system_channels = list()
+
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
@@ -91,20 +106,34 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             "remotes": git_info.remote_urls
         } if git_info else None
 
+        params = {
+            "projectIdentifier": str(project.internal_id),
+            "cliVersion": self.client_lib_version,
+            "gitInfo": git_info,
+            "customId": name,
+        }
+
+        kwargs = {
+            'experimentCreationParams': params,
+            'X-Neptune-CliVersion': self.client_lib_version,
+        }
+        api_experiment = self.leaderboard_swagger_client.api.createExperiment(**kwargs).response().result
+
+        upload_src_op = alpha_operation.AssignString(
+            path=['source_code', 'entrypoint'],
+            value=entrypoint,
+        )
+        add_tags_op = alpha_operation.AddStrings(
+            path=['sys', 'tags'],
+            values=set(tags),
+        )
+
         try:
-            params = {
-                "projectIdentifier": str(project.internal_id),
-                "cliVersion": self.client_lib_version,
-                "gitInfo": git_info,
-                "customId": name,
-            }
-
-            kwargs = {
-                'experimentCreationParams': params,
-                'X-Neptune-CliVersion': self.client_lib_version,
-            }
-            api_experiment = self.leaderboard_swagger_client.api.createExperiment(**kwargs).response().result
-
+            # TODO: handle alpha exceptions
+            self._alpha_backend.execute_operations(
+                experiment_uuid=uuid.UUID(api_experiment.id),
+                operations=[upload_src_op, add_tags_op]
+            )
             return self._convert_to_experiment(api_experiment, project)
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
@@ -122,23 +151,73 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             else:
                 raise
 
+    @with_api_exceptions_handler
+    def send_channels_values(self, experiment, channels_with_values):
+        ops = []
+        for channel_with_values in channels_with_values:
+            # TODO: handle other data types
+            # points = [Point(
+            #     timestampMillis=int(value.ts * 1000.0),
+            #     x=value.x,
+            #     y=Y(numericValue=value.y.get('numeric_value'),
+            #         textValue=value.y.get('text_value'),
+            #         inputImageValue=value.y.get('image_value'))
+            # ) for value in channel_with_values.channel_values]
+            ch_values = [
+                alpha_operation.LogStrings.ValueType(
+                    value=value.y.get('text_value'),
+                    step=None,  # TODO: what is step?
+                    ts=int(value.ts),
+                )
+                for value in channel_with_values.channel_values
+            ]
+            ops.append(alpha_operation.LogStrings(
+                path=alpha_path_utils.parse_path(channel_with_values.channel_id),
+                values=ch_values,
+            ))
+
+        try:
+            # TODO: handle alpha exceptions
+            errors = self._alpha_backend.execute_operations(
+                experiment_uuid=uuid.UUID(experiment.internal_id),
+                operations=ops
+            )
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+
     def get_system_channels(self, experiment):
-        return list()
+        return self._system_channels
 
     def create_system_channel(self, experiment, name, channel_type):
-        return NonCallableMagicMock()
+        new_channel = AlphaChannelWithLastValue(
+            ch_id=f'monitoring/{name}',
+            ch_name=name,
+            ch_type=channel_type,
+        )
+        self._system_channels.append(new_channel)
+        return new_channel
 
     def upload_experiment_source(self, experiment, data, progress_indicator):
+        # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
         pass
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
-        return NonCallableMagicMock()
+        experiment = super().get_experiment(experiment_id)
+        fake_experiment = NonCallableMagicMock()
+        # `timeOfCreation` is required by `TimeOffsetGenerator`
+        fake_experiment.timeOfCreation = dateutil.parser.parse(experiment.creationTime)
+        return fake_experiment
 
     def create_hardware_metric(self, experiment, metric):
         pass
 
     def mark_succeeded(self, experiment):
+        pass
+
+    def ping_experiment(self, experiment):
         pass
 
     @staticmethod

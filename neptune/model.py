@@ -52,6 +52,47 @@ class ChannelWithLastValue(object):
         self.channel_with_value_dto.y = y
 
 
+class AlphaChannelWithLastValue:
+    def __init__(self, ch_id, ch_name, ch_type):
+        self._ch_id = ch_id
+        self._ch_name = ch_name
+        self._ch_type = ch_type
+        self._x = None
+        self._y = None
+
+    @property
+    def id(self):
+        return self._ch_id
+
+    @property
+    def name(self):
+        return self._ch_name
+
+    @property
+    def type(self):
+        return self._ch_type
+
+    @property
+    def x(self):
+        return self._x
+
+    @x.setter
+    def x(self, x):
+        raise NotImplementedError()
+
+    @property
+    def trimmed_y(self):
+        raise NotImplementedError()
+
+    @property
+    def y(self):
+        return self._y
+
+    @y.setter
+    def y(self, y):
+        raise NotImplementedError()
+
+
 class LeaderboardEntry(object):
     def __init__(self, project_leaderboard_entry_dto):
         self.project_leaderboard_entry_dto = project_leaderboard_entry_dto
