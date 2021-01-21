@@ -16,6 +16,7 @@
 
 import logging
 import uuid
+from typing import List
 
 import click
 import dateutil
@@ -35,7 +36,7 @@ from neptune.api_exceptions import (
 )
 from neptune.exceptions import STYLES
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.utils.alpha_integration import MONITORING_ATTRIBUTE_SPACE
+from neptune.internal.utils.alpha_integration import MONITORING_ATTRIBUTE_SPACE, PARAMETERS_ATTRIBUTE_SPACE
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import AlphaChannelWithLastValue
 from neptune.projects import Project
@@ -65,6 +66,31 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                 name=project.name)
         except HTTPNotFound:
             raise ProjectNotFound(project_qualified_name)
+
+    def _create_experiment_operations(self, entrypoint, params, tags) -> List[alpha_operation.Operation]:
+        """Returns operations required to initialize newly created experiment"""
+        init_operations = list()
+
+        # Assign source entrypoint
+        init_operations.append(alpha_operation.AssignString(
+            path=['source_code', 'entrypoint'],
+            value=entrypoint,
+        ))
+        # Assign experiment parameters
+        for p_name, p_val in params.items():
+            parameter_type, string_value = self._get_parameter_with_type(p_val)
+            operation_cls = alpha_operation.AssignFloat if parameter_type == 'double' else alpha_operation.AssignString
+            init_operations.append(operation_cls(
+                path=alpha_path_utils.parse_path(f'{PARAMETERS_ATTRIBUTE_SPACE}{p_name}'),
+                value=string_value,
+            ))
+        # Assign tags
+        init_operations.append(alpha_operation.AddStrings(
+            path=['sys', 'tags'],
+            values=set(tags),
+        ))
+
+        return init_operations
 
     @with_api_exceptions_handler
     def create_experiment(self,
@@ -107,7 +133,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             "remotes": git_info.remote_urls
         } if git_info else None
 
-        params = {
+        api_params = {
             "projectIdentifier": str(project.internal_id),
             "cliVersion": self.client_lib_version,
             "gitInfo": git_info,
@@ -115,25 +141,16 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         }
 
         kwargs = {
-            'experimentCreationParams': params,
+            'experimentCreationParams': api_params,
             'X-Neptune-CliVersion': self.client_lib_version,
         }
         api_experiment = self.leaderboard_swagger_client.api.createExperiment(**kwargs).response().result
-
-        upload_src_op = alpha_operation.AssignString(
-            path=['source_code', 'entrypoint'],
-            value=entrypoint,
-        )
-        add_tags_op = alpha_operation.AddStrings(
-            path=['sys', 'tags'],
-            values=set(tags),
-        )
 
         try:
             # TODO: handle alpha exceptions
             self._alpha_backend.execute_operations(
                 experiment_uuid=uuid.UUID(api_experiment.id),
-                operations=[upload_src_op, add_tags_op]
+                operations=self._create_experiment_operations(entrypoint, params, tags),
             )
             return self._convert_to_experiment(api_experiment, project)
         except HTTPNotFound:

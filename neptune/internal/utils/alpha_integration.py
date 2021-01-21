@@ -15,3 +15,4 @@
 #
 
 MONITORING_ATTRIBUTE_SPACE = 'monitoring/'
+PARAMETERS_ATTRIBUTE_SPACE = 'parameters/'
