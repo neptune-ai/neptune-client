@@ -134,10 +134,9 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             neptune.init(backend=neptune.OfflineBackend())
     """
 
-    if project_qualified_name is None:
-        project_qualified_name = os.getenv(envs.PROJECT_ENV_NAME)
-        if project_qualified_name is None:
-            raise NeptuneMissingProjectQualifiedNameException()
+    project_qualified_name = project_qualified_name or os.getenv(envs.PROJECT_ENV_NAME)
+    if not project_qualified_name:
+        raise NeptuneMissingProjectQualifiedNameException()
 
     # pylint: disable=global-statement
     with __lock:
