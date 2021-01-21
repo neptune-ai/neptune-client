@@ -24,17 +24,21 @@ import six
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity
 from mock import NonCallableMagicMock
 
+from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.utils import paths as alpha_path_utils
 from neptune.api_exceptions import (
+    ChannelNotFound,
     ExperimentLimitReached,
+    ExperimentNotFound,
     ExperimentValidationError,
-    ProjectNotFound, ExperimentNotFound,
+    ProjectNotFound,
 )
-from neptune.exceptions import STYLES
+from neptune.exceptions import STYLES, NeptuneException
+from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.utils.alpha_integration import MONITORING_ATTRIBUTE_SPACE, PARAMETERS_ATTRIBUTE_SPACE
 from neptune.internal.utils.http import extract_response_field
@@ -67,7 +71,22 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         except HTTPNotFound:
             raise ProjectNotFound(project_qualified_name)
 
-    def _create_experiment_operations(self, entrypoint, params, tags) -> List[alpha_operation.Operation]:
+    def _execute_alpha_operation(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
+        """Execute operations using alpha backend"""
+        try:
+            # TODO: handle soft errors
+            errors = self._alpha_backend.execute_operations(
+                experiment_uuid=uuid.UUID(experiment.internal_id),
+                operations=operations
+            )
+        except alpha_exceptions.ExperimentUUIDNotFound as e:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id) from e
+        except alpha_exceptions.InternalClientError as e:
+            raise NeptuneException(e)
+
+    def _get_init_experiment_operations(self, entrypoint, params, tags) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
 
@@ -144,15 +163,9 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             'experimentCreationParams': api_params,
             'X-Neptune-CliVersion': self.client_lib_version,
         }
-        api_experiment = self.leaderboard_swagger_client.api.createExperiment(**kwargs).response().result
 
         try:
-            # TODO: handle alpha exceptions
-            self._alpha_backend.execute_operations(
-                experiment_uuid=uuid.UUID(api_experiment.id),
-                operations=self._create_experiment_operations(entrypoint, params, tags),
-            )
-            return self._convert_to_experiment(api_experiment, project)
+            api_experiment = self.leaderboard_swagger_client.api.createExperiment(**kwargs).response().result
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
         except HTTPBadRequest as e:
@@ -169,9 +182,17 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             else:
                 raise
 
+        experiment = self._convert_to_experiment(api_experiment, project)
+        # Initialize new experiment
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=self._get_init_experiment_operations(entrypoint, params, tags),
+        )
+        return experiment
+
     @with_api_exceptions_handler
     def send_channels_values(self, experiment, channels_with_values):
-        ops = []
+        send_operations = []
         for channel_with_values in channels_with_values:
             # TODO: handle other data types
             # points = [Point(
@@ -184,27 +205,19 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             ch_values = [
                 alpha_operation.LogStrings.ValueType(
                     value=value.y.get('text_value'),
-                    step=None,  # TODO: what is step?
+                    step=None,
                     ts=int(value.ts),
                 )
                 for value in channel_with_values.channel_values
             ]
-            ops.append(alpha_operation.LogStrings(
+            send_operations.append(alpha_operation.LogStrings(
                 path=alpha_path_utils.parse_path(channel_with_values.channel_id),
                 values=ch_values,
             ))
 
-        try:
-            # TODO: handle alpha exceptions
-            errors = self._alpha_backend.execute_operations(
-                experiment_uuid=uuid.UUID(experiment.internal_id),
-                operations=ops
-            )
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+        self._execute_alpha_operation(experiment, send_operations)
 
+    @with_api_exceptions_handler
     def get_system_channels(self, experiment):
         params = {
             'experimentId': experiment.internal_id,
@@ -226,21 +239,22 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
+    @with_api_exceptions_handler
     def create_system_channel(self, experiment, name, channel_type):
+        channel_id = f'{MONITORING_ATTRIBUTE_SPACE}{name}'
         dummy_log_string = alpha_operation.LogStrings(
-            path=alpha_path_utils.parse_path(f'{MONITORING_ATTRIBUTE_SPACE}{name}'),
+            path=alpha_path_utils.parse_path(channel_id),
             values=[],
-        )
-        # pylint: disable=unused-variable
-        errors = self._alpha_backend.execute_operations(
-            experiment_uuid=uuid.UUID(experiment.internal_id),
+        )  # this operation is used to create empty attribute
+        self._execute_alpha_operation(
+            experiment=experiment,
             operations=[dummy_log_string],
         )
         system_channels = self.get_system_channels(experiment)
         for channel in system_channels:
             if channel.name == name:
                 return channel
-        raise Exception()
+        raise ChannelNotFound(channel_id=channel_id)
 
     def upload_experiment_source(self, experiment, data, progress_indicator):
         # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
