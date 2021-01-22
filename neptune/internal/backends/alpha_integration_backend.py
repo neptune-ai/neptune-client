@@ -31,6 +31,7 @@ from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptune
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.utils import paths as alpha_path_utils
 from neptune.api_exceptions import (
+    AlphaOperationErrors,
     ChannelNotFound,
     ExperimentLimitReached,
     ExperimentNotFound,
@@ -74,17 +75,18 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
     def _execute_alpha_operation(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
         """Execute operations using alpha backend"""
         try:
-            # TODO: handle soft errors
             errors = self._alpha_backend.execute_operations(
                 experiment_uuid=uuid.UUID(experiment.internal_id),
                 operations=operations
             )
+            if errors:
+                raise AlphaOperationErrors(errors)
         except alpha_exceptions.ExperimentUUIDNotFound as e:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id) from e
         except alpha_exceptions.InternalClientError as e:
-            raise NeptuneException(e)
+            raise NeptuneException(e) from e
 
     def _get_init_experiment_operations(self, entrypoint, params, tags) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
@@ -224,20 +226,20 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         }
         try:
             experiment = self.leaderboard_swagger_client.api.getExperimentAttributes(**params).response().result
-            return [
-                AlphaChannelWithLastValue(
-                    ch_id=attr.stringSeriesProperties.attributeName,
-                    ch_name=alpha_path_utils.parse_path(attr.stringSeriesProperties.attributeName)[-1],
-                    ch_type=attr.stringSeriesProperties.attributeType,
-                )
-                for attr in experiment.attributes
-                if (attr.type == AlphaAttributeType.STRING_SERIES.value
-                    and attr.name.startswith(MONITORING_ATTRIBUTE_SPACE))
-            ]
         except HTTPNotFound:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+        return [
+            AlphaChannelWithLastValue(
+                ch_id=attr.stringSeriesProperties.attributeName,
+                ch_name=alpha_path_utils.parse_path(attr.stringSeriesProperties.attributeName)[-1],
+                ch_type=attr.stringSeriesProperties.attributeType,
+            )
+            for attr in experiment.attributes
+            if (attr.type == AlphaAttributeType.STRING_SERIES.value
+                and attr.name.startswith(MONITORING_ATTRIBUTE_SPACE))
+        ]
 
     @with_api_exceptions_handler
     def create_system_channel(self, experiment, name, channel_type):

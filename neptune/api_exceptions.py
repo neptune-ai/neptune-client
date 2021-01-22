@@ -136,3 +136,15 @@ class ChannelsValuesSendBatchError(NeptuneApiException):
                 experiment_short_id,
                 self._format_error(batch_errors[0]) if batch_errors else "No errors",
                 len(batch_errors)))
+
+
+class AlphaOperationErrors(NeptuneApiException):
+    """Handles minor errors returned (not raised) from `HostedNeptuneBackend.execute_operations`"""
+    def __init__(self, errors):
+        self._errors = errors
+
+    def __str__(self):
+        lines = [f'Caused by:']
+        for error in self._errors:
+            lines.append(f'\t* {error}')
+        return '\n'.join(lines)
