@@ -173,19 +173,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             api_experiment = self.leaderboard_swagger_client.api.createExperiment(**kwargs).response().result
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
-        except HTTPBadRequest as e:
-            error_type = extract_response_field(e.response, 'type')
-            if error_type == 'DUPLICATE_PARAMETER':
-                raise ExperimentValidationError('Parameter list contains duplicates.')
-            elif error_type == 'INVALID_TAG':
-                raise ExperimentValidationError(extract_response_field(e.response, 'message'))
-            else:
-                raise
-        except HTTPUnprocessableEntity as e:
-            if extract_response_field(e.response, 'type') == 'LIMIT_OF_EXPERIMENTS_IN_PROJECT_REACHED':
-                raise ExperimentLimitReached()
-            else:
-                raise
 
         experiment = self._convert_to_experiment(api_experiment, project)
         # Initialize new experiment
