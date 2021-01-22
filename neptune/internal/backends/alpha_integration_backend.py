@@ -20,7 +20,7 @@ from typing import List
 
 import click
 import six
-from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity
+from bravado.exception import HTTPNotFound
 from mock import NonCallableMagicMock
 
 from neptune.alpha import exceptions as alpha_exceptions
@@ -32,9 +32,7 @@ from neptune.alpha.internal.utils import paths as alpha_path_utils
 from neptune.api_exceptions import (
     AlphaOperationErrors,
     ChannelNotFound,
-    ExperimentLimitReached,
     ExperimentNotFound,
-    ExperimentValidationError,
     ProjectNotFound,
 )
 from neptune.exceptions import STYLES, NeptuneException
@@ -44,8 +42,8 @@ from neptune.internal.utils.alpha_integration import (
     MONITORING_ATTRIBUTE_SPACE,
     PARAMETERS_ATTRIBUTE_SPACE,
     SOURCE_CODE_ATTRIBUTE_SPACE,
+    SYSTEM_ATTRIBUTE_SPACE,
 )
-from neptune.internal.utils.http import extract_response_field
 from neptune.model import AlphaChannelWithLastValue
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
@@ -91,10 +89,15 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         except alpha_exceptions.InternalClientError as e:
             raise NeptuneException(e) from e
 
-    def _get_init_experiment_operations(self, entrypoint, params, tags) -> List[alpha_operation.Operation]:
+    def _get_init_experiment_operations(self, name, entrypoint, params, tags) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
 
+        # Assign experiment name
+        init_operations.append(alpha_operation.AssignString(
+            path=alpha_path_utils.parse_path(f'{SYSTEM_ATTRIBUTE_SPACE}name'),
+            value=name,
+        ))
         # Assign source entrypoint
         init_operations.append(alpha_operation.AssignString(
             path=alpha_path_utils.parse_path(f'{SOURCE_CODE_ATTRIBUTE_SPACE}entrypoint'),
@@ -161,7 +164,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             "projectIdentifier": str(project.internal_id),
             "cliVersion": self.client_lib_version,
             "gitInfo": git_info,
-            "customId": name,
+            "customId": None,
         }
 
         kwargs = {
@@ -178,7 +181,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         # Initialize new experiment
         self._execute_alpha_operation(
             experiment=experiment,
-            operations=self._get_init_experiment_operations(entrypoint, params, tags),
+            operations=self._get_init_experiment_operations(name, entrypoint, params, tags),
         )
         return experiment
 
