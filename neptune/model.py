@@ -13,9 +13,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import abc
 
 
-class ChannelWithLastValue(object):
+class AbstractChannelWithLastValue(abc.ABC):
+    @property
+    @abc.abstractmethod
+    def id(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def name(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def type(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def x(self):
+        pass
+
+    @x.setter
+    @abc.abstractmethod
+    def x(self, x):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def trimmed_y(self):
+        pass
+
+    @property
+    @abc.abstractmethod
+    def y(self):
+        pass
+
+    @y.setter
+    @abc.abstractmethod
+    def y(self, y):
+        pass
+
+
+class ChannelWithLastValue(AbstractChannelWithLastValue):
     def __init__(self, channel_with_value_dto):
         self.channel_with_value_dto = channel_with_value_dto
 
@@ -52,7 +95,7 @@ class ChannelWithLastValue(object):
         self.channel_with_value_dto.y = y
 
 
-class AlphaChannelWithLastValue:
+class AlphaChannelWithLastValue(AbstractChannelWithLastValue):
     def __init__(self, ch_id, ch_name, ch_type):
         self._ch_id = ch_id
         self._ch_name = ch_name
@@ -74,7 +117,7 @@ class AlphaChannelWithLastValue:
 
     @property
     def x(self):
-        return self._x
+        raise NotImplementedError()
 
     @x.setter
     def x(self, x):
@@ -86,7 +129,7 @@ class AlphaChannelWithLastValue:
 
     @property
     def y(self):
-        return self._y
+        raise NotImplementedError()
 
     @y.setter
     def y(self, y):

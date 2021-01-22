@@ -141,6 +141,7 @@ class ChannelsValuesSendBatchError(NeptuneApiException):
 class AlphaOperationErrors(NeptuneApiException):
     """Handles minor errors returned (not raised) from `HostedNeptuneBackend.execute_operations`"""
     def __init__(self, errors):
+        super().__init__()
         self._errors = errors
 
     def __str__(self):
