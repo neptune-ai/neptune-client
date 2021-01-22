@@ -19,7 +19,6 @@ import uuid
 from typing import List
 
 import click
-import dateutil
 import six
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity
 from mock import NonCallableMagicMock
@@ -41,7 +40,11 @@ from neptune.api_exceptions import (
 from neptune.exceptions import STYLES, NeptuneException
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.utils.alpha_integration import MONITORING_ATTRIBUTE_SPACE, PARAMETERS_ATTRIBUTE_SPACE
+from neptune.internal.utils.alpha_integration import (
+    MONITORING_ATTRIBUTE_SPACE,
+    PARAMETERS_ATTRIBUTE_SPACE,
+    SOURCE_CODE_ATTRIBUTE_SPACE,
+)
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import AlphaChannelWithLastValue
 from neptune.projects import Project
@@ -94,7 +97,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
         # Assign source entrypoint
         init_operations.append(alpha_operation.AssignString(
-            path=['source_code', 'entrypoint'],
+            path=alpha_path_utils.parse_path(f'{SOURCE_CODE_ATTRIBUTE_SPACE}entrypoint'),
             value=entrypoint,
         ))
         # Assign experiment parameters
@@ -208,7 +211,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                 alpha_operation.LogStrings.ValueType(
                     value=value.y.get('text_value'),
                     step=None,
-                    ts=int(value.ts),
+                    ts=value.ts,
                 )
                 for value in channel_with_values.channel_values
             ]
@@ -264,10 +267,10 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
-        experiment = super().get_experiment(experiment_id)
+        experiment = self.leaderboard_swagger_client.api.getExperiment(experimentId=experiment_id).response().result
         fake_experiment = NonCallableMagicMock()
         # `timeOfCreation` is required by `TimeOffsetGenerator`
-        fake_experiment.timeOfCreation = dateutil.parser.parse(experiment.creationTime)
+        fake_experiment.timeOfCreation = experiment.creationTime
         return fake_experiment
 
     def create_hardware_metric(self, experiment, metric):

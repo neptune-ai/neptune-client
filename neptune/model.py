@@ -96,7 +96,7 @@ class ChannelWithLastValue(AbstractChannelWithLastValue):
 
 
 class AlphaChannelWithLastValue(AbstractChannelWithLastValue):
-    def __init__(self, ch_id, ch_name, ch_type):
+    def __init__(self, ch_id: str, ch_name: str, ch_type: str):
         self._ch_id = ch_id
         self._ch_name = ch_name
         self._ch_type = ch_type
