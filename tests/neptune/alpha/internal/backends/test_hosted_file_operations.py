@@ -190,7 +190,6 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         self.assertEqual(filename, "sample.file")
 
-    @unittest.skip(reason="For some reason doesn't work on personal Ubuntu")
     @patch('neptune.alpha.internal.backends.hosted_file_operations._download_raw_data')
     def test_download_file_attribute(self, download_raw):
         # given
@@ -213,7 +212,6 @@ class TestHostedFileOperations(unittest.TestCase):
                 "attribute": "some/attribute"
             })
 
-    @unittest.skip(reason="For some reason doesn't work on personal Ubuntu")
     @patch('neptune.alpha.internal.backends.hosted_file_operations._download_raw_data')
     @patch('neptune.alpha.internal.backends.hosted_file_operations._get_download_url', new=lambda _, _id: "some_url")
     def test_download_zip(self, download_raw):
