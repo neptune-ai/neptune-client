@@ -162,6 +162,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
 
+    @with_api_exceptions_handler
+    def ping_experiment(self, experiment_uuid: uuid.UUID):
+        try:
+            self.leaderboard_client.api.ping(experimentId=str(experiment_uuid)).response().result
+        except HTTPNotFound:
+            raise ExperimentUUIDNotFound(experiment_uuid)
+
     # TODO: Return errors to OperationProcessor
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
         errors = []
