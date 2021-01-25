@@ -25,7 +25,6 @@ from mock import patch, Mock
 
 from neptune.alpha import init, ANONYMOUS, get_project
 from neptune.alpha.attributes.atoms import String
-from neptune.alpha.attributes.constants import SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException
 from neptune.alpha.internal.backends.api_model import Experiment, Attribute, AttributeType, LeaderboardEntry, \
@@ -96,38 +95,38 @@ class TestClient(unittest.TestCase):
     @patch('neptune.alpha.internal.utils.os.getcwd', new=lambda: "/home/user/main_dir")
     def test_entrypoint(self):
         exp = init(connection_mode='debug')
-        self.assertEqual(exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get(), "main.py")
+        self.assertEqual(exp["source_code/entrypoint"].get(), "main.py")
 
         exp = init(connection_mode='debug', source_files=[])
-        self.assertEqual(exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get(), "main.py")
+        self.assertEqual(exp["source_code/entrypoint"].get(), "main.py")
 
         exp = init(connection_mode='debug', source_files=["../*"])
-        self.assertEqual(exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get(), "main_dir/main.py")
+        self.assertEqual(exp["source_code/entrypoint"].get(), "main_dir/main.py")
 
         exp = init(connection_mode='debug', source_files=["internal/*"])
-        self.assertEqual(exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get(), "main.py")
+        self.assertEqual(exp["source_code/entrypoint"].get(), "main.py")
 
         exp = init(connection_mode='debug', source_files=["../other_dir/*"])
-        self.assertEqual(exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get(), "../main_dir/main.py")
+        self.assertEqual(exp["source_code/entrypoint"].get(), "../main_dir/main.py")
 
     @patch("neptune.alpha.internal.init_impl.sys.argv", ["main.py"])
     @patch("neptune.alpha.internal.init_impl.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
         exp = init(connection_mode='debug')
         with self.assertRaises(AttributeError):
-            exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get()
+            exp["source_code/entrypoint"].get()
 
         exp = init(connection_mode='debug', source_files=[])
         with self.assertRaises(AttributeError):
-            exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get()
+            exp["source_code/entrypoint"].get()
 
         exp = init(connection_mode='debug', source_files=["../*"])
         with self.assertRaises(AttributeError):
-            exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get()
+            exp["source_code/entrypoint"].get()
 
         exp = init(connection_mode='debug', source_files=["internal/*"])
         with self.assertRaises(AttributeError):
-            exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get()
+            exp["source_code/entrypoint"].get()
 
     @patch("neptune.alpha.internal.init_impl.sys.argv", ["main.py"])
     @patch("neptune.alpha.internal.init_impl.os.path.isfile", new=lambda file: "." in file)
@@ -137,10 +136,10 @@ class TestClient(unittest.TestCase):
     @patch("neptune.alpha.internal.init_impl.get_common_root", new=lambda _: None)
     def test_entrypoint_without_common_root(self):
         exp = init(connection_mode='debug', source_files=["../*"])
-        self.assertEqual(exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get(), "/home/user/main_dir/main.py")
+        self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")
 
         exp = init(connection_mode='debug', source_files=["internal/*"])
-        self.assertEqual(exp[SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH].get(), "/home/user/main_dir/main.py")
+        self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")
 
     @patch("neptune.alpha.internal.get_project_impl.HostedNeptuneBackend")
     def test_get_table_as_pandas(self, backend_init_mock):
