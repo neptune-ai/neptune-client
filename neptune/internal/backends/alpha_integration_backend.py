@@ -226,7 +226,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         return [
             AlphaChannelWithLastValue(
                 ch_id=attr.stringSeriesProperties.attributeName,
-                ch_name=alpha_path_utils.parse_path(attr.stringSeriesProperties.attributeName)[-1],
+                # ch_name is ch_id without first namespace
+                ch_name=attr.stringSeriesProperties.attributeName.split('/', 1)[-1],
                 ch_type=attr.stringSeriesProperties.attributeType,
             )
             for attr in experiment.attributes
