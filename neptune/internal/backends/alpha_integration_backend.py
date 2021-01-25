@@ -24,6 +24,7 @@ from bravado.exception import HTTPNotFound
 from mock import NonCallableMagicMock
 
 from neptune.alpha import exceptions as alpha_exceptions
+from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
@@ -38,12 +39,6 @@ from neptune.api_exceptions import (
 from neptune.exceptions import STYLES, NeptuneException
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.utils.alpha_integration import (
-    MONITORING_ATTRIBUTE_SPACE,
-    PARAMETERS_ATTRIBUTE_SPACE,
-    SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH,
-    SYSTEM_NAME_ATTRIBUTE_PATH,
-)
 from neptune.model import AlphaChannelWithLastValue
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
@@ -95,12 +90,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
         # Assign experiment name
         init_operations.append(alpha_operation.AssignString(
-            path=alpha_path_utils.parse_path(SYSTEM_NAME_ATTRIBUTE_PATH),
+            path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_NAME_ATTRIBUTE_PATH),
             value=name,
         ))
         # Assign source entrypoint
         init_operations.append(alpha_operation.AssignString(
-            path=alpha_path_utils.parse_path(SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
+            path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
             value=entrypoint,
         ))
         # Assign experiment parameters
@@ -108,12 +103,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             parameter_type, string_value = self._get_parameter_with_type(p_val)
             operation_cls = alpha_operation.AssignFloat if parameter_type == 'double' else alpha_operation.AssignString
             init_operations.append(operation_cls(
-                path=alpha_path_utils.parse_path(f'{PARAMETERS_ATTRIBUTE_SPACE}{p_name}'),
+                path=alpha_path_utils.parse_path(f'{alpha_consts.PARAMETERS_ATTRIBUTE_SPACE}{p_name}'),
                 value=string_value,
             ))
         # Assign tags
         init_operations.append(alpha_operation.AddStrings(
-            path=['sys', 'tags'],
+            path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
             values=set(tags),
         ))
 
@@ -232,12 +227,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             )
             for attr in experiment.attributes
             if (attr.type == AlphaAttributeType.STRING_SERIES.value
-                and attr.name.startswith(MONITORING_ATTRIBUTE_SPACE))
+                and attr.name.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE))
         ]
 
     @with_api_exceptions_handler
     def create_system_channel(self, experiment, name, channel_type):
-        channel_id = f'{MONITORING_ATTRIBUTE_SPACE}{name}'
+        channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
         dummy_log_string = alpha_operation.LogStrings(
             path=alpha_path_utils.parse_path(channel_id),
             values=[],

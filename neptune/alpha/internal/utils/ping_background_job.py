@@ -19,6 +19,7 @@ from datetime import datetime
 
 from typing import TYPE_CHECKING, Optional
 
+from neptune.alpha.attributes.constants import SYSTEM_PING_TIME_ATTRIBUTE_PATH
 from neptune.alpha.internal.background_job import BackgroundJob
 from neptune.alpha.internal.threading.daemon import Daemon
 
@@ -60,4 +61,4 @@ class PingBackgroundJob(BackgroundJob):
             self._experiment = experiment
 
         def work(self) -> None:
-            self._experiment["sys/ping_time"] = datetime.now()
+            self._experiment[SYSTEM_PING_TIME_ATTRIBUTE_PATH] = datetime.now()
