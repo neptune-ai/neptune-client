@@ -41,8 +41,8 @@ from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBacken
 from neptune.internal.utils.alpha_integration import (
     MONITORING_ATTRIBUTE_SPACE,
     PARAMETERS_ATTRIBUTE_SPACE,
-    SOURCE_CODE_ATTRIBUTE_SPACE,
-    SYSTEM_ATTRIBUTE_SPACE,
+    SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH,
+    SYSTEM_NAME_ATTRIBUTE_PATH,
 )
 from neptune.model import AlphaChannelWithLastValue
 from neptune.projects import Project
@@ -95,12 +95,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
         # Assign experiment name
         init_operations.append(alpha_operation.AssignString(
-            path=alpha_path_utils.parse_path(f'{SYSTEM_ATTRIBUTE_SPACE}name'),
+            path=alpha_path_utils.parse_path(SYSTEM_NAME_ATTRIBUTE_PATH),
             value=name,
         ))
         # Assign source entrypoint
         init_operations.append(alpha_operation.AssignString(
-            path=alpha_path_utils.parse_path(f'{SOURCE_CODE_ATTRIBUTE_SPACE}entrypoint'),
+            path=alpha_path_utils.parse_path(SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
             value=entrypoint,
         ))
         # Assign experiment parameters
