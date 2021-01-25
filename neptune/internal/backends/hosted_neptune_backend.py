@@ -612,10 +612,10 @@ class HostedNeptuneBackend(Backend):
             ).response()
 
             return experiment
-        except HTTPNotFound:
+        except HTTPNotFound as e:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id) from e
         except HTTPUnprocessableEntity:
             raise ExperimentAlreadyFinished(experiment.id)
 

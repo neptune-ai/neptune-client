@@ -35,6 +35,7 @@ from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendM
 from neptune.alpha.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
 from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
+from neptune.alpha.attributes import constants as attr_consts
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.alpha.internal.operation import Operation
@@ -187,13 +188,13 @@ def init(
         _experiment.sync(wait=False)
 
     if name is not None:
-        _experiment["sys/name"] = name
+        _experiment[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
     if description is not None:
-        _experiment["sys/description"] = description
+        _experiment[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
     if hostname is not None:
-        _experiment["sys/hostname"] = hostname
+        _experiment[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
     if tags is not None:
-        _experiment["sys/tags"].add(tags)
+        _experiment[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
 
     if capture_stdout and not _experiment.exists(stdout_path):
         _experiment.define(stdout_path, StringSeries([]))
@@ -212,10 +213,10 @@ def init(
                 entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(sys.argv[0]), common_root))
             else:
                 entrypoint = normalize_file_name(os.path.abspath(sys.argv[0]))
-        _experiment["source_code/entrypoint"] = entrypoint
+        _experiment[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
 
     if source_files is not None:
-        _experiment["source_code/files"].save_files(source_files)
+        _experiment[attr_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH].save_files(source_files)
 
     _experiment.start()
 
