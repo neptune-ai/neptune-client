@@ -29,6 +29,7 @@ from functools import partial
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
 from io import StringIO
 from itertools import groupby
+from typing import Dict
 
 import click
 import requests
@@ -48,10 +49,10 @@ from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitRea
     PathInProjectNotFound, ChannelNotFound
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
-from neptune.internal.backends.client_config import ClientConfig
 from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion, \
     AlphaProjectException, STYLES
 from neptune.experiments import Experiment
+from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -474,7 +475,7 @@ class HostedNeptuneBackend(Backend):
             raise
 
     @with_api_exceptions_handler
-    def create_channel(self, experiment, name, channel_type):
+    def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         ChannelParams = self.backend_swagger_client.get_model('ChannelParams')
 
         try:
@@ -497,6 +498,25 @@ class HostedNeptuneBackend(Backend):
             raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
 
     @with_api_exceptions_handler
+    def get_channels(self, experiment) -> Dict[str, object]:
+        api_experiment = self.get_experiment(experiment.internal_id)
+        channels_last_values_by_name = dict((ch.channelName, ch) for ch in api_experiment.channelsLastValues)
+        channels = dict()
+        for ch in api_experiment.channels:
+            last_value = channels_last_values_by_name.get(ch.name, None)
+            if last_value is not None:
+                ch.x = last_value.x
+                ch.y = last_value.y
+            elif ch.lastX is not None:
+                ch.x = ch.lastX
+                ch.y = None
+            else:
+                ch.x = None
+                ch.y = None
+            channels[ch.name] = ch
+        return channels
+
+    @with_api_exceptions_handler
     def reset_channel(self, channel_id):
 
         try:
@@ -508,7 +528,7 @@ class HostedNeptuneBackend(Backend):
             raise ChannelNotFound(channel_id)
 
     @with_api_exceptions_handler
-    def create_system_channel(self, experiment, name, channel_type):
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         ChannelParams = self.backend_swagger_client.get_model('ChannelParams')
 
         try:
@@ -531,13 +551,13 @@ class HostedNeptuneBackend(Backend):
             raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
 
     @with_api_exceptions_handler
-    def get_system_channels(self, experiment):
+    def get_system_channels(self, experiment) -> Dict[str, object]:
         try:
             channels = self.backend_swagger_client.api.getSystemChannels(
                 experimentId=experiment.internal_id,
             ).response().result
 
-            return channels
+            return {ch.name: ch for ch in channels}
         except HTTPNotFound:
             # pylint: disable=protected-access
             raise ExperimentNotFound(

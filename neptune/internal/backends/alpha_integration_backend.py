@@ -16,7 +16,7 @@
 
 import logging
 import uuid
-from typing import List
+from typing import List, Dict
 
 import click
 import six
@@ -39,7 +39,8 @@ from neptune.api_exceptions import (
 from neptune.exceptions import STYLES, NeptuneException
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.model import AlphaChannelWithLastValue
+from neptune.model import ChannelWithLastValue
+from neptune.internal.utils.alpha_integration import AlphaChannelDTO, AlphaChannelWithValueDTO
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
@@ -147,7 +148,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         pass
 
     @with_api_exceptions_handler
-    def create_system_channel(self, experiment, name, channel_type):
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
         dummy_log_string = alpha_operation.LogStrings(
             path=alpha_path_utils.parse_path(channel_id),
@@ -157,14 +158,13 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             experiment=experiment,
             operations=[dummy_log_string],
         )
-        system_channels = self.get_system_channels(experiment)
-        for channel in system_channels:
-            if channel.name == name:
-                return channel
-        raise ChannelNotFound(channel_id=channel_id)
+        try:
+            return self.get_system_channels(experiment)[name]
+        except KeyError:
+            raise ChannelNotFound(channel_id=channel_id)
 
     @with_api_exceptions_handler
-    def get_system_channels(self, experiment):
+    def get_system_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
         params = {
             'experimentId': experiment.internal_id,
         }
@@ -174,17 +174,18 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-        return [
-            AlphaChannelWithLastValue(
-                ch_id=attr.stringSeriesProperties.attributeName,
+        return {
+            alpha_path_utils.parse_path(attr.stringSeriesProperties.attributeName)[-1]:
+            AlphaChannelDTO(
+                channelId=attr.stringSeriesProperties.attributeName.split('/', 1)[-1],
                 # ch_name is ch_id without first namespace
-                ch_name=attr.stringSeriesProperties.attributeName.split('/', 1)[-1],
-                ch_type=attr.stringSeriesProperties.attributeType,
+                channelName=attr.stringSeriesProperties.attributeName.split('/', 1)[-1],
+                channelType=attr.stringSeriesProperties.attributeType,
             )
             for attr in experiment.attributes
             if (attr.type == AlphaAttributeType.STRING_SERIES.value
                 and attr.name.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE))
-        ]
+        }
 
     @with_api_exceptions_handler
     def send_channels_values(self, experiment, channels_with_values):
@@ -221,6 +222,17 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     def create_hardware_metric(self, experiment, metric):
         pass
+
+    def _convert_channel_to_channel_with_last_value(self, channel):
+        return ChannelWithLastValue(
+            AlphaChannelWithValueDTO(
+                channelId=channel.id,
+                channelName=channel.name,
+                channelType=channel.channelType,
+                x=None,
+                y=None
+            )
+        )
 
     @staticmethod
     def _get_client_config_args(api_token):

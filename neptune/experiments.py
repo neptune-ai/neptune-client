@@ -271,26 +271,10 @@ class Experiment(object):
 
                 exp_logs = experiment.get_logs()
         """
-        experiment = self._backend.get_experiment(self.internal_id)
-        channels_last_values_by_name = dict((ch.channelName, ch) for ch in experiment.channelsLastValues)
-        channels = dict()
-        for ch in experiment.channels:
-            last_value = channels_last_values_by_name.get(ch.name, None)
-            if last_value is not None:
-                ch.x = last_value.x
-                ch.y = last_value.y
-            elif ch.lastX is not None:
-                ch.x = ch.lastX
-                ch.y = None
-            else:
-                ch.x = None
-                ch.y = None
-            channels[ch.name] = ch
-        return channels
+        return self._backend.get_channels(self)
 
     def _get_system_channels(self):
-        channels = self._backend.get_system_channels(self)
-        return dict((ch.name, ch) for ch in channels)
+        return self._backend.get_system_channels(self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
         """Log metrics (numeric values) in Neptune.

@@ -96,11 +96,14 @@ class OfflineBackend(Backend):
     def reset_channel(self, channel_id):
         pass
 
+    def get_channels(self, experiment):
+        return {}
+
     def create_system_channel(self, experiment, name, channel_type):
         return NoopObject()
 
     def get_system_channels(self, experiment):
-        return []
+        return {}
 
     def send_channels_values(self, experiment, channels_with_values):
         pass

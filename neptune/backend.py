@@ -15,8 +15,11 @@
 #
 
 from abc import ABCMeta, abstractmethod, abstractproperty
+from typing import Dict
 
 import six
+
+from neptune.model import ChannelWithLastValue
 
 
 @six.add_metaclass(ABCMeta)
@@ -74,7 +77,7 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def create_notebook(self, project):
+    def create_notebook(self, project) -> ChannelWithLastValue:
         pass
 
     @abstractmethod
@@ -102,7 +105,11 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def create_channel(self, experiment, name, channel_type):
+    def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+        pass
+
+    @abstractmethod
+    def get_channels(self, experiment) -> Dict[str, object]:
         pass
 
     @abstractmethod
@@ -110,11 +117,11 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def create_system_channel(self, experiment, name, channel_type):
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         pass
 
     @abstractmethod
-    def get_system_channels(self, experiment):
+    def get_system_channels(self, experiment) -> Dict[str, object]:
         pass
 
     @abstractmethod
