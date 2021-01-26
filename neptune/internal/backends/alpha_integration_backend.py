@@ -39,7 +39,11 @@ from neptune.exceptions import STYLES, NeptuneException
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.channels.channels import ChannelType
-from neptune.internal.utils.alpha_integration import AlphaChannelDTO, AlphaChannelWithValueDTO
+from neptune.internal.utils.alpha_integration import (
+    AlphaChannelDTO,
+    AlphaChannelWithValueDTO,
+    channel_value_type_to_operation,
+)
 from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
@@ -198,11 +202,13 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     @with_api_exceptions_handler
     def get_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
-        api_experiment = self.get_experiment(experiment.internal_id)
-        channels_last_values_by_name = dict((ch.channelName, ch) for ch in api_experiment.channelsLastValues)
+        # TODO: implement i
+        api_channels = self._get_channels(experiment)
+        # channels_last_values_by_name = dict((ch.channelName, ch) for ch in api_experiment.channelsLastValues)
         channels = dict()
-        for ch in api_experiment.channels:
-            last_value = channels_last_values_by_name.get(ch.name, None)
+        for ch in api_channels:
+            last_value = None
+            # last_value = channels_last_values_by_name.get(ch.name, None)
             if last_value is not None:
                 ch.x = last_value.x
                 ch.y = last_value.y
@@ -239,23 +245,17 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
     def send_channels_values(self, experiment, channels_with_values):
         send_operations = []
         for channel_with_values in channels_with_values:
-            # TODO: handle other data types
-            # points = [Point(
-            #     timestampMillis=int(value.ts * 1000.0),
-            #     x=value.x,
-            #     y=Y(numericValue=value.y.get('numeric_value'),
-            #         textValue=value.y.get('text_value'),
-            #         inputImageValue=value.y.get('image_value'))
-            # ) for value in channel_with_values.channel_values]
+            channel_value_type = channel_with_values.channel_type
+            operation = channel_value_type_to_operation.get(channel_value_type)
             ch_values = [
-                alpha_operation.LogStrings.ValueType(
-                    value=value.y.get('text_value'),
+                alpha_operation.LogSeriesValue(
+                    value=ch_value.value,
                     step=None,
-                    ts=value.ts,
+                    ts=ch_value.ts,
                 )
-                for value in channel_with_values.channel_values
+                for ch_value in channel_with_values.channel_values
             ]
-            send_operations.append(alpha_operation.LogStrings(
+            send_operations.append(operation(
                 path=alpha_path_utils.parse_path(channel_with_values.channel_id),
                 values=ch_values,
             ))

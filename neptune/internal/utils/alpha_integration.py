@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 
+from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
 from neptune.exceptions import NeptuneException
-from neptune.internal.channels.channels import ChannelType
+from neptune.internal.channels.channels import ChannelType, ChannelValueType
 
 
 class AlphaChannelDTO:
@@ -62,6 +63,11 @@ class AlphaChannelDTO:
             return ChannelType.IMAGE.value
 
     @property
+    def lastX(self):
+        # TODO
+        return None
+
+    @property
     def _properties(self):
         """Returns proper attribute property according to type"""
         return getattr(self._attribute, f'{self._attribute.type}Properties')
@@ -105,3 +111,10 @@ class AlphaChannelWithValueDTO:
     @y.setter
     def y(self, y):
         self._y = y
+
+
+channel_value_type_to_operation = {
+    ChannelValueType.TEXT_VALUE: alpha_operation.LogStrings,
+    ChannelValueType.NUMERIC_VALUE: alpha_operation.LogFloats,
+    ChannelValueType.IMAGE_VALUE: alpha_operation.LogImages,
+}
