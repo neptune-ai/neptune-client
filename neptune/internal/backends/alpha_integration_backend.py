@@ -26,7 +26,6 @@ from mock import NonCallableMagicMock
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
-from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.utils import paths as alpha_path_utils
@@ -39,8 +38,9 @@ from neptune.api_exceptions import (
 from neptune.exceptions import STYLES, NeptuneException
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.model import ChannelWithLastValue
+from neptune.internal.channels.channels import ChannelType
 from neptune.internal.utils.alpha_integration import AlphaChannelDTO, AlphaChannelWithValueDTO
+from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
@@ -147,25 +147,40 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
         pass
 
-    @with_api_exceptions_handler
-    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
-        channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
-        dummy_log_string = alpha_operation.LogStrings(
+    def _create_channel(self, experiment: Experiment, channel_id: str, channel_type: str):
+        """This function is responsible for creating 'fake' channels in alpha projects.
+
+        Since channels are abandoned in alpha api, we're mocking them using empty logging operation."""
+
+        if channel_type == ChannelType.TEXT.value:
+            operation = alpha_operation.LogStrings
+        elif channel_type == ChannelType.NUMERIC.value:
+            operation = alpha_operation.LogFloats
+        elif channel_type == ChannelType.IMAGE.value:
+            operation = alpha_operation.LogFloats
+        else:
+            raise NeptuneException(f"We're not supporting {channel_type} channel type.")
+
+        log_empty_operation = operation(
             path=alpha_path_utils.parse_path(channel_id),
             values=[],
         )  # this operation is used to create empty attribute
         self._execute_alpha_operation(
             experiment=experiment,
-            operations=[dummy_log_string],
+            operations=[log_empty_operation],
         )
+
+    @with_api_exceptions_handler
+    def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+        channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
+        self._create_channel(experiment, channel_id, channel_type)
         try:
-            channel = self.get_system_channels(experiment)[name]
+            channel = self.get_channels(experiment)[name]  # TODO: implement this
             return self._convert_channel_to_channel_with_last_value(channel)
         except KeyError:
             raise ChannelNotFound(channel_id=channel_id)
 
-    @with_api_exceptions_handler
-    def get_system_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
+    def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
         params = {
             'experimentId': experiment.internal_id,
         }
@@ -175,17 +190,49 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+
+        return [
+            AlphaChannelDTO(attr) for attr in experiment.attributes
+            if AlphaChannelDTO.is_valid_attribute_for_channel(attr)
+        ]
+
+    @with_api_exceptions_handler
+    def get_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
+        api_experiment = self.get_experiment(experiment.internal_id)
+        channels_last_values_by_name = dict((ch.channelName, ch) for ch in api_experiment.channelsLastValues)
+        channels = dict()
+        for ch in api_experiment.channels:
+            last_value = channels_last_values_by_name.get(ch.name, None)
+            if last_value is not None:
+                ch.x = last_value.x
+                ch.y = last_value.y
+            elif ch.lastX is not None:
+                ch.x = ch.lastX
+                ch.y = None
+            else:
+                ch.x = None
+                ch.y = None
+            channels[ch.name] = ch
+        return channels
+
+    @with_api_exceptions_handler
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+        channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
+        self._create_channel(experiment, channel_id, channel_type=ChannelType.TEXT.value)
+        try:
+            channel = self.get_system_channels(experiment)[name]
+            return self._convert_channel_to_channel_with_last_value(channel)
+        except KeyError:
+            raise ChannelNotFound(channel_id=channel_id)
+
+    @with_api_exceptions_handler
+    def get_system_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
         return {
-            attr.stringSeriesProperties.attributeName.split('/', 1)[-1]:
-            AlphaChannelDTO(
-                channelId=attr.stringSeriesProperties.attributeName,
-                # ch_name is ch_id without first namespace
-                channelName=attr.stringSeriesProperties.attributeName.split('/', 1)[-1],
-                channelType=attr.stringSeriesProperties.attributeType,
-            )
-            for attr in experiment.attributes
-            if (attr.type == AlphaAttributeType.STRING_SERIES.value
-                and attr.name.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE))
+            channel.name: channel
+            for channel in self._get_channels(experiment)
+            # if (channel.channelType == AlphaAttributeType.STRING_SERIES.value
+            if (channel.channelType == ChannelType.TEXT.value
+                and channel.id.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE))
         }
 
     @with_api_exceptions_handler

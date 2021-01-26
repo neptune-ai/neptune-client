@@ -14,31 +14,63 @@
 # limitations under the License.
 #
 
+from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
+from neptune.exceptions import NeptuneException
+from neptune.internal.channels.channels import ChannelType
+
 
 class AlphaChannelDTO:
-    """Alpha leaderboard doesn't have `ChannelDTO` since it doesn't support channels at all,
-    so we do need fake `ChannelDTO` class for backward compatibility with old client's code"""
-    def __init__(self, channelId: str, channelName: str, channelType: str):
-        self._ch_id = channelId
-        self._ch_name = channelName
-        self._ch_type = channelType
+    """It's simple wrapper for `AttributeDTO` objects which uses alpha series attributes to fake channels.
+
+    Alpha leaderboard doesn't have `ChannelDTO` since it doesn't support channels at all,
+    so we do need fake `ChannelDTO` class for backward compatibility with old client's code."""
+
+    _allowed_atribute_types = [
+        AlphaAttributeType.FLOAT_SERIES.value,
+        AlphaAttributeType.STRING_SERIES.value,
+        AlphaAttributeType.IMAGE_SERIES.value,
+    ]
+
+    def __init__(self, attribute):
+        """Expects `AttributeDTO`"""
+        if not self.is_valid_attribute_for_channel(attribute):
+            raise NeptuneException(f"Invalid channel attribute type: {attribute.type}")
+
+        self._attribute = attribute
+
+    @classmethod
+    def is_valid_attribute_for_channel(cls, attribute):
+        """Checks if attribute can be used as channel"""
+        return attribute.type in cls._allowed_atribute_types
 
     @property
     def id(self):
-        return self._ch_id
+        return self._properties.attributeName
 
     @property
     def name(self):
-        return self._ch_name
+        return self._properties.attributeName.split('/', 1)[-1]
 
     @property
     def channelType(self):
-        return self._ch_type
+        attr_type = self._properties.attributeType
+        if attr_type == AlphaAttributeType.FLOAT_SERIES.value:
+            return ChannelType.NUMERIC.value
+        elif attr_type == AlphaAttributeType.STRING_SERIES.value:
+            return ChannelType.TEXT.value
+        elif attr_type == AlphaAttributeType.IMAGE_SERIES.value:
+            return ChannelType.IMAGE.value
+
+    @property
+    def _properties(self):
+        """Returns proper attribute property according to type"""
+        return getattr(self._attribute, f'{self._attribute.type}Properties')
 
 
 class AlphaChannelWithValueDTO:
     """Alpha leaderboard doesn't have `ChannelWithValueDTO` since it doesn't support channels at all,
     so we do need fake `ChannelWithValueDTO` class for backward compatibility with old client's code"""
+
     def __init__(self, channelId: str, channelName: str, channelType: str, x, y):
         self._ch_id = channelId
         self._ch_name = channelName
