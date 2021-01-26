@@ -32,17 +32,31 @@ class AlphaChannelDTO:
         return self._ch_name
 
     @property
-    def type(self):
+    def channelType(self):
         return self._ch_type
 
 
-class AlphaChannelWithValueDTO(AlphaChannelDTO):
+class AlphaChannelWithValueDTO:
     """Alpha leaderboard doesn't have `ChannelWithValueDTO` since it doesn't support channels at all,
     so we do need fake `ChannelWithValueDTO` class for backward compatibility with old client's code"""
     def __init__(self, channelId: str, channelName: str, channelType: str, x, y):
-        super().__init__(channelId, channelName, channelType)
+        self._ch_id = channelId
+        self._ch_name = channelName
+        self._ch_type = channelType
         self._x = x
         self._y = y
+
+    @property
+    def channelId(self):
+        return self._ch_id
+
+    @property
+    def channelName(self):
+        return self._ch_name
+
+    @property
+    def channelType(self):
+        return self._ch_type
 
     @property
     def x(self):

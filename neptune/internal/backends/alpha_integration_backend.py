@@ -159,7 +159,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             operations=[dummy_log_string],
         )
         try:
-            return self.get_system_channels(experiment)[name]
+            channel = self.get_system_channels(experiment)[name]
+            return self._convert_channel_to_channel_with_last_value(channel)
         except KeyError:
             raise ChannelNotFound(channel_id=channel_id)
 
@@ -175,9 +176,9 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
         return {
-            alpha_path_utils.parse_path(attr.stringSeriesProperties.attributeName)[-1]:
+            attr.stringSeriesProperties.attributeName.split('/', 1)[-1]:
             AlphaChannelDTO(
-                channelId=attr.stringSeriesProperties.attributeName.split('/', 1)[-1],
+                channelId=attr.stringSeriesProperties.attributeName,
                 # ch_name is ch_id without first namespace
                 channelName=attr.stringSeriesProperties.attributeName.split('/', 1)[-1],
                 channelType=attr.stringSeriesProperties.attributeType,
