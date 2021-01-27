@@ -152,7 +152,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
         pass
 
-    def _create_channel(self, experiment: Experiment, channel_id: str, channel_type: str):
+    def _create_channel(self, experiment: Experiment, channel_id: str, channel_name: str, channel_type: str,
+                        get_channels):
         """This function is responsible for creating 'fake' channels in alpha projects.
 
         Since channels are abandoned in alpha api, we're mocking them using empty logging operation."""
@@ -167,16 +168,19 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             experiment=experiment,
             operations=[log_empty_operation],
         )
+        try:
+            channel = get_channels(experiment)[channel_name]
+            return self._convert_channel_to_channel_with_last_value(channel)
+        except KeyError:
+            raise NeptuneException(f"Channel {channel_id} wasn't created.")
 
     @with_api_exceptions_handler
     def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         channel_id = f'{alpha_consts.LOG_ATTRIBUTE_SPACE}{name}'
-        self._create_channel(experiment, channel_id, channel_type)
-        try:
-            channel = self.get_channels(experiment)[name]  # TODO: implement this
-            return self._convert_channel_to_channel_with_last_value(channel)
-        except KeyError:
-            raise ChannelNotFound(channel_id=channel_id)
+        return self._create_channel(experiment, channel_id,
+                                    channel_name=name,
+                                    channel_type=channel_type,
+                                    get_channels=self.get_channels)
 
     def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
         params = {
@@ -215,12 +219,10 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
     @with_api_exceptions_handler
     def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
-        self._create_channel(experiment, channel_id, channel_type=ChannelType.TEXT.value)
-        try:
-            channel = self.get_system_channels(experiment)[name]
-            return self._convert_channel_to_channel_with_last_value(channel)
-        except KeyError:
-            raise ChannelNotFound(channel_id=channel_id)
+        return self._create_channel(experiment, channel_id,
+                                    channel_name=name,
+                                    channel_type=ChannelType.TEXT.value,
+                                    get_channels=self.get_system_channels)
 
     @with_api_exceptions_handler
     def get_system_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
