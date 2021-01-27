@@ -37,12 +37,13 @@ from neptune.api_exceptions import (
 from neptune.exceptions import STYLES, NeptuneException
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.channels.channels import ChannelType
+from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,
     channel_type_to_operation,
     channel_value_type_to_operation,
+    deprecated_img_to_alpha_image,
 )
 from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
@@ -237,9 +238,16 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             channel_value_type = channel_with_values.channel_type
             operation = channel_value_type_to_operation(channel_value_type)
 
+            if channel_value_type == ChannelValueType.IMAGE_VALUE:
+                # IMAGE_VALUE requires minor data modification before it's sent
+                data_transformer = deprecated_img_to_alpha_image
+            else:
+                # otherwise use identity function as transformer
+                data_transformer = lambda e: e
+
             ch_values = [
                 alpha_operation.LogSeriesValue(
-                    value=ch_value.value,
+                    value=data_transformer(ch_value.value),
                     step=None,
                     ts=ch_value.ts,
                 )
