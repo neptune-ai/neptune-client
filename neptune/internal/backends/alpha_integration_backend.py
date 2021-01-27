@@ -202,17 +202,14 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     @with_api_exceptions_handler
     def get_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
-        # TODO: implement i
-        api_channels = self._get_channels(experiment)
-        # channels_last_values_by_name = dict((ch.channelName, ch) for ch in api_experiment.channelsLastValues)
+        api_channels = [
+            channel for channel in self._get_channels(experiment)
+            # return channels from LOG_ATTRIBUTE_SPACE namespace only
+            if channel.id.startswith(alpha_consts.LOG_ATTRIBUTE_SPACE)
+        ]
         channels = dict()
         for ch in api_channels:
-            last_value = None
-            # last_value = channels_last_values_by_name.get(ch.name, None)
-            if last_value is not None:
-                ch.x = last_value.x
-                ch.y = last_value.y
-            elif ch.lastX is not None:
+            if ch.lastX is not None:
                 ch.x = ch.lastX
                 ch.y = None
             else:
@@ -236,7 +233,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         return {
             channel.name: channel
             for channel in self._get_channels(experiment)
-            # if (channel.channelType == AlphaAttributeType.STRING_SERIES.value
             if (channel.channelType == ChannelType.TEXT.value
                 and channel.id.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE))
         }

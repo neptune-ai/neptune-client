@@ -64,8 +64,7 @@ class AlphaChannelDTO:
 
     @property
     def lastX(self):
-        # TODO
-        return None
+        return self._properties.last
 
     @property
     def _properties(self):

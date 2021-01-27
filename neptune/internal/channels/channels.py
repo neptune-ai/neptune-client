@@ -89,9 +89,6 @@ class ChannelValue(object):
 
     def __eq__(self, o):
         return self.__dict__ == o.__dict__
-    #
-    # def __ne__(self, o):
-    #     return not self.__eq__(o)
 
 
 class ChannelIdWithValues:
