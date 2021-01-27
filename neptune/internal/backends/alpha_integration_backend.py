@@ -42,6 +42,7 @@ from neptune.internal.channels.channels import ChannelType
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,
+    channel_type_to_operation,
     channel_value_type_to_operation,
 )
 from neptune.model import ChannelWithLastValue
@@ -156,14 +157,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
         Since channels are abandoned in alpha api, we're mocking them using empty logging operation."""
 
-        if channel_type == ChannelType.TEXT.value:
-            operation = alpha_operation.LogStrings
-        elif channel_type == ChannelType.NUMERIC.value:
-            operation = alpha_operation.LogFloats
-        elif channel_type == ChannelType.IMAGE.value:
-            operation = alpha_operation.LogFloats
-        else:
-            raise NeptuneException(f"We're not supporting {channel_type} channel type.")
+        operation = channel_type_to_operation(ChannelType(channel_type))
 
         log_empty_operation = operation(
             path=alpha_path_utils.parse_path(channel_id),
@@ -242,7 +236,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         send_operations = []
         for channel_with_values in channels_with_values:
             channel_value_type = channel_with_values.channel_type
-            operation = channel_value_type_to_operation.get(channel_value_type)
+            operation = channel_value_type_to_operation(channel_value_type)
+
             ch_values = [
                 alpha_operation.LogSeriesValue(
                     value=ch_value.value,

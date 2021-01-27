@@ -64,6 +64,9 @@ class AlphaChannelDTO:
 
     @property
     def lastX(self):
+        if self.channelType == ChannelType.IMAGE.value:
+            # We do not store last value for image series
+            return None
         return self._properties.last
 
     @property
@@ -112,8 +115,26 @@ class AlphaChannelWithValueDTO:
         self._y = y
 
 
-channel_value_type_to_operation = {
-    ChannelValueType.TEXT_VALUE: alpha_operation.LogStrings,
-    ChannelValueType.NUMERIC_VALUE: alpha_operation.LogFloats,
-    ChannelValueType.IMAGE_VALUE: alpha_operation.LogImages,
-}
+def _map_using_dict(el, el_name, source_dict) -> alpha_operation.Operation:
+    try:
+        return source_dict[el]
+    except KeyError as e:
+        raise NeptuneException(f"We're not supporting {el} {el_name}.") from e
+
+
+def channel_type_to_operation(channel_type: ChannelType) -> alpha_operation.Operation:
+    _channel_type_to_operation = {
+        ChannelType.TEXT: alpha_operation.LogStrings,
+        ChannelType.NUMERIC: alpha_operation.LogFloats,
+        ChannelType.IMAGE: alpha_operation.LogImages,
+    }
+    return _map_using_dict(channel_type, 'channel type', _channel_type_to_operation)
+
+
+def channel_value_type_to_operation(channel_value_type: ChannelValueType) -> alpha_operation.Operation:
+    _channel_value_type_to_operation = {
+        ChannelValueType.TEXT_VALUE: alpha_operation.LogStrings,
+        ChannelValueType.NUMERIC_VALUE: alpha_operation.LogFloats,
+        ChannelValueType.IMAGE_VALUE: alpha_operation.LogImages,
+    }
+    return _map_using_dict(channel_value_type, 'channel value type', _channel_value_type_to_operation)
