@@ -31,7 +31,6 @@ from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.utils import paths as alpha_path_utils
 from neptune.api_exceptions import (
     AlphaOperationErrors,
-    ChannelNotFound,
     ExperimentNotFound,
     ProjectNotFound,
 )
