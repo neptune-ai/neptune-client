@@ -151,8 +151,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
         pass
 
-    def _create_channel(self, experiment: Experiment, channel_id: str, channel_name: str, channel_type: str,
-                        get_channels):
+    def _create_channel(self, experiment: Experiment, channel_id: str, channel_name: str, channel_type: str):
         """This function is responsible for creating 'fake' channels in alpha projects.
 
         Since channels are abandoned in alpha api, we're mocking them using empty logging operation."""
@@ -167,19 +166,22 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             experiment=experiment,
             operations=[log_empty_operation],
         )
-        try:
-            channel = get_channels(experiment)[channel_name]
-            return self._convert_channel_to_channel_with_last_value(channel)
-        except KeyError:
-            raise NeptuneException(f"Channel {channel_id} wasn't created.")
+        return ChannelWithLastValue(
+            AlphaChannelWithValueDTO(
+                channelId=channel_id,
+                channelName=channel_name,
+                channelType=channel_type,
+                x=None,
+                y=None
+            )
+        )
 
     @with_api_exceptions_handler
     def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         channel_id = f'{alpha_consts.LOG_ATTRIBUTE_SPACE}{name}'
         return self._create_channel(experiment, channel_id,
                                     channel_name=name,
-                                    channel_type=channel_type,
-                                    get_channels=self.get_channels)
+                                    channel_type=channel_type)
 
     def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
         params = {
@@ -220,8 +222,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
         return self._create_channel(experiment, channel_id,
                                     channel_name=name,
-                                    channel_type=ChannelType.TEXT.value,
-                                    get_channels=self.get_system_channels)
+                                    channel_type=ChannelType.TEXT.value)
 
     @with_api_exceptions_handler
     def get_system_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
@@ -262,17 +263,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     def create_hardware_metric(self, experiment, metric):
         pass
-
-    def _convert_channel_to_channel_with_last_value(self, channel):
-        return ChannelWithLastValue(
-            AlphaChannelWithValueDTO(
-                channelId=channel.id,
-                channelName=channel.name,
-                channelType=channel.channelType,
-                x=None,
-                y=None
-            )
-        )
 
     @staticmethod
     def _get_client_config_args(api_token):
