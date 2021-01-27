@@ -77,7 +77,7 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def create_notebook(self, project) -> ChannelWithLastValue:
+    def create_notebook(self, project):
         pass
 
     @abstractmethod

@@ -176,7 +176,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     @with_api_exceptions_handler
     def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
-        channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
+        channel_id = f'{alpha_consts.LOG_ATTRIBUTE_SPACE}{name}'
         self._create_channel(experiment, channel_id, channel_type)
         try:
             channel = self.get_channels(experiment)[name]  # TODO: implement this
