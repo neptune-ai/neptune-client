@@ -1,157 +1,63 @@
-# neptune-client
+# Neptune.ai
+![image](https://neptune.ai/wp-content/uploads/2020/03/neptune-ai-blue-horizontal.svg)
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
 [![Build Status](https://travis-ci.org/neptune-ai/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-client)
+[![Maintenance](https://img.shields.io/badge/Maintained%3F-YES-green.svg)](https://github.com/neptune-ai/neptune-client/graphs/commit-activity)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/neptune-client)
 
-# Overview
+[![twitter](https://img.shields.io/twitter/follow/neptune_ai.svg?label=Follow)](https://twitter.com/neptune_ai)
+![youtube](https://img.shields.io/youtube/views/9iX6DxcijO8?style=social)
 
-Neptune is an experiment tracking hub that brings organization and collaboration to your data science team. 
+## Lightweight experiment tracking tool for AI/ML individuals and teams. Fits any workflow.
+Neptune is a lightweight experiment logging/tracking tool that helps you with your machine learning experiments. Neptune is suitable for indvidual, commercial and research projects. It can especially help you with the following:
 
-It works with any:
-* infrastructure setup
-* framework
-* working style
+| |
+|-|
+|[Monitoring ML runs live](https://docs.neptune.ai/getting-started/quick-starts/how-to-monitor-live.html#use-cases-monitor-runs-live)|
+|[Organizing ML experimentation](https://docs.neptune.ai/getting-started/quick-starts/how-to-organize-experiments.html#use-cases-organize-ml-experiments)|
+|[Comparing/debugging ML experiments and models](https://docs.neptune.ai/getting-started/quick-starts/how-to-compare-experiments.html#use-cases-compare-and-debug-experiments)|
+|[Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)|
 
-**Keep the knowledge in one place, organized and ready to be shared with anyone.**
+### Want to see how it works?
+Check Neptune API Tour, that provides hands-on intro to Neptune:
 
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/2f3a5577ac55595e8b9241d81a2de43a0fc663db/wiki.png)
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/2a67f6ed1017d3f6a3dec6fe85d1727f3b41f533/neptune_quick_start.png)
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/8aa4f35e29a2a5177e89a8ed5d1daa233b04b0b9/clf_report.png)
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/8aa4f35e29a2a5177e89a8ed5d1daa233b04b0b9/ship_predictions.png)
+|Try|it|now|
+|---|--|---|
+|[![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/README.md)|[![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/README.md)|[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)|
 
-# Getting started
+----
 
-### Register
-Go to https://neptune.ai/ and sign up.
+## Use neptune with your favourite AI/ML libraries.
+![frameworks-logos](https://docs.neptune.ai/_static/images/integrations/framework-logos.png)
 
-It is completely free for individuals and non-organizations, and you can invite others to join your team!
+Neptune comes with 25+ integrations with Python libraries popular in machine learning, deep learning and reinforcement learning.
 
-### Get your API token
-In order to start working with Neptune you need to get the API token first.
-To do that, click on the `Get API Token` button on the top left.
+### Use with PyTorch Lightning
 
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/get_api_token.png)
+### Use with TensorFow and Keras
 
+### Use with Scikit-learn
 
-### Create your first project
-Click on `Projects` and the `New project`. Choose a name for it and whether you want it public or private.
+### Use with XGBoost or LightGBM
 
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/new_project.png)
+### Use with Optuna or scikit-opitmize
 
+### There is more
+:arrow_right: [integrations page](https://docs.neptune.ai/integrations/index.html)
 
-### Invite others
-Go to your project, click `Settings` and send invites!
+## Getting help
+If you got stuck or simply want to talk to us about something here are your options:
 
-![image](https://gist.githubusercontent.com/jakubczakon/f754769a39ea6b8fa9728ede49b9165c/raw/e3776e605fea1fd5377c3ec748ba87b71cd8ef12/invite.png)
+* [neptune documentation](https://docs.neptune.ai)
+* [neptune video tutorials](https://www.youtube.com/playlist?list=PLKePQLVx9tOd8TEGdG4PAKz0Owqdv1aaw)
+* Chat! When in application lick on the [blue message icon](https://docs.neptune.ai/_static/images/getting-started/intercom.gif) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
+* You can just shoot us an email at [contact@neptune.ai](mailto:contact@neptune.ai)
 
-### Start tracking your work
-Neptune let's you track any information important to your experimentation process.
+---
 
-#### Install Neptune client
-Just run:
+## People behind Neptune
+Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
-```bash
-pip install neptune-client
-```
+Piotr, Michał, Jakub, Paulina, Kamil, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Szymon, Jakub, Maciej, Piotr, Paweł, Patrycja, Grzegorz, Paweł, Natalia, Marcin and [you?](https://neptune.ai/jobs)
 
-#### Initialize Neptune
-Toward the top of your script insert the following snippet.
-
-```python
-import neptune
-
-neptune.init(api_token='YOUR_API_TOKEN',
-             project_qualified_name='USERNAME/PROJECT_NAME')
-```
-
-#### Create and stop the experiment
-You can treat every piece of work that you want to record as an experiment.
-Just create an experiment:
-
-```python
-neptune.create_experiment()
-```
-Do whatever you want and record it here!
-Stop the experiment.
-
-```python
-neptune.stop()
-```
-
-#### Track hyperparameters
-Making sure that all your hyperparameters are recorded is very important.
-With Neptune, you can do that easily by passing `params` dictionary when creating the experiment.
-
-```python
-params = {'n_estimators':10,
-          'criterion': 'gini',
-          'max_depth': 2,
-          'min_samples_split': 100}
-
-neptune.create_experiment(params=params)
-
-```
-
-#### Track metrics
-It is super easy. Just log your metric to Neptune.
-
-```python
-neptune.send_metric('roc_auc', 0.82)
-```
-
-In case you want to track your metric after every step (deep learning), you
-can simply send your metric to the same channel after every step and Neptune will
-automatically create a chart for you.
-
-```python
-for i in range(100):
-     neptune.send_metric('learning_rate_schedule', 0.01 *1.05 ** i) 
-```
-
-#### Track result diagnostics
-You can even log images to Neptune. Just save to the 
-
-```python
-plot_roc(y_test, y_test_pred)
-plt.savefig('roc_curve.png') 
-neptune.send_image('roc_curve', 'roc_curve.png')
-```
-
-#### Track artifacts
-You can save model weights and any other artifact that you created during your experiment.
-
-```python
-from sklearn.externals import joblib
-joblib.dump(clf, 'rf_model.pkl')
-neptune.send_artifact('rf_model.pkl')
-```
-
-#### Track data versions
-
-```python
-from hashlib import sha1
-
-data_version = sha1(X).hexdigest()
-neptune.send_text('data_version', data_version)
-```
-
-#### Track code
-You can track your codebase too.
-Just choose the files that you want to send to Neptune.
-
-```python
-
-neptune.create_experiment(upload_source_files=['utils.py', 
-                                               'main.py'])
-```
-
-**[Check the example project here](https://ui.neptune.ai/jakub-czakon/quick-start/experiments)**
-
-
-# Getting help
-If you get stuck, don't worry we are here to help.
-The best order of communication is:
-
- * [neptune documentation](https://docs.neptune.ai)
- * [github issues](https://github.com/neptune-ai/neptune-client/issues)
- * [neptune community forum](https://community.neptune.ai/)
- * [neptune community spectrum](https://spectrum.chat/neptune-community?tab=posts)
+![neptune.ai](https://neptune.ai/wp-content/uploads/2020/04/logo.png)
