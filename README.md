@@ -12,24 +12,73 @@ Neptune is a lightweight experiment logging/tracking tool that helps you with yo
 
 Neptune is suitable for **indvidual**, **commercial** and **research** projects. It can especially help you with the following:
 
+* [Logging experiments metadata](https://docs.neptune.ai/logging-and-managing-experiment-results/index.html)
 * [Monitoring ML runs live](https://docs.neptune.ai/getting-started/quick-starts/how-to-monitor-live.html#use-cases-monitor-runs-live)
-* [Organizing ML experimentation](https://docs.neptune.ai/getting-started/quick-starts/how-to-organize-experiments.html#use-cases-organize-ml-experiments)
+* [Organizing and exploring experiments results](https://docs.neptune.ai/organizing-and-exploring-results-in-the-ui/index.html)
 * [Comparing/debugging ML experiments and models](https://docs.neptune.ai/getting-started/quick-starts/how-to-compare-experiments.html#use-cases-compare-and-debug-experiments)
 * [Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)
 
-## Want to see how it works?
+## What is neptune-client?
+`neptune-client` is a Python library that serves three purposes:
+
+* logging machine learning experiments,
+* updating existing experiment with new data and visualizations,
+* downloading experiment data from Neptune to local machine.
+
+It is designed to be:
+
+* *lightweight*: low setup effort,
+* *generic*: capable of logging any kind of machine learning work
+* *straightforward*: user defines what to keep track of during experiment to use.
+
+### See how it works.
 Check Neptune API Tour, for hands-on intro to Neptune:
 
-|Try|it|now|
-|---|--|---|
-|[![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/README.md)|[![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/README.md)|[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)|
+[![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/README.md)
+[![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/README.md)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
 
 # Use Neptune with your favourite AI/ML libraries.
 ![frameworks-logos](https://docs.neptune.ai/_static/images/integrations/framework-logos.png)
 
 Neptune comes with 25+ integrations with Python libraries popular in machine learning, deep learning and reinforcement learning.
 
+Integrations lets you automaticaly:
+
+* log training, validation and testing metrics, and visualize them in Neptune UI,
+* log experiment hyper-parameters,
+* monitor hardware usage,
+* log performance charts and images,
+* save model checkpoints,
+* log interactive visualizations,
+* log csv files, pandas Datraframes,
+* [much more](https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment-data.html#what-you-can-log).
+
 ## Use with PyTorch Lightning
+PyTorch Lightning is a lightweight PyTorch wrapper for high-performance AI research. You can log PyTorch Lightning experiments to Neptune using `NeptuneLogger` (part of the pytorch-lightning library).
+
+Integration is 
+```
+from pytorch_lightning.loggers.neptune import NeptuneLogger
+
+# Create NeptuneLogger
+neptune_logger = NeptuneLogger(
+    api_key="ANONYMOUS",
+    project_name="shared/pytorch-lightning-integration",
+    params=PARAMS)
+
+# Pass NeptuneLogger to the Trainer
+trainer = pl.Trainer(max_epochs=PARAMS['max_epochs'],
+                     logger=neptune_logger)
+
+# Fit model, have everything logged automatically
+model = LitModel()
+trainer.fit(model, train_loader)
+```
+
+
+
+https://ui.neptune.ai/o/shared/org/pytorch-lightning-integration/e/PYTOR-137930/charts
 
 ## Use with TensorFow and Keras
 
