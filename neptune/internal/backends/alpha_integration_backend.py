@@ -208,12 +208,9 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         ]
         channels = dict()
         for ch in api_channels:
-            if ch.lastX is not None:
-                ch.x = ch.lastX
-                ch.y = None
-            else:
-                ch.x = None
-                ch.y = None
+            # TODO: NPT-9216
+            ch.x = ch.lastX
+            ch.y = ch.lastY
             channels[ch.name] = ch
         return channels
 

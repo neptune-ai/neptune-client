@@ -64,6 +64,11 @@ class AlphaChannelDTO:
 
     @property
     def lastX(self):
+        # TODO: NPT-9216
+        return None
+
+    @property
+    def lastY(self):
         if self.channelType == ChannelType.IMAGE.value:
             # We do not store last value for image series
             return None
