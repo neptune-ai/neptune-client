@@ -27,15 +27,15 @@ Neptune is suitable for **indvidual**, **commercial** and **research** projects.
 
 It is designed to be:
 
-* *lightweight*: low setup effort,
-* *generic*: capable of logging any kind of machine learning work
-* *straightforward*: user defines what to keep track of during experiment to use.
+* **lightweight**: low setup effort,
+* **generic**: capable of logging any kind of machine learning work
+* **straightforward**: user defines what to keep track of during experiment to use.
 
-### See how it works.
-Check Neptune API Tour, for hands-on intro to Neptune:
+### See how `neptune-client` works.
+Check this Neptune API Tour, for hands-on intro to neptune-client:
 
-[![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/README.md)
-[![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/README.md)
+[![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/docs/Neptune-API-Tour.py)
+[![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
 
 # Use Neptune with your favourite AI/ML libraries.
@@ -43,7 +43,7 @@ Check Neptune API Tour, for hands-on intro to Neptune:
 
 Neptune comes with 25+ integrations with Python libraries popular in machine learning, deep learning and reinforcement learning.
 
-Integrations lets you automaticaly:
+Integrations lets you automatically:
 
 * log training, validation and testing metrics, and visualize them in Neptune UI,
 * log experiment hyper-parameters,
@@ -55,9 +55,9 @@ Integrations lets you automaticaly:
 * [much more](https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment-data.html#what-you-can-log).
 
 ## Use with PyTorch Lightning
-PyTorch Lightning is a lightweight PyTorch wrapper for high-performance AI research. You can log PyTorch Lightning experiments to Neptune using `NeptuneLogger` (part of the pytorch-lightning library).
+PyTorch Lightning is a lightweight PyTorch wrapper for high-performance AI research. You can automatically log PyTorch Lightning experiments to Neptune using `NeptuneLogger` (part of the pytorch-lightning library).
 
-Integration is 
+The integration looks like this:
 ```
 from pytorch_lightning.loggers.neptune import NeptuneLogger
 
@@ -75,10 +75,12 @@ trainer = pl.Trainer(max_epochs=PARAMS['max_epochs'],
 model = LitModel()
 trainer.fit(model, train_loader)
 ```
+[![neptune-badge](https://img.shields.io/badge/Example-experiment-success)](https://ui.neptune.ai/o/shared/org/pytorch-lightning-integration/e/PYTOR-137930/charts)
 
-
-
-https://ui.neptune.ai/o/shared/org/pytorch-lightning-integration/e/PYTOR-137930/charts
+Check full code example (pick your favourite medium):
+[![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/integrations/pytorch-lightning/docs/Neptune-PyTorch-Lightning-advanced.py)
+[![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/integrations/pytorch-lightning/showcase/Neptune-PyTorch-Lightning-advanced.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/integrations/pytorch-lightning/showcase/Neptune-PyTorch-Lightning-advanced.ipynb)
 
 ## Use with TensorFow and Keras
 
