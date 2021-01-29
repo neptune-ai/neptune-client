@@ -15,15 +15,16 @@ Neptune is a lightweight experiment logging/tracking tool that helps you with yo
   <img src="https://neptune.ai/wp-content/uploads/lightning_adv_grad_norm.png" width="600" /><br><br>
 </div>
 
-You can log any Python and R experiments that you run:
-
-* in the cloud or locally,
-* on single machine or in distibuted setup,
-* in Notebooks or in scripts.
-
 Neptune is suitable for **indvidual**, **commercial** and **research** projects.  
 
 ## [Get free account](https://neptune.ai/register)
+
+# Features to help you get the job done
+* Rich logging and tracking methods
+* easy to use client
+* experiments compare
+* dashbordign views
+* team management
 
 # Neptune in 30 seconds
 <div align="center">
@@ -77,12 +78,7 @@ It can especially help you with the following:
 * [Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)
 
 
-# Features to help you get the job done
-* Rich logging and tracking methods
-* easy to use client
-* experiments compare
-* dashbordign views
-* team management
+
 
 ## What is neptune-client?
 `neptune-client` is a Python library that serves three purposes:
