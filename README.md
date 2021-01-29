@@ -18,6 +18,13 @@ Neptune is suitable for **indvidual**, **commercial** and **research** projects.
 * [Comparing/debugging ML experiments and models](https://docs.neptune.ai/getting-started/quick-starts/how-to-compare-experiments.html#use-cases-compare-and-debug-experiments)
 * [Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)
 
+# Features to help you get the job done
+* Rich logging and tracking methods
+* easy to use client
+* experiments compare
+* dashbordign views
+* team management
+
 ## What is neptune-client?
 `neptune-client` is a Python library that serves three purposes:
 
@@ -32,7 +39,25 @@ It is designed to be:
 * **straightforward**: user defines what to keep track of during experiment to use.
 
 ### See how `neptune-client` works.
-Check this Neptune API Tour, for hands-on intro to neptune-client:
+`pip install neptune-client`
+
+`conda install -c conda-forge neptune-client`
+
+```
+import neptune
+
+neptune.init('my_workspace/my_project')
+neptune.create_experiment()
+
+for epoch in range(epochs):
+    ...
+    neptune.log_metric('loss', loss)
+    neptune.log_metric('metric', accuracy)
+
+neptune.log_artifact('model_weights.pth')
+```
+
+For the hands-on intro to neptune-client check this API Tour:
 
 [![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/docs/Neptune-API-Tour.py)
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
