@@ -13,13 +13,56 @@
 # Lightweight experiment tracking tool for AI/ML individuals and teams. Fits any workflow.
 Neptune is a lightweight experiment logging/tracking tool that helps you with your machine learning experiments.
 
-Neptune is suitable for **indvidual**, **commercial** and **research** projects. It can especially help you with the following:
+Neptune is suitable for **indvidual**, **commercial** and **research** projects.
+
+## [Get free account](https://neptune.ai/register)
+
+# Neptune in 30 seconds
+<div align="center">
+  <img src="https://neptune.ai/wp-content/uploads/lightning_adv_grad_norm.png" width="600" /><br><br>
+</div>
+
+## Installation
+`pip install neptune-client`
+ 
+ or
+ 
+`conda install -c conda-forge neptune-client`
+
+## Start tracking
+```
+import neptune
+
+neptune.init('my_workspace/my_project')
+neptune.create_experiment()
+
+for epoch in range(epochs):
+    ...
+    neptune.log_metric('loss', loss)
+    neptune.log_metric('metric', accuracy)
+
+neptune.log_artifact('model_weights.pth')
+```
+
+## [Documentation](https://docs.neptune.ai/index.html)
+
+## Learn more
+For the hands-on intro to neptune-client check this API Tour:
+
+[![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/docs/Neptune-API-Tour.py)
+[![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
+
+
+# What is Neptune good for?
+It can especially help you with the following:
 
 * [Logging experiments metadata](https://docs.neptune.ai/logging-and-managing-experiment-results/index.html)
 * [Monitoring ML runs live](https://docs.neptune.ai/getting-started/quick-starts/how-to-monitor-live.html#use-cases-monitor-runs-live)
 * [Organizing and exploring experiments results](https://docs.neptune.ai/organizing-and-exploring-results-in-the-ui/index.html)
 * [Comparing/debugging ML experiments and models](https://docs.neptune.ai/getting-started/quick-starts/how-to-compare-experiments.html#use-cases-compare-and-debug-experiments)
 * [Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)
+
 
 # Features to help you get the job done
 * Rich logging and tracking methods
@@ -42,29 +85,7 @@ It is designed to be:
 * **straightforward**: user defines what to keep track of during experiment to use.
 
 ### See how `neptune-client` works.
-`pip install neptune-client`
 
-`conda install -c conda-forge neptune-client`
-
-```
-import neptune
-
-neptune.init('my_workspace/my_project')
-neptune.create_experiment()
-
-for epoch in range(epochs):
-    ...
-    neptune.log_metric('loss', loss)
-    neptune.log_metric('metric', accuracy)
-
-neptune.log_artifact('model_weights.pth')
-```
-
-For the hands-on intro to neptune-client check this API Tour:
-
-[![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/docs/Neptune-API-Tour.py)
-[![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
-[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
 
 # Use Neptune with your favourite AI/ML libraries.
 ![frameworks-logos](https://docs.neptune.ai/_static/images/integrations/framework-logos.png)
