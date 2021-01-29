@@ -62,7 +62,6 @@ For the hands-on intro to neptune-client check this API Tour:
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/product-tours/how-it-works/showcase/Neptune-API-Tour.ipynb)
 
-
 # What is Neptune good for?
 It can especially help you with the following:
 
@@ -75,7 +74,7 @@ It can especially help you with the following:
 
 
 
-## What is neptune-client?
+## About Python `neptune-client`
 `neptune-client` is a Python library that serves three purposes:
 
 * logging machine learning experiments,
@@ -88,8 +87,7 @@ It is designed to be:
 * **generic**: capable of logging any kind of machine learning work
 * **straightforward**: user defines what to keep track of during experiment to use.
 
-### See how `neptune-client` works.
-
+### [API-reference](https://docs.neptune.ai/api-reference/index.html)
 
 # Use Neptune with your favourite AI/ML libraries.
 ![frameworks-logos](https://docs.neptune.ai/_static/images/integrations/framework-logos.png)
