@@ -9,13 +9,11 @@
 ![youtube](https://img.shields.io/youtube/views/9iX6DxcijO8?style=social)
 
 # Lightweight experiment tracking tool for AI/ML individuals and teams. Fits any workflow.
-Neptune is a lightweight experiment logging/tracking tool that helps you with your machine learning experiments. Neptune is a web-based platform and Python-based `neptune-client` that you can use to log all experiments meta-data that you care about (metrics, data versions, model weight, visuals).
+Neptune is a lightweight experiment logging/tracking tool that helps you with your machine learning experiments. Neptune is suitable for **indvidual**, **commercial** and **research** projects.  
 
 <div align="center">
   <img src="https://neptune.ai/wp-content/uploads/lightning_adv_grad_norm.png" width="600" /><br><br>
 </div>
-
-Neptune is suitable for **indvidual**, **commercial** and **research** projects.  
 
 ## [Get free account](https://neptune.ai/register)
 
