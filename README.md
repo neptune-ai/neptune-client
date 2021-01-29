@@ -4,6 +4,8 @@
 [![Build Status](https://travis-ci.org/neptune-ai/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-client)
 [![Maintenance](https://img.shields.io/badge/Maintained%3F-YES-green.svg)](https://github.com/neptune-ai/neptune-client/graphs/commit-activity)
 
+[![neptune-blog](https://img.shields.io/badge/Neptune-blog-informational)](https://neptune.ai/blog)
+
 [![twitter](https://img.shields.io/twitter/follow/neptune_ai.svg?label=Follow)](https://twitter.com/neptune_ai)
 ![youtube](https://img.shields.io/youtube/views/9iX6DxcijO8?style=social)
 
