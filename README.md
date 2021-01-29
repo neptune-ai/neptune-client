@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/neptune-logo-less-margin-e1611939543542.png" width="300" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/neptune-logo-less-margin-e1611939742683.png" width="500" /><br><br>
 </div>
 
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
