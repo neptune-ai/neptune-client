@@ -24,6 +24,8 @@ Neptune is a lightweight experiment logging/tracking tool that helps you with yo
 * dashbordign views
 * team management
 
+### [Documentation](https://docs.neptune.ai/index.html)
+
 # Neptune in 30 seconds
 <div align="center">
   <a href="https://www.youtube.com/embed/9iX6DxcijO8">
@@ -52,8 +54,6 @@ for epoch in range(epochs):
 
 neptune.log_artifact('model_weights.pth')
 ```
-
-## [Documentation](https://docs.neptune.ai/index.html)
 
 ## Learn more
 For the hands-on intro to neptune-client check this API Tour:
