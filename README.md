@@ -78,6 +78,7 @@ trainer.fit(model, train_loader)
 [![neptune-badge](https://img.shields.io/badge/Example-experiment-success)](https://ui.neptune.ai/o/shared/org/pytorch-lightning-integration/e/PYTOR-137930/charts)
 
 Check full code example (pick your favourite medium):
+
 [![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/integrations/pytorch-lightning/docs/Neptune-PyTorch-Lightning-advanced.py)
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/integrations/pytorch-lightning/showcase/Neptune-PyTorch-Lightning-advanced.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/neptune-examples/blob/master/integrations/pytorch-lightning/showcase/Neptune-PyTorch-Lightning-advanced.ipynb)
@@ -100,6 +101,15 @@ If you got stuck or simply want to talk to us about something here are your opti
 * [video tutorials](https://www.youtube.com/playlist?list=PLKePQLVx9tOd8TEGdG4PAKz0Owqdv1aaw),
 * Chat! When in application click on the [blue message icon](https://docs.neptune.ai/_static/images/getting-started/intercom.gif) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP),
 * You can just shoot us an email at [contact@neptune.ai](mailto:contact@neptune.ai).
+
+# Neptune.ai is trusted by great companies
+![Roche](https://neptune.ai/wp-content/uploads/Roche-logo.png)
+![nnaisense](https://neptune.ai/wp-content/uploads/2020/07/NNAISENSE.png)
+![senseye](https://neptune.ai/wp-content/uploads/2020/06/Senseye-1.png)
+
+![zestyai](https://neptune.ai/wp-content/uploads/2020/07/Zesty.png)
+![newyorker](https://neptune.ai/wp-content/uploads/2020/07/NewYorker-2.png)
+![intive](https://neptune.ai/wp-content/uploads/2020/07/Intive-1.png)
 
 # People behind Neptune
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
