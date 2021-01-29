@@ -24,7 +24,6 @@ from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname, Unsupp
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from tests.neptune.api_models import ApiParameter
 
-
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
 
@@ -188,6 +187,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         swagger_client_factory.return_value = swagger_client
 
         return swagger_client
+
 
 class SomeClass(object):
     pass
