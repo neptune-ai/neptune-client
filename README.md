@@ -29,7 +29,7 @@ Neptune is a lightweight experiment logging/tracking tool that helps you with yo
 
 # Neptune in 30 seconds
 <div align="center">
-  <a href="https://www.youtube.com/embed/9iX6DxcijO8">
+  <a href="https://youtu.be/9iX6DxcijO8">
     <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/yt-get-started.png" width="600">
   </a>
 </div>
