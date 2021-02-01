@@ -69,9 +69,9 @@ class OldClientFeatures(ClientFeatures):
         neptune.send_image('single_img', self.img_path, name='name', description='desc')
         neptune.send_image('single_img', self.img_path, name='name', description='desc')
         neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
-        neptune.send_artifact(self.img_path, destination='single artifact')
-        neptune.log_artifact(self.img_path, destination='logged artifact')
-        neptune.log_artifact(self.img_path, destination='artifact to delete')
+        # neptune.send_artifact(self.img_path, destination='single artifact')
+        # neptune.log_artifact(self.img_path, destination='logged artifact')
+        # neptune.log_artifact(self.img_path, destination='artifact to delete')
         # neptune.delete_artifacts('artifact to delete')
 
     def other(self):
@@ -82,7 +82,7 @@ class OldClientFeatures(ClientFeatures):
         # self.modify_tags()
         self.log_std()
         self.log_series()
-        # self.handle_files_and_images()
+        self.handle_files_and_images()
 
         self.other()
 
