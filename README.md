@@ -203,7 +203,7 @@ Check full code example:
 
 ## Use with LightGBM
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2019/08/LightGBM.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/2019/08/LightGBM-e1612188069560.png" width="400" /><br><br>
 </div>
 
 LightGBM is a popular gradient boosting library.
