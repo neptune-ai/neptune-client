@@ -16,7 +16,7 @@
 
 import logging
 import uuid
-from typing import List
+from typing import List, Dict
 
 import click
 import six
@@ -26,20 +26,25 @@ from mock import NonCallableMagicMock
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
-from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.utils import paths as alpha_path_utils
 from neptune.api_exceptions import (
     AlphaOperationErrors,
-    ChannelNotFound,
     ExperimentNotFound,
     ProjectNotFound,
 )
 from neptune.exceptions import STYLES, NeptuneException
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.model import AlphaChannelWithLastValue
+from neptune.internal.channels.channels import ChannelType
+from neptune.internal.utils.alpha_integration import (
+    AlphaChannelDTO,
+    AlphaChannelWithValueDTO,
+    channel_type_to_operation,
+    channel_value_type_to_operation,
+)
+from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
@@ -146,25 +151,39 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
         pass
 
-    @with_api_exceptions_handler
-    def create_system_channel(self, experiment, name, channel_type):
-        channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
-        dummy_log_string = alpha_operation.LogStrings(
+    def _create_channel(self, experiment: Experiment, channel_id: str, channel_name: str, channel_type: str):
+        """This function is responsible for creating 'fake' channels in alpha projects.
+
+        Since channels are abandoned in alpha api, we're mocking them using empty logging operation."""
+
+        operation = channel_type_to_operation(ChannelType(channel_type))
+
+        log_empty_operation = operation(
             path=alpha_path_utils.parse_path(channel_id),
             values=[],
         )  # this operation is used to create empty attribute
         self._execute_alpha_operation(
             experiment=experiment,
-            operations=[dummy_log_string],
+            operations=[log_empty_operation],
         )
-        system_channels = self.get_system_channels(experiment)
-        for channel in system_channels:
-            if channel.name == name:
-                return channel
-        raise ChannelNotFound(channel_id=channel_id)
+        return ChannelWithLastValue(
+            AlphaChannelWithValueDTO(
+                channelId=channel_id,
+                channelName=channel_name,
+                channelType=channel_type,
+                x=None,
+                y=None
+            )
+        )
 
     @with_api_exceptions_handler
-    def get_system_channels(self, experiment):
+    def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+        channel_id = f'{alpha_consts.LOG_ATTRIBUTE_SPACE}{name}'
+        return self._create_channel(experiment, channel_id,
+                                    channel_name=name,
+                                    channel_type=channel_type)
+
+    def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
         params = {
             'experimentId': experiment.internal_id,
         }
@@ -174,39 +193,59 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+
         return [
-            AlphaChannelWithLastValue(
-                ch_id=attr.stringSeriesProperties.attributeName,
-                # ch_name is ch_id without first namespace
-                ch_name=attr.stringSeriesProperties.attributeName.split('/', 1)[-1],
-                ch_type=attr.stringSeriesProperties.attributeType,
-            )
-            for attr in experiment.attributes
-            if (attr.type == AlphaAttributeType.STRING_SERIES.value
-                and attr.name.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE))
+            AlphaChannelDTO(attr) for attr in experiment.attributes
+            if AlphaChannelDTO.is_valid_attribute_for_channel(attr)
         ]
+
+    @with_api_exceptions_handler
+    def get_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
+        api_channels = [
+            channel for channel in self._get_channels(experiment)
+            # return channels from LOG_ATTRIBUTE_SPACE namespace only
+            if channel.id.startswith(alpha_consts.LOG_ATTRIBUTE_SPACE)
+        ]
+        channels = dict()
+        for ch in api_channels:
+            # TODO: NPT-9216
+            ch.x = ch.lastX
+            ch.y = ch.lastY
+            channels[ch.name] = ch
+        return channels
+
+    @with_api_exceptions_handler
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+        channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
+        return self._create_channel(experiment, channel_id,
+                                    channel_name=name,
+                                    channel_type=ChannelType.TEXT.value)
+
+    @with_api_exceptions_handler
+    def get_system_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
+        return {
+            channel.name: channel
+            for channel in self._get_channels(experiment)
+            if (channel.channelType == ChannelType.TEXT.value
+                and channel.id.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE))
+        }
 
     @with_api_exceptions_handler
     def send_channels_values(self, experiment, channels_with_values):
         send_operations = []
         for channel_with_values in channels_with_values:
-            # TODO: handle other data types
-            # points = [Point(
-            #     timestampMillis=int(value.ts * 1000.0),
-            #     x=value.x,
-            #     y=Y(numericValue=value.y.get('numeric_value'),
-            #         textValue=value.y.get('text_value'),
-            #         inputImageValue=value.y.get('image_value'))
-            # ) for value in channel_with_values.channel_values]
+            channel_value_type = channel_with_values.channel_type
+            operation = channel_value_type_to_operation(channel_value_type)
+
             ch_values = [
-                alpha_operation.LogStrings.ValueType(
-                    value=value.y.get('text_value'),
+                alpha_operation.LogSeriesValue(
+                    value=ch_value.value,
                     step=None,
-                    ts=value.ts,
+                    ts=ch_value.ts,
                 )
-                for value in channel_with_values.channel_values
+                for ch_value in channel_with_values.channel_values
             ]
-            send_operations.append(alpha_operation.LogStrings(
+            send_operations.append(operation(
                 path=alpha_path_utils.parse_path(channel_with_values.channel_id),
                 values=ch_values,
             ))

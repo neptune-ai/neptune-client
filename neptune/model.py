@@ -13,52 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import abc
 
 
-class AbstractChannelWithLastValue(abc.ABC):
-    @property
-    @abc.abstractmethod
-    def id(self):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def name(self):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def type(self):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def x(self):
-        pass
-
-    @x.setter
-    @abc.abstractmethod
-    def x(self, x):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def trimmed_y(self):
-        pass
-
-    @property
-    @abc.abstractmethod
-    def y(self):
-        pass
-
-    @y.setter
-    @abc.abstractmethod
-    def y(self, y):
-        pass
-
-
-class ChannelWithLastValue(AbstractChannelWithLastValue):
+class ChannelWithLastValue:
     def __init__(self, channel_with_value_dto):
         self.channel_with_value_dto = channel_with_value_dto
 
@@ -93,47 +50,6 @@ class ChannelWithLastValue(AbstractChannelWithLastValue):
     @y.setter
     def y(self, y):
         self.channel_with_value_dto.y = y
-
-
-class AlphaChannelWithLastValue(AbstractChannelWithLastValue):
-    def __init__(self, ch_id: str, ch_name: str, ch_type: str):
-        self._ch_id = ch_id
-        self._ch_name = ch_name
-        self._ch_type = ch_type
-        self._x = None
-        self._y = None
-
-    @property
-    def id(self):
-        return self._ch_id
-
-    @property
-    def name(self):
-        return self._ch_name
-
-    @property
-    def type(self):
-        return self._ch_type
-
-    @property
-    def x(self):
-        raise NotImplementedError()
-
-    @x.setter
-    def x(self, x):
-        raise NotImplementedError()
-
-    @property
-    def trimmed_y(self):
-        raise NotImplementedError()
-
-    @property
-    def y(self):
-        raise NotImplementedError()
-
-    @y.setter
-    def y(self, y):
-        raise NotImplementedError()
 
 
 class LeaderboardEntry(object):
