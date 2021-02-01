@@ -146,7 +146,33 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         fake_experiment = NonCallableMagicMock()
         # `timeOfCreation` is required by `TimeOffsetGenerator`
         fake_experiment.timeOfCreation = experiment.creationTime
+
+        try:
+            tags = self._alpha_backend.get_string_set_attribute(
+                experiment_uuid=uuid.UUID(experiment_id),
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
+            ).values
+        except alpha_exceptions.MetadataInconsistency:
+            tags = list()
+        fake_experiment.tags = tags
         return fake_experiment
+
+    @with_api_exceptions_handler
+    def update_tags(self, experiment, tags_to_add, tags_to_delete):
+        operations = [
+            alpha_operation.AddStrings(
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
+                values=tags_to_add,
+            ),
+            alpha_operation.RemoveStrings(
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
+                values=tags_to_delete,
+            )
+        ]
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=operations,
+        )
 
     def upload_experiment_source(self, experiment, data, progress_indicator):
         # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`

@@ -38,8 +38,9 @@ class NewClientFeatures(ClientFeatures):
         """NPT-9213"""
         self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].add('tag1')
         self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].add(['tag2_to_remove', 'tag3'])
-        # self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].pop('tag2_to_remove')
-        # self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].pop('tag4_remove_non_existing')
+        # del self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH]  # TODO: NPT-9222
+        self.exp.sync()
+        assert set(self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].get()) == {'tag1', 'tag2_to_remove', 'tag3'}
 
     def log_std(self):
         print('stdout text1')

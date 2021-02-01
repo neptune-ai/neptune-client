@@ -36,10 +36,13 @@ class OldClientFeatures(ClientFeatures):
 
     def modify_tags(self):
         """NPT-9213"""
-        neptune.append_tag('tag1')
+        neptune.append_tags('tag1')
         neptune.append_tag(['tag2_to_remove', 'tag3'])
-        neptune.remove_tag('tag2_to_remove')
-        neptune.remove_tag('tag4_remove_non_existing')
+        # neptune.remove_tag('tag2_to_remove')  # TODO: NPT-9222
+        # neptune.remove_tag('tag4_remove_non_existing')  # TODO: NPT-9222
+
+        exp = neptune.get_experiment()
+        assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag2_to_remove', 'tag3'}
 
     def log_std(self):
         print('stdout text1')
@@ -79,7 +82,7 @@ class OldClientFeatures(ClientFeatures):
         print(v)
 
     def run(self):
-        # self.modify_tags()
+        self.modify_tags()
         self.log_std()
         self.log_series()
         self.handle_files_and_images()
