@@ -40,9 +40,6 @@ class ClientFeatures(abc.ABC):
     def run(self):
         pass
 
+    @abc.abstractmethod
     def run(self):
-        self.modify_tags()
-        self.log_std()
-        self.log_series()
-        self.other()
-        self.handle_files_and_images()
+        pass

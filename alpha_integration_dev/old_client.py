@@ -62,13 +62,13 @@ class OldClientFeatures(ClientFeatures):
         v = neptune.get_experiment().get_logs()
         print(v)
 
-    # def run(self):
-        # cls.modify_tags()
+    def run(self):
+        # self.modify_tags()
         self.log_std()
         self.log_series()
         # self.handle_files_and_images()
 
-        # self.other()
+        self.other()
 
 
 if __name__ == '__main__':
