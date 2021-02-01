@@ -29,7 +29,7 @@ Neptune is a lightweight experiment logging/tracking tool that helps you with yo
 
 # Neptune in 30 seconds
 <div align="center">
-  <a href="https://youtu.be/9iX6DxcijO8">
+  <a href="https://youtu.be/9iX6DxcijO8" target="_blank">
     <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/yt-get-started.png" width="600">
   </a>
 </div>
@@ -78,7 +78,7 @@ Neptune can especially helpful with the following problems:
 * [Comparing/debugging ML experiments and models](https://docs.neptune.ai/getting-started/quick-starts/how-to-compare-experiments.html#use-cases-compare-and-debug-experiments)
 * [Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)
 
-# Use Neptune with your favourite AI/ML libraries.
+# Use Neptune with your favourite AI/ML libraries
 ![frameworks-logos](https://docs.neptune.ai/_static/images/integrations/framework-logos.png)
 
 Neptune comes with **25+ integrations** with Python libraries popular in machine learning, deep learning and reinforcement learning.
