@@ -92,7 +92,9 @@ Integrations lets you automatically:
 * save model checkpoints,
 * log interactive visualizations,
 * log csv files, pandas Datraframes,
-* [much more](https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment-data.html#what-you-can-log).
+* [log much more](https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment-data.html#what-you-can-log).
+
+### [All integrations](https://docs.neptune.ai/integrations/index.html)
 
 ## PyTorch Lightning
 <div align="center">
@@ -296,9 +298,6 @@ Check full code example:
 [![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/neptune-examples/blob/master/integrations/optuna/docs/Neptune-Optuna.py)
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/neptune-examples/blob/master/integrations/optuna/showcase/Neptune-Optuna.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com//github/neptune-ai/neptune-examples/blob/master/integrations/optuna/docs/Neptune-Optuna.ipynb)
-
-## and more
-:arrow_right: [more integrations](https://docs.neptune.ai/integrations/index.html)
 
 # Getting help
 If you got stuck or simply want to talk to us about something here are your options:
