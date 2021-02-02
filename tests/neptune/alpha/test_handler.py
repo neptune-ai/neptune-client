@@ -305,6 +305,28 @@ class TestHandler(unittest.TestCase):
         exp["attr2"].log(["345", self.FloatLike(34), 4, 13.])
         self.assertEqual(exp['attr2'].get_last(), "13.0")
 
+    def test_assign_dict(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        exp["params"] = {
+            "x": 5,
+            "metadata": {
+                "name": "Trol",
+                "age": 376
+            },
+            "toys": StringSeriesVal(["cudgel", "hat"]),
+            "nested": {
+                "nested": {
+                    "deep_secret": FloatSeriesVal([13, 15])
+                }
+            }
+        }
+        self.assertEqual(exp['params/x'].get(), 5)
+        self.assertEqual(exp['params/metadata/name'].get(), "Trol")
+        self.assertEqual(exp['params/metadata/age'].get(), 376)
+        self.assertEqual(exp['params/toys'].get_last(), "hat")
+        self.assertEqual(exp['params/nested/nested/deep_secret'].get_last(), 15)
+
+
     @dataclass
     class FloatLike:
 

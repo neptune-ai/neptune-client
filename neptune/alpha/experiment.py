@@ -84,6 +84,9 @@ class Experiment(AbstractContextManager):
     def __delitem__(self, path) -> None:
         self.pop(path)
 
+    def assign(self, value, wait: bool = False) -> None:
+        self[""].assign(value, wait)
+
     def ping(self):
         self._backend.ping_experiment(self._uuid)
 
