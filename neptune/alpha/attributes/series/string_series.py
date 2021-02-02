@@ -47,7 +47,9 @@ class StringSeries(Series[Val, Data]):
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)
 
-    def get_last(self) -> str:
+    def get_last(self, wait=True) -> str:
         # pylint: disable=protected-access
+        if wait:
+            self._experiment.wait()
         val = self._backend.get_string_series_attribute(self._experiment_uuid, self._path)
         return val.last
