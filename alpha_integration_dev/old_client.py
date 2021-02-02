@@ -19,6 +19,7 @@
 * NEPTUNE_PROJECT
 """
 import sys
+from datetime import datetime
 
 import neptune
 from common_client_code import ClientFeatures
@@ -35,7 +36,6 @@ class OldClientFeatures(ClientFeatures):
         )
 
     def modify_tags(self):
-        """NPT-9213"""
         neptune.append_tags('tag1')
         neptune.append_tag(['tag2_to_remove', 'tag3'])
         # neptune.remove_tag('tag2_to_remove')  # TODO: NPT-9222
@@ -43,6 +43,20 @@ class OldClientFeatures(ClientFeatures):
 
         exp = neptune.get_experiment()
         assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag2_to_remove', 'tag3'}
+
+    def modify_properties(self):
+        neptune.set_property('prop', 'some text')
+        neptune.set_property('prop_number', 42)
+        neptune.set_property('nested/prop', 42)
+        neptune.set_property('prop_to_del', 42)
+        # neptune.set_property('prop_list', [1, 2, 3])  # TODO: merge changes from alpha
+        neptune.set_property('prop_datetime', datetime.now())
+        neptune.remove_property('prop_to_del')
+
+        # exp = neptune.get_experiment()
+        # props = exp.get_properties()
+        # print(props)
+
 
     def log_std(self):
         print('stdout text1')
@@ -83,6 +97,7 @@ class OldClientFeatures(ClientFeatures):
 
     def run(self):
         self.modify_tags()
+        self.modify_properties()
         self.log_std()
         self.log_series()
         self.handle_files_and_images()

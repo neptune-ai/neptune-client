@@ -30,7 +30,11 @@ class ClientFeatures(abc.ABC):
 
     @abc.abstractmethod
     def modify_tags(self):
-        """NPT-9213"""
+        pass
+
+    @abc.abstractmethod
+    def modify_properties(self):
+        pass
 
     @abc.abstractmethod
     def log_std(self):

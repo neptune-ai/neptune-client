@@ -44,6 +44,7 @@ from neptune.internal.utils.alpha_integration import (
     channel_type_to_operation,
     channel_value_type_to_operation,
     deprecated_img_to_alpha_image,
+    property_value_to_operation,
 )
 from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
@@ -156,6 +157,29 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             tags = list()
         fake_experiment.tags = tags
         return fake_experiment
+
+    def update_experiment(self, experiment, properties):
+        raise NeptuneException("`update_experiment` shouldn't be called.")
+
+    @with_api_exceptions_handler
+    def set_property(self, experiment, key, value):
+        operation_cls = property_value_to_operation(value)
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=[operation_cls(
+                path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}'),
+                value=value,
+            )],
+        )
+
+    @with_api_exceptions_handler
+    def remove_property(self, experiment, key):
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=[alpha_operation.DeleteAttribute(
+                path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}'),
+            )],
+        )
 
     @with_api_exceptions_handler
     def update_tags(self, experiment, tags_to_add, tags_to_delete):

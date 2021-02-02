@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from datetime import datetime
+from typing import Type
 
 from neptune.alpha import types as alpha_types
 from neptune.alpha.internal import operation as alpha_operation
@@ -149,3 +151,15 @@ def channel_value_type_to_operation(channel_value_type: ChannelValueType) -> alp
 def deprecated_img_to_alpha_image(img: dict) -> alpha_types.Image:
     # TODO: what about img: `name` and `description` fields?
     return img['data']
+
+
+def property_value_to_operation(value) -> Type[alpha_operation.Operation]:
+    """Converts value passed as property to `alpha_operation`"""
+    if isinstance(value, (int, float)):
+        return alpha_operation.AssignFloat
+    elif isinstance(value, str):
+        return alpha_operation.AssignString
+    elif isinstance(value, datetime):
+        return alpha_operation.AssignDatetime
+    else:
+        raise NeptuneException(f"Can't pass {value} of type {type(value)} as property.")
