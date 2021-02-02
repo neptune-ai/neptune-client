@@ -15,7 +15,6 @@
 #
 from typing import Union
 
-from neptune.alpha.internal.utils import verify_type
 
 from neptune.alpha.internal.operation import AssignString
 from neptune.alpha.types.atoms.string import String as StringVal
@@ -25,13 +24,15 @@ from neptune.alpha.attributes.atoms.atom import Atom
 class String(Atom):
 
     def assign(self, value: Union[StringVal, str], wait: bool = False):
-        verify_type("value", value, (StringVal, str))
-        if isinstance(value, StringVal):
-            value = value.value
-        with self._experiment.lock():
-            self._enqueue_operation(AssignString(self._path, value), wait)
+        if not isinstance(value, StringVal):
+            value = StringVal(value)
 
-    def get(self) -> str:
+        with self._experiment.lock():
+            self._enqueue_operation(AssignString(self._path, value.value), wait)
+
+    def get(self, wait=True) -> str:
         # pylint: disable=protected-access
+        if wait:
+            self._experiment.wait()
         val = self._backend.get_string_attribute(self._experiment_uuid, self._path)
         return val.value

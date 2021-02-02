@@ -16,6 +16,7 @@
 import os
 import unittest
 # pylint: disable=protected-access
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from io import StringIO, BytesIO
 from tempfile import TemporaryDirectory, NamedTemporaryFile
@@ -189,24 +190,20 @@ class TestHandler(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             exp['x'].log([])
-        with self.assertRaises(TypeError):
-            exp['x'].log(["str", 5])
+        with self.assertRaises(ValueError):
+            exp['x'].log([5, "str"])
         with self.assertRaises(ValueError):
             exp['x'].log([5, 10], step=10)
 
         exp['some/num/val'].log([5], step=1)
         exp['some/num/val'].log([])
-        with self.assertRaises(TypeError):
+        with self.assertRaises(ValueError):
             exp['some/num/val'].log("str")
         with self.assertRaises(TypeError):
             exp['some/num/val'].log(img)
 
         exp['some/str/val'].log(["str"], step=1)
         exp['some/str/val'].log([])
-        with self.assertRaises(TypeError):
-            exp['some/str/val'].log(5)
-        with self.assertRaises(TypeError):
-            exp['some/str/val'].log(img)
 
         exp['some/img/val'].log([img], step=1)
         exp['some/img/val'].log([])
@@ -272,3 +269,68 @@ class TestHandler(unittest.TestCase):
         exp = init(connection_mode="debug", flush_period=0.5)
         with self.assertRaises(AttributeError):
             exp['var'].something()
+
+    def test_float_like_types(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+
+        exp.define("attr1", self.FloatLike(5))
+        self.assertEqual(exp['attr1'].get(), 5)
+        exp["attr1"] = "234"
+        self.assertEqual(exp['attr1'].get(), 234)
+        with self.assertRaises(ValueError):
+            exp["attr1"] = "234a"
+
+        exp["attr2"].assign(self.FloatLike(34))
+        self.assertEqual(exp['attr2'].get(), 34)
+        exp["attr2"].assign("555")
+        self.assertEqual(exp['attr2'].get(), 555)
+        with self.assertRaises(ValueError):
+            exp["attr2"].assign("string")
+
+        exp["attr3"].log(self.FloatLike(34))
+        self.assertEqual(exp['attr3'].get_last(), 34)
+        exp["attr3"].log(["345", self.FloatLike(34), 4, 13.])
+        self.assertEqual(exp['attr3'].get_last(), 13)
+        with self.assertRaises(ValueError):
+            exp["attr3"].log([4, "234a"])
+
+    def test_string_like_types(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+
+        exp["attr1"] = "234"
+        exp["attr1"] = self.FloatLike(12356)
+        self.assertEqual(exp['attr1'].get(), "TestHandler.FloatLike(value=12356)")
+
+        exp["attr2"].log("xxx")
+        exp["attr2"].log(["345", self.FloatLike(34), 4, 13.])
+        self.assertEqual(exp['attr2'].get_last(), "13.0")
+
+    def test_assign_dict(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        exp["params"] = {
+            "x": 5,
+            "metadata": {
+                "name": "Trol",
+                "age": 376
+            },
+            "toys": StringSeriesVal(["cudgel", "hat"]),
+            "nested": {
+                "nested": {
+                    "deep_secret": FloatSeriesVal([13, 15])
+                }
+            }
+        }
+        self.assertEqual(exp['params/x'].get(), 5)
+        self.assertEqual(exp['params/metadata/name'].get(), "Trol")
+        self.assertEqual(exp['params/metadata/age'].get(), 376)
+        self.assertEqual(exp['params/toys'].get_last(), "hat")
+        self.assertEqual(exp['params/nested/nested/deep_secret'].get_last(), 15)
+
+
+    @dataclass
+    class FloatLike:
+
+        value: float
+
+        def __float__(self):
+            return float(self.value)

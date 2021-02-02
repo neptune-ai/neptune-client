@@ -28,12 +28,10 @@ from neptune.alpha.attributes.atoms.atom import Atom
 
 class File(Atom):
 
-    def assign(self, value: Union[FileVal, str, IOBase], wait: bool = False) -> None:
-        verify_type("value", value, (FileVal, str, IOBase))
+    def assign(self, value: Union[FileVal, IOBase], wait: bool = False) -> None:
+        verify_type("value", value, (FileVal, IOBase))
 
-        if isinstance(value, str):
-            value = FileVal(file_path=value)
-        elif isinstance(value, IOBase):
+        if isinstance(value, IOBase):
             file_content, file_name = get_stream_content(value)
             value = FileVal(file_content=file_content, file_name=file_name)
 
@@ -49,6 +47,8 @@ class File(Atom):
         verify_type("path", path, str)
         self.assign(FileVal(file_path=path), wait)
 
-    def download(self, destination: Optional[str] = None) -> None:
+    def download(self, destination: Optional[str] = None, wait=True) -> None:
         verify_type("destination", destination, (str, type(None)))
+        if wait:
+            self._experiment.wait()
         self._backend.download_file(self._experiment_uuid, self._path, destination)

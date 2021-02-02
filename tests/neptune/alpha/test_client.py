@@ -68,11 +68,9 @@ class TestClient(unittest.TestCase):
         exp = init(connection_mode='async', flush_period=0.5)
         exp["some/variable"] = 13
         # TODO: Should be None or exception?
-        # self.assertEqual(None, exp["some/variable"].get())
         with self.assertRaises(MetadataInconsistency):
-            exp["some/variable"].get()
-        exp.wait()
-        self.assertEqual(13, exp["some/variable"].get())
+            exp["some/variable"].get(wait=False)
+        self.assertEqual(13, exp["some/variable"].get(wait=True))
         self.assertIn(str(exp._uuid), os.listdir(".neptune/async"))
         execution_dir = os.listdir(".neptune/async/{}".format(exp._uuid))[0]
         self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))

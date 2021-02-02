@@ -16,6 +16,8 @@
 import os
 import unittest
 
+from neptune.alpha.types.series import StringSeries, FloatSeries
+
 from neptune.alpha import init, ANONYMOUS
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.alpha.exceptions import MetadataInconsistency
@@ -69,3 +71,24 @@ class TestExperiment(unittest.TestCase):
         exp.wait()
         self.assertEqual(handler['num'].get(), 3)
         self.assertEqual(handler['text'].get(), "Some text")
+
+    def test_assign_dict(self):
+        exp = init(connection_mode="debug", flush_period=0.5)
+        exp.assign({
+            "x": 5,
+            "metadata": {
+                "name": "Trol",
+                "age": 376
+            },
+            "toys": StringSeries(["cudgel", "hat"]),
+            "nested": {
+                "nested": {
+                    "deep_secret": FloatSeries([13, 15])
+                }
+            }
+        })
+        self.assertEqual(exp['x'].get(), 5)
+        self.assertEqual(exp['metadata/name'].get(), "Trol")
+        self.assertEqual(exp['metadata/age'].get(), 376)
+        self.assertEqual(exp['toys'].get_last(), "hat")
+        self.assertEqual(exp['nested/nested/deep_secret'].get_last(), 15)
