@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
-from io import IOBase
 from typing import TYPE_CHECKING, Union, Iterable
 
 from neptune.alpha.attributes.file_set import FileSet
@@ -27,7 +25,6 @@ from neptune.alpha.internal.utils import verify_type, is_collection, verify_coll
 from neptune.alpha.internal.utils.paths import join_paths, parse_path
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.series.image import Image
-from neptune.alpha.types.value import Value
 
 if TYPE_CHECKING:
     from neptune.alpha.experiment import Experiment
@@ -53,7 +50,13 @@ class Handler:
         else:
             raise AttributeError()
 
-    def assign(self, value: Union[Value, int, float, str, datetime, IOBase, dict], wait: bool = False) -> None:
+    def assign(self, value, wait: bool = False) -> None:
+        if not isinstance(value, dict):
+            return self._assign_impl(value, wait)
+        for key, value in value.items():
+            self[key].assign(value, wait)
+
+    def _assign_impl(self, value, wait: bool = False) -> None:
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
             if attr:
