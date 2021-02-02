@@ -53,10 +53,13 @@ class OldClientFeatures(ClientFeatures):
         neptune.set_property('prop_datetime', datetime.now())
         neptune.remove_property('prop_to_del')
 
-        # exp = neptune.get_experiment()
-        # props = exp.get_properties()
-        # print(props)
-
+        exp = neptune.get_experiment()
+        properties = exp.get_properties()
+        assert properties['prop'] == 'some text'
+        assert properties['prop_number'] == 42
+        assert properties['nested/prop'] == 42
+        assert 'prop_to_del' not in properties
+        print(f'Properties: {properties}')
 
     def log_std(self):
         print('stdout text1')
@@ -92,8 +95,8 @@ class OldClientFeatures(ClientFeatures):
         # neptune.delete_artifacts('artifact to delete')
 
     def other(self):
-        v = neptune.get_experiment().get_logs()
-        print(v)
+        logs = neptune.get_experiment().get_logs()
+        print(f'Logs: {logs}')
 
     def run(self):
         self.modify_tags()

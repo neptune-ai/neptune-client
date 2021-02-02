@@ -41,6 +41,7 @@ from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,
+    AlphaPropertyDTO,
     channel_type_to_operation,
     channel_value_type_to_operation,
     deprecated_img_to_alpha_image,
@@ -156,6 +157,11 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         except alpha_exceptions.MetadataInconsistency:
             tags = list()
         fake_experiment.tags = tags
+        fake_experiment.properties = [
+            AlphaPropertyDTO(attr) for attr in self._get_attributes(experiment_id)
+            if AlphaPropertyDTO.is_valid_attribute(attr)
+        ]
+
         return fake_experiment
 
     def update_experiment(self, experiment, properties):
@@ -235,19 +241,9 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                                     channel_type=channel_type)
 
     def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
-        params = {
-            'experimentId': experiment.internal_id,
-        }
-        try:
-            experiment = self.leaderboard_swagger_client.api.getExperimentAttributes(**params).response().result
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-
         return [
-            AlphaChannelDTO(attr) for attr in experiment.attributes
-            if AlphaChannelDTO.is_valid_attribute_for_channel(attr)
+            AlphaChannelDTO(attr) for attr in self._get_attributes(experiment.internal_id)
+            if AlphaChannelDTO.is_valid_attribute(attr)
         ]
 
     @with_api_exceptions_handler
@@ -318,6 +314,19 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     def create_hardware_metric(self, experiment, metric):
         pass
+
+    def _get_attributes(self, experiment_id) -> list:
+        params = {
+            'experimentId': experiment_id,
+        }
+        try:
+            experiment = self.leaderboard_swagger_client.api.getExperimentAttributes(**params).response().result
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+
+        return experiment.attributes
 
     @staticmethod
     def _get_client_config_args(api_token):

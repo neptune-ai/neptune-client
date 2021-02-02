@@ -62,6 +62,7 @@ class NewClientFeatures(ClientFeatures):
         self.exp.sync()
         assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop'].get() == 'some text'
         assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_number'].get() == 42
+        assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}nested/prop'].get() == 42
         prop_to_del_absent = False
         try:
             self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del'].get()
