@@ -54,12 +54,13 @@ class NewClientFeatures(ClientFeatures):
         self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_number'] = 42
         self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}nested/prop'] = 42
         self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del'] = 42
-        # self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_list'] = [1, 2, 3]  # TODO: merge changes from alpha
+        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_list'] = [1, 2, 3]
+        with open(self.text_file_path, mode='r') as f:
+            self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_IO'] = f
         self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_datetime'] = datetime.now()
         self.exp.sync()
         del self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del']
 
-        self.exp.sync()
         assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop'].get() == 'some text'
         assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_number'].get() == 42
         assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}nested/prop'].get() == 42

@@ -21,6 +21,7 @@ from typing import Type
 from neptune.alpha import types as alpha_types
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
+from neptune.alpha.internal import utils as alpha_utils
 from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
 from neptune.exceptions import NeptuneException
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
@@ -194,11 +195,15 @@ def deprecated_img_to_alpha_image(img: dict) -> alpha_types.Image:
 
 def property_value_to_operation(value) -> Type[alpha_operation.Operation]:
     """Converts value passed as property to `alpha_operation`"""
-    if isinstance(value, (int, float)):
+    if alpha_utils.is_float(value):
         return alpha_operation.AssignFloat
-    elif isinstance(value, str):
+    elif alpha_utils.is_string(value):
         return alpha_operation.AssignString
     elif isinstance(value, datetime):
         return alpha_operation.AssignDatetime
+    if alpha_utils.is_float_like(value):
+        return alpha_operation.AssignFloat
+    elif alpha_utils.is_string_like(value):
+        return alpha_operation.AssignString
     else:
         raise NeptuneException(f"Can't pass {value} of type {type(value)} as property.")

@@ -49,16 +49,20 @@ class OldClientFeatures(ClientFeatures):
         neptune.set_property('prop_number', 42)
         neptune.set_property('nested/prop', 42)
         neptune.set_property('prop_to_del', 42)
-        # neptune.set_property('prop_list', [1, 2, 3])  # TODO: merge changes from alpha
+        neptune.set_property('prop_list', [1, 2, 3])
+        with open(self.text_file_path, mode='r') as f:
+            neptune.set_property('prop_IO', f)
         neptune.set_property('prop_datetime', datetime.now())
         neptune.remove_property('prop_to_del')
 
         exp = neptune.get_experiment()
         properties = exp.get_properties()
         assert properties['prop'] == 'some text'
-        assert properties['prop_number'] == 42
+        # assert properties['prop_number'] == 42  # TODO: should we convert everything to str?
         assert properties['nested/prop'] == 42
         assert 'prop_to_del' not in properties
+        assert properties['prop_IO'] == "<_io.TextIOWrapper name='alpha_integration_dev/data/text.txt'" \
+                                        " mode='r' encoding='UTF-8'>"
         print(f'Properties: {properties}')
 
     def log_std(self):
