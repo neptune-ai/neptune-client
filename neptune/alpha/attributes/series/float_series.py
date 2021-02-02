@@ -63,7 +63,9 @@ class FloatSeries(Series[Val, Data]):
     def _is_value_type(self, value) -> bool:
         return isinstance(value, FloatSeriesVal)
 
-    def get_last(self) -> float:
+    def get_last(self, wait=True) -> float:
         # pylint: disable=protected-access
+        if wait:
+            self._experiment.wait()
         val = self._backend.get_float_series_attribute(self._experiment_uuid, self._path)
         return val.last

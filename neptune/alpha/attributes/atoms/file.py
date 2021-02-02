@@ -47,6 +47,8 @@ class File(Atom):
         verify_type("path", path, str)
         self.assign(FileVal(file_path=path), wait)
 
-    def download(self, destination: Optional[str] = None) -> None:
+    def download(self, destination: Optional[str] = None, wait=True) -> None:
         verify_type("destination", destination, (str, type(None)))
+        if wait:
+            self._experiment.wait()
         self._backend.download_file(self._experiment_uuid, self._path, destination)
