@@ -14,7 +14,8 @@
 # limitations under the License.
 #
 
+from neptune.alpha import types
 from neptune.alpha.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
-from neptune.alpha.internal.init_impl import __version__, init
-from neptune.alpha.internal.get_project_impl import get_project, get_experiments_table
 from neptune.alpha.experiment import Experiment
+from neptune.alpha.internal.get_project_impl import get_project, get_experiments_table
+from neptune.alpha.internal.init_impl import __version__, init
