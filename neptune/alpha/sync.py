@@ -128,8 +128,10 @@ def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Exper
                 synced_experiment_uuids.append(experiment_uuid)
             else:
                 unsynced_experiment_uuids.append(experiment_uuid)
-    synced_experiments = [experiment for experiment in map(get_experiment, synced_experiment_uuids) if experiment]
-    unsynced_experiments = [experiment for experiment in map(get_experiment, unsynced_experiment_uuids) if experiment]
+    synced_experiments = [experiment for experiment in map(get_experiment, synced_experiment_uuids)
+                          if experiment and not experiment.trashed]
+    unsynced_experiments = [experiment for experiment in map(get_experiment, unsynced_experiment_uuids)
+                            if experiment and not experiment.trashed]
     return synced_experiments, unsynced_experiments
 
 
@@ -312,7 +314,7 @@ path_option = click.option('--path', type=click.Path(exists=True, file_okay=Fals
 @click.command()
 @path_option
 def status(path: Path) -> None:
-    """List unsynchronized experiments in the given directory.
+    """List synchronized and unsynchronized experiments in the given directory. Trashed experiments are not listed.
 
     Neptune stores experiment data on disk in '.neptune' directories. In case an experiment runs offline
     or network is unavailable as the experiment runs, experiment data can be synchronized
@@ -321,11 +323,11 @@ def status(path: Path) -> None:
     Examples:
 
     \b
-    # List unsynchronized experiments in the current directory
+    # List synchronized and unsynchronized experiments in the current directory
     neptune status
 
     \b
-    # List unsynchronized experiments in directory "foo/bar" without actually syncing
+    # List synchronized and unsynchronized experiments in directory "foo/bar" without actually syncing
     neptune status --path foo/bar
     """
 

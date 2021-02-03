@@ -36,6 +36,7 @@ class Experiment:
     short_id: str
     workspace: str
     project_name: str
+    trashed: bool
 
 
 class ClientConfig(object):
