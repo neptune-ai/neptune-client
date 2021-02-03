@@ -42,7 +42,7 @@ class AlphaAttributeWrapper(abc.ABC):
 
     @classmethod
     def is_valid_attribute(cls, attribute):
-        """Checks if attribute can be used as channel"""
+        """Checks if attribute can be wrapped by particular descendant of this class"""
         return attribute.type in cls._allowed_atribute_types
 
     @property
@@ -58,15 +58,15 @@ class AlphaPropertyDTO(AlphaAttributeWrapper):
     so we do need fake `KeyValueProperty` class for backward compatibility with old client's code."""
 
     _allowed_atribute_types = [
-        AlphaAttributeType.FLOAT.value,
         AlphaAttributeType.STRING.value,
-        AlphaAttributeType.DATETIME.value,
     ]
 
     @classmethod
     def is_valid_attribute(cls, attribute):
-        """Checks if attribute can be used as channel"""
-        return attribute.name.startswith(alpha_consts.PROPERTIES_ATTRIBUTE_SPACE)
+        """Checks if attribute can be used as property"""
+        has_valid_type = super().is_valid_attribute(attribute)
+        is_in_properties_space = attribute.name.startswith(alpha_consts.PROPERTIES_ATTRIBUTE_SPACE)
+        return has_valid_type and is_in_properties_space
 
     @property
     def key(self):

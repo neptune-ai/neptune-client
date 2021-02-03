@@ -148,16 +148,18 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         # `timeOfCreation` is required by `TimeOffsetGenerator`
         fake_experiment.timeOfCreation = experiment.creationTime
 
-        try:
-            tags = self._alpha_backend.get_string_set_attribute(
-                experiment_uuid=uuid.UUID(experiment_id),
-                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
-            ).values
-        except alpha_exceptions.MetadataInconsistency:
-            tags = list()
+        attributes = self._get_attributes(experiment_id)
+
+        tags = [
+            attr['stringSetProperties'].values for attr in attributes
+            if attr.name == alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH
+        ]
+        # tags should be element found in all `attributes` or just empty list
+        tags = tags[0] if tags else list()
         fake_experiment.tags = tags
+
         fake_experiment.properties = [
-            AlphaPropertyDTO(attr) for attr in self._get_attributes(experiment_id)
+            AlphaPropertyDTO(attr) for attr in attributes
             if AlphaPropertyDTO.is_valid_attribute(attr)
         ]
 
