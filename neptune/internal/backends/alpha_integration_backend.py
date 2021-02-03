@@ -45,7 +45,6 @@ from neptune.internal.utils.alpha_integration import (
     channel_type_to_operation,
     channel_value_type_to_operation,
     deprecated_img_to_alpha_image,
-    property_value_to_operation,
 )
 from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
@@ -169,17 +168,18 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     @with_api_exceptions_handler
     def set_property(self, experiment, key, value):
-        operation_cls = property_value_to_operation(value)
+        """Save attribute casted to string under `alpha_consts.PROPERTIES_ATTRIBUTE_SPACE` namespace"""
         self._execute_alpha_operation(
             experiment=experiment,
-            operations=[operation_cls(
+            operations=[alpha_operation.AssignString(
                 path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}'),
-                value=value,
+                value=str(value),
             )],
         )
 
     @with_api_exceptions_handler
     def remove_property(self, experiment, key):
+        """Removes given attribute"""
         self._execute_alpha_operation(
             experiment=experiment,
             operations=[alpha_operation.DeleteAttribute(
