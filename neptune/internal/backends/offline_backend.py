@@ -129,6 +129,12 @@ class OfflineBackend(Backend):
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
         pass
 
+    def log_artifact(self, experiment, artifact, destination=None):
+        pass
+
+    def delete_artifacts(self, experiment, path):
+        pass
+
     def upload_experiment_output(self, experiment, data, progress_indicator):
         pass
 

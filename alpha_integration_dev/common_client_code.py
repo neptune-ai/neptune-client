@@ -28,6 +28,7 @@ class ClientFeatures(abc.ABC):
 
     img_path = 'alpha_integration_dev/data/g.png'
     text_file_path = 'alpha_integration_dev/data/text.txt'
+    compressed_text_file_path = 'alpha_integration_dev/data/text.txt.gz'
 
     @abc.abstractmethod
     def modify_tags(self):
@@ -47,7 +48,7 @@ class ClientFeatures(abc.ABC):
 
     @abc.abstractmethod
     def handle_files_and_images(self):
-        """NPT-9207"""
+        pass
 
     @abc.abstractmethod
     def other(self):

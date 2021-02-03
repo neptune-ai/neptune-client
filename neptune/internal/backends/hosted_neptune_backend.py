@@ -54,6 +54,7 @@ from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHo
 from neptune.experiments import Experiment
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
+from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
 from neptune.internal.utils.http import extract_response_field
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
@@ -720,6 +721,47 @@ class HostedNeptuneBackend(Backend):
             # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+
+    def log_artifact(self, experiment, artifact, destination=None):
+        if isinstance(artifact, str):
+            if os.path.exists(artifact):
+                target_name = os.path.basename(artifact) if destination is None else destination
+                upload_entry = UploadEntry(os.path.abspath(artifact), normalize_file_name(target_name))
+            else:
+                raise FileNotFound(artifact)
+        elif hasattr(artifact, 'read'):
+            if destination is not None:
+                upload_entry = UploadEntry(artifact, normalize_file_name(destination))
+            else:
+                raise ValueError("destination is required for file streams")
+        else:
+            raise ValueError("artifact is a local path or an IO object")
+
+        upload_to_storage(upload_entries=[upload_entry],
+                          upload_api_fun=self.upload_experiment_output,
+                          upload_tar_api_fun=self.extract_experiment_output,
+                          experiment=experiment)
+
+    def delete_artifacts(self, experiment, path):
+        if path is None:
+            raise ValueError("path argument must not be None")
+
+        paths = path
+        if not isinstance(path, list):
+            paths = [path]
+        for path in paths:
+            if path is None:
+                raise ValueError("path argument must not be None")
+            normalized_path = os.path.normpath(path)
+            if normalized_path.startswith(".."):
+                raise ValueError("path to delete must be within project's directory")
+            if normalized_path == "." or normalized_path == "/" or not normalized_path:
+                raise ValueError("Cannot delete whole artifacts directory")
+        try:
+            for path in paths:
+                self.rm_data(experiment=experiment, path=path)
+        except PathInProjectNotFound:
+            raise FileNotFound(path)
 
     def upload_experiment_output(self, experiment, data, progress_indicator):
         try:

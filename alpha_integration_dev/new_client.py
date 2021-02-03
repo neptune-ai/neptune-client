@@ -28,6 +28,7 @@ from PIL import Image
 import neptune.alpha as neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
 from neptune.alpha.attributes.constants import (
+ARTIFACT_ATTRIBUTE_SPACE,
     LOG_ATTRIBUTE_SPACE,
     PROPERTIES_ATTRIBUTE_SPACE,
     SYSTEM_TAGS_ATTRIBUTE_PATH,
@@ -96,8 +97,22 @@ class NewClientFeatures(ClientFeatures):
         self.exp[f'{LOG_ATTRIBUTE_SPACE}g_img'].log(g_img)
 
     def handle_files_and_images(self):
-        """NPT-9207"""
-        return
+        # image
+        im_frame = Image.open(self.img_path)
+        g_img = neptune.types.Image(im_frame)
+        self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned image'] = g_img
+        self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged image'].log(g_img)
+        with open(self.img_path, mode='r') as f:
+            # self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned image stream'] = f
+            self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged image stream'].log(f)
+
+        # artifact
+        with open(self.text_file_path, mode='r') as f:
+            self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned file stream'] = f
+            self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged file stream'].log(f)
+        text_file = neptune.types.File(self.text_file_path)
+        self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned file'] = text_file
+        # self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged file'].log(text_file)  # wrong type
 
     def other(self):
         return

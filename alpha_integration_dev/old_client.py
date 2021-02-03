@@ -90,14 +90,18 @@ class OldClientFeatures(ClientFeatures):
         neptune.log_image('g_img', self.img_path)
 
     def handle_files_and_images(self):
-        """NPT-9207"""
-        neptune.send_image('single_img', self.img_path, name='name', description='desc')
-        neptune.send_image('single_img', self.img_path, name='name', description='desc')
-        neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
-        # neptune.send_artifact(self.img_path, destination='single artifact')
-        # neptune.log_artifact(self.img_path, destination='logged artifact')
-        # neptune.log_artifact(self.img_path, destination='artifact to delete')
-        # neptune.delete_artifacts('artifact to delete')
+        # image
+        # `image_name` and `description` will be lost (the same as log_image)
+        neptune.send_image('image', self.img_path, name='name', description='desc')
+
+        # artifact
+        # (the same as log_artifact)
+        neptune.send_artifact(self.text_file_path, destination='dir/text file artifact')
+        neptune.log_artifact(self.compressed_text_file_path, destination='compressed file artifact')
+        with open(self.text_file_path, mode='r') as f:
+            neptune.send_artifact(f, destination='file stream')
+        neptune.log_artifact(self.img_path, destination='artifact to delete')
+        neptune.delete_artifacts('artifact to delete')
 
     def other(self):
         logs = neptune.get_experiment().get_logs()
