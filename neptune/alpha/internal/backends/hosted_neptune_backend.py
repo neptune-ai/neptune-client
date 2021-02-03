@@ -119,7 +119,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_experiment(self, experiment_id: str):
         try:
             exp = self.leaderboard_client.api.getExperiment(experimentId=experiment_id).response().result
-            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName)
+            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
         except HTTPNotFound:
             raise ExperimentNotFound(experiment_id)
 
@@ -158,7 +158,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         try:
             exp = self.leaderboard_client.api.createExperiment(**kwargs).response().result
-            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName)
+            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
 

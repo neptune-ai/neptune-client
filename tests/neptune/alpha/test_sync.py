@@ -34,7 +34,7 @@ from neptune.alpha.sync import Experiment, get_qualified_name, \
 
 
 def an_experiment():
-    return Experiment(uuid.uuid4(), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj')
+    return Experiment(uuid.uuid4(), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj', False)
 
 
 def prepare_experiments(path):
