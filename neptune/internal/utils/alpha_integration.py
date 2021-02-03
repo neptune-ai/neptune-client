@@ -191,19 +191,3 @@ def channel_value_type_to_operation(channel_value_type: ChannelValueType) -> alp
 def deprecated_img_to_alpha_image(img: dict) -> alpha_types.Image:
     # TODO: what about img: `name` and `description` fields?
     return img['data']
-
-
-def property_value_to_operation(value) -> Type[alpha_operation.Operation]:
-    """Converts value passed as property to `alpha_operation`"""
-    if alpha_utils.is_float(value):
-        return alpha_operation.AssignFloat
-    elif alpha_utils.is_string(value):
-        return alpha_operation.AssignString
-    elif isinstance(value, datetime):
-        return alpha_operation.AssignDatetime
-    if alpha_utils.is_float_like(value):
-        return alpha_operation.AssignFloat
-    elif alpha_utils.is_string_like(value):
-        return alpha_operation.AssignString
-    else:
-        raise NeptuneException(f"Can't pass {value} of type {type(value)} as property.")
