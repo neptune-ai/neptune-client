@@ -517,7 +517,7 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def get_channels(self, experiment) -> Dict[str, object]:
-        api_experiment = self.get_experiment(experiment)
+        api_experiment = self.get_experiment(experiment.internal_id)
         channels_last_values_by_name = dict((ch.channelName, ch) for ch in api_experiment.channelsLastValues)
         channels = dict()
         for ch in api_experiment.channels:
