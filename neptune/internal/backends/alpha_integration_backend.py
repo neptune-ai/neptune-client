@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import logging
+import os
 import uuid
 from typing import List, Dict
 
@@ -28,16 +28,17 @@ from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
-from neptune.alpha.internal.utils import paths as alpha_path_utils
+from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
 from neptune.api_exceptions import (
     AlphaOperationErrors,
     ExperimentNotFound,
     ProjectNotFound,
 )
-from neptune.exceptions import STYLES, NeptuneException
+from neptune.exceptions import STYLES, NeptuneException, FileNotFound
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
+from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,
@@ -314,6 +315,72 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     def create_hardware_metric(self, experiment, metric):
         pass
+
+    def log_artifact(self, experiment, artifact, destination=None):
+        target_name = os.path.basename(artifact) if destination is None else destination
+        target_name = f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{target_name}'
+        dest_path = alpha_path_utils.parse_path(normalize_file_name(target_name))
+        if isinstance(artifact, str):
+            if os.path.exists(artifact):
+                operations = [alpha_operation.UploadFile(
+                    path=dest_path,
+                    file_name=dest_path[-1],
+                    file_path=os.path.abspath(artifact),
+                )]
+            else:
+                raise FileNotFound(artifact)
+        elif hasattr(artifact, 'read'):
+            if destination is not None:
+                operations = [alpha_operation.UploadFileContent(
+                    path=dest_path,
+                    file_name=dest_path[-1],
+                    file_content=base64_encode(artifact.read().encode('utf-8')),
+                )]
+            else:
+                raise ValueError("destination is required for file streams")
+        else:
+            raise ValueError("artifact is a local path or an IO object")
+
+        self._execute_alpha_operation(experiment, operations)
+
+    def delete_artifacts(self, experiment, path):
+        pass
+
+    # def upload_experiment_output(self, experiment, data, progress_indicator):
+    #     try:
+    #         # Api exception handling is done in _upload_loop
+    #         self._upload_loop(partial(self._upload_raw_data,
+    #                                   api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+    #                           data=data,
+    #                           progress_indicator=progress_indicator,
+    #                           path_params={'experimentId': experiment.internal_id},
+    #                           query_params={})
+    #     except HTTPError as e:
+    #         if e.response.status_code == NOT_FOUND:
+    #             # pylint: disable=protected-access
+    #             raise ExperimentNotFound(
+    #                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+    #         if e.response.status_code == UNPROCESSABLE_ENTITY and (
+    #                 extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+    #             raise StorageLimitReached()
+    #         raise
+    #
+    # def extract_experiment_output(self, experiment, data):
+    #     try:
+    #         return self._upload_tar_data(
+    #             experiment=experiment,
+    #             api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
+    #             data=data
+    #         )
+    #     except HTTPError as e:
+    #         if e.response.status_code == NOT_FOUND:
+    #             # pylint: disable=protected-access
+    #             raise ExperimentNotFound(
+    #                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+    #         if e.response.status_code == UNPROCESSABLE_ENTITY and (
+    #                 extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+    #             raise StorageLimitReached()
+    #         raise
 
     def _get_attributes(self, experiment_id) -> list:
         params = {

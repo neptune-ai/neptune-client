@@ -96,10 +96,11 @@ class OldClientFeatures(ClientFeatures):
 
         # artifact
         # (the same as log_artifact)
+        neptune.send_artifact(self.text_file_path)
         neptune.send_artifact(self.text_file_path, destination='dir/text file artifact')
         neptune.log_artifact(self.compressed_text_file_path, destination='compressed file artifact')
         with open(self.text_file_path, mode='r') as f:
-            neptune.send_artifact(f, destination='file stream')
+            neptune.send_artifact(f, destination='file stream.txt')
         neptune.log_artifact(self.img_path, destination='artifact to delete')
         neptune.delete_artifacts('artifact to delete')
 
