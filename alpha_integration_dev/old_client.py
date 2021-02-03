@@ -85,8 +85,9 @@ class OldClientFeatures(ClientFeatures):
         neptune.log_text('m2', 'c')
 
         # images
-        # neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
-        # neptune.log_image('g_img', self.img_path)
+        # `image_name` and `description` will be lost
+        neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
+        neptune.log_image('g_img', self.img_path)
 
     def handle_files_and_images(self):
         """NPT-9207"""
