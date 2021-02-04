@@ -26,7 +26,7 @@ import socket
 import sys
 import uuid
 from functools import partial
-from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
+from http.client import NOT_FOUND  # pylint:disable=no-name-in-module
 from io import StringIO
 from itertools import groupby
 from typing import Dict
@@ -40,22 +40,36 @@ from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEnt
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 from packaging import version
-from requests.exceptions import HTTPError
 from six.moves import urllib
 
-from neptune.api_exceptions import ExperimentAlreadyFinished, ExperimentLimitReached, \
-    ExperimentNotFound, ExperimentValidationError, NamespaceNotFound, ProjectNotFound, StorageLimitReached, \
-    ChannelAlreadyExists, ChannelsValuesSendBatchError, NotebookNotFound, \
-    PathInProjectNotFound, ChannelNotFound
+from neptune.api_exceptions import (
+    ChannelAlreadyExists,
+    ChannelNotFound,
+    ChannelsValuesSendBatchError,
+    ExperimentAlreadyFinished,
+    ExperimentLimitReached,
+    ExperimentNotFound,
+    ExperimentValidationError,
+    NamespaceNotFound,
+    NotebookNotFound,
+    PathInProjectNotFound,
+    ProjectNotFound,
+)
 from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
-from neptune.exceptions import FileNotFound, DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion, \
-    AlphaProjectException, STYLES
+from neptune.exceptions import (
+    AlphaProjectException,
+    CannotResolveHostname,
+    DeprecatedApiToken,
+    FileNotFound,
+    STYLES,
+    UnsupportedClientVersion,
+)
 from neptune.experiments import Experiment
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
-from neptune.internal.utils.http import extract_response_field
+from neptune.internal.utils.http import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
@@ -457,41 +471,22 @@ class HostedNeptuneBackend(Backend):
             else:
                 raise
 
+    @handle_quota_limits
     def upload_experiment_source(self, experiment, data, progress_indicator):
-        try:
-            # Api exception handling is done in _upload_loop
-            self._upload_loop(partial(self._upload_raw_data,
-                                      api_method=self.backend_swagger_client.api.uploadExperimentSource),
-                              data=data,
-                              progress_indicator=progress_indicator,
-                              path_params={'experimentId': experiment.internal_id},
-                              query_params={})
-        except HTTPError as e:
-            if e.response.status_code == NOT_FOUND:
-                # pylint: disable=protected-access
-                raise ExperimentNotFound(
-                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            if e.response.status_code == UNPROCESSABLE_ENTITY and (
-                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-                raise StorageLimitReached()
-            raise
+        self._upload_loop(partial(self._upload_raw_data,
+                                  api_method=self.backend_swagger_client.api.uploadExperimentSource),
+                          data=data,
+                          progress_indicator=progress_indicator,
+                          path_params={'experimentId': experiment.internal_id},
+                          query_params={})
 
+    @handle_quota_limits
     def extract_experiment_source(self, experiment, data):
-        try:
-            return self._upload_tar_data(
-                experiment=experiment,
-                api_method=self.backend_swagger_client.api.uploadExperimentSourceAsTarstream,
-                data=data
-            )
-        except HTTPError as e:
-            if e.response.status_code == NOT_FOUND:
-                # pylint: disable=protected-access
-                raise ExperimentNotFound(
-                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            if e.response.status_code == UNPROCESSABLE_ENTITY and (
-                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-                raise StorageLimitReached()
-            raise
+        return self._upload_tar_data(
+            experiment=experiment,
+            api_method=self.backend_swagger_client.api.uploadExperimentSourceAsTarstream,
+            data=data
+        )
 
     @with_api_exceptions_handler
     def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
@@ -818,41 +813,22 @@ class HostedNeptuneBackend(Backend):
     def get_download_request(self, request_id):
         return self.backend_swagger_client.api.getDownloadRequest(id=request_id).response().result
 
+    @handle_quota_limits
     def _upload_experiment_output(self, experiment, data, progress_indicator):
-        try:
-            # Api exception handling is done in _upload_loop
-            self._upload_loop(partial(self._upload_raw_data,
-                                      api_method=self.backend_swagger_client.api.uploadExperimentOutput),
-                              data=data,
-                              progress_indicator=progress_indicator,
-                              path_params={'experimentId': experiment.internal_id},
-                              query_params={})
-        except HTTPError as e:
-            if e.response.status_code == NOT_FOUND:
-                # pylint: disable=protected-access
-                raise ExperimentNotFound(
-                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            if e.response.status_code == UNPROCESSABLE_ENTITY and (
-                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-                raise StorageLimitReached()
-            raise
+        self._upload_loop(partial(self._upload_raw_data,
+                                  api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+                          data=data,
+                          progress_indicator=progress_indicator,
+                          path_params={'experimentId': experiment.internal_id},
+                          query_params={})
 
+    @handle_quota_limits
     def _extract_experiment_output(self, experiment, data):
-        try:
-            return self._upload_tar_data(
-                experiment=experiment,
-                api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
-                data=data
-            )
-        except HTTPError as e:
-            if e.response.status_code == NOT_FOUND:
-                # pylint: disable=protected-access
-                raise ExperimentNotFound(
-                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            if e.response.status_code == UNPROCESSABLE_ENTITY and (
-                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-                raise StorageLimitReached()
-            raise
+        return self._upload_tar_data(
+            experiment=experiment,
+            api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
+            data=data
+        )
 
     @staticmethod
     def _get_all_items(get_portion, step):
