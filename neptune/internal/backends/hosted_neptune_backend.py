@@ -67,7 +67,7 @@ from neptune.exceptions import (
 )
 from neptune.experiments import Experiment
 from neptune.internal.backends.credentials import Credentials
-from neptune.internal.utils.http import extract_response_field, handle_quota_limits
+from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
