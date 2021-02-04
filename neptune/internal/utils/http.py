@@ -14,6 +14,12 @@
 # limitations under the License.
 #
 import logging
+from functools import wraps
+from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
+
+from requests.exceptions import HTTPError
+
+from neptune.api_exceptions import ExperimentNotFound, StorageLimitReached
 
 _logger = logging.getLogger(__name__)
 
@@ -32,3 +38,22 @@ def extract_response_field(response, field_name):
     except ValueError as e:
         _logger.debug('Failed to parse HTTP response: %s', e)
         return None
+
+
+def handle_quota_limits(f):
+    """Wrapper for functions which may request for non existing experiment or cause quota limit breach"""
+    @wraps(f)
+    def handler(experiment, *args, **kwargs):
+        try:
+            return f(experiment, *args, **kwargs)
+        except HTTPError as e:
+            if e.response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+            if e.response.status_code == UNPROCESSABLE_ENTITY and (
+                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+                raise StorageLimitReached()
+            raise
+
+    return handler
