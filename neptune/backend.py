@@ -165,13 +165,5 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def upload_experiment_output(self, experiment, data, progress_indicator):
-        pass
-
-    @abstractmethod
-    def extract_experiment_output(self, experiment, data):
-        pass
-
-    @abstractmethod
     def download_data(self, project, path, destination):
         pass

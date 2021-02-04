@@ -135,12 +135,6 @@ class OfflineBackend(Backend):
     def delete_artifacts(self, experiment, path):
         pass
 
-    def upload_experiment_output(self, experiment, data, progress_indicator):
-        pass
-
-    def extract_experiment_output(self, experiment, data):
-        pass
-
     def rm_data(self, experiment, path):
         pass
 

@@ -735,11 +735,11 @@ class HostedNeptuneBackend(Backend):
             else:
                 raise ValueError("destination is required for file streams")
         else:
-            raise ValueError("artifact is a local path or an IO object")
+            raise ValueError("Artifact must be a local path or an IO object")
 
         upload_to_storage(upload_entries=[upload_entry],
-                          upload_api_fun=self.upload_experiment_output,
-                          upload_tar_api_fun=self.extract_experiment_output,
+                          upload_api_fun=self._upload_experiment_output,
+                          upload_tar_api_fun=self._extract_experiment_output,
                           experiment=experiment)
 
     def delete_artifacts(self, experiment, path):
@@ -762,42 +762,6 @@ class HostedNeptuneBackend(Backend):
                 self.rm_data(experiment=experiment, path=path)
         except PathInProjectNotFound:
             raise FileNotFound(path)
-
-    def upload_experiment_output(self, experiment, data, progress_indicator):
-        try:
-            # Api exception handling is done in _upload_loop
-            self._upload_loop(partial(self._upload_raw_data,
-                                      api_method=self.backend_swagger_client.api.uploadExperimentOutput),
-                              data=data,
-                              progress_indicator=progress_indicator,
-                              path_params={'experimentId': experiment.internal_id},
-                              query_params={})
-        except HTTPError as e:
-            if e.response.status_code == NOT_FOUND:
-                # pylint: disable=protected-access
-                raise ExperimentNotFound(
-                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            if e.response.status_code == UNPROCESSABLE_ENTITY and (
-                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-                raise StorageLimitReached()
-            raise
-
-    def extract_experiment_output(self, experiment, data):
-        try:
-            return self._upload_tar_data(
-                experiment=experiment,
-                api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
-                data=data
-            )
-        except HTTPError as e:
-            if e.response.status_code == NOT_FOUND:
-                # pylint: disable=protected-access
-                raise ExperimentNotFound(
-                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            if e.response.status_code == UNPROCESSABLE_ENTITY and (
-                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-                raise StorageLimitReached()
-            raise
 
     @with_api_exceptions_handler
     def rm_data(self, experiment, path):
@@ -853,6 +817,42 @@ class HostedNeptuneBackend(Backend):
     @with_api_exceptions_handler
     def get_download_request(self, request_id):
         return self.backend_swagger_client.api.getDownloadRequest(id=request_id).response().result
+
+    def _upload_experiment_output(self, experiment, data, progress_indicator):
+        try:
+            # Api exception handling is done in _upload_loop
+            self._upload_loop(partial(self._upload_raw_data,
+                                      api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+                              data=data,
+                              progress_indicator=progress_indicator,
+                              path_params={'experimentId': experiment.internal_id},
+                              query_params={})
+        except HTTPError as e:
+            if e.response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+            if e.response.status_code == UNPROCESSABLE_ENTITY and (
+                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+                raise StorageLimitReached()
+            raise
+
+    def _extract_experiment_output(self, experiment, data):
+        try:
+            return self._upload_tar_data(
+                experiment=experiment,
+                api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
+                data=data
+            )
+        except HTTPError as e:
+            if e.response.status_code == NOT_FOUND:
+                # pylint: disable=protected-access
+                raise ExperimentNotFound(
+                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+            if e.response.status_code == UNPROCESSABLE_ENTITY and (
+                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+                raise StorageLimitReached()
+            raise
 
     @staticmethod
     def _get_all_items(get_portion, step):

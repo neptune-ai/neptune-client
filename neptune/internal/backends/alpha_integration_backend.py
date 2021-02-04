@@ -333,18 +333,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             else:
                 raise ValueError("destination is required for file streams")
         else:
-            raise ValueError("artifact is a local path or an IO object")
+            raise ValueError("Artifact must be a local path or an IO object")
 
         self._execute_alpha_operation(experiment, operations)
 
     def delete_artifacts(self, experiment, path):
         self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
-
-    def upload_experiment_output(self, experiment, data, progress_indicator):
-        raise NeptuneException(f'upload_experiment_output should not be called in alpha version')
-
-    def extract_experiment_output(self, experiment, data):
-        raise NeptuneException(f'extract_experiment_output should not be called in alpha version')
 
     def _get_attributes(self, experiment_id) -> list:
         params = {
