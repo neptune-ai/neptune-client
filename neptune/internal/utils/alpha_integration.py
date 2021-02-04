@@ -13,15 +13,71 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import abc
+from collections import namedtuple
 
 from neptune.alpha import types as alpha_types
+from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
 from neptune.exceptions import NeptuneException
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 
+# Alpha equivalent of old api's `KeyValueProperty` used in `Experiment.properties`
+AlphaKeyValueProperty = namedtuple('AlphaKeyValueProperty', ['key', 'value'])
 
-class AlphaChannelDTO:
+
+class AlphaAttributeWrapper(abc.ABC):
+    """It's simple wrapper for `AttributeDTO`."""
+
+    _allowed_atribute_types = list()
+
+    def __init__(self, attribute):
+        """Expects `AttributeDTO`"""
+        assert self._allowed_atribute_types is not None
+        if not self.is_valid_attribute(attribute):
+            raise NeptuneException(f"Invalid channel attribute type: {attribute.type}")
+
+        self._attribute = attribute
+
+    @classmethod
+    def is_valid_attribute(cls, attribute):
+        """Checks if attribute can be wrapped by particular descendant of this class"""
+        return attribute.type in cls._allowed_atribute_types
+
+    @property
+    def _properties(self):
+        """Returns proper attribute property according to type"""
+        return getattr(self._attribute, f'{self._attribute.type}Properties')
+
+
+class AlphaPropertyDTO(AlphaAttributeWrapper):
+    """It's simple wrapper for `AttributeDTO` objects which uses alpha variables attributes to fake properties.
+
+    Alpha leaderboard doesn't have `KeyValueProperty` since it doesn't support properties at all,
+    so we do need fake `KeyValueProperty` class for backward compatibility with old client's code."""
+
+    _allowed_atribute_types = [
+        AlphaAttributeType.STRING.value,
+    ]
+
+    @classmethod
+    def is_valid_attribute(cls, attribute):
+        """Checks if attribute can be used as property"""
+        has_valid_type = super().is_valid_attribute(attribute)
+        is_in_properties_space = attribute.name.startswith(alpha_consts.PROPERTIES_ATTRIBUTE_SPACE)
+        return has_valid_type and is_in_properties_space
+
+    @property
+    def key(self):
+        return self._properties.attributeName.split('/', 1)[-1]
+
+    @property
+    def value(self):
+        return self._properties.value
+
+
+class AlphaChannelDTO(AlphaAttributeWrapper):
     """It's simple wrapper for `AttributeDTO` objects which uses alpha series attributes to fake channels.
 
     Alpha leaderboard doesn't have `ChannelDTO` since it doesn't support channels at all,
@@ -32,18 +88,6 @@ class AlphaChannelDTO:
         AlphaAttributeType.STRING_SERIES.value,
         AlphaAttributeType.IMAGE_SERIES.value,
     ]
-
-    def __init__(self, attribute):
-        """Expects `AttributeDTO`"""
-        if not self.is_valid_attribute_for_channel(attribute):
-            raise NeptuneException(f"Invalid channel attribute type: {attribute.type}")
-
-        self._attribute = attribute
-
-    @classmethod
-    def is_valid_attribute_for_channel(cls, attribute):
-        """Checks if attribute can be used as channel"""
-        return attribute.type in cls._allowed_atribute_types
 
     @property
     def id(self):
@@ -74,11 +118,6 @@ class AlphaChannelDTO:
             # We do not store last value for image series
             return None
         return self._properties.last
-
-    @property
-    def _properties(self):
-        """Returns proper attribute property according to type"""
-        return getattr(self._attribute, f'{self._attribute.type}Properties')
 
 
 class AlphaChannelWithValueDTO:

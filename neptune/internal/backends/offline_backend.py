@@ -81,6 +81,12 @@ class OfflineBackend(Backend):
     def update_experiment(self, experiment, properties):
         pass
 
+    def set_property(self, experiment, key, value):
+        pass
+
+    def remove_property(self, experiment, key):
+        pass
+
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         pass
 
@@ -123,10 +129,10 @@ class OfflineBackend(Backend):
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
         pass
 
-    def upload_experiment_output(self, experiment, data, progress_indicator):
+    def log_artifact(self, experiment, artifact, destination=None):
         pass
 
-    def extract_experiment_output(self, experiment, data):
+    def delete_artifacts(self, experiment, path):
         pass
 
     def rm_data(self, experiment, path):

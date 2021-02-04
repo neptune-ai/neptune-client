@@ -19,6 +19,7 @@
 * NEPTUNE_PROJECT
 """
 import sys
+from datetime import datetime
 
 import neptune
 from common_client_code import ClientFeatures
@@ -35,11 +36,34 @@ class OldClientFeatures(ClientFeatures):
         )
 
     def modify_tags(self):
-        """NPT-9213"""
-        neptune.append_tag('tag1')
+        neptune.append_tags('tag1')
         neptune.append_tag(['tag2_to_remove', 'tag3'])
-        neptune.remove_tag('tag2_to_remove')
-        neptune.remove_tag('tag4_remove_non_existing')
+        # neptune.remove_tag('tag2_to_remove')  # TODO: NPT-9222
+        # neptune.remove_tag('tag4_remove_non_existing')  # TODO: NPT-9222
+
+        exp = neptune.get_experiment()
+        assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag2_to_remove', 'tag3'}
+
+    def modify_properties(self):
+        neptune.set_property('prop', 'some text')
+        neptune.set_property('prop_number', 42)
+        neptune.set_property('nested/prop', 42)
+        neptune.set_property('prop_to_del', 42)
+        neptune.set_property('prop_list', [1, 2, 3])
+        with open(self.text_file_path, mode='r') as f:
+            neptune.set_property('prop_IO', f)
+        neptune.set_property('prop_datetime', datetime.now())
+        neptune.remove_property('prop_to_del')
+
+        exp = neptune.get_experiment()
+        properties = exp.get_properties()
+        assert properties['prop'] == 'some text'
+        assert properties['prop_number'] == '42'
+        assert properties['nested/prop'] == '42'
+        assert 'prop_to_del' not in properties
+        assert properties['prop_IO'] == "<_io.TextIOWrapper name='alpha_integration_dev/data/text.txt'" \
+                                        " mode='r' encoding='UTF-8'>"
+        print(f'Properties: {properties}')
 
     def log_std(self):
         print('stdout text1')
@@ -61,30 +85,32 @@ class OldClientFeatures(ClientFeatures):
         neptune.log_text('m2', 'c')
 
         # images
-        # neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
-        # neptune.log_image('g_img', self.img_path)
+        # `image_name` and `description` will be lost
+        neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
+        neptune.log_image('g_img', self.img_path)
+
+        # see what we've logged
+        logs = neptune.get_experiment().get_logs()
+        print(f'Logs: {logs}')
 
     def handle_files_and_images(self):
-        """NPT-9207"""
-        neptune.send_image('single_img', self.img_path, name='name', description='desc')
-        neptune.send_image('single_img', self.img_path, name='name', description='desc')
-        neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
-        # neptune.send_artifact(self.img_path, destination='single artifact')
-        # neptune.log_artifact(self.img_path, destination='logged artifact')
-        # neptune.log_artifact(self.img_path, destination='artifact to delete')
-        # neptune.delete_artifacts('artifact to delete')
+        # image
+        # `image_name` and `description` will be lost (`send_image` the same as `log_image`)
+        neptune.send_image('image', self.img_path, name='name', description='desc')
 
-    def other(self):
-        v = neptune.get_experiment().get_logs()
-        print(v)
+        # artifact
+        # (`log_artifact` the same as `log_artifact`)
+        neptune.send_artifact(self.text_file_path)
+        neptune.log_artifact(self.text_file_path, destination='dir/text file artifact')
+        with open(self.text_file_path, mode='r') as f:
+            neptune.send_artifact(f, destination='file stream.txt')
+        neptune.log_artifact(self.img_path, destination='dir to delete/art1')
+        neptune.log_artifact(self.img_path, destination='dir to delete/art2')
+        # neptune.delete_artifacts('dir to delete')  # doesn't work for alpha NPT-9250
+        neptune.delete_artifacts('dir to delete/art1')
 
-    def run(self):
-        # self.modify_tags()
-        self.log_std()
-        self.log_series()
-        self.handle_files_and_images()
-
-        self.other()
+    def finalize(self):
+        pass
 
 
 if __name__ == '__main__':

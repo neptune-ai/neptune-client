@@ -27,10 +27,15 @@ class ClientFeatures(abc.ABC):
     }
 
     img_path = 'alpha_integration_dev/data/g.png'
+    text_file_path = 'alpha_integration_dev/data/text.txt'
 
     @abc.abstractmethod
     def modify_tags(self):
-        """NPT-9213"""
+        pass
+
+    @abc.abstractmethod
+    def modify_properties(self):
+        pass
 
     @abc.abstractmethod
     def log_std(self):
@@ -42,16 +47,17 @@ class ClientFeatures(abc.ABC):
 
     @abc.abstractmethod
     def handle_files_and_images(self):
-        """NPT-9207"""
-
-    @abc.abstractmethod
-    def other(self):
         pass
 
     @abc.abstractmethod
+    def finalize(self):
+        pass
+
     def run(self):
-        pass
+        self.modify_tags()
+        self.modify_properties()
+        self.log_std()
+        self.log_series()
+        self.handle_files_and_images()
 
-    @abc.abstractmethod
-    def run(self):
-        pass
+        self.finalize()
