@@ -104,8 +104,10 @@ class OldClientFeatures(ClientFeatures):
         neptune.log_artifact(self.text_file_path, destination='dir/text file artifact')
         with open(self.text_file_path, mode='r') as f:
             neptune.send_artifact(f, destination='file stream.txt')
-        neptune.log_artifact(self.img_path, destination='artifact to delete')
-        neptune.delete_artifacts('artifact to delete')
+        neptune.log_artifact(self.img_path, destination='dir to delete/art1')
+        neptune.log_artifact(self.img_path, destination='dir to delete/art2')
+        # neptune.delete_artifacts('dir to delete')  # doesn't work for alpha NPT-9250
+        neptune.delete_artifacts('dir to delete/art1')
 
     def finalize(self):
         pass
