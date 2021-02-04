@@ -51,13 +51,14 @@ class ClientFeatures(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def other(self):
+    def finalize(self):
         pass
 
-    @abc.abstractmethod
     def run(self):
-        pass
+        self.modify_tags()
+        self.modify_properties()
+        self.log_std()
+        self.log_series()
+        self.handle_files_and_images()
 
-    @abc.abstractmethod
-    def run(self):
-        pass
+        self.finalize()

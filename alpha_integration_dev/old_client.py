@@ -89,6 +89,10 @@ class OldClientFeatures(ClientFeatures):
         neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
         neptune.log_image('g_img', self.img_path)
 
+        # see what we've logged
+        logs = neptune.get_experiment().get_logs()
+        print(f'Logs: {logs}')
+
     def handle_files_and_images(self):
         # image
         # `image_name` and `description` will be lost (the same as log_image)
@@ -104,18 +108,8 @@ class OldClientFeatures(ClientFeatures):
         neptune.log_artifact(self.img_path, destination='artifact to delete')
         neptune.delete_artifacts('artifact to delete')
 
-    def other(self):
-        logs = neptune.get_experiment().get_logs()
-        print(f'Logs: {logs}')
-
-    def run(self):
-        self.modify_tags()
-        self.modify_properties()
-        self.log_std()
-        self.log_series()
-        self.handle_files_and_images()
-
-        self.other()
+    def finalize(self):
+        pass
 
 
 if __name__ == '__main__':
