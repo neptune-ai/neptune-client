@@ -453,7 +453,6 @@ class HostedNeptuneBackend(Backend):
 
     @handle_quota_limits
     def upload_experiment_source(self, experiment, data, progress_indicator):
-        # Api exception handling is done in _upload_loop
         self._upload_loop(partial(self._upload_raw_data,
                                   api_method=self.backend_swagger_client.api.uploadExperimentSource),
                           data=data,
@@ -680,7 +679,6 @@ class HostedNeptuneBackend(Backend):
 
     @handle_quota_limits
     def upload_experiment_output(self, experiment, data, progress_indicator):
-        # Api exception handling is done in _upload_loop
         self._upload_loop(partial(self._upload_raw_data,
                                   api_method=self.backend_swagger_client.api.uploadExperimentOutput),
                           data=data,
