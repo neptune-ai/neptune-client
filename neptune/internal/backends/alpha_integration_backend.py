@@ -180,13 +180,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     @with_api_exceptions_handler
     def remove_property(self, experiment, key):
-        """Removes given attribute"""
-        self._execute_alpha_operation(
-            experiment=experiment,
-            operations=[alpha_operation.DeleteAttribute(
-                path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}'),
-            )],
-        )
+        self._remove_attribute(experiment, str_path=f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}')
 
     @with_api_exceptions_handler
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
@@ -344,43 +338,13 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         self._execute_alpha_operation(experiment, operations)
 
     def delete_artifacts(self, experiment, path):
-        pass
+        self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
 
-    # def upload_experiment_output(self, experiment, data, progress_indicator):
-    #     try:
-    #         # Api exception handling is done in _upload_loop
-    #         self._upload_loop(partial(self._upload_raw_data,
-    #                                   api_method=self.backend_swagger_client.api.uploadExperimentOutput),
-    #                           data=data,
-    #                           progress_indicator=progress_indicator,
-    #                           path_params={'experimentId': experiment.internal_id},
-    #                           query_params={})
-    #     except HTTPError as e:
-    #         if e.response.status_code == NOT_FOUND:
-    #             # pylint: disable=protected-access
-    #             raise ExperimentNotFound(
-    #                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-    #         if e.response.status_code == UNPROCESSABLE_ENTITY and (
-    #                 extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-    #             raise StorageLimitReached()
-    #         raise
-    #
-    # def extract_experiment_output(self, experiment, data):
-    #     try:
-    #         return self._upload_tar_data(
-    #             experiment=experiment,
-    #             api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
-    #             data=data
-    #         )
-    #     except HTTPError as e:
-    #         if e.response.status_code == NOT_FOUND:
-    #             # pylint: disable=protected-access
-    #             raise ExperimentNotFound(
-    #                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-    #         if e.response.status_code == UNPROCESSABLE_ENTITY and (
-    #                 extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
-    #             raise StorageLimitReached()
-    #         raise
+    def upload_experiment_output(self, experiment, data, progress_indicator):
+        raise NeptuneException(f'upload_experiment_output should not be called in alpha version')
+
+    def extract_experiment_output(self, experiment, data):
+        raise NeptuneException(f'extract_experiment_output should not be called in alpha version')
 
     def _get_attributes(self, experiment_id) -> list:
         params = {
@@ -394,6 +358,15 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
         return experiment.attributes
+
+    def _remove_attribute(self, experiment, str_path: str):
+        """Removes given attribute"""
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=[alpha_operation.DeleteAttribute(
+                path=alpha_path_utils.parse_path(str_path),
+            )],
+        )
 
     @staticmethod
     def _get_client_config_args(api_token):
