@@ -95,14 +95,13 @@ class OldClientFeatures(ClientFeatures):
 
     def handle_files_and_images(self):
         # image
-        # `image_name` and `description` will be lost (the same as log_image)
+        # `image_name` and `description` will be lost (`send_image` the same as `log_image`)
         neptune.send_image('image', self.img_path, name='name', description='desc')
 
         # artifact
-        # (the same as log_artifact)
+        # (`log_artifact` the same as `log_artifact`)
         neptune.send_artifact(self.text_file_path)
-        neptune.send_artifact(self.text_file_path, destination='dir/text file artifact')
-        neptune.log_artifact(self.compressed_text_file_path, destination='compressed file artifact')
+        neptune.log_artifact(self.text_file_path, destination='dir/text file artifact')
         with open(self.text_file_path, mode='r') as f:
             neptune.send_artifact(f, destination='file stream.txt')
         neptune.log_artifact(self.img_path, destination='artifact to delete')
