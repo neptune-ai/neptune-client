@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+ARTIFACT_ATTRIBUTE_SPACE = 'artifacts/'
+
 LOG_ATTRIBUTE_SPACE = 'logs/'
 
 MONITORING_ATTRIBUTE_SPACE = 'monitoring/'

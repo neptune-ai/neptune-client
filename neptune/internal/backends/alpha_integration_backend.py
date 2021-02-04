@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import logging
+import os
 import uuid
 from typing import List, Dict
 
@@ -28,16 +28,17 @@ from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
-from neptune.alpha.internal.utils import paths as alpha_path_utils
+from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
 from neptune.api_exceptions import (
     AlphaOperationErrors,
     ExperimentNotFound,
     ProjectNotFound,
 )
-from neptune.exceptions import STYLES, NeptuneException
+from neptune.exceptions import STYLES, NeptuneException, FileNotFound
 from neptune.experiments import Experiment
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
+from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,
@@ -181,13 +182,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     @with_api_exceptions_handler
     def remove_property(self, experiment, key):
-        """Removes given attribute"""
-        self._execute_alpha_operation(
-            experiment=experiment,
-            operations=[alpha_operation.DeleteAttribute(
-                path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}'),
-            )],
-        )
+        self._remove_attribute(experiment, str_path=f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}')
 
     @with_api_exceptions_handler
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
@@ -317,6 +312,36 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
     def create_hardware_metric(self, experiment, metric):
         pass
 
+    def log_artifact(self, experiment, artifact, destination=None):
+        target_name = os.path.basename(artifact) if destination is None else destination
+        target_name = f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{target_name}'
+        dest_path = alpha_path_utils.parse_path(normalize_file_name(target_name))
+        if isinstance(artifact, str):
+            if os.path.exists(artifact):
+                operations = [alpha_operation.UploadFile(
+                    path=dest_path,
+                    file_name=dest_path[-1],
+                    file_path=os.path.abspath(artifact),
+                )]
+            else:
+                raise FileNotFound(artifact)
+        elif hasattr(artifact, 'read'):
+            if destination is not None:
+                operations = [alpha_operation.UploadFileContent(
+                    path=dest_path,
+                    file_name=dest_path[-1],
+                    file_content=base64_encode(artifact.read().encode('utf-8')),
+                )]
+            else:
+                raise ValueError("destination is required for file streams")
+        else:
+            raise ValueError("Artifact must be a local path or an IO object")
+
+        self._execute_alpha_operation(experiment, operations)
+
+    def delete_artifacts(self, experiment, path):
+        self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
+
     def _get_attributes(self, experiment_id) -> list:
         params = {
             'experimentId': experiment_id,
@@ -329,6 +354,15 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
         return experiment.attributes
+
+    def _remove_attribute(self, experiment, str_path: str):
+        """Removes given attribute"""
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=[alpha_operation.DeleteAttribute(
+                path=alpha_path_utils.parse_path(str_path),
+            )],
+        )
 
     @staticmethod
     def _get_client_config_args(api_token):

@@ -30,7 +30,7 @@ from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
-from neptune.internal.storage.storage_utils import upload_to_storage, UploadEntry, normalize_file_name
+from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
 
@@ -610,24 +610,7 @@ class Experiment(object):
                 # save file under different name
                 experiment.log_artifact('images/wrong_prediction_1.png', 'images/my_image_1.png')
         """
-        if isinstance(artifact, str):
-            if os.path.exists(artifact):
-                target_name = os.path.basename(artifact) if destination is None else destination
-                upload_entry = UploadEntry(os.path.abspath(artifact), normalize_file_name(target_name))
-            else:
-                raise FileNotFound(artifact)
-        elif hasattr(artifact, 'read'):
-            if destination is not None:
-                upload_entry = UploadEntry(artifact, normalize_file_name(destination))
-            else:
-                raise ValueError("destination is required for file streams")
-        else:
-            raise ValueError("artifact is a local path or an IO object")
-
-        upload_to_storage(upload_entries=[upload_entry],
-                          upload_api_fun=self._backend.upload_experiment_output,
-                          upload_tar_api_fun=self._backend.extract_experiment_output,
-                          experiment=self)
+        self._backend.log_artifact(self, artifact, destination)
 
     def delete_artifacts(self, path):
         """Removes an artifact(s) (file/directory) from the experiment storage.
@@ -647,25 +630,7 @@ class Experiment(object):
                 experiment.delete_artifacts(['forest_results.pkl', 'directory'])
                 experiment.delete_artifacts('')
         """
-        if path is None:
-            raise ValueError("path argument must not be None")
-
-        paths = path
-        if not isinstance(path, list):
-            paths = [path]
-        for path in paths:
-            if path is None:
-                raise ValueError("path argument must not be None")
-            normalized_path = os.path.normpath(path)
-            if normalized_path.startswith(".."):
-                raise ValueError("path to delete must be within project's directory")
-            if normalized_path == "." or normalized_path == "/" or not normalized_path:
-                raise ValueError("Cannot delete whole artifacts directory")
-        try:
-            for path in paths:
-                self._backend.rm_data(experiment=self, path=path)
-        except PathInProjectNotFound:
-            raise FileNotFound(path)
+        self._backend.delete_artifacts(self, path)
 
     def download_artifact(self, path, destination_dir=None):
         """Download an artifact (file) from the experiment storage.

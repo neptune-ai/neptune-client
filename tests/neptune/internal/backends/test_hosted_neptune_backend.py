@@ -18,7 +18,7 @@ import unittest
 import uuid
 
 import mock
-from mock import MagicMock
+from mock import call, MagicMock
 
 from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
@@ -165,6 +165,42 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         # expect
         with self.assertRaises(CannotResolveHostname):
             HostedNeptuneBackend(token)
+
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    @mock.patch('neptune.__version__', '0.5.13')
+    def test_delete_artifact(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        experiment = mock.MagicMock()
+        backend = HostedNeptuneBackend(API_TOKEN)
+        backend.rm_data = mock.MagicMock()
+
+        # and
+        def build_call(path):
+            return call(
+                experiment=experiment,
+                path=path
+            )
+
+        # when
+        backend.delete_artifacts(experiment=experiment, path='/an_abs_path_in_exp_output')
+        backend.delete_artifacts(experiment=experiment, path='/../an_abs_path_in_exp')
+        backend.delete_artifacts(experiment=experiment, path='/../../an_abs_path_in_prj')
+        backend.delete_artifacts(experiment=experiment, path='a_path_in_exp_output')
+        self.assertRaises(ValueError, backend.delete_artifacts,
+                          experiment=experiment, path='test/../../a_path_outside_exp')
+        self.assertRaises(ValueError, backend.delete_artifacts,
+                          experiment=experiment, path='../a_path_outside_exp')
+        self.assertRaises(ValueError, backend.delete_artifacts,
+                          experiment=experiment, path="..")
+
+        # then
+        backend.rm_data.assert_has_calls([
+            build_call('/an_abs_path_in_exp_output'),
+            build_call('/../an_abs_path_in_exp'),
+            build_call('/../../an_abs_path_in_prj'),
+            build_call('a_path_in_exp_output'),
+        ])
 
     @staticmethod
     def _get_swagger_client_mock(

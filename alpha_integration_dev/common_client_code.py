@@ -47,16 +47,17 @@ class ClientFeatures(abc.ABC):
 
     @abc.abstractmethod
     def handle_files_and_images(self):
-        """NPT-9207"""
-
-    @abc.abstractmethod
-    def other(self):
         pass
 
     @abc.abstractmethod
+    def finalize(self):
+        pass
+
     def run(self):
-        pass
+        self.modify_tags()
+        self.modify_properties()
+        self.log_std()
+        self.log_series()
+        self.handle_files_and_images()
 
-    @abc.abstractmethod
-    def run(self):
-        pass
+        self.finalize()

@@ -157,11 +157,11 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def upload_experiment_output(self, experiment, data, progress_indicator):
+    def log_artifact(self, experiment, artifact, destination=None):
         pass
 
     @abstractmethod
-    def extract_experiment_output(self, experiment, data):
+    def delete_artifacts(self, experiment, path):
         pass
 
     @abstractmethod
