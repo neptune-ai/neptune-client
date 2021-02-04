@@ -20,6 +20,7 @@ from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-nam
 from requests.exceptions import HTTPError
 
 from neptune.api_exceptions import ExperimentNotFound, StorageLimitReached
+from neptune.exceptions import NeptuneException
 
 _logger = logging.getLogger(__name__)
 
@@ -41,11 +42,18 @@ def extract_response_field(response, field_name):
 
 
 def handle_quota_limits(f):
-    """Wrapper for functions which may request for non existing experiment or cause quota limit breach"""
+    """Wrapper for functions which may request for non existing experiment or cause quota limit breach
+
+    Limitations:
+    Decorated function must be called with experiment argument like this fun(..., experiment=<experiment>, ...)"""
     @wraps(f)
-    def handler(experiment, *args, **kwargs):
+    def handler(*args, **kwargs):
+        experiment = kwargs.get('experiment')
+        if experiment is None:
+            raise NeptuneException('This function must be called with experiment passed by name,'
+                                   ' like this fun(..., experiment=<experiment>, ...)')
         try:
-            return f(experiment, *args, **kwargs)
+            return f(*args, **kwargs)
         except HTTPError as e:
             if e.response.status_code == NOT_FOUND:
                 # pylint: disable=protected-access
