@@ -21,12 +21,17 @@
 * NEPTUNE_PROJECT
 """
 import sys
+from datetime import datetime
 
 from PIL import Image
 
 import neptune.alpha as neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
-from neptune.alpha.attributes.constants import SYSTEM_TAGS_ATTRIBUTE_PATH, LOG_ATTRIBUTE_SPACE
+from neptune.alpha.attributes.constants import (
+    LOG_ATTRIBUTE_SPACE,
+    PROPERTIES_ATTRIBUTE_SPACE,
+    SYSTEM_TAGS_ATTRIBUTE_PATH,
+)
 
 
 class NewClientFeatures(ClientFeatures):
@@ -35,11 +40,36 @@ class NewClientFeatures(ClientFeatures):
         self.exp = neptune.init()
 
     def modify_tags(self):
-        """NPT-9213"""
         self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].add('tag1')
         self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].add(['tag2_to_remove', 'tag3'])
-        # self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].pop('tag2_to_remove')
-        # self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].pop('tag4_remove_non_existing')
+        self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].remove('tag2_to_remove')
+        self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].remove('tag4_remove_non_existing')
+        # del self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH]  # TODO: NPT-9222
+
+        self.exp.sync()
+        assert set(self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].get()) == {'tag1', 'tag3'}
+
+    def modify_properties(self):
+        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop'] = 'some text'
+        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_number'] = 42
+        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}nested/prop'] = 42
+        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del'] = 42
+        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_list'] = [1, 2, 3]
+        with open(self.text_file_path, mode='r') as f:
+            self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_IO'] = f
+        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_datetime'] = datetime.now()
+        self.exp.sync()
+        del self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del']
+
+        assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop'].get() == 'some text'
+        assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_number'].get() == 42
+        assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}nested/prop'].get() == 42
+        prop_to_del_absent = False
+        try:
+            self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del'].get()
+        except AttributeError:
+            prop_to_del_absent = True
+        assert prop_to_del_absent
 
     def log_std(self):
         print('stdout text1')
@@ -74,6 +104,7 @@ class NewClientFeatures(ClientFeatures):
 
     def run(self):
         self.modify_tags()
+        self.modify_properties()
         self.log_std()
         self.log_series()
         self.handle_files_and_images()

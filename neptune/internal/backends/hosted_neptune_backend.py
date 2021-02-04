@@ -414,6 +414,24 @@ class HostedNeptuneBackend(Backend):
             )
 
     @with_api_exceptions_handler
+    def set_property(self, experiment, key, value):
+        properties = {p.key: p.value for p in self.get_experiment(experiment.internal_id).properties}
+        properties[key] = str(value)
+        return self.update_experiment(
+            experiment=experiment,
+            properties=properties
+        )
+
+    @with_api_exceptions_handler
+    def remove_property(self, experiment, key):
+        properties = {p.key: p.value for p in self.get_experiment(experiment.internal_id).properties}
+        del properties[key]
+        return self.update_experiment(
+            experiment=experiment,
+            properties=properties
+        )
+
+    @with_api_exceptions_handler
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         UpdateTagsParams = self.backend_swagger_client.get_model('UpdateTagsParams')
         try:

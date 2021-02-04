@@ -19,6 +19,7 @@
 * NEPTUNE_PROJECT
 """
 import sys
+from datetime import datetime
 
 import neptune
 from common_client_code import ClientFeatures
@@ -35,11 +36,34 @@ class OldClientFeatures(ClientFeatures):
         )
 
     def modify_tags(self):
-        """NPT-9213"""
-        neptune.append_tag('tag1')
+        neptune.append_tags('tag1')
         neptune.append_tag(['tag2_to_remove', 'tag3'])
-        neptune.remove_tag('tag2_to_remove')
-        neptune.remove_tag('tag4_remove_non_existing')
+        # neptune.remove_tag('tag2_to_remove')  # TODO: NPT-9222
+        # neptune.remove_tag('tag4_remove_non_existing')  # TODO: NPT-9222
+
+        exp = neptune.get_experiment()
+        assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag2_to_remove', 'tag3'}
+
+    def modify_properties(self):
+        neptune.set_property('prop', 'some text')
+        neptune.set_property('prop_number', 42)
+        neptune.set_property('nested/prop', 42)
+        neptune.set_property('prop_to_del', 42)
+        neptune.set_property('prop_list', [1, 2, 3])
+        with open(self.text_file_path, mode='r') as f:
+            neptune.set_property('prop_IO', f)
+        neptune.set_property('prop_datetime', datetime.now())
+        neptune.remove_property('prop_to_del')
+
+        exp = neptune.get_experiment()
+        properties = exp.get_properties()
+        assert properties['prop'] == 'some text'
+        assert properties['prop_number'] == '42'
+        assert properties['nested/prop'] == '42'
+        assert 'prop_to_del' not in properties
+        assert properties['prop_IO'] == "<_io.TextIOWrapper name='alpha_integration_dev/data/text.txt'" \
+                                        " mode='r' encoding='UTF-8'>"
+        print(f'Properties: {properties}')
 
     def log_std(self):
         print('stdout text1')
@@ -61,8 +85,9 @@ class OldClientFeatures(ClientFeatures):
         neptune.log_text('m2', 'c')
 
         # images
-        # neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
-        # neptune.log_image('g_img', self.img_path)
+        # `image_name` and `description` will be lost
+        neptune.log_image('g_img', self.img_path, image_name='name', description='desc')
+        neptune.log_image('g_img', self.img_path)
 
     def handle_files_and_images(self):
         """NPT-9207"""
@@ -75,11 +100,12 @@ class OldClientFeatures(ClientFeatures):
         # neptune.delete_artifacts('artifact to delete')
 
     def other(self):
-        v = neptune.get_experiment().get_logs()
-        print(v)
+        logs = neptune.get_experiment().get_logs()
+        print(f'Logs: {logs}')
 
     def run(self):
-        # self.modify_tags()
+        self.modify_tags()
+        self.modify_properties()
         self.log_std()
         self.log_series()
         self.handle_files_and_images()

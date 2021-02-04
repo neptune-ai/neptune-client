@@ -81,6 +81,12 @@ class OfflineBackend(Backend):
     def update_experiment(self, experiment, properties):
         pass
 
+    def set_property(self, experiment, key, value):
+        pass
+
+    def remove_property(self, experiment, key):
+        pass
+
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         pass
 

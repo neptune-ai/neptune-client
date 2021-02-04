@@ -93,6 +93,14 @@ class Backend(object):
         pass
 
     @abstractmethod
+    def set_property(self, experiment, key, value):
+        pass
+
+    @abstractmethod
+    def remove_property(self, experiment, key):
+        pass
+
+    @abstractmethod
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         pass
 

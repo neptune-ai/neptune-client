@@ -41,6 +41,7 @@ from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,
+    AlphaPropertyDTO,
     channel_type_to_operation,
     channel_value_type_to_operation,
     deprecated_img_to_alpha_image,
@@ -146,7 +147,64 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         fake_experiment = NonCallableMagicMock()
         # `timeOfCreation` is required by `TimeOffsetGenerator`
         fake_experiment.timeOfCreation = experiment.creationTime
+
+        attributes = self._get_attributes(experiment_id)
+
+        tags = [
+            attr['stringSetProperties'].values for attr in attributes
+            if attr.name == alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH
+        ]
+        # tags should be element found in all `attributes` or just empty list
+        tags = tags[0] if tags else list()
+        fake_experiment.tags = tags
+
+        fake_experiment.properties = [
+            AlphaPropertyDTO(attr) for attr in attributes
+            if AlphaPropertyDTO.is_valid_attribute(attr)
+        ]
+
         return fake_experiment
+
+    def update_experiment(self, experiment, properties):
+        raise NeptuneException("`update_experiment` shouldn't be called.")
+
+    @with_api_exceptions_handler
+    def set_property(self, experiment, key, value):
+        """Save attribute casted to string under `alpha_consts.PROPERTIES_ATTRIBUTE_SPACE` namespace"""
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=[alpha_operation.AssignString(
+                path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}'),
+                value=str(value),
+            )],
+        )
+
+    @with_api_exceptions_handler
+    def remove_property(self, experiment, key):
+        """Removes given attribute"""
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=[alpha_operation.DeleteAttribute(
+                path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}'),
+            )],
+        )
+
+    @with_api_exceptions_handler
+    def update_tags(self, experiment, tags_to_add, tags_to_delete):
+        operations = [
+            alpha_operation.AddStrings(
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
+                values=tags_to_add,
+            ),
+            alpha_operation.RemoveStrings(
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
+                values=tags_to_delete,
+            )
+        ]
+        self._execute_alpha_operation(
+            experiment=experiment,
+            operations=operations,
+        )
 
     def upload_experiment_source(self, experiment, data, progress_indicator):
         # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
@@ -185,19 +243,9 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                                     channel_type=channel_type)
 
     def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
-        params = {
-            'experimentId': experiment.internal_id,
-        }
-        try:
-            experiment = self.leaderboard_swagger_client.api.getExperimentAttributes(**params).response().result
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-
         return [
-            AlphaChannelDTO(attr) for attr in experiment.attributes
-            if AlphaChannelDTO.is_valid_attribute_for_channel(attr)
+            AlphaChannelDTO(attr) for attr in self._get_attributes(experiment.internal_id)
+            if AlphaChannelDTO.is_valid_attribute(attr)
         ]
 
     @with_api_exceptions_handler
@@ -268,6 +316,19 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
     def create_hardware_metric(self, experiment, metric):
         pass
+
+    def _get_attributes(self, experiment_id) -> list:
+        params = {
+            'experimentId': experiment_id,
+        }
+        try:
+            experiment = self.leaderboard_swagger_client.api.getExperimentAttributes(**params).response().result
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+
+        return experiment.attributes
 
     @staticmethod
     def _get_client_config_args(api_token):

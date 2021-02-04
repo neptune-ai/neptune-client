@@ -913,11 +913,10 @@ class Experiment(object):
                 experiment.set_property('model', 'LightGBM')
                 experiment.set_property('magic-number', 7)
         """
-        properties = {p.key: p.value for p in self._backend.get_experiment(self.internal_id).properties}
-        properties[key] = str(value)
-        return self._backend.update_experiment(
+        return self._backend.set_property(
             experiment=self,
-            properties=properties
+            key=key,
+            value=value,
         )
 
     def remove_property(self, key):
@@ -934,11 +933,9 @@ class Experiment(object):
 
                 experiment.remove_property('host')
         """
-        properties = {p.key: p.value for p in self._backend.get_experiment(self.internal_id).properties}
-        del properties[key]
-        return self._backend.update_experiment(
+        return self._backend.remove_property(
             experiment=self,
-            properties=properties
+            key=key,
         )
 
     def get_hardware_utilization(self):
