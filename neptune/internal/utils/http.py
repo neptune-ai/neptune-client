@@ -46,6 +46,7 @@ def handle_quota_limits(f):
 
     Limitations:
     Decorated function must be called with experiment argument like this fun(..., experiment=<experiment>, ...)"""
+
     @wraps(f)
     def handler(*args, **kwargs):
         experiment = kwargs.get('experiment')
@@ -59,8 +60,8 @@ def handle_quota_limits(f):
                 # pylint: disable=protected-access
                 raise ExperimentNotFound(
                     experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            if e.response.status_code == UNPROCESSABLE_ENTITY and (
-                    extract_response_field(e.response, 'type') == 'LIMIT_OF_STORAGE_IN_PROJECT_REACHED'):
+            if (e.response.status_code == UNPROCESSABLE_ENTITY and
+                    extract_response_field(e.response, 'title').startswith('Storage limit reached in organization: ')):
                 raise StorageLimitReached()
             raise
 
