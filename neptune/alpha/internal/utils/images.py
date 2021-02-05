@@ -17,7 +17,7 @@
 import io
 import logging
 import os
-from typing import NewType, Union, Optional
+from typing import Optional
 
 from neptune.alpha.exceptions import FileNotFound
 from neptune.alpha.internal.utils import base64_encode
@@ -27,14 +27,14 @@ _logger = logging.getLogger(__name__)
 try:
     from numpy import ndarray as numpy_ndarray, array as numpy_array, uint8 as numpy_uint8
 except ImportError:
-    numpy_ndarray = NewType("numpy_ndarray", type(None))
-    numpy_array = NewType("numpy_array", type(None))
-    numpy_uint8 = NewType("numpy_uint8", type(None))
+    numpy_ndarray = None
+    numpy_array = None
+    numpy_uint8 = None
 
 try:
     from PIL.Image import Image as PILImage, fromarray as pilimage_fromarray
 except ImportError:
-    PILImage = NewType("PILImage", type(None))
+    PILImage = None
 
     def pilimage_fromarray():
         pass
@@ -42,15 +42,13 @@ except ImportError:
 try:
     from matplotlib.figure import Figure as MPLFigure
 except ImportError:
-    MPLFigure = NewType("MPLFigure", type(None))
+    MPLFigure = None
 
-
-ImageAcceptedTypes = Union[str, numpy_ndarray, PILImage, MPLFigure]
 
 IMAGE_SIZE_LIMIT_MB = 15
 
 
-def get_image_content(image: ImageAcceptedTypes) -> Optional[str]:
+def get_image_content(image) -> Optional[str]:
     content = _image_to_bytes(image)
 
     if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
@@ -63,8 +61,8 @@ def get_image_content(image: ImageAcceptedTypes) -> Optional[str]:
     return base64_encode(content)
 
 
-def _image_to_bytes(image: ImageAcceptedTypes) -> bytes:
-    if image is type(None):
+def _image_to_bytes(image) -> bytes:
+    if image is None:
         raise ValueError("image is None")
 
     elif isinstance(image, str):
@@ -73,7 +71,7 @@ def _image_to_bytes(image: ImageAcceptedTypes) -> bytes:
         with open(image, 'rb') as image_file:
             return image_file.read()
 
-    elif isinstance(image, numpy_ndarray):
+    elif numpy_ndarray is not None and isinstance(image, numpy_ndarray):
         shape = image.shape
         if len(shape) == 2:
             return _get_pil_image_data(pilimage_fromarray(image.astype(numpy_uint8)))
@@ -86,10 +84,10 @@ def _image_to_bytes(image: ImageAcceptedTypes) -> bytes:
         raise ValueError("Incorrect size of numpy.ndarray. Should be 2-dimensional or"
                          "3-dimensional with 3rd dimension of size 1, 3 or 4.")
 
-    elif isinstance(image, PILImage):
+    elif PILImage is not None and isinstance(image, PILImage):
         return _get_pil_image_data(image)
 
-    elif isinstance(image, MPLFigure):
+    elif MPLFigure is not None and isinstance(image, MPLFigure):
         return _get_figure_image_data(image)
 
     raise TypeError("image is {}".format(type(image)))
