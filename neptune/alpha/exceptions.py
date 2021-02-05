@@ -246,6 +246,11 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**inputs))
 
 
+class CannotSynchronizeOfflineExperimentsWithoutProject(NeptuneException):
+    def __init__(self):
+        super().__init__("Cannot synchronize offline experiments without a project.")
+
+
 class NeptuneExperimentResumeAndCustomIdCollision(NeptuneException):
     def __init__(self):
         super().__init__("`experiment` and `custom_experiment_id` arguments of init() function are mutually exclusive. "

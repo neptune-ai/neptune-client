@@ -27,7 +27,8 @@ import click
 from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
     OFFLINE_NAME_PREFIX, ASYNC_DIRECTORY
 from neptune.alpha.envs import PROJECT_ENV_NAME
-from neptune.alpha.exceptions import ProjectNotFound, NeptuneException
+from neptune.alpha.exceptions import ProjectNotFound, NeptuneException, \
+    CannotSynchronizeOfflineExperimentsWithoutProject
 from neptune.alpha.internal.backends.api_model import Project, Experiment
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
@@ -60,13 +61,13 @@ def get_experiment(experiment_id: str) -> Optional[Experiment]:
 
 
 project_name_missing_message = (
-    'Project name not provided, so skipping synchronization of offline experiments. '
+    'Project name not provided. Could not synchronize offline experiments. '
     'To synchronize offline experiment, specify the project name with the --project flag '
     'or by setting the {} environment variable.'.format(PROJECT_ENV_NAME))
 
 
 def project_not_found_message(project_name: str) -> str:
-    return ('Project {} not found, so skipping synchronization of offline experiments. '.format(project_name) +
+    return ('Project {} not found. Could not synchronize offline experiments. '.format(project_name) +
             'Please ensure you specified the correct project name with the --project flag ' +
             'or with the {} environment variable, or contact Neptune for support.'.format(PROJECT_ENV_NAME))
 
@@ -267,26 +268,31 @@ def is_offline_experiment_name(name: str) -> bool:
     return name.startswith(OFFLINE_NAME_PREFIX) and is_valid_uuid(name[len(OFFLINE_NAME_PREFIX):])
 
 
-def sync_selected_experiments(base_path: Path, project_name: Optional[str],
-                              experiment_names: Sequence[str]) -> None:
-    offline_experiment_ids = [name[len(OFFLINE_NAME_PREFIX):] for name in experiment_names
-                              if is_offline_experiment_name(name)]
-    other_experiment_names = [name for name in experiment_names if not is_offline_experiment_name(name)]
+def sync_offline_experiments(base_path: Path, project_name: Optional[str], offline_experiment_ids: Sequence[str]):
     if offline_experiment_ids:
         project = get_project(project_name)
-        if project:
-            registered_experiments = register_offline_experiments(base_path, project, offline_experiment_ids)
-            other_experiment_names.extend(get_qualified_name(exp) for exp in registered_experiments)
+        if not project:
+            raise CannotSynchronizeOfflineExperimentsWithoutProject
+        registered_experiments = register_offline_experiments(base_path, project, offline_experiment_ids)
+        offline_experiment_names = [get_qualified_name(exp) for exp in registered_experiments]
+        sync_selected_registered_experiments(base_path, offline_experiment_names)
+
+
+def sync_selected_experiments(base_path: Path, project_name: Optional[str],
+                              experiment_names: Sequence[str]) -> None:
+    other_experiment_names = [name for name in experiment_names if not is_offline_experiment_name(name)]
     sync_selected_registered_experiments(base_path, other_experiment_names)
+
+    offline_experiment_ids = [name[len(OFFLINE_NAME_PREFIX):] for name in experiment_names
+                              if is_offline_experiment_name(name)]
+    sync_offline_experiments(base_path, project_name, offline_experiment_ids)
 
 
 def sync_all_experiments(base_path: Path, project_name: Optional[str]) -> None:
-    offline_experiment_ids = get_offline_experiments_ids(base_path)
-    if offline_experiment_ids:
-        project = get_project(project_name)
-        if project:
-            register_offline_experiments(base_path, project, offline_experiment_ids)
     sync_all_registered_experiments(base_path)
+
+    offline_experiment_ids = get_offline_experiments_ids(base_path)
+    sync_offline_experiments(base_path, project_name, offline_experiment_ids)
 
 
 #######################################################################################################################
