@@ -19,6 +19,7 @@ from neptune import envs
 
 UNIX_STYLES = {'h1': '\033[95m',
                'h2': '\033[94m',
+               'blue': '\033[94m',
                'python': '\033[96m',
                'bash': '\033[95m',
                'warning': '\033[93m',
