@@ -190,8 +190,9 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         self.assertEqual(filename, "sample.file")
 
+    @patch('neptune.alpha.internal.backends.hosted_file_operations._store_response_as_file')
     @patch('neptune.alpha.internal.backends.hosted_file_operations._download_raw_data')
-    def test_download_file_attribute(self, download_raw):
+    def test_download_file_attribute(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
         exp_uuid = uuid.uuid4()
@@ -210,11 +211,14 @@ class TestHostedFileOperations(unittest.TestCase):
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "some/attribute"
-            })
+            },
+        )
+        store_response_mock.assert_called_once_with(download_raw.return_value, None)
 
+    @patch('neptune.alpha.internal.backends.hosted_file_operations._store_response_as_file')
     @patch('neptune.alpha.internal.backends.hosted_file_operations._download_raw_data')
     @patch('neptune.alpha.internal.backends.hosted_file_operations._get_download_url', new=lambda _, _id: "some_url")
-    def test_download_zip(self, download_raw):
+    def test_download_zip(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
         download_id = uuid.uuid4()
@@ -228,7 +232,9 @@ class TestHostedFileOperations(unittest.TestCase):
         download_raw.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
             url="some_url",
-            headers={"Accept": "application/zip"})
+            headers={"Accept": "application/zip"},
+        )
+        store_response_mock.assert_called_once_with(download_raw.return_value, None)
 
     @staticmethod
     def _get_swagger_mock():
