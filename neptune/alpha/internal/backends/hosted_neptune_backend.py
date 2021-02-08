@@ -29,7 +29,7 @@ from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, \
     ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException, \
     InternalClientError
-from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType, \
+from neptune.alpha.internal.backends.api_model import ClientConfig, Project, ApiExperiment, Attribute, AttributeType, \
     LeaderboardEntry, AttributeWithProperties, FloatAttribute, StringAttribute, DatetimeAttribute, \
     FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
 from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
@@ -119,7 +119,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_experiment(self, experiment_id: str):
         try:
             exp = self.leaderboard_client.api.getExperiment(experimentId=experiment_id).response().result
-            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
+            return ApiExperiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
         except HTTPNotFound:
             raise ExperimentNotFound(experiment_id)
 
@@ -128,7 +128,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                           project_uuid: uuid.UUID,
                           git_ref: Optional[GitRef] = None,
                           custom_experiment_id: Optional[str] = None
-                          ) -> Experiment:
+                          ) -> ApiExperiment:
         verify_type("project_uuid", project_uuid, uuid.UUID)
 
         git_info = {
@@ -158,7 +158,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         try:
             exp = self.leaderboard_client.api.createExperiment(**kwargs).response().result
-            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
+            return ApiExperiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
 

@@ -25,8 +25,8 @@ from neptune.alpha.internal.utils.paths import path_to_str
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound, \
     ExperimentNotFound, NeptuneException
-from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, AttributeType, FloatAttribute, \
-    StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
+from neptune.alpha.internal.backends.api_model import Project, ApiExperiment, Attribute, AttributeType,\
+    FloatAttribute, StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
 from neptune.alpha.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
@@ -71,7 +71,7 @@ class NeptuneBackendMock(NeptuneBackend):
                           project_uuid: uuid.UUID,
                           git_ref: Optional[GitRef] = None,
                           custom_experiment_id: Optional[str] = None
-                          ) -> Experiment:
+                          ) -> ApiExperiment:
         short_id = "OFFLINE-{}".format(len(self._experiments) + 1)
         new_experiment_uuid = uuid.uuid4()
         self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
@@ -84,9 +84,9 @@ class NeptuneBackendMock(NeptuneBackend):
         self._experiments[new_experiment_uuid].set(["sys", "modification_time"], Datetime(datetime.now()))
         if git_ref:
             self._experiments[new_experiment_uuid].set(["source_code", "git"], git_ref)
-        return Experiment(new_experiment_uuid, short_id, 'workspace', 'sandbox', False)
+        return ApiExperiment(new_experiment_uuid, short_id, 'workspace', 'sandbox', False)
 
-    def get_experiment(self, experiment_id: str) -> Experiment:
+    def get_experiment(self, experiment_id: str) -> ApiExperiment:
         raise ExperimentNotFound(experiment_id)
 
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
