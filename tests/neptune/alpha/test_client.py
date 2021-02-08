@@ -249,3 +249,36 @@ class TestClient(unittest.TestCase):
 
         exp['file/set'].download_zip("some_directory")
         backend_mock.download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
+
+    @unittest.skip(reason="Can't implement yet")
+    def test_latest_experiment_is_none_when_non_initialized(self):
+        # given uninitialized experiment
+        import neptune.alpha as neptune  # pylint: disable=import-outside-toplevel
+
+        # expect: it's None
+        self.assertIsNone(neptune.latest_experiment)  # pylint: disable=no-member
+
+    def test_latest_experiment_is_initialized_experiment(self):
+        # given initialized experiment
+        import neptune.alpha as neptune  # pylint: disable=import-outside-toplevel
+        exp1 = init()
+
+        # expect: it's the same as global `neptune.latest_experiment`
+        self.assertIs(exp1, neptune.latest_experiment)  # pylint: disable=no-member
+
+    def test_latest_experiment_is_the_latest_initialized(self):
+        # given initialized two experiments
+        import neptune.alpha as neptune  # pylint: disable=import-outside-toplevel
+        exp1 = init()
+        exp2 = init()
+
+        # expect: `neptune.latest_experiment` to be the latest initialized one
+        self.assertIsNot(exp1, neptune.latest_experiment)  # pylint: disable=no-member
+        self.assertIs(exp2, neptune.latest_experiment)  # pylint: disable=no-member
+
+    def test_latest_experiment(self):
+        # given initialized experiment
+        import neptune.alpha as neptune  # pylint: disable=import-outside-toplevel
+        init()
+        with self.assertRaises(AttributeError):
+            neptune.nonexisting_module_attribute  # pylint: disable=pointless-statement,no-member
