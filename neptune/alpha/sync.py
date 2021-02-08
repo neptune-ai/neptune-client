@@ -24,18 +24,24 @@ from typing import Sequence, Iterable, List, Optional, Tuple, Any
 
 import click
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
-    OFFLINE_NAME_PREFIX, ASYNC_DIRECTORY
+from neptune.alpha.constants import (
+    ASYNC_DIRECTORY,
+    NEPTUNE_EXPERIMENT_DIRECTORY,
+    OFFLINE_DIRECTORY,
+    OFFLINE_NAME_PREFIX,
+)
 from neptune.alpha.envs import PROJECT_ENV_NAME
-from neptune.alpha.exceptions import ProjectNotFound, NeptuneException, \
-    CannotSynchronizeOfflineExperimentsWithoutProject
+from neptune.alpha.exceptions import (
+    CannotSynchronizeOfflineExperimentsWithoutProject,
+    NeptuneException,
+    ProjectNotFound,
+)
 from neptune.alpha.internal.backends.api_model import Project, ApiExperiment
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import Operation
-
 
 #######################################################################################################################
 # Experiment and Project utilities
@@ -146,9 +152,8 @@ flag. Alternatively, you can set the environment variable
 
 
 def list_experiments(base_path: Path, synced_experiments: Sequence[ApiExperiment],
-                     unsynced_experiments: Sequence[ApiExperiment], offline_experiments_ids: Sequence[str])\
-                     -> None:
-
+                     unsynced_experiments: Sequence[ApiExperiment], offline_experiments_ids: Sequence[str]) \
+        -> None:
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
         click.echo('There are no Neptune experiments in {}'.format(base_path))
         sys.exit(1)

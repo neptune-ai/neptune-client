@@ -27,8 +27,13 @@ from neptune.alpha import init, ANONYMOUS, get_project
 from neptune.alpha.attributes.atoms import String
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException
-from neptune.alpha.internal.backends.api_model import ApiExperiment, Attribute, AttributeType, LeaderboardEntry, \
-    AttributeWithProperties
+from neptune.alpha.internal.backends.api_model import (
+    ApiExperiment,
+    Attribute,
+    AttributeType,
+    AttributeWithProperties,
+    LeaderboardEntry,
+)
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
 

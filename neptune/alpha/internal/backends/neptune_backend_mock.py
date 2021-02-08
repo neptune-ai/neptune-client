@@ -20,23 +20,51 @@ from shutil import copyfile
 from typing import Optional, List, Dict, TypeVar, Type
 from zipfile import ZipFile
 
-from neptune.alpha.internal.utils import base64_decode
-from neptune.alpha.internal.utils.paths import path_to_str
-
-from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError, ExperimentUUIDNotFound, \
-    ExperimentNotFound, NeptuneException
-from neptune.alpha.internal.backends.api_model import Project, ApiExperiment, Attribute, AttributeType,\
-    FloatAttribute, StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
+from neptune.alpha.exceptions import (
+    ExperimentNotFound,
+    ExperimentUUIDNotFound,
+    InternalClientError,
+    MetadataInconsistency,
+    NeptuneException,
+)
+from neptune.alpha.internal.backends.api_model import (
+    ApiExperiment,
+    Attribute,
+    AttributeType,
+    DatetimeAttribute,
+    FloatAttribute,
+    FloatSeriesAttribute,
+    Project,
+    StringAttribute,
+    StringSeriesAttribute,
+    StringSetAttribute,
+)
 from neptune.alpha.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
-from neptune.alpha.internal.operation import Operation, DeleteAttribute, \
-    AssignString, AssignFloat, \
-    LogStrings, LogFloats, LogImages, \
-    ClearFloatLog, ClearStringLog, ClearStringSet, ClearImageLog, \
-    RemoveStrings, AddStrings, \
-    UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent
+from neptune.alpha.internal.operation import (
+    AddStrings,
+    AssignDatetime,
+    AssignFloat,
+    AssignString,
+    ClearFloatLog,
+    ClearImageLog,
+    ClearStringLog,
+    ClearStringSet,
+    ConfigFloatSeries,
+    DeleteAttribute,
+    LogFloats,
+    LogImages,
+    LogStrings,
+    Operation,
+    RemoveStrings,
+    UploadFile,
+    UploadFileContent,
+    UploadFileSet,
+)
 from neptune.alpha.internal.operation_visitor import OperationVisitor
+from neptune.alpha.internal.utils import base64_decode
+from neptune.alpha.internal.utils.paths import path_to_str
 from neptune.alpha.types import Image
 from neptune.alpha.types.atoms import GitRef
 from neptune.alpha.types.atoms.datetime import Datetime

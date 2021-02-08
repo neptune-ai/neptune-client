@@ -18,9 +18,17 @@ import uuid
 from typing import List, Optional
 
 from neptune.alpha.exceptions import NeptuneException
-
-from neptune.alpha.internal.backends.api_model import Project, ApiExperiment, Attribute, FloatAttribute,\
-    StringAttribute, DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
+from neptune.alpha.internal.backends.api_model import (
+    ApiExperiment,
+    Attribute,
+    DatetimeAttribute,
+    FloatAttribute,
+    FloatSeriesAttribute,
+    Project,
+    StringAttribute,
+    StringSeriesAttribute,
+    StringSetAttribute,
+)
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.types.atoms import GitRef
 

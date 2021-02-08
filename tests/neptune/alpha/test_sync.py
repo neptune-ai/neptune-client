@@ -29,8 +29,14 @@ from neptune.alpha.internal.backends.api_model import Project
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
-from neptune.alpha.sync import ApiExperiment, get_qualified_name, \
-    sync_selected_experiments, sync_all_experiments, synchronization_status, get_project
+from neptune.alpha.sync import (
+    ApiExperiment,
+    get_project,
+    get_qualified_name,
+    sync_all_experiments,
+    sync_selected_experiments,
+    synchronization_status,
+)
 
 
 def an_experiment():
