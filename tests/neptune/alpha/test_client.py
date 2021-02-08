@@ -256,7 +256,7 @@ class TestClient(unittest.TestCase):
         import neptune.alpha as neptune  # pylint: disable=import-outside-toplevel
 
         # expect: it's None
-        self.assertIsNone(neptune.latest_experiment)  # pylint: disable=no-member
+        self.assertIsNone(neptune.get_latest_experiment())
 
     def test_latest_experiment_is_initialized_experiment(self):
         # given initialized experiment
@@ -264,7 +264,7 @@ class TestClient(unittest.TestCase):
         exp1 = init()
 
         # expect: it's the same as global `neptune.latest_experiment`
-        self.assertIs(exp1, neptune.latest_experiment)  # pylint: disable=no-member
+        self.assertIs(exp1, neptune.get_latest_experiment())
 
     def test_latest_experiment_is_the_latest_initialized(self):
         # given initialized two experiments
@@ -273,12 +273,5 @@ class TestClient(unittest.TestCase):
         exp2 = init()
 
         # expect: `neptune.latest_experiment` to be the latest initialized one
-        self.assertIsNot(exp1, neptune.latest_experiment)  # pylint: disable=no-member
-        self.assertIs(exp2, neptune.latest_experiment)  # pylint: disable=no-member
-
-    def test_latest_experiment(self):
-        # given initialized experiment
-        import neptune.alpha as neptune  # pylint: disable=import-outside-toplevel
-        init()
-        with self.assertRaises(AttributeError):
-            neptune.nonexisting_module_attribute  # pylint: disable=pointless-statement,no-member
+        self.assertIsNot(exp1, neptune.get_latest_experiment())
+        self.assertIs(exp2, neptune.get_latest_experiment())
