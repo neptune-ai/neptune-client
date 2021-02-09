@@ -27,8 +27,13 @@ from neptune.alpha import init, ANONYMOUS, get_project
 from neptune.alpha.attributes.atoms import String
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException
-from neptune.alpha.internal.backends.api_model import Experiment, Attribute, AttributeType, LeaderboardEntry, \
-    AttributeWithProperties
+from neptune.alpha.internal.backends.api_model import (
+    ApiExperiment,
+    Attribute,
+    AttributeType,
+    AttributeWithProperties,
+    LeaderboardEntry,
+)
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
 
@@ -77,7 +82,7 @@ class TestClient(unittest.TestCase):
 
     @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_experiment",
            new=lambda _, _id:
-           Experiment(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94", "workspace", "sandbox", False))
+           ApiExperiment(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94", "workspace", "sandbox", False))
     @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
            new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)])
     def test_resume(self):

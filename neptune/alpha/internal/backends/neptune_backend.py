@@ -18,9 +18,17 @@ import uuid
 from typing import List, Optional
 
 from neptune.alpha.exceptions import NeptuneException
-
-from neptune.alpha.internal.backends.api_model import Project, Experiment, Attribute, FloatAttribute, StringAttribute, \
-    DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
+from neptune.alpha.internal.backends.api_model import (
+    ApiExperiment,
+    Attribute,
+    DatetimeAttribute,
+    FloatAttribute,
+    FloatSeriesAttribute,
+    Project,
+    StringAttribute,
+    StringSeriesAttribute,
+    StringSetAttribute,
+)
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.types.atoms import GitRef
 
@@ -35,7 +43,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_experiment(self, experiment_id: str) -> Experiment:
+    def get_experiment(self, experiment_id: str) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
@@ -43,7 +51,7 @@ class NeptuneBackend:
                           project_uuid: uuid.UUID,
                           git_ref: Optional[GitRef] = None,
                           custom_experiment_id: Optional[str] = None
-                          ) -> Experiment:
+                          ) -> ApiExperiment:
         pass
 
     def ping_experiment(self, experiment_uuid: uuid.UUID):

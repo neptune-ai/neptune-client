@@ -31,7 +31,7 @@ class Project:
 
 
 @dataclass
-class Experiment:
+class ApiExperiment:
     uuid: uuid.UUID
     short_id: str
     workspace: str

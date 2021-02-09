@@ -24,18 +24,24 @@ from typing import Sequence, Iterable, List, Optional, Tuple, Any
 
 import click
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
-    OFFLINE_NAME_PREFIX, ASYNC_DIRECTORY
+from neptune.alpha.constants import (
+    ASYNC_DIRECTORY,
+    NEPTUNE_EXPERIMENT_DIRECTORY,
+    OFFLINE_DIRECTORY,
+    OFFLINE_NAME_PREFIX,
+)
 from neptune.alpha.envs import PROJECT_ENV_NAME
-from neptune.alpha.exceptions import ProjectNotFound, NeptuneException, \
-    CannotSynchronizeOfflineExperimentsWithoutProject
-from neptune.alpha.internal.backends.api_model import Project, Experiment
+from neptune.alpha.exceptions import (
+    CannotSynchronizeOfflineExperimentsWithoutProject,
+    NeptuneException,
+    ProjectNotFound,
+)
+from neptune.alpha.internal.backends.api_model import Project, ApiExperiment
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import Operation
-
 
 #######################################################################################################################
 # Experiment and Project utilities
@@ -52,7 +58,7 @@ def report_get_experiment_error(experiment_id: str, status_code: int, skipping: 
                .format(experiment_id, status_code, comment), file=sys.stderr)
 
 
-def get_experiment(experiment_id: str) -> Optional[Experiment]:
+def get_experiment(experiment_id: str) -> Optional[ApiExperiment]:
     try:
         return backend.get_experiment(experiment_id)
     except NeptuneException as e:
@@ -84,7 +90,7 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
         return None
 
 
-def get_qualified_name(experiment: Experiment) -> str:
+def get_qualified_name(experiment: ApiExperiment) -> str:
     return "{}/{}/{}".format(experiment.workspace, experiment.project_name, experiment.short_id)
 
 
@@ -119,7 +125,7 @@ def get_offline_experiments_ids(base_path: Path) -> List[str]:
     return result
 
 
-def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Experiment]]:
+def partition_experiments(base_path: Path) -> Tuple[List[ApiExperiment], List[ApiExperiment]]:
     synced_experiment_uuids = []
     unsynced_experiment_uuids = []
     for experiment_path in (base_path / ASYNC_DIRECTORY).iterdir():
@@ -145,10 +151,9 @@ flag. Alternatively, you can set the environment variable
 '''.format(PROJECT_ENV_NAME)
 
 
-def list_experiments(base_path: Path, synced_experiments: Sequence[Experiment],
-                     unsynced_experiments: Sequence[Experiment], offline_experiments_ids: Sequence[str])\
-                     -> None:
-
+def list_experiments(base_path: Path, synced_experiments: Sequence[ApiExperiment],
+                     unsynced_experiments: Sequence[ApiExperiment], offline_experiments_ids: Sequence[str]) \
+        -> None:
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
         click.echo('There are no Neptune experiments in {}'.format(base_path))
         sys.exit(1)
@@ -232,7 +237,7 @@ def sync_selected_registered_experiments(base_path: Path, qualified_experiment_n
                            file=sys.stderr)
 
 
-def register_offline_experiment(project: Project) -> Optional[Experiment]:
+def register_offline_experiment(project: Project) -> Optional[ApiExperiment]:
     try:
         return backend.create_experiment(project.uuid)
     except Exception as e:
@@ -249,7 +254,7 @@ def move_offline_experiment(base_path: Path, offline_uuid: str, server_uuid: str
 
 
 def register_offline_experiments(base_path: Path, project: Project,
-                                 offline_experiments_ids: Iterable[str]) -> List[Experiment]:
+                                 offline_experiments_ids: Iterable[str]) -> List[ApiExperiment]:
     result = []
     for experiment_uuid in offline_experiments_ids:
         if (base_path / OFFLINE_DIRECTORY / experiment_uuid).is_dir():
