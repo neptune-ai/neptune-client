@@ -16,10 +16,14 @@
 from typing import Optional
 
 from neptune.alpha.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
+from neptune.alpha.exceptions import NeptuneUninitializedException
 from neptune.alpha.experiment import Experiment
 from neptune.alpha.internal.get_project_impl import get_project, get_experiments_table
 from neptune.alpha.internal.init_impl import __version__, init
 
 
 def get_last_exp() -> Optional[Experiment]:
-    return Experiment.latest_experiment
+    last_exp = Experiment.last_exp
+    if last_exp is None:
+        raise NeptuneUninitializedException()
+    return last_exp

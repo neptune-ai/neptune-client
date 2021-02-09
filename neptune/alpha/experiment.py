@@ -58,7 +58,7 @@ from neptune.exceptions import UNIX_STYLES
 
 
 class Experiment(AbstractContextManager):
-    latest_experiment = None
+    last_exp = None  # "static" instance of recently created Experiment
 
     def __init__(
             self,
@@ -75,7 +75,7 @@ class Experiment(AbstractContextManager):
         self._lock = threading.RLock()
         self._started = False
 
-        Experiment.latest_experiment = self
+        Experiment.last_exp = self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         traceback.print_exception(exc_type, exc_val, exc_tb)

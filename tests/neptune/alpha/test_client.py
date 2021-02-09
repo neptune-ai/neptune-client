@@ -23,10 +23,10 @@ from datetime import datetime
 
 from mock import patch, Mock
 
-from neptune.alpha import init, ANONYMOUS, get_project, get_last_exp
+from neptune.alpha import init, ANONYMOUS, get_project, get_last_exp, Experiment
 from neptune.alpha.attributes.atoms import String
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException
+from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException, NeptuneUninitializedException
 from neptune.alpha.internal.backends.api_model import (
     ApiExperiment,
     Attribute,
@@ -250,22 +250,16 @@ class TestClient(unittest.TestCase):
         exp['file/set'].download_zip("some_directory")
         backend_mock.download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
 
-    @unittest.skip(reason="Can't implement yet")
-    def test_latest_experiment_is_none_when_non_initialized(self):
+    def test_last_exp_is_raising_exception_when_non_initialized(self):
         # given uninitialized experiment
+        Experiment.last_exp = None
 
-        # expect: it's None
-        self.assertIsNone(get_last_exp())
+        # expect: raises NeptuneUninitializedException
+        with self.assertRaises(NeptuneUninitializedException):
+            get_last_exp()
 
-    def test_latest_experiment_is_initialized_experiment(self):
-        # given initialized experiment
-        exp1 = init()
-
-        # expect: it's the same as global `neptune.latest_experiment`
-        self.assertIs(exp1, get_last_exp())
-
-    def test_latest_experiment_is_the_latest_initialized(self):
-        # given initialized two experiments
+    def test_last_exp_is_the_latest_initialized(self):
+        # given two initialized experiments
         exp1 = init()
         exp2 = init()
 
