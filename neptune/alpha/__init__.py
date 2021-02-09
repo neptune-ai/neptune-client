@@ -21,5 +21,5 @@ from neptune.alpha.internal.get_project_impl import get_project, get_experiments
 from neptune.alpha.internal.init_impl import __version__, init
 
 
-def get_latest_experiment() -> Optional[Experiment]:
+def get_last_exp() -> Optional[Experiment]:
     return Experiment.latest_experiment
