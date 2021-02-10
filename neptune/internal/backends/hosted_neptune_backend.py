@@ -796,7 +796,7 @@ class HostedNeptuneBackend(Backend):
         return [
             KeyValueProperty(
                 key=key,
-                value=value
+                value=str(value)
             ) for key, value in raw_properties.items()
         ]
 
