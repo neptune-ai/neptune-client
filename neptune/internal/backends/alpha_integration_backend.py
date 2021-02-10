@@ -16,18 +16,21 @@
 import logging
 import os
 import uuid
+from itertools import groupby
 from typing import List, Dict
 
 import click
 import six
 from bravado.exception import HTTPNotFound
 from mock import NonCallableMagicMock
+from neptune.alpha.internal.utils.paths import parse_path
 
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
+from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats
 from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
 from neptune.api_exceptions import (
     AlphaOperationErrors,
@@ -314,8 +317,35 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
+    @staticmethod
+    def _get_attribute_name_for_metric(resource_type, gauge_name, gauges_count) -> str:
+        if gauges_count > 1:
+            return "monitoring/{}_{}".format(resource_type, gauge_name).lower()
+        return "monitoring/{}".format(resource_type).lower()
+
+    @with_api_exceptions_handler
     def create_hardware_metric(self, experiment, metric):
-        pass
+        operations = []
+        gauges_count = len(metric.gauges)
+        for gauge in metric.gauges:
+            path = parse_path(self._get_attribute_name_for_metric(metric.resource_type, gauge.name(), gauges_count))
+            operations.append(ConfigFloatSeries(path, min=metric.min_value, max=metric.max_value, unit=metric.unit))
+        self._execute_alpha_operation(experiment, operations)
+
+    @with_api_exceptions_handler
+    def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
+        operations = []
+        metrics_by_name = {metric.name: metric for metric in metrics}
+        for report in metric_reports:
+            metric = metrics_by_name.get(report.metric.name)
+            gauges_count = len(metric.gauges)
+            for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name):
+                metric_values = list(metric_values)
+                path = parse_path(self._get_attribute_name_for_metric(metric.resource_type, gauge_name, gauges_count))
+                operations.append(LogFloats(
+                    path,
+                    [LogFloats.ValueType(value.value, step=None, ts=value.timestamp) for value in metric_values]))
+        self._execute_alpha_operation(experiment, operations)
 
     def log_artifact(self, experiment, artifact, destination=None):
         target_name = os.path.basename(artifact) if destination is None else destination
@@ -397,15 +427,17 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         init_operations = list()
 
         # Assign experiment name
+        name = name or ""
         init_operations.append(alpha_operation.AssignString(
             path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_NAME_ATTRIBUTE_PATH),
             value=name,
         ))
         # Assign source entrypoint
-        init_operations.append(alpha_operation.AssignString(
-            path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
-            value=entrypoint,
-        ))
+        if entrypoint:
+            init_operations.append(alpha_operation.AssignString(
+                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
+                value=entrypoint,
+            ))
         # Assign experiment parameters
         for p_name, p_val in params.items():
             parameter_type, string_value = self._get_parameter_with_type(p_val)
@@ -415,9 +447,10 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                 value=string_value,
             ))
         # Assign tags
-        init_operations.append(alpha_operation.AddStrings(
-            path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
-            values=set(tags),
-        ))
+        if tags:
+            init_operations.append(alpha_operation.AddStrings(
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
+                values=set(tags),
+            ))
 
         return init_operations
