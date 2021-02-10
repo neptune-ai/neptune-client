@@ -307,7 +307,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         pass
 
     def ping_experiment(self, experiment):
-        pass
+        try:
+            self.leaderboard_swagger_client.api.ping(experimentId=str(experiment.internal_id)).response().result
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
     def create_hardware_metric(self, experiment, metric):
         pass
