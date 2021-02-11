@@ -23,10 +23,10 @@ from datetime import datetime
 
 from mock import patch, Mock
 
-from neptune.alpha import init, ANONYMOUS, get_project
+from neptune.alpha import init, ANONYMOUS, get_project, get_last_exp, Experiment
 from neptune.alpha.attributes.atoms import String
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException
+from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException, NeptuneUninitializedException
 from neptune.alpha.internal.backends.api_model import (
     ApiExperiment,
     Attribute,
@@ -249,3 +249,20 @@ class TestClient(unittest.TestCase):
 
         exp['file/set'].download_zip("some_directory")
         backend_mock.download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
+
+    def test_last_exp_is_raising_exception_when_non_initialized(self):
+        # given uninitialized experiment
+        Experiment.last_exp = None
+
+        # expect: raises NeptuneUninitializedException
+        with self.assertRaises(NeptuneUninitializedException):
+            get_last_exp()
+
+    def test_last_exp_is_the_latest_initialized(self):
+        # given two initialized experiments
+        exp1 = init()
+        exp2 = init()
+
+        # expect: `neptune.latest_experiment` to be the latest initialized one
+        self.assertIsNot(exp1, get_last_exp())
+        self.assertIs(exp2, get_last_exp())
