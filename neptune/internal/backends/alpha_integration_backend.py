@@ -45,10 +45,11 @@ from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,
+    AlphaParameterDTO,
     AlphaPropertyDTO,
     channel_type_to_operation,
     channel_value_type_to_operation,
-    deprecated_img_to_alpha_image, AlphaParameterDTO,
+    deprecated_img_to_alpha_image,
 )
 from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
@@ -433,13 +434,11 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         init_operations = list()
 
         # Assign experiment name
-        name = name or ""
         init_operations.append(alpha_operation.AssignString(
             path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_NAME_ATTRIBUTE_PATH),
             value=name,
         ))
         # Assign experiment description
-        description = description or ""
         init_operations.append(alpha_operation.AssignString(
             path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH),
             value=description,
