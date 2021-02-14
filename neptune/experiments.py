@@ -25,6 +25,7 @@ import requests
 import six
 from pandas.errors import EmptyDataError
 
+from neptune.alpha.internal.backends.utils import check_if_ssl_verify as alpha_check_if_ssl_verify
 from neptune.api_exceptions import ExperimentAlreadyFinished, ChannelDoesNotExist, PathInProjectNotFound
 from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NotADirectory
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
@@ -774,9 +775,7 @@ class Experiment(object):
             sleep_time = min(sleep_time * 2, max_sleep_time)
             download_request = self._backend.get_download_request(download_request.id)
 
-        ssl_verify = True
-        if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
-            ssl_verify = False
+        ssl_verify = alpha_check_if_ssl_verify()
 
         # We do not use Backend here cause `downloadUrl` can be any url (not only Neptune API endpoint)
         response = requests.get(

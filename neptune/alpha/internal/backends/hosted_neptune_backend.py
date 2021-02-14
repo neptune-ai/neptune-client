@@ -13,19 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 import platform
 import uuid
 from typing import List, Optional, Dict, Iterable
 
 import click
-import urllib3
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
-from bravado.requests_client import RequestsClient
 from packaging import version
 
-from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import (
     ExperimentNotFound,
     ExperimentUUIDNotFound,
@@ -62,8 +58,9 @@ from neptune.alpha.internal.backends.operation_api_name_visitor import Operation
 from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
 from neptune.alpha.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.alpha.internal.backends.utils import (
+    check_if_ssl_verify,
+    create_http_client,
     create_swagger_client,
-    update_session_proxies,
     verify_client_version,
     verify_host_resolution,
     with_api_exceptions_handler,
@@ -89,18 +86,15 @@ class HostedNeptuneBackend(NeptuneBackend):
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
         self.credentials = credentials
 
-        ssl_verify = True
-        if os.getenv(NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE):
-            urllib3.disable_warnings()
-            ssl_verify = False
+        ssl_verify = check_if_ssl_verify()
 
-        self._http_client = self._create_http_client(ssl_verify, proxies)
+        self._http_client = create_http_client(ssl_verify, proxies)
 
         config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
         if proxies is None:
             verify_host_resolution(config_api_url)
 
-        token_http_client = self._create_http_client(ssl_verify, proxies)
+        token_http_client = create_http_client(ssl_verify, proxies)
         token_client = create_swagger_client(config_api_url + self.BACKEND_SWAGGER_PATH,
                                              token_http_client)
 
@@ -443,12 +437,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=100)]
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
-
-    @staticmethod
-    def _create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
-        http_client = RequestsClient(ssl_verify=ssl_verify)
-        update_session_proxies(http_client.session, proxies)
-        return http_client
 
     @staticmethod
     def _get_all_items(get_portion, step):

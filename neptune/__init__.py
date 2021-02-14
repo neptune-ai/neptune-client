@@ -145,6 +145,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
         if backend is None:
             backend_name = os.getenv(envs.BACKEND)
             backend = backend_factory(
+                project_qualified_name=project_qualified_name,
                 backend_name=backend_name,
                 api_token=api_token,
                 proxies=proxies,

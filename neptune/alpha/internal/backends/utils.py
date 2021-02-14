@@ -15,25 +15,27 @@
 #
 
 import logging
+import os
 import socket
 import sys
 import time
 from typing import Optional, Dict
-
 from urllib.parse import urlparse
 
 import click
 import requests
-
+import urllib3
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
     HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
     HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError, HTTPTooManyRequests
 from bravado.http_client import HttpClient
+from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
 from requests import Session
 
+from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.alpha.exceptions import SSLError, ConnectionLost, InternalServerError, Unauthorized, Forbidden, \
     CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
 from neptune.alpha.internal.backends.api_model import ClientConfig
@@ -43,7 +45,6 @@ _logger = logging.getLogger(__name__)
 
 
 def with_api_exceptions_handler(func):
-
     def wrapper(*args, **kwargs):
         last_exception = None
         for retry in range(0, 3):
@@ -141,3 +142,16 @@ def update_session_proxies(session: Session, proxies: Optional[Dict[str, str]]):
             session.proxies.update(proxies)
         except (TypeError, ValueError):
             raise ValueError("Wrong proxies format: {}".format(proxies))
+
+
+def check_if_ssl_verify():
+    if os.getenv(NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE):
+        urllib3.disable_warnings()
+        return False
+    return True
+
+
+def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
+    http_client = RequestsClient(ssl_verify=ssl_verify)
+    update_session_proxies(http_client.session, proxies)
+    return http_client

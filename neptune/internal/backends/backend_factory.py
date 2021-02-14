@@ -13,10 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import click
 
+from neptune.alpha.internal.backends.utils import (
+    check_if_ssl_verify as alpha_check_if_ssl_verify,
+    create_http_client as alpha_create_http_client,
+    create_swagger_client as alpha_create_swagger_client,
+)
 from neptune.alpha.internal.credentials import Credentials
-from neptune.exceptions import InvalidNeptuneBackend
 from neptune.backend import Backend
+from neptune.exceptions import InvalidNeptuneBackend, STYLES
 from neptune.internal.backends import (
     AlphaIntegrationBackend,
     HostedNeptuneBackend,
@@ -24,17 +30,30 @@ from neptune.internal.backends import (
 )
 
 
-def backend_factory(*, backend_name, api_token=None, proxies=None) -> Backend:
+def backend_factory(*, project_qualified_name, backend_name, api_token=None, proxies=None) -> Backend:
     if backend_name == 'offline':
         return OfflineBackend()
 
     elif backend_name is None:
         credentials = Credentials(api_token)
-        # TODO: Improvement. How to determine which backend class should be used?
-        if credentials.token_origin_address.startswith('https://alpha.'):
-            return AlphaIntegrationBackend(api_token, proxies)
+        ssl_verify = alpha_check_if_ssl_verify()
+        boot_http_client = alpha_create_http_client(ssl_verify, proxies)
+        config_api_url = credentials.api_url_opt or credentials.token_origin_address
+        boot_backend_client = alpha_create_swagger_client(f'{config_api_url}/api/backend/swagger.json',
+                                                          boot_http_client)
 
-        return HostedNeptuneBackend(api_token, proxies)
+        response = boot_backend_client.api.getProject(projectIdentifier=project_qualified_name).response()
+        warning = response.metadata.headers.get('X-Server-Warning')
+        if warning:
+            click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
+        project = response.result
+        if not hasattr(project, 'version'):
+            pass  # what now?
+
+        if project.version == 1:
+            return HostedNeptuneBackend(api_token, proxies)
+        else:
+            return AlphaIntegrationBackend(api_token, proxies)
 
     else:
         raise InvalidNeptuneBackend(backend_name)

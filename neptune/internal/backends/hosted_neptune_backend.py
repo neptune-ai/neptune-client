@@ -34,7 +34,6 @@ from typing import Dict
 import click
 import requests
 import six
-import urllib3
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity, HTTPConflict
 from bravado.requests_client import RequestsClient
@@ -42,6 +41,7 @@ from bravado_core.formatter import SwaggerFormat
 from packaging import version
 from six.moves import urllib
 
+from neptune.alpha.internal.backends.utils import check_if_ssl_verify as alpha_check_if_ssl_verify
 from neptune.api_exceptions import (
     ChannelAlreadyExists,
     ChannelNotFound,
@@ -91,10 +91,7 @@ class HostedNeptuneBackend(Backend):
 
         self.credentials = Credentials(api_token)
 
-        ssl_verify = True
-        if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
-            urllib3.disable_warnings()
-            ssl_verify = False
+        ssl_verify = alpha_check_if_ssl_verify()
 
         self._http_client = RequestsClient(ssl_verify=ssl_verify)
         # for session re-creation we need to keep an authenticator-free version of http client
