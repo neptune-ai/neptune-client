@@ -24,17 +24,24 @@ from typing import Sequence, Iterable, List, Optional, Tuple, Any
 
 import click
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
-    OFFLINE_NAME_PREFIX, ASYNC_DIRECTORY
+from neptune.alpha.constants import (
+    ASYNC_DIRECTORY,
+    NEPTUNE_EXPERIMENT_DIRECTORY,
+    OFFLINE_DIRECTORY,
+    OFFLINE_NAME_PREFIX,
+)
 from neptune.alpha.envs import PROJECT_ENV_NAME
-from neptune.alpha.exceptions import ProjectNotFound, NeptuneException
-from neptune.alpha.internal.backends.api_model import Project, Experiment
+from neptune.alpha.exceptions import (
+    CannotSynchronizeOfflineExperimentsWithoutProject,
+    NeptuneException,
+    ProjectNotFound,
+)
+from neptune.alpha.internal.backends.api_model import Project, ApiExperiment
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import Operation
-
 
 #######################################################################################################################
 # Experiment and Project utilities
@@ -51,7 +58,7 @@ def report_get_experiment_error(experiment_id: str, status_code: int, skipping: 
                .format(experiment_id, status_code, comment), file=sys.stderr)
 
 
-def get_experiment(experiment_id: str) -> Optional[Experiment]:
+def get_experiment(experiment_id: str) -> Optional[ApiExperiment]:
     try:
         return backend.get_experiment(experiment_id)
     except NeptuneException as e:
@@ -60,13 +67,13 @@ def get_experiment(experiment_id: str) -> Optional[Experiment]:
 
 
 project_name_missing_message = (
-    'Project name not provided, so skipping synchronization of offline experiments. '
+    'Project name not provided. Could not synchronize offline experiments. '
     'To synchronize offline experiment, specify the project name with the --project flag '
     'or by setting the {} environment variable.'.format(PROJECT_ENV_NAME))
 
 
 def project_not_found_message(project_name: str) -> str:
-    return ('Project {} not found, so skipping synchronization of offline experiments. '.format(project_name) +
+    return ('Project {} not found. Could not synchronize offline experiments. '.format(project_name) +
             'Please ensure you specified the correct project name with the --project flag ' +
             'or with the {} environment variable, or contact Neptune for support.'.format(PROJECT_ENV_NAME))
 
@@ -83,7 +90,7 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
         return None
 
 
-def get_qualified_name(experiment: Experiment) -> str:
+def get_qualified_name(experiment: ApiExperiment) -> str:
     return "{}/{}/{}".format(experiment.workspace, experiment.project_name, experiment.short_id)
 
 
@@ -118,7 +125,7 @@ def get_offline_experiments_ids(base_path: Path) -> List[str]:
     return result
 
 
-def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Experiment]]:
+def partition_experiments(base_path: Path) -> Tuple[List[ApiExperiment], List[ApiExperiment]]:
     synced_experiment_uuids = []
     unsynced_experiment_uuids = []
     for experiment_path in (base_path / ASYNC_DIRECTORY).iterdir():
@@ -128,8 +135,10 @@ def partition_experiments(base_path: Path) -> Tuple[List[Experiment], List[Exper
                 synced_experiment_uuids.append(experiment_uuid)
             else:
                 unsynced_experiment_uuids.append(experiment_uuid)
-    synced_experiments = [experiment for experiment in map(get_experiment, synced_experiment_uuids) if experiment]
-    unsynced_experiments = [experiment for experiment in map(get_experiment, unsynced_experiment_uuids) if experiment]
+    synced_experiments = [experiment for experiment in map(get_experiment, synced_experiment_uuids)
+                          if experiment and not experiment.trashed]
+    unsynced_experiments = [experiment for experiment in map(get_experiment, unsynced_experiment_uuids)
+                            if experiment and not experiment.trashed]
     return synced_experiments, unsynced_experiments
 
 
@@ -142,10 +151,9 @@ flag. Alternatively, you can set the environment variable
 '''.format(PROJECT_ENV_NAME)
 
 
-def list_experiments(base_path: Path, synced_experiments: Sequence[Experiment],
-                     unsynced_experiments: Sequence[Experiment], offline_experiments_ids: Sequence[str])\
-                     -> None:
-
+def list_experiments(base_path: Path, synced_experiments: Sequence[ApiExperiment],
+                     unsynced_experiments: Sequence[ApiExperiment], offline_experiments_ids: Sequence[str]) \
+        -> None:
     if not synced_experiments and not unsynced_experiments and not offline_experiments_ids:
         click.echo('There are no Neptune experiments in {}'.format(base_path))
         sys.exit(1)
@@ -229,7 +237,7 @@ def sync_selected_registered_experiments(base_path: Path, qualified_experiment_n
                            file=sys.stderr)
 
 
-def register_offline_experiment(project: Project) -> Optional[Experiment]:
+def register_offline_experiment(project: Project) -> Optional[ApiExperiment]:
     try:
         return backend.create_experiment(project.uuid)
     except Exception as e:
@@ -246,7 +254,7 @@ def move_offline_experiment(base_path: Path, offline_uuid: str, server_uuid: str
 
 
 def register_offline_experiments(base_path: Path, project: Project,
-                                 offline_experiments_ids: Iterable[str]) -> List[Experiment]:
+                                 offline_experiments_ids: Iterable[str]) -> List[ApiExperiment]:
     result = []
     for experiment_uuid in offline_experiments_ids:
         if (base_path / OFFLINE_DIRECTORY / experiment_uuid).is_dir():
@@ -265,26 +273,31 @@ def is_offline_experiment_name(name: str) -> bool:
     return name.startswith(OFFLINE_NAME_PREFIX) and is_valid_uuid(name[len(OFFLINE_NAME_PREFIX):])
 
 
-def sync_selected_experiments(base_path: Path, project_name: Optional[str],
-                              experiment_names: Sequence[str]) -> None:
-    offline_experiment_ids = [name[len(OFFLINE_NAME_PREFIX):] for name in experiment_names
-                              if is_offline_experiment_name(name)]
-    other_experiment_names = [name for name in experiment_names if not is_offline_experiment_name(name)]
+def sync_offline_experiments(base_path: Path, project_name: Optional[str], offline_experiment_ids: Sequence[str]):
     if offline_experiment_ids:
         project = get_project(project_name)
-        if project:
-            registered_experiments = register_offline_experiments(base_path, project, offline_experiment_ids)
-            other_experiment_names.extend(get_qualified_name(exp) for exp in registered_experiments)
+        if not project:
+            raise CannotSynchronizeOfflineExperimentsWithoutProject
+        registered_experiments = register_offline_experiments(base_path, project, offline_experiment_ids)
+        offline_experiment_names = [get_qualified_name(exp) for exp in registered_experiments]
+        sync_selected_registered_experiments(base_path, offline_experiment_names)
+
+
+def sync_selected_experiments(base_path: Path, project_name: Optional[str],
+                              experiment_names: Sequence[str]) -> None:
+    other_experiment_names = [name for name in experiment_names if not is_offline_experiment_name(name)]
     sync_selected_registered_experiments(base_path, other_experiment_names)
+
+    offline_experiment_ids = [name[len(OFFLINE_NAME_PREFIX):] for name in experiment_names
+                              if is_offline_experiment_name(name)]
+    sync_offline_experiments(base_path, project_name, offline_experiment_ids)
 
 
 def sync_all_experiments(base_path: Path, project_name: Optional[str]) -> None:
-    offline_experiment_ids = get_offline_experiments_ids(base_path)
-    if offline_experiment_ids:
-        project = get_project(project_name)
-        if project:
-            register_offline_experiments(base_path, project, offline_experiment_ids)
     sync_all_registered_experiments(base_path)
+
+    offline_experiment_ids = get_offline_experiments_ids(base_path)
+    sync_offline_experiments(base_path, project_name, offline_experiment_ids)
 
 
 #######################################################################################################################
@@ -312,7 +325,7 @@ path_option = click.option('--path', type=click.Path(exists=True, file_okay=Fals
 @click.command()
 @path_option
 def status(path: Path) -> None:
-    """List unsynchronized experiments in the given directory.
+    """List synchronized and unsynchronized experiments in the given directory. Trashed experiments are not listed.
 
     Neptune stores experiment data on disk in '.neptune' directories. In case an experiment runs offline
     or network is unavailable as the experiment runs, experiment data can be synchronized
@@ -321,11 +334,11 @@ def status(path: Path) -> None:
     Examples:
 
     \b
-    # List unsynchronized experiments in the current directory
+    # List synchronized and unsynchronized experiments in the current directory
     neptune status
 
     \b
-    # List unsynchronized experiments in directory "foo/bar" without actually syncing
+    # List synchronized and unsynchronized experiments in directory "foo/bar" without actually syncing
     neptune status --path foo/bar
     """
 

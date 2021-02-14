@@ -31,11 +31,12 @@ class Project:
 
 
 @dataclass
-class Experiment:
+class ApiExperiment:
     uuid: uuid.UUID
     short_id: str
     workspace: str
     project_name: str
+    trashed: bool
 
 
 class ClientConfig(object):

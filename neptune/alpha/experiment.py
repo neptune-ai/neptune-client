@@ -23,6 +23,8 @@ from datetime import datetime
 from io import IOBase
 from typing import Dict, Any, Union, List, Optional
 
+import click
+
 from neptune.alpha.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.alpha.attributes.atoms.experiment_state import ExperimentState as ExperimentStateAttr
 from neptune.alpha.attributes.atoms.file import File as FileAttr
@@ -52,9 +54,11 @@ from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.value import Value
+from neptune.exceptions import UNIX_STYLES
 
 
 class Experiment(AbstractContextManager):
+    last_exp = None  # "static" instance of recently created Experiment
 
     def __init__(
             self,
@@ -70,6 +74,8 @@ class Experiment(AbstractContextManager):
         self._structure = ExperimentStructure[Attribute]()
         self._lock = threading.RLock()
         self._started = False
+
+        Experiment.last_exp = self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         traceback.print_exception(exc_type, exc_val, exc_tb)
@@ -110,6 +116,25 @@ class Experiment(AbstractContextManager):
 
     def get_structure(self) -> Dict[str, Any]:
         return self._structure.get_structure()
+
+    def print_structure(self) -> None:
+        self._print_structure_impl(self.get_structure(), indent=0)
+
+    def _print_structure_impl(self, struct: dict, indent: int) -> None:
+        for key in sorted(struct.keys()):
+            click.echo("    " * indent, nl=False)
+            if isinstance(struct[key], dict):
+                click.echo("{blue}'{key}'{end}:".format(
+                    blue=UNIX_STYLES['blue'],
+                    key=key,
+                    end=UNIX_STYLES['end']))
+                self._print_structure_impl(struct[key], indent=indent+1)
+            else:
+                click.echo("{blue}'{key}'{end}: {type}".format(
+                    blue=UNIX_STYLES['blue'],
+                    key=key,
+                    end=UNIX_STYLES['end'],
+                    type=type(struct[key]).__name__))
 
     def define(self,
                path: str,

@@ -149,7 +149,7 @@ class HostedNeptuneBackend(Backend):
             if warning:
                 click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
             project = response.result
-            if project.version > 1:
+            if hasattr(project, 'version') and project.version > 1:
                 raise AlphaProjectException(project_qualified_name)
 
             return Project(
