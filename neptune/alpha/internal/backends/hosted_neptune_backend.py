@@ -20,6 +20,7 @@ from typing import List, Optional, Dict, Iterable
 import click
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
+# from bravado.requests_client import RequestsClient  # TODO: why this is required by tests?
 from packaging import version
 
 from neptune.alpha.exceptions import (
