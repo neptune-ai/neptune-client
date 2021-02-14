@@ -20,10 +20,16 @@ import abc
 
 class ClientFeatures(abc.ABC):
     params = {
-        'text_parameter': 'some text',
-        'number parameter': 42,
-        'list': [1, 2, 3],
-        'datetime': datetime.now()
+        'init_text_parameter': 'some text',
+        'init_number parameter': 42,
+        'init_list': [1, 2, 3],
+        'init_datetime': datetime.now()
+    }
+    properties = {
+        'init_text_property': 'some text',
+        'init_number property': 42,
+        # 'init_list': [1, 2, 3],  # TODO: Error 500 in old client
+        # 'init_datetime': datetime.now()  # TODO: Non serializable in old client
     }
 
     img_path = 'alpha_integration_dev/data/g.png'

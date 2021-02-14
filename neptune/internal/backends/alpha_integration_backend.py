@@ -122,6 +122,11 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         } if git_info else None
 
         api_params = {
+            # TODO: what about those missing attributes
+            # abortable,
+            # monitored,
+            # notebook_id,
+            # checkpoint_id,
             "projectIdentifier": str(project.internal_id),
             "cliVersion": self.client_lib_version,
             "gitInfo": git_info,
@@ -140,10 +145,16 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
 
         experiment = self._convert_to_experiment(api_experiment, project)
         # Initialize new experiment
+        init_experiment_operations = self._get_init_experiment_operations(name,
+                                                                          description,
+                                                                          params,
+                                                                          properties,
+                                                                          tags,
+                                                                          hostname,
+                                                                          entrypoint)
         self._execute_alpha_operation(
             experiment=experiment,
-            operations=self._get_init_experiment_operations(
-                name, description, hostname, entrypoint, params, properties, tags),
+            operations=init_experiment_operations,
         )
         return experiment
 
@@ -428,8 +439,14 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         except alpha_exceptions.InternalClientError as e:
             raise NeptuneException(e) from e
 
-    def _get_init_experiment_operations(
-            self, name, description, hostname, entrypoint, params, properties, tags) -> List[alpha_operation.Operation]:
+    def _get_init_experiment_operations(self,
+                                        name,
+                                        description,
+                                        params,
+                                        properties,
+                                        tags,
+                                        hostname,
+                                        entrypoint) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
 
@@ -443,18 +460,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH),
             value=description,
         ))
-        # Assign hostname
-        if hostname:
-            init_operations.append(alpha_operation.AssignString(
-                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH),
-                value=hostname,
-            ))
-        # Assign source entrypoint
-        if entrypoint:
-            init_operations.append(alpha_operation.AssignString(
-                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
-                value=entrypoint,
-            ))
         # Assign experiment parameters
         for p_name, p_val in params.items():
             parameter_type, string_value = self._get_parameter_with_type(p_val)
@@ -474,6 +479,18 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             init_operations.append(alpha_operation.AddStrings(
                 path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
                 values=set(tags),
+            ))
+        # Assign source hostname
+        if hostname:
+            init_operations.append(alpha_operation.AssignString(
+                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
+                value=hostname,
+            ))
+        # Assign source entrypoint
+        if entrypoint:
+            init_operations.append(alpha_operation.AssignString(
+                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
+                value=entrypoint,
             ))
 
         return init_operations
