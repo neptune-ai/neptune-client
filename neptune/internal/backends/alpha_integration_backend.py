@@ -16,13 +16,13 @@
 import logging
 import os
 import uuid
+from collections import namedtuple
 from itertools import groupby
 from typing import List, Dict
 
 import click
 import six
 from bravado.exception import HTTPNotFound
-from mock import NonCallableMagicMock
 from neptune.alpha.internal.utils.paths import parse_path
 
 from neptune.alpha import exceptions as alpha_exceptions
@@ -56,6 +56,24 @@ from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
+
+
+LegacyExperiment = namedtuple(
+    'LegacyExperiment',
+    'shortId '
+    'name '
+    'timeOfCreation '
+    'timeOfCompletion '
+    'runningTime '
+    'owner '
+    'storageSize '
+    'channelsSize '
+    'tags '
+    'description '
+    'hostname '
+    'state '
+    'properties '
+    'parameters')
 
 
 class AlphaIntegrationBackend(HostedNeptuneBackend):
@@ -153,31 +171,28 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         attributes = api_attributes.attributes
         system_attributes = api_attributes.systemAttributes
 
-        fake_experiment = NonCallableMagicMock()
-        fake_experiment.shortId = system_attributes.shortId.value
-        fake_experiment.name = system_attributes.name.value
-        fake_experiment.timeOfCreation = system_attributes.creationTime.value
-        fake_experiment.timeOfCompletion = None
-        fake_experiment.runningTime = system_attributes.runningTime.value
-        fake_experiment.owner = system_attributes.owner.value
-        fake_experiment.storageSize = system_attributes.size.value
-        fake_experiment.channelsSize = 0
-        fake_experiment.tags = system_attributes.tags.values
-        fake_experiment.description = system_attributes.description.value
-        fake_experiment.hostname = system_attributes.hostname.value if system_attributes.hostname else None
-        fake_experiment.state = "running" if system_attributes.state.value == "running" else "succeeded"
-
-        fake_experiment.properties = [
-            AlphaPropertyDTO(attr) for attr in attributes
-            if AlphaPropertyDTO.is_valid_attribute(attr)
-        ]
-
-        fake_experiment.parameters = [
-            AlphaParameterDTO(attr) for attr in attributes
-            if AlphaParameterDTO.is_valid_attribute(attr)
-        ]
-
-        return fake_experiment
+        return LegacyExperiment(
+            shortId=system_attributes.shortId.value,
+            name=system_attributes.name.value,
+            timeOfCreation=system_attributes.creationTime.value,
+            timeOfCompletion=None,
+            runningTime=system_attributes.runningTime.value,
+            owner=system_attributes.owner.value,
+            storageSize=system_attributes.size.value,
+            channelsSize=0,
+            tags=system_attributes.tags.values,
+            description=system_attributes.description.value,
+            hostname=system_attributes.hostname.value if system_attributes.hostname else None,
+            state="running" if system_attributes.state.value == "running" else "succeeded",
+            properties=[
+                AlphaPropertyDTO(attr) for attr in attributes
+                if AlphaPropertyDTO.is_valid_attribute(attr)
+            ],
+            parameters=[
+                AlphaParameterDTO(attr) for attr in attributes
+                if AlphaParameterDTO.is_valid_attribute(attr)
+            ]
+        )
 
     def update_experiment(self, experiment, properties):
         raise NeptuneException("`update_experiment` shouldn't be called.")
@@ -251,10 +266,15 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                                     channel_type=channel_type)
 
     def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
-        return [
-            AlphaChannelDTO(attr) for attr in self._get_attributes(experiment.internal_id)
-            if AlphaChannelDTO.is_valid_attribute(attr)
-        ]
+        try:
+            return [
+                AlphaChannelDTO(attr) for attr in self._get_attributes(experiment.internal_id)
+                if AlphaChannelDTO.is_valid_attribute(attr)
+            ]
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
     @with_api_exceptions_handler
     def get_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
