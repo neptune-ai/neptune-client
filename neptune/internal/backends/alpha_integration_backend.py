@@ -309,6 +309,9 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
     def mark_succeeded(self, experiment):
         pass
 
+    def mark_failed(self, experiment, traceback):
+        pass
+
     def ping_experiment(self, experiment):
         try:
             self.leaderboard_swagger_client.api.ping(experimentId=str(experiment.internal_id)).response().result
