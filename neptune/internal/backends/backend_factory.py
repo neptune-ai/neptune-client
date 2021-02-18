@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import logging
+from typing import Tuple
 
 import click
 
@@ -24,41 +25,44 @@ from neptune.alpha.internal.backends.utils import (
 )
 from neptune.alpha.internal.credentials import Credentials
 from neptune.backend import Backend
-from neptune.exceptions import InvalidNeptuneBackend, STYLES
+from neptune.exceptions import STYLES
 from neptune.internal.backends import (
     AlphaIntegrationBackend,
     HostedNeptuneBackend,
-    OfflineBackend,
 )
+from neptune.projects import Project
 
 _logger = logging.getLogger(__name__)
 
 
-def backend_factory(*, project_qualified_name, backend_name, api_token=None, proxies=None) -> Backend:
-    if backend_name == 'offline':
-        return OfflineBackend()
+def backend_initializer(*, project_qualified_name, api_token=None, proxies=None) -> Tuple[Backend, Project]:
+    """Return initialized `HostedNeptuneBackend` of `AlphaIntegrationBackend` depending on the api_project version.
+    Function additionally returns api_project to avoid duplicated API call.
+    """
+    credentials = Credentials(api_token)
+    ssl_verify = alpha_check_if_ssl_verify()
+    boot_http_client = alpha_create_http_client(ssl_verify, proxies)
+    config_api_url = credentials.api_url_opt or credentials.token_origin_address
+    token_backend_client = alpha_create_swagger_client(f'{config_api_url}/api/backend/swagger.json',
+                                                       boot_http_client)
 
-    elif backend_name is None:
-        credentials = Credentials(api_token)
-        ssl_verify = alpha_check_if_ssl_verify()
-        boot_http_client = alpha_create_http_client(ssl_verify, proxies)
-        config_api_url = credentials.api_url_opt or credentials.token_origin_address
-        boot_backend_client = alpha_create_swagger_client(f'{config_api_url}/api/backend/swagger.json',
-                                                          boot_http_client)
+    response = token_backend_client.api.getProject(projectIdentifier=project_qualified_name).response()
+    warning = response.metadata.headers.get('X-Server-Warning')
+    if warning:
+        click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
+    api_project = response.result
 
-        response = boot_backend_client.api.getProject(projectIdentifier=project_qualified_name).response()
-        warning = response.metadata.headers.get('X-Server-Warning')
-        if warning:
-            click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
-        project = response.result
-
-        if not hasattr(project, 'version') or project.version == 1:
-            return HostedNeptuneBackend(api_token, proxies)
-        elif project.version == 2:
-            return AlphaIntegrationBackend(api_token, proxies)
-        else:
-            _logger.warning(f'Unknown project version: {project.version}. Assuming v2 project.')
-            return AlphaIntegrationBackend(api_token, proxies)
-
+    if not hasattr(api_project, 'version') or api_project.version == 1:
+        backend = HostedNeptuneBackend(api_token, proxies)
+    elif api_project.version == 2:
+        backend = AlphaIntegrationBackend(api_token, proxies)
     else:
-        raise InvalidNeptuneBackend(backend_name)
+        _logger.warning(f'Unknown api_project version: {api_project.version}. Assuming v2 api_project.')
+        return AlphaIntegrationBackend(api_token, proxies), api_project
+
+    project = Project(
+        backend=backend,
+        internal_id=api_project.id,
+        namespace=api_project.organizationName,
+        name=api_project.name)
+    return backend, project

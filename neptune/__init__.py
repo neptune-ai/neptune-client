@@ -19,9 +19,14 @@ import threading
 
 from neptune import constants
 from neptune import envs
-from neptune.exceptions import NeptuneMissingProjectQualifiedNameException, NeptuneUninitializedException, \
-    InvalidNeptuneBackend
-from neptune.internal.backends import backend_factory
+from neptune.exceptions import InvalidNeptuneBackend, STYLES
+from neptune.exceptions import (
+    InvalidNeptuneBackend,
+    NeptuneMissingProjectQualifiedNameException,
+    NeptuneUninitializedException,
+)
+from neptune.internal.backends import OfflineBackend
+from neptune.internal.backends import backend_initializer
 from neptune.projects import Project
 from neptune.sessions import Session
 from ._version import get_versions
@@ -142,17 +147,20 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
     with __lock:
         global session, project
 
+        project = None
         if backend is None:
             backend_name = os.getenv(envs.BACKEND)
-            backend = backend_factory(
-                project_qualified_name=project_qualified_name,
-                backend_name=backend_name,
-                api_token=api_token,
-                proxies=proxies,
-            )
+            if backend_name == 'offline':
+                backend = OfflineBackend()
+            elif backend_name is None:
+                backend, project = backend_initializer(project_qualified_name=project_qualified_name,
+                                                       api_token=api_token, proxies=proxies)
+            else:
+                raise InvalidNeptuneBackend(backend_name)
 
         session = Session(backend=backend)
-        project = session.get_project(project_qualified_name)
+        if project is None:
+            project = session.get_project(project_qualified_name)
 
         return project
 

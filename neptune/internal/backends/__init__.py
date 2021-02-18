@@ -17,4 +17,4 @@
 from neptune.internal.backends.alpha_integration_backend import AlphaIntegrationBackend
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.backends.offline_backend import OfflineBackend
-from neptune.internal.backends.backend_factory import backend_factory
+from neptune.internal.backends.backend_factory import backend_initializer
