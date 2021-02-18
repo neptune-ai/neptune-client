@@ -19,11 +19,11 @@ import threading
 
 from neptune import constants
 from neptune import envs
-from neptune.exceptions import InvalidNeptuneBackend, STYLES
 from neptune.exceptions import (
     InvalidNeptuneBackend,
     NeptuneMissingProjectQualifiedNameException,
     NeptuneUninitializedException,
+    STYLES,
 )
 from neptune.internal.backends import OfflineBackend
 from neptune.internal.backends import backend_initializer
