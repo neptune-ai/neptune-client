@@ -172,16 +172,13 @@ def init(
     stderr_path = "{}/stderr".format(monitoring_namespace)
 
     background_jobs = []
-    if capture_hardware_metrics:
-        if HardwareMetricReportingJob.requirements_installed():
-            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
-        else:
-            _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
-    background_jobs.append(PingBackgroundJob())
     if capture_stdout:
         background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
     if capture_stderr:
         background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
+    if capture_hardware_metrics:
+        background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
+    background_jobs.append(PingBackgroundJob())
 
     _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
     if connection_mode != OFFLINE:

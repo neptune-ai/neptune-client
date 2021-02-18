@@ -246,6 +246,11 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**inputs))
 
 
+class CannotSynchronizeOfflineExperimentsWithoutProject(NeptuneException):
+    def __init__(self):
+        super().__init__("Cannot synchronize offline experiments without a project.")
+
+
 class NeptuneExperimentResumeAndCustomIdCollision(NeptuneException):
     def __init__(self):
         super().__init__("`experiment` and `custom_experiment_id` arguments of init() function are mutually exclusive. "
@@ -313,3 +318,25 @@ class OperationNotSupported(NeptuneException):
 class NotAlphaProjectException(NeptuneException):
     def __init__(self, project: str):
         super().__init__('{} is not Alpha Neptune Project. Use old neptune-client from neptune package'.format(project))
+
+
+class NeptuneUninitializedException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}     
+----NeptuneUninitializedException---------------------------------------------------------------------------------------
+{end}
+You must initialize neptune-client before you access `get_last_exp`.
+
+Looks like you forgot to add:
+    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
+
+before you ran:
+    {python}neptune.get_last_exp(){end}
+
+You may also want to check the following docs pages:
+    - TODO: create and link docs
+
+{correct}Need help?{end}-> TODO: create and link docs
+""".format(**STYLES)
+        super().__init__(message)

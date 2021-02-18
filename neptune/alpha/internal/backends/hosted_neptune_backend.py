@@ -26,22 +26,55 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.alpha.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.alpha.exceptions import UnsupportedClientVersion, ProjectNotFound, \
-    ExperimentUUIDNotFound, MetadataInconsistency, NeptuneException, ExperimentNotFound, NotAlphaProjectException, \
-    InternalClientError
-from neptune.alpha.internal.backends.api_model import ClientConfig, Project, Experiment, Attribute, AttributeType, \
-    LeaderboardEntry, AttributeWithProperties, FloatAttribute, StringAttribute, DatetimeAttribute, \
-    FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
-from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, download_file_attribute, \
-    upload_file_set_attribute, download_zip
+from neptune.alpha.exceptions import (
+    ExperimentNotFound,
+    ExperimentUUIDNotFound,
+    InternalClientError,
+    MetadataInconsistency,
+    NeptuneException,
+    NotAlphaProjectException,
+    ProjectNotFound,
+    UnsupportedClientVersion,
+)
+from neptune.alpha.internal.backends.api_model import (
+    ApiExperiment,
+    Attribute,
+    AttributeType,
+    AttributeWithProperties,
+    ClientConfig,
+    DatetimeAttribute,
+    FloatAttribute,
+    FloatSeriesAttribute,
+    LeaderboardEntry,
+    Project,
+    StringAttribute,
+    StringSeriesAttribute,
+    StringSetAttribute,
+)
+from neptune.alpha.internal.backends.hosted_file_operations import (
+    download_file_attribute,
+    download_zip,
+    upload_file_attribute,
+    upload_file_set_attribute,
+)
 from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
 from neptune.alpha.internal.backends.operations_preprocessor import OperationsPreprocessor
-from neptune.alpha.internal.backends.utils import with_api_exceptions_handler, verify_host_resolution, \
-    create_swagger_client, verify_client_version, update_session_proxies
+from neptune.alpha.internal.backends.utils import (
+    create_swagger_client,
+    update_session_proxies,
+    verify_client_version,
+    verify_host_resolution,
+    with_api_exceptions_handler,
+)
 from neptune.alpha.internal.credentials import Credentials
-from neptune.alpha.internal.operation import Operation, UploadFile, UploadFileSet, UploadFileContent
+from neptune.alpha.internal.operation import (
+    Operation,
+    UploadFile,
+    UploadFileContent,
+    UploadFileSet,
+)
 from neptune.alpha.internal.utils import verify_type, base64_decode
 from neptune.alpha.internal.utils.paths import path_to_str
 from neptune.alpha.types.atoms import GitRef
@@ -119,7 +152,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_experiment(self, experiment_id: str):
         try:
             exp = self.leaderboard_client.api.getExperiment(experimentId=experiment_id).response().result
-            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName)
+            return ApiExperiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
         except HTTPNotFound:
             raise ExperimentNotFound(experiment_id)
 
@@ -128,7 +161,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                           project_uuid: uuid.UUID,
                           git_ref: Optional[GitRef] = None,
                           custom_experiment_id: Optional[str] = None
-                          ) -> Experiment:
+                          ) -> ApiExperiment:
         verify_type("project_uuid", project_uuid, uuid.UUID)
 
         git_info = {
@@ -158,7 +191,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         try:
             exp = self.leaderboard_client.api.createExperiment(**kwargs).response().result
-            return Experiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName)
+            return ApiExperiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
 

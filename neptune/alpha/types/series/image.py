@@ -14,15 +14,15 @@
 # limitations under the License.
 #
 
-from neptune.alpha.internal.utils.images import ImageAcceptedTypes, get_image_content
+from neptune.alpha.internal.utils.images import get_image_content
 
 
 class Image:
 
-    def __init__(self, value: ImageAcceptedTypes = None, content: str = None):
+    def __init__(self, value=None, content: str = None):
         if content is not None:
             self.content = content
         elif value is not None:
-            self.content: ImageAcceptedTypes = get_image_content(value)
+            self.content = get_image_content(value)
         else:
             raise ValueError("Parameter 'value' unfilled.")
