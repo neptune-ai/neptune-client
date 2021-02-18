@@ -16,13 +16,13 @@
 import logging
 import os
 import uuid
+from collections import namedtuple
 from itertools import groupby
 from typing import List, Dict
 
 import click
 import six
 from bravado.exception import HTTPNotFound
-from mock import NonCallableMagicMock
 from neptune.alpha.internal.utils.paths import parse_path
 
 from neptune.alpha import exceptions as alpha_exceptions
@@ -30,7 +30,7 @@ from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
-from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats
+from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
 from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
 from neptune.api_exceptions import (
     AlphaOperationErrors,
@@ -45,6 +45,7 @@ from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,
+    AlphaParameterDTO,
     AlphaPropertyDTO,
     channel_type_to_operation,
     channel_value_type_to_operation,
@@ -55,6 +56,24 @@ from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
+
+
+LegacyExperiment = namedtuple(
+    'LegacyExperiment',
+    'shortId '
+    'name '
+    'timeOfCreation '
+    'timeOfCompletion '
+    'runningTime '
+    'owner '
+    'storageSize '
+    'channelsSize '
+    'tags '
+    'description '
+    'hostname '
+    'state '
+    'properties '
+    'parameters')
 
 
 class AlphaIntegrationBackend(HostedNeptuneBackend):
@@ -141,33 +160,39 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         # Initialize new experiment
         self._execute_alpha_operation(
             experiment=experiment,
-            operations=self._get_init_experiment_operations(name, entrypoint, params, tags),
+            operations=self._get_init_experiment_operations(
+                name, description, hostname, entrypoint, params, properties, tags),
         )
         return experiment
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
-        experiment = self.leaderboard_swagger_client.api.getExperiment(experimentId=experiment_id).response().result
-        fake_experiment = NonCallableMagicMock()
-        # `timeOfCreation` is required by `TimeOffsetGenerator`
-        fake_experiment.timeOfCreation = experiment.creationTime
+        api_attributes = self._get_api_experiment_attributes(experiment_id)
+        attributes = api_attributes.attributes
+        system_attributes = api_attributes.systemAttributes
 
-        attributes = self._get_attributes(experiment_id)
-
-        tags = [
-            attr['stringSetProperties'].values for attr in attributes
-            if attr.name == alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH
-        ]
-        # tags should be element found in all `attributes` or just empty list
-        tags = tags[0] if tags else list()
-        fake_experiment.tags = tags
-
-        fake_experiment.properties = [
-            AlphaPropertyDTO(attr) for attr in attributes
-            if AlphaPropertyDTO.is_valid_attribute(attr)
-        ]
-
-        return fake_experiment
+        return LegacyExperiment(
+            shortId=system_attributes.shortId.value,
+            name=system_attributes.name.value,
+            timeOfCreation=system_attributes.creationTime.value,
+            timeOfCompletion=None,
+            runningTime=system_attributes.runningTime.value,
+            owner=system_attributes.owner.value,
+            storageSize=system_attributes.size.value,
+            channelsSize=0,
+            tags=system_attributes.tags.values,
+            description=system_attributes.description.value,
+            hostname=system_attributes.hostname.value if system_attributes.hostname else None,
+            state="running" if system_attributes.state.value == "running" else "succeeded",
+            properties=[
+                AlphaPropertyDTO(attr) for attr in attributes
+                if AlphaPropertyDTO.is_valid_attribute(attr)
+            ],
+            parameters=[
+                AlphaParameterDTO(attr) for attr in attributes
+                if AlphaParameterDTO.is_valid_attribute(attr)
+            ]
+        )
 
     def update_experiment(self, experiment, properties):
         raise NeptuneException("`update_experiment` shouldn't be called.")
@@ -241,10 +266,15 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                                     channel_type=channel_type)
 
     def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
-        return [
-            AlphaChannelDTO(attr) for attr in self._get_attributes(experiment.internal_id)
-            if AlphaChannelDTO.is_valid_attribute(attr)
-        ]
+        try:
+            return [
+                AlphaChannelDTO(attr) for attr in self._get_attributes(experiment.internal_id)
+                if AlphaChannelDTO.is_valid_attribute(attr)
+            ]
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
     @with_api_exceptions_handler
     def get_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
@@ -381,17 +411,13 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
 
     def _get_attributes(self, experiment_id) -> list:
+        return self._get_api_experiment_attributes(experiment_id).attributes
+
+    def _get_api_experiment_attributes(self, experiment_id):
         params = {
             'experimentId': experiment_id,
         }
-        try:
-            experiment = self.leaderboard_swagger_client.api.getExperimentAttributes(**params).response().result
-        except HTTPNotFound:
-            # pylint: disable=protected-access
-            raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-
-        return experiment.attributes
+        return self.leaderboard_swagger_client.api.getExperimentAttributes(**params).response().result
 
     def _remove_attribute(self, experiment, str_path: str):
         """Removes given attribute"""
@@ -425,16 +451,27 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         except alpha_exceptions.InternalClientError as e:
             raise NeptuneException(e) from e
 
-    def _get_init_experiment_operations(self, name, entrypoint, params, tags) -> List[alpha_operation.Operation]:
+    def _get_init_experiment_operations(
+            self, name, description, hostname, entrypoint, params, properties, tags) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
 
         # Assign experiment name
-        name = name or ""
         init_operations.append(alpha_operation.AssignString(
             path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_NAME_ATTRIBUTE_PATH),
             value=name,
         ))
+        # Assign experiment description
+        init_operations.append(alpha_operation.AssignString(
+            path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH),
+            value=description,
+        ))
+        # Assign hostname
+        if hostname:
+            init_operations.append(alpha_operation.AssignString(
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH),
+                value=hostname,
+            ))
         # Assign source entrypoint
         if entrypoint:
             init_operations.append(alpha_operation.AssignString(
@@ -448,6 +485,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             init_operations.append(operation_cls(
                 path=alpha_path_utils.parse_path(f'{alpha_consts.PARAMETERS_ATTRIBUTE_SPACE}{p_name}'),
                 value=string_value,
+            ))
+        # Assign experiment properties
+        for p_key, p_val in properties.items():
+            init_operations.append(AssignString(
+                path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{p_key}'),
+                value=str(p_val),
             ))
         # Assign tags
         if tags:

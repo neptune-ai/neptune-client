@@ -77,6 +77,38 @@ class AlphaPropertyDTO(AlphaAttributeWrapper):
         return self._properties.value
 
 
+class AlphaParameterDTO(AlphaAttributeWrapper):
+    """It's simple wrapper for `AttributeDTO` objects which uses alpha variables attributes to fake properties.
+
+    Alpha leaderboard doesn't have `KeyValueProperty` since it doesn't support properties at all,
+    so we do need fake `KeyValueProperty` class for backward compatibility with old client's code."""
+
+    _allowed_atribute_types = [
+        AlphaAttributeType.FLOAT.value,
+        AlphaAttributeType.STRING.value,
+        AlphaAttributeType.DATETIME.value,
+    ]
+
+    @classmethod
+    def is_valid_attribute(cls, attribute):
+        """Checks if attribute can be used as property"""
+        has_valid_type = super().is_valid_attribute(attribute)
+        is_in_parameters_space = attribute.name.startswith(alpha_consts.PARAMETERS_ATTRIBUTE_SPACE)
+        return has_valid_type and is_in_parameters_space
+
+    @property
+    def name(self):
+        return self._properties.attributeName.split('/', 1)[-1]
+
+    @property
+    def value(self):
+        return self._properties.value
+
+    @property
+    def parameterType(self):
+        return "double" if self._properties.attributeType == AlphaAttributeType.FLOAT.value else "string"
+
+
 class AlphaChannelDTO(AlphaAttributeWrapper):
     """It's simple wrapper for `AttributeDTO` objects which uses alpha series attributes to fake channels.
 
