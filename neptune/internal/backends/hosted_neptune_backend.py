@@ -65,7 +65,6 @@ from neptune.exceptions import (
     STYLES,
     UnsupportedClientVersion,
 )
-from neptune.internal.backends.client_config import ClientConfig
 from neptune.experiments import Experiment
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
@@ -758,23 +757,6 @@ class HostedNeptuneBackend(Backend):
                 self.rm_data(experiment=experiment, path=path)
         except PathInProjectNotFound:
             raise FileNotFound(path)
-
-    @handle_quota_limits
-    def upload_experiment_output(self, experiment, data, progress_indicator):
-        self._upload_loop(partial(self._upload_raw_data,
-                                  api_method=self.backend_swagger_client.api.uploadExperimentOutput),
-                          data=data,
-                          progress_indicator=progress_indicator,
-                          path_params={'experimentId': experiment.internal_id},
-                          query_params={})
-
-    @handle_quota_limits
-    def extract_experiment_output(self, experiment, data):
-        return self._upload_tar_data(
-            experiment=experiment,
-            api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
-            data=data
-        )
 
     @with_api_exceptions_handler
     def rm_data(self, experiment, path):
