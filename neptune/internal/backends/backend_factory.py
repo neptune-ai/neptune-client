@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
+
 import click
 
 from neptune.alpha.internal.backends.utils import (
@@ -28,6 +30,8 @@ from neptune.internal.backends import (
     HostedNeptuneBackend,
     OfflineBackend,
 )
+
+_logger = logging.getLogger(__name__)
 
 
 def backend_factory(*, project_qualified_name, backend_name, api_token=None, proxies=None) -> Backend:
@@ -47,12 +51,13 @@ def backend_factory(*, project_qualified_name, backend_name, api_token=None, pro
         if warning:
             click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
         project = response.result
-        if not hasattr(project, 'version'):
-            pass  # what now?
 
-        if project.version == 1:
+        if not hasattr(project, 'version') or project.version == 1:
             return HostedNeptuneBackend(api_token, proxies)
+        elif project.version == 2:
+            return AlphaIntegrationBackend(api_token, proxies)
         else:
+            _logger.warning(f'Unknown project version: {project.version}. Assuming v2 project.')
             return AlphaIntegrationBackend(api_token, proxies)
 
     else:
