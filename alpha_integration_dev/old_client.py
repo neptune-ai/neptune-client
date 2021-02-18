@@ -45,7 +45,7 @@ class OldClientFeatures(ClientFeatures):
         properties = exp.get_properties()
         assert properties['init_text_property'] == 'some text'
         assert properties['init_number property'] == '42'
-        # assert properties['prop_list'] == '[1, 2, 3]'  # TODO
+        assert properties['init_list'] == '[1, 2, 3]'
 
         assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2'}
 

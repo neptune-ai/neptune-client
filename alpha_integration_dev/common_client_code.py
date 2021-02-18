@@ -28,8 +28,8 @@ class ClientFeatures(abc.ABC):
     properties = {
         'init_text_property': 'some text',
         'init_number property': 42,
-        # 'init_list': [1, 2, 3],  # TODO: Error 500 in old client
-        # 'init_datetime': datetime.now()  # TODO: Non serializable in old client
+        'init_list': [1, 2, 3],
+        'init_datetime': datetime.now(),
     }
 
     img_path = 'alpha_integration_dev/data/g.png'
