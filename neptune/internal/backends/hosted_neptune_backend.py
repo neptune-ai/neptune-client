@@ -65,11 +65,12 @@ from neptune.exceptions import (
     STYLES,
     UnsupportedClientVersion,
 )
+from neptune.internal.backends.client_config import ClientConfig
 from neptune.experiments import Experiment
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
-from neptune.internal.utils.http import extract_response_field, handle_quota_limits
+from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
@@ -758,6 +759,23 @@ class HostedNeptuneBackend(Backend):
         except PathInProjectNotFound:
             raise FileNotFound(path)
 
+    @handle_quota_limits
+    def upload_experiment_output(self, experiment, data, progress_indicator):
+        self._upload_loop(partial(self._upload_raw_data,
+                                  api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+                          data=data,
+                          progress_indicator=progress_indicator,
+                          path_params={'experimentId': experiment.internal_id},
+                          query_params={})
+
+    @handle_quota_limits
+    def extract_experiment_output(self, experiment, data):
+        return self._upload_tar_data(
+            experiment=experiment,
+            api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
+            data=data
+        )
+
     @with_api_exceptions_handler
     def rm_data(self, experiment, path):
         try:
@@ -877,7 +895,7 @@ class HostedNeptuneBackend(Backend):
         return [
             KeyValueProperty(
                 key=key,
-                value=value
+                value=str(value)
             ) for key, value in raw_properties.items()
         ]
 
