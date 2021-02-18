@@ -35,7 +35,6 @@ API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
 credentials = Credentials(API_TOKEN)
 
 
-@patch('neptune.alpha.internal.backends.hosted_neptune_backend.RequestsClient', new=MagicMock())
 @patch('neptune.alpha.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock())
 @patch('bravado.client.SwaggerClient.from_url')
 @patch('platform.platform', new=lambda: 'testPlatform')
