@@ -88,8 +88,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                           params,
                           properties,
                           tags,
-                          abortable,
-                          monitored,
+                          abortable,  # deprecated in alpha
+                          monitored,  # deprecated in alpha
                           git_info,
                           hostname,
                           entrypoint,
@@ -122,11 +122,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         } if git_info else None
 
         api_params = {
-            # TODO: what about those missing attributes
-            # abortable,
-            # monitored,
-            # notebook_id,
-            # checkpoint_id,
+            "notebookId": notebook_id,
+            "checkpointId": checkpoint_id,
             "projectIdentifier": str(project.internal_id),
             "cliVersion": self.client_lib_version,
             "gitInfo": git_info,
