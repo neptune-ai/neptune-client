@@ -41,10 +41,10 @@ def backend_initializer(*, project_qualified_name, api_token=None, proxies=None)
     """
     credentials = Credentials(api_token)
     ssl_verify = alpha_check_if_ssl_verify()
-    boot_http_client = alpha_create_http_client(ssl_verify, proxies)
+    token_http_client = alpha_create_http_client(ssl_verify, proxies)
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
     token_backend_client = alpha_create_swagger_client(f'{config_api_url}/api/backend/swagger.json',
-                                                       boot_http_client)
+                                                       token_http_client)
 
     response = token_backend_client.api.getProject(projectIdentifier=project_qualified_name).response()
     warning = response.metadata.headers.get('X-Server-Warning')
@@ -55,10 +55,10 @@ def backend_initializer(*, project_qualified_name, api_token=None, proxies=None)
     if not hasattr(api_project, 'version') or api_project.version == 1:
         backend = HostedNeptuneBackend(api_token, proxies)
     elif api_project.version == 2:
-        backend = AlphaIntegrationBackend(api_token, proxies)
+        backend = AlphaIntegrationBackend(token_backend_client, api_token, proxies)
     else:
         _logger.warning(f'Unknown api_project version: {api_project.version}. Assuming v2 api_project.')
-        return AlphaIntegrationBackend(api_token, proxies), api_project
+        return AlphaIntegrationBackend(token_backend_client, api_token, proxies), api_project
 
     project = Project(
         backend=backend,

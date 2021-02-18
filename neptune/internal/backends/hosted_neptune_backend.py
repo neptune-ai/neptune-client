@@ -82,7 +82,7 @@ _logger = logging.getLogger(__name__)
 class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
-    def __init__(self, api_token=None, proxies=None):
+    def __init__(self, token_backend_client, api_token=None, proxies=None):
         self._proxies = proxies
 
         # This is not a top-level import because of circular dependencies
@@ -105,7 +105,6 @@ class HostedNeptuneBackend(Backend):
         self._http_client_for_token.session.headers.update({'User-Agent': user_agent})
 
         update_session_proxies(self._http_client.session, proxies)
-        update_session_proxies(self._http_client_for_token.session, proxies)
 
         config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
         # We don't need to be able to resolve Neptune host if we use proxy
@@ -113,17 +112,14 @@ class HostedNeptuneBackend(Backend):
             self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
 
         # this backend client is used only for initial configuration and session re-creation
-        backend_client = self._get_swagger_client(
-            '{}/api/backend/swagger.json'.format(config_api_url),
-            self._http_client_for_token
-        )
-        self._client_config = self._create_client_config(self.credentials.api_token, backend_client)
+        self._client_config = self._create_client_config(self.credentials.api_token, token_backend_client)
 
         self._verify_version()
 
         self._set_swagger_clients(self._client_config)
 
-        self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies, backend_client)
+        self.authenticator = self._create_authenticator(self.credentials.api_token, ssl_verify, proxies,
+                                                        token_backend_client)
         self._http_client.authenticator = self.authenticator
 
     @property

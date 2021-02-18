@@ -58,8 +58,8 @@ _logger = logging.getLogger(__name__)
 
 
 class AlphaIntegrationBackend(HostedNeptuneBackend):
-    def __init__(self, api_token=None, proxies=None):
-        super().__init__(api_token, proxies)
+    def __init__(self, token_backend_client, api_token=None, proxies=None):
+        super().__init__(token_backend_client, api_token, proxies)
         self._alpha_backend = AlphaHostedNeptuneBackend(AlphaCredentials(api_token=api_token))
 
     @with_api_exceptions_handler
