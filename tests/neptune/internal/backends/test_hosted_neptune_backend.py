@@ -158,7 +158,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(DeprecatedApiToken):
-            HostedNeptuneBackend(token)
+            self.create_backend(token)
 
     @mock.patch('socket.gethostbyname')
     def test_cannot_resolve_host(self, gethostname_mock):
