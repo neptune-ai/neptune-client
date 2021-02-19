@@ -23,6 +23,7 @@ from freezegun import freeze_time
 from mock import MagicMock
 
 from neptune.internal.backends.alpha_integration_backend import AlphaIntegrationBackend
+from neptune.internal.backends.backend_factory import get_token_backend_client
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
 from tests.neptune.alpha.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
@@ -44,7 +45,8 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
     def setUp(self, swagger_client_factory) -> None:
         # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)
-        self.backend = AlphaIntegrationBackend(API_TOKEN)
+        token_backend_client = get_token_backend_client(API_TOKEN)
+        self.backend = AlphaIntegrationBackend(token_backend_client, API_TOKEN)
         self.exp_mock = MagicMock(
             internal_id='00000000-0000-0000-0000-000000000000'
         )

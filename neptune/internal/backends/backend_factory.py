@@ -30,21 +30,31 @@ from neptune.internal.backends import (
     AlphaIntegrationBackend,
     HostedNeptuneBackend,
 )
+from neptune.internal.utils.http import verify_host_resolution
 from neptune.projects import Project
 
 _logger = logging.getLogger(__name__)
+
+
+def get_token_backend_client(api_token, proxies=None):
+    credentials = Credentials(api_token)
+    ssl_verify = alpha_check_if_ssl_verify()
+    token_http_client = alpha_create_http_client(ssl_verify, proxies)
+    config_api_url = credentials.api_url_opt or credentials.token_origin_address
+    if proxies is None:
+        verify_host_resolution(
+            api_url=config_api_url,
+            app_url=credentials.token_origin_address,
+            api_url_opt=credentials.api_url_opt
+        )
+    return alpha_create_swagger_client(f'{config_api_url}/api/backend/swagger.json', token_http_client)
 
 
 def backend_initializer(*, project_qualified_name, api_token=None, proxies=None) -> Tuple[Backend, Project]:
     """Return initialized `HostedNeptuneBackend` of `AlphaIntegrationBackend` depending on the api_project version.
     Function additionally returns api_project to avoid duplicated API call.
     """
-    credentials = Credentials(api_token)
-    ssl_verify = alpha_check_if_ssl_verify()
-    token_http_client = alpha_create_http_client(ssl_verify, proxies)
-    config_api_url = credentials.api_url_opt or credentials.token_origin_address
-    token_backend_client = alpha_create_swagger_client(f'{config_api_url}/api/backend/swagger.json',
-                                                       token_http_client)
+    token_backend_client = get_token_backend_client(api_token, proxies)
 
     response = token_backend_client.api.getProject(projectIdentifier=project_qualified_name).response()
     warning = response.metadata.headers.get('X-Server-Warning')

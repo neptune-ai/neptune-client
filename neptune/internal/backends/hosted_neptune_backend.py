@@ -22,7 +22,6 @@ import logging
 import math
 import os
 import platform
-import socket
 import sys
 import uuid
 from functools import partial
@@ -39,7 +38,6 @@ from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEnt
 from bravado.requests_client import RequestsClient
 from bravado_core.formatter import SwaggerFormat
 from packaging import version
-from six.moves import urllib
 
 from neptune.alpha.internal.backends.utils import check_if_ssl_verify as alpha_check_if_ssl_verify
 from neptune.api_exceptions import (
@@ -59,8 +57,6 @@ from neptune.backend import Backend
 from neptune.checkpoint import Checkpoint
 from neptune.exceptions import (
     AlphaProjectException,
-    CannotResolveHostname,
-    DeprecatedApiToken,
     FileNotFound,
     STYLES,
     UnsupportedClientVersion,
@@ -69,7 +65,7 @@ from neptune.experiments import Experiment
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
-from neptune.internal.utils.http import extract_response_field, handle_quota_limits
+from neptune.internal.utils.http import extract_response_field, handle_quota_limits, verify_host_resolution
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
@@ -109,7 +105,11 @@ class HostedNeptuneBackend(Backend):
         config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
         # We don't need to be able to resolve Neptune host if we use proxy
         if proxies is None:
-            self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
+            verify_host_resolution(
+                api_url=config_api_url,
+                app_url=self.credentials.token_origin_address,
+                api_url_opt=self.credentials.api_url_opt
+            )
 
         # this backend client is used only for initial configuration and session re-creation
         self._client_config = self._create_client_config(self.credentials.api_token, token_backend_client)
@@ -1064,16 +1064,6 @@ class HostedNeptuneBackend(Backend):
             '{}/api/leaderboard/swagger.json'.format(client_config.api_url),
             self._http_client
         )
-
-    def _verify_host_resolution(self, api_url, app_url):
-        host = urllib.parse.urlparse(api_url).netloc.split(':')[0]
-        try:
-            socket.gethostbyname(host)
-        except socket.gaierror:
-            if self.credentials.api_url_opt is None:
-                raise DeprecatedApiToken(urllib.parse.urlparse(app_url).netloc)
-            else:
-                raise CannotResolveHostname(host)
 
 
 uuid_format = SwaggerFormat(format='uuid', to_python=lambda x: x,

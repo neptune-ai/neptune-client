@@ -14,13 +14,15 @@
 # limitations under the License.
 #
 import logging
+import socket
+import urllib
 from functools import wraps
 from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
 
 from requests.exceptions import HTTPError
 
 from neptune.api_exceptions import ExperimentNotFound, StorageLimitReached
-from neptune.exceptions import NeptuneException
+from neptune.exceptions import NeptuneException, DeprecatedApiToken, CannotResolveHostname
 
 _logger = logging.getLogger(__name__)
 
@@ -66,3 +68,14 @@ def handle_quota_limits(f):
             raise
 
     return handler
+
+
+def verify_host_resolution(api_url, app_url, api_url_opt):
+    host = urllib.parse.urlparse(api_url).netloc.split(':')[0]
+    try:
+        socket.gethostbyname(host)
+    except socket.gaierror:
+        if api_url_opt is None:
+            raise DeprecatedApiToken(urllib.parse.urlparse(app_url).netloc)
+        else:
+            raise CannotResolveHostname(host)
