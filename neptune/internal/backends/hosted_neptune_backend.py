@@ -65,7 +65,7 @@ from neptune.experiments import Experiment
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
-from neptune.internal.utils.http import extract_response_field, handle_quota_limits, verify_host_resolution
+from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits, verify_host_resolution
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
 from neptune.oauth import NeptuneAuthenticator
@@ -870,7 +870,7 @@ class HostedNeptuneBackend(Backend):
         return [
             KeyValueProperty(
                 key=key,
-                value=value
+                value=str(value)
             ) for key, value in raw_properties.items()
         ]
 
