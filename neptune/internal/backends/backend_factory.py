@@ -63,7 +63,7 @@ def backend_initializer(*, project_qualified_name, api_token=None, proxies=None)
     api_project = response.result
 
     if not hasattr(api_project, 'version') or api_project.version == 1:
-        backend = HostedNeptuneBackend(api_token, proxies)
+        backend = HostedNeptuneBackend(token_backend_client, api_token, proxies)
     elif api_project.version == 2:
         backend = AlphaIntegrationBackend(token_backend_client, api_token, proxies)
     else:
