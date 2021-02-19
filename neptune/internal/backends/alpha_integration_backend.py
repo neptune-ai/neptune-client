@@ -39,6 +39,7 @@ from neptune.api_exceptions import (
 )
 from neptune.exceptions import STYLES, NeptuneException, FileNotFound
 from neptune.experiments import Experiment
+from neptune.internal.backends.backend_factory import backend_for_project
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
@@ -77,8 +78,9 @@ LegacyExperiment = namedtuple(
 
 
 class AlphaIntegrationBackend(HostedNeptuneBackend):
-    def __init__(self, api_token=None, proxies=None):
+    def __init__(self, old_backend: HostedNeptuneBackend, api_token=None, proxies=None):
         super().__init__(api_token, proxies)
+        self._old_backend = old_backend
         self._alpha_backend = AlphaHostedNeptuneBackend(AlphaCredentials(api_token=api_token))
 
     @with_api_exceptions_handler
@@ -91,7 +93,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             project = response.result
 
             return Project(
-                backend=self,
+                backend=backend_for_project(api_project=project, old_backend=self._old_backend, new_backend=self),
                 internal_id=project.id,
                 namespace=project.organizationName,
                 name=project.name)

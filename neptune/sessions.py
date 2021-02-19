@@ -19,6 +19,7 @@ import re
 from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
+from neptune.internal.backends.backend_factory import backend_for_project
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.exceptions import NeptuneIncorrectProjectQualifiedNameException
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -218,6 +219,14 @@ class Session(object):
                 #               Project(neptune-ai/Mapping-Challenge))
                 #              ])
         """
-
-        projects = [Project(self._backend, p.id, namespace, p.name) for p in self._backend.get_projects(namespace)]
+        old_backend = self._backend
+        new_backend = self._backend.alpha_backend
+        projects = [
+            Project(
+                backend_for_project(api_project=p, old_backend=old_backend, new_backend=new_backend),
+                p.id,
+                namespace,
+                p.name
+            ) for p in self._backend.get_projects(namespace)
+        ]
         return OrderedDict((p.full_id, p) for p in projects)

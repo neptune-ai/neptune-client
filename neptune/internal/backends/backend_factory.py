@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Optional
 
 from neptune.alpha.internal.credentials import Credentials
 from neptune.exceptions import InvalidNeptuneBackend
@@ -38,3 +39,10 @@ def backend_factory(*, backend_name, api_token=None, proxies=None) -> Backend:
 
     else:
         raise InvalidNeptuneBackend(backend_name)
+
+
+def backend_for_project(api_project,  old_backend: HostedNeptuneBackend, new_backend: HostedNeptuneBackend):
+    if hasattr(api_project, 'version') and api_project.version > 1:
+        return new_backend
+    else:
+        return old_backend

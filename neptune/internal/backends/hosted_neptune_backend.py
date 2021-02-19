@@ -66,6 +66,8 @@ from neptune.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.experiments import Experiment
+from neptune.internal.backends import AlphaIntegrationBackend
+from neptune.internal.backends.backend_factory import backend_for_project
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
@@ -83,6 +85,7 @@ class HostedNeptuneBackend(Backend):
 
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
+        self._alpha_backend = None
         self._proxies = proxies
 
         # This is not a top-level import because of circular dependencies
@@ -130,6 +133,15 @@ class HostedNeptuneBackend(Backend):
         self._http_client.authenticator = self.authenticator
 
     @property
+    def alpha_backend(self):
+        if self._alpha_backend is None:
+            self._alpha_backend = AlphaIntegrationBackend(
+                old_backend=self,
+                api_token=self.credentials.api_token,
+                proxies=self.proxies)
+        return self._alpha_backend
+
+    @property
     def api_address(self):
         return self._client_config.api_url
 
@@ -149,11 +161,9 @@ class HostedNeptuneBackend(Backend):
             if warning:
                 click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
             project = response.result
-            if hasattr(project, 'version') and project.version > 1:
-                raise AlphaProjectException(project_qualified_name)
 
             return Project(
-                backend=self,
+                backend=backend_for_project(api_project=project, old_backend=self, new_backend=self.alpha_backend),
                 internal_id=project.id,
                 namespace=project.organizationName,
                 name=project.name)
