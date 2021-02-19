@@ -30,7 +30,7 @@ from neptune.internal.backends import (
     AlphaIntegrationBackend,
     HostedNeptuneBackend,
 )
-from neptune.internal.utils.http import verify_host_resolution
+from neptune.internal.utils.http_utils import verify_host_resolution
 from neptune.projects import Project
 
 _logger = logging.getLogger(__name__)
