@@ -302,7 +302,7 @@ class TestProject(unittest.TestCase):
         self.assertTrue(
             anExperiment._start.call_args[1]['upload_source_entries'][0].target_path.startswith('tests/neptune/'))
 
-    @patch('neptune.projects.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.internal.utils.git.glob', new=lambda path: [path.replace('*', 'file.txt')])
     @patch('neptune.projects.os.path', new=ntpath)
     @patch('neptune.internal.storage.storage_utils.os.sep', new=ntpath.sep)
     def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(self):

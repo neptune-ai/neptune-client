@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import logging
 import os
+import sys
 from typing import Optional
 
+from neptune.alpha.attributes import constants as attr_consts
+from neptune.alpha.internal.utils import get_absolute_paths, get_common_root
 from neptune.alpha.types.atoms import GitRef
+from neptune.internal.storage.storage_utils import normalize_file_name
+from neptune.utils import is_ipython
 
 _logger = logging.getLogger(__name__)
 
@@ -63,3 +67,22 @@ def discover_git_repo_location() -> Optional[str]:
     if hasattr(__main__, '__file__'):
         return os.path.dirname(os.path.abspath(__main__.__file__))
     return None
+
+
+def upload_source_code(source_files, experiment):
+    if not is_ipython() and os.path.isfile(sys.argv[0]):
+        if source_files is None:
+            entrypoint = os.path.basename(sys.argv[0])
+            source_files = sys.argv[0]
+        elif not source_files:
+            entrypoint = os.path.basename(sys.argv[0])
+        else:
+            common_root = get_common_root(get_absolute_paths(source_files))
+            if common_root is not None:
+                entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(sys.argv[0]), common_root))
+            else:
+                entrypoint = normalize_file_name(os.path.abspath(sys.argv[0]))
+        experiment[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
+
+    if source_files is not None:
+        experiment[attr_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH].save_files(source_files)
