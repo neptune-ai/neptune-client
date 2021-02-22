@@ -30,7 +30,6 @@ from neptune.exceptions import NeptuneNoExperimentContextException
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
-from neptune.internal.utils.git import get_source_code_to_upload
 from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
 
 _logger = logging.getLogger(__name__)
@@ -408,8 +407,6 @@ class Project(object):
         if isinstance(upload_source_files, six.string_types):
             upload_source_files = [upload_source_files]
 
-        entrypoint, upload_source_entries = get_source_code_to_upload(upload_source_files=upload_source_files)
-
         if notebook_path is None and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
             notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
 
@@ -434,14 +431,13 @@ class Project(object):
             monitored=run_monitoring_thread,
             git_info=git_info,
             hostname=hostname,
-            entrypoint=entrypoint,
+            upload_source_files=upload_source_files,
             notebook_id=notebook_id,
             checkpoint_id=checkpoint_id
         )
 
         # pylint: disable=protected-access
         experiment._start(
-            upload_source_entries=upload_source_entries,
             abort_callback=abort_callback,
             logger=logger,
             upload_stdout=upload_stdout,

@@ -69,6 +69,7 @@ from neptune.experiments import Experiment
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
+from neptune.internal.utils.git import get_source_code_to_upload
 from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
@@ -245,7 +246,7 @@ class HostedNeptuneBackend(Backend):
                           monitored,
                           git_info,
                           hostname,
-                          entrypoint,
+                          upload_source_files,
                           notebook_id,
                           checkpoint_id):
         if not isinstance(name, six.string_types):
@@ -258,8 +259,8 @@ class HostedNeptuneBackend(Backend):
             raise ValueError("Invalid properties {}, should be a dict.".format(properties))
         if not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
-        if entrypoint is not None and not isinstance(entrypoint, six.string_types):
-            raise ValueError("Invalid entrypoint {}, should be a string.".format(entrypoint))
+        if upload_source_files is not None and not isinstance(upload_source_files, list):
+            raise ValueError("Invalid entrypoint {}, should be a list.".format(list))
 
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
         GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
@@ -279,6 +280,7 @@ class HostedNeptuneBackend(Backend):
                 currentBranch=git_info.active_branch,
                 repositoryDirty=git_info.repository_dirty
             )
+        entrypoint, upload_source_entries = get_source_code_to_upload(upload_source_files=upload_source_files)
 
         try:
             params = ExperimentCreationParams(
@@ -305,7 +307,13 @@ class HostedNeptuneBackend(Backend):
             }
             api_experiment = self.backend_swagger_client.api.createExperiment(**kwargs).response().result
 
-            return self._convert_to_experiment(api_experiment, project)
+            experiment = self._convert_to_experiment(api_experiment, project)
+            upload_to_storage(upload_entries=upload_source_entries,
+                              upload_api_fun=self.upload_experiment_source,
+                              upload_tar_api_fun=self.extract_experiment_source,
+                              warn_limit=100 * 1024 * 1024,
+                              experiment=experiment)
+            return experiment
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
         except HTTPBadRequest as e:

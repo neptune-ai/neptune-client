@@ -23,7 +23,6 @@ from typing import List, Dict
 import click
 import six
 from bravado.exception import HTTPNotFound
-from neptune.alpha.internal.utils.paths import parse_path
 
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
@@ -32,6 +31,7 @@ from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptune
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
 from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
+from neptune.alpha.internal.utils.paths import parse_path
 from neptune.api_exceptions import (
     AlphaOperationErrors,
     ExperimentNotFound,
@@ -51,12 +51,12 @@ from neptune.internal.utils.alpha_integration import (
     channel_value_type_to_operation,
     deprecated_img_to_alpha_image,
 )
+from neptune.internal.utils.git import get_source_code_to_upload
 from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
-
 
 LegacyExperiment = namedtuple(
     'LegacyExperiment',
@@ -110,7 +110,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                           monitored,
                           git_info,
                           hostname,
-                          entrypoint,
+                          upload_source_files,
                           notebook_id,
                           checkpoint_id):
         if not isinstance(name, six.string_types):
@@ -123,8 +123,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise ValueError("Invalid properties {}, should be a dict.".format(properties))
         if not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
-        if entrypoint is not None and not isinstance(entrypoint, six.string_types):
-            raise ValueError("Invalid entrypoint {}, should be a string.".format(entrypoint))
+        if upload_source_files is not None and not isinstance(upload_source_files, list):
+            raise ValueError("Invalid entrypoint {}, should be a list.".format(list))
 
         git_info = {
             "commit": {
@@ -157,11 +157,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise ProjectNotFound(project_identifier=project.full_id)
 
         experiment = self._convert_to_experiment(api_experiment, project)
+        entrypoint, upload_source_entries = get_source_code_to_upload(upload_source_files=upload_source_files)
         # Initialize new experiment
         self._execute_alpha_operation(
             experiment=experiment,
             operations=self._get_init_experiment_operations(
-                name, description, hostname, entrypoint, params, properties, tags),
+                name, description, hostname, entrypoint, upload_source_entries, params, properties, tags),
         )
         return experiment
 
@@ -452,9 +453,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise NeptuneException(e) from e
 
     def _get_init_experiment_operations(
-            self, name, description, hostname, entrypoint, params, properties, tags) -> List[alpha_operation.Operation]:
+            self, name, description, hostname, entrypoint, upload_source_entries, params, properties,
+            tags) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
+
+        print(upload_source_entries)
 
         # Assign experiment name
         init_operations.append(alpha_operation.AssignString(

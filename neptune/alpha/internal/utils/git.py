@@ -16,8 +16,9 @@
 import logging
 import os
 import sys
-from typing import Optional
+from typing import Optional, List
 
+from neptune.alpha import Experiment
 from neptune.alpha.attributes import constants as attr_consts
 from neptune.alpha.internal.utils import get_absolute_paths, get_common_root
 from neptune.alpha.types.atoms import GitRef
@@ -69,7 +70,7 @@ def discover_git_repo_location() -> Optional[str]:
     return None
 
 
-def upload_source_code(source_files, experiment):
+def upload_source_code(source_files: Optional[List[str]], experiment: Experiment) -> None:
     if not is_ipython() and os.path.isfile(sys.argv[0]):
         if source_files is None:
             entrypoint = os.path.basename(sys.argv[0])
