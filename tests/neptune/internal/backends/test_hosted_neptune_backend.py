@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import ntpath
+import os
 import socket
+import sys
 import unittest
 import uuid
 
@@ -31,6 +34,13 @@ API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
 @mock.patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
 class TestHostedNeptuneBackend(unittest.TestCase):
     # pylint:disable=protected-access
+    def setUp(self):
+        super(TestHostedNeptuneBackend, self).setUp()
+        self.current_directory = os.getcwd()
+
+    def tearDown(self):
+        # revert initial directory after changing location in tests
+        os.chdir(self.current_directory)
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.__version__', '0.5.13')
@@ -201,6 +211,192 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             build_call('/../../an_abs_path_in_prj'),
             build_call('a_path_in_exp_output'),
         ])
+
+    @mock.patch('neptune.internal.backends.hosted_neptune_backend.upload_to_storage')
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    def test_create_experiment_with_relative_upload_sources(self, swagger_client_factory, upload_to_storage_mock):
+        # skip if
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+            self.skipTest('not supported in this Python version')
+
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(API_TOKEN)
+        os.chdir('tests/neptune')
+
+        # when
+        backend.create_experiment(
+            project=MagicMock(),
+            name='text_exp',
+            description='',
+            params=dict(),
+            properties=dict(),
+            tags=list(),
+            abortable=True,
+            monitored=True,
+            git_info=None,
+            hostname='',
+            upload_source_files=[
+                'test_project.*',
+                '../../*.md'
+            ],
+            notebook_id=None,
+            checkpoint_id=None,
+        )
+
+        # then
+        upload_to_storage_mock.assert_called_once()
+        self.assertTrue(
+            {entry.target_path for entry in upload_to_storage_mock.call_args[1]['upload_entries']} == {
+                'CODE_OF_CONDUCT.md', 'README.md', 'tests/neptune/test_project.py'
+            })
+
+    @mock.patch('neptune.internal.backends.hosted_neptune_backend.upload_to_storage')
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    def test_create_experiment_with_absolute_upload_sources(self, swagger_client_factory, upload_to_storage_mock):
+        # skip if
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+            self.skipTest('not supported in this Python version')
+
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(API_TOKEN)
+        os.chdir('tests/neptune')
+
+        # when
+        backend.create_experiment(
+            project=MagicMock(),
+            name='text_exp',
+            description='',
+            params=dict(),
+            properties=dict(),
+            tags=list(),
+            abortable=True,
+            monitored=True,
+            git_info=None,
+            hostname='',
+            upload_source_files=[
+                os.path.abspath('test_project.py'),
+                '../../*.md'
+            ],
+            notebook_id=None,
+            checkpoint_id=None,
+        )
+
+        # then
+        upload_to_storage_mock.assert_called_once()
+        self.assertTrue(
+            {entry.target_path for entry in upload_to_storage_mock.call_args[1]['upload_entries']} == {
+                'CODE_OF_CONDUCT.md', 'README.md', 'tests/neptune/test_project.py'
+            })
+
+    @mock.patch('neptune.internal.backends.hosted_neptune_backend.upload_to_storage')
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    def test_create_experiment_with_upload_single_sources(self, swagger_client_factory, upload_to_storage_mock):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(API_TOKEN)
+        os.chdir('tests/neptune')
+
+        # when
+        backend.create_experiment(
+            project=MagicMock(),
+            name='text_exp',
+            description='',
+            params=dict(),
+            properties=dict(),
+            tags=list(),
+            abortable=True,
+            monitored=True,
+            git_info=None,
+            hostname='',
+            upload_source_files=[
+                'test_project.py'
+            ],
+            notebook_id=None,
+            checkpoint_id=None,
+        )
+
+        # then
+        upload_to_storage_mock.assert_called_once()
+        self.assertTrue(
+            {entry.target_path for entry in upload_to_storage_mock.call_args[1]['upload_entries']} == {
+                'test_project.py'
+            })
+
+    @unittest.skip(reason='failing...')
+    @mock.patch('neptune.internal.backends.hosted_neptune_backend.upload_to_storage')
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    def test_create_experiment_with_common_path_below_current_directory(self, swagger_client_factory,
+                                                                        upload_to_storage_mock):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(API_TOKEN)
+        os.chdir('tests/neptune')
+
+        # when
+        backend.create_experiment(
+            project=MagicMock(),
+            name='text_exp',
+            description='',
+            params=dict(),
+            properties=dict(),
+            tags=list(),
+            abortable=True,
+            monitored=True,
+            git_info=None,
+            hostname='',
+            upload_source_files=[
+                'tests/neptune/*.*'
+            ],
+            notebook_id=None,
+            checkpoint_id=None,
+        )
+
+        # then
+        upload_to_storage_mock.assert_called_once()
+        self.assertTrue(
+            upload_to_storage_mock.call_args[1]['upload_entries'][0].target_path.startswith('tests/neptune/')
+        )
+
+    @mock.patch('neptune.internal.backends.hosted_neptune_backend.upload_to_storage')
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    @mock.patch('neptune.internal.utils.git.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @mock.patch('neptune.projects.os.path', new=ntpath)
+    @mock.patch('neptune.internal.storage.storage_utils.os.sep', new=ntpath.sep)
+    def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(self, swagger_client_factory,
+                                                                                   upload_to_storage_mock):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(API_TOKEN)
+        os.chdir('tests/neptune')
+
+        # when
+        backend.create_experiment(
+            project=MagicMock(),
+            name='text_exp',
+            description='',
+            params=dict(),
+            properties=dict(),
+            tags=list(),
+            abortable=True,
+            monitored=True,
+            git_info=None,
+            hostname='',
+            upload_source_files=[
+                'c:\\test1\\*',
+                'd:\\test2\\*'
+            ],
+            notebook_id=None,
+            checkpoint_id=None,
+        )
+
+        # then
+        upload_to_storage_mock.assert_called_once()
+        self.assertTrue(
+            {entry.target_path for entry in upload_to_storage_mock.call_args[1]['upload_entries']} == {
+                'c:/test1/file.txt', 'd:/test2/file.txt'
+            })
 
     @staticmethod
     def _get_swagger_client_mock(

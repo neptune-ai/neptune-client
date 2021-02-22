@@ -14,14 +14,11 @@
 # limitations under the License.
 #
 
-import os.path
-import sys
 import unittest
 from random import randint
-import ntpath
 
 import pandas as pd
-from mock import MagicMock, patch
+from mock import MagicMock
 from munch import Munch
 
 from neptune.exceptions import NeptuneNoExperimentContextException
@@ -38,10 +35,6 @@ class TestProject(unittest.TestCase):
         super(TestProject, self).setUp()
         self.backend = MagicMock()
         self.project = Project(backend=self.backend, internal_id=a_uuid_string(), namespace=a_string(), name=a_string())
-        self.current_directory = os.getcwd()
-
-    def tearDown(self):
-        os.chdir(self.current_directory)
 
     def test_get_members(self):
         # given
@@ -223,105 +216,6 @@ class TestProject(unittest.TestCase):
         with self.assertRaises(NeptuneNoExperimentContextException):
             self.project._get_current_experiment()
 
-    def test_create_experiment_with_relative_upload_sources(self):
-        # skip if
-        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
-            self.skipTest("not supported in this Python version")
-
-        # given
-        os.chdir('tests/neptune')
-        # and
-        anExperiment = MagicMock()
-        self.backend.create_experiment.return_value = anExperiment
-
-        # when
-        self.project.create_experiment(upload_source_files=[
-            "test_project.*",
-            "../../*.md"
-        ])
-
-        # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
-            "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
-        })
-
-    def test_create_experiment_with_absolute_upload_sources(self):
-        # skip if
-        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
-            self.skipTest("not supported in this Python version")
-
-        # given
-        os.chdir('tests/neptune')
-        # and
-        anExperiment = MagicMock()
-        self.backend.create_experiment.return_value = anExperiment
-
-        # when
-        self.project.create_experiment(upload_source_files=[
-            os.path.abspath('test_project.py'),
-            "../../*.md"
-        ])
-
-        # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
-            "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
-        })
-
-    def test_create_experiment_with_upload_single_sources(self):
-        # given
-        os.chdir('tests/neptune')
-        # and
-        anExperiment = MagicMock()
-        self.backend.create_experiment.return_value = anExperiment
-
-        # when
-        self.project.create_experiment(upload_source_files=[
-            'test_project.py'
-        ])
-
-        # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
-            "test_project.py"
-        })
-
-    def test_create_experiment_with_common_path_below_current_directory(self):
-        # given
-        anExperiment = MagicMock()
-        self.backend.create_experiment.return_value = anExperiment
-
-        # when
-        self.project.create_experiment(upload_source_files=[
-            'tests/neptune/*.*'
-        ])
-
-        # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue(
-            anExperiment._start.call_args[1]['upload_source_entries'][0].target_path.startswith('tests/neptune/'))
-
-    @patch('neptune.internal.utils.git.glob', new=lambda path: [path.replace('*', 'file.txt')])
-    @patch('neptune.projects.os.path', new=ntpath)
-    @patch('neptune.internal.storage.storage_utils.os.sep', new=ntpath.sep)
-    def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(self):
-        # given
-        anExperiment = MagicMock()
-        # and
-        self.backend.create_experiment.return_value = anExperiment
-
-        # when
-        self.project.create_experiment(upload_source_files=[
-            'c:\\test1\\*',
-            'd:\\test2\\*'
-        ])
-
-        # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
-            'c:/test1/file.txt', 'd:/test2/file.txt'
-        })
 
 if __name__ == '__main__':
     unittest.main()
