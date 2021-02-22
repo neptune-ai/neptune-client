@@ -280,7 +280,7 @@ class HostedNeptuneBackend(Backend):
                 currentBranch=git_info.active_branch,
                 repositoryDirty=git_info.repository_dirty
             )
-        entrypoint, upload_source_entries = get_source_code_to_upload(upload_source_files=upload_source_files)
+        entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
 
         try:
             params = ExperimentCreationParams(
@@ -308,6 +308,10 @@ class HostedNeptuneBackend(Backend):
             api_experiment = self.backend_swagger_client.api.createExperiment(**kwargs).response().result
 
             experiment = self._convert_to_experiment(api_experiment, project)
+            upload_source_entries = [
+                UploadEntry(source_path, target_path)
+                for source_path, target_path in source_target_pairs
+            ]
             upload_to_storage(upload_entries=upload_source_entries,
                               upload_api_fun=self.upload_experiment_source,
                               upload_tar_api_fun=self.extract_experiment_source,

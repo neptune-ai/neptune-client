@@ -157,12 +157,12 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise ProjectNotFound(project_identifier=project.full_id)
 
         experiment = self._convert_to_experiment(api_experiment, project)
-        entrypoint, upload_source_entries = get_source_code_to_upload(upload_source_files=upload_source_files)
+        entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
         # Initialize new experiment
         self._execute_alpha_operation(
             experiment=experiment,
             operations=self._get_init_experiment_operations(
-                name, description, hostname, entrypoint, upload_source_entries, params, properties, tags),
+                name, description, hostname, entrypoint, source_target_pairs, params, properties, tags),
         )
         return experiment
 
@@ -453,12 +453,10 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise NeptuneException(e) from e
 
     def _get_init_experiment_operations(
-            self, name, description, hostname, entrypoint, upload_source_entries, params, properties,
+            self, name, description, hostname, entrypoint, source_target_pairs, params, properties,
             tags) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
-
-        print(upload_source_entries)
 
         # Assign experiment name
         init_operations.append(alpha_operation.AssignString(
@@ -481,6 +479,15 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             init_operations.append(alpha_operation.AssignString(
                 path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
                 value=entrypoint,
+            ))
+        # Assign source files
+        if source_target_pairs:
+            dest_path = alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH)
+            file_globs = [source_path for source_path, target_path in source_target_pairs]
+            init_operations.append(alpha_operation.UploadFileSet(
+                path=dest_path,
+                file_globs=file_globs,
+                reset=True,
             ))
         # Assign experiment parameters
         for p_name, p_val in params.items():
