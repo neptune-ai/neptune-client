@@ -361,7 +361,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     @mock.patch('neptune.internal.backends.hosted_neptune_backend.upload_to_storage')
     @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.utils.git.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @mock.patch('neptune.internal.utils.source_code.glob', new=lambda path: [path.replace('*', 'file.txt')])
     @mock.patch('neptune.projects.os.path', new=ntpath)
     @mock.patch('neptune.internal.storage.storage_utils.os.sep', new=ntpath.sep)
     def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(self, swagger_client_factory,

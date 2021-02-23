@@ -52,7 +52,8 @@ from neptune.alpha.internal.streams.std_capture_background_job import (
     StdoutCaptureBackgroundJob,
 )
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
-from neptune.alpha.internal.utils.git import get_git_info, discover_git_repo_location, upload_source_code
+from neptune.alpha.internal.utils.git import get_git_info, discover_git_repo_location
+from neptune.alpha.internal.utils.source_code import upload_source_code
 from neptune.alpha.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.version import version as parsed_version
