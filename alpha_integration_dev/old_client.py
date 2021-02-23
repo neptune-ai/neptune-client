@@ -31,9 +31,23 @@ class OldClientFeatures(ClientFeatures):
         neptune.init()
         neptune.create_experiment(
             name='const project name',
+            description='exp description',
             params=self.params,
+            properties=self.properties,
             tags=['initial tag 1', 'initial tag 2'],
+            abort_callback=None,
+            run_monitoring_thread=False,
+            hostname='hostname value',
+            # notebook_id='test1',  # TODO: Error 500 when wrong value
         )
+
+        exp = neptune.get_experiment()
+        properties = exp.get_properties()
+        assert properties['init_text_property'] == 'some text'
+        assert properties['init_number property'] == '42'
+        assert properties['init_list'] == '[1, 2, 3]'
+
+        assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2'}
 
     def modify_tags(self):
         neptune.append_tags('tag1')
@@ -60,6 +74,7 @@ class OldClientFeatures(ClientFeatures):
         assert properties['prop'] == 'some text'
         assert properties['prop_number'] == '42'
         assert properties['nested/prop'] == '42'
+        assert properties['prop_list'] == '[1, 2, 3]'
         assert 'prop_to_del' not in properties
         assert properties['prop_IO'] == "<_io.TextIOWrapper name='alpha_integration_dev/data/text.txt'" \
                                         " mode='r' encoding='UTF-8'>"
