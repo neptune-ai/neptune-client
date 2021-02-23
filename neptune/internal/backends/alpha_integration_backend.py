@@ -106,8 +106,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                           params,
                           properties,
                           tags,
-                          abortable,
-                          monitored,
+                          abortable,  # deprecated in alpha
+                          monitored,  # deprecated in alpha
                           git_info,
                           hostname,
                           upload_source_files,
@@ -140,6 +140,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         } if git_info else None
 
         api_params = {
+            "notebookId": notebook_id,
+            "checkpointId": checkpoint_id,
             "projectIdentifier": str(project.internal_id),
             "cliVersion": self.client_lib_version,
             "gitInfo": git_info,
@@ -159,10 +161,17 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         experiment = self._convert_to_experiment(api_experiment, project)
         entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
         # Initialize new experiment
+        init_experiment_operations = self._get_init_experiment_operations(name,
+                                                                          description,
+                                                                          params,
+                                                                          properties,
+                                                                          tags,
+                                                                          hostname,
+                                                                          entrypoint,
+                                                                          source_target_pairs)
         self._execute_alpha_operation(
             experiment=experiment,
-            operations=self._get_init_experiment_operations(
-                name, description, hostname, entrypoint, source_target_pairs, params, properties, tags),
+            operations=init_experiment_operations,
         )
         return experiment
 
@@ -452,9 +461,15 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         except alpha_exceptions.InternalClientError as e:
             raise NeptuneException(e) from e
 
-    def _get_init_experiment_operations(
-            self, name, description, hostname, entrypoint, source_target_pairs, params, properties,
-            tags) -> List[alpha_operation.Operation]:
+    def _get_init_experiment_operations(self,
+                                        name,
+                                        description,
+                                        params,
+                                        properties,
+                                        tags,
+                                        hostname,
+                                        entrypoint,
+                                        source_target_pairs) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
 
@@ -468,27 +483,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH),
             value=description,
         ))
-        # Assign hostname
-        if hostname:
-            init_operations.append(alpha_operation.AssignString(
-                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH),
-                value=hostname,
-            ))
-        # Assign source entrypoint
-        if entrypoint:
-            init_operations.append(alpha_operation.AssignString(
-                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
-                value=entrypoint,
-            ))
-        # Assign source files
-        if source_target_pairs:
-            dest_path = alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH)
-            file_globs = [source_path for source_path, target_path in source_target_pairs]
-            init_operations.append(alpha_operation.UploadFileSet(
-                path=dest_path,
-                file_globs=file_globs,
-                reset=True,
-            ))
         # Assign experiment parameters
         for p_name, p_val in params.items():
             parameter_type, string_value = self._get_parameter_with_type(p_val)
@@ -508,6 +502,27 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             init_operations.append(alpha_operation.AddStrings(
                 path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_TAGS_ATTRIBUTE_PATH),
                 values=set(tags),
+            ))
+        # Assign source hostname
+        if hostname:
+            init_operations.append(alpha_operation.AssignString(
+                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
+                value=hostname,
+            ))
+        # Assign source entrypoint
+        if entrypoint:
+            init_operations.append(alpha_operation.AssignString(
+                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
+                value=entrypoint,
+            ))
+        # Assign source files
+        if source_target_pairs:
+            dest_path = alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH)
+            file_globs = [source_path for source_path, target_path in source_target_pairs]
+            init_operations.append(alpha_operation.UploadFileSet(
+                path=dest_path,
+                file_globs=file_globs,
+                reset=True,
             ))
 
         return init_operations
