@@ -14,11 +14,14 @@
 # limitations under the License.
 #
 
+import os.path
+import sys
 import unittest
 from random import randint
+import ntpath
 
 import pandas as pd
-from mock import MagicMock
+from mock import MagicMock, patch
 from munch import Munch
 
 from neptune.exceptions import NeptuneNoExperimentContextException
@@ -35,6 +38,11 @@ class TestProject(unittest.TestCase):
         super(TestProject, self).setUp()
         self.backend = MagicMock()
         self.project = Project(backend=self.backend, internal_id=a_uuid_string(), namespace=a_string(), name=a_string())
+        self.current_directory = os.getcwd()
+
+    def tearDown(self):
+        # revert initial directory after changing location in tests
+        os.chdir(self.current_directory)
 
     def test_get_members(self):
         # given
@@ -216,6 +224,121 @@ class TestProject(unittest.TestCase):
         with self.assertRaises(NeptuneNoExperimentContextException):
             self.project._get_current_experiment()
 
+    def test_create_experiment_with_relative_upload_sources(self):
+        # skip if
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+            self.skipTest("not supported in this Python version")
+
+        # given
+        os.chdir('tests/neptune')
+        # and
+        anExperiment = MagicMock()
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            "test_project.*",
+            "../../*.md"
+        ])
+
+        # then
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            set(source_target_pairs_targets) == {"CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"}
+        )
+
+    def test_create_experiment_with_absolute_upload_sources(self):
+        # skip if
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+            self.skipTest("not supported in this Python version")
+
+        # given
+        os.chdir('tests/neptune')
+        # and
+        anExperiment = MagicMock()
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            os.path.abspath('test_project.py'),
+            "../../*.md"
+        ])
+
+        # then
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            set(source_target_pairs_targets) == {"CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"}
+        )
+
+    def test_create_experiment_with_upload_single_sources(self):
+        # given
+        os.chdir('tests/neptune')
+        # and
+        anExperiment = MagicMock()
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            'test_project.py'
+        ])
+
+        # then
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            set(source_target_pairs_targets) == {"test_project.py"}
+        )
+
+    def test_create_experiment_with_common_path_below_current_directory(self):
+        # given
+        anExperiment = MagicMock()
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            'tests/neptune/*.*'
+        ])
+
+        # then
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            all(target_p.startswith('tests/neptune/') for target_p in source_target_pairs_targets)
+        )
+
+    @patch('neptune.internal.utils.source_code.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.projects.os.path', new=ntpath)
+    @patch('neptune.internal.storage.storage_utils.os.sep', new=ntpath.sep)
+    def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(self):
+        # given
+        anExperiment = MagicMock()
+        # and
+        self.backend.create_experiment.return_value = anExperiment
+
+        # when
+        self.project.create_experiment(upload_source_files=[
+            'c:\\test1\\*',
+            'd:\\test2\\*'
+        ])
+
+        # then
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            set(source_target_pairs_targets) == {'c:/test1/file.txt', 'd:/test2/file.txt'}
+        )
 
 if __name__ == '__main__':
     unittest.main()

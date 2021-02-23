@@ -51,7 +51,6 @@ from neptune.internal.utils.alpha_integration import (
     channel_value_type_to_operation,
     deprecated_img_to_alpha_image,
 )
-from neptune.internal.utils.source_code import get_source_code_to_upload
 from neptune.model import ChannelWithLastValue
 from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
