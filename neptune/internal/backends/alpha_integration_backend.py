@@ -110,7 +110,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                           monitored,  # deprecated in alpha
                           git_info,
                           hostname,
-                          upload_source_files,
+                          entrypoint,
                           notebook_id,
                           checkpoint_id):
         if not isinstance(name, six.string_types):
@@ -123,8 +123,8 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise ValueError("Invalid properties {}, should be a dict.".format(properties))
         if not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
-        if upload_source_files is not None and not isinstance(upload_source_files, list):
-            raise ValueError("Invalid upload_source_files {}, should be a list.".format(list))
+        if entrypoint is not None and not isinstance(entrypoint, six.string_types):
+            raise ValueError("Invalid entrypoint {}, should be a string.".format(entrypoint))
 
         git_info = {
             "commit": {
@@ -159,7 +159,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             raise ProjectNotFound(project_identifier=project.full_id)
 
         experiment = self._convert_to_experiment(api_experiment, project)
-        entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
         # Initialize new experiment
         init_experiment_operations = self._get_init_experiment_operations(name,
                                                                           description,
@@ -167,13 +166,22 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                                                                           properties,
                                                                           tags,
                                                                           hostname,
-                                                                          entrypoint,
-                                                                          source_target_pairs)
+                                                                          entrypoint)
         self._execute_alpha_operation(
             experiment=experiment,
             operations=init_experiment_operations,
         )
         return experiment
+
+    def upload_source_code(self, experiment, source_target_pairs):
+        dest_path = alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH)
+        file_globs = [source_path for source_path, target_path in source_target_pairs]
+        upload_files_operation = alpha_operation.UploadFileSet(
+            path=dest_path,
+            file_globs=file_globs,
+            reset=True,
+        )
+        self._execute_alpha_operation(experiment, [upload_files_operation])
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
@@ -468,8 +476,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
                                         properties,
                                         tags,
                                         hostname,
-                                        entrypoint,
-                                        source_target_pairs) -> List[alpha_operation.Operation]:
+                                        entrypoint) -> List[alpha_operation.Operation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
 
@@ -514,15 +521,6 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             init_operations.append(alpha_operation.AssignString(
                 path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
                 value=entrypoint,
-            ))
-        # Assign source files
-        if source_target_pairs:
-            dest_path = alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH)
-            file_globs = [source_path for source_path, target_path in source_target_pairs]
-            init_operations.append(alpha_operation.UploadFileSet(
-                path=dest_path,
-                file_globs=file_globs,
-                reset=True,
             ))
 
         return init_operations

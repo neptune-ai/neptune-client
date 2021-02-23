@@ -64,8 +64,12 @@ class Backend(object):
     @abstractmethod
     def create_experiment(self, project, name, description,
                           params, properties, tags, abortable,
-                          monitored, git_info, hostname, upload_source_files,
+                          monitored, git_info, hostname, entrypoint,
                           notebook_id, checkpoint_id):
+        pass
+
+    @abstractmethod
+    def upload_source_code(self, experiment, source_target_pairs):
         pass
 
     @abstractmethod

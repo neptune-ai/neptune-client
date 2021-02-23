@@ -246,7 +246,7 @@ class HostedNeptuneBackend(Backend):
                           monitored,
                           git_info,
                           hostname,
-                          upload_source_files,
+                          entrypoint,
                           notebook_id,
                           checkpoint_id):
         if not isinstance(name, six.string_types):
@@ -259,8 +259,8 @@ class HostedNeptuneBackend(Backend):
             raise ValueError("Invalid properties {}, should be a dict.".format(properties))
         if not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
-        if upload_source_files is not None and not isinstance(upload_source_files, list):
-            raise ValueError("Invalid upload_source_files {}, should be a list.".format(list))
+        if entrypoint is not None and not isinstance(entrypoint, six.string_types):
+            raise ValueError("Invalid entrypoint {}, should be a string.".format(entrypoint))
 
         ExperimentCreationParams = self.backend_swagger_client.get_model('ExperimentCreationParams')
         GitInfoDTO = self.backend_swagger_client.get_model('GitInfoDTO')
@@ -280,7 +280,6 @@ class HostedNeptuneBackend(Backend):
                 currentBranch=git_info.active_branch,
                 repositoryDirty=git_info.repository_dirty
             )
-        entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
 
         try:
             params = ExperimentCreationParams(
@@ -307,17 +306,7 @@ class HostedNeptuneBackend(Backend):
             }
             api_experiment = self.backend_swagger_client.api.createExperiment(**kwargs).response().result
 
-            experiment = self._convert_to_experiment(api_experiment, project)
-            upload_source_entries = [
-                UploadEntry(source_path, target_path)
-                for source_path, target_path in source_target_pairs
-            ]
-            upload_to_storage(upload_entries=upload_source_entries,
-                              upload_api_fun=self.upload_experiment_source,
-                              upload_tar_api_fun=self.extract_experiment_source,
-                              warn_limit=100 * 1024 * 1024,
-                              experiment=experiment)
-            return experiment
+            return self._convert_to_experiment(api_experiment, project)
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
         except HTTPBadRequest as e:
@@ -333,6 +322,17 @@ class HostedNeptuneBackend(Backend):
                 raise ExperimentLimitReached()
             else:
                 raise
+
+    def upload_source_code(self, experiment, source_target_pairs):
+        upload_source_entries = [
+            UploadEntry(source_path, target_path)
+            for source_path, target_path in source_target_pairs
+        ]
+        upload_to_storage(upload_entries=upload_source_entries,
+                          upload_api_fun=self.upload_experiment_source,
+                          upload_tar_api_fun=self.extract_experiment_source,
+                          warn_limit=100 * 1024 * 1024,
+                          experiment=experiment)
 
     @with_api_exceptions_handler
     def get_notebook(self, project, notebook_id):
