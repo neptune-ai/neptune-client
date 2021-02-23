@@ -33,7 +33,7 @@ class OldClientFeatures(ClientFeatures):
             name='const project name',
             params=self.params,
             tags=['initial tag 1', 'initial tag 2'],
-            # upload_source_files='*.py',  # NPT-9407
+            upload_source_files='alpha_integration_dev/*.py',
         )
 
     def modify_tags(self):
