@@ -90,7 +90,7 @@ class TestClient(unittest.TestCase):
         self.assertEqual(exp._uuid, uuid.UUID('12345678-1234-5678-1234-567812345678'))
         self.assertIsInstance(exp.get_structure()["test"], String)
 
-    @patch("neptune.alpha.internal.init_impl.sys.argv", ["main.py"])
+    @patch("neptune.alpha.internal.utils.source_code.sys.argv", ["main.py"])
     @patch("neptune.alpha.internal.init_impl.os.path.isfile", new=lambda file: "." in file)
     @patch('neptune.alpha.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
     @patch('neptune.alpha.internal.utils.os.path.abspath',
@@ -112,8 +112,8 @@ class TestClient(unittest.TestCase):
         exp = init(connection_mode='debug', source_files=["../other_dir/*"])
         self.assertEqual(exp["source_code/entrypoint"].get(), "../main_dir/main.py")
 
-    @patch("neptune.alpha.internal.init_impl.sys.argv", ["main.py"])
-    @patch("neptune.alpha.internal.init_impl.is_ipython", new=lambda: True)
+    @patch("neptune.alpha.internal.utils.source_code.sys.argv", ["main.py"])
+    @patch("neptune.alpha.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
         exp = init(connection_mode='debug')
         with self.assertRaises(AttributeError):
@@ -131,12 +131,12 @@ class TestClient(unittest.TestCase):
         with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
-    @patch("neptune.alpha.internal.init_impl.sys.argv", ["main.py"])
+    @patch("neptune.alpha.internal.utils.source_code.sys.argv", ["main.py"])
+    @patch("neptune.alpha.internal.utils.source_code.get_common_root", new=lambda _: None)
     @patch("neptune.alpha.internal.init_impl.os.path.isfile", new=lambda file: "." in file)
     @patch('neptune.alpha.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
     @patch('neptune.alpha.internal.utils.os.path.abspath',
            new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
-    @patch("neptune.alpha.internal.init_impl.get_common_root", new=lambda _: None)
     def test_entrypoint_without_common_root(self):
         exp = init(connection_mode='debug', source_files=["../*"])
         self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")

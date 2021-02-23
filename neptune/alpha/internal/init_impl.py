@@ -16,7 +16,6 @@
 import logging
 import os
 import re
-import sys
 from datetime import datetime
 from pathlib import Path
 from platform import node as get_hostname
@@ -24,34 +23,41 @@ from typing import Optional, List, Union
 
 import click
 
-from neptune.alpha.constants import NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, \
-    ASYNC_DIRECTORY
+from neptune.alpha.attributes import constants as attr_consts
+from neptune.alpha.constants import (
+    ASYNC_DIRECTORY,
+    NEPTUNE_EXPERIMENT_DIRECTORY,
+    OFFLINE_DIRECTORY,
+)
 from neptune.alpha.envs import PROJECT_ENV_NAME, CUSTOM_EXP_ID_ENV_NAME
-from neptune.alpha.exceptions import NeptuneMissingProjectNameException, \
-    NeptuneIncorrectProjectQualifiedNameException, NeptuneExperimentResumeAndCustomIdCollision
+from neptune.alpha.exceptions import (
+    NeptuneExperimentResumeAndCustomIdCollision,
+    NeptuneIncorrectProjectQualifiedNameException,
+    NeptuneMissingProjectNameException,
+)
 from neptune.alpha.experiment import Experiment
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.alpha.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
 from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
-from neptune.alpha.attributes import constants as attr_consts
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.alpha.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
 from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
-from neptune.alpha.internal.streams.std_capture_background_job import StdoutCaptureBackgroundJob, \
-    StderrCaptureBackgroundJob
-from neptune.alpha.internal.utils import verify_type, verify_collection_type, get_absolute_paths, get_common_root
+from neptune.alpha.internal.streams.std_capture_background_job import (
+    StderrCaptureBackgroundJob,
+    StdoutCaptureBackgroundJob,
+)
+from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.internal.utils.git import get_git_info, discover_git_repo_location
+from neptune.alpha.internal.utils.source_code import upload_source_code
 from neptune.alpha.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.version import version as parsed_version
-from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.utils import is_ipython
 
 __version__ = str(parsed_version)
 
@@ -63,21 +69,20 @@ ASYNC = "async"
 SYNC = "sync"
 
 
-def init(
-        project: Optional[str] = None,
-        api_token: Optional[str] = None,
-        experiment: Optional[str] = None,
-        custom_experiment_id: Optional[str] = None,
-        connection_mode: str = ASYNC,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        tags: Optional[Union[List[str], str]] = None,
-        source_files: Optional[Union[List[str], str]] = None,
-        capture_stdout: bool = True,
-        capture_stderr: bool = True,
-        capture_hardware_metrics: bool = True,
-        monitoring_namespace: str = "monitoring",
-        flush_period: float = 5) -> Experiment:
+def init(project: Optional[str] = None,
+         api_token: Optional[str] = None,
+         experiment: Optional[str] = None,
+         custom_experiment_id: Optional[str] = None,
+         connection_mode: str = ASYNC,
+         name: Optional[str] = None,
+         description: Optional[str] = None,
+         tags: Optional[Union[List[str], str]] = None,
+         source_files: Optional[Union[List[str], str]] = None,
+         capture_stdout: bool = True,
+         capture_stderr: bool = True,
+         capture_hardware_metrics: bool = True,
+         monitoring_namespace: str = "monitoring",
+         flush_period: float = 5) -> Experiment:
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("experiment", experiment, (str, type(None)))
@@ -198,22 +203,7 @@ def init(
     if capture_stderr and not _experiment.exists(stderr_path):
         _experiment.define(stderr_path, StringSeries([]))
 
-    if not is_ipython() and os.path.isfile(sys.argv[0]):
-        if source_files is None:
-            entrypoint = os.path.basename(sys.argv[0])
-            source_files = sys.argv[0]
-        elif not source_files:
-            entrypoint = os.path.basename(sys.argv[0])
-        else:
-            common_root = get_common_root(get_absolute_paths(source_files))
-            if common_root is not None:
-                entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(sys.argv[0]), common_root))
-            else:
-                entrypoint = normalize_file_name(os.path.abspath(sys.argv[0]))
-        _experiment[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
-
-    if source_files is not None:
-        _experiment[attr_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH].save_files(source_files)
+    upload_source_code(source_files=source_files, experiment=_experiment)
 
     _experiment.start()
 

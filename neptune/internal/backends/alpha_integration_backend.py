@@ -23,7 +23,6 @@ from typing import List, Dict
 import click
 import six
 from bravado.exception import HTTPNotFound
-from neptune.alpha.internal.utils.paths import parse_path
 
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
@@ -32,6 +31,7 @@ from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptune
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
 from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
+from neptune.alpha.internal.utils.paths import parse_path
 from neptune.api_exceptions import (
     AlphaOperationErrors,
     ExperimentNotFound,
@@ -56,7 +56,6 @@ from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
-
 
 LegacyExperiment = namedtuple(
     'LegacyExperiment',
@@ -172,6 +171,16 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             operations=init_experiment_operations,
         )
         return experiment
+
+    def upload_source_code(self, experiment, source_target_pairs):
+        dest_path = alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH)
+        file_globs = [source_path for source_path, target_path in source_target_pairs]
+        upload_files_operation = alpha_operation.UploadFileSet(
+            path=dest_path,
+            file_globs=file_globs,
+            reset=True,
+        )
+        self._execute_alpha_operation(experiment, [upload_files_operation])
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):

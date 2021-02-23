@@ -18,7 +18,6 @@ import atexit
 import logging
 import os
 import os.path
-import sys
 import threading
 from platform import node as get_hostname
 
@@ -31,8 +30,8 @@ from neptune.exceptions import NeptuneNoExperimentContextException
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
-from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name
-from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location, glob, is_ipython
+from neptune.internal.utils.source_code import get_source_code_to_upload
+from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
 
 _logger = logging.getLogger(__name__)
 
@@ -409,45 +408,7 @@ class Project(object):
         if isinstance(upload_source_files, six.string_types):
             upload_source_files = [upload_source_files]
 
-        upload_source_entries = []
-        if is_ipython():
-            main_file = None
-            entrypoint = None
-        else:
-            main_file = sys.argv[0]
-            entrypoint = main_file or None
-        if upload_source_files is None:
-            if main_file is not None and os.path.isfile(main_file):
-                entrypoint = normalize_file_name(os.path.basename(main_file))
-                upload_source_entries = [
-                    UploadEntry(os.path.abspath(main_file), normalize_file_name(os.path.basename(main_file)))
-                ]
-        else:
-            expanded_source_files = set()
-            for filepath in upload_source_files:
-                expanded_source_files |= set(glob(filepath))
-            if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
-                for filepath in expanded_source_files:
-                    if filepath.startswith('..'):
-                        raise ValueError('You need to have Python 3.5 or later to use paths outside current directory.')
-                    upload_source_entries.append(UploadEntry(os.path.abspath(filepath), normalize_file_name(filepath)))
-            else:
-                absolute_paths = []
-                for filepath in expanded_source_files:
-                    absolute_paths.append(os.path.abspath(filepath))
-                try:
-                    common_source_root = os.path.commonpath(absolute_paths)
-                except ValueError:
-                    for absolute_path in absolute_paths:
-                        upload_source_entries.append(UploadEntry(absolute_path, normalize_file_name(absolute_path)))
-                else:
-                    if os.path.isfile(common_source_root):
-                        common_source_root = os.path.dirname(common_source_root)
-                    if common_source_root.startswith(os.getcwd() + os.sep):
-                        common_source_root = os.getcwd()
-                    for absolute_path in absolute_paths:
-                        upload_source_entries.append(UploadEntry(absolute_path, normalize_file_name(
-                            os.path.relpath(absolute_path, common_source_root))))
+        entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
 
         if notebook_path is None and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
             notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
@@ -478,9 +439,10 @@ class Project(object):
             checkpoint_id=checkpoint_id
         )
 
+        self._backend.upload_source_code(experiment, source_target_pairs)
+
         # pylint: disable=protected-access
         experiment._start(
-            upload_source_entries=upload_source_entries,
             abort_callback=abort_callback,
             logger=logger,
             upload_stdout=upload_stdout,

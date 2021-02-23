@@ -39,6 +39,7 @@ class OldClientFeatures(ClientFeatures):
             run_monitoring_thread=False,
             hostname='hostname value',
             # notebook_id='test1',  # TODO: Error 500 when wrong value
+            upload_source_files='alpha_integration_dev/*.py',
         )
 
         exp = neptune.get_experiment()

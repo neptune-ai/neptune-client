@@ -322,6 +322,17 @@ class HostedNeptuneBackend(Backend):
             else:
                 raise
 
+    def upload_source_code(self, experiment, source_target_pairs):
+        upload_source_entries = [
+            UploadEntry(source_path, target_path)
+            for source_path, target_path in source_target_pairs
+        ]
+        upload_to_storage(upload_entries=upload_source_entries,
+                          upload_api_fun=self.upload_experiment_source,
+                          upload_tar_api_fun=self.extract_experiment_source,
+                          warn_limit=100 * 1024 * 1024,
+                          experiment=experiment)
+
     @with_api_exceptions_handler
     def get_notebook(self, project, notebook_id):
         try:

@@ -30,7 +30,6 @@ from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
-from neptune.internal.storage.storage_utils import upload_to_storage
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
 
@@ -996,7 +995,6 @@ class Experiment(object):
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
     def _start(self,
-               upload_source_entries=None,
                abort_callback=None,
                logger=None,
                upload_stdout=True,
@@ -1004,11 +1002,6 @@ class Experiment(object):
                send_hardware_metrics=True,
                run_monitoring_thread=True,
                handle_uncaught_exceptions=True):
-        upload_to_storage(upload_entries=upload_source_entries,
-                          upload_api_fun=self._backend.upload_experiment_source,
-                          upload_tar_api_fun=self._backend.extract_experiment_source,
-                          warn_limit=100 * 1024 * 1024,
-                          experiment=self)
 
         self._execution_context.start(
             abort_callback=abort_callback,

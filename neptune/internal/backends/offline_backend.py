@@ -63,6 +63,9 @@ class OfflineBackend(Backend):
                           notebook_id, checkpoint_id):
         return NoopObject()
 
+    def upload_source_code(self, experiment, source_target_pairs):
+        pass
+
     def get_notebook(self, project, notebook_id):
         return NoopObject()
 
