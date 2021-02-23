@@ -408,6 +408,8 @@ class Project(object):
         if isinstance(upload_source_files, six.string_types):
             upload_source_files = [upload_source_files]
 
+        entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
+
         if notebook_path is None and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
             notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
 
@@ -420,8 +422,6 @@ class Project(object):
                                            notebook_path=notebook_path)
             if checkpoint is not None:
                 checkpoint_id = checkpoint.id
-
-        entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
 
         experiment = self._backend.create_experiment(
             project=self,
