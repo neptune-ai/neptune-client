@@ -19,7 +19,7 @@
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.alpha.internal.operation import AssignFloat, DeleteAttribute, AssignString, LogFloats, LogStrings, \
-    LogImages, ClearFloatLog, ClearImageLog, AddStrings, RemoveStrings, ClearStringSet, ConfigFloatSeries
+    LogImages, ClearFloatLog, ClearImageLog, AddStrings, RemoveStrings, ClearStringSet, ConfigFloatSeries, UploadFileSet
 
 from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
 
@@ -248,4 +248,47 @@ class TestOperationsPreprocessor(TestAttributeBase):
         self.assertEqual(processor.get_errors(), [
             MetadataInconsistency("Cannot perform RemoveStrings operation on h: Attribute is not a String Set"),
             MetadataInconsistency("Cannot perform AddStrings operation on i: Attribute is not a String Set")
+        ])
+
+    def test_file_set(self):
+        # given
+        processor = OperationsPreprocessor()
+
+        # when
+        processor.process([
+            UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
+            DeleteAttribute(["a"]),
+            UploadFileSet(["a"], ["hhh", "gij"], reset=False),
+
+            DeleteAttribute(["b"]),
+            UploadFileSet(["b"], ["abc", "defgh"], reset=True),
+
+            UploadFileSet(["c"], ["hhh", "gij"], reset=False),
+            UploadFileSet(["c"], ["abc", "defgh"], reset=True),
+            UploadFileSet(["c"], ["qqq"], reset=False),
+
+            UploadFileSet(["d"], ["hhh", "gij"], reset=False),
+
+            AssignFloat(["e"], 5),
+            UploadFileSet(["e"], [""], reset=False),
+        ])
+
+        # then
+        self.assertEqual(processor.get_operations(), [
+            UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
+            DeleteAttribute(["a"]),
+            UploadFileSet(["a"], ["hhh", "gij"], reset=False),
+
+            DeleteAttribute(["b"]),
+            UploadFileSet(["b"], ["abc", "defgh"], reset=True),
+
+            UploadFileSet(["c"], ["abc", "defgh"], reset=True),
+            UploadFileSet(["c"], ["qqq"], reset=False),
+
+            UploadFileSet(["d"], ["hhh", "gij"], reset=False),
+
+            AssignFloat(["e"], 5),
+        ])
+        self.assertEqual(processor.get_errors(), [
+            MetadataInconsistency("Cannot perform UploadFileSet operation on e: Attribute is not a File Set")
         ])

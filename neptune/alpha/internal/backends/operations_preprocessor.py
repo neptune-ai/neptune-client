@@ -58,7 +58,7 @@ class _DataType(Enum):
     STRING = "String"
     FILE = "File"
     DATETIME = "Datetime"
-    FILE_SET = "FileSet"
+    FILE_SET = "File Set"
     FLOAT_SERIES = "Float Series"
     STRING_SERIES = "String Series"
     IMAGE_SERIES = "Image Series"
@@ -130,7 +130,10 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._process_modify_op(_DataType.FILE, op, self._assign_modifier())
 
     def visit_upload_file_set(self, op: UploadFileSet) -> None:
-        self._process_modify_op(_DataType.FILE_SET, op, self._assign_modifier())
+        if op.reset:
+            self._process_modify_op(_DataType.FILE_SET, op, self._assign_modifier())
+        else:
+            self._process_modify_op(_DataType.FILE_SET, op, self._add_modifier())
 
     def visit_log_floats(self, op: LogFloats) -> None:
         self._process_modify_op(
