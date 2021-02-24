@@ -202,7 +202,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(experiment_uuid)
 
-    # TODO: Return errors to OperationProcessor
     def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
         errors = []
 
@@ -215,9 +214,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in operations_preprocessor.get_operations():
             (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
 
-        if other_operations:
-            errors.extend(self._execute_operations(experiment_uuid, other_operations))
-
+        # Upload operations should be done first since they are idempotent
         for op in upload_operations:
             if isinstance(op, UploadFile):
                 try:
@@ -251,6 +248,9 @@ class HostedNeptuneBackend(NeptuneBackend):
                     errors.append(e)
             else:
                 raise InternalClientError("Upload operation in neither File or FileSet")
+
+        if other_operations:
+            errors.extend(self._execute_operations(experiment_uuid, other_operations))
 
         return errors
 

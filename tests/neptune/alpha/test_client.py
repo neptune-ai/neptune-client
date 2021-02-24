@@ -72,7 +72,6 @@ class TestClient(unittest.TestCase):
     def test_async_mode(self):
         exp = init(connection_mode='async', flush_period=0.5)
         exp["some/variable"] = 13
-        # TODO: Should be None or exception?
         with self.assertRaises(MetadataInconsistency):
             exp["some/variable"].get(wait=False)
         self.assertEqual(13, exp["some/variable"].get(wait=True))

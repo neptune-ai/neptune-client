@@ -133,11 +133,11 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         ], any_order=True)
 
         self.assertEqual([
-            MetadataInconsistency("error1"),
             FileUploadError("file1", "error2"),
             FileUploadError("file1", "error2"),
             FileUploadError("file1", "error2"),
-            FileUploadError("file1", "error2")
+            FileUploadError("file1", "error2"),
+            MetadataInconsistency("error1")
         ], result)
 
     @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attribute')
