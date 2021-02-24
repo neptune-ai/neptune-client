@@ -120,15 +120,14 @@ def init(
     else:
         raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
 
-    if not project:
-        project = os.getenv(PROJECT_ENV_NAME)
-    elif connection_mode == 'offline':
+    if connection_mode == OFFLINE or connection_mode == DEBUG:
         project = 'offline/project-placeholder'
-
-    if not project:
-        raise NeptuneMissingProjectNameException()
-    if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
-        raise NeptuneIncorrectProjectQualifiedNameException(project)
+    elif not project:
+        project = os.getenv(PROJECT_ENV_NAME)
+        if not project:
+            raise NeptuneMissingProjectNameException()
+        if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
+            raise NeptuneIncorrectProjectQualifiedNameException(project)
 
     project_obj = backend.get_project(project)
     if experiment:
@@ -217,8 +216,8 @@ def init(
     _experiment.start()
 
     if connection_mode == OFFLINE:
-        click.echo("offline/{}.".format(exp.uuid))
-    else:
+        click.echo("offline/{}".format(exp.uuid))
+    elif connection_mode != DEBUG:
         click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
             base_url=backend.get_display_address(),
             workspace=exp.workspace,
