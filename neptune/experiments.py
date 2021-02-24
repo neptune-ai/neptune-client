@@ -270,7 +270,10 @@ class Experiment(object):
 
                 exp_logs = experiment.get_logs()
         """
-        return {key: ch.y for key, ch in self._backend.get_channels(self).items()}
+        def get_channel_value(ch):
+            return float(ch.y) if ch.y is not None and ch.channelType == "numeric" else ch.y
+
+        return {key: get_channel_value(ch) for key, ch in self._backend.get_channels(self).items()}
 
     def _get_system_channels(self):
         return self._backend.get_system_channels(self)
