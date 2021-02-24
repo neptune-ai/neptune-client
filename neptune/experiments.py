@@ -270,7 +270,7 @@ class Experiment(object):
 
                 exp_logs = experiment.get_logs()
         """
-        return self._backend.get_channels(self)
+        return {key: ch.y for key, ch in self._backend.get_channels(self).items()}
 
     def _get_system_channels(self):
         return self._backend.get_system_channels(self)

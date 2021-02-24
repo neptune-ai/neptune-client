@@ -140,12 +140,11 @@ class AlphaChannelDTO(AlphaAttributeWrapper):
             return ChannelType.IMAGE.value
 
     @property
-    def lastX(self):
-        # TODO: NPT-9216
-        return None
+    def x(self):
+        return self._properties.lastStep
 
     @property
-    def lastY(self):
+    def y(self):
         if self.channelType == ChannelType.IMAGE.value:
             # We do not store last value for image series
             return None
