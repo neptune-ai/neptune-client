@@ -976,7 +976,7 @@ class Experiment(object):
         """
 
         channels_data = {}
-        channels_by_name = self.get_channels()
+        channels_by_name = self._backend.get_channels(self)
         for channel_name in channel_names:
             channel_id = channels_by_name[channel_name].id
             try:
@@ -1106,7 +1106,7 @@ class Experiment(object):
         self._backend.send_channels_values(self, channels_with_values)
 
     def _get_channels(self, channels_names_with_types):
-        existing_channels = self.get_channels()
+        existing_channels = self._backend.get_channels(self)
         channels_by_name = {}
         for (channel_name, channel_type) in channels_names_with_types:
             channel = existing_channels.get(channel_name, None)
@@ -1123,7 +1123,7 @@ class Experiment(object):
 
     def _find_channel(self, channel_name, channel_namespace):
         if channel_namespace == ChannelNamespace.USER:
-            return self.get_channels().get(channel_name, None)
+            return self._backend.get_channels(self).get(channel_name, None)
         elif channel_namespace == ChannelNamespace.SYSTEM:
             return self._get_system_channels().get(channel_name, None)
         else:
