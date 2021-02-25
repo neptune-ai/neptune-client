@@ -30,7 +30,6 @@ from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue
 from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
-from neptune.internal.storage.storage_utils import upload_to_storage, UploadEntry, normalize_file_name
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
 
@@ -50,7 +49,7 @@ class Experiment(object):
 
 
     Args:
-        backend (:obj:`neptune.Backend`): A Backend object
+        backend (:obj:`neptune.ApiClient`): A ApiClient object
         project (:obj:`neptune.Project`): The project this experiment belongs to
         _id (:obj:`str`): Experiment id
         internal_id (:obj:`str`): internal UUID
@@ -271,26 +270,13 @@ class Experiment(object):
 
                 exp_logs = experiment.get_logs()
         """
-        experiment = self._backend.get_experiment(self.internal_id)
-        channels_last_values_by_name = dict((ch.channelName, ch) for ch in experiment.channelsLastValues)
-        channels = dict()
-        for ch in experiment.channels:
-            last_value = channels_last_values_by_name.get(ch.name, None)
-            if last_value is not None:
-                ch.x = last_value.x
-                ch.y = last_value.y
-            elif ch.lastX is not None:
-                ch.x = ch.lastX
-                ch.y = None
-            else:
-                ch.x = None
-                ch.y = None
-            channels[ch.name] = ch
-        return channels
+        def get_channel_value(ch):
+            return float(ch.y) if ch.y is not None and ch.channelType == "numeric" else ch.y
+
+        return {key: get_channel_value(ch) for key, ch in self._backend.get_channels(self).items()}
 
     def _get_system_channels(self):
-        channels = self._backend.get_system_channels(self)
-        return dict((ch.name, ch) for ch in channels)
+        return self._backend.get_system_channels(self)
 
     def send_metric(self, channel_name, x, y=None, timestamp=None):
         """Log metrics (numeric values) in Neptune.
@@ -626,24 +612,7 @@ class Experiment(object):
                 # save file under different name
                 experiment.log_artifact('images/wrong_prediction_1.png', 'images/my_image_1.png')
         """
-        if isinstance(artifact, str):
-            if os.path.exists(artifact):
-                target_name = os.path.basename(artifact) if destination is None else destination
-                upload_entry = UploadEntry(os.path.abspath(artifact), normalize_file_name(target_name))
-            else:
-                raise FileNotFound(artifact)
-        elif hasattr(artifact, 'read'):
-            if destination is not None:
-                upload_entry = UploadEntry(artifact, normalize_file_name(destination))
-            else:
-                raise ValueError("destination is required for file streams")
-        else:
-            raise ValueError("artifact is a local path or an IO object")
-
-        upload_to_storage(upload_entries=[upload_entry],
-                          upload_api_fun=self._backend.upload_experiment_output,
-                          upload_tar_api_fun=self._backend.extract_experiment_output,
-                          experiment=self)
+        self._backend.log_artifact(self, artifact, destination)
 
     def delete_artifacts(self, path):
         """Removes an artifact(s) (file/directory) from the experiment storage.
@@ -663,25 +632,7 @@ class Experiment(object):
                 experiment.delete_artifacts(['forest_results.pkl', 'directory'])
                 experiment.delete_artifacts('')
         """
-        if path is None:
-            raise ValueError("path argument must not be None")
-
-        paths = path
-        if not isinstance(path, list):
-            paths = [path]
-        for path in paths:
-            if path is None:
-                raise ValueError("path argument must not be None")
-            normalized_path = os.path.normpath(path)
-            if normalized_path.startswith(".."):
-                raise ValueError("path to delete must be within project's directory")
-            if normalized_path == "." or normalized_path == "/" or not normalized_path:
-                raise ValueError("Cannot delete whole artifacts directory")
-        try:
-            for path in paths:
-                self._backend.rm_data(experiment=self, path=path)
-        except PathInProjectNotFound:
-            raise FileNotFound(path)
+        self._backend.delete_artifacts(self, path)
 
     def download_artifact(self, path, destination_dir=None):
         """Download an artifact (file) from the experiment storage.
@@ -829,7 +780,7 @@ class Experiment(object):
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             ssl_verify = False
 
-        # We do not use Backend here cause `downloadUrl` can be any url (not only Neptune API endpoint)
+        # We do not use ApiClient here cause `downloadUrl` can be any url (not only Neptune API endpoint)
         response = requests.get(
             url=download_request.downloadUrl,
             headers={"Accept": "application/zip"},
@@ -929,11 +880,10 @@ class Experiment(object):
                 experiment.set_property('model', 'LightGBM')
                 experiment.set_property('magic-number', 7)
         """
-        properties = {p.key: p.value for p in self._backend.get_experiment(self.internal_id).properties}
-        properties[key] = str(value)
-        return self._backend.update_experiment(
+        return self._backend.set_property(
             experiment=self,
-            properties=properties
+            key=key,
+            value=value,
         )
 
     def remove_property(self, key):
@@ -950,11 +900,9 @@ class Experiment(object):
 
                 experiment.remove_property('host')
         """
-        properties = {p.key: p.value for p in self._backend.get_experiment(self.internal_id).properties}
-        del properties[key]
-        return self._backend.update_experiment(
+        return self._backend.remove_property(
             experiment=self,
-            properties=properties
+            key=key,
         )
 
     def get_hardware_utilization(self):
@@ -1031,7 +979,7 @@ class Experiment(object):
         """
 
         channels_data = {}
-        channels_by_name = self.get_channels()
+        channels_by_name = self._backend.get_channels(self)
         for channel_name in channel_names:
             channel_id = channels_by_name[channel_name].id
             try:
@@ -1050,7 +998,6 @@ class Experiment(object):
         return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
 
     def _start(self,
-               upload_source_entries=None,
                abort_callback=None,
                logger=None,
                upload_stdout=True,
@@ -1058,11 +1005,6 @@ class Experiment(object):
                send_hardware_metrics=True,
                run_monitoring_thread=True,
                handle_uncaught_exceptions=True):
-        upload_to_storage(upload_entries=upload_source_entries,
-                          upload_api_fun=self._backend.upload_experiment_source,
-                          upload_tar_api_fun=self._backend.extract_experiment_source,
-                          warn_limit=100 * 1024 * 1024,
-                          experiment=self)
 
         self._execution_context.start(
             abort_callback=abort_callback,
@@ -1167,7 +1109,7 @@ class Experiment(object):
         self._backend.send_channels_values(self, channels_with_values)
 
     def _get_channels(self, channels_names_with_types):
-        existing_channels = self.get_channels()
+        existing_channels = self._backend.get_channels(self)
         channels_by_name = {}
         for (channel_name, channel_type) in channels_names_with_types:
             channel = existing_channels.get(channel_name, None)
@@ -1184,7 +1126,7 @@ class Experiment(object):
 
     def _find_channel(self, channel_name, channel_namespace):
         if channel_namespace == ChannelNamespace.USER:
-            return self.get_channels().get(channel_name, None)
+            return self._backend.get_channels(self).get(channel_name, None)
         elif channel_namespace == ChannelNamespace.SYSTEM:
             return self._get_system_channels().get(channel_name, None)
         else:

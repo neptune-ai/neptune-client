@@ -29,6 +29,7 @@ from functools import partial
 from http.client import NOT_FOUND  # pylint:disable=no-name-in-module
 from io import StringIO
 from itertools import groupby
+from typing import Dict
 
 import click
 import requests
@@ -54,9 +55,8 @@ from neptune.api_exceptions import (
     PathInProjectNotFound,
     ProjectNotFound,
 )
-from neptune.backend import Backend
+from neptune.backend import ApiClient
 from neptune.checkpoint import Checkpoint
-from neptune.internal.backends.client_config import ClientConfig
 from neptune.exceptions import (
     AlphaProjectException,
     CannotResolveHostname,
@@ -66,7 +66,9 @@ from neptune.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.experiments import Experiment
+from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
+from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
 from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
@@ -77,7 +79,7 @@ from neptune.utils import with_api_exceptions_handler, update_session_proxies
 _logger = logging.getLogger(__name__)
 
 
-class HostedNeptuneBackend(Backend):
+class HostedNeptuneApiClient(ApiClient):
 
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
@@ -320,6 +322,17 @@ class HostedNeptuneBackend(Backend):
             else:
                 raise
 
+    def upload_source_code(self, experiment, source_target_pairs):
+        upload_source_entries = [
+            UploadEntry(source_path, target_path)
+            for source_path, target_path in source_target_pairs
+        ]
+        upload_to_storage(upload_entries=upload_source_entries,
+                          upload_api_fun=self.upload_experiment_source,
+                          upload_tar_api_fun=self.extract_experiment_source,
+                          warn_limit=100 * 1024 * 1024,
+                          experiment=experiment)
+
     @with_api_exceptions_handler
     def get_notebook(self, project, notebook_id):
         try:
@@ -427,6 +440,24 @@ class HostedNeptuneBackend(Backend):
             )
 
     @with_api_exceptions_handler
+    def set_property(self, experiment, key, value):
+        properties = {p.key: p.value for p in self.get_experiment(experiment.internal_id).properties}
+        properties[key] = str(value)
+        return self.update_experiment(
+            experiment=experiment,
+            properties=properties
+        )
+
+    @with_api_exceptions_handler
+    def remove_property(self, experiment, key):
+        properties = {p.key: p.value for p in self.get_experiment(experiment.internal_id).properties}
+        del properties[key]
+        return self.update_experiment(
+            experiment=experiment,
+            properties=properties
+        )
+
+    @with_api_exceptions_handler
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         UpdateTagsParams = self.backend_swagger_client.get_model('UpdateTagsParams')
         try:
@@ -469,7 +500,7 @@ class HostedNeptuneBackend(Backend):
         )
 
     @with_api_exceptions_handler
-    def create_channel(self, experiment, name, channel_type):
+    def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         ChannelParams = self.backend_swagger_client.get_model('ChannelParams')
 
         try:
@@ -492,6 +523,25 @@ class HostedNeptuneBackend(Backend):
             raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
 
     @with_api_exceptions_handler
+    def get_channels(self, experiment) -> Dict[str, object]:
+        api_experiment = self.get_experiment(experiment.internal_id)
+        channels_last_values_by_name = dict((ch.channelName, ch) for ch in api_experiment.channelsLastValues)
+        channels = dict()
+        for ch in api_experiment.channels:
+            last_value = channels_last_values_by_name.get(ch.name, None)
+            if last_value is not None:
+                ch.x = last_value.x
+                ch.y = last_value.y
+            elif ch.lastX is not None:
+                ch.x = ch.lastX
+                ch.y = None
+            else:
+                ch.x = None
+                ch.y = None
+            channels[ch.name] = ch
+        return channels
+
+    @with_api_exceptions_handler
     def reset_channel(self, channel_id):
 
         try:
@@ -503,7 +553,7 @@ class HostedNeptuneBackend(Backend):
             raise ChannelNotFound(channel_id)
 
     @with_api_exceptions_handler
-    def create_system_channel(self, experiment, name, channel_type):
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         ChannelParams = self.backend_swagger_client.get_model('ChannelParams')
 
         try:
@@ -526,13 +576,13 @@ class HostedNeptuneBackend(Backend):
             raise ChannelAlreadyExists(channel_name=name, experiment_short_id=experiment.id)
 
     @with_api_exceptions_handler
-    def get_system_channels(self, experiment):
+    def get_system_channels(self, experiment) -> Dict[str, object]:
         try:
             channels = self.backend_swagger_client.api.getSystemChannels(
                 experimentId=experiment.internal_id,
             ).response().result
 
-            return channels
+            return {ch.name: ch for ch in channels}
         except HTTPNotFound:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
@@ -607,10 +657,10 @@ class HostedNeptuneBackend(Backend):
             ).response()
 
             return experiment
-        except HTTPNotFound:
+        except HTTPNotFound as e:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id) from e
         except HTTPUnprocessableEntity:
             raise ExperimentAlreadyFinished(experiment.id)
 
@@ -678,22 +728,46 @@ class HostedNeptuneBackend(Backend):
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
-    @handle_quota_limits
-    def upload_experiment_output(self, experiment, data, progress_indicator):
-        self._upload_loop(partial(self._upload_raw_data,
-                                  api_method=self.backend_swagger_client.api.uploadExperimentOutput),
-                          data=data,
-                          progress_indicator=progress_indicator,
-                          path_params={'experimentId': experiment.internal_id},
-                          query_params={})
+    def log_artifact(self, experiment, artifact, destination=None):
+        if isinstance(artifact, str):
+            if os.path.exists(artifact):
+                target_name = os.path.basename(artifact) if destination is None else destination
+                upload_entry = UploadEntry(os.path.abspath(artifact), normalize_file_name(target_name))
+            else:
+                raise FileNotFound(artifact)
+        elif hasattr(artifact, 'read'):
+            if destination is not None:
+                upload_entry = UploadEntry(artifact, normalize_file_name(destination))
+            else:
+                raise ValueError("destination is required for file streams")
+        else:
+            raise ValueError("Artifact must be a local path or an IO object")
 
-    @handle_quota_limits
-    def extract_experiment_output(self, experiment, data):
-        return self._upload_tar_data(
-            experiment=experiment,
-            api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
-            data=data
-        )
+        upload_to_storage(upload_entries=[upload_entry],
+                          upload_api_fun=self._upload_experiment_output,
+                          upload_tar_api_fun=self._extract_experiment_output,
+                          experiment=experiment)
+
+    def delete_artifacts(self, experiment, path):
+        if path is None:
+            raise ValueError("path argument must not be None")
+
+        paths = path
+        if not isinstance(path, list):
+            paths = [path]
+        for path in paths:
+            if path is None:
+                raise ValueError("path argument must not be None")
+            normalized_path = os.path.normpath(path)
+            if normalized_path.startswith(".."):
+                raise ValueError("path to delete must be within project's directory")
+            if normalized_path == "." or normalized_path == "/" or not normalized_path:
+                raise ValueError("Cannot delete whole artifacts directory")
+        try:
+            for path in paths:
+                self.rm_data(experiment=experiment, path=path)
+        except PathInProjectNotFound:
+            raise FileNotFound(path)
 
     @with_api_exceptions_handler
     def rm_data(self, experiment, path):
@@ -749,6 +823,23 @@ class HostedNeptuneBackend(Backend):
     @with_api_exceptions_handler
     def get_download_request(self, request_id):
         return self.backend_swagger_client.api.getDownloadRequest(id=request_id).response().result
+
+    @handle_quota_limits
+    def _upload_experiment_output(self, experiment, data, progress_indicator):
+        self._upload_loop(partial(self._upload_raw_data,
+                                  api_method=self.backend_swagger_client.api.uploadExperimentOutput),
+                          data=data,
+                          progress_indicator=progress_indicator,
+                          path_params={'experimentId': experiment.internal_id},
+                          query_params={})
+
+    @handle_quota_limits
+    def _extract_experiment_output(self, experiment, data):
+        return self._upload_tar_data(
+            experiment=experiment,
+            api_method=self.backend_swagger_client.api.uploadExperimentOutputAsTarstream,
+            data=data
+        )
 
     @staticmethod
     def _get_all_items(get_portion, step):
@@ -929,12 +1020,14 @@ class HostedNeptuneBackend(Backend):
             ssl_verify,
             proxies)
 
+    @staticmethod
+    def _get_client_config_args(api_token):
+        return dict(X_Neptune_Api_Token=api_token)
+
     @with_api_exceptions_handler
     def _create_client_config(self, api_token, backend_client):
-        config = backend_client.api.getClientConfig(X_Neptune_Api_Token=api_token).response().result
-        min_recommended = None
-        min_compatible = None
-        max_compatible = None
+        client_config_args = self._get_client_config_args(api_token)
+        config = backend_client.api.getClientConfig(**client_config_args).response().result
 
         if hasattr(config, "pyLibVersions"):
             min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
@@ -1000,6 +1093,9 @@ class HostedNeptuneBackend(Backend):
             else:
                 raise CannotResolveHostname(host)
 
+
+# define deprecated HostedNeptuneBackend class
+HostedNeptuneBackend = HostedNeptuneApiClient
 
 uuid_format = SwaggerFormat(format='uuid', to_python=lambda x: x,
                             to_wire=lambda x: x, validate=lambda x: None, description='')

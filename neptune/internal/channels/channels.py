@@ -16,18 +16,26 @@
 import time
 from collections import namedtuple
 from enum import Enum
+from typing import List
+
+from neptune.exceptions import NeptuneException
 
 ChannelNameWithTypeAndNamespace = namedtuple(
     "ChannelNameWithType",
     ['channel_id', 'channel_name', 'channel_type', 'channel_namespace']
 )
-ChannelIdWithValues = namedtuple('ChannelIdWithValues', ['channel_id', 'channel_values'])
 
 
 class ChannelType(Enum):
     TEXT = 'text'
     NUMERIC = 'numeric'
     IMAGE = 'image'
+
+
+class ChannelValueType(Enum):
+    TEXT_VALUE = 'text_value'
+    NUMERIC_VALUE = 'numeric_value'
+    IMAGE_VALUE = 'image_value'
 
 
 class ChannelNamespace(Enum):
@@ -56,6 +64,23 @@ class ChannelValue(object):
     def y(self):
         return self._y
 
+    @property
+    def value(self):
+        return self.y.get(self.value_type.value)
+
+    @property
+    def value_type(self) -> ChannelValueType:
+        """We expect that exactly one of `y` values is not None, and according to that we try to determine value type"""
+        unique_channel_value_types = set([
+            ch_value_type for ch_value_type in ChannelValueType if self.y.get(ch_value_type.value) is not None
+        ])
+        if len(unique_channel_value_types) > 1:
+            raise NeptuneException(f'There are mixed value types in {self}')
+        if not unique_channel_value_types:
+            raise NeptuneException(f"Can't determine type of {self}")
+
+        return next(iter(unique_channel_value_types))
+
     def __str__(self):
         return 'ChannelValue(x={},y={},ts={})'.format(self.x, self.y, self.ts)
 
@@ -65,5 +90,34 @@ class ChannelValue(object):
     def __eq__(self, o):
         return self.__dict__ == o.__dict__
 
-    def __ne__(self, o):
-        return not self.__eq__(o)
+
+class ChannelIdWithValues:
+    def __init__(self, channel_id, channel_values):
+        self._channel_id = channel_id
+        self._channel_values = channel_values
+
+    @property
+    def channel_id(self) -> str:
+        return self._channel_id
+
+    @property
+    def channel_values(self) -> List[ChannelValue]:
+        return self._channel_values
+
+    @property
+    def channel_type(self) -> ChannelValueType:
+        unique_channel_value_types = set([
+            ch_val.value_type for ch_val in self.channel_values
+        ])
+        if len(unique_channel_value_types) > 1:
+            raise NeptuneException(f'There are mixed value types in this channel: {self.channel_id}')
+        if not unique_channel_value_types:
+            raise NeptuneException(f"Can't determine type of channel: {self.channel_id}")
+
+        return next(iter(unique_channel_value_types))
+
+    def __eq__(self, other):
+        return self.channel_id == other.channel_id and self.channel_values == other.channel_values
+
+    def __gt__(self, other):
+        return hash(self.channel_id) < hash(other.channel_id)

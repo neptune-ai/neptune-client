@@ -268,8 +268,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.executeOperations(**kwargs).response().result
             return [MetadataInconsistency(err.errorDescription) for err in result]
-        except HTTPNotFound:
-            raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
+        except HTTPNotFound as e:
+            raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid) from e
 
     @with_api_exceptions_handler
     def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:

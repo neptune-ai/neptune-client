@@ -15,6 +15,7 @@
 #
 from typing import Optional
 
+from neptune.alpha import types
 from neptune.alpha.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
 from neptune.alpha.exceptions import NeptuneUninitializedException
 from neptune.alpha.experiment import Experiment

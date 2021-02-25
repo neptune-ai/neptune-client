@@ -15,12 +15,15 @@
 #
 
 from abc import ABCMeta, abstractmethod, abstractproperty
+from typing import Dict
 
 import six
 
+from neptune.model import ChannelWithLastValue
+
 
 @six.add_metaclass(ABCMeta)
-class Backend(object):
+class ApiClient(object):
 
     @abstractproperty
     def api_address(self):
@@ -66,6 +69,10 @@ class Backend(object):
         pass
 
     @abstractmethod
+    def upload_source_code(self, experiment, source_target_pairs):
+        pass
+
+    @abstractmethod
     def get_notebook(self, project, notebook_id):
         pass
 
@@ -90,6 +97,14 @@ class Backend(object):
         pass
 
     @abstractmethod
+    def set_property(self, experiment, key, value):
+        pass
+
+    @abstractmethod
+    def remove_property(self, experiment, key):
+        pass
+
+    @abstractmethod
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         pass
 
@@ -102,7 +117,11 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def create_channel(self, experiment, name, channel_type):
+    def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+        pass
+
+    @abstractmethod
+    def get_channels(self, experiment) -> Dict[str, object]:
         pass
 
     @abstractmethod
@@ -110,11 +129,11 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def create_system_channel(self, experiment, name, channel_type):
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         pass
 
     @abstractmethod
-    def get_system_channels(self, experiment):
+    def get_system_channels(self, experiment) -> Dict[str, object]:
         pass
 
     @abstractmethod
@@ -142,11 +161,11 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def upload_experiment_output(self, experiment, data, progress_indicator):
+    def log_artifact(self, experiment, artifact, destination=None):
         pass
 
     @abstractmethod
-    def extract_experiment_output(self, experiment, data):
+    def delete_artifacts(self, experiment, path):
         pass
 
     @abstractmethod

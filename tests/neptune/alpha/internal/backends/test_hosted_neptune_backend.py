@@ -27,6 +27,7 @@ from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptune
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import UploadFile, AssignString, LogFloats, UploadFileContent
 from neptune.alpha.internal.utils import base64_encode
+from tests.neptune.alpha.backend_test_mixin import BackendTestMixin
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
@@ -39,7 +40,7 @@ credentials = Credentials(API_TOKEN)
 @patch('bravado.client.SwaggerClient.from_url')
 @patch('platform.platform', new=lambda: 'testPlatform')
 @patch('platform.python_version', new=lambda: '3.9.test')
-class TestHostedNeptuneBackend(unittest.TestCase):
+class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
     # pylint:disable=protected-access
 
     @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attribute')
@@ -232,25 +233,3 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         # expect
         with self.assertRaises(CannotResolveHostname):
             HostedNeptuneBackend(credentials)
-
-    @staticmethod
-    def _get_swagger_client_mock(
-            swagger_client_factory,
-            min_recommended=None,
-            min_compatible=None,
-            max_compatible=None):
-        py_lib_versions = type('py_lib_versions', (object,), {})()
-        setattr(py_lib_versions, "minRecommendedVersion", min_recommended)
-        setattr(py_lib_versions, "minCompatibleVersion", min_compatible)
-        setattr(py_lib_versions, "maxCompatibleVersion", max_compatible)
-
-        client_config = type('client_config_response_result', (object,), {})()
-        setattr(client_config, "pyLibVersions", py_lib_versions)
-        setattr(client_config, "apiUrl", "ui.neptune.ai")
-        setattr(client_config, "applicationUrl", "ui.neptune.ai")
-
-        swagger_client = MagicMock()
-        swagger_client.api.getClientConfig.return_value.response.return_value.result = client_config
-        swagger_client_factory.return_value = swagger_client
-
-        return swagger_client

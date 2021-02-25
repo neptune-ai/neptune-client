@@ -21,13 +21,13 @@ from neptune import constants
 from neptune import envs
 from neptune.exceptions import NeptuneMissingProjectQualifiedNameException, NeptuneUninitializedException, \
     InvalidNeptuneBackend
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.backends.offline_backend import OfflineBackend
+from neptune.internal.backends import backend_factory
 from neptune.projects import Project
 from neptune.sessions import Session
 from ._version import get_versions
 
-__version__ = "1.0.0" #get_versions()['version']
+__version__ = "1.0.0"  # get_versions()['version']
+
 del get_versions
 
 session = None
@@ -83,10 +83,10 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneBackend
-                neptune.init(backend=HostedNeptuneBackend(proxies=...))
+                from neptune import HostedNeptuneApiClient
+                neptune.init(backend=HostedNeptuneApiClient(proxies=...))
 
-        backend (:class:`~neptune.Backend`, optional, default is ``None``):
+        backend (:class:`~neptune.ApiClient`, optional, default is ``None``):
             By default, Neptune client library sends logs, metrics, images, etc to Neptune servers:
             either publicly available SaaS, or an on-premises installation.
 
@@ -94,19 +94,19 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneBackend
-                neptune.init(backend=HostedNeptuneBackend(...))
+                from neptune import HostedNeptuneApiClient
+                neptune.init(backend=HostedNeptuneApiClient(...))
 
-            Passing an instance of :class:`~neptune.OfflineBackend` makes your code run without communicating
+            Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
             with Neptune servers.
 
             .. code :: python3
 
-                from neptune import OfflineBackend
-                neptune.init(backend=OfflineBackend())
+                from neptune import OfflineApiClient
+                neptune.init(backend=OfflineApiClient())
 
             .. note::
-                Instead of passing a ``neptune.OfflineBackend`` instance as ``backend``, you can set an
+                Instead of passing a ``neptune.OfflineApiClient`` instance as ``backend``, you can set an
                 environment variable ``NEPTUNE_BACKEND=offline`` to override the default behaviour.
 
     Returns:
@@ -131,11 +131,12 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             neptune.init('jack/sandbox')
 
             # running offline
-            neptune.init(backend=neptune.OfflineBackend())
+            neptune.init(backend=neptune.OfflineApiClient())
     """
 
-    if project_qualified_name is None:
-        project_qualified_name = os.getenv(envs.PROJECT_ENV_NAME)
+    project_qualified_name = project_qualified_name or os.getenv(envs.PROJECT_ENV_NAME)
+    if not project_qualified_name:
+        raise NeptuneMissingProjectQualifiedNameException()
 
     # pylint: disable=global-statement
     with __lock:
@@ -143,20 +144,13 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
         if backend is None:
             backend_name = os.getenv(envs.BACKEND)
-            if backend_name == 'offline':
-                backend = OfflineBackend()
-
-            elif backend_name is None:
-                backend = HostedNeptuneBackend(api_token, proxies)
-
-            else:
-                raise InvalidNeptuneBackend(backend_name)
+            backend = backend_factory(
+                backend_name=backend_name,
+                api_token=api_token,
+                proxies=proxies,
+            )
 
         session = Session(backend=backend)
-
-        if project_qualified_name is None:
-            raise NeptuneMissingProjectQualifiedNameException()
-
         project = session.get_project(project_qualified_name)
 
         return project

@@ -41,6 +41,7 @@ class TestProject(unittest.TestCase):
         self.current_directory = os.getcwd()
 
     def tearDown(self):
+        # revert initial directory after changing location in tests
         os.chdir(self.current_directory)
 
     def test_get_members(self):
@@ -241,10 +242,13 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
-            "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
-        })
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            set(source_target_pairs_targets) == {"CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"}
+        )
 
     def test_create_experiment_with_absolute_upload_sources(self):
         # skip if
@@ -264,10 +268,13 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
-            "CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"
-        })
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            set(source_target_pairs_targets) == {"CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"}
+        )
 
     def test_create_experiment_with_upload_single_sources(self):
         # given
@@ -282,10 +289,13 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
-            "test_project.py"
-        })
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            set(source_target_pairs_targets) == {"test_project.py"}
+        )
 
     def test_create_experiment_with_common_path_below_current_directory(self):
         # given
@@ -298,11 +308,15 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        anExperiment._start.assert_called_once()
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
         self.assertTrue(
-            anExperiment._start.call_args[1]['upload_source_entries'][0].target_path.startswith('tests/neptune/'))
+            all(target_p.startswith('tests/neptune/') for target_p in source_target_pairs_targets)
+        )
 
-    @patch('neptune.projects.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.internal.utils.source_code.glob', new=lambda path: [path.replace('*', 'file.txt')])
     @patch('neptune.projects.os.path', new=ntpath)
     @patch('neptune.internal.storage.storage_utils.os.sep', new=ntpath.sep)
     def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(self):
@@ -318,10 +332,13 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        anExperiment._start.assert_called_once()
-        self.assertTrue({entry.target_path for entry in anExperiment._start.call_args[1]['upload_source_entries']} == {
-            'c:/test1/file.txt', 'd:/test2/file.txt'
-        })
+        self.backend.upload_source_code.assert_called_once()
+        source_target_pairs_targets = [
+            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+        ]
+        self.assertTrue(
+            set(source_target_pairs_targets) == {'c:/test1/file.txt', 'd:/test2/file.txt'}
+        )
 
 if __name__ == '__main__':
     unittest.main()
