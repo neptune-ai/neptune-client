@@ -22,6 +22,7 @@ from neptune import envs
 from neptune.exceptions import NeptuneMissingProjectQualifiedNameException, NeptuneUninitializedException, \
     InvalidNeptuneApiClient
 from neptune.internal.api_clients import api_client_factory
+from neptune.internal.utils.deprecated_backend_name_compatibility import get_api_client_value
 from neptune.projects import Project
 from neptune.sessions import Session
 from ._version import get_versions
@@ -48,7 +49,7 @@ You can pass this value as api_token during init() call, either by an environmen
 ANONYMOUS_API_TOKEN = constants.ANONYMOUS_API_TOKEN
 
 
-def init(project_qualified_name=None, api_token=None, proxies=None, api_client=None):
+def init(project_qualified_name=None, api_token=None, proxies=None, api_client=None, backend=None):
     """Initialize `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with
     specific project.
 
@@ -109,6 +110,10 @@ def init(project_qualified_name=None, api_token=None, proxies=None, api_client=N
                 Instead of passing a ``neptune.OfflineApiClient`` instance as ``api_client``, you can set an
                 environment variable ``NEPTUNE_BACKEND=offline`` to override the default behaviour.
 
+        backend (:class:`~neptune.ApiClient`, optional, default is ``None``):
+            Deprecated variable renamed to `api_client`.
+            Attribute is left here for keeping backward compatibility.
+
     Returns:
         :class:`~neptune.projects.Project` object that is used to create or list experiments, notebooks, etc.
 
@@ -133,6 +138,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, api_client=N
             # running offline
             neptune.init(api_client=neptune.OfflineApiClient())
     """
+    api_client = get_api_client_value(api_client=api_client, backend=backend)
 
     project_qualified_name = project_qualified_name or os.getenv(envs.PROJECT_ENV_NAME)
     if not project_qualified_name:

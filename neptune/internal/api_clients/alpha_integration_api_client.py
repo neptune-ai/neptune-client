@@ -27,7 +27,8 @@ from bravado.exception import HTTPNotFound
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
-from neptune.alpha.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient as AlphaHostedNeptuneBackend
+from neptune.alpha.internal.api_clients.hosted_neptune_api_client import \
+    HostedNeptuneApiClient as AlphaHostedNeptuneApiClient
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
 from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
@@ -78,7 +79,7 @@ LegacyExperiment = namedtuple(
 class AlphaIntegrationApiClient(HostedNeptuneApiClient):
     def __init__(self, api_token=None, proxies=None):
         super().__init__(api_token, proxies)
-        self._alpha_api_client = AlphaHostedNeptuneBackend(AlphaCredentials(api_token=api_token))
+        self._alpha_api_client = AlphaHostedNeptuneApiClient(AlphaCredentials(api_token=api_token))
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):

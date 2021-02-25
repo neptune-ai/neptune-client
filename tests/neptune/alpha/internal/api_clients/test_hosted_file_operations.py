@@ -21,8 +21,14 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 import mock
 from mock import MagicMock, patch
 
-from neptune.alpha.internal.api_clients.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
-    download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, download_zip
+from neptune.alpha.internal.api_clients.hosted_file_operations import (
+    _attribute_upload_response_handler,
+    _get_content_disposition_filename,
+    download_file_attribute,
+    download_zip,
+    upload_file_attribute,
+    upload_file_set_attribute,
+)
 from neptune.utils import IS_WINDOWS
 
 

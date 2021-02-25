@@ -18,6 +18,7 @@ import logging
 import re
 from collections import OrderedDict
 
+from neptune import get_api_client_value
 from neptune.api_exceptions import ProjectNotFound
 from neptune.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
 from neptune.exceptions import NeptuneIncorrectProjectQualifiedNameException
@@ -80,6 +81,10 @@ class Session(object):
                 from neptune import Session, HostedNeptuneApiClient
                 session = Session(api_client=HostedNeptuneApiClient(proxies=...))
 
+        backend (:class:`~neptune.ApiClient`, optional, default is ``None``):
+            Deprecated variable renamed to `api_client`.
+            Attribute is left here for keeping backward compatibility.
+
     Examples:
 
         Create session, assuming you have created an environment variable ``NEPTUNE_API_TOKEN``
@@ -104,7 +109,9 @@ class Session(object):
             session = Session(api_client=OfflineApiClient())
 
     """
-    def __init__(self, api_token=None, proxies=None, api_client=None):
+    def __init__(self, api_token=None, proxies=None, api_client=None, backend=None):
+        api_client = get_api_client_value(api_client=api_client, backend=backend)
+
         self._api_client = api_client
 
         if self._api_client is None:
