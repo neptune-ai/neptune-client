@@ -69,7 +69,6 @@ from neptune.experiments import Experiment
 from neptune.internal.backends.client_config import ClientConfig
 from neptune.internal.backends.credentials import Credentials
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
-from neptune.internal.utils.deprecated_backend_name_compatibility import DeprecatedBackendMixin
 from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
@@ -1095,9 +1094,8 @@ class HostedNeptuneApiClient(ApiClient):
                 raise CannotResolveHostname(host)
 
 
-class HostedNeptuneBackend(DeprecatedBackendMixin, HostedNeptuneApiClient):
-    recommended_class = HostedNeptuneApiClient
-
+# define deprecated HostedNeptuneBackend class
+HostedNeptuneBackend = HostedNeptuneApiClient
 
 uuid_format = SwaggerFormat(format='uuid', to_python=lambda x: x,
                             to_wire=lambda x: x, validate=lambda x: None, description='')

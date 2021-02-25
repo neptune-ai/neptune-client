@@ -17,7 +17,6 @@ import logging
 from io import StringIO
 
 from neptune.backend import ApiClient
-from neptune.internal.utils.deprecated_backend_name_compatibility import DeprecatedBackendMixin
 
 _logger = logging.getLogger(__name__)
 
@@ -164,5 +163,5 @@ class NoopObject(object):
         pass
 
 
-class OfflineBackend(DeprecatedBackendMixin, OfflineApiClient):
-    recommended_class = OfflineApiClient
+# define deprecated OfflineBackend class
+OfflineBackend = OfflineApiClient
