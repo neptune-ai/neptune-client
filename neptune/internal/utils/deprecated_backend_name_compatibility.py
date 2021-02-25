@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2021, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,17 @@
 # limitations under the License.
 #
 
-from neptune.internal.backends.alpha_integration_backend import AlphaIntegrationApiClient
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
-from neptune.internal.backends.offline_backend import OfflineApiClient
-from neptune.internal.backends.backend_factory import backend_factory
+import logging
+
+_logger = logging.getLogger(__name__)
+
+
+class DeprecatedBackendMixin:
+    recommended_class = None
+
+    def __init__(self, *args, **kwargs):
+        assert self.recommended_class is not None
+        _logger.warning(f"`{type(self).__name__}` is deprecated."
+                        f" Use `{self.recommended_class.__name__}` instead.")
+
+        super().__init__(*args, **kwargs)

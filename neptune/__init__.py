@@ -83,10 +83,10 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneBackend
-                neptune.init(backend=HostedNeptuneBackend(proxies=...))
+                from neptune import HostedNeptuneApiClient
+                neptune.init(backend=HostedNeptuneApiClient(proxies=...))
 
-        backend (:class:`~neptune.Backend`, optional, default is ``None``):
+        backend (:class:`~neptune.ApiClient`, optional, default is ``None``):
             By default, Neptune client library sends logs, metrics, images, etc to Neptune servers:
             either publicly available SaaS, or an on-premises installation.
 
@@ -94,19 +94,19 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneBackend
-                neptune.init(backend=HostedNeptuneBackend(...))
+                from neptune import HostedNeptuneApiClient
+                neptune.init(backend=HostedNeptuneApiClient(...))
 
-            Passing an instance of :class:`~neptune.OfflineBackend` makes your code run without communicating
+            Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
             with Neptune servers.
 
             .. code :: python3
 
-                from neptune import OfflineBackend
-                neptune.init(backend=OfflineBackend())
+                from neptune import OfflineApiClient
+                neptune.init(backend=OfflineApiClient())
 
             .. note::
-                Instead of passing a ``neptune.OfflineBackend`` instance as ``backend``, you can set an
+                Instead of passing a ``neptune.OfflineApiClient`` instance as ``backend``, you can set an
                 environment variable ``NEPTUNE_BACKEND=offline`` to override the default behaviour.
 
     Returns:
@@ -131,7 +131,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             neptune.init('jack/sandbox')
 
             # running offline
-            neptune.init(backend=neptune.OfflineBackend())
+            neptune.init(backend=neptune.OfflineApiClient())
     """
 
     project_qualified_name = project_qualified_name or os.getenv(envs.PROJECT_ENV_NAME)

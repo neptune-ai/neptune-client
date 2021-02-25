@@ -27,7 +27,7 @@ from bravado.exception import HTTPNotFound
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
-from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneBackend
+from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneApiClient
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
 from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
@@ -39,7 +39,7 @@ from neptune.api_exceptions import (
 )
 from neptune.exceptions import STYLES, NeptuneException, FileNotFound
 from neptune.experiments import Experiment
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
@@ -75,10 +75,10 @@ LegacyExperiment = namedtuple(
     'parameters')
 
 
-class AlphaIntegrationBackend(HostedNeptuneBackend):
+class AlphaIntegrationApiClient(HostedNeptuneApiClient):
     def __init__(self, api_token=None, proxies=None):
         super().__init__(api_token, proxies)
-        self._alpha_backend = AlphaHostedNeptuneBackend(AlphaCredentials(api_token=api_token))
+        self._alpha_backend = AlphaHostedNeptuneApiClient(AlphaCredentials(api_token=api_token))
 
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):

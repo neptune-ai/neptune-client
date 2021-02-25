@@ -21,7 +21,7 @@ import mock
 from mock import call, MagicMock
 
 from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
 from tests.neptune.api_models import ApiParameter
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
@@ -39,7 +39,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.13')
 
         # expect
-        HostedNeptuneBackend(api_token=API_TOKEN)
+        HostedNeptuneApiClient(api_token=API_TOKEN)
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.__version__', '0.5.13')
@@ -49,7 +49,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(UnsupportedClientVersion) as ex:
-            HostedNeptuneBackend(api_token=API_TOKEN)
+            HostedNeptuneApiClient(api_token=API_TOKEN)
 
         self.assertTrue("Please install neptune-client>=0.5.14" in str(ex.exception))
 
@@ -60,7 +60,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.13')
 
         # expect
-        HostedNeptuneBackend(api_token=API_TOKEN)
+        HostedNeptuneApiClient(api_token=API_TOKEN)
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.__version__', '0.5.13')
@@ -70,7 +70,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(UnsupportedClientVersion) as ex:
-            HostedNeptuneBackend(api_token=API_TOKEN)
+            HostedNeptuneApiClient(api_token=API_TOKEN)
 
         self.assertTrue("Please install neptune-client==0.5.12" in str(ex.exception))
 
@@ -86,7 +86,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         uuid4.return_value = some_uuid
 
         # and
-        backend = HostedNeptuneBackend(api_token=API_TOKEN)
+        backend = HostedNeptuneApiClient(api_token=API_TOKEN)
 
         # and
         some_object = SomeClass()
@@ -126,7 +126,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self._get_swagger_client_mock(swagger_client_factory)
 
         # when
-        backend = HostedNeptuneBackend()
+        backend = HostedNeptuneApiClient()
 
         # then
         self.assertEqual(API_TOKEN, backend.credentials.api_token)
@@ -137,7 +137,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self._get_swagger_client_mock(swagger_client_factory)
 
         # when
-        session = HostedNeptuneBackend(API_TOKEN)
+        session = HostedNeptuneApiClient(API_TOKEN)
 
         # then
         self.assertEqual(API_TOKEN, session.credentials.api_token)
@@ -152,7 +152,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(DeprecatedApiToken):
-            HostedNeptuneBackend(token)
+            HostedNeptuneApiClient(token)
 
     @mock.patch('socket.gethostbyname')
     def test_cannot_resolve_host(self, gethostname_mock):
@@ -164,7 +164,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(CannotResolveHostname):
-            HostedNeptuneBackend(token)
+            HostedNeptuneApiClient(token)
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.__version__', '0.5.13')
@@ -172,7 +172,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
         experiment = mock.MagicMock()
-        backend = HostedNeptuneBackend(API_TOKEN)
+        backend = HostedNeptuneApiClient(API_TOKEN)
         backend.rm_data = mock.MagicMock()
 
         # and
