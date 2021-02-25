@@ -19,7 +19,7 @@ import re
 from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
 from neptune.exceptions import NeptuneIncorrectProjectQualifiedNameException
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
@@ -33,7 +33,7 @@ class Session(object):
     In order to query Neptune experiments you need to instantiate this object first.
 
     Args:
-        backend (:class:`~neptune.backend.Backend`, optional, default is ``None``):
+        backend (:class:`~neptune.backend.ApiClient`, optional, default is ``None``):
             By default, Neptune client library sends logs, metrics, images, etc to Neptune servers:
             either publicly available SaaS, or an on-premises installation.
 
@@ -41,16 +41,16 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session, HostedNeptuneBackend
-                session = Session(backend=HostedNeptuneBackend(...))
+                from neptune import Session, HostedNeptuneApiClient
+                session = Session(backend=HostedNeptuneApiClient(...))
 
-            Passing an instance of :class:`~neptune.OfflineBackend` makes your code run without communicating
+            Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
             with Neptune servers.
 
             .. code :: python3
 
-                from neptune import Session, OfflineBackend
-                session = Session(backend=OfflineBackend())
+                from neptune import Session, OfflineApiClient
+                session = Session(backend=OfflineApiClient())
 
         api_token (:obj:`str`, optional, default is ``None``):
             User's API token. If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
@@ -77,8 +77,8 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session, HostedNeptuneBackend
-                session = Session(backend=HostedNeptuneBackend(proxies=...))
+                from neptune import Session, HostedNeptuneApiClient
+                session = Session(backend=HostedNeptuneApiClient(proxies=...))
 
     Examples:
 
@@ -100,8 +100,8 @@ class Session(object):
 
         .. code:: python3
 
-            from neptune import Session, OfflineBackend
-            session = Session(backend=OfflineBackend())
+            from neptune import Session, OfflineApiClient
+            session = Session(backend=OfflineApiClient())
 
     """
     def __init__(self, api_token=None, proxies=None, backend=None):
@@ -112,7 +112,7 @@ class Session(object):
                             'and will be removed in future versions. For current behaviour '
                             'use `neptune.init(...)` or `Session.with_default_backend(...)')
 
-            self._backend = HostedNeptuneBackend(api_token, proxies)
+            self._backend = HostedNeptuneApiClient(api_token, proxies)
 
     @classmethod
     def with_default_backend(cls, api_token=None):
@@ -131,7 +131,7 @@ class Session(object):
                 session = Session.with_default_backend()
 
         """
-        return cls(backend=HostedNeptuneBackend(api_token))
+        return cls(backend=HostedNeptuneApiClient(api_token))
 
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.

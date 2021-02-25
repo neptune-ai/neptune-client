@@ -42,7 +42,7 @@ class Project(object):
     """A class for storing information and managing Neptune project.
 
     Args:
-        backend (:class:`~neptune.Backend`, required): A Backend object.
+        backend (:class:`~neptune.ApiClient`, required): A ApiClient object.
         internal_id (:obj:`str`, required): UUID of the project.
         namespace (:obj:`str`, required): It can either be your workspace or user name.
         name (:obj:`str`, required): project name.

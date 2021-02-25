@@ -55,7 +55,7 @@ from neptune.api_exceptions import (
     PathInProjectNotFound,
     ProjectNotFound,
 )
-from neptune.backend import Backend
+from neptune.backend import ApiClient
 from neptune.checkpoint import Checkpoint
 from neptune.exceptions import (
     AlphaProjectException,
@@ -79,7 +79,7 @@ from neptune.utils import with_api_exceptions_handler, update_session_proxies
 _logger = logging.getLogger(__name__)
 
 
-class HostedNeptuneBackend(Backend):
+class HostedNeptuneApiClient(ApiClient):
 
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
@@ -1093,6 +1093,9 @@ class HostedNeptuneBackend(Backend):
             else:
                 raise CannotResolveHostname(host)
 
+
+# define deprecated HostedNeptuneBackend class
+HostedNeptuneBackend = HostedNeptuneApiClient
 
 uuid_format = SwaggerFormat(format='uuid', to_python=lambda x: x,
                             to_wire=lambda x: x, validate=lambda x: None, description='')

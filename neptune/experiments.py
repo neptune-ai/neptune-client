@@ -49,7 +49,7 @@ class Experiment(object):
 
 
     Args:
-        backend (:obj:`neptune.Backend`): A Backend object
+        backend (:obj:`neptune.ApiClient`): A ApiClient object
         project (:obj:`neptune.Project`): The project this experiment belongs to
         _id (:obj:`str`): Experiment id
         internal_id (:obj:`str`): internal UUID
@@ -780,7 +780,7 @@ class Experiment(object):
         if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
             ssl_verify = False
 
-        # We do not use Backend here cause `downloadUrl` can be any url (not only Neptune API endpoint)
+        # We do not use ApiClient here cause `downloadUrl` can be any url (not only Neptune API endpoint)
         response = requests.get(
             url=download_request.downloadUrl,
             headers={"Accept": "application/zip"},

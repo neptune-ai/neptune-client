@@ -16,12 +16,12 @@
 import logging
 from io import StringIO
 
-from neptune.backend import Backend
+from neptune.backend import ApiClient
 
 _logger = logging.getLogger(__name__)
 
 
-class OfflineBackend(Backend):
+class OfflineApiClient(ApiClient):
 
     def __init__(self):
         _logger.warning('Neptune is running in offline mode. No data is being logged to Neptune.')
@@ -161,3 +161,7 @@ class NoopObject(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
+
+
+# define deprecated OfflineBackend class
+OfflineBackend = OfflineApiClient
