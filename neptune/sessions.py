@@ -19,7 +19,7 @@ import re
 from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
 from neptune.exceptions import NeptuneIncorrectProjectQualifiedNameException
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
@@ -33,28 +33,28 @@ class Session(object):
     In order to query Neptune experiments you need to instantiate this object first.
 
     Args:
-        backend (:class:`~neptune.backend.Backend`, optional, default is ``None``):
+        api_client (:class:`~neptune.api_client.ApiClient`, optional, default is ``None``):
             By default, Neptune client library sends logs, metrics, images, etc to Neptune servers:
             either publicly available SaaS, or an on-premises installation.
 
-            You can pass the default backend instance explicitly to specify its parameters:
+            You can pass the default api_client instance explicitly to specify its parameters:
 
             .. code :: python3
 
-                from neptune import Session, HostedNeptuneBackend
-                session = Session(backend=HostedNeptuneBackend(...))
+                from neptune import Session, HostedNeptuneApiClient
+                session = Session(api_client=HostedNeptuneApiClient(...))
 
-            Passing an instance of :class:`~neptune.OfflineBackend` makes your code run without communicating
+            Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
             with Neptune servers.
 
             .. code :: python3
 
-                from neptune import Session, OfflineBackend
-                session = Session(backend=OfflineBackend())
+                from neptune import Session, OfflineApiClient
+                session = Session(api_client=OfflineApiClient())
 
         api_token (:obj:`str`, optional, default is ``None``):
             User's API token. If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
-            Parameter is ignored if ``backend`` is passed.
+            Parameter is ignored if ``api_client`` is passed.
 
             .. deprecated :: 0.4.4
 
@@ -63,13 +63,13 @@ class Session(object):
             .. code :: python3
 
                 from neptune import Session
-                session = Session.with_default_backend(api_token='...')
+                session = Session.with_default_api_client(api_token='...')
 
         proxies (:obj:`str`, optional, default is ``None``):
             Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_ library.
             For more information see their proxies
             `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
-            Parameter is ignored if ``backend`` is passed.
+            Parameter is ignored if ``api_client`` is passed.
 
             .. deprecated :: 0.4.4
 
@@ -77,8 +77,8 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session, HostedNeptuneBackend
-                session = Session(backend=HostedNeptuneBackend(proxies=...))
+                from neptune import Session, HostedNeptuneApiClient
+                session = Session(api_client=HostedNeptuneApiClient(proxies=...))
 
     Examples:
 
@@ -87,35 +87,35 @@ class Session(object):
         .. code:: python3
 
             from neptune import Session
-            session = Session.with_default_backend()
+            session = Session.with_default_api_client()
 
         Create session and pass ``api_token``
 
         .. code:: python3
 
             from neptune import Session
-            session = Session.with_default_backend(api_token='...')
+            session = Session.with_default_api_client(api_token='...')
 
         Create an offline session
 
         .. code:: python3
 
-            from neptune import Session, OfflineBackend
-            session = Session(backend=OfflineBackend())
+            from neptune import Session, OfflineApiClient
+            session = Session(api_client=OfflineApiClient())
 
     """
-    def __init__(self, api_token=None, proxies=None, backend=None):
-        self._backend = backend
+    def __init__(self, api_token=None, proxies=None, api_client=None):
+        self._api_client = api_client
 
-        if self._backend is None:
-            _logger.warning('WARNING: Instantiating Session without specifying a backend is deprecated '
+        if self._api_client is None:
+            _logger.warning('WARNING: Instantiating Session without specifying a api_client is deprecated '
                             'and will be removed in future versions. For current behaviour '
-                            'use `neptune.init(...)` or `Session.with_default_backend(...)')
+                            'use `neptune.init(...)` or `Session.with_default_api_client(...)')
 
-            self._backend = HostedNeptuneBackend(api_token, proxies)
+            self._api_client = HostedNeptuneApiClient(api_token, proxies)
 
     @classmethod
-    def with_default_backend(cls, api_token=None):
+    def with_default_api_client(cls, api_token=None):
         """The simplest way to instantiate a ``Session``.
 
         Args:
@@ -128,10 +128,10 @@ class Session(object):
             .. code :: python3
 
                 from neptune import Session
-                session = Session.with_default_backend()
+                session = Session.with_default_api_client()
 
         """
-        return cls(backend=HostedNeptuneBackend(api_token))
+        return cls(api_client=HostedNeptuneApiClient(api_token))
 
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.
@@ -167,7 +167,7 @@ class Session(object):
         if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project_qualified_name):
             raise NeptuneIncorrectProjectQualifiedNameException(project_qualified_name)
 
-        return self._backend.get_project(project_qualified_name)
+        return self._api_client.get_project(project_qualified_name)
 
     def get_projects(self, namespace):
         """Get all projects that you have permissions to see in given workspace.
@@ -219,5 +219,8 @@ class Session(object):
                 #              ])
         """
 
-        projects = [Project(self._backend, p.id, namespace, p.name) for p in self._backend.get_projects(namespace)]
+        projects = [
+            Project(self._api_client, p.id, namespace, p.name)
+            for p in self._api_client.get_projects(namespace)
+        ]
         return OrderedDict((p.full_id, p) for p in projects)

@@ -23,7 +23,7 @@ from neptune.model import ChannelWithLastValue
 
 
 @six.add_metaclass(ABCMeta)
-class Backend(object):
+class ApiClient(object):
 
     @abstractproperty
     def api_address(self):

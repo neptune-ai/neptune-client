@@ -39,7 +39,7 @@ from neptune.api_exceptions import (
 )
 from neptune.exceptions import STYLES, NeptuneException, FileNotFound
 from neptune.experiments import Experiment
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
@@ -75,7 +75,7 @@ LegacyExperiment = namedtuple(
     'parameters')
 
 
-class AlphaIntegrationBackend(HostedNeptuneBackend):
+class AlphaIntegrationApiClient(HostedNeptuneApiClient):
     def __init__(self, api_token=None, proxies=None):
         super().__init__(api_token, proxies)
         self._alpha_backend = AlphaHostedNeptuneBackend(AlphaCredentials(api_token=api_token))
@@ -90,7 +90,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             project = response.result
 
             return Project(
-                backend=self,
+                api_client=self,
                 internal_id=project.id,
                 namespace=project.organizationName,
                 name=project.name)
@@ -453,7 +453,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
         )
 
     def _execute_alpha_operation(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
-        """Execute operations using alpha backend"""
+        """Execute operations using alpha api_client"""
         try:
             errors = self._alpha_backend.execute_operations(
                 experiment_uuid=uuid.UUID(experiment.internal_id),

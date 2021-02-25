@@ -283,13 +283,13 @@ You may also want to check the following docs pages:
         super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message.format(**inputs))
 
 
-class InvalidNeptuneBackend(NeptuneException):
-    def __init__(self, provided_backend_name):
-        super(InvalidNeptuneBackend, self).__init__(
+class InvalidNeptuneApiClient(NeptuneException):
+    def __init__(self, provided_api_client_name):
+        super(InvalidNeptuneApiClient, self).__init__(
             'Unknown {} "{}". '
             'Use this environment variable to modify neptune-client behaviour at runtime, '
             'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
-            .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
+            .format(envs.API_CLIENT, provided_api_client_name, envs.API_CLIENT))
 
 
 class DeprecatedApiToken(NeptuneException):

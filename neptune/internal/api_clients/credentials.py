@@ -42,7 +42,7 @@ class Credentials(object):
 
     Examples:
 
-        >>> from neptune.internal.backends.credentials import Credentials
+        >>> from neptune.internal.api_clients.credentials import Credentials
         >>> credentials=Credentials('YOUR_NEPTUNE_API_KEY')
 
         Alternatively you can create an environment variable by running:

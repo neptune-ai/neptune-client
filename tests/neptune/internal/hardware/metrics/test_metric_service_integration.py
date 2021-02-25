@@ -34,8 +34,8 @@ from neptune.utils import IS_MACOS
 
 class TestMetricServiceIntegration(unittest.TestCase):
     def setUp(self):
-        self.backend = MagicMock()
-        self.metric_service_factory = MetricServiceFactory(backend=self.backend, os_environ=os.environ)
+        self.api_client = MagicMock()
+        self.metric_service_factory = MetricServiceFactory(api_client=self.api_client, os_environ=os.environ)
 
     @unittest.skipIf(IS_MACOS, "MacOS behaves strangely")
     def test_create_system_metrics(self):
@@ -48,14 +48,14 @@ class TestMetricServiceIntegration(unittest.TestCase):
         # and
         cpu_metric_id = str(uuid.uuid4())
         ram_metric_id = str(uuid.uuid4())
-        self.backend.create_hardware_metric.side_effect = [cpu_metric_id, ram_metric_id]
+        self.api_client.create_hardware_metric.side_effect = [cpu_metric_id, ram_metric_id]
 
         # when
         self.metric_service_factory.create(
             gauge_mode=GaugeMode.SYSTEM, experiment=experiment, reference_timestamp=time.time())
 
         # then
-        self.backend.create_hardware_metric.assert_has_calls([
+        self.api_client.create_hardware_metric.assert_has_calls([
             call(
                 experiment,
                 Metric(
@@ -102,7 +102,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
         metric_service.report_and_send(timestamp=second_after_start)
 
         # then
-        self.backend.send_hardware_metric_reports.assert_called_once_with(
+        self.api_client.send_hardware_metric_reports.assert_called_once_with(
             experiment,
             metrics_container.metrics(),
             [

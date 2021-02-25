@@ -36,8 +36,11 @@ from tests.neptune.random_utils import a_string, a_string_list, a_uuid_string
 class TestProject(unittest.TestCase):
     def setUp(self):
         super(TestProject, self).setUp()
-        self.backend = MagicMock()
-        self.project = Project(backend=self.backend, internal_id=a_uuid_string(), namespace=a_string(), name=a_string())
+        self.api_client = MagicMock()
+        self.project = Project(api_client=self.api_client,
+                               internal_id=a_uuid_string(),
+                               namespace=a_string(),
+                               name=a_string())
         self.current_directory = os.getcwd()
 
     def tearDown(self):
@@ -50,13 +53,13 @@ class TestProject(unittest.TestCase):
         members = [a_registered_project_member(username) for username in member_usernames]
 
         # and
-        self.backend.get_project_members.return_value = members + [an_invited_project_member()]
+        self.api_client.get_project_members.return_value = members + [an_invited_project_member()]
 
         # when
         fetched_member_usernames = self.project.get_members()
 
         # then
-        self.backend.get_project_members.assert_called_once_with(self.project.internal_id)
+        self.api_client.get_project_members.assert_called_once_with(self.project.internal_id)
 
         # and
         self.assertEqual(member_usernames, fetched_member_usernames)
@@ -64,27 +67,27 @@ class TestProject(unittest.TestCase):
     def test_get_experiments_with_no_params(self):
         # given
         leaderboard_entries = [MagicMock() for _ in range(0, 2)]
-        self.backend.get_leaderboard_entries.return_value = leaderboard_entries
+        self.api_client.get_leaderboard_entries.return_value = leaderboard_entries
 
         # when
         experiments = self.project.get_experiments()
 
         # then
-        self.backend.get_leaderboard_entries.assert_called_once_with(
+        self.api_client.get_leaderboard_entries.assert_called_once_with(
             project=self.project,
             ids=None,
             states=None, owners=None, tags=None,
             min_running_time=None)
 
         # and
-        expected_experiments = [Experiment(self.backend, self.project, entry.id, entry.internal_id)
+        expected_experiments = [Experiment(self.api_client, self.project, entry.id, entry.internal_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_experiments_with_scalar_params(self):
         # given
         leaderboard_entries = [MagicMock() for _ in range(0, 2)]
-        self.backend.get_leaderboard_entries.return_value = leaderboard_entries
+        self.api_client.get_leaderboard_entries.return_value = leaderboard_entries
 
         # and
         params = dict(
@@ -102,17 +105,17 @@ class TestProject(unittest.TestCase):
             states=[params['state']], owners=[params['owner']], tags=[params['tag']],
             min_running_time=params['min_running_time']
         )
-        self.backend.get_leaderboard_entries.assert_called_once_with(**expected_params)
+        self.api_client.get_leaderboard_entries.assert_called_once_with(**expected_params)
 
         # and
-        expected_experiments = [Experiment(self.backend, self.project, entry.id, entry.internal_id)
+        expected_experiments = [Experiment(self.api_client, self.project, entry.id, entry.internal_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_experiments_with_list_params(self):
         # given
         leaderboard_entries = [MagicMock() for _ in range(0, 2)]
-        self.backend.get_leaderboard_entries.return_value = leaderboard_entries
+        self.api_client.get_leaderboard_entries.return_value = leaderboard_entries
 
         # and
         params = dict(
@@ -130,22 +133,22 @@ class TestProject(unittest.TestCase):
             states=params['state'], owners=params['owner'], tags=params['tag'],
             min_running_time=params['min_running_time']
         )
-        self.backend.get_leaderboard_entries.assert_called_once_with(**expected_params)
+        self.api_client.get_leaderboard_entries.assert_called_once_with(**expected_params)
 
         # and
-        expected_experiments = [Experiment(self.backend, self.project, entry.id, entry.internal_id)
+        expected_experiments = [Experiment(self.api_client, self.project, entry.id, entry.internal_id)
                                 for entry in leaderboard_entries]
         self.assertEqual(expected_experiments, experiments)
 
     def test_get_leaderboard(self):
         # given
-        self.backend.get_leaderboard_entries.return_value = [LeaderboardEntry(some_exp_entry_dto)]
+        self.api_client.get_leaderboard_entries.return_value = [LeaderboardEntry(some_exp_entry_dto)]
 
         # when
         leaderboard = self.project.get_leaderboard()
 
         # then
-        self.backend.get_leaderboard_entries.assert_called_once_with(
+        self.api_client.get_leaderboard_entries.assert_called_once_with(
             project=self.project,
             ids=None,
             states=None, owners=None, tags=None,
@@ -233,7 +236,7 @@ class TestProject(unittest.TestCase):
         os.chdir('tests/neptune')
         # and
         anExperiment = MagicMock()
-        self.backend.create_experiment.return_value = anExperiment
+        self.api_client.create_experiment.return_value = anExperiment
 
         # when
         self.project.create_experiment(upload_source_files=[
@@ -242,9 +245,9 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        self.backend.upload_source_code.assert_called_once()
+        self.api_client.upload_source_code.assert_called_once()
         source_target_pairs_targets = [
-            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+            target_p for source_p, target_p in self.api_client.upload_source_code.call_args[0][1]
         ]
         self.assertTrue(
             set(source_target_pairs_targets) == {"CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"}
@@ -259,7 +262,7 @@ class TestProject(unittest.TestCase):
         os.chdir('tests/neptune')
         # and
         anExperiment = MagicMock()
-        self.backend.create_experiment.return_value = anExperiment
+        self.api_client.create_experiment.return_value = anExperiment
 
         # when
         self.project.create_experiment(upload_source_files=[
@@ -268,9 +271,9 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        self.backend.upload_source_code.assert_called_once()
+        self.api_client.upload_source_code.assert_called_once()
         source_target_pairs_targets = [
-            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+            target_p for source_p, target_p in self.api_client.upload_source_code.call_args[0][1]
         ]
         self.assertTrue(
             set(source_target_pairs_targets) == {"CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"}
@@ -281,7 +284,7 @@ class TestProject(unittest.TestCase):
         os.chdir('tests/neptune')
         # and
         anExperiment = MagicMock()
-        self.backend.create_experiment.return_value = anExperiment
+        self.api_client.create_experiment.return_value = anExperiment
 
         # when
         self.project.create_experiment(upload_source_files=[
@@ -289,9 +292,9 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        self.backend.upload_source_code.assert_called_once()
+        self.api_client.upload_source_code.assert_called_once()
         source_target_pairs_targets = [
-            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+            target_p for source_p, target_p in self.api_client.upload_source_code.call_args[0][1]
         ]
         self.assertTrue(
             set(source_target_pairs_targets) == {"test_project.py"}
@@ -300,7 +303,7 @@ class TestProject(unittest.TestCase):
     def test_create_experiment_with_common_path_below_current_directory(self):
         # given
         anExperiment = MagicMock()
-        self.backend.create_experiment.return_value = anExperiment
+        self.api_client.create_experiment.return_value = anExperiment
 
         # when
         self.project.create_experiment(upload_source_files=[
@@ -308,9 +311,9 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        self.backend.upload_source_code.assert_called_once()
+        self.api_client.upload_source_code.assert_called_once()
         source_target_pairs_targets = [
-            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+            target_p for source_p, target_p in self.api_client.upload_source_code.call_args[0][1]
         ]
         self.assertTrue(
             all(target_p.startswith('tests/neptune/') for target_p in source_target_pairs_targets)
@@ -323,7 +326,7 @@ class TestProject(unittest.TestCase):
         # given
         anExperiment = MagicMock()
         # and
-        self.backend.create_experiment.return_value = anExperiment
+        self.api_client.create_experiment.return_value = anExperiment
 
         # when
         self.project.create_experiment(upload_source_files=[
@@ -332,9 +335,9 @@ class TestProject(unittest.TestCase):
         ])
 
         # then
-        self.backend.upload_source_code.assert_called_once()
+        self.api_client.upload_source_code.assert_called_once()
         source_target_pairs_targets = [
-            target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
+            target_p for source_p, target_p in self.api_client.upload_source_code.call_args[0][1]
         ]
         self.assertTrue(
             set(source_target_pairs_targets) == {'c:/test1/file.txt', 'd:/test2/file.txt'}

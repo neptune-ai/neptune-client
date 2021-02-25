@@ -42,7 +42,7 @@ class Project(object):
     """A class for storing information and managing Neptune project.
 
     Args:
-        backend (:class:`~neptune.Backend`, required): A Backend object.
+        api_client (:class:`~neptune.ApiClient`, required): A ApiClient object.
         internal_id (:obj:`str`, required): UUID of the project.
         namespace (:obj:`str`, required): It can either be your workspace or user name.
         name (:obj:`str`, required): project name.
@@ -51,8 +51,8 @@ class Project(object):
         ``namespace`` and ``name`` joined together with ``/`` form ``project_qualified_name``.
     """
 
-    def __init__(self, backend, internal_id, namespace, name):
-        self._backend = backend
+    def __init__(self, api_client, internal_id, namespace, name):
+        self._api_client = api_client
         self.internal_id = internal_id
         self.namespace = namespace
         self.name = name
@@ -75,7 +75,7 @@ class Project(object):
                 project.get_members()
 
         """
-        project_members = self._backend.get_project_members(self.internal_id)
+        project_members = self._api_client.get_project_members(self.internal_id)
         return [member.registeredMemberInfo.username for member in project_members if member.registeredMemberInfo]
 
     def get_experiments(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
@@ -124,7 +124,7 @@ class Project(object):
         """
         leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
         return [
-            Experiment(self._backend, self, entry.id, entry.internal_id)
+            Experiment(self._api_client, self, entry.id, entry.internal_id)
             for entry in leaderboard_entries
         ]
 
@@ -417,13 +417,13 @@ class Project(object):
 
         checkpoint_id = None
         if notebook_id is not None and notebook_path is not None:
-            checkpoint = create_checkpoint(backend=self._backend,
+            checkpoint = create_checkpoint(api_client=self._api_client,
                                            notebook_id=notebook_id,
                                            notebook_path=notebook_path)
             if checkpoint is not None:
                 checkpoint_id = checkpoint.id
 
-        experiment = self._backend.create_experiment(
+        experiment = self._api_client.create_experiment(
             project=self,
             name=name,
             description=description,
@@ -439,7 +439,7 @@ class Project(object):
             checkpoint_id=checkpoint_id
         )
 
-        self._backend.upload_source_code(experiment, source_target_pairs)
+        self._api_client.upload_source_code(experiment, source_target_pairs)
 
         # pylint: disable=protected-access
         experiment._start(
@@ -460,7 +460,7 @@ class Project(object):
 
     def _get_experiment_link(self, experiment):
         return "{base_url}/{namespace}/{project}/e/{exp_id}".format(
-            base_url=self._backend.display_address,
+            base_url=self._api_client.display_address,
             namespace=self.namespace,
             project=self.name,
             exp_id=experiment.id
@@ -482,7 +482,7 @@ class Project(object):
                 # Create a notebook in Neptune
                 notebook = project.create_notebook()
         """
-        return self._backend.create_notebook(self)
+        return self._api_client.create_notebook(self)
 
     def get_notebook(self, notebook_id):
         """Get a :class:`~neptune.notebook.Notebook` object with given ``notebook_id``.
@@ -500,7 +500,7 @@ class Project(object):
                 # Get a notebook object
                 notebook = project.get_notebook('d1c1b494-0620-4e54-93d5-29f4e848a51a')
         """
-        return self._backend.get_notebook(project=self, notebook_id=notebook_id)
+        return self._api_client.get_notebook(project=self, notebook_id=notebook_id)
 
     @property
     def full_id(self):
@@ -521,7 +521,7 @@ class Project(object):
         return not self.__eq__(o)
 
     def _fetch_leaderboard(self, id, state, owner, tag, min_running_time):
-        return self._backend.get_leaderboard_entries(
+        return self._api_client.get_leaderboard_entries(
             project=self, ids=as_list(id), states=as_list(state),
             owners=as_list(owner), tags=as_list(tag),
             min_running_time=min_running_time)

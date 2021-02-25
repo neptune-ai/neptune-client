@@ -55,7 +55,7 @@ from neptune.api_exceptions import (
     PathInProjectNotFound,
     ProjectNotFound,
 )
-from neptune.backend import Backend
+from neptune.api_client import ApiClient
 from neptune.checkpoint import Checkpoint
 from neptune.exceptions import (
     AlphaProjectException,
@@ -66,8 +66,8 @@ from neptune.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.experiments import Experiment
-from neptune.internal.backends.client_config import ClientConfig
-from neptune.internal.backends.credentials import Credentials
+from neptune.internal.api_clients.client_config import ClientConfig
+from neptune.internal.api_clients.credentials import Credentials
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
 from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
@@ -79,7 +79,7 @@ from neptune.utils import with_api_exceptions_handler, update_session_proxies
 _logger = logging.getLogger(__name__)
 
 
-class HostedNeptuneBackend(Backend):
+class HostedNeptuneApiClient(ApiClient):
 
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
@@ -153,7 +153,7 @@ class HostedNeptuneBackend(Backend):
                 raise AlphaProjectException(project_qualified_name)
 
             return Project(
-                backend=self,
+                api_client=self,
                 internal_id=project.id,
                 namespace=project.organizationName,
                 name=project.name)
@@ -347,7 +347,7 @@ class HostedNeptuneBackend(Backend):
             api_notebook = api_notebook_list.entries[0]
 
             return Notebook(
-                backend=self,
+                api_client=self,
                 project=project,
                 _id=api_notebook.id,
                 owner=api_notebook.owner
@@ -380,7 +380,7 @@ class HostedNeptuneBackend(Backend):
             ).response().result
 
             return Notebook(
-                backend=self,
+                api_client=self,
                 project=project,
                 _id=api_notebook.id,
                 owner=api_notebook.owner
@@ -893,7 +893,7 @@ class HostedNeptuneBackend(Backend):
         ]
 
     def _convert_to_experiment(self, api_experiment, project):
-        return Experiment(backend=self,
+        return Experiment(api_client=self,
                           project=project,
                           _id=api_experiment.shortId,
                           internal_id=api_experiment.id)

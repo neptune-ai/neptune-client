@@ -23,8 +23,8 @@ from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
 class MetricServiceFactory(object):
-    def __init__(self, backend, os_environ):
-        self.__backend = backend
+    def __init__(self, api_client, os_environ):
+        self.__api_client = api_client
         self.__os_environ = os_environ
 
     def create(self, gauge_mode, experiment, reference_timestamp):
@@ -37,12 +37,12 @@ class MetricServiceFactory(object):
         metrics_container = metrics_factory.create_metrics_container()
 
         for metric in metrics_container.metrics():
-            metric.internal_id = self.__backend.create_hardware_metric(experiment, metric)
+            metric.internal_id = self.__api_client.create_hardware_metric(experiment, metric)
 
         metric_reporter = MetricReporterFactory(reference_timestamp).create(metrics=metrics_container.metrics())
 
         return MetricService(
-            backend=self.__backend,
+            api_client=self.__api_client,
             metric_reporter=metric_reporter,
             experiment=experiment,
             metrics_container=metrics_container

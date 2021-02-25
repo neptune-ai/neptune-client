@@ -25,7 +25,7 @@ _checkpoints_lock = threading.Lock()
 _checkpoints = dict()
 
 
-def create_checkpoint(backend, notebook_id, notebook_path):
+def create_checkpoint(api_client, notebook_id, notebook_path):
     if is_ipython():
         # pylint:disable=bad-option-value,import-outside-toplevel,import-error
         import IPython
@@ -38,7 +38,7 @@ def create_checkpoint(backend, notebook_id, notebook_path):
             if execution_count in _checkpoints:
                 return _checkpoints[execution_count]
 
-            checkpoint = backend.create_checkpoint(notebook_id, notebook_path)
+            checkpoint = api_client.create_checkpoint(notebook_id, notebook_path)
             if ipython is not None and ipython.kernel is not None:
                 send_checkpoint_created(notebook_id=notebook_id,
                                         notebook_path=notebook_path,

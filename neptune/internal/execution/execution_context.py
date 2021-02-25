@@ -39,8 +39,8 @@ _logger = logging.getLogger(__name__)
 
 class ExecutionContext(object):
 
-    def __init__(self, backend, experiment):
-        self._backend = backend
+    def __init__(self, api_client, experiment):
+        self._api_client = api_client
         self._experiment = experiment
         self._ping_thread = None
         self._hardware_metric_thread = None
@@ -137,7 +137,7 @@ class ExecutionContext(object):
             abort_impl = DefaultAbortImpl(pid=os.getpid())
 
         websocket_factory = ReconnectingWebsocketFactory(
-            backend=self._backend,
+            api_client=self._api_client,
             experiment_id=self._experiment.internal_id
         )
         self._aborting_thread = AbortingThread(
@@ -148,12 +148,12 @@ class ExecutionContext(object):
         self._aborting_thread.start()
 
     def _run_monitoring_thread(self):
-        self._ping_thread = PingThread(backend=self._backend, experiment=self._experiment)
+        self._ping_thread = PingThread(api_client=self._api_client, experiment=self._experiment)
         self._ping_thread.start()
 
     def _run_hardware_metrics_reporting_thread(self):
         gauge_mode = GaugeMode.CGROUP if in_docker() else GaugeMode.SYSTEM
-        metric_service = MetricServiceFactory(self._backend, os.environ).create(
+        metric_service = MetricServiceFactory(self._api_client, os.environ).create(
             gauge_mode=gauge_mode,
             experiment=self._experiment,
             reference_timestamp=time.time()

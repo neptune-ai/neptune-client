@@ -20,8 +20,8 @@ import threading
 from neptune import constants
 from neptune import envs
 from neptune.exceptions import NeptuneMissingProjectQualifiedNameException, NeptuneUninitializedException, \
-    InvalidNeptuneBackend
-from neptune.internal.backends import backend_factory
+    InvalidNeptuneApiClient
+from neptune.internal.api_clients import api_client_factory
 from neptune.projects import Project
 from neptune.sessions import Session
 from ._version import get_versions
@@ -48,7 +48,7 @@ You can pass this value as api_token during init() call, either by an environmen
 ANONYMOUS_API_TOKEN = constants.ANONYMOUS_API_TOKEN
 
 
-def init(project_qualified_name=None, api_token=None, proxies=None, backend=None):
+def init(project_qualified_name=None, api_token=None, proxies=None, api_client=None):
     """Initialize `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with
     specific project.
 
@@ -83,30 +83,30 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneBackend
-                neptune.init(backend=HostedNeptuneBackend(proxies=...))
+                from neptune import HostedNeptuneApiClient
+                neptune.init(api_client=HostedNeptuneApiClient(proxies=...))
 
-        backend (:class:`~neptune.Backend`, optional, default is ``None``):
+        api_client (:class:`~neptune.ApiClient`, optional, default is ``None``):
             By default, Neptune client library sends logs, metrics, images, etc to Neptune servers:
             either publicly available SaaS, or an on-premises installation.
 
-            You can also pass the default backend instance explicitly to specify its parameters:
+            You can also pass the default api_client instance explicitly to specify its parameters:
 
             .. code :: python3
 
-                from neptune import HostedNeptuneBackend
-                neptune.init(backend=HostedNeptuneBackend(...))
+                from neptune import HostedNeptuneApiClient
+                neptune.init(api_client=HostedNeptuneApiClient(...))
 
-            Passing an instance of :class:`~neptune.OfflineBackend` makes your code run without communicating
+            Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
             with Neptune servers.
 
             .. code :: python3
 
-                from neptune import OfflineBackend
-                neptune.init(backend=OfflineBackend())
+                from neptune import OfflineApiClient
+                neptune.init(api_client=OfflineApiClient())
 
             .. note::
-                Instead of passing a ``neptune.OfflineBackend`` instance as ``backend``, you can set an
+                Instead of passing a ``neptune.OfflineApiClient`` instance as ``api_client``, you can set an
                 environment variable ``NEPTUNE_BACKEND=offline`` to override the default behaviour.
 
     Returns:
@@ -131,7 +131,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             neptune.init('jack/sandbox')
 
             # running offline
-            neptune.init(backend=neptune.OfflineBackend())
+            neptune.init(api_client=neptune.OfflineApiClient())
     """
 
     project_qualified_name = project_qualified_name or os.getenv(envs.PROJECT_ENV_NAME)
@@ -142,15 +142,11 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
     with __lock:
         global session, project
 
-        if backend is None:
-            backend_name = os.getenv(envs.BACKEND)
-            backend = backend_factory(
-                backend_name=backend_name,
-                api_token=api_token,
-                proxies=proxies,
-            )
+        if api_client is None:
+            api_client_name = os.getenv(envs.API_CLIENT)
+            api_client = api_client_factory(api_client_name=api_client_name, api_token=api_token, proxies=proxies)
 
-        session = Session(backend=backend)
+        session = Session(api_client=api_client)
         project = session.get_project(project_qualified_name)
 
         return project

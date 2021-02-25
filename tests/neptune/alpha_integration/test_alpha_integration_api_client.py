@@ -22,7 +22,7 @@ import mock
 from freezegun import freeze_time
 from mock import MagicMock
 
-from neptune.internal.backends.alpha_integration_backend import AlphaIntegrationBackend
+from neptune.internal.api_clients.alpha_integration_api_client import AlphaIntegrationApiClient
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
 from tests.neptune.alpha.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
@@ -37,14 +37,14 @@ API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImF
 """
 
 
-class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixin):
+class TestAlphaIntegrationNeptuneApiClient(unittest.TestCase, AlphaBackendTestMixin):
     @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
+    @mock.patch('neptune.internal.api_clients.hosted_neptune_api_client.NeptuneAuthenticator', new=MagicMock)
     @mock.patch('neptune.alpha.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
     def setUp(self, swagger_client_factory) -> None:
         # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)
-        self.backend = AlphaIntegrationBackend(API_TOKEN)
+        self.api_client = AlphaIntegrationApiClient(API_TOKEN)
         self.exp_mock = MagicMock(
             internal_id='00000000-0000-0000-0000-000000000000'
         )
@@ -63,7 +63,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
         )
 
         # invoke send_channels_values
-        self.backend.send_channels_values(self.exp_mock, [channel_with_values])
+        self.api_client.send_channels_values(self.exp_mock, [channel_with_values])
 
         # expect `executeOperations` was called once with properly prepared kwargs
         expected_call_args = {
@@ -79,7 +79,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
             }]
         }
         # pylint:disable=protected-access
-        execute_operations = self.backend._alpha_backend.leaderboard_client.api.executeOperations
+        execute_operations = self.api_client._alpha_backend.leaderboard_client.api.executeOperations
         self.assertEqual(len(execute_operations.call_args_list), 1)
         self.assertDictEqual(execute_operations.call_args_list[0][1], expected_call_args)
 
