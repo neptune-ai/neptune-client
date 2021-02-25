@@ -21,5 +21,5 @@ from neptune.internal.api_clients import HostedNeptuneApiClient
 from neptune.internal.utils.deprecated_backend_name_compatibility import DeprecatedBackendMixin
 
 
-class HostedNeptuneBackend(HostedNeptuneApiClient, DeprecatedBackendMixin):
+class HostedNeptuneBackend(DeprecatedBackendMixin, HostedNeptuneApiClient):
     recommended_class = HostedNeptuneApiClient

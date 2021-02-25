@@ -21,5 +21,5 @@ from neptune.internal.api_clients import OfflineApiClient
 from neptune.internal.utils.deprecated_backend_name_compatibility import DeprecatedBackendMixin
 
 
-class OfflineBackend(OfflineApiClient, DeprecatedBackendMixin):
+class OfflineBackend(DeprecatedBackendMixin, OfflineApiClient):
     recommended_class = OfflineApiClient
