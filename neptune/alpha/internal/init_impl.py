@@ -36,9 +36,9 @@ from neptune.alpha.exceptions import (
     NeptuneMissingProjectNameException,
 )
 from neptune.alpha.experiment import Experiment
-from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.alpha.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
+from neptune.alpha.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
+from neptune.alpha.internal.api_clients.neptune_api_client_mock import NeptuneApiClientMock
+from neptune.alpha.internal.api_clients.offline_neptune_api_client import OfflineNeptuneApiClient
 from neptune.alpha.internal.backgroud_job_list import BackgroundJobList
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
@@ -115,14 +115,14 @@ def init(project: Optional[str] = None,
         raise NeptuneExperimentResumeAndCustomIdCollision()
 
     if connection_mode == ASYNC:
-        # TODO Initialize backend in async thread
-        backend = HostedNeptuneBackend(Credentials(api_token=api_token))
+        # TODO Initialize api_client in async thread
+        api_client = HostedNeptuneApiClient(Credentials(api_token=api_token))
     elif connection_mode == SYNC:
-        backend = HostedNeptuneBackend(Credentials(api_token=api_token))
+        api_client = HostedNeptuneApiClient(Credentials(api_token=api_token))
     elif connection_mode == DEBUG:
-        backend = NeptuneBackendMock()
+        api_client = NeptuneApiClientMock()
     elif connection_mode == OFFLINE:
-        backend = OfflineNeptuneBackend()
+        api_client = OfflineNeptuneApiClient()
     else:
         raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
 
@@ -135,15 +135,15 @@ def init(project: Optional[str] = None,
         if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
             raise NeptuneIncorrectProjectQualifiedNameException(project)
 
-    project_obj = backend.get_project(project)
+    project_obj = api_client.get_project(project)
     if experiment:
-        exp = backend.get_experiment(project + '/' + experiment)
+        exp = api_client.get_experiment(project + '/' + experiment)
     else:
         git_ref = get_git_info(discover_git_repo_location())
         if custom_experiment_id and len(custom_experiment_id) > 32:
             _logger.warning('Given custom_experiment_id exceeds 32 characters and it will be ignored.')
             custom_experiment_id = None
-        exp = backend.create_experiment(project_obj.uuid, git_ref, custom_experiment_id)
+        exp = api_client.create_experiment(project_obj.uuid, git_ref, custom_experiment_id)
 
     if connection_mode == ASYNC:
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, ASYNC_DIRECTORY, exp.uuid)
@@ -156,14 +156,14 @@ def init(project: Optional[str] = None,
         operation_processor = AsyncOperationProcessor(
             exp.uuid,
             DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
-            backend,
+            api_client,
             sleep_time=flush_period)
     elif connection_mode == SYNC:
-        operation_processor = SyncOperationProcessor(exp.uuid, backend)
+        operation_processor = SyncOperationProcessor(exp.uuid, api_client)
     elif connection_mode == DEBUG:
-        operation_processor = SyncOperationProcessor(exp.uuid, backend)
+        operation_processor = SyncOperationProcessor(exp.uuid, api_client)
     elif connection_mode == OFFLINE:
-        # Experiment was returned by mocked backend and has some random UUID.
+        # Experiment was returned by mocked api_client and has some random UUID.
         experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
         storage_queue = DiskQueue(Path(experiment_path),
                                   lambda x: x.to_dict(),
@@ -184,7 +184,7 @@ def init(project: Optional[str] = None,
         background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
     background_jobs.append(PingBackgroundJob())
 
-    _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
+    _experiment = Experiment(exp.uuid, api_client, operation_processor, BackgroundJobList(background_jobs))
     if connection_mode != OFFLINE:
         _experiment.sync(wait=False)
 
@@ -210,7 +210,7 @@ def init(project: Optional[str] = None,
         click.echo("offline/{}".format(exp.uuid))
     elif connection_mode != DEBUG:
         click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
-            base_url=backend.get_display_address(),
+            base_url=api_client.get_display_address(),
             workspace=exp.workspace,
             project=exp.project_name,
             exp_id=exp.short_id

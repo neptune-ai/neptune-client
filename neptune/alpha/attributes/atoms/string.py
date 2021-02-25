@@ -34,5 +34,5 @@ class String(Atom):
         # pylint: disable=protected-access
         if wait:
             self._experiment.wait()
-        val = self._backend.get_string_attribute(self._experiment_uuid, self._path)
+        val = self._api_client.get_string_attribute(self._experiment_uuid, self._path)
         return val.value

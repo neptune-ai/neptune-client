@@ -37,5 +37,5 @@ class Datetime(Atom):
         # pylint: disable=protected-access
         if wait:
             self._experiment.wait()
-        val = self._backend.get_datetime_attribute(self._experiment_uuid, self._path)
+        val = self._api_client.get_datetime_attribute(self._experiment_uuid, self._path)
         return val.value

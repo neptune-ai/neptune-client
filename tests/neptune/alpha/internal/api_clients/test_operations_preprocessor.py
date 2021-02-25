@@ -17,7 +17,7 @@
 # pylint: disable=protected-access
 
 from neptune.alpha.exceptions import MetadataInconsistency
-from neptune.alpha.internal.backends.operations_preprocessor import OperationsPreprocessor
+from neptune.alpha.internal.api_clients.operations_preprocessor import OperationsPreprocessor
 from neptune.alpha.internal.operation import AssignFloat, DeleteAttribute, AssignString, LogFloats, LogStrings, \
     LogImages, ClearFloatLog, ClearImageLog, AddStrings, RemoveStrings, ClearStringSet, ConfigFloatSeries, UploadFileSet
 

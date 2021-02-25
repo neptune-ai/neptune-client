@@ -16,20 +16,20 @@
 import uuid
 from typing import Optional
 
-from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
+from neptune.alpha.internal.api_clients.neptune_api_client import NeptuneApiClient
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
 
 
 class SyncOperationProcessor(OperationProcessor):
 
-    def __init__(self, experiment_uuid: uuid.UUID, backend: NeptuneBackend):
+    def __init__(self, experiment_uuid: uuid.UUID, api_client: NeptuneApiClient):
         self._experiment_uuid = experiment_uuid
-        self._backend = backend
+        self._api_client = api_client
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument
-        errors = self._backend.execute_operations(self._experiment_uuid, [op])
+        errors = self._api_client.execute_operations(self._experiment_uuid, [op])
         if errors:
             raise errors[0]
 

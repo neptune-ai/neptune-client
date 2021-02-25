@@ -39,8 +39,8 @@ from neptune.alpha.attributes.series.string_series import StringSeries as String
 from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.alpha.exceptions import MetadataInconsistency
 from neptune.alpha.handler import Handler
-from neptune.alpha.internal.backends.api_model import AttributeType
-from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
+from neptune.alpha.internal.api_clients.api_model import AttributeType
+from neptune.alpha.internal.api_clients.neptune_api_client import NeptuneApiClient
 from neptune.alpha.internal.background_job import BackgroundJob
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.operation import DeleteAttribute
@@ -63,12 +63,12 @@ class Experiment(AbstractContextManager):
     def __init__(
             self,
             _uuid: uuid.UUID,
-            backend: NeptuneBackend,
+            api_client: NeptuneApiClient,
             op_processor: OperationProcessor,
             background_job: BackgroundJob
     ):
         self._uuid = _uuid
-        self._backend = backend
+        self._api_client = api_client
         self._op_processor = op_processor
         self._bg_job = background_job
         self._structure = ExperimentStructure[Attribute]()
@@ -94,7 +94,7 @@ class Experiment(AbstractContextManager):
         self[""].assign(value, wait)
 
     def ping(self):
-        self._backend.ping_experiment(self._uuid)
+        self._api_client.ping_experiment(self._uuid)
 
     def start(self):
         atexit.register(self._shutdown_hook)
@@ -202,7 +202,7 @@ class Experiment(AbstractContextManager):
         with self._lock:
             if wait:
                 self._op_processor.wait()
-            attributes = self._backend.get_attributes(self._uuid)
+            attributes = self._api_client.get_attributes(self._uuid)
             self._structure.clear()
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)

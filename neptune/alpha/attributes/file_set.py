@@ -51,4 +51,4 @@ class FileSet(Attribute):
 
     def download_zip(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file_set(self._experiment_uuid, self._path, destination)
+        self._api_client.download_file_set(self._experiment_uuid, self._path, destination)

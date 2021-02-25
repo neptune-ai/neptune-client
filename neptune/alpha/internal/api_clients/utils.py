@@ -36,7 +36,7 @@ from requests import Session
 
 from neptune.alpha.exceptions import SSLError, ConnectionLost, InternalServerError, Unauthorized, Forbidden, \
     CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
-from neptune.alpha.internal.backends.api_model import ClientConfig
+from neptune.alpha.internal.api_clients.api_model import ClientConfig
 from neptune.alpha.internal.utils import replace_patch_version
 
 _logger = logging.getLogger(__name__)

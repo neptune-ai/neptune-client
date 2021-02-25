@@ -27,17 +27,17 @@ from neptune.alpha import init, ANONYMOUS, get_project, get_last_exp, Experiment
 from neptune.alpha.attributes.atoms import String
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.alpha.exceptions import MetadataInconsistency, OfflineModeFetchException, NeptuneUninitializedException
-from neptune.alpha.internal.backends.api_model import (
+from neptune.alpha.internal.api_clients.api_model import (
     ApiExperiment,
     Attribute,
     AttributeType,
     AttributeWithProperties,
     LeaderboardEntry,
 )
-from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.alpha.internal.api_clients.neptune_api_client_mock import NeptuneApiClientMock
 
 
-@patch('neptune.alpha.internal.init_impl.HostedNeptuneBackend', NeptuneBackendMock)
+@patch('neptune.alpha.internal.init_impl.HostedNeptuneApiClient', NeptuneApiClientMock)
 class TestClient(unittest.TestCase):
 
     @classmethod
@@ -79,10 +79,10 @@ class TestClient(unittest.TestCase):
         execution_dir = os.listdir(".neptune/async/{}".format(exp._uuid))[0]
         self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))
 
-    @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_experiment",
+    @patch("neptune.alpha.internal.api_clients.neptune_api_client_mock.NeptuneApiClientMock.get_experiment",
            new=lambda _, _id:
            ApiExperiment(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94", "workspace", "sandbox", False))
-    @patch("neptune.alpha.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+    @patch("neptune.alpha.internal.api_clients.neptune_api_client_mock.NeptuneApiClientMock.get_attributes",
            new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)])
     def test_resume(self):
         exp = init(flush_period=0.5, experiment="SAN-94")
@@ -143,11 +143,11 @@ class TestClient(unittest.TestCase):
         exp = init(connection_mode='debug', source_files=["internal/*"])
         self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")
 
-    @patch("neptune.alpha.internal.get_project_impl.HostedNeptuneBackend")
-    def test_get_table_as_pandas(self, backend_init_mock):
+    @patch("neptune.alpha.internal.get_project_impl.HostedNeptuneApiClient")
+    def test_get_table_as_pandas(self, api_client_init_mock):
         # given
-        backend_mock = Mock()
-        backend_init_mock.return_value = backend_mock
+        api_client_mock = Mock()
+        api_client_init_mock.return_value = api_client_mock
 
         # and
         attributes = []
@@ -171,7 +171,7 @@ class TestClient(unittest.TestCase):
         # and
         empty_entry = LeaderboardEntry(uuid.uuid4(), [])
         filled_entry = LeaderboardEntry(uuid.uuid4(), attributes)
-        backend_mock.get_leaderboard = Mock(return_value=[empty_entry, filled_entry])
+        api_client_mock.get_leaderboard = Mock(return_value=[empty_entry, filled_entry])
 
         # when
         df = get_project().get_experiments_table().as_pandas()
@@ -193,11 +193,11 @@ class TestClient(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.assertTrue(df['image/series'])
 
-    @patch("neptune.alpha.internal.get_project_impl.HostedNeptuneBackend")
-    def test_get_table_as_experiments(self, backend_init_mock):
+    @patch("neptune.alpha.internal.get_project_impl.HostedNeptuneApiClient")
+    def test_get_table_as_experiments(self, api_client_init_mock):
         # given
-        backend_mock = Mock()
-        backend_init_mock.return_value = backend_mock
+        api_client_mock = Mock()
+        api_client_init_mock.return_value = api_client_mock
 
         # and
         exp_id = uuid.uuid4()
@@ -220,7 +220,7 @@ class TestClient(unittest.TestCase):
         attributes.append(AttributeWithProperties("image/series", AttributeType.IMAGE_SERIES, None))
 
         # and
-        backend_mock.get_leaderboard = Mock(return_value=[LeaderboardEntry(exp_id, attributes)])
+        api_client_mock.get_leaderboard = Mock(return_value=[LeaderboardEntry(exp_id, attributes)])
 
         # when
         exp = get_project().get_experiments_table().as_experiments()[0]
@@ -244,10 +244,10 @@ class TestClient(unittest.TestCase):
             exp['image/series'].get()
 
         exp['file'].download("some_directory")
-        backend_mock.download_file.assert_called_with(exp_id, ["file"], "some_directory")
+        api_client_mock.download_file.assert_called_with(exp_id, ["file"], "some_directory")
 
         exp['file/set'].download_zip("some_directory")
-        backend_mock.download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
+        api_client_mock.download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
 
     def test_last_exp_is_raising_exception_when_non_initialized(self):
         # given uninitialized experiment

@@ -17,7 +17,7 @@
 from mock import MagicMock
 
 
-class BackendTestMixin:
+class ApiClientTestMixin:
 
     @staticmethod
     def _get_swagger_client_mock(

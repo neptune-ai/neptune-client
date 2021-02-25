@@ -51,4 +51,4 @@ class File(Atom):
         verify_type("destination", destination, (str, type(None)))
         if wait:
             self._experiment.wait()
-        self._backend.download_file(self._experiment_uuid, self._path, destination)
+        self._api_client.download_file(self._experiment_uuid, self._path, destination)

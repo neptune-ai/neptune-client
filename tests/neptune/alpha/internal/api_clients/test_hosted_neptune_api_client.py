@@ -23,11 +23,11 @@ from packaging.version import Version
 
 from neptune.alpha.exceptions import CannotResolveHostname, UnsupportedClientVersion, FileUploadError, \
     MetadataInconsistency
-from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.alpha.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import UploadFile, AssignString, LogFloats, UploadFileContent
 from neptune.alpha.internal.utils import base64_encode
-from tests.neptune.alpha.backend_test_mixin import BackendTestMixin
+from tests.neptune.alpha.api_client_test_mixin import ApiClientTestMixin
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
@@ -35,19 +35,19 @@ API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
 credentials = Credentials(API_TOKEN)
 
 
-@patch('neptune.alpha.internal.backends.hosted_neptune_backend.RequestsClient', new=MagicMock())
-@patch('neptune.alpha.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock())
+@patch('neptune.alpha.internal.api_clients.hosted_neptune_api_client.RequestsClient', new=MagicMock())
+@patch('neptune.alpha.internal.api_clients.hosted_neptune_api_client.NeptuneAuthenticator', new=MagicMock())
 @patch('bravado.client.SwaggerClient.from_url')
 @patch('platform.platform', new=lambda: 'testPlatform')
 @patch('platform.python_version', new=lambda: '3.9.test')
-class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
+class TestHostedNeptuneBackend(unittest.TestCase, ApiClientTestMixin):
     # pylint:disable=protected-access
 
-    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attribute')
+    @patch('neptune.alpha.internal.api_clients.hosted_neptune_api_client.upload_file_attribute')
     def test_execute_operations(self, upload_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
-        backend = HostedNeptuneBackend(credentials)
+        api_client = HostedNeptuneApiClient(credentials)
         exp_uuid = uuid.uuid4()
 
         response_error = MagicMock()
@@ -59,7 +59,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         some_binary = b"Some streamed binary"
 
         # when
-        result = backend.execute_operations(
+        result = api_client.execute_operations(
             experiment_uuid=exp_uuid,
             operations=[
                 UploadFile(
@@ -110,22 +110,22 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
 
         upload_mock.assert_has_calls([
-            call(swagger_client=backend.leaderboard_client,
+            call(swagger_client=api_client.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/other/file.txt",
                  source="other/file/path.txt",
                  target="path.txt"),
-            call(swagger_client=backend.leaderboard_client,
+            call(swagger_client=api_client.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_file",
                  source="path_to_file",
                  target="path_to_file"),
-            call(swagger_client=backend.leaderboard_client,
+            call(swagger_client=api_client.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_text_stream",
                  source=some_text.encode('utf-8'),
                  target="stream.txt"),
-            call(swagger_client=backend.leaderboard_client,
+            call(swagger_client=api_client.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_binary_stream",
                  source=some_binary,
@@ -140,15 +140,15 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             MetadataInconsistency("error1")
         ], result)
 
-    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.upload_file_attribute')
+    @patch('neptune.alpha.internal.api_clients.hosted_neptune_api_client.upload_file_attribute')
     def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
-        backend = HostedNeptuneBackend(credentials)
+        api_client = HostedNeptuneApiClient(credentials)
         exp_uuid = uuid.uuid4()
 
         # when
-        backend.execute_operations(
+        api_client.execute_operations(
             experiment_uuid=exp_uuid,
             operations=[
                 UploadFile(
@@ -170,58 +170,58 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
 
         upload_mock.assert_has_calls([
-            call(swagger_client=backend.leaderboard_client,
+            call(swagger_client=api_client.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/path/1/var",
                  source="/path/to/file",
                  target="file"),
-            call(swagger_client=backend.leaderboard_client,
+            call(swagger_client=api_client.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/path/2/var",
                  source="/some.file/with.dots.txt",
                  target="with.dots.txt"),
-            call(swagger_client=backend.leaderboard_client,
+            call(swagger_client=api_client.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/path/3/var",
                  source="/path/to/some_image.jpeg",
                  target="some_image.jpeg")
         ], any_order=True)
 
-    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.alpha.internal.api_clients.hosted_neptune_api_client.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.13')
 
         # expect
-        HostedNeptuneBackend(credentials)
+        HostedNeptuneApiClient(credentials)
 
-    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.alpha.internal.api_clients.hosted_neptune_api_client.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.14')
 
         # expect
         with self.assertRaises(UnsupportedClientVersion) as ex:
-            HostedNeptuneBackend(credentials)
+            HostedNeptuneApiClient(credentials)
 
         self.assertTrue("Please install neptune-client>=0.5.14" in str(ex.exception))
 
-    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.alpha.internal.api_clients.hosted_neptune_api_client.neptune_client_version', Version('0.5.13'))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.12')
 
         # expect
-        HostedNeptuneBackend(credentials)
+        HostedNeptuneApiClient(credentials)
 
-    @patch('neptune.alpha.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.alpha.internal.api_clients.hosted_neptune_api_client.neptune_client_version', Version('0.5.13'))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.4.999')
 
         # expect
         with self.assertRaises(UnsupportedClientVersion) as ex:
-            HostedNeptuneBackend(credentials)
+            HostedNeptuneApiClient(credentials)
 
         self.assertTrue("Please install neptune-client==0.4.0" in str(ex.exception))
 
@@ -232,4 +232,4 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # expect
         with self.assertRaises(CannotResolveHostname):
-            HostedNeptuneBackend(credentials)
+            HostedNeptuneApiClient(credentials)

@@ -19,7 +19,7 @@ from collections import namedtuple
 from neptune.alpha import types as alpha_types
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
-from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
+from neptune.alpha.internal.api_clients.api_model import AttributeType as AlphaAttributeType
 from neptune.exceptions import NeptuneException
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 

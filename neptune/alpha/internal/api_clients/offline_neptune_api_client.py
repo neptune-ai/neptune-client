@@ -18,12 +18,12 @@ import uuid
 from typing import List
 
 from neptune.alpha.exceptions import OfflineModeFetchException
-from neptune.alpha.internal.backends.api_model import Attribute, FloatAttribute, StringAttribute, \
+from neptune.alpha.internal.api_clients.api_model import Attribute, FloatAttribute, StringAttribute, \
     DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
-from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.alpha.internal.api_clients.neptune_api_client_mock import NeptuneApiClientMock
 
 
-class OfflineNeptuneBackend(NeptuneBackendMock):
+class OfflineNeptuneApiClient(NeptuneApiClientMock):
 
     def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
         raise OfflineModeFetchException

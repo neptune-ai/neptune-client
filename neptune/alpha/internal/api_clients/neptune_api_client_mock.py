@@ -27,7 +27,7 @@ from neptune.alpha.exceptions import (
     MetadataInconsistency,
     NeptuneException,
 )
-from neptune.alpha.internal.backends.api_model import (
+from neptune.alpha.internal.api_clients.api_model import (
     ApiExperiment,
     Attribute,
     AttributeType,
@@ -39,8 +39,8 @@ from neptune.alpha.internal.backends.api_model import (
     StringSeriesAttribute,
     StringSetAttribute,
 )
-from neptune.alpha.internal.backends.hosted_file_operations import get_unique_upload_entries
-from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
+from neptune.alpha.internal.api_clients.hosted_file_operations import get_unique_upload_entries
+from neptune.alpha.internal.api_clients.neptune_api_client import NeptuneApiClient
 from neptune.alpha.internal.experiment_structure import ExperimentStructure
 from neptune.alpha.internal.operation import (
     AddStrings,
@@ -82,7 +82,7 @@ from neptune.alpha.types.value_visitor import ValueVisitor
 Val = TypeVar('Val', bound=Value)
 
 
-class NeptuneBackendMock(NeptuneBackend):
+class NeptuneApiClientMock(NeptuneApiClient):
 
     def __init__(self, credentials=None):
         # pylint: disable=unused-argument
@@ -136,7 +136,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise MetadataInconsistency("{} is a namespace, not an attribute".format(op.path))
             else:
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
-        visitor = NeptuneBackendMock.NewValueOpVisitor(op.path, val)
+        visitor = NeptuneApiClientMock.NewValueOpVisitor(op.path, val)
         new_val = visitor.visit(op)
         if new_val:
             exp.set(op.path, new_val)

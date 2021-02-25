@@ -25,7 +25,7 @@ import pytest
 import neptune.alpha.sync
 from neptune.alpha.constants import OFFLINE_DIRECTORY
 from neptune.alpha.exceptions import ProjectNotFound
-from neptune.alpha.internal.backends.api_model import Project
+from neptune.alpha.internal.api_clients.api_model import Project
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.internal.utils.sync_offset_file import SyncOffsetFile
@@ -124,9 +124,9 @@ def test_sync_all_experiments(tmp_path, mocker, capsys):
 
     # and
     mocker.patch.object(neptune.alpha.sync, 'get_experiment', get_experiment_impl)
-    mocker.patch.object(neptune.alpha.sync, 'backend')
-    mocker.patch.object(neptune.alpha.sync.backend, 'execute_operations')
-    mocker.patch.object(neptune.alpha.sync.backend, 'get_project',
+    mocker.patch.object(neptune.alpha.sync, 'api_client')
+    mocker.patch.object(neptune.alpha.sync.api_client, 'execute_operations')
+    mocker.patch.object(neptune.alpha.sync.api_client, 'get_project',
                         lambda _: Project(uuid.uuid4(), 'project', 'workspace'))
     mocker.patch.object(neptune.alpha.sync, 'register_offline_experiment', lambda _: registered_offline_experiment)
     mocker.patch.object(Operation, 'from_dict', lambda x: x)
@@ -145,7 +145,7 @@ def test_sync_all_experiments(tmp_path, mocker, capsys):
 
     # and
     # pylint: disable=no-member
-    neptune.alpha.sync.backend.execute_operations.has_calls([
+    neptune.alpha.sync.api_client.execute_operations.has_calls([
         mocker.call(unsync_exp.uuid, ['op-1']),
         mocker.call(registered_offline_experiment.uuid, ['op-1'])
     ], any_order=True)
@@ -165,9 +165,9 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
 
     # and
     mocker.patch.object(neptune.alpha.sync, 'get_experiment', get_experiment_impl_)
-    mocker.patch.object(neptune.alpha.sync, 'backend')
-    mocker.patch.object(neptune.alpha.sync.backend, 'execute_operations')
-    mocker.patch.object(neptune.alpha.sync.backend, 'get_project',
+    mocker.patch.object(neptune.alpha.sync, 'api_client')
+    mocker.patch.object(neptune.alpha.sync.api_client, 'execute_operations')
+    mocker.patch.object(neptune.alpha.sync.api_client, 'get_project',
                         lambda _: Project(uuid.uuid4(), 'project', 'workspace'))
     mocker.patch.object(neptune.alpha.sync, 'register_offline_experiment', lambda _: registered_offline_exp)
     mocker.patch.object(Operation, 'from_dict', lambda x: x)
@@ -187,7 +187,7 @@ def test_sync_selected_experiments(tmp_path, mocker, capsys):
 
     # and
     # pylint: disable=no-member
-    neptune.alpha.sync.backend.execute_operations \
+    neptune.alpha.sync.api_client.execute_operations \
         .assert_called_with(registered_offline_exp.uuid, ['op-0', 'op-1'])
 
 
@@ -202,9 +202,9 @@ def test_get_project_no_name_set(mocker):
 
 def test_get_project_project_not_found(mocker):
     # given
-    mocker.patch.object(neptune.alpha.sync, 'backend')
-    mocker.patch.object(neptune.alpha.sync.backend, 'get_project')
-    neptune.alpha.sync.backend.get_project.side_effect = ProjectNotFound('foo')
+    mocker.patch.object(neptune.alpha.sync, 'api_client')
+    mocker.patch.object(neptune.alpha.sync.api_client, 'get_project')
+    neptune.alpha.sync.api_client.get_project.side_effect = ProjectNotFound('foo')
 
     # expect
     assert get_project('foo') is None

@@ -24,7 +24,7 @@ import click
 
 from neptune.alpha.exceptions import ConnectionLost
 from neptune.alpha.internal.containers.storage_queue import StorageQueue
-from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
+from neptune.alpha.internal.api_clients.neptune_api_client import NeptuneApiClient
 from neptune.alpha.internal.operation import Operation
 from neptune.alpha.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.alpha.internal.threading.daemon import Daemon
@@ -39,12 +39,12 @@ class AsyncOperationProcessor(OperationProcessor):
     def __init__(self,
                  experiment_uuid: uuid.UUID,
                  queue: StorageQueue[Operation],
-                 backend: NeptuneBackend,
+                 api_client: NeptuneApiClient,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
         self._experiment_uuid = experiment_uuid
         self._queue = queue
-        self._backend = backend
+        self._api_client = api_client
         self._batch_size = batch_size
         self._last_version = 0
         self._consumed_version = 0
@@ -118,7 +118,7 @@ class AsyncOperationProcessor(OperationProcessor):
             # TODO: Handle Metadata errors
             for retry in range(0, self.RETRIES):
                 try:
-                    result = self._processor._backend.execute_operations(self._processor._experiment_uuid, batch)
+                    result = self._processor._api_client.execute_operations(self._processor._experiment_uuid, batch)
                     self._processor._queue.ack(version)
                     for error in result:
                         _logger.error("Error occurred during asynchronous operation processing: %s", error)

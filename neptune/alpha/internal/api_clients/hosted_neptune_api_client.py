@@ -36,7 +36,7 @@ from neptune.alpha.exceptions import (
     ProjectNotFound,
     UnsupportedClientVersion,
 )
-from neptune.alpha.internal.backends.api_model import (
+from neptune.alpha.internal.api_clients.api_model import (
     ApiExperiment,
     Attribute,
     AttributeType,
@@ -51,17 +51,17 @@ from neptune.alpha.internal.backends.api_model import (
     StringSeriesAttribute,
     StringSetAttribute,
 )
-from neptune.alpha.internal.backends.hosted_file_operations import (
+from neptune.alpha.internal.api_clients.hosted_file_operations import (
     download_file_attribute,
     download_zip,
     upload_file_attribute,
     upload_file_set_attribute,
 )
-from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
-from neptune.alpha.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
-from neptune.alpha.internal.backends.operation_api_object_converter import OperationApiObjectConverter
-from neptune.alpha.internal.backends.operations_preprocessor import OperationsPreprocessor
-from neptune.alpha.internal.backends.utils import (
+from neptune.alpha.internal.api_clients.neptune_api_client import NeptuneApiClient
+from neptune.alpha.internal.api_clients.operation_api_name_visitor import OperationApiNameVisitor
+from neptune.alpha.internal.api_clients.operation_api_object_converter import OperationApiObjectConverter
+from neptune.alpha.internal.api_clients.operations_preprocessor import OperationsPreprocessor
+from neptune.alpha.internal.api_clients.utils import (
     create_swagger_client,
     update_session_proxies,
     verify_client_version,
@@ -82,7 +82,7 @@ from neptune.alpha.version import version as neptune_client_version
 from neptune.oauth import NeptuneAuthenticator
 
 
-class HostedNeptuneBackend(NeptuneBackend):
+class HostedNeptuneApiClient(NeptuneApiClient):
     BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
     LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
 

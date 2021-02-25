@@ -18,7 +18,7 @@ import uuid
 from typing import List, Optional
 
 from neptune.alpha.exceptions import NeptuneException
-from neptune.alpha.internal.backends.api_model import (
+from neptune.alpha.internal.api_clients.api_model import (
     ApiExperiment,
     Attribute,
     DatetimeAttribute,
@@ -33,7 +33,7 @@ from neptune.alpha.internal.operation import Operation
 from neptune.alpha.types.atoms import GitRef
 
 
-class NeptuneBackend:
+class NeptuneApiClient:
 
     def get_display_address(self) -> str:
         pass

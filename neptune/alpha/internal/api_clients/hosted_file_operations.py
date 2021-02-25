@@ -26,7 +26,7 @@ from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
 from neptune.alpha.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, FileSetUploadError
-from neptune.alpha.internal.backends.utils import with_api_exceptions_handler
+from neptune.alpha.internal.api_clients.utils import with_api_exceptions_handler
 from neptune.alpha.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
 from neptune.internal.storage.storage_utils import scan_unique_upload_entries, split_upload_files, UploadEntry, \

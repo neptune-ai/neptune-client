@@ -16,7 +16,7 @@
 import uuid
 from typing import List, TYPE_CHECKING
 
-from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
+from neptune.alpha.internal.api_clients.neptune_api_client import NeptuneApiClient
 
 from neptune.alpha.internal.operation import Operation
 
@@ -39,9 +39,9 @@ class Attribute:
         self._experiment._op_processor.enqueue_operation(operation, wait)
 
     @property
-    def _backend(self) -> NeptuneBackend:
+    def _api_client(self) -> NeptuneApiClient:
         # pylint: disable=protected-access
-        return self._experiment._backend
+        return self._experiment._api_client
 
     @property
     def _experiment_uuid(self) -> uuid.UUID:

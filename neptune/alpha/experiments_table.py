@@ -18,15 +18,15 @@ from datetime import datetime
 from typing import List, Dict, Optional, Union
 
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError
-from neptune.alpha.internal.backends.api_model import LeaderboardEntry, AttributeWithProperties, AttributeType
-from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.alpha.internal.api_clients.api_model import LeaderboardEntry, AttributeWithProperties, AttributeType
+from neptune.alpha.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
 from neptune.alpha.internal.utils.paths import join_paths, parse_path
 
 
 class ExperimentsTableEntry:
 
-    def __init__(self, backend: HostedNeptuneBackend, _id: uuid.UUID, attributes: List[AttributeWithProperties]):
-        self._backend = backend
+    def __init__(self, api_client: HostedNeptuneApiClient, _id: uuid.UUID, attributes: List[AttributeWithProperties]):
+        self._api_client = api_client
         self._id = _id
         self._attributes = attributes
 
@@ -63,7 +63,7 @@ class ExperimentsTableEntry:
             if attr.path == path:
                 _type = attr.type
                 if _type == AttributeType.FILE:
-                    self._backend.download_file(self._id, parse_path(path), destination)
+                    self._api_client.download_file(self._id, parse_path(path), destination)
                     return
                 raise MetadataInconsistency("Cannot download file from attribute of type {}".format(_type))
         raise ValueError("Could not find {} attribute".format(path))
@@ -73,7 +73,7 @@ class ExperimentsTableEntry:
             if attr.path == path:
                 _type = attr.type
                 if _type == AttributeType.FILE_SET:
-                    self._backend.download_file_set(self._id, parse_path(path), destination)
+                    self._api_client.download_file_set(self._id, parse_path(path), destination)
                     return
                 raise MetadataInconsistency("Cannot download ZIP archive from attribute of type {}".format(_type))
         raise ValueError("Could not find {} attribute".format(path))
@@ -100,12 +100,12 @@ class LeaderboardHandler:
 
 class ExperimentsTable:
 
-    def __init__(self, backend: HostedNeptuneBackend, entries: List[LeaderboardEntry]):
-        self._backend = backend
+    def __init__(self, api_client: HostedNeptuneApiClient, entries: List[LeaderboardEntry]):
+        self._api_client = api_client
         self._entries = entries
 
     def as_experiments(self) -> List[ExperimentsTableEntry]:
-        return [ExperimentsTableEntry(self._backend, e.id, e.attributes) for e in self._entries]
+        return [ExperimentsTableEntry(self._api_client, e.id, e.attributes) for e in self._entries]
 
     def as_pandas(self):
         # pylint:disable=import-outside-toplevel

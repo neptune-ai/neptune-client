@@ -36,9 +36,9 @@ from neptune.alpha.exceptions import (
     NeptuneException,
     ProjectNotFound,
 )
-from neptune.alpha.internal.backends.api_model import Project, ApiExperiment
-from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
+from neptune.alpha.internal.api_clients.api_model import Project, ApiExperiment
+from neptune.alpha.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
+from neptune.alpha.internal.api_clients.neptune_api_client import NeptuneApiClient
 from neptune.alpha.internal.containers.disk_queue import DiskQueue
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.operation import Operation
@@ -49,7 +49,7 @@ from neptune.alpha.internal.operation import Operation
 
 
 # Set in CLI entry points block, patched in tests
-backend: NeptuneBackend = None
+api_client: NeptuneApiClient = None
 
 
 def report_get_experiment_error(experiment_id: str, status_code: int, skipping: bool) -> None:
@@ -60,7 +60,7 @@ def report_get_experiment_error(experiment_id: str, status_code: int, skipping: 
 
 def get_experiment(experiment_id: str) -> Optional[ApiExperiment]:
     try:
-        return backend.get_experiment(experiment_id)
+        return api_client.get_experiment(experiment_id)
     except NeptuneException as e:
         click.echo('Exception while fetching experiment {}. Skipping experiment.'.format(experiment_id), err=True)
         logging.exception(e)
@@ -84,7 +84,7 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
         click.echo(textwrap.fill(project_name_missing_message), file=sys.stderr)
         return None
     try:
-        return backend.get_project(project_name)
+        return api_client.get_project(project_name)
     except ProjectNotFound:
         click.echo(textwrap.fill(project_not_found_message(project_name)), file=sys.stderr)
         return None
@@ -212,7 +212,7 @@ def sync_execution(execution_path: Path, experiment_uuid: uuid.UUID) -> None:
         batch, version = disk_queue.get_batch(1000)
         if not batch:
             break
-        backend.execute_operations(experiment_uuid, batch)
+        api_client.execute_operations(experiment_uuid, batch)
         disk_queue.ack(version)
 
 
@@ -239,7 +239,7 @@ def sync_selected_registered_experiments(base_path: Path, qualified_experiment_n
 
 def register_offline_experiment(project: Project) -> Optional[ApiExperiment]:
     try:
-        return backend.create_experiment(project.uuid)
+        return api_client.create_experiment(project.uuid)
     except Exception as e:
         click.echo('Exception occurred while trying to create an experiment '
                    'on the Neptune server. Please try again later',
@@ -343,8 +343,8 @@ def status(path: Path) -> None:
     """
 
     # pylint: disable=global-statement
-    global backend
-    backend = HostedNeptuneBackend(Credentials())
+    global api_client
+    api_client = HostedNeptuneApiClient(Credentials())
 
     synchronization_status(path)
 
@@ -389,8 +389,8 @@ def sync(path: Path, experiment_names: List[str], project_name: Optional[str]):
     """
 
     # pylint: disable=global-statement
-    global backend
-    backend = HostedNeptuneBackend(Credentials())
+    global api_client
+    api_client = HostedNeptuneApiClient(Credentials())
 
     if experiment_names:
         sync_selected_experiments(path, project_name, experiment_names)

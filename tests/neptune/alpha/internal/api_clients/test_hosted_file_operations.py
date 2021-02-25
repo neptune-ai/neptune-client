@@ -21,7 +21,7 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 import mock
 from mock import MagicMock, patch
 
-from neptune.alpha.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
+from neptune.alpha.internal.api_clients.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
     download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, download_zip
 from neptune.utils import IS_WINDOWS
 
@@ -30,7 +30,7 @@ class TestHostedFileOperations(unittest.TestCase):
     # pylint:disable=protected-access
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations._upload_loop')
     def test_upload_file_attribute(self, upload_loop_mock):
         # given
         exp_uuid = uuid.uuid4()
@@ -59,7 +59,7 @@ class TestHostedFileOperations(unittest.TestCase):
             })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations._upload_loop')
     def test_upload_file_attribute_from_stream(self, upload_loop_mock):
         # given
         exp_uuid = uuid.uuid4()
@@ -87,7 +87,7 @@ class TestHostedFileOperations(unittest.TestCase):
             })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.alpha.internal.backends.hosted_file_operations._upload_loop')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations._upload_loop')
     @patch('neptune.alpha.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
     def test_upload_single_file_in_file_set_attribute(self, upload_loop_mock):
         # given
@@ -118,7 +118,7 @@ class TestHostedFileOperations(unittest.TestCase):
             })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations.upload_raw_data')
     @patch('neptune.alpha.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
     def test_upload_multiple_files_in_file_set_attribute(self, upload_raw_data_mock):
         # given
@@ -149,7 +149,7 @@ class TestHostedFileOperations(unittest.TestCase):
             })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.alpha.internal.backends.hosted_file_operations.upload_raw_data')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations.upload_raw_data')
     def test_missing_files_or_directory(self, upload_raw_data_mock):
         # given
         exp_uuid = uuid.uuid4()
@@ -190,8 +190,8 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         self.assertEqual(filename, "sample.file")
 
-    @patch('neptune.alpha.internal.backends.hosted_file_operations._store_response_as_file')
-    @patch('neptune.alpha.internal.backends.hosted_file_operations._download_raw_data')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations._store_response_as_file')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations._download_raw_data')
     def test_download_file_attribute(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
@@ -215,9 +215,9 @@ class TestHostedFileOperations(unittest.TestCase):
         )
         store_response_mock.assert_called_once_with(download_raw.return_value, None)
 
-    @patch('neptune.alpha.internal.backends.hosted_file_operations._store_response_as_file')
-    @patch('neptune.alpha.internal.backends.hosted_file_operations._download_raw_data')
-    @patch('neptune.alpha.internal.backends.hosted_file_operations._get_download_url', new=lambda _, _id: "some_url")
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations._store_response_as_file')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations._download_raw_data')
+    @patch('neptune.alpha.internal.api_clients.hosted_file_operations._get_download_url', new=lambda _, _id: "some_url")
     def test_download_zip(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()

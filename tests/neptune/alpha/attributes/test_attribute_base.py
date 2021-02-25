@@ -24,7 +24,7 @@ from neptune.alpha.internal.operation_processors.operation_processor import Oper
 
 from neptune.alpha.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 
-from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.alpha.internal.api_clients.neptune_api_client_mock import NeptuneApiClientMock
 
 from neptune.alpha.experiment import Experiment
 
@@ -36,11 +36,11 @@ class TestAttributeBase(unittest.TestCase):
 
     @staticmethod
     def _create_experiment(processor: Optional[OperationProcessor] = None):
-        backend = NeptuneBackendMock()
-        exp = backend.create_experiment(uuid.uuid4())
+        api_client = NeptuneApiClientMock()
+        exp = api_client.create_experiment(uuid.uuid4())
         if processor is None:
-            processor = SyncOperationProcessor(exp.uuid, backend)
-        _experiment = Experiment(exp.uuid, backend, processor, MagicMock())
+            processor = SyncOperationProcessor(exp.uuid, api_client)
+        _experiment = Experiment(exp.uuid, api_client, processor, MagicMock())
         _experiment.sync()
         _experiment.start()
         return _experiment

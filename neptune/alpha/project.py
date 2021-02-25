@@ -17,7 +17,7 @@
 import uuid
 from typing import Union, Optional, Iterable
 
-from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.alpha.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.experiments_table import ExperimentsTable
 
@@ -26,9 +26,9 @@ class Project:
 
     def __init__(self,
                  _uuid: uuid.UUID,
-                 backend: HostedNeptuneBackend):
+                 api_client: HostedNeptuneApiClient):
         self._uuid = _uuid
-        self._backend = backend
+        self._api_client = api_client
 
     # pylint:disable=redefined-builtin
     def get_experiments_table(self,
@@ -42,9 +42,9 @@ class Project:
         owner = self._as_list("owner", owner)
         tags = self._as_list("tag", tag)
 
-        leaderboard_entries = self._backend.get_leaderboard(self._uuid, id, state, owner, tags)
+        leaderboard_entries = self._api_client.get_leaderboard(self._uuid, id, state, owner, tags)
 
-        return ExperimentsTable(self._backend, leaderboard_entries)
+        return ExperimentsTable(self._api_client, leaderboard_entries)
 
     @staticmethod
     def _as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Optional[Iterable[str]]:

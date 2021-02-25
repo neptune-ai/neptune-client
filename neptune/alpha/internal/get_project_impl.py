@@ -19,7 +19,7 @@ from typing import Optional, Union, Iterable
 
 from neptune.alpha.envs import PROJECT_ENV_NAME
 from neptune.alpha.exceptions import NeptuneMissingProjectNameException
-from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.alpha.internal.api_clients.hosted_neptune_api_client import HostedNeptuneApiClient
 from neptune.alpha.internal.credentials import Credentials
 from neptune.alpha.internal.utils import verify_type
 from neptune.alpha.experiments_table import ExperimentsTable
@@ -48,8 +48,8 @@ def get_project(name: Optional[str] = None) -> Project:
     if not name:
         raise NeptuneMissingProjectNameException()
 
-    backend = HostedNeptuneBackend(Credentials())
+    api_client = HostedNeptuneApiClient(Credentials())
 
-    project_obj = backend.get_project(name)
+    project_obj = api_client.get_project(name)
 
-    return Project(project_obj.uuid, backend)
+    return Project(project_obj.uuid, api_client)
