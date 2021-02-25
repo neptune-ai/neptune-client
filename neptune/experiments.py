@@ -270,7 +270,10 @@ class Experiment(object):
 
                 exp_logs = experiment.get_logs()
         """
-        return self._backend.get_channels(self)
+        def get_channel_value(ch):
+            return float(ch.y) if ch.y is not None and ch.channelType == "numeric" else ch.y
+
+        return {key: get_channel_value(ch) for key, ch in self._backend.get_channels(self).items()}
 
     def _get_system_channels(self):
         return self._backend.get_system_channels(self)
@@ -976,7 +979,7 @@ class Experiment(object):
         """
 
         channels_data = {}
-        channels_by_name = self.get_channels()
+        channels_by_name = self._backend.get_channels(self)
         for channel_name in channel_names:
             channel_id = channels_by_name[channel_name].id
             try:
@@ -1106,7 +1109,7 @@ class Experiment(object):
         self._backend.send_channels_values(self, channels_with_values)
 
     def _get_channels(self, channels_names_with_types):
-        existing_channels = self.get_channels()
+        existing_channels = self._backend.get_channels(self)
         channels_by_name = {}
         for (channel_name, channel_type) in channels_names_with_types:
             channel = existing_channels.get(channel_name, None)
@@ -1123,7 +1126,7 @@ class Experiment(object):
 
     def _find_channel(self, channel_name, channel_namespace):
         if channel_namespace == ChannelNamespace.USER:
-            return self.get_channels().get(channel_name, None)
+            return self._backend.get_channels(self).get(channel_name, None)
         elif channel_namespace == ChannelNamespace.SYSTEM:
             return self._get_system_channels().get(channel_name, None)
         else:

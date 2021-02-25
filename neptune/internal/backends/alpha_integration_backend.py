@@ -300,13 +300,7 @@ class AlphaIntegrationBackend(HostedNeptuneBackend):
             # return channels from LOG_ATTRIBUTE_SPACE namespace only
             if channel.id.startswith(alpha_consts.LOG_ATTRIBUTE_SPACE)
         ]
-        channels = dict()
-        for ch in api_channels:
-            # TODO: NPT-9216
-            ch.x = ch.lastX
-            ch.y = ch.lastY
-            channels[ch.name] = ch
-        return channels
+        return {ch.name: ch for ch in api_channels}
 
     @with_api_exceptions_handler
     def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
