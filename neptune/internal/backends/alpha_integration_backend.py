@@ -32,8 +32,6 @@ from neptune.alpha.internal.backends.operation_api_name_visitor import \
     OperationApiNameVisitor as AlphaOperationApiNameVisitor
 from neptune.alpha.internal.backends.operation_api_object_converter import \
     OperationApiObjectConverter as AlphaOperationApiObjectConverter
-from neptune.alpha.internal.backends.operations_preprocessor import \
-    OperationsPreprocessor as AlphaOperationsPreprocessor
 from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
 from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode, base64_decode
 from neptune.alpha.internal.utils.paths import parse_path
@@ -167,7 +165,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
                                                                           tags,
                                                                           hostname,
                                                                           entrypoint)
-        self._execute_alpha_operation(
+        self._execute_operations(
             experiment=experiment,
             operations=init_experiment_operations,
         )
@@ -181,7 +179,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
             file_globs=file_globs,
             reset=True,
         )
-        self._execute_alpha_operation(experiment, [upload_files_operation])
+        self._execute_upload_operation(experiment, upload_files_operation)
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
@@ -218,7 +216,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
     @with_api_exceptions_handler
     def set_property(self, experiment, key, value):
         """Save attribute casted to string under `alpha_consts.PROPERTIES_ATTRIBUTE_SPACE` namespace"""
-        self._execute_alpha_operation(
+        self._execute_operations(
             experiment=experiment,
             operations=[alpha_operation.AssignString(
                 path=alpha_path_utils.parse_path(f'{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}'),
@@ -242,7 +240,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
                 values=tags_to_delete,
             )
         ]
-        self._execute_alpha_operation(
+        self._execute_operations(
             experiment=experiment,
             operations=operations,
         )
@@ -262,7 +260,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
             path=alpha_path_utils.parse_path(channel_id),
             values=[],
         )  # this operation is used to create empty attribute
-        self._execute_alpha_operation(
+        self._execute_operations(
             experiment=experiment,
             operations=[log_empty_operation],
         )
@@ -346,7 +344,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
                 values=ch_values,
             ))
 
-        self._execute_alpha_operation(experiment, send_operations)
+        self._execute_operations(experiment, send_operations)
 
     def mark_succeeded(self, experiment):
         pass
@@ -375,7 +373,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
         for gauge in metric.gauges:
             path = parse_path(self._get_attribute_name_for_metric(metric.resource_type, gauge.name(), gauges_count))
             operations.append(ConfigFloatSeries(path, min=metric.min_value, max=metric.max_value, unit=metric.unit))
-        self._execute_alpha_operation(experiment, operations)
+        self._execute_operations(experiment, operations)
 
     @with_api_exceptions_handler
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
@@ -390,7 +388,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
                 operations.append(LogFloats(
                     path,
                     [LogFloats.ValueType(value.value, step=None, ts=value.timestamp) for value in metric_values]))
-        self._execute_alpha_operation(experiment, operations)
+        self._execute_operations(experiment, operations)
 
     def log_artifact(self, experiment, artifact, destination=None):
         target_name = os.path.basename(artifact) if destination is None else destination
@@ -398,26 +396,26 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
         dest_path = alpha_path_utils.parse_path(normalize_file_name(target_name))
         if isinstance(artifact, str):
             if os.path.exists(artifact):
-                operations = [alpha_operation.UploadFile(
+                operation = alpha_operation.UploadFile(
                     path=dest_path,
                     file_name=dest_path[-1],
                     file_path=os.path.abspath(artifact),
-                )]
+                )
             else:
                 raise FileNotFound(artifact)
         elif hasattr(artifact, 'read'):
             if destination is not None:
-                operations = [alpha_operation.UploadFileContent(
+                operation = alpha_operation.UploadFileContent(
                     path=dest_path,
                     file_name=dest_path[-1],
                     file_content=base64_encode(artifact.read().encode('utf-8')),
-                )]
+                )
             else:
                 raise ValueError("destination is required for file streams")
         else:
             raise ValueError("Artifact must be a local path or an IO object")
 
-        self._execute_alpha_operation(experiment, operations)
+        self._execute_upload_operation(experiment, operation)
 
     def delete_artifacts(self, experiment, path):
         self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
@@ -433,7 +431,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
 
     def _remove_attribute(self, experiment, str_path: str):
         """Removes given attribute"""
-        self._execute_alpha_operation(
+        self._execute_operations(
             experiment=experiment,
             operations=[alpha_operation.DeleteAttribute(
                 path=alpha_path_utils.parse_path(str_path),
@@ -447,52 +445,51 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
             alpha="true",
         )
 
-    def _execute_upload_operations(self,
-                                   experiment_uuid: uuid.UUID,
-                                   upload_operations: List[alpha_operation.Operation]
-                                   ) -> List[alpha_exceptions.NeptuneException]:
-        errors = list()
-
-        for op in upload_operations:
-            if isinstance(op, alpha_operation.UploadFile):
-                try:
-                    alpha_hosted_file_operations.upload_file_attribute(
-                        swagger_client=self.leaderboard_swagger_client,
-                        experiment_uuid=experiment_uuid,
-                        attribute=alpha_path_utils.path_to_str(op.path),
-                        source=op.file_path,
-                        target=op.file_name)
-                except alpha_exceptions.NeptuneException as e:
-                    errors.append(e)
-            elif isinstance(op, alpha_operation.UploadFileContent):
-                try:
-                    alpha_hosted_file_operations.upload_file_attribute(
-                        swagger_client=self.leaderboard_swagger_client,
-                        experiment_uuid=experiment_uuid,
-                        attribute=alpha_path_utils.path_to_str(op.path),
-                        source=base64_decode(op.file_content),
-                        target=op.file_name)
-                except alpha_exceptions.NeptuneException as e:
-                    errors.append(e)
-            elif isinstance(op, alpha_operation.UploadFileSet):
-                try:
-                    alpha_hosted_file_operations.upload_file_set_attribute(
-                        swagger_client=self.leaderboard_swagger_client,
-                        experiment_uuid=experiment_uuid,
-                        attribute=alpha_path_utils.path_to_str(op.path),
-                        file_globs=op.file_globs,
-                        reset=op.reset)
-                except alpha_exceptions.NeptuneException as e:
-                    errors.append(e)
+    def _execute_upload_operation(self,
+                                  experiment: Experiment,
+                                  upload_operation: alpha_operation.Operation):
+        experiment_uuid = uuid.UUID(experiment.internal_id)
+        try:
+            if isinstance(upload_operation, alpha_operation.UploadFile):
+                alpha_hosted_file_operations.upload_file_attribute(
+                    swagger_client=self.leaderboard_swagger_client,
+                    experiment_uuid=experiment_uuid,
+                    attribute=alpha_path_utils.path_to_str(upload_operation.path),
+                    source=upload_operation.file_path,
+                    target=upload_operation.file_name)
+            elif isinstance(upload_operation, alpha_operation.UploadFileContent):
+                alpha_hosted_file_operations.upload_file_attribute(
+                    swagger_client=self.leaderboard_swagger_client,
+                    experiment_uuid=experiment_uuid,
+                    attribute=alpha_path_utils.path_to_str(upload_operation.path),
+                    source=base64_decode(upload_operation.file_content),
+                    target=upload_operation.file_name)
+            elif isinstance(upload_operation, alpha_operation.UploadFileSet):
+                alpha_hosted_file_operations.upload_file_set_attribute(
+                    swagger_client=self.leaderboard_swagger_client,
+                    experiment_uuid=experiment_uuid,
+                    attribute=alpha_path_utils.path_to_str(upload_operation.path),
+                    file_globs=upload_operation.file_globs,
+                    reset=upload_operation.reset)
             else:
                 raise NeptuneException("Upload operation in neither File or FileSet")
+        except alpha_exceptions.NeptuneException as e:
+            raise NeptuneException(e) from e
 
-        return errors
+        return None
 
     @with_api_exceptions_handler
-    def _execute_operations(self, experiment: Experiment, operations: List[alpha_operation.Operation]
-                            ) -> List[alpha_exceptions.MetadataInconsistency]:
+    def _execute_operations(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
         experiment_uuid = uuid.UUID(experiment.internal_id)
+        file_operations = (
+            alpha_operation.UploadFile,
+            alpha_operation.UploadFileContent,
+            alpha_operation.UploadFileSet
+        )
+        if any(isinstance(op, file_operations) for op in operations):
+            raise NeptuneException("File operations must be handled directly by `_execute_upload_operation`,"
+                                   " not by `_execute_operations` function call.")
+
         kwargs = {
             'experimentId': str(experiment_uuid),
             'operations': [
@@ -505,50 +502,19 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
         }
         try:
             result = self.leaderboard_swagger_client.api.executeOperations(**kwargs).response().result
-            return [
+            errors = [
                 alpha_exceptions.MetadataInconsistency(err.errorDescription)
                 for err in result
             ]
+            if errors:
+                raise AlphaOperationErrors(errors=errors)
+            return None
         except HTTPNotFound as e:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
                 project_qualified_name=experiment._project.full_id
             ) from e
-
-    def _execute_alpha_operation(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
-        experiment_uuid = uuid.UUID(experiment.internal_id)
-        errors = []
-
-        operations_preprocessor = AlphaOperationsPreprocessor()
-        operations_preprocessor.process(operations)
-        errors.extend(operations_preprocessor.get_errors())
-
-        upload_operations, other_operations = [], []
-        file_operations = (
-            alpha_operation.UploadFile,
-            alpha_operation.UploadFileContent,
-            alpha_operation.UploadFileSet
-        )
-        for op in operations_preprocessor.get_operations():
-            (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
-
-        # Upload operations should be done first since they are idempotent
-        errors.extend(
-            self._execute_upload_operations(experiment_uuid=experiment_uuid,
-                                            upload_operations=upload_operations)
-        )
-
-        if other_operations:
-            errors.extend(
-                self._execute_operations(experiment=experiment,
-                                         operations=other_operations)
-            )
-
-        if errors:
-            raise AlphaOperationErrors(errors)
-
-        return None
 
     def _get_init_experiment_operations(self,
                                         name,
