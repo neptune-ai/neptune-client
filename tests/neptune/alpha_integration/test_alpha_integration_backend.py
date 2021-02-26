@@ -79,7 +79,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
             }]
         }
         # pylint:disable=protected-access
-        execute_operations = self.backend._alpha_backend.leaderboard_client.api.executeOperations
+        execute_operations = self.backend.leaderboard_swagger_client.api.executeOperations
         self.assertEqual(len(execute_operations.call_args_list), 1)
         self.assertDictEqual(execute_operations.call_args_list[0][1], expected_call_args)
 

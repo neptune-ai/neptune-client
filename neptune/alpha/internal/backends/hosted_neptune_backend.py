@@ -215,6 +215,21 @@ class HostedNeptuneBackend(NeptuneBackend):
             (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
 
         # Upload operations should be done first since they are idempotent
+        errors.extend(
+            self._execute_upload_operations(experiment_uuid=experiment_uuid,
+                                            upload_operations=upload_operations)
+        )
+
+        if other_operations:
+            errors.extend(self._execute_operations(experiment_uuid, other_operations))
+
+        return errors
+
+    def _execute_upload_operations(self,
+                                   experiment_uuid: uuid.UUID,
+                                   upload_operations: List[Operation]) -> List[NeptuneException]:
+        errors = list()
+
         for op in upload_operations:
             if isinstance(op, UploadFile):
                 try:
@@ -248,9 +263,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                     errors.append(e)
             else:
                 raise InternalClientError("Upload operation in neither File or FileSet")
-
-        if other_operations:
-            errors.extend(self._execute_operations(experiment_uuid, other_operations))
 
         return errors
 
