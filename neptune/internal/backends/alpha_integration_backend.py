@@ -28,14 +28,12 @@ from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends import hosted_file_operations as alpha_hosted_file_operations
-from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneApiClient
 from neptune.alpha.internal.backends.operation_api_name_visitor import \
     OperationApiNameVisitor as AlphaOperationApiNameVisitor
 from neptune.alpha.internal.backends.operation_api_object_converter import \
     OperationApiObjectConverter as AlphaOperationApiObjectConverter
 from neptune.alpha.internal.backends.operations_preprocessor import \
     OperationsPreprocessor as AlphaOperationsPreprocessor
-from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
 from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode, base64_decode
 from neptune.alpha.internal.utils.paths import parse_path
@@ -83,10 +81,6 @@ LegacyExperiment = namedtuple(
 
 
 class AlphaIntegrationApiClient(HostedNeptuneApiClient):
-    def __init__(self, api_token=None, proxies=None):
-        super().__init__(api_token, proxies)
-        self._alpha_backend = AlphaHostedNeptuneApiClient(AlphaCredentials(api_token=api_token))
-
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
