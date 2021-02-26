@@ -27,10 +27,17 @@ from bravado.exception import HTTPNotFound
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
+from neptune.alpha.internal.backends import hosted_file_operations as alpha_hosted_file_operations
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend as AlphaHostedNeptuneApiClient
+from neptune.alpha.internal.backends.operation_api_name_visitor import \
+    OperationApiNameVisitor as AlphaOperationApiNameVisitor
+from neptune.alpha.internal.backends.operation_api_object_converter import \
+    OperationApiObjectConverter as AlphaOperationApiObjectConverter
+from neptune.alpha.internal.backends.operations_preprocessor import \
+    OperationsPreprocessor as AlphaOperationsPreprocessor
 from neptune.alpha.internal.credentials import Credentials as AlphaCredentials
 from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
-from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode
+from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode, base64_decode
 from neptune.alpha.internal.utils.paths import parse_path
 from neptune.api_exceptions import (
     AlphaOperationErrors,
@@ -446,21 +453,108 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
             alpha="true",
         )
 
-    def _execute_alpha_operation(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
-        """Execute operations using alpha backend"""
+    def _execute_upload_operations(self,
+                                   experiment_uuid: uuid.UUID,
+                                   upload_operations: List[alpha_operation.Operation]) -> List[
+        alpha_exceptions.NeptuneException]:
+        errors = list()
+
+        for op in upload_operations:
+            if isinstance(op, alpha_operation.UploadFile):
+                try:
+                    alpha_hosted_file_operations.upload_file_attribute(
+                        swagger_client=self.leaderboard_swagger_client,
+                        experiment_uuid=experiment_uuid,
+                        attribute=alpha_path_utils.path_to_str(op.path),
+                        source=op.file_path,
+                        target=op.file_name)
+                except alpha_exceptions.NeptuneException as e:
+                    errors.append(e)
+            elif isinstance(op, alpha_operation.UploadFileContent):
+                try:
+                    alpha_hosted_file_operations.upload_file_attribute(
+                        swagger_client=self.leaderboard_swagger_client,
+                        experiment_uuid=experiment_uuid,
+                        attribute=alpha_path_utils.path_to_str(op.path),
+                        source=base64_decode(op.file_content),
+                        target=op.file_name)
+                except alpha_exceptions.NeptuneException as e:
+                    errors.append(e)
+            elif isinstance(op, alpha_operation.UploadFileSet):
+                try:
+                    alpha_hosted_file_operations.upload_file_set_attribute(
+                        swagger_client=self.leaderboard_swagger_client,
+                        experiment_uuid=experiment_uuid,
+                        attribute=alpha_path_utils.path_to_str(op.path),
+                        file_globs=op.file_globs,
+                        reset=op.reset)
+                except alpha_exceptions.NeptuneException as e:
+                    errors.append(e)
+            else:
+                raise NeptuneException("Upload operation in neither File or FileSet")
+
+        return errors
+
+    @with_api_exceptions_handler
+    def _execute_operations(self, experiment: Experiment, operations: List[alpha_operation.Operation]
+                            ) -> List[alpha_exceptions.MetadataInconsistency]:
+        experiment_uuid = uuid.UUID(experiment.internal_id)
+        kwargs = {
+            'experimentId': str(experiment_uuid),
+            'operations': [
+                {
+                    'path': alpha_path_utils.path_to_str(op.path),
+                    AlphaOperationApiNameVisitor().visit(op): AlphaOperationApiObjectConverter().convert(op)
+                }
+                for op in operations
+            ]
+        }
         try:
-            errors = self._alpha_backend.execute_operations(
-                experiment_uuid=uuid.UUID(experiment.internal_id),
-                operations=operations
-            )
-            if errors:
-                raise AlphaOperationErrors(errors)
-        except alpha_exceptions.ExperimentUUIDNotFound as e:
+            result = self.leaderboard_swagger_client.api.executeOperations(**kwargs).response().result
+            return [
+                alpha_exceptions.MetadataInconsistency(err.errorDescription)
+                for err in result
+            ]
+        except HTTPNotFound as e:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
-                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id) from e
-        except alpha_exceptions.InternalClientError as e:
-            raise NeptuneException(e) from e
+                experiment_short_id=experiment.id,
+                project_qualified_name=experiment._project.full_id
+            ) from e
+
+    def _execute_alpha_operation(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
+        experiment_uuid = uuid.UUID(experiment.internal_id)
+        errors = []
+
+        operations_preprocessor = AlphaOperationsPreprocessor()
+        operations_preprocessor.process(operations)
+        errors.extend(operations_preprocessor.get_errors())
+
+        upload_operations, other_operations = [], []
+        file_operations = (
+            alpha_operation.UploadFile,
+            alpha_operation.UploadFileContent,
+            alpha_operation.UploadFileSet
+        )
+        for op in operations_preprocessor.get_operations():
+            (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
+
+        # Upload operations should be done first since they are idempotent
+        errors.extend(
+            self._execute_upload_operations(experiment_uuid=experiment_uuid,
+                                            upload_operations=upload_operations)
+        )
+
+        if other_operations:
+            errors.extend(
+                self._execute_operations(experiment=experiment,
+                                         operations=other_operations)
+            )
+
+        if errors:
+            raise AlphaOperationErrors(errors)
+
+        return None
 
     def _get_init_experiment_operations(self,
                                         name,

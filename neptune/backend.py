@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABCMeta, abstractmethod
 from typing import Dict
 
 import six
@@ -25,15 +25,18 @@ from neptune.model import ChannelWithLastValue
 @six.add_metaclass(ABCMeta)
 class ApiClient(object):
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def api_address(self):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def display_address(self):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def proxies(self):
         pass
 
