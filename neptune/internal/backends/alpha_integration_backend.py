@@ -455,8 +455,8 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
 
     def _execute_upload_operations(self,
                                    experiment_uuid: uuid.UUID,
-                                   upload_operations: List[alpha_operation.Operation]) -> List[
-        alpha_exceptions.NeptuneException]:
+                                   upload_operations: List[alpha_operation.Operation]
+                                   ) -> List[alpha_exceptions.NeptuneException]:
         errors = list()
 
         for op in upload_operations:
