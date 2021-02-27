@@ -22,7 +22,7 @@ import mock
 from freezegun import freeze_time
 from mock import MagicMock
 
-from neptune.internal.backends import AlphaIntegrationApiClient
+from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
 from tests.neptune.alpha.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
@@ -39,12 +39,13 @@ API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImF
 
 class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixin):
     @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
+    @mock.patch('neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator',
+                new=MagicMock)
     @mock.patch('neptune.alpha.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
     def setUp(self, swagger_client_factory) -> None:
         # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)
-        self.backend = AlphaIntegrationApiClient(API_TOKEN)
+        self.backend = HostedNeptuneBackendApiClient(API_TOKEN)
         self.exp_mock = MagicMock(
             internal_id='00000000-0000-0000-0000-000000000000'
         )

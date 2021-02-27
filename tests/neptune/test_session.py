@@ -24,8 +24,10 @@ from neptune.sessions import Session
 from tests.neptune.api_objects_factory import a_project
 
 
-@patch('neptune.internal.backends.hosted_neptune_backend.SwaggerClient.from_url', MagicMock())
-@patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', MagicMock())
+@patch('neptune.internal.api_clients.hosted_api_clients.mixins.SwaggerClient.from_url',
+       MagicMock())
+@patch('neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator',
+       MagicMock())
 class TestSession(unittest.TestCase):
 
     # threading.RLock needs to be mocked, because it breaks the equality of Projects

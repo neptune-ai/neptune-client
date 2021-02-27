@@ -79,7 +79,7 @@ LegacyExperiment = namedtuple(
     'parameters')
 
 
-class AlphaIntegrationLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
+class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
