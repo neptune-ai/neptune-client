@@ -62,7 +62,7 @@ _logger = logging.getLogger(__name__)
 
 class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     @with_api_exceptions_handler
-    def __init__(self, backend_api_client, project_version):
+    def __init__(self, backend_api_client):
         self._backend_api_client = backend_api_client
 
         self._client_config = self._create_client_config(api_token=self.credentials.api_token,

@@ -42,7 +42,8 @@ from neptune.api_exceptions import (
 )
 from neptune.exceptions import STYLES, NeptuneException, FileNotFound
 from neptune.experiments import Experiment
-from neptune.internal.api_clients.hosted_api_clients.hosted_neptune_backend import HostedNeptuneLeaderboardApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
+    HostedNeptuneLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (

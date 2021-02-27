@@ -37,6 +37,8 @@ from neptune.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.internal.api_clients.credentials import Credentials
+from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import \
+    AlphaIntegrationLeaderboardApiClient
 from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
     HostedNeptuneLeaderboardApiClient
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
@@ -149,8 +151,10 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             raise NamespaceNotFound(namespace_name=namespace)
 
     def create_leaderboard_backend(self, project_version) -> LeaderboardApiClient:
-        return HostedNeptuneLeaderboardApiClient(backend_api_client=self,
-                                                 project_version=project_version)
+        if project_version == 1:
+            return HostedNeptuneLeaderboardApiClient(backend_api_client=self)
+        else:
+            return AlphaIntegrationLeaderboardApiClient(backend_api_client=self)
 
     @with_api_exceptions_handler
     def _create_authenticator(self, api_token, ssl_verify, proxies, backend_client):
