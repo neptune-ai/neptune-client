@@ -42,7 +42,7 @@ from neptune.api_exceptions import (
 )
 from neptune.exceptions import STYLES, NeptuneException, FileNotFound
 from neptune.experiments import Experiment
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
@@ -78,7 +78,7 @@ LegacyExperiment = namedtuple(
     'parameters')
 
 
-class AlphaIntegrationApiClient(HostedNeptuneApiClient):
+class AlphaIntegrationLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:

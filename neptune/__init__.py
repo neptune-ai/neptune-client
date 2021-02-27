@@ -19,8 +19,11 @@ import threading
 
 from neptune import constants
 from neptune import envs
-from neptune.exceptions import NeptuneMissingProjectQualifiedNameException, NeptuneUninitializedException, \
-    InvalidNeptuneBackend
+from neptune.exceptions import (
+    InvalidNeptuneBackend,
+    NeptuneMissingProjectQualifiedNameException,
+    NeptuneUninitializedException,
+)
 from neptune.internal.backends import backend_factory
 from neptune.projects import Project
 from neptune.sessions import Session

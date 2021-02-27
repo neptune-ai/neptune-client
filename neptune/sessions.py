@@ -19,7 +19,7 @@ import re
 from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackendApiClient
 from neptune.exceptions import NeptuneIncorrectProjectQualifiedNameException
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
@@ -112,7 +112,7 @@ class Session(object):
                             'and will be removed in future versions. For current behaviour '
                             'use `neptune.init(...)` or `Session.with_default_backend(...)')
 
-            self._backend = HostedNeptuneApiClient(api_token, proxies)
+            self._backend = HostedNeptuneBackendApiClient(api_token, proxies)
 
     @classmethod
     def with_default_backend(cls, api_token=None):

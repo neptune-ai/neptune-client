@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 from typing import Dict
 
 import six
@@ -22,8 +22,7 @@ import six
 from neptune.model import ChannelWithLastValue
 
 
-@six.add_metaclass(ABCMeta)
-class ApiClient(object):
+class ApiClient(ABC):
 
     @property
     @abstractmethod
@@ -40,6 +39,8 @@ class ApiClient(object):
     def proxies(self):
         pass
 
+
+class BackendApiClient(ApiClient, ABC):
     @abstractmethod
     def get_project(self, project_qualified_name):
         pass
@@ -48,6 +49,12 @@ class ApiClient(object):
     def get_projects(self, namespace):
         pass
 
+    @abstractmethod
+    def create_leaderboard_backend(self) -> 'LeaderboardApiClient':
+        pass
+
+
+class LeaderboardApiClient(ApiClient, ABC):
     @abstractmethod
     def get_project_members(self, project_identifier):
         pass

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from neptune.internal.backends.alpha_integration_backend import AlphaIntegrationApiClient
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
-from neptune.internal.backends.offline_backend import OfflineApiClient
+from neptune.internal.backends.alpha_integration_backend import AlphaIntegrationLeaderboardApiClient
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackendApiClient
+from neptune.internal.backends.offline_backend import OfflineBackendApiClient
 from neptune.internal.backends.backend_factory import backend_factory

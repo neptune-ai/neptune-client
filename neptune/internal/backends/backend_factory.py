@@ -14,27 +14,20 @@
 # limitations under the License.
 #
 
-from neptune.alpha.internal.credentials import Credentials
 from neptune.exceptions import InvalidNeptuneBackend
-from neptune.backend import ApiClient
+from neptune.backend import BackendApiClient
 from neptune.internal.backends import (
-    AlphaIntegrationApiClient,
-    HostedNeptuneApiClient,
-    OfflineApiClient,
+    HostedNeptuneBackendApiClient,
+    OfflineBackendApiClient,
 )
 
 
-def backend_factory(*, backend_name, api_token=None, proxies=None) -> ApiClient:
+def backend_factory(*, backend_name, api_token=None, proxies=None) -> BackendApiClient:
     if backend_name == 'offline':
-        return OfflineApiClient()
+        return OfflineBackendApiClient()
 
     elif backend_name is None:
-        credentials = Credentials(api_token)
-        # TODO: Improvement. How to determine which backend class should be used?
-        if credentials.token_origin_address.startswith('https://alpha.'):
-            return AlphaIntegrationApiClient(api_token, proxies)
-
-        return HostedNeptuneApiClient(api_token, proxies)
+        return HostedNeptuneBackendApiClient(api_token, proxies)
 
     else:
         raise InvalidNeptuneBackend(backend_name)
