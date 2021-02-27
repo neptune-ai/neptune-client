@@ -122,3 +122,5 @@ venv.bak/
 # VS Code
 .history
 .vscode
+
+stream.bin

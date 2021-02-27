@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from neptune.internal.api_clients import HostedNeptuneBackendApiClient
-
-# define deprecated HostedNeptuneBackend class
-HostedNeptuneBackend = HostedNeptuneBackendApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client import HostedNeptuneBackendApiClient
+from neptune.internal.api_clients.offline_backend import OfflineBackendApiClient
+from neptune.internal.api_clients.backend_factory import backend_factory

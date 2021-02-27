@@ -17,8 +17,6 @@
 from abc import ABC, abstractmethod
 from typing import Dict
 
-import six
-
 from neptune.model import ChannelWithLastValue
 
 
@@ -50,7 +48,7 @@ class BackendApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def create_leaderboard_backend(self) -> 'LeaderboardApiClient':
+    def create_leaderboard_backend(self, project_version) -> 'LeaderboardApiClient':
         pass
 
 

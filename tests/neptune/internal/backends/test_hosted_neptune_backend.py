@@ -21,7 +21,7 @@ import mock
 from mock import call, MagicMock
 
 from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
+from neptune.internal.backends import HostedNeptuneApiClient
 from tests.neptune.api_models import ApiParameter
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \

@@ -44,11 +44,23 @@ class OfflineBackendApiClient(BackendApiClient):
     def get_projects(self, namespace):
         return []
 
-    def create_leaderboard_backend(self) -> 'OfflineLeaderboardApiClient':
+    def create_leaderboard_backend(self, project_version) -> 'OfflineLeaderboardApiClient':
         return OfflineLeaderboardApiClient()
 
 
 class OfflineLeaderboardApiClient(LeaderboardApiClient):
+    @property
+    def api_address(self):
+        return 'OFFLINE'
+
+    @property
+    def display_address(self):
+        return 'OFFLINE'
+
+    @property
+    def proxies(self):
+        return None
+
     def get_project_members(self, project_identifier):
         return []
 

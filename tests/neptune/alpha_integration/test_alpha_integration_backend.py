@@ -22,7 +22,7 @@ import mock
 from freezegun import freeze_time
 from mock import MagicMock
 
-from neptune.internal.backends.alpha_integration_backend import AlphaIntegrationApiClient
+from neptune.internal.backends import AlphaIntegrationApiClient
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
 from tests.neptune.alpha.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
