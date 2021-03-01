@@ -121,7 +121,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     # pylint: disable=unused-argument
     @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.backends.credentials.os.getenv', return_value=API_TOKEN)
+    @mock.patch('neptune.internal.api_clients.credentials.os.getenv', return_value=API_TOKEN)
     def test_should_take_default_credentials_from_env(self, env, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
