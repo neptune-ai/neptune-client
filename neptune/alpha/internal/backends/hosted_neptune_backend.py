@@ -160,7 +160,9 @@ class HostedNeptuneBackend(NeptuneBackend):
     def create_experiment(self,
                           project_uuid: uuid.UUID,
                           git_ref: Optional[GitRef] = None,
-                          custom_experiment_id: Optional[str] = None
+                          custom_experiment_id: Optional[str] = None,
+                          notebook_id: Optional[uuid.UUID] = None,
+                          checkpoint_id: Optional[uuid.UUID] = None
                           ) -> ApiExperiment:
         verify_type("project_uuid", project_uuid, uuid.UUID)
 
@@ -184,6 +186,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             "customId": custom_experiment_id
         }
 
+        if notebook_id is not None and checkpoint_id is not None:
+            params["notebookId"] = notebook_id
+            params["checkpointId"] = checkpoint_id
+
         kwargs = {
             'experimentCreationParams': params,
             'X-Neptune-CliVersion': str(neptune_client_version)
@@ -194,6 +200,18 @@ class HostedNeptuneBackend(NeptuneBackend):
             return ApiExperiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
+
+    @with_api_exceptions_handler
+    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
+        checkpoint = self.leaderboard_client.createEmptyCheckpoint(
+            notebookId = notebook_id,
+            checkpoint = {
+                "path": jupyter_path
+            }
+        ).response().result
+        if checkpoint is not None:
+            return checkpoint.id
+        return None
 
     @with_api_exceptions_handler
     def ping_experiment(self, experiment_uuid: uuid.UUID):

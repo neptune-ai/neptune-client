@@ -50,8 +50,14 @@ class NeptuneBackend:
     def create_experiment(self,
                           project_uuid: uuid.UUID,
                           git_ref: Optional[GitRef] = None,
-                          custom_experiment_id: Optional[str] = None
+                          custom_experiment_id: Optional[str] = None,
+                          notebook_id: Optional[uuid.UUID] = None,
+                          checkpoint_id: Optional[uuid.UUID] = None
                           ) -> ApiExperiment:
+        pass
+
+    @abc.abstractmethod
+    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
         pass
 
     def ping_experiment(self, experiment_uuid: uuid.UUID):
