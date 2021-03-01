@@ -19,9 +19,12 @@ import threading
 
 from neptune import constants
 from neptune import envs
-from neptune.exceptions import NeptuneMissingProjectQualifiedNameException, NeptuneUninitializedException, \
-    InvalidNeptuneBackend
-from neptune.internal.backends import backend_factory
+from neptune.exceptions import (
+    InvalidNeptuneBackend,
+    NeptuneMissingProjectQualifiedNameException,
+    NeptuneUninitializedException,
+)
+from neptune.internal.api_clients import backend_factory
 from neptune.projects import Project
 from neptune.sessions import Session
 from ._version import get_versions
@@ -83,8 +86,8 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneApiClient
-                neptune.init(backend=HostedNeptuneApiClient(proxies=...))
+                from neptune import HostedNeptuneBackendApiClient
+                neptune.init(backend=HostedNeptuneBackendApiClient(proxies=...))
 
         backend (:class:`~neptune.ApiClient`, optional, default is ``None``):
             By default, Neptune client library sends logs, metrics, images, etc to Neptune servers:
@@ -94,8 +97,8 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
 
             .. code :: python3
 
-                from neptune import HostedNeptuneApiClient
-                neptune.init(backend=HostedNeptuneApiClient(...))
+                from neptune import HostedNeptuneBackendApiClient
+                neptune.init(backend=HostedNeptuneBackendApiClient(...))
 
             Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
             with Neptune servers.

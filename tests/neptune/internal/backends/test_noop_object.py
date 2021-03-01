@@ -16,7 +16,7 @@
 
 import unittest
 
-from neptune.internal.backends.offline_backend import NoopObject
+from neptune.internal.api_clients.offline_backend import NoopObject
 
 class TestHostedNeptuneObject(unittest.TestCase):
 

@@ -16,13 +16,12 @@
 import logging
 from io import StringIO
 
-from neptune.backend import ApiClient
+from neptune.backend import BackendApiClient, LeaderboardApiClient
 
 _logger = logging.getLogger(__name__)
 
 
-class OfflineApiClient(ApiClient):
-
+class OfflineBackendApiClient(BackendApiClient):
     def __init__(self):
         _logger.warning('Neptune is running in offline mode. No data is being logged to Neptune.')
         _logger.warning('Disable offline mode to log your experiments.')
@@ -44,6 +43,23 @@ class OfflineApiClient(ApiClient):
 
     def get_projects(self, namespace):
         return []
+
+    def create_leaderboard_backend(self, project) -> 'OfflineLeaderboardApiClient':
+        return OfflineLeaderboardApiClient()
+
+
+class OfflineLeaderboardApiClient(LeaderboardApiClient):
+    @property
+    def api_address(self):
+        return 'OFFLINE'
+
+    @property
+    def display_address(self):
+        return 'OFFLINE'
+
+    @property
+    def proxies(self):
+        return None
 
     def get_project_members(self, project_identifier):
         return []
@@ -164,4 +180,4 @@ class NoopObject(object):
 
 
 # define deprecated OfflineBackend class
-OfflineBackend = OfflineApiClient
+OfflineBackend = OfflineBackendApiClient

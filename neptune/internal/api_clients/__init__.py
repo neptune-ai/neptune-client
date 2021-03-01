@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, Neptune Labs Sp. z o.o.
+# Copyright (c) 2019, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,3 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client import HostedNeptuneBackendApiClient
+from neptune.internal.api_clients.offline_backend import OfflineBackendApiClient
+from neptune.internal.api_clients.backend_factory import backend_factory

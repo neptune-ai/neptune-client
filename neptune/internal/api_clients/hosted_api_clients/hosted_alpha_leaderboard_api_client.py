@@ -20,7 +20,6 @@ from collections import namedtuple
 from itertools import groupby
 from typing import List, Dict
 
-import click
 import six
 from bravado.exception import HTTPNotFound
 
@@ -40,9 +39,10 @@ from neptune.api_exceptions import (
     ExperimentNotFound,
     ProjectNotFound,
 )
-from neptune.exceptions import STYLES, NeptuneException, FileNotFound
+from neptune.exceptions import NeptuneException, FileNotFound
 from neptune.experiments import Experiment
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
+    HostedNeptuneLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
@@ -55,7 +55,6 @@ from neptune.internal.utils.alpha_integration import (
     deprecated_img_to_alpha_image,
 )
 from neptune.model import ChannelWithLastValue
-from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
@@ -78,23 +77,7 @@ LegacyExperiment = namedtuple(
     'parameters')
 
 
-class AlphaIntegrationApiClient(HostedNeptuneApiClient):
-    @with_api_exceptions_handler
-    def get_project(self, project_qualified_name):
-        try:
-            response = self.backend_swagger_client.api.getProject(projectIdentifier=project_qualified_name).response()
-            warning = response.metadata.headers.get('X-Server-Warning')
-            if warning:
-                click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
-            project = response.result
-
-            return Project(
-                backend=self,
-                internal_id=project.id,
-                namespace=project.organizationName,
-                name=project.name)
-        except HTTPNotFound:
-            raise ProjectNotFound(project_qualified_name)
+class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
 
     @with_api_exceptions_handler
     def create_experiment(self,
@@ -119,7 +102,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
             raise ValueError("Invalid params {}, should be a dict.".format(params))
         if not isinstance(properties, dict):
             raise ValueError("Invalid properties {}, should be a dict.".format(properties))
-        if not isinstance(hostname, six.string_types):
+        if hostname is not None and not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
         if entrypoint is not None and not isinstance(entrypoint, six.string_types):
             raise ValueError("Invalid entrypoint {}, should be a string.".format(entrypoint))
@@ -560,7 +543,7 @@ class AlphaIntegrationApiClient(HostedNeptuneApiClient):
         # Assign source hostname
         if hostname:
             init_operations.append(alpha_operation.AssignString(
-                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH),
                 value=hostname,
             ))
         # Assign source entrypoint

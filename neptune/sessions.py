@@ -19,7 +19,7 @@ import re
 from collections import OrderedDict
 
 from neptune.api_exceptions import ProjectNotFound
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneApiClient
+from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.exceptions import NeptuneIncorrectProjectQualifiedNameException
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
@@ -41,8 +41,8 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session, HostedNeptuneApiClient
-                session = Session(backend=HostedNeptuneApiClient(...))
+                from neptune import Session, HostedNeptuneBackendApiClient
+                session = Session(backend=HostedNeptuneBackendApiClient(...))
 
             Passing an instance of :class:`~neptune.OfflineApiClient` makes your code run without communicating
             with Neptune servers.
@@ -77,8 +77,8 @@ class Session(object):
 
             .. code :: python3
 
-                from neptune import Session, HostedNeptuneApiClient
-                session = Session(backend=HostedNeptuneApiClient(proxies=...))
+                from neptune import Session, HostedNeptuneBackendApiClient
+                session = Session(backend=HostedNeptuneBackendApiClient(proxies=...))
 
     Examples:
 
@@ -112,7 +112,7 @@ class Session(object):
                             'and will be removed in future versions. For current behaviour '
                             'use `neptune.init(...)` or `Session.with_default_backend(...)')
 
-            self._backend = HostedNeptuneApiClient(api_token, proxies)
+            self._backend = HostedNeptuneBackendApiClient(api_token, proxies)
 
     @classmethod
     def with_default_backend(cls, api_token=None):
@@ -131,7 +131,7 @@ class Session(object):
                 session = Session.with_default_backend()
 
         """
-        return cls(backend=HostedNeptuneApiClient(api_token))
+        return cls(backend=HostedNeptuneBackendApiClient(api_token))
 
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.
@@ -219,5 +219,6 @@ class Session(object):
                 #              ])
         """
 
-        projects = [Project(self._backend, p.id, namespace, p.name) for p in self._backend.get_projects(namespace)]
+        projects = [Project(self._backend.create_leaderboard_backend(p), p.id, namespace, p.name)
+                    for p in self._backend.get_projects(namespace)]
         return OrderedDict((p.full_id, p) for p in projects)
