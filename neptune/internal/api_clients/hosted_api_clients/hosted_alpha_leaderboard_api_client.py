@@ -102,7 +102,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             raise ValueError("Invalid params {}, should be a dict.".format(params))
         if not isinstance(properties, dict):
             raise ValueError("Invalid properties {}, should be a dict.".format(properties))
-        if not isinstance(hostname, six.string_types):
+        if hostname is not None and not isinstance(hostname, six.string_types):
             raise ValueError("Invalid hostname {}, should be a string.".format(hostname))
         if entrypoint is not None and not isinstance(entrypoint, six.string_types):
             raise ValueError("Invalid entrypoint {}, should be a string.".format(entrypoint))
@@ -543,7 +543,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         # Assign source hostname
         if hostname:
             init_operations.append(alpha_operation.AssignString(
-                path=alpha_path_utils.parse_path(alpha_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH),
+                path=alpha_path_utils.parse_path(alpha_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH),
                 value=hostname,
             ))
         # Assign source entrypoint
