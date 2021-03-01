@@ -159,11 +159,9 @@ def init(project: Optional[str] = None,
 
         checkpoint_id = None
         if notebook_id is not None and notebook_path is not None:
-            checkpoint = create_checkpoint(backend=backend,
-                                           notebook_id=notebook_id,
-                                           notebook_path=notebook_path)
-            if checkpoint is not None:
-                checkpoint_id = checkpoint.id
+            checkpoint_id = create_checkpoint(backend=backend,
+                                              notebook_id=notebook_id,
+                                              notebook_path=notebook_path)
 
         exp = backend.create_experiment(project_obj.uuid, git_ref, custom_experiment_id, notebook_id, checkpoint_id)
 
