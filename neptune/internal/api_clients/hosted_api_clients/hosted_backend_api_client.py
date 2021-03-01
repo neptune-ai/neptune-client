@@ -130,10 +130,9 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             if warning:
                 click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
             project = response.result
-            project_version = project.version if hasattr(project, 'version') else 1
 
             return Project(
-                backend=self.create_leaderboard_backend(project_version=project_version),
+                backend=self.create_leaderboard_backend(project=project),
                 internal_id=project.id,
                 namespace=project.organizationName,
                 name=project.name)
@@ -150,7 +149,8 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
         except HTTPNotFound:
             raise NamespaceNotFound(namespace_name=namespace)
 
-    def create_leaderboard_backend(self, project_version) -> LeaderboardApiClient:
+    def create_leaderboard_backend(self, project) -> LeaderboardApiClient:
+        project_version = project.version if hasattr(project, 'version') else 1
         if project_version == 1:
             return HostedNeptuneLeaderboardApiClient(backend_api_client=self)
         else:

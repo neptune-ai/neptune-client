@@ -22,6 +22,8 @@ from mock import call, MagicMock
 
 from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
 from neptune.internal.api_clients import HostedNeptuneBackendApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
+    HostedNeptuneLeaderboardApiClient
 from tests.neptune.api_models import ApiParameter
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
@@ -88,12 +90,13 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # and
         backend = HostedNeptuneBackendApiClient(api_token=API_TOKEN)
+        leaderboard = HostedNeptuneLeaderboardApiClient(backend)
 
         # and
         some_object = SomeClass()
 
         # when
-        api_params = backend._convert_to_api_parameters({
+        api_params = leaderboard._convert_to_api_parameters({
             'str': 'text',
             'bool': False,
             'float': 1.23,
@@ -174,7 +177,8 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self._get_swagger_client_mock(swagger_client_factory)
         experiment = mock.MagicMock()
         backend = HostedNeptuneBackendApiClient(API_TOKEN)
-        backend.rm_data = mock.MagicMock()
+        leaderboard = HostedNeptuneLeaderboardApiClient(backend)
+        leaderboard.rm_data = mock.MagicMock()
 
         # and
         def build_call(path):
@@ -184,19 +188,19 @@ class TestHostedNeptuneBackend(unittest.TestCase):
             )
 
         # when
-        backend.delete_artifacts(experiment=experiment, path='/an_abs_path_in_exp_output')
-        backend.delete_artifacts(experiment=experiment, path='/../an_abs_path_in_exp')
-        backend.delete_artifacts(experiment=experiment, path='/../../an_abs_path_in_prj')
-        backend.delete_artifacts(experiment=experiment, path='a_path_in_exp_output')
-        self.assertRaises(ValueError, backend.delete_artifacts,
+        leaderboard.delete_artifacts(experiment=experiment, path='/an_abs_path_in_exp_output')
+        leaderboard.delete_artifacts(experiment=experiment, path='/../an_abs_path_in_exp')
+        leaderboard.delete_artifacts(experiment=experiment, path='/../../an_abs_path_in_prj')
+        leaderboard.delete_artifacts(experiment=experiment, path='a_path_in_exp_output')
+        self.assertRaises(ValueError, leaderboard.delete_artifacts,
                           experiment=experiment, path='test/../../a_path_outside_exp')
-        self.assertRaises(ValueError, backend.delete_artifacts,
+        self.assertRaises(ValueError, leaderboard.delete_artifacts,
                           experiment=experiment, path='../a_path_outside_exp')
-        self.assertRaises(ValueError, backend.delete_artifacts,
+        self.assertRaises(ValueError, leaderboard.delete_artifacts,
                           experiment=experiment, path="..")
 
         # then
-        backend.rm_data.assert_has_calls([
+        leaderboard.rm_data.assert_has_calls([
             build_call('/an_abs_path_in_exp_output'),
             build_call('/../an_abs_path_in_exp'),
             build_call('/../../an_abs_path_in_prj'),

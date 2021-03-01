@@ -48,7 +48,7 @@ class BackendApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def create_leaderboard_backend(self, project_version) -> 'LeaderboardApiClient':
+    def create_leaderboard_backend(self, project) -> 'LeaderboardApiClient':
         pass
 
 

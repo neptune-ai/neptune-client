@@ -38,7 +38,9 @@ class TestSession(unittest.TestCase):
 
         # and
         backend = MagicMock()
+        leaderboard = MagicMock()
         backend.get_projects.return_value = api_projects
+        backend.create_leaderboard_backend.return_value = leaderboard
 
         # and
         session = Session(backend=backend)
@@ -51,7 +53,7 @@ class TestSession(unittest.TestCase):
 
         # then
         expected_projects = OrderedDict(
-            (custom_namespace + '/' + p.name, Project(backend, p.id, custom_namespace, p.name)) for p in api_projects
+            (custom_namespace + '/' + p.name, Project(leaderboard, p.id, custom_namespace, p.name)) for p in api_projects
         )
         self.assertEqual(expected_projects, projects)
 

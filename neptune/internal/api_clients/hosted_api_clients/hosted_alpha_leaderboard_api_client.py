@@ -80,22 +80,6 @@ LegacyExperiment = namedtuple(
 
 
 class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
-    @with_api_exceptions_handler
-    def get_project(self, project_qualified_name):
-        try:
-            response = self.backend_swagger_client.api.getProject(projectIdentifier=project_qualified_name).response()
-            warning = response.metadata.headers.get('X-Server-Warning')
-            if warning:
-                click.echo('{warning}{content}{end}'.format(content=warning, **STYLES))
-            project = response.result
-
-            return Project(
-                backend=self,
-                internal_id=project.id,
-                namespace=project.organizationName,
-                name=project.name)
-        except HTTPNotFound:
-            raise ProjectNotFound(project_qualified_name)
 
     @with_api_exceptions_handler
     def create_experiment(self,

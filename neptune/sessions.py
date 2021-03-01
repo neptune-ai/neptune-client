@@ -219,5 +219,6 @@ class Session(object):
                 #              ])
         """
 
-        projects = [Project(self._backend, p.id, namespace, p.name) for p in self._backend.get_projects(namespace)]
+        projects = [Project(self._backend.create_leaderboard_backend(p), p.id, namespace, p.name)
+                    for p in self._backend.get_projects(namespace)]
         return OrderedDict((p.full_id, p) for p in projects)

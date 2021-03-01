@@ -23,6 +23,8 @@ from freezegun import freeze_time
 from mock import MagicMock
 
 from neptune.internal.api_clients import HostedNeptuneBackendApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import \
+    HostedAlphaLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
 from tests.neptune.alpha.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
@@ -46,6 +48,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
         # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)
         self.backend = HostedNeptuneBackendApiClient(API_TOKEN)
+        self.leaderboard = HostedAlphaLeaderboardApiClient(self.backend)
         self.exp_mock = MagicMock(
             internal_id='00000000-0000-0000-0000-000000000000'
         )
@@ -64,7 +67,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
         )
 
         # invoke send_channels_values
-        self.backend.send_channels_values(self.exp_mock, [channel_with_values])
+        self.leaderboard.send_channels_values(self.exp_mock, [channel_with_values])
 
         # expect `executeOperations` was called once with properly prepared kwargs
         expected_call_args = {
@@ -80,7 +83,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
             }]
         }
         # pylint:disable=protected-access
-        execute_operations = self.backend.leaderboard_swagger_client.api.executeOperations
+        execute_operations = self.leaderboard.leaderboard_swagger_client.api.executeOperations
         self.assertEqual(len(execute_operations.call_args_list), 1)
         self.assertDictEqual(execute_operations.call_args_list[0][1], expected_call_args)
 
