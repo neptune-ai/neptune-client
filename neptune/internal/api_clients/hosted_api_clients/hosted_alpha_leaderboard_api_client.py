@@ -20,7 +20,6 @@ from collections import namedtuple
 from itertools import groupby
 from typing import List, Dict
 
-import click
 import six
 from bravado.exception import HTTPNotFound
 
@@ -40,7 +39,7 @@ from neptune.api_exceptions import (
     ExperimentNotFound,
     ProjectNotFound,
 )
-from neptune.exceptions import STYLES, NeptuneException, FileNotFound
+from neptune.exceptions import NeptuneException, FileNotFound
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
     HostedNeptuneLeaderboardApiClient
@@ -56,7 +55,6 @@ from neptune.internal.utils.alpha_integration import (
     deprecated_img_to_alpha_image,
 )
 from neptune.model import ChannelWithLastValue
-from neptune.projects import Project
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)

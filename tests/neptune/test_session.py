@@ -53,7 +53,8 @@ class TestSession(unittest.TestCase):
 
         # then
         expected_projects = OrderedDict(
-            (custom_namespace + '/' + p.name, Project(leaderboard, p.id, custom_namespace, p.name)) for p in api_projects
+            (custom_namespace + '/' + p.name, Project(leaderboard, p.id, custom_namespace, p.name))
+            for p in api_projects
         )
         self.assertEqual(expected_projects, projects)
 
