@@ -52,6 +52,8 @@ _logger = logging.getLogger(__name__)
 class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     @with_api_exceptions_handler
     def __init__(self, api_token=None, proxies=None):
+        self._old_leaderboard_client = None
+        self._new_leaderboard_client = None
         self._api_token = api_token
         self._proxies = proxies
 
@@ -152,9 +154,13 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     def create_leaderboard_backend(self, project) -> LeaderboardApiClient:
         project_version = project.version if hasattr(project, 'version') else 1
         if project_version == 1:
-            return HostedNeptuneLeaderboardApiClient(backend_api_client=self)
+            if self._old_leaderboard_client is None:
+                self._old_leaderboard_client = HostedNeptuneLeaderboardApiClient(backend_api_client=self)
+            return self._old_leaderboard_client
         else:
-            return HostedAlphaLeaderboardApiClient(backend_api_client=self)
+            if self._new_leaderboard_client is None:
+                self._new_leaderboard_client = HostedAlphaLeaderboardApiClient(backend_api_client=self)
+            return self._new_leaderboard_client
 
     @with_api_exceptions_handler
     def _create_authenticator(self, api_token, ssl_verify, proxies, backend_client):
