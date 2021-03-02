@@ -118,7 +118,7 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def create_channel(self, experiment, name, channel_type):
         return NoopObject()
 
-    def reset_channel(self, channel_id):
+    def reset_channel(self, experiment, channel_id, channel_type):
         pass
 
     def get_channels(self, experiment):

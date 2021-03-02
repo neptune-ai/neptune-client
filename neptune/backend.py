@@ -133,7 +133,7 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def reset_channel(self, channel_id):
+    def reset_channel(self, experiment, channel_id, channel_type):
         pass
 
     @abstractmethod

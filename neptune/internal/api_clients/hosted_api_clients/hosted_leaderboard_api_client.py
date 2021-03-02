@@ -481,8 +481,7 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
         return channels
 
     @with_api_exceptions_handler
-    def reset_channel(self, channel_id):
-
+    def reset_channel(self, experiment, channel_id, channel_type):
         try:
             self.backend_swagger_client.api.resetChannel(
                 id=channel_id
