@@ -98,7 +98,9 @@ class NeptuneBackendMock(NeptuneBackend):
     def create_experiment(self,
                           project_uuid: uuid.UUID,
                           git_ref: Optional[GitRef] = None,
-                          custom_experiment_id: Optional[str] = None
+                          custom_experiment_id: Optional[str] = None,
+                          notebook_id: Optional[uuid.UUID] = None,
+                          checkpoint_id: Optional[uuid.UUID] = None
                           ) -> ApiExperiment:
         short_id = "OFFLINE-{}".format(len(self._experiments) + 1)
         new_experiment_uuid = uuid.uuid4()
@@ -113,6 +115,9 @@ class NeptuneBackendMock(NeptuneBackend):
         if git_ref:
             self._experiments[new_experiment_uuid].set(["source_code", "git"], git_ref)
         return ApiExperiment(new_experiment_uuid, short_id, 'workspace', 'sandbox', False)
+
+    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
+        return None
 
     def get_experiment(self, experiment_id: str) -> ApiExperiment:
         raise ExperimentNotFound(experiment_id)

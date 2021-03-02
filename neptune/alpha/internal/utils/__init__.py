@@ -154,3 +154,13 @@ def get_stream_content(stream: IOBase) -> (Optional[str], str):
         content = content.getvalue()
 
     return base64_encode(content), default_name
+
+
+def is_ipython() -> bool:
+    try:
+        # pylint:disable=bad-option-value,import-outside-toplevel
+        import IPython
+        ipython = IPython.core.getipython.get_ipython()
+        return ipython is not None
+    except ImportError:
+        return False
