@@ -37,6 +37,7 @@ from neptune.alpha.exceptions import (
     NeptuneMissingProjectNameException,
 )
 from neptune.alpha.experiment import Experiment
+from neptune.alpha.internal.backends.neptune_backend import NeptuneBackend
 from neptune.alpha.internal.notebooks.notebooks import create_checkpoint
 from neptune.alpha.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.alpha.internal.backends.neptune_backend_mock import NeptuneBackendMock
@@ -146,22 +147,7 @@ def init(project: Optional[str] = None,
             _logger.warning('Given custom_experiment_id exceeds 32 characters and it will be ignored.')
             custom_experiment_id = None
 
-        notebook_id = None
-        if os.getenv(NEPTUNE_NOTEBOOK_ID, None) is not None:
-            try:
-                notebook_id = uuid.UUID(os.environ[NEPTUNE_NOTEBOOK_ID])
-            except ValueError:
-                _logger.warning("Invalid notebook ID, must be an UUID")
-
-        notebook_path = None
-        if os.getenv(NEPTUNE_NOTEBOOK_PATH, None) is not None:
-            notebook_path = os.environ[NEPTUNE_NOTEBOOK_PATH]
-
-        checkpoint_id = None
-        if notebook_id is not None and notebook_path is not None:
-            checkpoint_id = create_checkpoint(backend=backend,
-                                              notebook_id=notebook_id,
-                                              notebook_path=notebook_path)
+        notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
 
         exp = backend.create_experiment(project_obj.uuid, git_ref, custom_experiment_id, notebook_id, checkpoint_id)
 
@@ -237,3 +223,23 @@ def init(project: Optional[str] = None,
         ))
 
     return _experiment
+
+
+def _create_notebook_checkpoint(backend: NeptuneBackend) -> (uuid.UUID, uuid.UUID):
+    notebook_id = None
+    if os.getenv(NEPTUNE_NOTEBOOK_ID, None) is not None:
+        try:
+            notebook_id = uuid.UUID(os.environ[NEPTUNE_NOTEBOOK_ID])
+        except ValueError:
+            _logger.warning("Invalid notebook ID, must be an UUID")
+
+    notebook_path = None
+    if os.getenv(NEPTUNE_NOTEBOOK_PATH, None) is not None:
+        notebook_path = os.environ[NEPTUNE_NOTEBOOK_PATH]
+
+    checkpoint_id = None
+    if notebook_id is not None and notebook_path is not None:
+        checkpoint_id = create_checkpoint(backend=backend,
+                                          notebook_id=notebook_id,
+                                          notebook_path=notebook_path)
+    return notebook_id, checkpoint_id
