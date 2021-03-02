@@ -487,7 +487,7 @@ class Project(object):
             upload_stderr=upload_stderr,
             send_hardware_metrics=send_hardware_metrics,
             run_monitoring_thread=run_monitoring_thread,
-            handle_uncaught_exceptions=handle_uncaught_exceptions
+            handle_uncaught_exceptions=handle_uncaught_exceptions and not is_ipython()
         )
 
         self._push_new_experiment(experiment)
