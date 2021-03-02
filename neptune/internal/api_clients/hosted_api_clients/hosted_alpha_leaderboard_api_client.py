@@ -17,6 +17,7 @@ import logging
 import os
 import uuid
 from collections import namedtuple
+from io import StringIO
 from itertools import groupby
 from typing import List, Dict
 
@@ -317,7 +318,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             ch_values = [
                 alpha_operation.LogSeriesValue(
                     value=data_transformer(ch_value.value),
-                    step=None,
+                    step=ch_value.x,
                     ts=ch_value.ts,
                 )
                 for ch_value in channel_with_values.channel_values
@@ -554,3 +555,53 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             ))
 
         return init_operations
+
+    @with_api_exceptions_handler
+    def _get_channel_tuples_from_csv(self, experiment, channel_internal_id):
+        try:
+            csv = self.leaderboard_swagger_client.api.getFloatSeriesValuesCSV(
+                experimentId=experiment.internal_id, attribute=channel_internal_id
+            ).response().incoming_response.text
+            lines = csv.split('\n')[:-1]
+            return [line.split(',') for line in lines]
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+
+    @with_api_exceptions_handler
+    def get_channel_points_csv(self, experiment, channel_internal_id):
+        try:
+            values = self._get_channel_tuples_from_csv(experiment, channel_internal_id)
+            step_and_value = [val[0] + ',' + val[2] for val in values]
+            csv = StringIO()
+            for line in step_and_value:
+                csv.write(line + "\n")
+            csv.seek(0)
+            return csv
+        except HTTPNotFound:
+            # pylint: disable=protected-access
+            raise ExperimentNotFound(
+                experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
+
+    @with_api_exceptions_handler
+    def get_metrics_csv(self, experiment):
+        metric_channels = [
+            channel for channel in self._get_channels(experiment)
+            if (channel.channelType == ChannelType.NUMERIC.value
+                and channel.id.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE))
+        ]
+        data = {
+            # val[1] + ',' + val[2] is timestamp,value
+            ch.name: [val[1] + ',' + val[2] for val in self._get_channel_tuples_from_csv(experiment, ch.id)]
+            for ch in metric_channels
+        }
+        values_count = max(len(values) for values in data.values())
+        csv = StringIO()
+        csv.write(','.join(["x_{name},y_{name}".format(name=ch.name) for ch in metric_channels]))
+        csv.write("\n")
+        for i in range(0, values_count):
+            csv.write(','.join([data[ch.name][i] if i < len(data[ch.name]) else "," for ch in metric_channels]))
+            csv.write("\n")
+        csv.seek(0)
+        return csv
