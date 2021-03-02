@@ -207,6 +207,15 @@ def channel_type_to_operation(channel_type: ChannelType) -> alpha_operation.Oper
     return _map_using_dict(channel_type, 'channel type', _channel_type_to_operation)
 
 
+def channel_type_to_clear_operation(channel_type: ChannelType) -> alpha_operation.Operation:
+    _channel_type_to_operation = {
+        ChannelType.TEXT: alpha_operation.ClearStringLog,
+        ChannelType.NUMERIC: alpha_operation.ClearFloatLog,
+        ChannelType.IMAGE: alpha_operation.ClearImageLog,
+    }
+    return _map_using_dict(channel_type, 'channel type', _channel_type_to_operation)
+
+
 def channel_value_type_to_operation(channel_value_type: ChannelValueType) -> alpha_operation.Operation:
     _channel_value_type_to_operation = {
         ChannelValueType.TEXT_VALUE: alpha_operation.LogStrings,

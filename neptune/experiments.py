@@ -829,7 +829,7 @@ class Experiment(object):
         channel = self._find_channel(log_name, ChannelNamespace.USER)
         if channel is None:
             raise ChannelDoesNotExist(self.id, log_name)
-        self._backend.reset_channel(channel.id)
+        self._backend.reset_channel(self, channel.id, channel.channelType)
 
     def get_parameters(self):
         """Retrieve parameters for this experiment.

@@ -53,7 +53,7 @@ from neptune.internal.utils.alpha_integration import (
     AlphaPropertyDTO,
     channel_type_to_operation,
     channel_value_type_to_operation,
-    deprecated_img_to_alpha_image,
+    deprecated_img_to_alpha_image, channel_type_to_clear_operation,
 )
 from neptune.model import ChannelWithLastValue
 from neptune.utils import with_api_exceptions_handler
@@ -555,6 +555,14 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             ))
 
         return init_operations
+
+    @with_api_exceptions_handler
+    def reset_channel(self, experiment, channel_id, channel_type):
+        op = channel_type_to_clear_operation(ChannelType(channel_type))
+        self._execute_operations(
+            experiment=experiment,
+            operations=[op(path=alpha_path_utils.parse_path(channel_id))],
+        )
 
     @with_api_exceptions_handler
     def _get_channel_tuples_from_csv(self, experiment, channel_internal_id):
