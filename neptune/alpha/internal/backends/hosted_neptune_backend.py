@@ -203,15 +203,15 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
-        checkpoint = self.leaderboard_client.createEmptyCheckpoint(
-            notebookId=notebook_id,
-            checkpoint={
-                "path": jupyter_path
-            }
-        ).response().result
-        if checkpoint is not None:
-            return checkpoint.id
-        return None
+        try:
+            return self.leaderboard_client.createEmptyCheckpoint(
+                notebookId=notebook_id,
+                checkpoint={
+                    "path": jupyter_path
+                }
+            ).response().result.id
+        except HTTPNotFound:
+            return None
 
     @with_api_exceptions_handler
     def ping_experiment(self, experiment_uuid: uuid.UUID):
