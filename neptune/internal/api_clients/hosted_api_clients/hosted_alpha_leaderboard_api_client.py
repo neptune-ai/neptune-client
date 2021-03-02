@@ -23,6 +23,7 @@ from typing import List, Dict
 
 import six
 from bravado.exception import HTTPNotFound
+from neptune.alpha.internal.backends.api_model import AttributeType
 
 from neptune.alpha import exceptions as alpha_exceptions
 from neptune.alpha.attributes import constants as alpha_consts
@@ -55,7 +56,7 @@ from neptune.internal.utils.alpha_integration import (
     channel_value_type_to_operation,
     deprecated_img_to_alpha_image, channel_type_to_clear_operation,
 )
-from neptune.model import ChannelWithLastValue
+from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
@@ -76,6 +77,26 @@ LegacyExperiment = namedtuple(
     'state '
     'properties '
     'parameters')
+
+LegacyLeaderboardEntry = namedtuple(
+    'LegacyExperiment',
+    'id '
+    'organizationName '
+    'projectName '
+    'shortId '
+    'name '
+    'state '
+    'timeOfCreation '
+    'timeOfCompletion '
+    'runningTime '
+    'owner '
+    'size '
+    'tags '
+    'description '
+    'channelsLastValues '
+    'parameters '
+    'properties'
+)
 
 
 class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
@@ -613,3 +634,96 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             csv.write("\n")
         csv.seek(0)
         return csv
+
+    @with_api_exceptions_handler
+    def get_leaderboard_entries(self, project,
+                                entry_types=None,  # deprecated
+                                ids=None,
+                                states=None,
+                                owners=None,
+                                tags=None,
+                                min_running_time=None):
+        if states is not None:
+            states = [state if state == "running" else "idle" for state in states]
+        try:
+            def get_portion(limit, offset):
+                return self.leaderboard_swagger_client.api.getLeaderboard(
+                    projectIdentifier=project.full_id,
+                    shortId=ids, state=states, owner=owners, tags=tags,
+                    tagsMode='and', minRunningTimeSeconds=min_running_time,
+                    sortBy=['sys/id'], sortFieldType=['string'], sortDirection=['ascending'],
+                    limit=limit, offset=offset
+                ).response().result.entries
+            return [LeaderboardEntry(self._to_leaderboard_entry_dto(e))
+                    for e in self._get_all_items(get_portion, step=100)]
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier=project.full_id)
+
+    @staticmethod
+    def _to_leaderboard_entry_dto(experiment_attributes):
+        attributes = experiment_attributes.attributes
+        system_attributes = experiment_attributes.systemAttributes
+
+        def is_channel_namespace(name):
+            return name.startswith(alpha_consts.LOG_ATTRIBUTE_SPACE)\
+                   or name.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE)
+
+        numeric_channels = [
+            HostedAlphaLeaderboardApiClient._float_series_to_channel_last_value_dto(attr)
+            for attr in attributes
+            if attr.type == AttributeType.FLOAT_SERIES.value
+            and is_channel_namespace(attr.name)
+            and attr.floatSeriesProperties.last is not None
+        ]
+        text_channels = [
+            HostedAlphaLeaderboardApiClient._string_series_to_channel_last_value_dto(attr)
+            for attr in attributes
+            if attr.type == AttributeType.STRING_SERIES.value
+            and is_channel_namespace(attr.name)
+            and attr.stringSeriesProperties.last is not None
+        ]
+
+        return LegacyLeaderboardEntry(
+            id=experiment_attributes.id,
+            organizationName=experiment_attributes.organizationName,
+            projectName=experiment_attributes.projectName,
+            shortId=system_attributes.shortId.value,
+            name=system_attributes.name.value,
+            state="running" if system_attributes.state.value == "running" else "succeeded",
+            timeOfCreation=system_attributes.creationTime.value,
+            timeOfCompletion=None,
+            runningTime=system_attributes.runningTime.value,
+            owner=system_attributes.owner.value,
+            size=system_attributes.size.value,
+            tags=system_attributes.tags.values,
+            description=system_attributes.description.value,
+            channelsLastValues=numeric_channels + text_channels,
+            parameters=[
+                AlphaParameterDTO(attr) for attr in attributes
+                if AlphaParameterDTO.is_valid_attribute(attr)
+            ],
+            properties=[
+                AlphaPropertyDTO(attr) for attr in attributes
+                if AlphaPropertyDTO.is_valid_attribute(attr)
+            ]
+        )
+
+    @staticmethod
+    def _float_series_to_channel_last_value_dto(attribute):
+        return AlphaChannelWithValueDTO(
+            channelId=attribute.name,
+            channelName=attribute.name.split('/', 1)[-1],
+            channelType="numeric",
+            x=attribute.floatSeriesProperties.lastStep,
+            y=attribute.floatSeriesProperties.last
+        )
+
+    @staticmethod
+    def _string_series_to_channel_last_value_dto(attribute):
+        return AlphaChannelWithValueDTO(
+            channelId=attribute.name,
+            channelName=attribute.name.split('/', 1)[-1],
+            channelType="text",
+            x=attribute.stringSeriesProperties.lastStep,
+            y=attribute.stringSeriesProperties.last
+        )
