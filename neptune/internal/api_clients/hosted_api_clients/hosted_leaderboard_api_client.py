@@ -99,7 +99,7 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
 
     @property
     def api_address(self):
-        return self._backend_api_client.api_address
+        return self._client_config.api_url
 
     @property
     def display_address(self):
