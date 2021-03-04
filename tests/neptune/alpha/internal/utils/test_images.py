@@ -114,10 +114,12 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(figure), self._encode_figure(figure))
 
+    @unittest.skipIf(sys.version_info < (3, 6),
+                     reason="Installing Torch on Windows takes too long and 3.5 is not supported")
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
         # given
-        image_tensor = torch.rand(200, 300, 3)
+        image_tensor = torch.rand(200, 300, 3)  # pylint: disable=no-member
         expected_array = image_tensor.numpy() * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
