@@ -18,6 +18,7 @@
 import base64
 import io
 import os
+import sys
 import unittest
 from typing import Optional
 from uuid import uuid4
@@ -63,7 +64,8 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_2d_grayscale_array(self):
         # given
         image_array = self._random_image_array(d=None)
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+        scaled_array = image_array * 255
+        expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
@@ -75,11 +77,12 @@ class TestImage(unittest.TestCase):
             [[3], [4]],
             [[5], [6]]
         ])
-        expected_image = Image.fromarray(numpy.array([
+        expected_array = numpy.array([
             [1, 2],
             [3, 4],
             [5, 6]
-        ]).astype(numpy.uint8))
+        ]) * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
@@ -87,7 +90,8 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_rgb_array(self):
         # given
         image_array = self._random_image_array()
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+        scaled_array = image_array * 255
+        expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
@@ -95,7 +99,8 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_rgba_array(self):
         # given
         image_array = self._random_image_array(d=4)
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+        scaled_array = image_array * 255
+        expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
         self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
@@ -108,6 +113,27 @@ class TestImage(unittest.TestCase):
 
         # expect
         self.assertEqual(get_image_content(figure), self._encode_figure(figure))
+
+    def test_get_image_content_from_torch_tensor(self):
+        import torch  # pylint: disable=C0415
+        # given
+        image_tensor = torch.rand(200, 300, 3)
+        expected_array = image_tensor.numpy() * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+
+        # expect
+        self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
+
+    @unittest.skipIf(sys.version_info < (3, 6), reason="Tensorflow isn't built for older Pythons")
+    def test_get_image_content_from_tensorflow_tensor(self):
+        import tensorflow as tf  # pylint: disable=C0415
+        # given
+        image_tensor = tf.random.uniform(shape=[200, 300, 3])
+        expected_array = image_tensor.numpy() * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+
+        # expect
+        self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
     @staticmethod
     def _encode_pil_image(image: Image) -> str:
