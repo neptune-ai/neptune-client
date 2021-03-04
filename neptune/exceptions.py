@@ -311,3 +311,22 @@ class UnsupportedClientVersion(NeptuneException):
                 version,
                 "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion)
             ))
+
+
+class NotNeptuneExperimentException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}     
+----NotNeptuneExperimentException---------------------------------------------------------------------------------------
+{end}
+Looks like you did not pass Neptune Experiment. Here is how to create one:
+    {python}exp = neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
+
+Returned {bold}exp{end} is Neptune experiment.
+
+You may also want to check the following docs pages:
+    - https://docs-beta.neptune.ai/essentials/integrations/machine-learning-frameworks/sklearn
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+""".format(**STYLES)
+        super(NotNeptuneExperimentException, self).__init__(message)
