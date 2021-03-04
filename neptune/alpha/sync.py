@@ -368,7 +368,7 @@ def sync(path: Path, experiment_names: List[str], project_name: Optional[str]):
 
     \b
     # Synchronize all experiments in the current directory
-    neptune sync # TODO while in alpha: python -m neptune.alpha.cli sync
+    neptune sync
 
     \b
     # Synchronize all experiments in the given path
