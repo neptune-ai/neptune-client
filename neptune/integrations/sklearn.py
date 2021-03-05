@@ -36,7 +36,7 @@ from neptune.alpha.experiment import Experiment
 from neptune.exceptions import NotNeptuneExperimentException
 
 
-# INFO
+# ToDo
 # Yellowbrick and scikitplot are required
 # pip install yellowbrick>=1.3
 # pip install scikit-plot>=0.3.7
@@ -522,10 +522,10 @@ def log_scores(experiment, estimator, X, y, y_pred=None, namespace=None):
     assert isinstance(namespace, str) or namespace is None,\
         'namespace must be str, but {} was passed'.format(type(namespace))
 
+    _validate_experiment(experiment)
+
     if namespace is None:
         namespace = 'test/scores/'
-
-    exp = _validate_experiment(experiment)
 
     if y_pred is None:
         y_pred = estimator.predict(X)
