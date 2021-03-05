@@ -16,7 +16,6 @@
 
 try:
     from neptune.alpha.integrations.tensorflow_keras.impl import NeptuneMonitor
-    NeptuneMonitor = NeptuneMonitor
 except ImportError:
     from neptune.alpha.exceptions import NeptuneIntegrationNotInstalledException
     raise NeptuneIntegrationNotInstalledException("neptune-tensorflow-keras", "tensorflow-keras") from None
