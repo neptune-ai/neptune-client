@@ -47,13 +47,10 @@ class NeptuneCallback(Callback):
     Goes over the `last_metrics` and `smooth_loss` after each batch and epoch
     and logs them to Neptune.
 
-    If experiment parameter is not provided, Neptune will attempt to self-initialize using
-    `project` and  `api_token` parameters
-
     See the example experiment here https://ui.neptune.ai/shared/keras-integration/e/KERAS-23/logs
 
     Args:
-        experiment: `neptune.Experiment`:
+        experiment: `neptune.alpha.Experiment`:
             Neptune experiment, required.
         base_namespace: str, optional:
             Namespace, in which all series will be put.
@@ -64,12 +61,12 @@ class NeptuneCallback(Callback):
 
         .. code:: python
 
-            import neptune
+            import neptune.alpha as neptune
 
             experiment = neptune.init(api_token='ANONYMOUS',
                                       project='shared/keras-integration')
 
-        Instantiate the monitor and pass
+        Instantiate the callback and pass
         it to callbacks argument of `model.fit()`:
 
         .. code:: python
