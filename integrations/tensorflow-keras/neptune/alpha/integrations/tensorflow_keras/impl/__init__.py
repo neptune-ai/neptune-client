@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2021, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Optional
 
-import neptune.alpha as neptune
+from neptune.alpha import Experiment
 from neptune.alpha.exceptions import NeptuneException
 
 # Note: we purposefully try to import `tensorflow.keras.callbacks.Callback`
@@ -35,7 +36,7 @@ except ImportError:
         raise ModuleNotFoundError(msg) # pylint:disable=undefined-variable
 
 
-class NeptuneMonitor(Callback):
+class NeptuneCallback(Callback):
     """Logs Keras metrics to Neptune.
 
     Goes over the `last_metrics` and `smooth_loss` after each batch and epoch
@@ -47,19 +48,10 @@ class NeptuneMonitor(Callback):
     See the example experiment here https://ui.neptune.ai/shared/keras-integration/e/KERAS-23/logs
 
     Args:
-        experiment: `neptune.Experiment`, optional:
-            Neptune experiment. If not provided, falls back on the current
-            experiment.
-        prefix: str, optional:
-            Prefix that should be added before the `metric_name`
-            and `valid_name` before logging to the appropriate channel.
-            Default is empty string ('').
-        project: str, optional:
-            When experiment is `None`, create experiment in this project.
-            Defaults to value of `NEPTUNE_PROJECT` environment variable.
-        api_token: str, optional:
-            When experiment is `None`, create experiment using this api_token.
-            Defaults to value of `NEPTUNE_API_TOKEN` environment variable.
+        experiment: `neptune.Experiment`:
+            Neptune experiment, required.
+        base_namespace: str, optional:
+            Namespace, in which all series will be put.
 
     Example:
 
@@ -69,14 +61,8 @@ class NeptuneMonitor(Callback):
 
             import neptune
 
-            neptune.init(api_token='ANONYMOUS',
-                         project_qualified_name='shared/keras-integration')
-
-        Create Neptune experiment:
-
-        .. code:: python
-
-            neptune.create_experiment(name='keras-integration-example')
+            experiment = neptune.init(api_token='ANONYMOUS',
+                                      project='shared/keras-integration')
 
         Instantiate the monitor and pass
         it to callbacks argument of `model.fit()`:
@@ -88,22 +74,29 @@ class NeptuneMonitor(Callback):
             model.fit(x_train, y_train,
                       epochs=PARAMS['epoch_nr'],
                       batch_size=PARAMS['batch_size'],
-                      callbacks=[NeptuneMonitor()])
+                      callbacks=[NeptuneMonitor(experiment)])
 
     Note:
         You need to have Keras or Tensorflow 2 installed on your computer to use this module.
     """
 
-    def __init__(self, experiment=None, prefix='', project=None, api_token=None):
+    def __init__(self, experiment: Experiment, base_namespace: Optional[str] = None):
         super().__init__()
-        self._exp = experiment if experiment else neptune.init(project=project, api_token=api_token)
-        self._prefix = prefix
+        if experiment is None or not isinstance(experiment, Experiment):
+            raise ValueError("Neptune experiment is missing")
+        self._exp = experiment
+        self._namespace = ''
+        if base_namespace:
+            if not base_namespace.endswith("/"):
+                self._namespace = base_namespace
+            else:
+                self._namespace = base_namespace + '/'
 
     def _log_metrics(self, logs, trigger):
         if not logs:
             return
 
-        prefix = self._prefix + trigger + '_'
+        prefix = self._namespace + trigger + '/'
 
         for metric, value in logs.items():
             try:

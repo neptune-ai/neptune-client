@@ -13,7 +13,7 @@ def main():
         all_deps += extras[group_name]
     extras['all'] = all_deps
 
-    base_libs = ['neptune-client>=0.4.126']
+    base_libs = ['neptune-client>=0.5.1']
 
     setup(
         name='neptune-tensorflow-keras',
@@ -22,7 +22,7 @@ def main():
         author='neptune.ai',
         support='contact@neptune.ai',
         author_email='contact@neptune.ai',
-        url="https://github.com/neptune-ai/neptune-contrib",
+        url="https://github.com/neptune-ai/neptune-client",
         long_description=readme,
         long_description_content_type="text/markdown",
         license='MIT License',
