@@ -43,7 +43,7 @@ from neptune.exceptions import NotNeptuneExperimentException
 
 
 def log_regressor_summary(experiment, regressor, X_train, X_test, y_train, y_test,
-                          model_name=None, nrows=1000, log_charts=True):
+                          nrows=1000, log_charts=True):
     """Log sklearn regressor summary.
 
     This method automatically logs all regressor parameters, pickled estimator (model),
@@ -70,10 +70,6 @@ def log_regressor_summary(experiment, regressor, X_train, X_test, y_train, y_tes
             | The regression target for training
         y_test (:obj:`ndarray`):
             | The regression target for testing
-        model_name (`str`, optional, default is ``None``):
-            | Name of the pickled model file to upload.
-            | If ``None``, then ``estimator.skl`` is used.
-            | The model will be logged under namespace: ``model/<model_name>``.
         nrows (`int`, optional, default is 1000):
             | Log first ``nrows`` rows of test predictions.
         log_charts (:bool:, optional, default is ``True``):
@@ -106,7 +102,7 @@ def log_regressor_summary(experiment, regressor, X_train, X_test, y_train, y_tes
     _validate_experiment(experiment)
 
     log_estimator_params(experiment, regressor)
-    log_pickled_model(experiment, regressor, model_name)
+    log_pickled_model(experiment, regressor)
 
     y_pred = regressor.predict(X_test)
     log_test_predictions(experiment, regressor, X_test, y_test, y_pred=y_pred, nrows=nrows)
@@ -121,8 +117,8 @@ def log_regressor_summary(experiment, regressor, X_train, X_test, y_train, y_tes
         log_cooks_distance_chart(experiment, regressor, X_train, y_train)
 
 
-def log_classifier_summary(classifier, X_train, X_test, y_train, y_test,
-                           model_name=None, nrows=1000, experiment=None, log_charts=True):
+def log_classifier_summary(experiment, classifier, X_train, X_test, y_train, y_test,
+                           nrows=1000, log_charts=True):
     """Log sklearn classifier summary.
 
     This method automatically logs all classifier parameters, pickled estimator (model),
@@ -149,9 +145,6 @@ def log_classifier_summary(classifier, X_train, X_test, y_train, y_test,
             | The classification target for training
         y_test (:obj:`ndarray`):
             | The classification target for testing
-        model_name (`str`, optional, default is ``None``):
-            | If logging picked model, define a name of the file to be logged to `model/<model_name>`
-            | If ``None`` - `estimator.skl` is used.
         nrows (`int`, optional, default is 1000):
             | Log first ``nrows`` rows of test predictions and predictions probabilities.
         log_charts (:bool:, optional, default is ``True``):
@@ -185,7 +178,7 @@ def log_classifier_summary(classifier, X_train, X_test, y_train, y_test,
     _validate_experiment(experiment)
 
     log_estimator_params(experiment, classifier)
-    log_pickled_model(experiment, classifier, model_name)
+    log_pickled_model(experiment, classifier,)
     log_test_preds_proba(experiment, classifier, X_test, nrows=nrows)
 
     y_pred = classifier.predict(X_test)
