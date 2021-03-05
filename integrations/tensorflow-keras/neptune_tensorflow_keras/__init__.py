@@ -19,6 +19,10 @@ from typing import Optional
 from neptune.alpha import Experiment
 from neptune.alpha.exceptions import NeptuneException
 
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
 # Note: we purposefully try to import `tensorflow.keras.callbacks.Callback`
 # before `keras.callbacks.Callback` because the former is compatible with both
 # `tensorflow.keras` and `keras`, while the latter is only compatible
@@ -70,7 +74,7 @@ class NeptuneCallback(Callback):
 
         .. code:: python
 
-            from neptunecontrib.monitoring.keras import NeptuneMonitor
+            from neptune.alpha.integrations.tensorflow_keras import NeptuneCallback
 
             model.fit(x_train, y_train,
                       epochs=PARAMS['epoch_nr'],
@@ -85,26 +89,28 @@ class NeptuneCallback(Callback):
         super().__init__()
         if experiment is None or not isinstance(experiment, Experiment):
             raise ValueError("Neptune experiment is missing")
-        self._exp = experiment
-        self._namespace = ''
+        self._base_namespace = ''
         if base_namespace:
-            if not base_namespace.endswith("/"):
-                self._namespace = base_namespace
+            if base_namespace.endswith("/"):
+                self._base_namespace = base_namespace[:-1]
             else:
-                self._namespace = base_namespace + '/'
+                self._base_namespace = base_namespace
+        if self._base_namespace:
+            self._metric_logger = experiment[self._base_namespace]
+        else:
+            self._metric_logger = experiment
 
     def _log_metrics(self, logs, trigger):
         if not logs:
             return
 
-        prefix = self._namespace + trigger + '/'
+        logger = self._metric_logger[trigger]
 
         for metric, value in logs.items():
             try:
                 if metric in ('batch', 'size'):
                     continue
-                name = prefix + metric
-                self._exp[name].log(value)
+                logger[metric].log(value)
             except NeptuneException:
                 pass
 
@@ -113,7 +119,3 @@ class NeptuneCallback(Callback):
 
     def on_epoch_end(self, epoch, logs=None):  # pylint:disable=unused-argument
         self._log_metrics(logs, 'epoch')
-
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
