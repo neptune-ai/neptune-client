@@ -44,6 +44,15 @@ try:
 except ImportError:
     MPLFigure = None
 
+try:
+    from torch import Tensor as TorchTensor
+except ImportError:
+    TorchTensor = None
+
+try:
+    from tensorflow import Tensor as TensorflowTensor
+except ImportError:
+    TensorflowTensor = None
 
 IMAGE_SIZE_LIMIT_MB = 15
 
@@ -72,17 +81,7 @@ def _image_to_bytes(image) -> bytes:
             return image_file.read()
 
     elif numpy_ndarray is not None and isinstance(image, numpy_ndarray):
-        shape = image.shape
-        if len(shape) == 2:
-            return _get_pil_image_data(pilimage_fromarray(image.astype(numpy_uint8)))
-        if len(shape) == 3:
-            if shape[2] == 1:
-                array2d = numpy_array([[col[0] for col in row] for row in image])
-                return _get_pil_image_data(pilimage_fromarray(array2d.astype(numpy_uint8)))
-            if shape[2] in (3, 4):
-                return _get_pil_image_data(pilimage_fromarray(image.astype(numpy_uint8)))
-        raise ValueError("Incorrect size of numpy.ndarray. Should be 2-dimensional or"
-                         "3-dimensional with 3rd dimension of size 1, 3 or 4.")
+        return _get_numpy_as_image(image)
 
     elif PILImage is not None and isinstance(image, PILImage):
         return _get_pil_image_data(image)
@@ -90,7 +89,28 @@ def _image_to_bytes(image) -> bytes:
     elif MPLFigure is not None and isinstance(image, MPLFigure):
         return _get_figure_image_data(image)
 
+    elif TorchTensor is not None and isinstance(image, TorchTensor):
+        return _get_numpy_as_image(image.detach().numpy())
+
+    elif TensorflowTensor is not None and isinstance(image, TensorflowTensor):
+        return _get_numpy_as_image(image.numpy())
+
     raise TypeError("image is {}".format(type(image)))
+
+
+def _get_numpy_as_image(array):
+    array *= 255
+    shape = array.shape
+    if len(shape) == 2:
+        return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
+    if len(shape) == 3:
+        if shape[2] == 1:
+            array2d = numpy_array([[col[0] for col in row] for row in array])
+            return _get_pil_image_data(pilimage_fromarray(array2d.astype(numpy_uint8)))
+        if shape[2] in (3, 4):
+            return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
+    raise ValueError("Incorrect size of numpy.ndarray. Should be 2-dimensional or"
+                     "3-dimensional with 3rd dimension of size 1, 3 or 4.")
 
 
 def _get_pil_image_data(image: PILImage) -> bytes:
