@@ -359,5 +359,8 @@ You may also want to check the following docs pages:
     
 {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'neptune-framwork': neptune_framwork, 'framework': framwork}.items()) + list(STYLES.items()))
+        inputs = dict(list({
+                               'neptune-framwork': neptune_framwork,
+                               'framework': framwork
+                           }.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))

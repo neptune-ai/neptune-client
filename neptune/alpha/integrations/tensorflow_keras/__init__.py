@@ -20,4 +20,3 @@ try:
 except ImportError:
     from neptune.alpha.exceptions import NeptuneIntegrationNotInstalledException
     raise NeptuneIntegrationNotInstalledException("neptune-tensorflow-keras", "tensorflow-keras") from None
-
