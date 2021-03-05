@@ -1,3 +1,4 @@
+import versioneer
 from setuptools import setup
 
 
@@ -17,7 +18,7 @@ def main():
 
     setup(
         name='neptune-tensorflow-keras',
-        version="0.0.1", # TODO fix version generation, propably use versioneer
+        version=versioneer.get_version(),
         description='Neptune.ai tensorflow-keras integration library',
         author='neptune.ai',
         support='contact@neptune.ai',
@@ -28,7 +29,7 @@ def main():
         license='MIT License',
         install_requires=base_libs,
         extras_require=extras,
-        packages=['neptune.alpha.integrations.tensorflow_keras.impl'],
+        packages=['neptune_tensorflow_keras'],
         zip_safe=False
     )
 

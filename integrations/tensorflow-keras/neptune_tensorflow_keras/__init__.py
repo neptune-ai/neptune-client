@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from typing import Optional
 
 from neptune.alpha import Experiment
@@ -112,3 +113,7 @@ class NeptuneCallback(Callback):
 
     def on_epoch_end(self, epoch, logs=None):  # pylint:disable=unused-argument
         self._log_metrics(logs, 'epoch')
+
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
