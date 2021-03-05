@@ -241,7 +241,7 @@ def log_estimator_params(experiment, estimator, namespace=None):
 def log_pickled_model(experiment, estimator, namespace=None):
     """Log pickled estimator.
 
-    Log estimator as pickled file under given <namespace>, by default ``model/estimator.skl``.
+    Log estimator as pickled file under given <namespace>, by default ``pickled_model/estimator.skl``.
 
     Estimator should be fitted before calling this function.
 
@@ -258,7 +258,7 @@ def log_pickled_model(experiment, estimator, namespace=None):
             | Scikit-learn estimator to log.
         namespace (:str:, optional, default is ``None``):
             | Neptune 'namespace' under which to store pickled model.
-            | If ``None``, then ``model/estimator.skl`` is used.
+            | If ``None``, then ``pickled_model/estimator.skl`` is used.
 
     Returns:
         ``None``
@@ -281,7 +281,7 @@ def log_pickled_model(experiment, estimator, namespace=None):
     _validate_experiment(experiment)
 
     if namespace is None:
-        namespace = 'model/estimator.skl'
+        namespace = 'pickled_model/estimator.skl'
 
     buffer = BytesIO()
     pickle.dump(estimator, buffer)
@@ -543,14 +543,14 @@ def log_scores(experiment, estimator, X, y, y_pred=None, namespace=None):
         for metric_name, values in zip(['precision', 'recall', 'fbeta_score', 'support'],
                                        precision_recall_fscore_support(y, y_pred)):
             for i, value in enumerate(values):
-                experiment['{}/{}/class_{}'.format(namespace, metric_name, i)] = value
+                experiment['{}/class_{}/{}'.format(namespace, i, metric_name)] = value
 
 
 def log_learning_curve_chart(experiment, regressor, X_train, y_train, namespace=None):
     """Log learning curve chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/learning_curve``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -589,7 +589,7 @@ def log_learning_curve_chart(experiment, regressor, X_train, y_train, namespace=
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/learning_curve'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -606,7 +606,7 @@ def log_feature_importance_chart(experiment, regressor, X_train, y_train, namesp
     """Log feature importance chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/feature_importance``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -645,7 +645,7 @@ def log_feature_importance_chart(experiment, regressor, X_train, y_train, namesp
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/feature_importance'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -664,7 +664,7 @@ def log_residuals_chart(experiment, regressor, X_train, X_test, y_train, y_test,
     """Log residuals chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/residuals``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -707,7 +707,7 @@ def log_residuals_chart(experiment, regressor, X_train, X_test, y_train, y_test,
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/residuals'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -727,7 +727,7 @@ def log_prediction_error_chart(experiment, regressor, X_train, X_test, y_train, 
     """Log prediction error chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/prediction_error``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -770,7 +770,7 @@ def log_prediction_error_chart(experiment, regressor, X_train, X_test, y_train, 
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/prediction_error'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -790,7 +790,7 @@ def log_cooks_distance_chart(experiment, regressor, X_train, y_train, namespace=
     """Log feature importance chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/cooks_distance``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -829,7 +829,7 @@ def log_cooks_distance_chart(experiment, regressor, X_train, y_train, namespace=
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/cooks_distance'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -848,7 +848,7 @@ def log_classification_report_chart(experiment, classifier, X_train, X_test, y_t
     """Log classification report chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/classification_report``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -891,7 +891,7 @@ def log_classification_report_chart(experiment, classifier, X_train, X_test, y_t
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/classification_report'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -911,7 +911,7 @@ def log_confusion_matrix_chart(experiment, classifier, X_train, X_test, y_train,
     """Log confusion matrix.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/confusion_matrix``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -954,7 +954,7 @@ def log_confusion_matrix_chart(experiment, classifier, X_train, X_test, y_train,
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/confusion_matrix'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -974,7 +974,7 @@ def log_roc_auc_chart(experiment, classifier, X_train, X_test, y_train, y_test, 
     """Log ROC-AUC chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/ROC_AUC``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -1017,7 +1017,7 @@ def log_roc_auc_chart(experiment, classifier, X_train, X_test, y_train, y_test, 
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/ROC_AUC'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -1037,7 +1037,7 @@ def log_precision_recall_chart(experiment, classifier, X_test, y_test, y_pred_pr
     """Log precision recall chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/precision_recall``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -1078,7 +1078,7 @@ def log_precision_recall_chart(experiment, classifier, X_test, y_test, y_pred_pr
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/precision_recall'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -1103,7 +1103,7 @@ def log_class_prediction_error_chart(experiment, classifier, X_train, X_test, y_
     """Log class prediction error chart.
 
     Create and log learning curve chart, and have it under given <namespace>,
-    by default ``diagnostics_charts/class_prediction_error``.
+    by default ``diagnostics_charts``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -1146,7 +1146,7 @@ def log_class_prediction_error_chart(experiment, classifier, X_train, X_test, y_
         'namespace must be str, but {} was passed'.format(type(namespace))
 
     if namespace is None:
-        namespace = 'diagnostics_charts/class_prediction_error'
+        namespace = 'diagnostics_charts'
 
     _validate_experiment(experiment)
 
@@ -1345,7 +1345,7 @@ def log_silhouette_chart(experiment, model, X, namespace=None, **kwargs):
     Charts are computed for j = 2, 3, ..., n_clusters.
 
     Create and log silhouette charts, and have it under given <namespace>,
-    by default ``diagnostics_charts/silhouette/``.
+    by default ``diagnostics_charts/silhouette``.
 
     Tip:
         Check Sklearn-Neptune integration
@@ -1362,7 +1362,7 @@ def log_silhouette_chart(experiment, model, X, namespace=None, **kwargs):
             | Training instances to cluster.
         namespace (:str:, optional, default is ``None``):
             | Neptune 'namespace' under which to store test preds probabilities.
-            | If ``None``, then ``diagnostics_charts/silhouette/`` is used.
+            | If ``None``, then ``diagnostics_charts/silhouette`` is used.
         kwargs:
             KMeans parameters.
 
@@ -1386,7 +1386,7 @@ def log_silhouette_chart(experiment, model, X, namespace=None, **kwargs):
     _validate_experiment(experiment)
 
     if namespace is None:
-        namespace = 'diagnostics_charts/silhouette/'
+        namespace = 'diagnostics_charts/silhouette'
 
     model.set_params(**kwargs)
 
@@ -1401,7 +1401,7 @@ def log_silhouette_chart(experiment, model, X, namespace=None, **kwargs):
             visualizer = SilhouetteVisualizer(model, is_fitted=True, ax=ax)
             visualizer.fit(X)
             visualizer.finalize()
-            experiment['{}/k={}'.format(namespace, j)].log(neptune.types.Image(fig))
+            experiment[namespace].log(neptune.types.Image(fig))
             plt.close(fig)
         except Exception as e:
             print('Did not log Silhouette Coefficients chart. Error {}'.format(e))
