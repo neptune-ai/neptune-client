@@ -340,3 +340,24 @@ You may also want to check the following docs pages:
 {correct}Need help?{end}-> TODO: create and link docs
 """.format(**STYLES)
         super().__init__(message)
+
+
+class NeptuneIntegrationNotInstalledException(NeptuneException):
+    def __init__(self, neptune_framwork, framwork):
+        message = """
+{h1}     
+----NeptuneIntegrationNotInstalledException-----------------------------------------
+{end}
+Looks like integration {neptune-framwork} wasn't installed.
+To install run:
+    {bash}pip install {neptune-framwork}{end}
+Or:
+    {bash}pip install neptune-client[{framework}]{end}
+
+You may also want to check the following docs pages:
+    - https://docs-beta.neptune.ai/essentials/integrations
+    
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({'neptune-framwork': neptune_framwork, 'framework': framwork}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
