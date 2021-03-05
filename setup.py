@@ -22,6 +22,9 @@ def main():
             install_requires=requirements,
             packages=find_packages(),
             cmdclass=versioneer.get_cmdclass(),
+            extras_require={
+              "tensorflow-keras": ["neptune-tensorflow-keras"]
+            },
             entry_points={
                 'console_scripts': [
                     'neptune = neptune_cli.main:main',
