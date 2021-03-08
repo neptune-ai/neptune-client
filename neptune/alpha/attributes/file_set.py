@@ -37,7 +37,7 @@ class FileSet(Attribute):
             verify_collection_type("value", value, str)
         self._enqueue_upload_operation(value, reset=True, wait=wait)
 
-    def save_files(self, globs: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def upload_files(self, globs: Union[str, Iterable[str]], wait: bool = False) -> None:
         if isinstance(globs, str):
             globs = [globs]
         else:

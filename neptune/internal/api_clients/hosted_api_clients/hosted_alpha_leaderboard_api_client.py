@@ -399,11 +399,12 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         target_name = os.path.basename(artifact) if destination is None else destination
         target_name = f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{target_name}'
         dest_path = alpha_path_utils.parse_path(normalize_file_name(target_name))
+        ext = os.path.splitext(target_name)[1]
         if isinstance(artifact, str):
             if os.path.exists(artifact):
                 operation = alpha_operation.UploadFile(
                     path=dest_path,
-                    file_name=dest_path[-1],
+                    ext=ext,
                     file_path=os.path.abspath(artifact),
                 )
             else:
@@ -412,7 +413,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             if destination is not None:
                 operation = alpha_operation.UploadFileContent(
                     path=dest_path,
-                    file_name=dest_path[-1],
+                    ext=ext,
                     file_content=base64_encode(artifact.read().encode('utf-8')),
                 )
             else:
@@ -461,14 +462,14 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                     experiment_uuid=experiment_uuid,
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     source=upload_operation.file_path,
-                    target=upload_operation.file_name)
+                    ext=upload_operation.ext)
             elif isinstance(upload_operation, alpha_operation.UploadFileContent):
                 alpha_hosted_file_operations.upload_file_attribute(
                     swagger_client=self.leaderboard_swagger_client,
                     experiment_uuid=experiment_uuid,
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     source=base64_decode(upload_operation.file_content),
-                    target=upload_operation.file_name)
+                    ext=upload_operation.ext)
             elif isinstance(upload_operation, alpha_operation.UploadFileSet):
                 alpha_hosted_file_operations.upload_file_set_attribute(
                     swagger_client=self.leaderboard_swagger_client,

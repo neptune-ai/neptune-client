@@ -114,7 +114,7 @@ class AssignDatetime(Operation):
 @dataclass
 class UploadFile(Operation):
 
-    file_name: str
+    ext: str
     file_path: str
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -122,19 +122,19 @@ class UploadFile(Operation):
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["file_name"] = self.file_name
+        ret["ext"] = self.ext
         ret["file_path"] = self.file_path
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'UploadFile':
-        return UploadFile(data["path"], data["file_name"], data["file_path"])
+        return UploadFile(data["path"], data["ext"], data["file_path"])
 
 
 @dataclass
 class UploadFileContent(Operation):
 
-    file_name: str
+    ext: str
     file_content: str
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -142,13 +142,13 @@ class UploadFileContent(Operation):
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["file_name"] = self.file_name
+        ret["ext"] = self.ext
         ret["file_content"] = self.file_content
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'UploadFileContent':
-        return UploadFileContent(data["path"], data["file_name"], data["file_content"])
+        return UploadFileContent(data["path"], data["ext"], data["file_content"])
 
 
 @dataclass

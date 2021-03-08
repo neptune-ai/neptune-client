@@ -1,0 +1,3 @@
+include versioneer.py
+include neptune/alpha/integrations/tensorflow_keras/impl/_version.py
+include neptune_tensorflow_keras/_version.py

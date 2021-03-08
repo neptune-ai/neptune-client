@@ -256,7 +256,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         experiment_uuid=experiment_uuid,
                         attribute=path_to_str(op.path),
                         source=op.file_path,
-                        target=op.file_name)
+                        ext=op.ext)
                 except NeptuneException as e:
                     errors.append(e)
             elif isinstance(op, UploadFileContent):
@@ -266,7 +266,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         experiment_uuid=experiment_uuid,
                         attribute=path_to_str(op.path),
                         source=base64_decode(op.file_content),
-                        target=op.file_name)
+                        ext=op.ext)
                 except NeptuneException as e:
                     errors.append(e)
             elif isinstance(op, UploadFileSet):

@@ -43,4 +43,4 @@ def upload_source_code(source_files: Optional[List[str]], experiment: Experiment
         experiment[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
 
     if source_files is not None:
-        experiment[attr_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH].save_files(source_files)
+        experiment[attr_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH].upload_files(source_files)

@@ -32,7 +32,7 @@ from neptune.alpha.attributes.atoms.float import Float
 from neptune.alpha.attributes.atoms.string import String
 from neptune.alpha.attributes.sets.string_set import StringSet
 from neptune.alpha.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.alpha.types import Image
+from neptune.alpha.types import Image, File as FileVal
 from neptune.alpha.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.alpha.types.atoms.float import Float as FloatVal
 from neptune.alpha.types.atoms.string import String as StringVal
@@ -90,7 +90,7 @@ class TestHandler(unittest.TestCase):
     @patch('neptune.alpha.internal.backends.neptune_backend_mock.copyfile')
     def test_save_download_file(self, copy_mock):
         exp = init(connection_mode="debug", flush_period=0.5)
-        exp['some/num/file'].save("path/to/other/file.txt")
+        exp['some/num/file'].upload("path/to/other/file.txt")
         self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
 
         exp['some/num/file'].download("path/to/download/alternative_file.txt")
@@ -113,11 +113,11 @@ class TestHandler(unittest.TestCase):
         exp = init(connection_mode="debug", flush_period=0.5)
         data = "Some test content of the stream"
 
-        exp['some/num/file'] = StringIO(data)
-        self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
+        exp['some/num/attr_name'] = FileVal.from_stream(StringIO(data))
+        self.assertIsInstance(exp.get_structure()['some']['num']['attr_name'], File)
 
         with NamedTemporaryFile("w") as temp_file:
-            exp['some/num/file'].download(temp_file.name)
+            exp['some/num/attr_name'].download(temp_file.name)
             with open(temp_file.name, "rt") as file:
                 self.assertEqual(file.read(), data)
 
@@ -125,15 +125,14 @@ class TestHandler(unittest.TestCase):
         exp = init(connection_mode="debug", flush_period=0.5)
         data = b"Some test content of the stream"
 
-        exp['some/num/file'] = BytesIO(data)
-        self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
+        exp['some/num/attr_name'] = FileVal.from_stream(BytesIO(data))
+        self.assertIsInstance(exp.get_structure()['some']['num']['attr_name'], File)
 
-        exp['some/num/file'].download()
         with TemporaryDirectory() as temp_dir:
             with patch('neptune.alpha.internal.backends.neptune_backend_mock.os.path.abspath') as abspath_mock:
-                abspath_mock.side_effect = lambda path: os.path.normpath(temp_dir + path)
-                exp['some/num/file'].download()
-            with open(temp_dir + 'stream.bin', "rb") as file:
+                abspath_mock.side_effect = lambda path: os.path.normpath(temp_dir + "/" + path)
+                exp['some/num/attr_name'].download()
+            with open(temp_dir + '/attr_name.bin', "rb") as file:
                 self.assertEqual(file.read(), data)
 
     @patch('neptune.alpha.internal.utils.glob',
@@ -141,8 +140,8 @@ class TestHandler(unittest.TestCase):
     @patch('neptune.alpha.internal.backends.neptune_backend_mock.ZipFile.write')
     def test_save_files_download_zip(self, zip_write_mock):
         exp = init(connection_mode="debug", flush_period=0.5)
-        exp['some/artifacts'].save_files("path/to/file.txt")
-        exp['some/artifacts'].save_files("path/to/other/*")
+        exp['some/artifacts'].upload_files("path/to/file.txt")
+        exp['some/artifacts'].upload_files("path/to/other/*")
 
         with TemporaryDirectory() as temp_dir:
             exp['some/artifacts'].download_zip(temp_dir)
