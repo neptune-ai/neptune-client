@@ -22,7 +22,7 @@ import sys
 from datetime import datetime
 
 import neptune
-from common_client_code import ClientFeatures
+from alpha_integration_dev.common_client_code import ClientFeatures
 
 
 class OldClientFeatures(ClientFeatures):

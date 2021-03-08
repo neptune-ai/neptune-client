@@ -16,9 +16,10 @@
 
 from typing import TypeVar, Iterable, TYPE_CHECKING, List
 
+from neptune.alpha.types import File
+
 from neptune.alpha.internal.utils import verify_collection_type
 
-from neptune.alpha.types.series.image import Image
 from neptune.alpha.types.series.series import Series
 
 if TYPE_CHECKING:
@@ -27,18 +28,18 @@ if TYPE_CHECKING:
 Ret = TypeVar('Ret')
 
 
-class ImageSeries(Series):
+class FileSeries(Series):
 
-    def __init__(self, values: Iterable[Image]):
-        verify_collection_type("values", values, Image)
+    def __init__(self, values: Iterable[File]):
+        verify_collection_type("values", values, File)
         self._values = list(values)
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_image_series(self)
 
     @property
-    def values(self) -> List[Image]:
+    def values(self) -> List[File]:
         return self._values
 
     def __str__(self):
-        return "ImageSeries({})".format(str(self.values))
+        return "FileSeries({})".format(str(self.values))

@@ -13,13 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import io
 import logging
-import os
 from typing import Optional
-
-from neptune.alpha.exceptions import FileNotFound
 
 _logger = logging.getLogger(__name__)
 
@@ -72,12 +68,6 @@ def get_image_content(image) -> Optional[bytes]:
 def _image_to_bytes(image) -> bytes:
     if image is None:
         raise ValueError("image is None")
-
-    elif isinstance(image, str):
-        if not os.path.exists(image):
-            raise FileNotFound(image)
-        with open(image, 'rb') as image_file:
-            return image_file.read()
 
     elif numpy_ndarray is not None and isinstance(image, numpy_ndarray):
         return _get_numpy_as_image(image)

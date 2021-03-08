@@ -15,5 +15,5 @@
 #
 
 from .float_series import FloatSeries
-from .image_series import ImageSeries
+from .file_series import FileSeries
 from .string_series import StringSeries

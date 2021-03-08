@@ -22,8 +22,7 @@ from .atoms.git_ref import GitRef
 
 from .series.float_series import FloatSeries
 from .series.string_series import StringSeries
-from .series.image_series import ImageSeries
-from .series.image import Image
+from .series.file_series import FileSeries
 
 from .sets.string_set import StringSet
 
