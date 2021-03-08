@@ -17,6 +17,10 @@
 # pylint: disable=protected-access
 from io import StringIO, BytesIO
 
+import numpy
+from PIL import Image
+
+from neptune.alpha.internal.utils.images import _get_pil_image_data
 from neptune.alpha.types import File
 
 from tests.neptune.alpha.attributes.test_attribute_base import TestAttributeBase
@@ -45,16 +49,27 @@ class TestFile(TestAttributeBase):
         self.assertEqual(None, file.content)
         self.assertEqual("txt", file.extension)
 
-    def test_create_from_content(self):
+    def test_create_from_string_content(self):
         file = File.from_content("some_content")
         self.assertEqual(None, file.path)
         self.assertEqual("some_content".encode("utf-8"), file.content)
-        self.assertEqual("", file.extension)
+        self.assertEqual("txt", file.extension)
 
-        file = File.from_content("some_content", extension="txt")
+        file = File.from_content("some_content", extension="png")
         self.assertEqual(None, file.path)
         self.assertEqual("some_content".encode("utf-8"), file.content)
-        self.assertEqual("txt", file.extension)
+        self.assertEqual("png", file.extension)
+
+    def test_create_from_bytes_content(self):
+        file = File.from_content(b"some_content")
+        self.assertEqual(None, file.path)
+        self.assertEqual(b"some_content", file.content)
+        self.assertEqual("bin", file.extension)
+
+        file = File.from_content(b"some_content", extension="png")
+        self.assertEqual(None, file.path)
+        self.assertEqual(b"some_content", file.content)
+        self.assertEqual("png", file.extension)
 
     def test_create_from_string_io(self):
         file = File.from_stream(StringIO("aaabbbccc"))
@@ -101,6 +116,18 @@ class TestFile(TestAttributeBase):
         self.assertEqual(None, file.path)
         self.assertEqual(b"bccc", file.content)
         self.assertEqual("bin", file.extension)
+
+    def test_as_image(self):
+        # given
+        image_array = numpy.random.rand(10, 10) * 255
+        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
+
+        # when
+        file = File.as_image(expected_image)
+
+        # then
+        self.assertEqual(file.extension, "png")
+        self.assertEqual(file.content, _get_pil_image_data(expected_image))
 
     def test_raise_exception_in_constructor(self):
         with self.assertRaises(ValueError):

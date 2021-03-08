@@ -15,7 +15,9 @@
 #
 import os
 from io import IOBase
-from typing import TypeVar, TYPE_CHECKING, Optional
+from typing import TypeVar, TYPE_CHECKING, Optional, Union
+
+from neptune.alpha.internal.utils.images import get_image_content
 
 from neptune.alpha.internal.utils import verify_type, get_stream_content
 from neptune.alpha.types.atoms.atom import Atom
@@ -63,11 +65,21 @@ class File(Atom):
             return "File(content=...)"
 
     @staticmethod
-    def from_content(content: str, extension: Optional[str] = None):
-        return File(content=content.encode("utf-8"), extension=extension)
+    def from_content(content: Union[str, bytes], extension: Optional[str] = None):
+        if isinstance(content, str):
+            ext = "txt"
+            content = content.encode("utf-8")
+        else:
+            ext = "bin"
+        return File(content=content, extension=extension or ext)
 
     @staticmethod
     def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None):
         verify_type("stream", stream, IOBase)
         content, stream_default_ext = get_stream_content(stream, seek)
         return File(content=content, extension=extension or stream_default_ext)
+
+    @staticmethod
+    def as_image(image):
+        content_bytes = get_image_content(image)
+        return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")

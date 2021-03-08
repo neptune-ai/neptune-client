@@ -15,7 +15,6 @@
 #
 
 # pylint: disable=protected-access
-import base64
 import io
 import os
 import sys
@@ -138,16 +137,16 @@ class TestImage(unittest.TestCase):
         self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
     @staticmethod
-    def _encode_pil_image(image: Image) -> str:
+    def _encode_pil_image(image: Image) -> bytes:
         with io.BytesIO() as image_buffer:
             image.save(image_buffer, format='PNG')
-            return base64.b64encode(image_buffer.getvalue()).decode('utf-8')
+            return image_buffer.getvalue()
 
     @staticmethod
-    def _encode_figure(figure: Figure) -> str:
+    def _encode_figure(figure: Figure) -> bytes:
         with io.BytesIO() as image_buffer:
             figure.savefig(image_buffer, format='PNG', bbox_inches="tight")
-            return base64.b64encode(image_buffer.getvalue()).decode('utf-8')
+            return image_buffer.getvalue()
 
     @staticmethod
     def _random_image_array(w=20, h=30, d: Optional[int] = 3):
