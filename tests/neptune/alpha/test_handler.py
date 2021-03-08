@@ -90,7 +90,7 @@ class TestHandler(unittest.TestCase):
     @patch('neptune.alpha.internal.backends.neptune_backend_mock.copyfile')
     def test_save_download_file(self, copy_mock):
         exp = init(connection_mode="debug", flush_period=0.5)
-        exp['some/num/file'].save("path/to/other/file.txt")
+        exp['some/num/file'].upload("path/to/other/file.txt")
         self.assertIsInstance(exp.get_structure()['some']['num']['file'], File)
 
         exp['some/num/file'].download("path/to/download/alternative_file.txt")
@@ -140,8 +140,8 @@ class TestHandler(unittest.TestCase):
     @patch('neptune.alpha.internal.backends.neptune_backend_mock.ZipFile.write')
     def test_save_files_download_zip(self, zip_write_mock):
         exp = init(connection_mode="debug", flush_period=0.5)
-        exp['some/artifacts'].save_files("path/to/file.txt")
-        exp['some/artifacts'].save_files("path/to/other/*")
+        exp['some/artifacts'].upload_files("path/to/file.txt")
+        exp['some/artifacts'].upload_files("path/to/other/*")
 
         with TemporaryDirectory() as temp_dir:
             exp['some/artifacts'].download_zip(temp_dir)

@@ -64,11 +64,11 @@ class Handler:
             else:
                 self._experiment.define(self._path, value, wait)
 
-    def save(self, value: str, wait: bool = False) -> None:
+    def upload(self, value: str, wait: bool = False) -> None:
         verify_type("value", value, str)
         self.assign(File(path=value), wait)
 
-    def save_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def upload_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         if is_collection(value):
             verify_collection_type("value", value, str)
         else:
@@ -78,10 +78,10 @@ class Handler:
             attr = self._experiment.get_attribute(self._path)
             if not attr:
                 attr = FileSet(self._experiment, parse_path(self._path))
-                attr.save_files(value, wait)
+                attr.upload_files(value, wait)
                 self._experiment.set_attribute(self._path, attr)
             else:
-                attr.save_files(value, wait)
+                attr.upload_files(value, wait)
 
     def log(self,
             value: Union[int, float, str, Image, Iterable[int], Iterable[float], Iterable[str], Iterable[Image]],
