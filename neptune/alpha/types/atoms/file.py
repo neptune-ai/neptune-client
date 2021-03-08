@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 import os
+from io import IOBase
 from typing import TypeVar, TYPE_CHECKING, Optional
 
-from neptune.alpha.internal.utils import verify_type
+from neptune.alpha.internal.utils import verify_type, get_stream_content
 from neptune.alpha.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -28,29 +29,45 @@ Ret = TypeVar('Ret')
 class File(Atom):
 
     def __init__(self,
-                 file_path: Optional[str] = None,
-                 file_content: Optional[str] = None,
-                 file_name: Optional[str] = None):
-        verify_type("file_path", file_path, (str, type(None)))
-        verify_type("file_content", file_content, (str, type(None)))
-        verify_type("file_name", file_name, (str, type(None)))
+                 path: Optional[str] = None,
+                 content: Optional[bytes] = None,
+                 extension: Optional[str] = None):
+        verify_type("path", path, (str, type(None)))
+        verify_type("content", content, (bytes, type(None)))
+        verify_type("extension", extension, (str, type(None)))
 
-        if file_path is not None and file_content is not None:
-            raise ValueError("file_path and file_content are mutually exclusive")
-        if file_path is None and file_content is None:
-            raise ValueError("file_path or file_content is required")
-        if file_content is not None and file_name is None:
-            raise ValueError("file_name is required if given file_content")
+        if path is not None and content is not None:
+            raise ValueError("path and content are mutually exclusive")
+        if path is None and content is None:
+            raise ValueError("path or content is required")
 
-        self.file_path = file_path
-        self.file_content = file_content
-        self.file_name = file_name or os.path.basename(file_path)
+        self.path = path
+        self.content = content
+
+        if extension is None and path is not None:
+            try:
+                ext = os.path.splitext(path)[1]
+                self.extension = ext[1:] if ext else ""
+            except ValueError:
+                self.extension = ""
+        else:
+            self.extension = extension or ""
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_file(self)
 
     def __str__(self):
-        if self.file_path is not None:
-            return "File({})".format(str(self.file_path))
+        if self.path is not None:
+            return "File(path={})".format(str(self.path))
         else:
-            return "File(stream)"
+            return "File(content=...)"
+
+    @staticmethod
+    def from_content(content: str, extension: Optional[str] = None):
+        return File(content=content.encode("utf-8"), extension=extension)
+
+    @staticmethod
+    def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None):
+        verify_type("stream", stream, IOBase)
+        content, stream_default_ext = get_stream_content(stream, seek)
+        return File(content=content, extension=extension or stream_default_ext)

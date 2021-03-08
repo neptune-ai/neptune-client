@@ -66,7 +66,7 @@ class Handler:
 
     def save(self, value: str, wait: bool = False) -> None:
         verify_type("value", value, str)
-        self.assign(File(file_path=value), wait)
+        self.assign(File(path=value), wait)
 
     def save_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         if is_collection(value):

@@ -37,10 +37,15 @@ def upload_file_attribute(swagger_client: SwaggerClient,
                           experiment_uuid: uuid.UUID,
                           attribute: str,
                           source: Union[str, bytes],
-                          target: str
+                          ext: str
                           ) -> None:
     if isinstance(source, str) and not os.path.isfile(source):
         raise FileUploadError(source, "Path not found or is a not a file.")
+
+    target = attribute
+    if ext:
+        target += "." + ext
+
     try:
         url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadAttribute.operation.path_name
         upload_entry = UploadEntry(source if isinstance(source, str) else BytesIO(source), target)
@@ -51,7 +56,7 @@ def upload_file_attribute(swagger_client: SwaggerClient,
                      query_params={
                          "experimentId": str(experiment_uuid),
                          "attribute": attribute,
-                         "filename": target
+                         "ext": ext
                      })
     except MetadataInconsistency:
         raise

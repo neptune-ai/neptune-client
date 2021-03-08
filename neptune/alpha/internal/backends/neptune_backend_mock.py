@@ -164,12 +164,12 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         value: File = self._experiments[experiment_uuid].get(path)
-        target_path = os.path.abspath(destination or value.file_name)
-        if value.file_content is not None:
+        target_path = os.path.abspath(destination or (path[-1] + ("." + value.extension if value.extension else "")))
+        if value.content is not None:
             with open(target_path, 'wb') as target_file:
-                target_file.write(base64_decode(value.file_content))
-        elif value.file_path != target_path:
-            copyfile(value.file_path, target_path)
+                target_file.write(value.content)
+        elif value.path != target_path:
+            copyfile(value.path, target_path)
 
     def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         source_file_set_value: FileSet = self._experiments[experiment_uuid].get(path)
@@ -278,12 +278,12 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("save", File.__name__)
-            return File(file_path=op.file_path, file_name=op.file_name)
+            return File(path=op.file_path, extension=op.ext)
 
         def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("save", File.__name__)
-            return File(file_content=op.file_content, file_name=op.file_name)
+            return File(content=base64_decode(op.file_content), extension=op.ext)
 
         def visit_upload_file_set(self, op: UploadFileSet) -> Optional[Value]:
             if self._current_value is None or op.reset:

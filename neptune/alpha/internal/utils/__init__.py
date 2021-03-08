@@ -119,19 +119,20 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
 STREAM_SIZE_LIMIT_MB = 15
 
 
-def get_stream_content(stream: IOBase) -> (Optional[str], str):
-    if stream.seekable():
-        stream.seek(0)
+def get_stream_content(stream: IOBase, seek: Optional[int] = None) -> (Optional[str], str):
+    if seek is not None and stream.seekable():
+        stream.seek(seek)
 
     content = stream.read(STREAM_SIZE_LIMIT_MB * 1024 * 1024 + 1)
-    default_name = "stream.txt" if isinstance(content, str) else "stream.bin"
+    default_ext = "txt" if isinstance(content, str) else "bin"
     if isinstance(content, str):
         content = content.encode('utf-8')
 
     if len(content) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
-        _logger.warning('Your stream is larger than %dMB. Neptune supports saving files smaller than %dMB.',
+        _logger.warning('Your stream is larger than %dMB. '
+                        'Neptune supports saving files from streams smaller than %dMB.',
                         STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
-        return None, default_name
+        return None, default_ext
 
     while True:
         chunk = stream.read(1024 * 1024)
@@ -148,12 +149,12 @@ def get_stream_content(stream: IOBase) -> (Optional[str], str):
             if content.tell() + len(chunk) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
                 _logger.warning('Your stream is larger than %dMB. Neptune supports saving files smaller than %dMB.',
                                 STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
-                return None, default_name
+                return None, default_ext
             content.write(chunk)
     if isinstance(content, BytesIO):
         content = content.getvalue()
 
-    return base64_encode(content), default_name
+    return content, default_ext
 
 
 def is_ipython() -> bool:
