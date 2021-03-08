@@ -20,7 +20,6 @@ import os
 from typing import Optional
 
 from neptune.alpha.exceptions import FileNotFound
-from neptune.alpha.internal.utils import base64_encode
 
 _logger = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ except ImportError:
 IMAGE_SIZE_LIMIT_MB = 15
 
 
-def get_image_content(image) -> Optional[str]:
+def get_image_content(image) -> Optional[bytes]:
     content = _image_to_bytes(image)
 
     if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
@@ -67,7 +66,7 @@ def get_image_content(image) -> Optional[str]:
                         IMAGE_SIZE_LIMIT_MB)
         return None
 
-    return base64_encode(content)
+    return content
 
 
 def _image_to_bytes(image) -> bytes:

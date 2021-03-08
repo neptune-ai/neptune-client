@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.alpha.internal.utils import base64_encode
 
 from neptune.alpha.internal.utils.images import get_image_content
 
@@ -23,6 +24,7 @@ class Image:
         if content is not None:
             self.content = content
         elif value is not None:
-            self.content = get_image_content(value)
+            content_bytes = get_image_content(value)
+            self.content = base64_encode(content_bytes) if content_bytes is not None else None
         else:
             raise ValueError("Parameter 'value' unfilled.")
