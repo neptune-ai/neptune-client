@@ -41,7 +41,7 @@ class File(Atom):
         with self._experiment.lock():
             self._enqueue_operation(operation, wait)
 
-    def save(self, path: str, wait: bool = False) -> None:
+    def upload(self, path: str, wait: bool = False) -> None:
         verify_type("path", path, str)
         self.assign(FileVal(path=path), wait)
 

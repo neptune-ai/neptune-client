@@ -67,7 +67,7 @@ class TestFile(TestAttributeBase):
             processor = MagicMock()
             exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = File(exp, path)
-            var.save(value, wait=wait)
+            var.upload(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(UploadFile(path=path, ext="", file_path=expected),
                                                                 wait)
 
@@ -81,17 +81,17 @@ class TestFile(TestAttributeBase):
             processor = MagicMock()
             exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = FileSet(exp, path)
-            var.save_files(value, wait=wait)
+            var.upload_files(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected, False), wait)
 
     def test_save_type_error(self):
         values = [55, None, [], FileVal]
         for value in values:
             with self.assertRaises(TypeError):
-                File(MagicMock(), MagicMock()).save(value)
+                File(MagicMock(), MagicMock()).upload(value)
 
     def test_save__files_type_error(self):
         values = [55, None, [55], FileSetVal]
         for value in values:
             with self.assertRaises(TypeError):
-                FileSet(MagicMock(), MagicMock()).save_files(value)
+                FileSet(MagicMock(), MagicMock()).upload_files(value)
