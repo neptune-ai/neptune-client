@@ -36,9 +36,12 @@ class TestFile(TestAttributeBase):
         a_text = "Some text stream"
         a_binary = b"Some binary stream"
         value_and_operation_factory = [
-            (FileVal("other/../other/file.txt"), lambda _: UploadFile(_, "file.txt", os.getcwd() + "/other/file.txt")),
-            (StringIO(a_text), lambda _: UploadFileContent(_, "stream.txt", base64_encode(a_text.encode('utf-8')))),
-            (BytesIO(a_binary), lambda _: UploadFileContent(_, "stream.bin", base64_encode(a_binary))),
+            (FileVal("other/../other/file.txt"),
+             lambda _: UploadFile(_, "txt", os.getcwd() + "/other/file.txt")),
+            (FileVal.from_stream(StringIO(a_text)),
+             lambda _: UploadFileContent(_, "txt", base64_encode(a_text.encode('utf-8')))),
+            (FileVal.from_stream(BytesIO(a_binary)),
+             lambda _: UploadFileContent(_, "bin", base64_encode(a_binary))),
         ]
 
         for value, operation_factory in value_and_operation_factory:
@@ -65,7 +68,7 @@ class TestFile(TestAttributeBase):
             exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
             var = File(exp, path)
             var.save(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(UploadFile(path, os.path.basename(value), expected),
+            processor.enqueue_operation.assert_called_once_with(UploadFile(path=path, ext="", file_path=expected),
                                                                 wait)
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")

@@ -64,24 +64,24 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             operations=[
                 UploadFile(
                     path=['some', 'files', 'some_file'],
-                    file_name='path_to_file',
+                    ext='',
                     file_path='path_to_file'
                 ),
                 UploadFileContent(
                     path=['some', 'files', 'some_text_stream'],
-                    file_name="stream.txt",
+                    ext="txt",
                     file_content=base64_encode(some_text.encode('utf-8'))
                 ),
                 UploadFileContent(
                     path=['some', 'files', 'some_binary_stream'],
-                    file_name="stream.bin",
+                    ext="bin",
                     file_content=base64_encode(some_binary)
                 ),
                 LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
                 AssignString(["properties", "name"], "some text"),
                 UploadFile(
                     path=['some', 'other', 'file.txt'],
-                    file_name="path.txt",
+                    ext="txt",
                     file_path='other/file/path.txt'
                 )
             ]
@@ -114,22 +114,22 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                  experiment_uuid=exp_uuid,
                  attribute="some/other/file.txt",
                  source="other/file/path.txt",
-                 target="path.txt"),
+                 ext="txt"),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_file",
                  source="path_to_file",
-                 target="path_to_file"),
+                 ext=""),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_text_stream",
                  source=some_text.encode('utf-8'),
-                 target="stream.txt"),
+                 ext="txt"),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/files/some_binary_stream",
                  source=some_binary,
-                 target="stream.bin")
+                 ext="bin")
         ], any_order=True)
 
         self.assertEqual([
@@ -153,17 +153,17 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             operations=[
                 UploadFile(
                     path=['some', 'path', '1', "var"],
-                    file_name="file",
+                    ext="",
                     file_path='/path/to/file'
                 ),
                 UploadFile(
                     path=['some', 'path', '2', "var"],
-                    file_name="with.dots.txt",
+                    ext="txt",
                     file_path='/some.file/with.dots.txt'
                 ),
                 UploadFile(
                     path=['some', 'path', '3', "var"],
-                    file_name="some_image.jpeg",
+                    ext="jpeg",
                     file_path='/path/to/some_image.jpeg'
                 )
             ]
@@ -174,17 +174,17 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                  experiment_uuid=exp_uuid,
                  attribute="some/path/1/var",
                  source="/path/to/file",
-                 target="file"),
+                 ext=""),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/path/2/var",
                  source="/some.file/with.dots.txt",
-                 target="with.dots.txt"),
+                 ext="txt"),
             call(swagger_client=backend.leaderboard_client,
                  experiment_uuid=exp_uuid,
                  attribute="some/path/3/var",
                  source="/path/to/some_image.jpeg",
-                 target="some_image.jpeg")
+                 ext="jpeg")
         ], any_order=True)
 
     @patch('neptune.alpha.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))

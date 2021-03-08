@@ -44,7 +44,7 @@ class TestHostedFileOperations(unittest.TestCase):
                 experiment_uuid=exp_uuid,
                 attribute="target/path.txt",
                 source=f.name,
-                target=os.path.basename(f.name))
+                ext="txt")
 
         # then
         upload_loop_mock.assert_called_once_with(
@@ -55,7 +55,7 @@ class TestHostedFileOperations(unittest.TestCase):
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
-                "filename": os.path.basename(f.name)
+                "ext": "txt"
             })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
@@ -72,7 +72,7 @@ class TestHostedFileOperations(unittest.TestCase):
             experiment_uuid=exp_uuid,
             attribute="target/path.txt",
             source=b"Some content of test stream",
-            target="stream.txt")
+            ext="txt")
 
         # then
         upload_loop_mock.assert_called_once_with(
@@ -83,7 +83,7 @@ class TestHostedFileOperations(unittest.TestCase):
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
-                "filename": "stream.txt"
+                "ext": "txt"
             })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
