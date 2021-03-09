@@ -44,6 +44,6 @@ def create_checkpoint(backend: NeptuneBackend, notebook_id: uuid.UUID, notebook_
             if ipython is not None and ipython.kernel is not None:
                 send_checkpoint_created(notebook_id=notebook_id,
                                         notebook_path=notebook_path,
-                                        checkpoint_id=checkpoint.id)
+                                        checkpoint_id=checkpoint)
                 _checkpoints[execution_count] = checkpoint
             return checkpoint
