@@ -37,9 +37,9 @@ def send_checkpoint_created(notebook_id, notebook_path, checkpoint_id) -> None:
     neptune_comm = _get_comm()
     neptune_comm.send(data=dict(
         message_type=MessageType.CHECKPOINT_CREATED,
-        data=dict(checkpoint_id=checkpoint_id,
-                  notebook_id=notebook_id,
-                  notebook_path=notebook_path)))
+        data=dict(checkpoint_id=str(checkpoint_id),
+                  notebook_id=str(notebook_id),
+                  notebook_path=str(notebook_path))))
 
 
 def _get_comm():
