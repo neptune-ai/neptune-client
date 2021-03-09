@@ -13,37 +13,62 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import imghdr
+import os
 
 from typing import Optional, Iterable
 
-from neptune.alpha.types.series.image import Image
+from neptune.alpha.internal.utils import base64_encode
 
-from neptune.alpha.types.series.image_series import ImageSeries as ImageSeriesVal
+from neptune.alpha.exceptions import FileNotFound, OperationNotSupported
 
+from neptune.alpha.types import File
+from neptune.alpha.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.alpha.internal.operation import LogImages, ClearImageLog, Operation
 from neptune.alpha.attributes.series.series import Series
 
-Val = ImageSeriesVal
-Data = Image
+Val = FileSeriesVal
+Data = File
 
 
-class ImageSeries(Series[Val, Data]):
+class FileSeries(Series[Val, Data]):
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
-        values = [LogImages.ValueType(val.content, step=step, ts=timestamp) for val in value.values]
+        values = [
+            LogImages.ValueType(self._get_base64_image_content(val), step=step, ts=timestamp)
+            for val in value.values
+        ]
         return LogImages(self._path, values)
 
     def _get_log_operation_from_data(self,
                                      data_list: Iterable[Data],
                                      step: Optional[float],
                                      timestamp: float) -> Operation:
-        return LogImages(self._path, [LogImages.ValueType(data.content, step, timestamp) for data in data_list])
+        return LogImages(self._path, [
+            LogImages.ValueType(self._get_base64_image_content(data), step, timestamp)
+            for data in data_list
+        ])
 
     def _get_clear_operation(self) -> Operation:
         return ClearImageLog(self._path)
 
     def _data_to_value(self, value: Iterable) -> Val:
-        return ImageSeriesVal(value)
+        return FileSeriesVal(value)
 
     def _is_value_type(self, value) -> bool:
-        return isinstance(value, ImageSeriesVal)
+        return isinstance(value, FileSeriesVal)
+
+    @staticmethod
+    def _get_base64_image_content(file: File) -> str:
+        if file.path is not None:
+            if not os.path.exists(file.path):
+                raise FileNotFound(file.path)
+            with open(file.path, 'rb') as image_file:
+                file = File.from_stream(image_file)
+
+        ext = imghdr.what("", h=file.content)
+        if not ext:
+            raise OperationNotSupported("FileSeries supports only image files for now. "
+                                        "Other file types will be implemented in future.")
+
+        return base64_encode(file.content)

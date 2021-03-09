@@ -23,7 +23,7 @@ from neptune.alpha.types.atoms.string import String
 from neptune.alpha.types.atoms.file import File
 from neptune.alpha.types.file_set import FileSet
 from neptune.alpha.types.series.float_series import FloatSeries
-from neptune.alpha.types.series.image_series import ImageSeries
+from neptune.alpha.types.series.file_series import FileSeries
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.types.sets.string_set import StringSet
 from neptune.alpha.types.value import Value
@@ -65,7 +65,7 @@ class ValueVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_image_series(self, value: ImageSeries) -> Ret:
+    def visit_image_series(self, value: FileSeries) -> Ret:
         pass
 
     @abc.abstractmethod

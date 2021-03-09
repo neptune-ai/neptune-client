@@ -42,16 +42,6 @@ class TestImage(unittest.TestCase):
         if not os.path.exists(self.TEST_DIR):
             os.makedirs(self.TEST_DIR)
 
-    def test_get_image_content_from_string(self):
-        # given
-        filename = "{}/image.png".format(self.TEST_DIR)
-        image_array = self._random_image_array()
-        expected_image = Image.fromarray(image_array.astype(numpy.uint8))
-        expected_image.save(filename)
-
-        # expect
-        self.assertEqual(get_image_content(filename), self._encode_pil_image(expected_image))
-
     def test_get_image_content_from_pil_image(self):
         # given
         image_array = self._random_image_array()

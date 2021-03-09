@@ -22,7 +22,7 @@ from neptune.alpha.attributes.atoms.float import Float as FloatAttr
 from neptune.alpha.attributes.atoms.string import String as StringAttr
 from neptune.alpha.attributes.attribute import Attribute
 from neptune.alpha.attributes.series.float_series import FloatSeries as FloatSeriesAttr
-from neptune.alpha.attributes.series.image_series import ImageSeries as ImageSeriesAttr
+from neptune.alpha.attributes.series.file_series import FileSeries as ImageSeriesAttr
 from neptune.alpha.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.alpha.exceptions import OperationNotSupported
@@ -33,7 +33,7 @@ from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
 from neptune.alpha.types.file_set import FileSet
 from neptune.alpha.types.series.float_series import FloatSeries
-from neptune.alpha.types.series.image_series import ImageSeries
+from neptune.alpha.types.series.file_series import FileSeries
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.types.sets.string_set import StringSet
 from neptune.alpha.types.value_visitor import ValueVisitor
@@ -69,7 +69,7 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
     def visit_string_series(self, _: StringSeries) -> Attribute:
         return StringSeriesAttr(self._experiment, self._path)
 
-    def visit_image_series(self, _: ImageSeries) -> Attribute:
+    def visit_image_series(self, _: FileSeries) -> Attribute:
         return ImageSeriesAttr(self._experiment, self._path)
 
     def visit_string_set(self, _: StringSet) -> Attribute:

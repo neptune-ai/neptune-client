@@ -24,6 +24,7 @@ import sys
 from datetime import datetime
 
 from PIL import Image
+from neptune.alpha.types import File
 
 import neptune.alpha as neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
@@ -93,13 +94,13 @@ class NewClientFeatures(ClientFeatures):
 
         # images
         im_frame = Image.open(self.img_path)
-        g_img = neptune.types.Image(im_frame)
+        g_img = File.as_image(im_frame)
         self.exp[f'{LOG_ATTRIBUTE_SPACE}g_img'].log(g_img)
 
     def handle_files_and_images(self):
         # image
         im_frame = Image.open(self.img_path)
-        g_img = neptune.types.Image(im_frame)
+        g_img = File.as_image(im_frame)
         self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned image'] = g_img
         self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged image'].log(g_img)
         with open(self.img_path, mode='r') as f:

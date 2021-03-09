@@ -16,7 +16,6 @@
 import abc
 from collections import namedtuple
 
-from neptune.alpha import types as alpha_types
 from neptune.alpha.attributes import constants as alpha_consts
 from neptune.alpha.internal import operation as alpha_operation
 from neptune.alpha.internal.backends.api_model import AttributeType as AlphaAttributeType
@@ -225,6 +224,5 @@ def channel_value_type_to_operation(channel_value_type: ChannelValueType) -> alp
     return _map_using_dict(channel_value_type, 'channel value type', _channel_value_type_to_operation)
 
 
-def deprecated_img_to_alpha_image(img: dict) -> alpha_types.Image:
-    # TODO: what about img: `name` and `description` fields?
+def deprecated_img_to_alpha_image(img: dict) -> str:
     return img['data']

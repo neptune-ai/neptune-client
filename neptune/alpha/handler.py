@@ -16,7 +16,7 @@
 from typing import TYPE_CHECKING, Union, Iterable
 
 from neptune.alpha.attributes.file_set import FileSet
-from neptune.alpha.attributes.series import ImageSeries
+from neptune.alpha.attributes.series import FileSeries
 from neptune.alpha.attributes.series.float_series import FloatSeries
 from neptune.alpha.attributes.series.string_series import StringSeries
 from neptune.alpha.attributes.sets.string_set import StringSet
@@ -24,7 +24,6 @@ from neptune.alpha.internal.utils import verify_type, is_collection, verify_coll
     is_float_like, is_string_like
 from neptune.alpha.internal.utils.paths import join_paths, parse_path
 from neptune.alpha.types.atoms.file import File
-from neptune.alpha.types.series.image import Image
 
 if TYPE_CHECKING:
     from neptune.alpha.experiment import Experiment
@@ -84,7 +83,7 @@ class Handler:
                 attr.upload_files(value, wait)
 
     def log(self,
-            value: Union[int, float, str, Image, Iterable[int], Iterable[float], Iterable[str], Iterable[Image]],
+            value: Union[int, float, str, File, Iterable[int], Iterable[float], Iterable[str], Iterable[File]],
             step=None,
             timestamp=None,
             wait: bool = False) -> None:
@@ -106,8 +105,8 @@ class Handler:
                     attr = FloatSeries(self._experiment, parse_path(self._path))
                 elif is_string(first_value):
                     attr = StringSeries(self._experiment, parse_path(self._path))
-                elif isinstance(first_value, Image):
-                    attr = ImageSeries(self._experiment, parse_path(self._path))
+                elif isinstance(first_value, File):
+                    attr = FileSeries(self._experiment, parse_path(self._path))
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._experiment, parse_path(self._path))
                 elif is_string_like(first_value):

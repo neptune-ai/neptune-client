@@ -33,7 +33,7 @@ from neptune.alpha.attributes.atoms.string import String as StringAttr
 from neptune.alpha.attributes.attribute import Attribute
 from neptune.alpha.attributes.file_set import FileSet as FileSetAttr
 from neptune.alpha.attributes.series.float_series import FloatSeries as FloatSeriesAttr
-from neptune.alpha.attributes.series.image_series import ImageSeries as ImageSeriesAttr
+from neptune.alpha.attributes.series.file_series import FileSeries as ImageSeriesAttr
 from neptune.alpha.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.alpha.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.alpha.exceptions import MetadataInconsistency

@@ -65,7 +65,6 @@ from neptune.alpha.internal.operation import (
 from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.internal.utils import base64_decode
 from neptune.alpha.internal.utils.paths import path_to_str
-from neptune.alpha.types import Image
 from neptune.alpha.types.atoms import GitRef
 from neptune.alpha.types.atoms.datetime import Datetime
 from neptune.alpha.types.atoms.file import File
@@ -73,7 +72,7 @@ from neptune.alpha.types.atoms.float import Float
 from neptune.alpha.types.atoms.string import String
 from neptune.alpha.types.file_set import FileSet
 from neptune.alpha.types.series.float_series import FloatSeries
-from neptune.alpha.types.series.image_series import ImageSeries
+from neptune.alpha.types.series.file_series import FileSeries
 from neptune.alpha.types.series.string_series import StringSeries
 from neptune.alpha.types.sets.string_set import StringSet
 from neptune.alpha.types.value import Value
@@ -245,7 +244,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_string_series(self, _: StringSeries) -> AttributeType:
             return AttributeType.STRING_SERIES
 
-        def visit_image_series(self, _: ImageSeries) -> AttributeType:
+        def visit_image_series(self, _: FileSeries) -> AttributeType:
             return AttributeType.IMAGE_SERIES
 
         def visit_string_set(self, _: StringSet) -> AttributeType:
@@ -312,12 +311,12 @@ class NeptuneBackendMock(NeptuneBackend):
             return StringSeries(self._current_value.values + raw_values)
 
         def visit_log_images(self, op: LogImages) -> Optional[Value]:
-            raw_values = [Image(content=x.value) for x in op.values]
+            raw_values = [File.from_content(base64_decode(x.value)) for x in op.values]
             if self._current_value is None:
-                return ImageSeries(raw_values)
-            if not isinstance(self._current_value, ImageSeries):
-                raise self._create_type_error("log", ImageSeries.__name__)
-            return ImageSeries(self._current_value.values + raw_values)
+                return FileSeries(raw_values)
+            if not isinstance(self._current_value, FileSeries):
+                raise self._create_type_error("log", FileSeries.__name__)
+            return FileSeries(self._current_value.values + raw_values)
 
         def visit_clear_float_log(self, op: ClearFloatLog) -> Optional[Value]:
             # pylint: disable=unused-argument
@@ -341,10 +340,10 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_clear_image_log(self, op: ClearImageLog) -> Optional[Value]:
             # pylint: disable=unused-argument
             if self._current_value is None:
-                return ImageSeries([])
-            if not isinstance(self._current_value, ImageSeries):
-                raise self._create_type_error("clear", ImageSeries.__name__)
-            return ImageSeries([])
+                return FileSeries([])
+            if not isinstance(self._current_value, FileSeries):
+                raise self._create_type_error("clear", FileSeries.__name__)
+            return FileSeries([])
 
         def visit_config_float_series(self, op: ConfigFloatSeries) -> Optional[Value]:
             if self._current_value is None:
