@@ -26,10 +26,15 @@ import matplotlib
 from matplotlib import pyplot
 from matplotlib.figure import Figure
 
+import plotly.express as px
+import altair as alt
+from vega_datasets import data
+from bokeh.plotting import figure
+
 from PIL import Image
 import numpy
 
-from neptune.alpha.internal.utils.images import get_image_content
+from neptune.alpha.internal.utils.images import get_image_content, get_html_content
 
 matplotlib.use('agg')
 
@@ -98,10 +103,10 @@ class TestImage(unittest.TestCase):
         # given
         pyplot.plot([1, 2, 3, 4])
         pyplot.ylabel('some interesting numbers')
-        figure = pyplot.gcf()
+        fig = pyplot.gcf()
 
         # expect
-        self.assertEqual(get_image_content(figure), self._encode_figure(figure))
+        self.assertEqual(get_image_content(fig), self._encode_figure(fig))
 
     @unittest.skipIf(sys.version_info < (3, 6),
                      reason="Installing Torch on Windows takes too long and 3.5 is not supported")
@@ -126,6 +131,58 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
+    def test_get_html_from_matplotlib_figure(self):
+        # given
+        fig = pyplot.figure()
+        x = [21, 22, 23, 4, 5, 6, 77, 8, 9, 10, 31, 32, 33, 34, 35, 36, 37, 18, 49, 50, 100]
+        pyplot.hist(x, bins=5)
+
+        # when
+        result = get_html_content(fig)
+
+        # then
+        self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" />'))
+
+    def test_get_html_from_plotly(self):
+        # given
+        df = px.data.tips()
+        fig = px.histogram(df, x="total_bill", y="tip", color="sex", marginal="rug",
+                           hover_data=df.columns)
+
+        # when
+        result = get_html_content(fig)
+
+        # then
+        self.assertTrue(result.startswith('<html>\n<head><meta charset="utf-8" />'))
+
+    def test_get_html_from_altair(self):
+        # given
+        source = data.cars()
+
+        chart = alt.Chart(source).mark_circle(size=60).encode(
+            x='Horsepower',
+            y='Miles_per_Gallon',
+            color='Origin',
+            tooltip=['Name', 'Origin', 'Horsepower', 'Miles_per_Gallon']
+        ).interactive()
+
+        # when
+        result = get_html_content(chart)
+
+        # then
+        self.assertTrue(result.startswith('<!DOCTYPE html>\n<html>\n<head>\n  <style>'))
+
+    def test_get_html_from_bokeh(self):
+        # given
+        p = figure(plot_width=400, plot_height=400)
+        p.circle(size=20, color="navy", alpha=0.5)
+
+        # when
+        result = get_html_content(p)
+
+        # then
+        self.assertTrue(result.startswith('\n\n\n\n<!DOCTYPE html>\n<html lang="en">'))
+
     @staticmethod
     def _encode_pil_image(image: Image) -> bytes:
         with io.BytesIO() as image_buffer:
@@ -133,9 +190,9 @@ class TestImage(unittest.TestCase):
             return image_buffer.getvalue()
 
     @staticmethod
-    def _encode_figure(figure: Figure) -> bytes:
+    def _encode_figure(fig: Figure) -> bytes:
         with io.BytesIO() as image_buffer:
-            figure.savefig(image_buffer, format='PNG', bbox_inches="tight")
+            fig.savefig(image_buffer, format='PNG', bbox_inches="tight")
             return image_buffer.getvalue()
 
     @staticmethod

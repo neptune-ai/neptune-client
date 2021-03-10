@@ -17,7 +17,7 @@ import os
 from io import IOBase
 from typing import TypeVar, TYPE_CHECKING, Optional, Union
 
-from neptune.alpha.internal.utils.images import get_image_content
+from neptune.alpha.internal.utils.images import get_image_content, get_html_content
 
 from neptune.alpha.internal.utils import verify_type, get_stream_content
 from neptune.alpha.types.atoms.atom import Atom
@@ -65,7 +65,7 @@ class File(Atom):
             return "File(content=...)"
 
     @staticmethod
-    def from_content(content: Union[str, bytes], extension: Optional[str] = None):
+    def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> 'File':
         if isinstance(content, str):
             ext = "txt"
             content = content.encode("utf-8")
@@ -74,12 +74,17 @@ class File(Atom):
         return File(content=content, extension=extension or ext)
 
     @staticmethod
-    def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None):
+    def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> 'File':
         verify_type("stream", stream, IOBase)
         content, stream_default_ext = get_stream_content(stream, seek)
         return File(content=content, extension=extension or stream_default_ext)
 
     @staticmethod
-    def as_image(image):
+    def as_image(image) -> 'File':
         content_bytes = get_image_content(image)
         return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
+
+    @staticmethod
+    def as_html(chart) -> 'File':
+        content = get_html_content(chart)
+        return File.from_content(content if content is not None else "", extension="html")
