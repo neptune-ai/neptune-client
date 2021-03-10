@@ -295,6 +295,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 OperationApiNameVisitor().visit(op): OperationApiObjectConverter().convert(op)
             } for op in operations]
         }
+
         try:
             result = self.leaderboard_client.api.executeOperations(**kwargs).response().result
             return [MetadataInconsistency(err.errorDescription) for err in result]

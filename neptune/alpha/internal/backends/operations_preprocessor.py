@@ -19,7 +19,7 @@ from typing import List, TypeVar, Callable
 from neptune.alpha.exceptions import MetadataInconsistency, InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, UploadFile, LogFloats, LogStrings, \
     LogImages, ClearFloatLog, ClearStringLog, ClearImageLog, AddStrings, RemoveStrings, DeleteAttribute, \
-    ClearStringSet, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent
+    ClearStringSet, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
 from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.internal.utils.paths import path_to_str
 
@@ -179,6 +179,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_config_float_series(self, op: ConfigFloatSeries) -> None:
         self._process_config_op(_DataType.FLOAT_SERIES, op)
+
+    def visit_delete_files(self, op: DeleteFiles) -> None:
+        self._process_modify_op(_DataType.FILE_SET, op, self._add_modifier())
 
     def visit_delete_attribute(self, op: DeleteAttribute) -> None:
         if self._type:

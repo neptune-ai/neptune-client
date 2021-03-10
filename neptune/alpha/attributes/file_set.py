@@ -17,7 +17,7 @@ import os
 from typing import Union, Iterable, Optional
 
 from neptune.alpha.attributes.attribute import Attribute
-from neptune.alpha.internal.operation import UploadFileSet
+from neptune.alpha.internal.operation import UploadFileSet, DeleteFiles
 from neptune.alpha.internal.utils import verify_type, verify_collection_type
 from neptune.alpha.types.file_set import FileSet as FileSetVal
 
@@ -43,6 +43,14 @@ class FileSet(Attribute):
         else:
             verify_collection_type("globs", globs, str)
         self._enqueue_upload_operation(globs, reset=False, wait=wait)
+
+    def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
+        if isinstance(paths, str):
+            paths = [paths]
+        else:
+            verify_collection_type("paths", paths, str)
+        with self._experiment.lock():
+            self._enqueue_operation(DeleteFiles(self._path, set(paths)), wait)
 
     def _enqueue_upload_operation(self, globs: Iterable[str], reset: bool, wait: bool):
         with self._experiment.lock():

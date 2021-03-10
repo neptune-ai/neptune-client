@@ -60,7 +60,7 @@ from neptune.alpha.internal.operation import (
     RemoveStrings,
     UploadFile,
     UploadFileContent,
-    UploadFileSet,
+    UploadFileSet, DeleteFiles,
 )
 from neptune.alpha.internal.operation_visitor import OperationVisitor
 from neptune.alpha.internal.utils import base64_decode
@@ -281,7 +281,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
-                raise self._create_type_error("save", File.__name__)
+                raise self._create_type_error("upload_files", File.__name__)
             return File(content=base64_decode(op.file_content), extension=op.ext)
 
         def visit_upload_file_set(self, op: UploadFileSet) -> Optional[Value]:
@@ -373,6 +373,15 @@ class NeptuneBackendMock(NeptuneBackend):
             if not isinstance(self._current_value, StringSet):
                 raise self._create_type_error("clear", StringSet.__name__)
             return StringSet(set())
+
+        def visit_delete_files(self, op: DeleteFiles) -> Optional[Value]:
+            # pylint: disable=unused-argument
+            if self._current_value is None:
+                return FileSet([])
+            if not isinstance(self._current_value, FileSet):
+                raise self._create_type_error("delete_files", FileSet.__name__)
+            # It is not important to support deleting properly in debug mode, let's just ignore this operation
+            return self._current_value
 
         def visit_delete_attribute(self, op: DeleteAttribute) -> Optional[Value]:
             # pylint: disable=unused-argument

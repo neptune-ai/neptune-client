@@ -362,6 +362,24 @@ class ClearStringSet(Operation):
 
 
 @dataclass
+class DeleteFiles(Operation):
+
+    file_paths: Set[str]
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_delete_files(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["file_paths"] = list(self.file_paths)
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'DeleteFiles':
+        return DeleteFiles(data["path"], set(data["file_paths"]))
+
+
+@dataclass
 class DeleteAttribute(Operation):
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
