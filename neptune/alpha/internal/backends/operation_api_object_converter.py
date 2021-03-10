@@ -17,7 +17,7 @@
 from neptune.alpha.exceptions import InternalClientError
 from neptune.alpha.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent
+    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
 from neptune.alpha.internal.operation_visitor import OperationVisitor, Ret
 
 
@@ -110,3 +110,8 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
 
     def visit_clear_string_set(self, _: ClearStringSet) -> dict:
         return {}
+
+    def visit_delete_files(self, op: DeleteFiles) -> Ret:
+        return {
+            'filePaths': list(op.file_paths)
+        }

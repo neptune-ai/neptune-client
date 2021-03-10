@@ -44,6 +44,7 @@ class TestOperations(unittest.TestCase):
             UploadFileContent(TestOperations._random_path(), "stream.txt", "some base64"),
             UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], True),
             UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], False),
+            DeleteFiles(TestOperations._random_path(), {"file/path/*.txt", "dir/path/"}),
             LogFloats(TestOperations._random_path(), [
                 LogFloats.ValueType(5, 4, 500),
                 LogFloats.ValueType(3, None, 1000),
