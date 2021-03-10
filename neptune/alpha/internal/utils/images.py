@@ -13,9 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import base64
 import io
 import logging
+import warnings
+from io import StringIO
 from typing import Optional
+
+from neptune.alpha.exceptions import PlotlyIncompatibilityException
 
 _logger = logging.getLogger(__name__)
 
@@ -34,20 +39,6 @@ except ImportError:
     def pilimage_fromarray():
         pass
 
-try:
-    from matplotlib.figure import Figure as MPLFigure
-except ImportError:
-    MPLFigure = None
-
-try:
-    from torch import Tensor as TorchTensor
-except ImportError:
-    TorchTensor = None
-
-try:
-    from tensorflow import Tensor as TensorflowTensor
-except ImportError:
-    TensorflowTensor = None
 
 IMAGE_SIZE_LIMIT_MB = 15
 
@@ -65,6 +56,20 @@ def get_image_content(image) -> Optional[bytes]:
     return content
 
 
+def get_html_content(chart) -> Optional[str]:
+    content = _chart_to_html(chart)
+
+    if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
+        _logger.warning('Your file is larger than %dMB. '
+                        'Neptune supports logging files in-memory objects smaller than %dMB. '
+                        'Resize or increase compression of this object',
+                        IMAGE_SIZE_LIMIT_MB,
+                        IMAGE_SIZE_LIMIT_MB)
+        return None
+
+    return content
+
+
 def _image_to_bytes(image) -> bytes:
     if image is None:
         raise ValueError("image is None")
@@ -75,16 +80,78 @@ def _image_to_bytes(image) -> bytes:
     elif PILImage is not None and isinstance(image, PILImage):
         return _get_pil_image_data(image)
 
-    elif MPLFigure is not None and isinstance(image, MPLFigure):
+    elif _is_matplotlib_figure(image):
         return _get_figure_image_data(image)
 
-    elif TorchTensor is not None and isinstance(image, TorchTensor):
+    elif _is_torch_tensor(image):
         return _get_numpy_as_image(image.detach().numpy())
 
-    elif TensorflowTensor is not None and isinstance(image, TensorflowTensor):
+    elif _is_tensorflow_tensor(image):
         return _get_numpy_as_image(image.numpy())
 
     raise TypeError("image is {}".format(type(image)))
+
+
+def _chart_to_html(chart) -> str:
+    if _is_matplotlib_pyplot(chart):
+        chart = chart.gcf()
+
+    if _is_matplotlib_figure(chart):
+        try:
+            chart = _matplotlib_to_plotly(chart)
+            return _export_plotly_figure(chart)
+        except ImportError:
+            print("Plotly not installed. Logging plot as an image.")
+            return _image_content_to_html(_get_figure_image_data(chart))
+        except UserWarning:
+            print("Couldn't convert Matplotlib plot to interactive Plotly plot. Logging plot as an image instead.")
+            return _image_content_to_html(_get_figure_image_data(chart))
+
+    elif _is_plotly_figure(chart):
+        return _export_plotly_figure(chart)
+
+    elif _is_altair_chart(chart):
+        return _export_altair_chart(chart)
+
+    elif _is_bokeh_figure(chart):
+        return _export_bokeh_figure(chart)
+
+    else:
+        raise ValueError("Currently supported are matplotlib, plotly, altair, and bokeh figures")
+
+
+def _matplotlib_to_plotly(chart):
+    # pylint: disable=import-outside-toplevel
+    import plotly
+    import matplotlib
+
+    # When Plotly cannot accurately convert a matplotlib plot, it emits a warning.
+    # Then we want to fallback on logging the plot as an image.
+    #
+    # E.g. when trying to convert a Seaborn confusion matrix or a hist2d, it emits a UserWarning with message
+    # "Dang! That path collection is out of this world. I totally don't know what to do with it yet!
+    # Plotly can only import path collections linked to 'data' coordinates"
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "error",
+            category=UserWarning,
+            message=".*Plotly can only import path collections linked to 'data' coordinates.*")
+        try:
+            chart = plotly.tools.mpl_to_plotly(chart)
+        except AttributeError as e:
+            if "is_frame_like" in e.args[0]:
+                plotly_version = plotly.__version__
+                matplotlib_version = matplotlib.__version__
+                raise PlotlyIncompatibilityException(matplotlib_version, plotly_version) from e
+            else:
+                raise e
+
+    return chart
+
+
+def _image_content_to_html(content: bytes) -> str:
+    str_equivalent_image = base64.b64encode(content).decode()
+    return "<img src='data:image/png;base64," + str_equivalent_image + "'/>"
 
 
 def _get_numpy_as_image(array):
@@ -108,7 +175,63 @@ def _get_pil_image_data(image: PILImage) -> bytes:
         return image_buffer.getvalue()
 
 
-def _get_figure_image_data(figure: MPLFigure) -> bytes:
+def _get_figure_image_data(figure) -> bytes:
     with io.BytesIO() as image_buffer:
         figure.savefig(image_buffer, format='png', bbox_inches="tight")
         return image_buffer.getvalue()
+
+
+def _is_torch_tensor(image):
+    return image.__class__.__module__.startswith('torch')\
+           and image.__class__.__name__ == 'Tensor'\
+           and hasattr(image, "numpy")
+
+
+def _is_tensorflow_tensor(image):
+    return image.__class__.__module__.startswith('tensorflow.')\
+           and 'Tensor' in image.__class__.__name__\
+           and hasattr(image, "numpy")
+
+
+def _is_matplotlib_pyplot(chart):
+    return chart.__class__.__module__.startswith('matplotlib.pyplot')
+
+
+def _is_matplotlib_figure(image):
+    return image.__class__.__module__.startswith('matplotlib.') and image.__class__.__name__ == 'Figure'
+
+
+def _is_plotly_figure(chart):
+    return chart.__class__.__module__.startswith('plotly.') and chart.__class__.__name__ == 'Figure'
+
+
+def _is_altair_chart(chart):
+    return chart.__class__.__module__.startswith('altair.') and 'Chart' in chart.__class__.__name__
+
+
+def _is_bokeh_figure(chart):
+    return chart.__class__.__module__.startswith('bokeh.') and chart.__class__.__name__ == 'Figure'
+
+
+def _export_plotly_figure(image):
+    buffer = StringIO()
+    image.write_html(buffer)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def _export_altair_chart(chart):
+    buffer = StringIO()
+    chart.save(buffer, format='html')
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def _export_bokeh_figure(chart):
+    from bokeh.resources import CDN
+    from bokeh.embed import file_html
+
+    html = file_html(chart, CDN)
+    buffer = StringIO(html)
+    buffer.seek(0)
+    return buffer.getvalue()

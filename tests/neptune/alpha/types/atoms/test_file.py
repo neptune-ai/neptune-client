@@ -129,6 +129,20 @@ class TestFile(TestAttributeBase):
         self.assertEqual(file.extension, "png")
         self.assertEqual(file.content, _get_pil_image_data(expected_image))
 
+    def test_as_html(self):
+        # given
+        from bokeh.plotting import figure
+        # given
+        p = figure(plot_width=400, plot_height=400)
+        p.circle(size=20, color="navy", alpha=0.5)
+
+        # when
+        file = File.as_html(p)
+
+        # then
+        self.assertEqual(file.extension, "html")
+        self.assertTrue(file.content.startswith('\n\n\n\n<!DOCTYPE html>\n<html lang="en">'.encode("utf-8")))
+
     def test_raise_exception_in_constructor(self):
         with self.assertRaises(ValueError):
             File(path="path", content=b"some_content")
