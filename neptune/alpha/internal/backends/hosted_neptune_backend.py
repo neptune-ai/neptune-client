@@ -187,8 +187,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         if notebook_id is not None and checkpoint_id is not None:
-            params["notebookId"] = notebook_id
-            params["checkpointId"] = checkpoint_id
+            params["notebookId"] = str(notebook_id) if notebook_id is not None else None
+            params["checkpointId"] = str(checkpoint_id) if checkpoint_id is not None else None
 
         kwargs = {
             'experimentCreationParams': params,
