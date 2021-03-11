@@ -186,7 +186,10 @@ class TestImage(unittest.TestCase):
 
     def test_get_html_from_pandas(self):
         # given
-        table = pandas.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv', nrows=100)
+        table = pandas.DataFrame(
+            numpy.random.randn(6, 4),
+            index=pandas.date_range("20130101", periods=6),
+            columns=list("ABCD"))
 
         # when
         result = get_html_content(table)
