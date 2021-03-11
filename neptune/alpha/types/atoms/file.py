@@ -111,4 +111,3 @@ class File(Atom):
         elif isinstance(value, File):
             return value
         raise TypeError("Value of type {} is not supported.".format(type(value)))
-
