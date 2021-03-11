@@ -17,7 +17,7 @@ import os
 from io import IOBase
 from typing import TypeVar, TYPE_CHECKING, Optional, Union
 
-from neptune.alpha.internal.utils.images import get_image_content, get_html_content
+from neptune.alpha.internal.utils.images import get_image_content, get_html_content, get_pickle_content
 
 from neptune.alpha.internal.utils import verify_type, get_stream_content
 from neptune.alpha.types.atoms.atom import Atom
@@ -88,3 +88,8 @@ class File(Atom):
     def as_html(chart) -> 'File':
         content = get_html_content(chart)
         return File.from_content(content if content is not None else "", extension="html")
+
+    @staticmethod
+    def as_pickle(obj) -> 'File':
+        content = get_pickle_content(obj)
+        return File.from_content(content if content is not None else b"", extension="pkl")

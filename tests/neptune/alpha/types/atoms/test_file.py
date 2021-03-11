@@ -15,6 +15,7 @@
 #
 
 # pylint: disable=protected-access
+import pickle
 from io import StringIO, BytesIO
 
 import numpy
@@ -142,6 +143,17 @@ class TestFile(TestAttributeBase):
         # then
         self.assertEqual(file.extension, "html")
         self.assertTrue(file.content.startswith('\n\n\n\n<!DOCTYPE html>\n<html lang="en">'.encode("utf-8")))
+
+    def test_as_pickle(self):
+        # given
+        obj = {"a": [b"xyz", 34], "b": 1246}
+
+        # when
+        file = File.as_pickle(obj)
+
+        # then
+        self.assertEqual(file.extension, "pkl")
+        self.assertEqual(file.content, pickle.dumps(obj))
 
     def test_raise_exception_in_constructor(self):
         with self.assertRaises(ValueError):
