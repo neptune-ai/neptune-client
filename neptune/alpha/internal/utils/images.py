@@ -16,8 +16,9 @@
 import base64
 import io
 import logging
+import pickle
 import warnings
-from io import StringIO
+from io import StringIO, BytesIO
 from typing import Optional
 
 from pandas import DataFrame
@@ -60,6 +61,20 @@ def get_image_content(image) -> Optional[bytes]:
 
 def get_html_content(chart) -> Optional[str]:
     content = _to_html(chart)
+
+    if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
+        _logger.warning('Your file is larger than %dMB. '
+                        'Neptune supports logging files in-memory objects smaller than %dMB. '
+                        'Resize or increase compression of this object',
+                        IMAGE_SIZE_LIMIT_MB,
+                        IMAGE_SIZE_LIMIT_MB)
+        return None
+
+    return content
+
+
+def get_pickle_content(obj) -> Optional[bytes]:
+    content = _export_pickle(obj)
 
     if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
         _logger.warning('Your file is larger than %dMB. '
@@ -248,5 +263,12 @@ def _export_bokeh_figure(chart):
 
     html = file_html(chart, CDN)
     buffer = StringIO(html)
+    buffer.seek(0)
+    return buffer.getvalue()
+
+
+def _export_pickle(obj):
+    buffer = BytesIO()
+    pickle.dump(obj, buffer)
     buffer.seek(0)
     return buffer.getvalue()
