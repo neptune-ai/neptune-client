@@ -34,7 +34,7 @@ from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     CannotSynchronizeOfflineExperimentsWithoutProject,
     NeptuneException,
-    ProjectNotFound,
+    ProjectNotFound, ExperimentNotFound,
 )
 from neptune.new.internal.backends.api_model import Project, ApiExperiment
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
@@ -61,9 +61,12 @@ def report_get_experiment_error(experiment_id: str, status_code: int, skipping: 
 def get_experiment(experiment_id: str) -> Optional[ApiExperiment]:
     try:
         return backend.get_experiment(experiment_id)
+    except ExperimentNotFound:
+        return None
     except NeptuneException as e:
         click.echo('Exception while fetching experiment {}. Skipping experiment.'.format(experiment_id), err=True)
         logging.exception(e)
+        return None
 
 
 project_name_missing_message = (
@@ -125,7 +128,7 @@ def get_offline_experiments_ids(base_path: Path) -> List[str]:
     return result
 
 
-def partition_experiments(base_path: Path) -> Tuple[List[ApiExperiment], List[ApiExperiment]]:
+def partition_experiments(base_path: Path) -> Tuple[List[ApiExperiment], List[ApiExperiment], int]:
     synced_experiment_uuids = []
     unsynced_experiment_uuids = []
     for experiment_path in (base_path / ASYNC_DIRECTORY).iterdir():
@@ -135,11 +138,13 @@ def partition_experiments(base_path: Path) -> Tuple[List[ApiExperiment], List[Ap
                 synced_experiment_uuids.append(experiment_uuid)
             else:
                 unsynced_experiment_uuids.append(experiment_uuid)
-    synced_experiments = [experiment for experiment in map(get_experiment, synced_experiment_uuids)
-                          if experiment and not experiment.trashed]
-    unsynced_experiments = [experiment for experiment in map(get_experiment, unsynced_experiment_uuids)
-                            if experiment and not experiment.trashed]
-    return synced_experiments, unsynced_experiments
+    synced_experiments = [experiment for experiment in map(get_experiment, synced_experiment_uuids)]
+    unsynced_experiments = [experiment for experiment in map(get_experiment, unsynced_experiment_uuids)]
+    not_found = len([exp for exp in synced_experiments + unsynced_experiments if not exp or exp.trashed])
+    synced_experiments = [exp for exp in synced_experiments if exp and not exp.trashed]
+    unsynced_experiments = [exp for exp in unsynced_experiments if exp and not exp.trashed]
+
+    return synced_experiments, unsynced_experiments, not_found
 
 
 offline_experiment_explainer = '''
@@ -188,7 +193,11 @@ def list_experiments(base_path: Path, synced_experiments: Sequence[ApiExperiment
 
 
 def synchronization_status(base_path: Path) -> None:
-    synced_experiments, unsynced_experiments = partition_experiments(base_path)
+    synced_experiments, unsynced_experiments, not_found = partition_experiments(base_path)
+    if not_found > 0:
+        click.echo(
+            "WARNING: {} experiments was skipped because they are in trash or do not exist anymore.".format(not_found),
+            sys.stderr)
     offline_experiments_ids = get_offline_experiments_ids(base_path)
     list_experiments(base_path, synced_experiments, unsynced_experiments, offline_experiments_ids)
 
