@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import os
-from io import IOBase
 from typing import Optional
 
 from neptune.alpha.internal.utils import verify_type, base64_encode
@@ -29,7 +28,7 @@ from neptune.alpha.attributes.atoms.atom import Atom
 class File(Atom):
 
     def assign(self, value: FileVal, wait: bool = False) -> None:
-        verify_type("value", value, (FileVal, IOBase))
+        verify_type("value", value, FileVal)
 
         if value.path is not None:
             operation = UploadFile(self._path, ext=value.extension, file_path=os.path.abspath(value.path))
@@ -41,9 +40,8 @@ class File(Atom):
         with self._experiment.lock():
             self._enqueue_operation(operation, wait)
 
-    def upload(self, path: str, wait: bool = False) -> None:
-        verify_type("path", path, str)
-        self.assign(FileVal(path=path), wait)
+    def upload(self, value, wait: bool = False) -> None:
+        self.assign(File.create_from(value), wait)
 
     def download(self, destination: Optional[str] = None, wait=True) -> None:
         verify_type("destination", destination, (str, type(None)))
