@@ -346,11 +346,14 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
                     CheckpointDTO = self.leaderboard_swagger_client.get_model('CheckpointDTO')
                     return CheckpointDTO.unmarshal(response.json())
         else:
-            NewCheckpointDTO = self.leaderboard_swagger_client.get_model('NewCheckpointDTO')
-            return self.leaderboard_swagger_client.api.createEmptyCheckpoint(
-                notebookId=notebook_id,
-                checkpoint=NewCheckpointDTO(path=jupyter_path)
-            ).response().result
+            try:
+                NewCheckpointDTO = self.leaderboard_swagger_client.get_model('NewCheckpointDTO')
+                return self.leaderboard_swagger_client.api.createEmptyCheckpoint(
+                    notebookId=notebook_id,
+                    checkpoint=NewCheckpointDTO(path=jupyter_path)
+                ).response().result
+            except HTTPNotFound:
+                return None
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
