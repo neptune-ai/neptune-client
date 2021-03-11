@@ -63,9 +63,8 @@ class Handler:
             else:
                 self._experiment.define(self._path, value, wait)
 
-    def upload(self, value: str, wait: bool = False) -> None:
-        verify_type("value", value, str)
-        self.assign(File(path=value), wait)
+    def upload(self, value, wait: bool = False) -> None:
+        self.assign(File.create_from(value), wait)
 
     def upload_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         if is_collection(value):

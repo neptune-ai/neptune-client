@@ -91,13 +91,13 @@ def _image_to_bytes(image) -> bytes:
     if image is None:
         raise ValueError("image is None")
 
-    elif numpy_ndarray is not None and isinstance(image, numpy_ndarray):
+    elif is_numpy_array(image):
         return _get_numpy_as_image(image)
 
-    elif PILImage is not None and isinstance(image, PILImage):
+    elif is_pil_image(image):
         return _get_pil_image_data(image)
 
-    elif _is_matplotlib_figure(image):
+    elif is_matplotlib_figure(image):
         return _get_figure_image_data(image)
 
     elif _is_torch_tensor(image):
@@ -113,7 +113,7 @@ def _to_html(chart) -> str:
     if _is_matplotlib_pyplot(chart):
         chart = chart.gcf()
 
-    if _is_matplotlib_figure(chart):
+    if is_matplotlib_figure(chart):
         try:
             chart = _matplotlib_to_plotly(chart)
             return _export_plotly_figure(chart)
@@ -124,16 +124,16 @@ def _to_html(chart) -> str:
             print("Couldn't convert Matplotlib plot to interactive Plotly plot. Logging plot as an image instead.")
             return _image_content_to_html(_get_figure_image_data(chart))
 
-    elif _is_pandas_dataframe(chart):
+    elif is_pandas_dataframe(chart):
         return _export_pandas_dataframe_to_html(chart)
 
-    elif _is_plotly_figure(chart):
+    elif is_plotly_figure(chart):
         return _export_plotly_figure(chart)
 
-    elif _is_altair_chart(chart):
+    elif is_altair_chart(chart):
         return _export_altair_chart(chart)
 
-    elif _is_bokeh_figure(chart):
+    elif is_bokeh_figure(chart):
         return _export_bokeh_figure(chart)
 
     else:
@@ -217,23 +217,31 @@ def _is_matplotlib_pyplot(chart):
     return chart.__class__.__module__.startswith('matplotlib.pyplot')
 
 
-def _is_matplotlib_figure(image):
+def is_numpy_array(image) -> bool:
+    return numpy_ndarray is not None and isinstance(image, numpy_ndarray)
+
+
+def is_pil_image(image) -> bool:
+    return PILImage is not None and isinstance(image, PILImage)
+
+
+def is_matplotlib_figure(image):
     return image.__class__.__module__.startswith('matplotlib.') and image.__class__.__name__ == 'Figure'
 
 
-def _is_plotly_figure(chart):
+def is_plotly_figure(chart):
     return chart.__class__.__module__.startswith('plotly.') and chart.__class__.__name__ == 'Figure'
 
 
-def _is_altair_chart(chart):
+def is_altair_chart(chart):
     return chart.__class__.__module__.startswith('altair.') and 'Chart' in chart.__class__.__name__
 
 
-def _is_bokeh_figure(chart):
+def is_bokeh_figure(chart):
     return chart.__class__.__module__.startswith('bokeh.') and chart.__class__.__name__ == 'Figure'
 
 
-def _is_pandas_dataframe(table):
+def is_pandas_dataframe(table):
     return isinstance(table, DataFrame)
 
 

@@ -17,7 +17,9 @@ import os
 from io import IOBase
 from typing import TypeVar, TYPE_CHECKING, Optional, Union
 
-from neptune.alpha.internal.utils.images import get_image_content, get_html_content, get_pickle_content
+from neptune.alpha.internal.utils.images import get_image_content, get_html_content, get_pickle_content, is_pil_image, \
+    is_matplotlib_figure, is_plotly_figure, is_altair_chart, is_bokeh_figure, is_numpy_array, is_pandas_dataframe
+
 
 from neptune.alpha.internal.utils import verify_type, get_stream_content
 from neptune.alpha.types.atoms.atom import Atom
@@ -93,3 +95,19 @@ class File(Atom):
     def as_pickle(obj) -> 'File':
         content = get_pickle_content(obj)
         return File.from_content(content if content is not None else b"", extension="pkl")
+
+    @staticmethod
+    def create_from(value) -> 'File':
+        if isinstance(value, str):
+            return File(path=value)
+        elif is_pil_image(value) or is_matplotlib_figure(value):
+            return File.as_image(value)
+        elif is_plotly_figure(value) or is_altair_chart(value) or is_bokeh_figure(value):
+            return File.as_html(value)
+        elif is_numpy_array(value):
+            raise TypeError("Value of type {} is not supported. Please use File.as_image().".format(type(value)))
+        elif is_pandas_dataframe(value):
+            raise TypeError("Value of type {} is not supported. Please use File.as_html().".format(type(value)))
+        elif isinstance(value, File):
+            return value
+        raise TypeError("Value of type {} is not supported.".format(type(value)))
