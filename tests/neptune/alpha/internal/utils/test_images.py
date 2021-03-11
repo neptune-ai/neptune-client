@@ -23,6 +23,7 @@ from typing import Optional
 from uuid import uuid4
 
 import matplotlib
+import pandas
 from matplotlib import pyplot
 from matplotlib.figure import Figure
 
@@ -182,6 +183,17 @@ class TestImage(unittest.TestCase):
 
         # then
         self.assertTrue(result.startswith('\n\n\n\n<!DOCTYPE html>\n<html lang="en">'))
+
+    def test_get_html_from_pandas(self):
+        # given
+        table = pandas.read_csv('https://raw.githubusercontent.com/mwaskom/seaborn-data/master/iris.csv', nrows=100)
+
+        # when
+        result = get_html_content(table)
+
+        # then
+        self.assertTrue(result.startswith(
+            '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">'))
 
     @staticmethod
     def _encode_pil_image(image: Image) -> bytes:

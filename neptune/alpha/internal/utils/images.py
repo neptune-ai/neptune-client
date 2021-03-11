@@ -20,6 +20,8 @@ import warnings
 from io import StringIO
 from typing import Optional
 
+from pandas import DataFrame
+
 from neptune.alpha.exceptions import PlotlyIncompatibilityException
 
 _logger = logging.getLogger(__name__)
@@ -57,7 +59,7 @@ def get_image_content(image) -> Optional[bytes]:
 
 
 def get_html_content(chart) -> Optional[str]:
-    content = _chart_to_html(chart)
+    content = _to_html(chart)
 
     if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
         _logger.warning('Your file is larger than %dMB. '
@@ -92,7 +94,7 @@ def _image_to_bytes(image) -> bytes:
     raise TypeError("image is {}".format(type(image)))
 
 
-def _chart_to_html(chart) -> str:
+def _to_html(chart) -> str:
     if _is_matplotlib_pyplot(chart):
         chart = chart.gcf()
 
@@ -106,6 +108,9 @@ def _chart_to_html(chart) -> str:
         except UserWarning:
             print("Couldn't convert Matplotlib plot to interactive Plotly plot. Logging plot as an image instead.")
             return _image_content_to_html(_get_figure_image_data(chart))
+
+    elif _is_pandas_dataframe(chart):
+        return _export_pandas_dataframe_to_html(chart)
 
     elif _is_plotly_figure(chart):
         return _export_plotly_figure(chart)
@@ -211,6 +216,16 @@ def _is_altair_chart(chart):
 
 def _is_bokeh_figure(chart):
     return chart.__class__.__module__.startswith('bokeh.') and chart.__class__.__name__ == 'Figure'
+
+
+def _is_pandas_dataframe(table):
+    return isinstance(table, DataFrame)
+
+
+def _export_pandas_dataframe_to_html(table):
+    buffer = StringIO(table.to_html())
+    buffer.seek(0)
+    return buffer.getvalue()
 
 
 def _export_plotly_figure(image):
