@@ -23,21 +23,21 @@ from typing import List, Dict
 
 import six
 from bravado.exception import HTTPNotFound
-from neptune.alpha.internal.backends.api_model import AttributeType
+from neptune.new.internal.backends.api_model import AttributeType
 
-from neptune.alpha import exceptions as alpha_exceptions
-from neptune.alpha.attributes import constants as alpha_consts
-from neptune.alpha.internal import operation as alpha_operation
-from neptune.alpha.internal.backends import hosted_file_operations as alpha_hosted_file_operations
-from neptune.alpha.internal.backends.operation_api_name_visitor import \
+from neptune.new import exceptions as alpha_exceptions
+from neptune.new.attributes import constants as alpha_consts
+from neptune.new.internal import operation as alpha_operation
+from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
+from neptune.new.internal.backends.operation_api_name_visitor import \
     OperationApiNameVisitor as AlphaOperationApiNameVisitor
-from neptune.alpha.internal.backends.operation_api_object_converter import \
+from neptune.new.internal.backends.operation_api_object_converter import \
     OperationApiObjectConverter as AlphaOperationApiObjectConverter
-from neptune.alpha.internal.operation import ConfigFloatSeries, LogFloats, AssignString
-from neptune.alpha.internal.utils import paths as alpha_path_utils, base64_encode, base64_decode
-from neptune.alpha.internal.utils.paths import parse_path
+from neptune.new.internal.operation import ConfigFloatSeries, LogFloats, AssignString
+from neptune.new.internal.utils import paths as alpha_path_utils, base64_encode, base64_decode
+from neptune.new.internal.utils.paths import parse_path
 from neptune.api_exceptions import (
-    AlphaOperationErrors,
+    ExperimentOperationErrors,
     ExperimentNotFound,
     ProjectNotFound,
 )
@@ -513,7 +513,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                 for err in result
             ]
             if errors:
-                raise AlphaOperationErrors(errors=errors)
+                raise ExperimentOperationErrors(errors=errors)
             return None
         except HTTPNotFound as e:
             # pylint: disable=protected-access

@@ -24,11 +24,11 @@ import sys
 from datetime import datetime
 
 from PIL import Image
-from neptune.alpha.types import File
+from neptune.new.types import File
 
-import neptune.alpha as neptune
+import neptune.new as neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
-from neptune.alpha.attributes.constants import (
+from neptune.new.attributes.constants import (
     ARTIFACT_ATTRIBUTE_SPACE,
     LOG_ATTRIBUTE_SPACE,
     PROPERTIES_ATTRIBUTE_SPACE,

@@ -26,7 +26,7 @@ from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import \
     HostedAlphaLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
-from tests.neptune.alpha.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
+from tests.neptune.new.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL2FscG' \
             'hhLnN0YWdlLm5lcHR1bmUuYWkiLCJhcGlfa2V5IjoiZDg5MGQ3Y2ItZGEzNi00MjRkLWJhNTQtZmVjZDJmYTdhOTQzIn0='
@@ -43,7 +43,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator',
                 new=MagicMock)
-    @mock.patch('neptune.alpha.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
+    @mock.patch('neptune.new.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
     def setUp(self, swagger_client_factory) -> None:
         # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)
