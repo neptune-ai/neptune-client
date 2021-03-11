@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.exceptions import NeptuneException
+from neptune import envs
+from neptune.exceptions import NeptuneException, STYLES
 
 
 class NeptuneApiException(NeptuneException):
@@ -33,32 +34,129 @@ class ConnectionLost(NeptuneApiException):
 
 class ServerError(NeptuneApiException):
     def __init__(self):
-        super(ServerError, self).__init__('Server error. Please try again later.')
+        message = """
+{h1}
+----ServerError-----------------------------------------------------------------------
+{end}
+Neptune Client Library encountered an unexpected Server Error.
+
+Please try again later or contact Neptune support.
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super(ServerError, self).__init__(message.format(**inputs))
 
 
 class Unauthorized(NeptuneApiException):
     def __init__(self):
-        super(Unauthorized, self).__init__('Your API token is invalid.')
+        message = """
+{h1}
+----Unauthorized-----------------------------------------------------------------------
+{end}
+You have no permission to access given resource.
+    
+    - Verify your API token is correct.
+      See: https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+      
+    - Verify if you set your Project qualified name correctly
+      The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+      It has two parts:
+          - {correct}WORKSPACE{end}: which can be your username or your organization name
+          - {correct}PROJECT_NAME{end}: which is the actual project name you chose
+          
+    - Ask your organization administrator to grant you necessary privileges to the project
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super(Unauthorized, self).__init__(message.format(**inputs))
 
 
 class Forbidden(NeptuneApiException):
     def __init__(self):
-        super(Forbidden, self).__init__('You have no permissions to access this resource.')
+        message = """
+{h1}
+----Forbidden-----------------------------------------------------------------------
+{end}
+You have no permission to access given resource.
+    
+    - Verify your API token is correct.
+      See: https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+      
+    - Verify if you set your Project qualified name correctly
+      The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+      It has two parts:
+          - {correct}WORKSPACE{end}: which can be your username or your organization name
+          - {correct}PROJECT_NAME{end}: which is the actual project name you chose
+          
+   - Ask your organization administrator to grant you necessary privileges to the project
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super(Forbidden, self).__init__(message.format(**inputs))
 
 
 class InvalidApiKey(NeptuneApiException):
     def __init__(self):
-        super(InvalidApiKey, self).__init__('The provided API key is invalid.')
+        message = """
+{h1}
+----InvalidApiKey-----------------------------------------------------------------------
+{end}
+Your API token is invalid.
+    
+Learn how to get it in this docs page:
+https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+
+There are two options to add it:
+    - specify it in your code 
+    - set an environment variable in your operating system.
+
+{h2}CODE{end}
+Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
+    {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
+
+{h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
+or export or set an environment variable depending on your operating system: 
+
+    {correct}Linux/Unix{end}
+    In your terminal run:
+        {bash}export {env_api_token}=YOUR_API_TOKEN{end}
+        
+    {correct}Windows{end}
+    In your CMD run:
+        {bash}set {env_api_token}=YOUR_API_TOKEN{end}
+        
+and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}: 
+    {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
+    
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+"""
+        inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
+        super(InvalidApiKey, self).__init__(message.format(**inputs))
 
 
-class NamespaceNotFound(NeptuneApiException):
+class WorkspaceNotFound(NeptuneApiException):
     def __init__(self, namespace_name):
-        super(NamespaceNotFound, self).__init__("Namespace '{}' not found.".format(namespace_name))
+        message = """
+{h1}
+----WorkspaceNotFound-------------------------------------------------------------------------
+{end}
+Workspace {python}{workspace}{end} not found.
+"""
+        inputs = dict(list({'workspace': namespace_name}.items()) + list(STYLES.items()))
+        super(WorkspaceNotFound, self).__init__(message.format(**inputs))
 
 
 class ProjectNotFound(NeptuneApiException):
     def __init__(self, project_identifier):
-        super(ProjectNotFound, self).__init__("Project '{}' not found.".format(project_identifier))
+        message = """
+{h1}
+----ProjectNotFound-------------------------------------------------------------------------
+{end}
+Project {python}{project}{end} not found.
+"""
+        inputs = dict(list({'project': project_identifier}.items()) + list(STYLES.items()))
+        super(ProjectNotFound, self).__init__(message.format(**inputs))
 
 
 class PathInProjectNotFound(NeptuneApiException):

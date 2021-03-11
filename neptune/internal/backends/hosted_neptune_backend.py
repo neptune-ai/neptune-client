@@ -49,7 +49,7 @@ from neptune.api_exceptions import (
     ExperimentLimitReached,
     ExperimentNotFound,
     ExperimentValidationError,
-    NamespaceNotFound,
+    WorkspaceNotFound,
     NotebookNotFound,
     PathInProjectNotFound,
     ProjectNotFound,
@@ -166,7 +166,7 @@ class HostedNeptuneBackend(Backend):
             ).response()
             return r.result.entries
         except HTTPNotFound:
-            raise NamespaceNotFound(namespace_name=namespace)
+            raise WorkspaceNotFound(namespace_name=namespace)
 
     @with_api_exceptions_handler
     def get_project_members(self, project_identifier):
