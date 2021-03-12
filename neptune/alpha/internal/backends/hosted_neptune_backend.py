@@ -204,7 +204,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
         try:
-            return self.leaderboard_client.createEmptyCheckpoint(
+            return self.leaderboard_client.api.createEmptyCheckpoint(
                 notebookId=notebook_id,
                 checkpoint={
                     "path": jupyter_path
