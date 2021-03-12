@@ -34,7 +34,8 @@ from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     CannotSynchronizeOfflineExperimentsWithoutProject,
     NeptuneException,
-    ProjectNotFound, ExperimentNotFound,
+    ProjectNotFound,
+    ExperimentNotFound,
 )
 from neptune.new.internal.backends.api_model import Project, ApiExperiment
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
