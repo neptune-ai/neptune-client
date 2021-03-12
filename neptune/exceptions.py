@@ -113,12 +113,6 @@ class InvalidNotebookPath(NeptuneException):
             "File {} is not a valid notebook. Should end with .ipynb.".format(path))
 
 
-class InvalidChannelX(NeptuneException):
-    def __init__(self, x):
-        super(InvalidChannelX, self).__init__(
-            "Invalid channel X-coordinate: '{}'. The sequence of X-coordinates must be strictly increasing.".format(x))
-
-
 class NoChannelValue(NeptuneException):
     def __init__(self):
         super(NoChannelValue, self).__init__('No channel value provided.')
@@ -299,8 +293,21 @@ class DeprecatedApiToken(NeptuneException):
 
 class CannotResolveHostname(NeptuneException):
     def __init__(self, host):
-        super(CannotResolveHostname, self).__init__(
-            "Cannot resolve hostname {}. Please contact Neptune support.".format(host))
+        message = """
+{h1}
+----CannotResolveHostname-----------------------------------------------------------------------
+{end}
+Neptune Client Library was not able to resolve hostname {host}.
+
+What should I do?
+    - Check if your computer is connected to the internet.
+    - Check if your computer should use any proxy to access internet.
+      If so, you may want to use {python}proxies{end} parameter of {python}neptune.init(){end} function.
+      See https://docs.neptune.ai/api-reference/neptune/index.html#neptune.init
+      and https://requests.readthedocs.io/en/master/user/advanced/#proxies
+"""
+        inputs = dict(list({'host': host}.items()) + list(STYLES.items()))
+        super(CannotResolveHostname, self).__init__(message.format(**inputs))
 
 
 class UnsupportedClientVersion(NeptuneException):
