@@ -15,6 +15,7 @@
 #
 from typing import TYPE_CHECKING, Union, Iterable
 
+from neptune.new.attributes import File
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
@@ -23,7 +24,7 @@ from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.internal.utils import verify_type, is_collection, verify_collection_type, is_float, is_string, \
     is_float_like, is_string_like
 from neptune.new.internal.utils.paths import join_paths, parse_path
-from neptune.new.types.atoms.file import File
+from neptune.new.types.atoms.file import File as FileVal
 
 if TYPE_CHECKING:
     from neptune.new.experiment import Experiment
@@ -64,7 +65,16 @@ class Handler:
                 self._experiment.define(self._path, value, wait)
 
     def upload(self, value, wait: bool = False) -> None:
-        self.assign(File.create_from(value), wait)
+        f = FileVal.create_from(value)
+
+        with self._experiment.lock():
+            attr = self._experiment.get_attribute(self._path)
+            if not attr:
+                attr = File(self._experiment, parse_path(self._path))
+                attr.upload(value, wait)
+                self._experiment.set_attribute(self._path, attr)
+            else:
+                attr.upload(value, wait)
 
     def upload_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         if is_collection(value):
@@ -82,7 +92,7 @@ class Handler:
                 attr.upload_files(value, wait)
 
     def log(self,
-            value: Union[int, float, str, File, Iterable[int], Iterable[float], Iterable[str], Iterable[File]],
+            value: Union[int, float, str, FileVal, Iterable[int], Iterable[float], Iterable[str], Iterable[FileVal]],
             step=None,
             timestamp=None,
             wait: bool = False) -> None:
@@ -104,7 +114,7 @@ class Handler:
                     attr = FloatSeries(self._experiment, parse_path(self._path))
                 elif is_string(first_value):
                     attr = StringSeries(self._experiment, parse_path(self._path))
-                elif isinstance(first_value, File):
+                elif isinstance(first_value, FileVal):
                     attr = FileSeries(self._experiment, parse_path(self._path))
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._experiment, parse_path(self._path))

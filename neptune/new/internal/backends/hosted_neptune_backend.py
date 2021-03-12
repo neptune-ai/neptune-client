@@ -21,7 +21,7 @@ from typing import List, Optional, Dict, Iterable
 import click
 import urllib3
 from bravado.client import SwaggerClient
-from bravado.exception import HTTPNotFound
+from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from packaging import version
 
@@ -34,7 +34,7 @@ from neptune.new.exceptions import (
     NeptuneException,
     OldProjectException,
     ProjectNotFound,
-    UnsupportedClientVersion,
+    StorageLimitReached, UnsupportedClientVersion,
 )
 from neptune.new.internal.backends.api_model import (
     ApiExperiment,
@@ -233,10 +233,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
 
         # Upload operations should be done first since they are idempotent
-        errors.extend(
-            self._execute_upload_operations(experiment_uuid=experiment_uuid,
-                                            upload_operations=upload_operations)
-        )
+        errors.extend(self._execute_upload_operations(
+            experiment_uuid=experiment_uuid,
+            upload_operations=upload_operations))
 
         if other_operations:
             errors.extend(self._execute_operations(experiment_uuid, other_operations))
@@ -301,6 +300,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid) from e
+        except HTTPUnprocessableEntity:
+            raise StorageLimitReached()
 
     @with_api_exceptions_handler
     def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:

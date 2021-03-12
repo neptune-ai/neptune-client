@@ -22,10 +22,12 @@ from typing import List, Optional, Dict, Iterable, Callable, Set, Union
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
+from bravado.exception import HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
-from neptune.new.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, FileSetUploadError
+from neptune.new.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, FileSetUploadError, \
+    StorageLimitReached
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
@@ -181,7 +183,10 @@ def upload_raw_data(http_client: RequestsClient,
     request = http_client.authenticator.apply(Request(method='POST', url=url, data=data, headers=headers))
 
     response = session.send(session.prepare_request(request))
+    if response.status_code == HTTPUnprocessableEntity.status_code:
+        raise StorageLimitReached()
     response.raise_for_status()
+
     return response.content
 
 
