@@ -142,6 +142,8 @@ class WorkspaceNotFound(NeptuneApiException):
 ----WorkspaceNotFound-------------------------------------------------------------------------
 {end}
 Workspace {python}{workspace}{end} not found.
+
+Workspace is your username or a name of your team organization.
 """
         inputs = dict(list({'workspace': namespace_name}.items()) + list(STYLES.items()))
         super(WorkspaceNotFound, self).__init__(message.format(**inputs))
@@ -154,6 +156,8 @@ class ProjectNotFound(NeptuneApiException):
 ----ProjectNotFound-------------------------------------------------------------------------
 {end}
 Project {python}{project}{end} not found.
+
+Verify if your project's name was not misspelled. You can find proper name after logging into Neptune UI: ui.neptune.ai.
 """
         inputs = dict(list({'project': project_identifier}.items()) + list(STYLES.items()))
         super(ProjectNotFound, self).__init__(message.format(**inputs))
