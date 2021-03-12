@@ -31,8 +31,7 @@ from neptune.internal.threads.aborting_thread import AbortingThread
 from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
 from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
-from neptune.utils import is_notebook, in_docker
-
+from neptune.utils import is_notebook, in_docker, is_ipython
 
 _logger = logging.getLogger(__name__)
 
@@ -133,8 +132,10 @@ class ExecutionContext(object):
     def _run_aborting_thread(self, abort_callback):
         if abort_callback is not None:
             abort_impl = CustomAbortImpl(abort_callback)
-        else:
+        elif not is_ipython():
             abort_impl = DefaultAbortImpl(pid=os.getpid())
+        else:
+            return
 
         websocket_factory = ReconnectingWebsocketFactory(
             backend=self._backend,

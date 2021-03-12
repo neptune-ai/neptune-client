@@ -14,7 +14,7 @@ def main():
         all_deps += extras[group_name]
     extras['all'] = all_deps
 
-    base_libs = ['neptune-client>=0.5.1']
+    base_libs = ['neptune-client>=0.5.1', 'tensorflow']
 
     setup(
         name='neptune-tensorflow-keras',

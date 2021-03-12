@@ -16,8 +16,8 @@
 
 from typing import Optional
 
-from neptune.alpha import Experiment
-from neptune.alpha.exceptions import NeptuneException
+from neptune.new import Experiment
+from neptune.new.exceptions import NeptuneException
 
 from ._version import get_versions
 __version__ = get_versions()['version']
@@ -50,7 +50,7 @@ class NeptuneCallback(Callback):
     See the example experiment here https://ui.neptune.ai/shared/keras-integration/e/KERAS-23/logs
 
     Args:
-        experiment: `neptune.alpha.Experiment`:
+        experiment: `neptune.new.Experiment`:
             Neptune experiment, required.
         base_namespace: str, optional:
             Namespace, in which all series will be put.
@@ -61,7 +61,7 @@ class NeptuneCallback(Callback):
 
         .. code:: python
 
-            import neptune.alpha as neptune
+            import neptune.new as neptune
 
             experiment = neptune.init(api_token='ANONYMOUS',
                                       project='shared/keras-integration')
@@ -71,7 +71,7 @@ class NeptuneCallback(Callback):
 
         .. code:: python
 
-            from neptune.alpha.integrations.tensorflow_keras import NeptuneCallback
+            from neptune.new.integrations.tensorflow_keras import NeptuneCallback
 
             model.fit(x_train, y_train,
                       epochs=PARAMS['epoch_nr'],

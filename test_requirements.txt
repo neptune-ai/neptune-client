@@ -11,8 +11,12 @@ pytest-xdist==2.2.0
 tensorflow; python_version >= '3.0'
 tox==3.6.1
 pytest-timeout==1.4.2
-matplotlib
+matplotlib==3.2
 pytest-mock==3.3.1
+plotly
+altair
+vega_datasets
+bokeh
 
 # Installing Torch on Windows increases the test duration by ~10 minutes
 torch; platform_system != 'Windows' and python_version >= '3.6'

@@ -17,7 +17,7 @@
 import click
 import pkg_resources
 
-from neptune.alpha.cli import sync, status
+from neptune.new.cli import sync, status
 
 
 @click.group()

@@ -138,7 +138,7 @@ class ChannelsValuesSendBatchError(NeptuneApiException):
                 len(batch_errors)))
 
 
-class AlphaOperationErrors(NeptuneApiException):
+class ExperimentOperationErrors(NeptuneApiException):
     """Handles minor errors returned by calling `client.executeOperations`"""
     def __init__(self, errors):
         super().__init__()
