@@ -35,13 +35,6 @@ import neptune.new as neptune
 # pip install yellowbrick>=1.3
 # pip install scikit-plot>=0.3.7
 
-# ToDo
-# log t_test only when needed
-# if path is not None and content is not None:
-#     raise ValueError("path and content are mutually exclusive")
-# if path is None and content is None:
-#     raise ValueError("path or content is required")
-
 
 def create_regressor_summary(regressor, X_train, X_test, y_train, y_test, nrows=1000, log_charts=True):
     """Create sklearn regressor summary.
@@ -381,7 +374,7 @@ def compute_test_preds(estimator, X_test, y_test, y_pred=None, nrows=1000):
     return preds
 
 
-def compute_test_preds_proba(classifier, X_test, y_pred_proba=None, nrows=1000):
+def compute_test_preds_proba(classifier, X_test=None, y_pred_proba=None, nrows=1000):
     """Log test predictions probabilities.
 
     Calculate and log test preds probabilities, and have them as html file under given <namespace>,
@@ -421,6 +414,11 @@ def compute_test_preds_proba(classifier, X_test, y_pred_proba=None, nrows=1000):
     """
     assert is_classifier(classifier), 'Classifier should be sklearn classifier.'
     assert isinstance(nrows, int), 'nrows should be integer, {} was passed'.format(type(nrows))
+
+    if X_test is not None and y_pred_proba is not None:
+        raise ValueError('X_test and y_pred_proba are mutually exclusive')
+    if X_test is None and y_pred_proba is None:
+        raise ValueError('X_test or y_pred_proba is required')
 
     if y_pred_proba is None:
         try:
@@ -991,7 +989,7 @@ def create_precision_recall_chart(classifier, X_test, y_test, y_pred_proba=None)
         except Exception as e:
             print('Did not log Precision-Recall chart: this classifier does not provide predictions probabilities.'
                   'Error {}'.format(e))
-            return
+            return chart
 
     try:
         fig, ax = plt.subplots()
