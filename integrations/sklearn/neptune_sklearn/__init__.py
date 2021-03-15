@@ -30,12 +30,6 @@ from yellowbrick.regressor import ResidualsPlot, PredictionError, CooksDistance
 import neptune.new as neptune
 
 
-# ToDo
-# Yellowbrick and scikitplot are required
-# pip install yellowbrick>=1.3
-# pip install scikit-plot>=0.3.7
-
-
 def create_regressor_summary(regressor, X_train, X_test, y_train, y_test, nrows=1000, log_charts=True):
     """Create sklearn regressor summary.
 
