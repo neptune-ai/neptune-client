@@ -23,7 +23,8 @@ def main():
             packages=find_packages(),
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
-              "tensorflow-keras": ["neptune-tensorflow-keras"]
+              "tensorflow-keras": ["neptune-tensorflow-keras"],
+              "sklearn": ["neptune-sklearn"]
             },
             entry_points={
                 'console_scripts': [
