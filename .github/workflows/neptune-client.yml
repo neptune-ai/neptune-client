@@ -45,6 +45,25 @@ jobs:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN_TENSORFLOW_KERAS }}
           packages_dir: integrations/tensorflow-keras/dist
+  publish_sklearn_integration:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/sklearn')
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Build and test
+        run : |
+          cd integrations/sklearn
+          python setup.py sdist
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@XXX
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN_SKLEARN }}
+          packages_dir: integrations/sklearn/dist
 
 #  publish:
 #    needs: test
