@@ -28,7 +28,7 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.api_exceptions import (
-    NamespaceNotFound,
+    WorkspaceNotFound,
     ProjectNotFound,
 )
 from neptune.backend import BackendApiClient, LeaderboardApiClient
@@ -149,7 +149,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             ).response()
             return r.result.entries
         except HTTPNotFound:
-            raise NamespaceNotFound(namespace_name=namespace)
+            raise WorkspaceNotFound(namespace_name=namespace)
 
     def create_leaderboard_backend(self, project) -> LeaderboardApiClient:
         project_version = project.version if hasattr(project, 'version') else 1
