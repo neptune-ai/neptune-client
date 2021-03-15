@@ -188,7 +188,7 @@ class Session(object):
                 | **values** are corresponding :class:`~neptune.projects.Project` objects.
 
         Raises:
-            `NamespaceNotFound`: When the given namespace does not exist.
+            `WorkspaceNotFound`: When the given workspace does not exist.
 
         Examples:
 
