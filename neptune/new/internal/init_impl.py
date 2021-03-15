@@ -33,7 +33,7 @@ from neptune.new.constants import (
 from neptune.new.envs import PROJECT_ENV_NAME, CUSTOM_EXP_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH
 from neptune.new.exceptions import (
     NeptuneExperimentResumeAndCustomIdCollision,
-    NeptuneIncorrectProjectQualifiedNameException,
+    NeptuneIncorrectProjectNameException,
     NeptuneMissingProjectNameException,
 )
 from neptune.new.experiment import Experiment
@@ -136,7 +136,7 @@ def init(project: Optional[str] = None,
         if not project:
             raise NeptuneMissingProjectNameException()
         if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
-            raise NeptuneIncorrectProjectQualifiedNameException(project)
+            raise NeptuneIncorrectProjectNameException(project)
 
     project_obj = backend.get_project(project)
     if experiment:

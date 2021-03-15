@@ -66,7 +66,19 @@ class FileSetUploadError(NeptuneException):
 
 class InternalClientError(NeptuneException):
     def __init__(self, msg: str):
-        super().__init__("Internal client error: {}. Please contact Neptune support.".format(msg))
+        message = """
+{h1}
+----InternalClientError-----------------------------------------------------------------------
+{end}
+Neptune Client Library encountered an unexpected Internal Error:
+{msg}
+
+Please contact Neptune support.
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({"msg": msg}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class ClientHttpError(NeptuneException):
@@ -121,20 +133,20 @@ and skip the {bold}project{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/workspace-project-and-user-management/index.html
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-beta.neptune.ai/administration/workspace-project-and-user-management
+    - https://docs-beta.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'env_project': envs.PROJECT_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
 
 
-class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
+class NeptuneIncorrectProjectNameException(NeptuneException):
     def __init__(self, project):
         message = """
 {h1}
-----NeptuneIncorrectProjectQualifiedNameException-----------------------------------------------------------------------
+----NeptuneIncorrectProjectNameException-----------------------------------------------------------------------
 {end}
 Project qualified name {fail}"{project}"{end} you specified was incorrect.
 
@@ -150,10 +162,10 @@ For example, a project {correct}neptune-ai/credit-default-prediction{end} parts 
 The URL to this project looks like this: https://ui.neptune.ai/neptune-ai/credit-default-prediction
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/workspace-project-and-user-management/index.html
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-beta.neptune.ai/administration/workspace-project-and-user-management
+    - https://docs-beta.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'project': project}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -168,7 +180,7 @@ class NeptuneMissingApiTokenException(NeptuneException):
 Neptune client couldn't find your API token.
 
 Learn how to get it in this docs page:
-https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
 
 There are two options to add it:
     - specify it in your code 
@@ -193,10 +205,10 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+    - https://docs-beta.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -212,7 +224,7 @@ Provided API token is invalid.
 Make sure you copied and provided your API token correctly.
 
 Learn how to get it in this docs page:
-https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
 
 There are two options to add it:
     - specify it in your code 
@@ -237,10 +249,10 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+    - https://docs-beta.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -253,11 +265,20 @@ class CannotSynchronizeOfflineExperimentsWithoutProject(NeptuneException):
 
 class NeptuneExperimentResumeAndCustomIdCollision(NeptuneException):
     def __init__(self):
-        super().__init__("`experiment` and `custom_experiment_id` arguments of init() function are mutually exclusive. "
-                         "Make sure you have no {custom_id_env} environment variable defined "
-                         "and no value explicitly passed to `custom_experiment_id` argument "
-                         "if you meant to resume experiment."
-                         .format(custom_id_env=CUSTOM_EXP_ID_ENV_NAME))
+        message = """
+{h1}
+----NeptuneExperimentResumeAndCustomIdCollision-----------------------------------------------------------------------
+{end}
+Incorrect call of function {python}neptune.init(){end}.
+
+Parameters {python}experiment{end} and {python}custom_experiment_id{end} of {python}neptune.init(){end} are mutually exclusive.
+Make sure you have no {bash}{custom_id_env}{end} environment variable defined
+and no value explicitly passed to `custom_experiment_id` argument if you meant to resume experiment.
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({'custom_id_env': CUSTOM_EXP_ID_ENV_NAME}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class UnsupportedClientVersion(NeptuneException):
@@ -266,16 +287,43 @@ class UnsupportedClientVersion(NeptuneException):
             version: Union[Version, str],
             min_version: Optional[Union[Version, str]] = None,
             max_version: Optional[Union[Version, str]] = None):
-        super().__init__(
-            "This neptune-client version ({}) is not supported. Please install neptune-client{}".format(
-                str(version),
-                "==" + replace_patch_version(str(max_version)) if max_version else ">=" + str(min_version)
-            ))
+        current_version = str(version)
+        required_version = "==" + replace_patch_version(str(max_version)) if max_version else ">=" + str(min_version)
+        message = """
+{h1}
+----UnsupportedClientVersion-----------------------------------------------------------------------
+{end}
+Your version of neptune-client ({current_version}) library is not supported by this Neptune server.
+
+Please install neptune-client{required_version}
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list(
+            {'current_version': current_version, 'required_version': required_version}.items()
+        ) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class CannotResolveHostname(NeptuneException):
     def __init__(self, host):
-        super().__init__("Cannot resolve hostname {}.".format(host))
+        message = """
+{h1}
+----CannotResolveHostname-----------------------------------------------------------------------
+{end}
+Neptune Client Library was not able to resolve hostname {underline}{host}{end}.
+
+What should I do?
+    - Check if your computer is connected to the internet.
+    - Check if your computer should use any proxy to access internet.
+      If so, you may want to use {python}proxies{end} parameter of {python}neptune.init(){end} function.
+      See (TODO: paste docs link here)
+      and https://requests.readthedocs.io/en/master/user/advanced/#proxies
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({'host': host}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class SSLError(NeptuneException):
@@ -292,17 +340,68 @@ class ConnectionLost(NeptuneException):
 
 class InternalServerError(NeptuneApiException):
     def __init__(self):
-        super().__init__('Internal server error. Please contact Neptune support.')
+        message = """
+{h1}
+----InternalServerError-----------------------------------------------------------------------
+{end}
+Neptune Client Library encountered an unexpected Internal Server Error.
+
+Please try again later or contact Neptune support.
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class Unauthorized(NeptuneApiException):
     def __init__(self):
-        super().__init__('Unauthorized. Verify your API token is invalid.')
+        message = """
+{h1}
+----Unauthorized-----------------------------------------------------------------------
+{end}
+You have no permission to access given resource.
+    
+    - Verify your API token is correct.
+      See: https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      
+    - Verify if you set up your project correctly
+      The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+      It has two parts:
+          - {correct}WORKSPACE{end}: which can be your username or your organization name
+          - {correct}PROJECT_NAME{end}: which is the actual project name you chose
+          
+   - Ask your organization administrator to grant you necessary privileges to the project
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class Forbidden(NeptuneApiException):
     def __init__(self):
-        super().__init__('You have no permissions to access this resource.')
+        message = """
+{h1}
+----Forbidden-----------------------------------------------------------------------
+{end}
+You have no permission to access given resource.
+    
+    - Verify your API token is correct.
+      See: https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      
+    - Verify if you set up your project correctly
+      The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+      It has two parts:
+          - {correct}WORKSPACE{end}: which can be your username or your organization name
+          - {correct}PROJECT_NAME{end}: which is the actual project name you chose
+          
+   - Ask your organization administrator to grant you necessary privileges to the project
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class OfflineModeFetchException(NeptuneException):
@@ -336,9 +435,9 @@ before you ran:
     {python}neptune.get_last_exp(){end}
 
 You may also want to check the following docs pages:
-    - TODO: create and link docs
+    - TODO: paste docs link here
 
-{correct}Need help?{end}-> TODO: create and link docs
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 """.format(**STYLES)
         super().__init__(message)
 
