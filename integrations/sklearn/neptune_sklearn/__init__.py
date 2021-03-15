@@ -805,7 +805,8 @@ def create_classification_report_chart(classifier, X_train, X_test, y_train, y_t
             rfc.fit(X_train, y_train)
 
             exp = neptune.init(project='my_workspace/my_project')
-            exp['report'] = npt_utils.create_classification_report_chart(rfc, X_train, X_test, y_train, y_test)
+            exp['visuals/classification_report'] = \
+                npt_utils.create_classification_report_chart(rfc, X_train, X_test, y_train, y_test)
     """
     assert is_classifier(classifier), 'classifier should be sklearn classifier.'
 
@@ -910,7 +911,7 @@ def create_roc_auc_chart(classifier, X_train, X_test, y_train, y_test):
             rfc.fit(X_train, y_train)
 
             exp = neptune.init(project='my_workspace/my_project')
-            exp['report'] = npt_utils.create_roc_auc_chart(rfc, X_train, X_test, y_train, y_test)
+            exp['visuals/roc_auc'] = npt_utils.create_roc_auc_chart(rfc, X_train, X_test, y_train, y_test)
     """
     assert is_classifier(classifier), 'classifier should be sklearn classifier.'
 
