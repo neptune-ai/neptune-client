@@ -87,7 +87,7 @@ def create_regressor_summary(regressor, X_train, X_test, y_train, y_test, nrows=
             rfr.fit(X_train, y_train)
 
             exp = neptune.init(project='my_workspace/my_project')
-            exp['summary/random_forest'] = npt_utils.create_regressor_summary(rfr, X_train, X_test, y_train, y_test)
+            exp['random_forest/summary'] = npt_utils.create_regressor_summary(rfr, X_train, X_test, y_train, y_test)
     """
     assert is_regressor(regressor), 'regressor should be sklearn regressor.'
 
@@ -170,7 +170,7 @@ def create_classifier_summary(classifier, X_train, X_test, y_train, y_test, nrow
             rfc.fit(X_train, y_train)
 
             exp = neptune.init(project='my_workspace/my_project')
-            exp['summary/random_forest'] = npt_utils.create_classifier_summary(rfc, X_train, X_test, y_train, y_test)
+            exp['random_forest/summary'] = npt_utils.create_classifier_summary(rfc, X_train, X_test, y_train, y_test)
     """
     assert is_classifier(classifier), 'classifier should be sklearn classifier.'
 
@@ -234,7 +234,7 @@ def create_kmeans_summary(model, X, nrows=1000, **kwargs):
             X, y = make_blobs(n_samples=579, n_features=17, centers=7, random_state=28743)
 
             exp = neptune.init(project='my_workspace/my_project')
-            exp['summary/kmeans'] = npt_utils.create_kmeans_summary(km, X)
+            exp['kmeans/summary'] = npt_utils.create_kmeans_summary(km, X)
     """
     assert isinstance(model, KMeans), 'model should be sklearn KMeans instance'
 
@@ -857,7 +857,8 @@ def create_confusion_matrix_chart(classifier, X_train, X_test, y_train, y_test):
             rfc.fit(X_train, y_train)
 
             exp = neptune.init(project='my_workspace/my_project')
-            exp['report'] = npt_utils.create_confusion_matrix_chart(rfc, X_train, X_test, y_train, y_test)
+            exp['visuals/confusion_matrix'] = \
+                npt_utils.create_confusion_matrix_chart(rfc, X_train, X_test, y_train, y_test)
     """
     assert is_classifier(classifier), 'classifier should be sklearn classifier.'
 
@@ -959,7 +960,7 @@ def create_precision_recall_chart(classifier, X_test, y_test, y_pred_proba=None)
             rfc.fit(X_train, y_train)
 
             exp = neptune.init(project='my_workspace/my_project')
-            exp['report'] = npt_utils.create_precision_recall_chart(rfc, X_test, y_test)
+            exp['visuals/precision_recall'] = npt_utils.create_precision_recall_chart(rfc, X_test, y_test)
     """
     assert is_classifier(classifier), 'classifier should be sklearn classifier.'
 
@@ -1016,7 +1017,8 @@ def create_class_prediction_error_chart(classifier, X_train, X_test, y_train, y_
             rfc.fit(X_train, y_train)
 
             exp = neptune.init(project='my_workspace/my_project')
-            exp['report'] = npt_utils.create_class_prediction_error_chart(rfc, X_train, X_test, y_train, y_test)
+            exp['visuals/class_prediction_error'] = \
+                npt_utils.create_class_prediction_error_chart(rfc, X_train, X_test, y_train, y_test)
     """
     assert is_classifier(classifier), 'classifier should be sklearn classifier.'
 
