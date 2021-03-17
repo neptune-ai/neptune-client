@@ -22,7 +22,7 @@ import mock
 from mock import MagicMock, patch
 
 from neptune.new.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
-    download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, download_zip
+    download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, download_file_set_attribute
 from neptune.utils import IS_WINDOWS
 
 
@@ -218,15 +218,15 @@ class TestHostedFileOperations(unittest.TestCase):
     @patch('neptune.new.internal.backends.hosted_file_operations._store_response_as_file')
     @patch('neptune.new.internal.backends.hosted_file_operations._download_raw_data')
     @patch('neptune.new.internal.backends.hosted_file_operations._get_download_url', new=lambda _, _id: "some_url")
-    def test_download_zip(self, download_raw, store_response_mock):
+    def test_download_file_set_attribute(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
         download_id = uuid.uuid4()
 
         # when
-        download_zip(swagger_client=swagger_mock,
-                     download_id=download_id,
-                     destination=None)
+        download_file_set_attribute(swagger_client=swagger_mock,
+                                    download_id=download_id,
+                                    destination=None)
 
         # then
         download_raw.assert_called_once_with(

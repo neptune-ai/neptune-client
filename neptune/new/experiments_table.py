@@ -33,6 +33,12 @@ class ExperimentsTableEntry:
     def __getitem__(self, path: str) -> 'LeaderboardHandler':
         return LeaderboardHandler(self, path)
 
+    def get_attribute_type(self, path: str) -> AttributeType:
+        for attr in self._attributes:
+            if attr.path == path:
+                return attr.type
+        raise ValueError("Could not find {} attribute".format(path))
+
     def get_attribute_value(self, path: str):
         for attr in self._attributes:
             if attr.path == path:
@@ -48,7 +54,7 @@ class ExperimentsTableEntry:
                 if _type == AttributeType.FILE:
                     raise MetadataInconsistency("Cannot get value for file attribute. Use download() instead.")
                 if _type == AttributeType.FILE_SET:
-                    raise MetadataInconsistency("Cannot get value for file set attribute. Use download_zip() instead.")
+                    raise MetadataInconsistency("Cannot get value for file set attribute. Use download() instead.")
                 if _type == AttributeType.STRING_SET:
                     return set(attr.properties.values)
                 if _type == AttributeType.GIT_REF:
@@ -92,10 +98,13 @@ class LeaderboardHandler:
         return self._experiment.get_attribute_value(self._path)
 
     def download(self, destination: Optional[str]):
-        return self._experiment.download_file_attribute(self._path, destination)
+        attr_type = self._experiment.get_attribute_type(self._path)
+        if attr_type == AttributeType.FILE:
+            return self._experiment.download_file_attribute(self._path, destination)
+        elif attr_type == AttributeType.FILE_SET:
+            return self._experiment.download_file_set_attribute(self._path, destination)
+        raise InternalClientError("Unsupported attribute type {}".format(attr_type))
 
-    def download_zip(self, destination: Optional[str]):
-        return self._experiment.download_file_set_attribute(self._path, destination)
 
 
 class ExperimentsTable:
