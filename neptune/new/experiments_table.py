@@ -103,7 +103,7 @@ class LeaderboardHandler:
             return self._experiment.download_file_attribute(self._path, destination)
         elif attr_type == AttributeType.FILE_SET:
             return self._experiment.download_file_set_attribute(self._path, destination)
-        raise InternalClientError("Unsupported attribute type {}".format(attr_type))
+        raise MetadataInconsistency("Cannot download file from attribute of type {}".format(attr_type))
 
 
 
