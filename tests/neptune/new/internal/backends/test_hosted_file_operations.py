@@ -22,7 +22,8 @@ import mock
 from mock import MagicMock, patch
 
 from neptune.new.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
-    download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, download_file_set_attribute
+    download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, \
+    download_file_set_attribute
 from neptune.utils import IS_WINDOWS
 
 
