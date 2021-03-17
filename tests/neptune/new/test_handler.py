@@ -138,14 +138,14 @@ class TestHandler(unittest.TestCase):
     @patch('neptune.new.internal.utils.glob',
            new=lambda path: [path.replace('*', 'file.txt')])
     @patch('neptune.new.internal.backends.neptune_backend_mock.ZipFile.write')
-    def test_save_files_download_zip(self, zip_write_mock):
+    def test_save_files_download(self, zip_write_mock):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp['some/artifacts'].upload_files("path/to/file.txt")
         exp['some/artifacts'].upload_files("path/to/other/*")
 
         with TemporaryDirectory() as temp_dir:
-            exp['some/artifacts'].download_zip(temp_dir)
-            exp['some/artifacts'].download_zip(temp_dir)
+            exp['some/artifacts'].download(temp_dir)
+            exp['some/artifacts'].download(temp_dir)
 
         zip_write_mock.assert_any_call(os.path.abspath("path/to/file.txt"), "path/to/file.txt")
         zip_write_mock.assert_any_call(os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt")

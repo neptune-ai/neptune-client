@@ -199,9 +199,9 @@ def download_file_attribute(swagger_client: SwaggerClient,
 
 
 @with_api_exceptions_handler
-def download_zip(swagger_client: SwaggerClient,
-                 download_id: uuid.UUID,
-                 destination: Optional[str] = None):
+def download_file_set_attribute(swagger_client: SwaggerClient,
+                                download_id: uuid.UUID,
+                                destination: Optional[str] = None):
     download_url: Optional[str] = _get_download_url(swagger_client, download_id)
     next_sleep = 0.5
     while download_url is None:

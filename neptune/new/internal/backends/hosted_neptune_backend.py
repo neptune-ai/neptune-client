@@ -53,7 +53,7 @@ from neptune.new.internal.backends.api_model import (
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
-    download_zip,
+    download_file_set_attribute,
     upload_file_attribute,
     upload_file_set_attribute,
 )
@@ -329,7 +329,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         download_request = self._get_file_set_download_request(experiment_uuid, path)
         try:
-            download_zip(
+            download_file_set_attribute(
                 swagger_client=self.leaderboard_client,
                 download_id=download_request.id,
                 destination=destination)

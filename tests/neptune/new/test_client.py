@@ -246,7 +246,7 @@ class TestClient(unittest.TestCase):
         exp['file'].download("some_directory")
         backend_mock.download_file.assert_called_with(exp_id, ["file"], "some_directory")
 
-        exp['file/set'].download_zip("some_directory")
+        exp['file/set'].download("some_directory")
         backend_mock.download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
 
     def test_last_exp_is_raising_exception_when_non_initialized(self):
