@@ -32,7 +32,7 @@ from neptune.new.exceptions import (
     InternalClientError,
     MetadataInconsistency,
     NeptuneException,
-    OldProjectException,
+    NeptuneLegacyProjectException,
     ProjectNotFound,
     UnsupportedClientVersion,
 )
@@ -143,7 +143,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 click.echo(warning)  # TODO print in color once colored exceptions are added
             project = response.result
             if project.version < 2:
-                raise OldProjectException(project_id)
+                raise NeptuneLegacyProjectException(project_id)
             return Project(uuid.UUID(project.id), project.name, project.organizationName)
         except HTTPNotFound:
             raise ProjectNotFound(project_id)

@@ -34,8 +34,8 @@ from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
 from requests import Session
 
-from neptune.new.exceptions import SSLError, ConnectionLost, InternalServerError, Unauthorized, Forbidden, \
-    CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
+from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, InternalServerError, \
+    Unauthorized, Forbidden, CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.utils import replace_patch_version
 
@@ -59,13 +59,13 @@ def with_api_exceptions_handler(func):
                 last_exception = e
                 continue
             except HTTPServerError as e:
-                raise InternalServerError() from e
+                raise InternalServerError(e.response.text) from e
             except HTTPUnauthorized:
                 raise Unauthorized()
             except HTTPForbidden:
                 raise Forbidden()
             except HTTPClientError as e:
-                raise ClientHttpError(e.status_code) from e
+                raise ClientHttpError(e.status_code, e.response.text) from e
             except requests.exceptions.RequestException as e:
                 if e.response is None:
                     raise
@@ -80,16 +80,16 @@ def with_api_exceptions_handler(func):
                     last_exception = e
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
-                    raise InternalServerError() from e
+                    raise InternalServerError(str(e.response)) from e
                 elif status_code == HTTPUnauthorized.status_code:
                     raise Unauthorized()
                 elif status_code == HTTPForbidden.status_code:
                     raise Forbidden()
                 elif 400 <= status_code < 500:
-                    raise ClientHttpError(status_code) from e
+                    raise ClientHttpError(status_code, str(e.response)) from e
                 else:
                     raise
-        raise ConnectionLost() from last_exception
+        raise NeptuneConnectionLostException() from last_exception
 
     return wrapper
 
