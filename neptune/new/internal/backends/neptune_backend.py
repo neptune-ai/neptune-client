@@ -28,6 +28,7 @@ from neptune.new.internal.backends.api_model import (
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
+    StringSeriesValues, FloatSeriesValues,
 )
 from neptune.new.internal.operation import Operation
 from neptune.new.types.atoms import GitRef
@@ -101,4 +102,14 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_string_set_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_string_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                 offset: int, limit: int) -> StringSeriesValues:
+        pass
+
+    @abc.abstractmethod
+    def get_float_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> FloatSeriesValues:
         pass

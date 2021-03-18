@@ -91,6 +91,18 @@ class Handler:
             else:
                 attr.upload_files(value, wait)
 
+    def fetch_values(self, include_timestamp=True):
+        with self._experiment.lock():
+            attr = self._experiment.get_attribute(self._path)
+            if attr:
+                if isinstance(attr, StringSeries):
+                    return attr.fetch_values(include_timestamp=include_timestamp)
+                elif isinstance(attr, FloatSeries):
+                    return attr.fetch_values(include_timestamp=include_timestamp)
+                raise TypeError("fetch_values is available only for string and float series")
+            else:
+                raise ValueError("Attribute does not exist: {}".format(self._path))
+
     def log(self,
             value: Union[int, float, str, FileVal, Iterable[int], Iterable[float], Iterable[str], Iterable[FileVal]],
             step=None,
