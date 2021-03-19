@@ -16,7 +16,8 @@
 from datetime import datetime
 from typing import Optional, Iterable, Dict, Union
 
-from neptune.new.internal.backends.api_model import StringPointValue
+from neptune.new.attributes.series.fetchable_series import FetchableSeries
+from neptune.new.internal.backends.api_model import StringSeriesValues
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 
 from neptune.new.internal.operation import LogStrings, ClearStringLog, Operation
@@ -26,7 +27,7 @@ Val = StringSeriesVal
 Data = str
 
 
-class StringSeries(Series[Val, Data]):
+class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in value.values]
@@ -54,28 +55,5 @@ class StringSeries(Series[Val, Data]):
         val = self._backend.get_string_series_attribute(self._experiment_uuid, self._path)
         return val.last
 
-    def fetch_values(self, include_timestamp=True):
-        # pylint: disable=import-outside-toplevel
-        import pandas as pd
-        limit = 1000
-        val = self._backend.get_string_series_values(self._experiment_uuid, self._path, 0, limit)
-        data = val.values
-        offset = limit
-
-        def make_row(entry: StringPointValue) -> Dict[str, Optional[Union[str, float, datetime]]]:
-            row: Dict[str, Union[str, float, datetime]] = dict()
-            row["step"] = entry.step
-            row["value"] = entry.value
-            if include_timestamp:
-                row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
-            return row
-
-        while offset < val.totalItemCount:
-            batch = self._backend.get_string_series_values(self._experiment_uuid, self._path, offset, limit)
-            data.extend(batch.values)
-            offset += limit
-
-        rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
-
-        df = pd.DataFrame.from_dict(data=rows, orient='index')
-        return df
+    def _fetch_values_from_backend(self, offset, limit) -> StringSeriesValues:
+        return self._backend.get_string_series_values(self._experiment_uuid, self._path, offset, limit)

@@ -16,7 +16,8 @@
 from datetime import datetime
 from typing import Union, Optional, Iterable, Dict
 
-from neptune.new.internal.backends.api_model import FloatPointValue
+from neptune.new.attributes.series.fetchable_series import FetchableSeries
+from neptune.new.internal.backends.api_model import FloatSeriesValues
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 
 from neptune.new.internal.utils import verify_type
@@ -28,7 +29,7 @@ Val = FloatSeriesVal
 Data = Union[float, int]
 
 
-class FloatSeries(Series[Val, Data]):
+class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     # pylint: disable=redefined-builtin
     def configure(self,
@@ -71,28 +72,5 @@ class FloatSeries(Series[Val, Data]):
         val = self._backend.get_float_series_attribute(self._experiment_uuid, self._path)
         return val.last
 
-    def fetch_values(self, include_timestamp=True):
-        # pylint: disable=import-outside-toplevel
-        import pandas as pd
-        limit = 1000
-        val = self._backend.get_float_series_values(self._experiment_uuid, self._path, 0, limit)
-        data = val.values
-        offset = limit
-
-        def make_row(entry: FloatPointValue) -> Dict[str, Optional[Union[str, float, datetime]]]:
-            row: Dict[str, Union[str, float, datetime]] = dict()
-            row["step"] = entry.step
-            row["value"] = entry.value
-            if include_timestamp:
-                row["timestamp"] = datetime.fromtimestamp(entry.timestampMillis / 1000)
-            return row
-
-        while offset < val.totalItemCount:
-            batch = self._backend.get_float_series_values(self._experiment_uuid, self._path, offset, limit)
-            data.extend(batch.values)
-            offset += limit
-
-        rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
-
-        df = pd.DataFrame.from_dict(data=rows, orient='index')
-        return df
+    def _fetch_values_from_backend(self, offset, limit) -> FloatSeriesValues:
+        return self._backend.get_float_series_values(self._experiment_uuid, self._path, offset, limit)

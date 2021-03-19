@@ -37,7 +37,9 @@ from neptune.new.internal.backends.api_model import (
     Project,
     StringAttribute,
     StringSeriesAttribute,
-    StringSetAttribute, StringSeriesValues, FloatSeriesValues,
+    StringSetAttribute,
+    StringSeriesValues,
+    FloatSeriesValues,
 )
 from neptune.new.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend

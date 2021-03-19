@@ -18,6 +18,7 @@ from typing import TYPE_CHECKING, Union, Iterable
 from neptune.new.attributes import File
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.attributes.series import FileSeries
+from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
@@ -95,9 +96,7 @@ class Handler:
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
             if attr:
-                if isinstance(attr, StringSeries):
-                    return attr.fetch_values(include_timestamp=include_timestamp)
-                elif isinstance(attr, FloatSeries):
+                if isinstance(attr, FetchableSeries):
                     return attr.fetch_values(include_timestamp=include_timestamp)
                 raise TypeError("fetch_values is available only for string and float series")
             else:

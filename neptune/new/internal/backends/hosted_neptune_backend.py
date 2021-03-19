@@ -49,7 +49,11 @@ from neptune.new.internal.backends.api_model import (
     Project,
     StringAttribute,
     StringSeriesAttribute,
-    StringSetAttribute, StringSeriesValues, StringPointValue, FloatSeriesValues, FloatPointValue,
+    StringSetAttribute,
+    StringSeriesValues,
+    StringPointValue,
+    FloatSeriesValues,
+    FloatPointValue,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
@@ -315,6 +319,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [to_attribute(attr) for attr in experiment.attributes]
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
+
+    def download_file_series_by_index(self, experiment_uuid: uuid.UUID, path: List[str],
+                                      index: int, destination: Optional[str] = None):
+        pass
 
     def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         try:

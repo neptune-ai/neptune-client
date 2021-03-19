@@ -18,9 +18,17 @@ import uuid
 from typing import List
 
 from neptune.new.exceptions import NeptuneOfflineModeFetchException
-from neptune.new.internal.backends.api_model import Attribute, FloatAttribute, StringAttribute, \
-    DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute, StringSeriesValues, \
-    FloatSeriesValues
+from neptune.new.internal.backends.api_model import (
+    Attribute,
+    FloatAttribute,
+    StringAttribute,
+    DatetimeAttribute,
+    FloatSeriesAttribute,
+    StringSeriesAttribute,
+    StringSetAttribute,
+    StringSeriesValues,
+    FloatSeriesValues,
+)
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
 
