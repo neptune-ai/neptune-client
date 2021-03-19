@@ -21,7 +21,7 @@ from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.streams.std_stream_capture_logger import StdoutCaptureLogger, StderrCaptureLogger
 
 if TYPE_CHECKING:
-    from neptune.new.experiment import Experiment
+    from neptune.new.run import Run
 
 
 class StdoutCaptureBackgroundJob(BackgroundJob):
@@ -30,8 +30,8 @@ class StdoutCaptureBackgroundJob(BackgroundJob):
         self._attribute_name = attribute_name
         self._logger = None
 
-    def start(self, experiment: 'Experiment'):
-        self._logger = StdoutCaptureLogger(experiment, self._attribute_name)
+    def start(self, run: 'Run'):
+        self._logger = StdoutCaptureLogger(run, self._attribute_name)
 
     def stop(self):
         self._logger.close()
@@ -46,8 +46,8 @@ class StderrCaptureBackgroundJob(BackgroundJob):
         self._attribute_name = attribute_name
         self._logger = None
 
-    def start(self, experiment: 'Experiment'):
-        self._logger = StderrCaptureLogger(experiment, self._attribute_name)
+    def start(self, run: 'Run'):
+        self._logger = StderrCaptureLogger(run, self._attribute_name)
 
     def stop(self):
         self._logger.close()

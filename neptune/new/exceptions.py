@@ -20,7 +20,7 @@ from typing import Union, Optional, List
 from packaging.version import Version
 
 from neptune.new import envs
-from neptune.new.envs import CUSTOM_EXP_ID_ENV_NAME
+from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.utils import replace_patch_version
 from neptune.exceptions import STYLES
 
@@ -105,15 +105,15 @@ class ProjectNotFound(NeptuneException):
         super().__init__("Project {} not found.".format(project_id))
 
 
-class ExperimentNotFound(NeptuneException):
+class RunNotFound(NeptuneException):
 
-    def __init__(self, experiment_id: str) -> None:
-        super().__init__("Experiment {} not found.".format(experiment_id))
+    def __init__(self, run_id: str) -> None:
+        super().__init__("Run {} not found.".format(run_id))
 
 
-class ExperimentUUIDNotFound(NeptuneException):
-    def __init__(self, exp_uuid: uuid.UUID):
-        super().__init__("Experiment with UUID {} not found. Could be deleted.".format(exp_uuid))
+class RunUUIDNotFound(NeptuneException):
+    def __init__(self, run_uuid: uuid.UUID):
+        super().__init__("Run with UUID {} not found. Could be deleted.".format(run_uuid))
 
 
 class NeptuneMissingProjectNameException(NeptuneException):
@@ -272,26 +272,26 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**inputs))
 
 
-class CannotSynchronizeOfflineExperimentsWithoutProject(NeptuneException):
+class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
     def __init__(self):
-        super().__init__("Cannot synchronize offline experiments without a project.")
+        super().__init__("Cannot synchronize offline runs without a project.")
 
 
-class NeptuneExperimentResumeAndCustomIdCollision(NeptuneException):
+class NeptuneRunResumeAndCustomIdCollision(NeptuneException):
     def __init__(self):
         message = """
 {h1}
-----NeptuneExperimentResumeAndCustomIdCollision-----------------------------------------
+----NeptuneRunResumeAndCustomIdCollision-----------------------------------------
 {end}
 Incorrect call of function {python}neptune.init(){end}.
 
-Parameters {python}experiment{end} and {python}custom_experiment_id{end} of {python}neptune.init(){end} are mutually exclusive.
+Parameters {python}run{end} and {python}custom_run_id{end} of {python}neptune.init(){end} are mutually exclusive.
 Make sure you have no {bash}{custom_id_env}{end} environment variable defined
-and no value explicitly passed to `custom_experiment_id` argument if you meant to resume experiment.
+and no value explicitly passed to `custom_run_id` argument if you meant to resume run.
 
 {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'custom_id_env': CUSTOM_EXP_ID_ENV_NAME}.items()) + list(STYLES.items()))
+        inputs = dict(list({'custom_id_env': CUSTOM_RUN_ID_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
 
 

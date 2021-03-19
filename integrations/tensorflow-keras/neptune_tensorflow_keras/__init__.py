@@ -16,7 +16,7 @@
 
 from typing import Optional
 
-from neptune.new import Experiment
+from neptune.new import Run
 from neptune.new.exceptions import NeptuneException
 
 from ._version import get_versions
@@ -82,9 +82,9 @@ class NeptuneCallback(Callback):
         You need to have Keras or Tensorflow 2 installed on your computer to use this module.
     """
 
-    def __init__(self, experiment: Experiment, base_namespace: Optional[str] = None):
+    def __init__(self, experiment: Run, base_namespace: Optional[str] = None):
         super().__init__()
-        if experiment is None or not isinstance(experiment, Experiment):
+        if experiment is None or not isinstance(experiment, Run):
             raise ValueError("Neptune experiment is missing")
         self._base_namespace = ''
         if base_namespace:

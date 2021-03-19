@@ -35,7 +35,7 @@ class TestSeries(TestAttributeBase):
         expected = [LogFloats.ValueType(17, None, self._now()), LogFloats.ValueType(3.6, None, self._now())]
 
         processor = MagicMock()
-        exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
+        exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
         var = FloatSeries(exp, path)
         var.assign(value, wait=wait)
         self.assertEqual(3, processor.enqueue_operation.call_count)
@@ -47,7 +47,7 @@ class TestSeries(TestAttributeBase):
 
     def test_assign_empty(self):
         processor = MagicMock()
-        exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
+        exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
         var = StringSeries(exp, path)
         var.assign(StringSeriesVal([]), wait=wait)
         processor.enqueue_operation.assert_called_once_with(ClearStringLog(path), wait)
@@ -70,7 +70,7 @@ class TestSeries(TestAttributeBase):
 
         for value, expected in value_and_expected:
             processor = MagicMock()
-            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
+            exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
             var = FloatSeries(exp, path)
             var.log(value, wait=wait)
             processor.enqueue_operation.assert_called_once_with(LogFloats(path, expected), wait)
@@ -86,7 +86,7 @@ class TestSeries(TestAttributeBase):
 
         for value, step, expected in value_step_and_expected:
             processor = MagicMock()
-            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
+            exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
             var = FloatSeries(exp, path)
             var.log(value, step=step, wait=wait)
             processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
@@ -99,14 +99,14 @@ class TestSeries(TestAttributeBase):
 
         for value, ts, expected in value_step_and_expected:
             processor = MagicMock()
-            exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
+            exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
             var = FloatSeries(exp, path)
             var.log(value, timestamp=ts, wait=wait)
             processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
 
     def test_log_value_errors(self):
         processor = MagicMock()
-        exp, path = self._create_experiment(processor), self._random_path()
+        exp, path = self._create_run(processor), self._random_path()
         attr = FloatSeries(exp, path)
 
         with self.assertRaises(ValueError):
@@ -120,7 +120,7 @@ class TestSeries(TestAttributeBase):
 
     def test_clear(self):
         processor = MagicMock()
-        exp, path, wait = self._create_experiment(processor), self._random_path(), self._random_wait()
+        exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
         var = FloatSeries(exp, path)
         var.clear(wait=wait)
         processor.enqueue_operation.assert_called_once_with(ClearFloatLog(path), wait)

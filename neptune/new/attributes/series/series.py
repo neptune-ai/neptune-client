@@ -67,7 +67,7 @@ class Series(Attribute, Generic[Val, Data]):
             value = self._data_to_value(value)
         clear_op = self._get_clear_operation()
         config_op = self._get_config_operation_from_value(value)
-        with self._experiment.lock():
+        with self._run.lock():
             if config_op:
                 self._enqueue_operation(config_op, wait=False)
             if not value.values:
@@ -99,10 +99,10 @@ class Series(Attribute, Generic[Val, Data]):
 
         op = self._get_log_operation_from_data(value.values, step, timestamp)
 
-        with self._experiment.lock():
+        with self._run.lock():
             self._enqueue_operation(op, wait)
 
     def _clear_impl(self, wait: bool = False) -> None:
         op = self._get_clear_operation()
-        with self._experiment.lock():
+        with self._run.lock():
             self._enqueue_operation(op, wait)

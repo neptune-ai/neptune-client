@@ -26,7 +26,7 @@ from neptune.new.internal.operation_processors.sync_operation_processor import S
 
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
-from neptune.new.experiment import Experiment
+from neptune.new.run import Run
 
 
 _now = time.time()
@@ -35,15 +35,15 @@ _now = time.time()
 class TestAttributeBase(unittest.TestCase):
 
     @staticmethod
-    def _create_experiment(processor: Optional[OperationProcessor] = None):
+    def _create_run(processor: Optional[OperationProcessor] = None):
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(uuid.uuid4())
+        exp = backend.create_run(uuid.uuid4())
         if processor is None:
             processor = SyncOperationProcessor(exp.uuid, backend)
-        _experiment = Experiment(exp.uuid, backend, processor, MagicMock())
-        _experiment.sync()
-        _experiment.start()
-        return _experiment
+        _run = Run(exp.uuid, backend, processor, MagicMock())
+        _run.sync()
+        _run.start()
+        return _run
 
     @staticmethod
     def _random_path():

@@ -60,7 +60,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # when
         result = backend.execute_operations(
-            experiment_uuid=exp_uuid,
+            run_uuid=exp_uuid,
             operations=[
                 UploadFile(
                     path=['some', 'files', 'some_file'],
@@ -111,22 +111,22 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         upload_mock.assert_has_calls([
             call(swagger_client=backend.leaderboard_client,
-                 experiment_uuid=exp_uuid,
+                 run_uuid=exp_uuid,
                  attribute="some/other/file.txt",
                  source="other/file/path.txt",
                  ext="txt"),
             call(swagger_client=backend.leaderboard_client,
-                 experiment_uuid=exp_uuid,
+                 run_uuid=exp_uuid,
                  attribute="some/files/some_file",
                  source="path_to_file",
                  ext=""),
             call(swagger_client=backend.leaderboard_client,
-                 experiment_uuid=exp_uuid,
+                 run_uuid=exp_uuid,
                  attribute="some/files/some_text_stream",
                  source=some_text.encode('utf-8'),
                  ext="txt"),
             call(swagger_client=backend.leaderboard_client,
-                 experiment_uuid=exp_uuid,
+                 run_uuid=exp_uuid,
                  attribute="some/files/some_binary_stream",
                  source=some_binary,
                  ext="bin")
@@ -149,7 +149,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # when
         backend.execute_operations(
-            experiment_uuid=exp_uuid,
+            run_uuid=exp_uuid,
             operations=[
                 UploadFile(
                     path=['some', 'path', '1', "var"],
@@ -171,17 +171,17 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         upload_mock.assert_has_calls([
             call(swagger_client=backend.leaderboard_client,
-                 experiment_uuid=exp_uuid,
+                 run_uuid=exp_uuid,
                  attribute="some/path/1/var",
                  source="/path/to/file",
                  ext=""),
             call(swagger_client=backend.leaderboard_client,
-                 experiment_uuid=exp_uuid,
+                 run_uuid=exp_uuid,
                  attribute="some/path/2/var",
                  source="/some.file/with.dots.txt",
                  ext="txt"),
             call(swagger_client=backend.leaderboard_client,
-                 experiment_uuid=exp_uuid,
+                 run_uuid=exp_uuid,
                  attribute="some/path/3/var",
                  source="/path/to/some_image.jpeg",
                  ext="jpeg")

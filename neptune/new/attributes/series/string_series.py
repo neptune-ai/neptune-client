@@ -50,9 +50,9 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
     def get_last(self, wait=True) -> str:
         # pylint: disable=protected-access
         if wait:
-            self._experiment.wait()
-        val = self._backend.get_string_series_attribute(self._experiment_uuid, self._path)
+            self._run.wait()
+        val = self._backend.get_string_series_attribute(self._run_uuid, self._path)
         return val.last
 
     def _fetch_values_from_backend(self, offset, limit) -> StringSeriesValues:
-        return self._backend.get_string_series_values(self._experiment_uuid, self._path, offset, limit)
+        return self._backend.get_string_series_values(self._run_uuid, self._path, offset, limit)

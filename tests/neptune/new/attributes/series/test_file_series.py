@@ -52,7 +52,7 @@ class TestFileSeries(TestAttributeBase):
         wait = self._random_wait()
         path = self._random_path()
         op_processor = MagicMock()
-        exp = self._create_experiment(processor=op_processor)
+        exp = self._create_run(processor=op_processor)
         attr = FileSeries(exp, path)
 
         file = File.as_image(numpy.random.rand(10, 10) * 255)
@@ -70,7 +70,7 @@ class TestFileSeries(TestAttributeBase):
         wait = self._random_wait()
         path = self._random_path()
         op_processor = MagicMock()
-        exp = self._create_experiment(processor=op_processor)
+        exp = self._create_run(processor=op_processor)
         attr = FileSeries(exp, path)
 
         file = File.as_image(numpy.random.rand(10, 10) * 255)
@@ -89,7 +89,7 @@ class TestFileSeries(TestAttributeBase):
         wait = self._random_wait()
         path = self._random_path()
         op_processor = MagicMock()
-        exp = self._create_experiment(processor=op_processor)
+        exp = self._create_run(processor=op_processor)
         attr = FileSeries(exp, path)
 
         file = File.as_image(numpy.random.rand(10, 10) * 255)
@@ -108,7 +108,7 @@ class TestFileSeries(TestAttributeBase):
         # given
         path = self._random_path()
         op_processor = MagicMock()
-        exp = self._create_experiment(processor=op_processor)
+        exp = self._create_run(processor=op_processor)
         attr = FileSeries(exp, path)
 
         file = File.from_content("some text")
@@ -125,7 +125,7 @@ class TestFileSeries(TestAttributeBase):
         # given
         path = self._random_path()
         op_processor = MagicMock()
-        exp = self._create_experiment(processor=op_processor)
+        exp = self._create_run(processor=op_processor)
         attr = FileSeries(exp, path)
 
         file = File.from_content("some text")

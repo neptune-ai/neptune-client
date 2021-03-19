@@ -19,14 +19,14 @@ import threading
 
 from typing import TextIO
 
-from neptune.new.experiment import Experiment
+from neptune.new.run import Run
 from neptune.new.logging import Logger as NeptuneLogger
 
 
 class StdStreamCaptureLogger:
 
-    def __init__(self, experiment: Experiment, attribute_name: str, stream: TextIO):
-        self._logger = NeptuneLogger(experiment, attribute_name)
+    def __init__(self, run: Run, attribute_name: str, stream: TextIO):
+        self._logger = NeptuneLogger(run, attribute_name)
         self.stream = stream
         self._thread_local = threading.local()
 
@@ -48,8 +48,8 @@ class StdStreamCaptureLogger:
 
 class StdoutCaptureLogger(StdStreamCaptureLogger):
 
-    def __init__(self, experiment: Experiment, attribute_name: str):
-        super().__init__(experiment, attribute_name, sys.stdout)
+    def __init__(self, run: Run, attribute_name: str):
+        super().__init__(run, attribute_name, sys.stdout)
         sys.stdout = self
 
     def close(self):
@@ -58,8 +58,8 @@ class StdoutCaptureLogger(StdStreamCaptureLogger):
 
 class StderrCaptureLogger(StdStreamCaptureLogger):
 
-    def __init__(self, experiment: Experiment, attribute_name: str):
-        super().__init__(experiment, attribute_name, sys.stderr)
+    def __init__(self, run: Run, attribute_name: str):
+        super().__init__(run, attribute_name, sys.stderr)
         sys.stderr = self
 
     def close(self):

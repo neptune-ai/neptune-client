@@ -18,7 +18,7 @@ import os
 import sys
 from typing import Optional, List
 
-from neptune.new import Experiment
+from neptune.new import Run
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.storage_utils import normalize_file_name
@@ -27,7 +27,7 @@ from neptune.utils import is_ipython
 _logger = logging.getLogger(__name__)
 
 
-def upload_source_code(source_files: Optional[List[str]], experiment: Experiment) -> None:
+def upload_source_code(source_files: Optional[List[str]], run: Run) -> None:
     if not is_ipython() and os.path.isfile(sys.argv[0]):
         if source_files is None:
             entrypoint = os.path.basename(sys.argv[0])
@@ -40,7 +40,7 @@ def upload_source_code(source_files: Optional[List[str]], experiment: Experiment
                 entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(sys.argv[0]), common_root))
             else:
                 entrypoint = normalize_file_name(os.path.abspath(sys.argv[0]))
-        experiment[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
+        run[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
 
     if source_files is not None:
-        experiment[attr_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH].upload_files(source_files)
+        run[attr_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH].upload_files(source_files)

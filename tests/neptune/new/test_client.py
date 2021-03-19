@@ -23,13 +23,13 @@ from datetime import datetime
 
 from mock import patch, Mock
 
-from neptune.new import init, ANONYMOUS, get_project, get_last_exp, Experiment
+from neptune.new import init, ANONYMOUS, get_project, get_last_run, Run
 from neptune.new.attributes.atoms import String
 from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.new.exceptions import MetadataInconsistency, NeptuneOfflineModeFetchException, \
     NeptuneUninitializedException
 from neptune.new.internal.backends.api_model import (
-    ApiExperiment,
+    ApiRun,
     Attribute,
     AttributeType,
     AttributeWithProperties,
@@ -80,13 +80,13 @@ class TestClient(unittest.TestCase):
         execution_dir = os.listdir(".neptune/async/{}".format(exp._uuid))[0]
         self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))
 
-    @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_experiment",
+    @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
            new=lambda _, _id:
-           ApiExperiment(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94", "workspace", "sandbox", False))
+           ApiRun(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94", "workspace", "sandbox", False))
     @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
            new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)])
     def test_resume(self):
-        exp = init(flush_period=0.5, experiment="SAN-94")
+        exp = init(flush_period=0.5, run="SAN-94")
         self.assertEqual(exp._uuid, uuid.UUID('12345678-1234-5678-1234-567812345678'))
         self.assertIsInstance(exp.get_structure()["test"], String)
 
@@ -153,8 +153,8 @@ class TestClient(unittest.TestCase):
         # and
         attributes = []
         now = datetime.now()
-        attributes.append(AttributeWithProperties("experiment/state",
-                                                  AttributeType.EXPERIMENT_STATE,
+        attributes.append(AttributeWithProperties("run/state",
+                                                  AttributeType.RUN_STATE,
                                                   Mock(value="idle")))
         attributes.append(AttributeWithProperties("float", AttributeType.FLOAT, Mock(value=12.5)))
         attributes.append(AttributeWithProperties("string", AttributeType.STRING, Mock(value="some text")))
@@ -175,10 +175,10 @@ class TestClient(unittest.TestCase):
         backend_mock.get_leaderboard = Mock(return_value=[empty_entry, filled_entry])
 
         # when
-        df = get_project().get_experiments_table().as_pandas()
+        df = get_project().get_runs_table().as_pandas()
 
         # then
-        self.assertEqual("idle", df['experiment/state'][1])
+        self.assertEqual("idle", df['run/state'][1])
         self.assertEqual(12.5, df['float'][1])
         self.assertEqual("some text", df['string'][1])
         self.assertEqual(now, df['datetime'][1])
@@ -195,7 +195,7 @@ class TestClient(unittest.TestCase):
             self.assertTrue(df['image/series'])
 
     @patch("neptune.new.internal.get_project_impl.HostedNeptuneBackend")
-    def test_get_table_as_experiments(self, backend_init_mock):
+    def test_get_table_as_runs(self, backend_init_mock):
         # given
         backend_mock = Mock()
         backend_init_mock.return_value = backend_mock
@@ -204,8 +204,8 @@ class TestClient(unittest.TestCase):
         exp_id = uuid.uuid4()
         attributes = []
         now = datetime.now()
-        attributes.append(AttributeWithProperties("experiment/state",
-                                                  AttributeType.EXPERIMENT_STATE,
+        attributes.append(AttributeWithProperties("run/state",
+                                                  AttributeType.RUN_STATE,
                                                   Mock(value="idle")))
         attributes.append(AttributeWithProperties("float", AttributeType.FLOAT, Mock(value=12.5)))
         attributes.append(AttributeWithProperties("string", AttributeType.STRING, Mock(value="some text")))
@@ -224,11 +224,11 @@ class TestClient(unittest.TestCase):
         backend_mock.get_leaderboard = Mock(return_value=[LeaderboardEntry(exp_id, attributes)])
 
         # when
-        exp = get_project().get_experiments_table().as_experiments()[0]
+        exp = get_project().get_runs_table().as_runs()[0]
 
         # then
-        self.assertEqual("idle", exp['experiment/state'].get())
-        self.assertEqual("idle", exp['experiment']['state'].get())
+        self.assertEqual("idle", exp['run/state'].get())
+        self.assertEqual("idle", exp['run']['state'].get())
         self.assertEqual(12.5, exp['float'].get())
         self.assertEqual("some text", exp['string'].get())
         self.assertEqual(now, exp['datetime'].get())
@@ -251,18 +251,18 @@ class TestClient(unittest.TestCase):
         backend_mock.download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
 
     def test_last_exp_is_raising_exception_when_non_initialized(self):
-        # given uninitialized experiment
-        Experiment.last_exp = None
+        # given uninitialized run
+        Run.last_run = None
 
         # expect: raises NeptuneUninitializedException
         with self.assertRaises(NeptuneUninitializedException):
-            get_last_exp()
+            get_last_run()
 
     def test_last_exp_is_the_latest_initialized(self):
-        # given two initialized experiments
+        # given two initialized runs
         exp1 = init()
         exp2 = init()
 
-        # expect: `neptune.latest_experiment` to be the latest initialized one
-        self.assertIsNot(exp1, get_last_exp())
-        self.assertIs(exp2, get_last_exp())
+        # expect: `neptune.latest_run` to be the latest initialized one
+        self.assertIsNot(exp1, get_last_run())
+        self.assertIs(exp2, get_last_run())

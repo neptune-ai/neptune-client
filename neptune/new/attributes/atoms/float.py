@@ -26,12 +26,12 @@ class Float(Atom):
         if not isinstance(value, FloatVal):
             value = FloatVal(value)
 
-        with self._experiment.lock():
+        with self._run.lock():
             self._enqueue_operation(AssignFloat(self._path, value.value), wait)
 
     def get(self, wait=True) -> float:
         # pylint: disable=protected-access
         if wait:
-            self._experiment.wait()
-        val = self._backend.get_float_attribute(self._experiment_uuid, self._path)
+            self._run.wait()
+        val = self._backend.get_float_attribute(self._run_uuid, self._path)
         return val.value

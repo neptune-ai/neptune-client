@@ -39,41 +39,41 @@ from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value_visitor import ValueVisitor
 
 if TYPE_CHECKING:
-    from neptune.new import Experiment
+    from neptune.new import Run
 
 
 class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
-    def __init__(self, _experiment: 'Experiment', path: List[str]):
-        self._experiment = _experiment
+    def __init__(self, run: 'Run', path: List[str]):
+        self._run = run
         self._path = path
 
     def visit_float(self, _: Float) -> Attribute:
-        return FloatAttr(self._experiment, self._path)
+        return FloatAttr(self._run, self._path)
 
     def visit_string(self, _: String) -> Attribute:
-        return StringAttr(self._experiment, self._path)
+        return StringAttr(self._run, self._path)
 
     def visit_datetime(self, _: Datetime) -> Attribute:
-        return DatetimeAttr(self._experiment, self._path)
+        return DatetimeAttr(self._run, self._path)
 
     def visit_file(self, _: File) -> Attribute:
-        return FileAttr(self._experiment, self._path)
+        return FileAttr(self._run, self._path)
 
     def visit_file_set(self, _: FileSet) -> Attribute:
-        return FileSetAttr(self._experiment, self._path)
+        return FileSetAttr(self._run, self._path)
 
     def visit_float_series(self, _: FloatSeries) -> Attribute:
-        return FloatSeriesAttr(self._experiment, self._path)
+        return FloatSeriesAttr(self._run, self._path)
 
     def visit_string_series(self, _: StringSeries) -> Attribute:
-        return StringSeriesAttr(self._experiment, self._path)
+        return StringSeriesAttr(self._run, self._path)
 
     def visit_image_series(self, _: FileSeries) -> Attribute:
-        return ImageSeriesAttr(self._experiment, self._path)
+        return ImageSeriesAttr(self._run, self._path)
 
     def visit_string_set(self, _: StringSet) -> Attribute:
-        return StringSetAttr(self._experiment, self._path)
+        return StringSetAttr(self._run, self._path)
 
     def visit_git_ref(self, _: GitRef) -> Attribute:
         raise OperationNotSupported("Cannot create custom attribute of type GitRef")

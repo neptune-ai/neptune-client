@@ -21,7 +21,7 @@ from neptune.new.internal.utils.paths import path_to_str
 T = TypeVar('T')
 
 
-class ExperimentStructure(Generic[T]):
+class RunStructure(Generic[T]):
 
     def __init__(self):
         self._structure = dict()
