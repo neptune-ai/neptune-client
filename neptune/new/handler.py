@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import TYPE_CHECKING, Union, Iterable
+from typing import TYPE_CHECKING, Union, Iterable, Optional
 
 from neptune.new.attributes import File
 from neptune.new.attributes.file_set import FileSet
@@ -92,13 +92,23 @@ class Handler:
             else:
                 attr.upload_files(value, wait)
 
-    def fetch_values(self, include_timestamp=True):
+    def fetch_values(self, include_timestamp: Optional[bool] = True):
         with self._experiment.lock():
             attr = self._experiment.get_attribute(self._path)
             if attr:
                 if isinstance(attr, FetchableSeries):
                     return attr.fetch_values(include_timestamp=include_timestamp)
                 raise TypeError("fetch_values is available only for string and float series")
+            else:
+                raise ValueError("Attribute does not exist: {}".format(self._path))
+
+    def download(self, destination: Optional[str] = None):
+        with self._experiment.lock():
+            attr = self._experiment.get_attribute(self._path)
+            if attr:
+                if isinstance(attr, FileSeries):
+                    return attr.download(destination=destination)
+                raise TypeError("download is available only for file series")
             else:
                 raise ValueError("Attribute does not exist: {}".format(self._path))
 

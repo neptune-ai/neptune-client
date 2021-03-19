@@ -186,6 +186,21 @@ def upload_raw_data(http_client: RequestsClient,
 
 
 @with_api_exceptions_handler
+def download_image_series_element(swagger_client: SwaggerClient,
+                                  experiment_uuid: uuid.UUID,
+                                  attribute: str,
+                                  index: int,
+                                  destination: str):
+    response = _download_raw_data(
+        http_client=swagger_client.swagger_spec.http_client,
+        url=swagger_client.swagger_spec.api_url + swagger_client.api.getImageSeriesValue.operation.path_name,
+        headers={},
+        query_params={"experimentId": str(experiment_uuid), "attribute": attribute, "index": index})
+    _store_response_as_file(response, os.path.join(destination, "{}.{}"
+                                                   .format(index, response.headers['content-type'].split('/')[-1])))
+
+
+@with_api_exceptions_handler
 def download_file_attribute(swagger_client: SwaggerClient,
                             experiment_uuid: uuid.UUID,
                             attribute: str,

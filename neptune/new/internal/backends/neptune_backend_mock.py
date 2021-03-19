@@ -40,6 +40,7 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     StringSeriesValues,
     FloatSeriesValues,
+    ImageSeriesValues,
 )
 from neptune.new.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -230,6 +231,15 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_float_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
                                 offset: int, limit: int) -> FloatSeriesValues:
         return FloatSeriesValues(0, [])
+
+    def get_image_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> ImageSeriesValues:
+        return ImageSeriesValues(0)
+
+    def download_file_series_by_index(self, experiment_uuid: uuid.UUID, path: List[str],
+                                      index: int, destination: str):
+        pass
+
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 
