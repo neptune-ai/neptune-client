@@ -38,6 +38,8 @@ from neptune.new.internal.backends.api_model import (
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
+    StringSeriesValues,
+    FloatSeriesValues,
 )
 from neptune.new.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -220,6 +222,14 @@ class NeptuneBackendMock(NeptuneBackend):
         if isinstance(value, expected_type):
             return value
         raise MetadataInconsistency("Attribute {} is not {}".format(str_path, type.__name__))
+
+    def get_string_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                 offset: int, limit: int) -> StringSeriesValues:
+        return StringSeriesValues(0, [])
+
+    def get_float_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> FloatSeriesValues:
+        return FloatSeriesValues(0, [])
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 

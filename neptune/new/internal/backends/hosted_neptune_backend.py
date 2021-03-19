@@ -50,6 +50,10 @@ from neptune.new.internal.backends.api_model import (
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
+    StringSeriesValues,
+    StringPointValue,
+    FloatSeriesValues,
+    FloatPointValue,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
@@ -316,6 +320,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
+    def download_file_series_by_index(self, experiment_uuid: uuid.UUID, path: List[str],
+                                      index: int, destination: Optional[str] = None):
+        pass
+
     def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         try:
             download_file_attribute(
@@ -405,6 +413,38 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
             return StringSetAttribute(result.values)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_string_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                 offset: int, limit: int) -> StringSeriesValues:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path),
+            'limit': limit,
+            'offset': offset
+        }
+        try:
+            result = self.leaderboard_client.api.getStringSeriesValues(**params).response().result
+            return StringSeriesValues(result.totalItemCount,
+                                      [StringPointValue(v.timestampMillis, v.step, v.value) for v in result.values])
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_float_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> FloatSeriesValues:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path),
+            'limit': limit,
+            'offset': offset
+        }
+        try:
+            result = self.leaderboard_client.api.getFloatSeriesValues(**params).response().result
+            return FloatSeriesValues(result.totalItemCount,
+                                     [FloatPointValue(v.timestampMillis, v.step, v.value) for v in result.values])
         except HTTPNotFound:
             raise MetadataInconsistency("Attribute {} not found".format(path))
 

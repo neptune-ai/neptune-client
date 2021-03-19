@@ -109,6 +109,32 @@ class LeaderboardEntry:
 
 
 @dataclass
+class StringPointValue:
+    timestampMillis: int
+    step: float
+    value: str
+
+
+@dataclass
+class StringSeriesValues:
+    totalItemCount: int
+    values: List[StringPointValue]
+
+
+@dataclass
+class FloatPointValue:
+    timestampMillis: int
+    step: float
+    value: float
+
+
+@dataclass
+class FloatSeriesValues:
+    totalItemCount: int
+    values: List[FloatPointValue]
+
+
+@dataclass
 class FloatAttribute:
     value: float
 

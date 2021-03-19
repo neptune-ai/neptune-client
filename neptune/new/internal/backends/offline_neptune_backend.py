@@ -18,8 +18,17 @@ import uuid
 from typing import List
 
 from neptune.new.exceptions import NeptuneOfflineModeFetchException
-from neptune.new.internal.backends.api_model import Attribute, FloatAttribute, StringAttribute, \
-    DatetimeAttribute, FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
+from neptune.new.internal.backends.api_model import (
+    Attribute,
+    FloatAttribute,
+    StringAttribute,
+    DatetimeAttribute,
+    FloatSeriesAttribute,
+    StringSeriesAttribute,
+    StringSetAttribute,
+    StringSeriesValues,
+    FloatSeriesValues,
+)
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
 
@@ -44,4 +53,12 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         raise NeptuneOfflineModeFetchException
 
     def get_string_set_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
+        raise NeptuneOfflineModeFetchException
+
+    def get_string_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                 offset: int, limit: int) -> StringSeriesValues:
+        raise NeptuneOfflineModeFetchException
+
+    def get_float_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> FloatSeriesValues:
         raise NeptuneOfflineModeFetchException
