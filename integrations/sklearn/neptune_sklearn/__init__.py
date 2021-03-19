@@ -29,6 +29,10 @@ from yellowbrick.regressor import ResidualsPlot, PredictionError, CooksDistance
 
 import neptune.new as neptune
 
+from ._version import get_versions
+__version__ = get_versions()['version']
+del get_versions
+
 
 def create_regressor_summary(regressor, X_train, X_test, y_train, y_test, nrows=1000, log_charts=True):
     """Create sklearn regressor summary.
