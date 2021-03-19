@@ -15,12 +15,29 @@
 #
 
 try:
-    from neptune_sklearn import create_regressor_summary, create_classifier_summary, create_kmeans_summary, \
-        get_estimator_params, get_pickled_model, get_test_preds, get_test_preds_proba, get_scores, \
-        create_learning_curve_chart, create_feature_importance_chart, create_residuals_chart, \
-        create_prediction_error_chart, create_cooks_distance_chart, create_classification_report_chart, \
-        create_confusion_matrix_chart, create_roc_auc_chart, create_precision_recall_chart, \
-        create_class_prediction_error_chart, get_cluster_labels, create_kelbow_chart, create_silhouette_chart
+    from neptune_sklearn import (
+        create_regressor_summary,
+        create_classifier_summary,
+        create_kmeans_summary,
+        get_estimator_params,
+        get_pickled_model,
+        get_test_preds,
+        get_test_preds_proba,
+        get_scores,
+        create_learning_curve_chart,
+        create_feature_importance_chart,
+        create_residuals_chart,
+        create_prediction_error_chart,
+        create_cooks_distance_chart,
+        create_classification_report_chart,
+        create_confusion_matrix_chart,
+        create_roc_auc_chart,
+        create_precision_recall_chart,
+        create_class_prediction_error_chart,
+        get_cluster_labels,
+        create_kelbow_chart,
+        create_silhouette_chart
+    )
 
 except ImportError:
     from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
