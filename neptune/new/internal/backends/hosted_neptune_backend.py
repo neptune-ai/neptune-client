@@ -32,7 +32,7 @@ from neptune.new.exceptions import (
     InternalClientError,
     MetadataInconsistency,
     NeptuneException,
-    OldProjectException,
+    NeptuneLegacyProjectException,
     ProjectNotFound,
     UnsupportedClientVersion,
 )
@@ -53,7 +53,7 @@ from neptune.new.internal.backends.api_model import (
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
-    download_zip,
+    download_file_set_attribute,
     upload_file_attribute,
     upload_file_set_attribute,
 )
@@ -143,7 +143,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 click.echo(warning)  # TODO print in color once colored exceptions are added
             project = response.result
             if project.version < 2:
-                raise OldProjectException(project_id)
+                raise NeptuneLegacyProjectException(project_id)
             return Project(uuid.UUID(project.id), project.name, project.organizationName)
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
@@ -329,7 +329,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         download_request = self._get_file_set_download_request(experiment_uuid, path)
         try:
-            download_zip(
+            download_file_set_attribute(
                 swagger_client=self.leaderboard_client,
                 download_id=download_request.id,
                 destination=destination)

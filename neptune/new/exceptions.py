@@ -82,8 +82,22 @@ Please contact Neptune support.
 
 
 class ClientHttpError(NeptuneException):
-    def __init__(self, code: int):
-        super().__init__("Client HTTP error {}".format(code))
+    def __init__(self, status, response):
+        message = """
+{h1}
+----ClientHttpError-----------------------------------------------------------------------
+{end}
+Neptune server returned status {fail}{status}{end}.
+
+Server response was:
+{fail}{response}{end}
+
+Verify the correctness of your call or contact Neptune support.
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({"status": status, "response": response}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class ProjectNotFound(NeptuneException):
@@ -106,7 +120,7 @@ class NeptuneMissingProjectNameException(NeptuneException):
     def __init__(self):
         message = """
 {h1}
-----NeptuneMissingProjectNameException-------------------------------------------------------------------------
+----NeptuneMissingProjectNameException----------------------------------------
 {end}
 Neptune client couldn't find your project name.
 
@@ -146,7 +160,7 @@ class NeptuneIncorrectProjectNameException(NeptuneException):
     def __init__(self, project):
         message = """
 {h1}
-----NeptuneIncorrectProjectNameException-----------------------------------------------------------------------
+----NeptuneIncorrectProjectNameException------------------------------------
 {end}
 Project qualified name {fail}"{project}"{end} you specified was incorrect.
 
@@ -175,7 +189,7 @@ class NeptuneMissingApiTokenException(NeptuneException):
     def __init__(self):
         message = """
 {h1}
-----NeptuneMissingApiTokenException-------------------------------------------------------------------------------------
+----NeptuneMissingApiTokenException-------------------------------------------
 {end}
 Neptune client couldn't find your API token.
 
@@ -218,7 +232,7 @@ class NeptuneInvalidApiTokenException(NeptuneException):
     def __init__(self):
         message = """
 {h1}
-----NeptuneInvalidApiTokenException-------------------------------------------------------------------------------------
+----NeptuneInvalidApiTokenException------------------------------------------------
 {end}
 Provided API token is invalid.
 Make sure you copied and provided your API token correctly.
@@ -267,7 +281,7 @@ class NeptuneExperimentResumeAndCustomIdCollision(NeptuneException):
     def __init__(self):
         message = """
 {h1}
-----NeptuneExperimentResumeAndCustomIdCollision-----------------------------------------------------------------------
+----NeptuneExperimentResumeAndCustomIdCollision-----------------------------------------
 {end}
 Incorrect call of function {python}neptune.init(){end}.
 
@@ -291,7 +305,7 @@ class UnsupportedClientVersion(NeptuneException):
         required_version = "==" + replace_patch_version(str(max_version)) if max_version else ">=" + str(min_version)
         message = """
 {h1}
-----UnsupportedClientVersion-----------------------------------------------------------------------
+----UnsupportedClientVersion-------------------------------------------------------------
 {end}
 Your version of neptune-client ({current_version}) library is not supported by this Neptune server.
 
@@ -333,24 +347,52 @@ class SSLError(NeptuneException):
             'environment variable to accept self-signed certificates.')
 
 
-class ConnectionLost(NeptuneException):
+class NeptuneConnectionLostException(NeptuneException):
     def __init__(self):
-        super().__init__('Connection to Neptune server was lost.')
+        message = """
+{h1}
+----NeptuneConnectionLostException---------------------------------------------------------
+{end}
+A connection to the Neptune server was lost.
+If you are using asynchronous (default) connection mode Neptune automatically switched to an offline mode and your data is being stored safely on the disk.
+You can upload it later using Neptune Command Line Interface:
+    {bash}neptune sync -p workspace_name/project_name{end}
+
+What should I do?
+    - Check if your computer is connected to the internet.
+    - If your connection is unstable you can consider working using the offline mode:
+        {python}run = neptune.init(connection_mode="offline"){end}
+        
+You can read in detail how it works and how to upload your data on the following doc pages:
+    - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes#offline
+    - https://docs-beta.neptune.ai/advanced-user-guides/uploading-offline-data
+    
+You may also want to check the following docs pages:
+    - https://docs-beta.neptune.ai/advanced-user-guides/connectivity-issues
+    - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes
+    
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class InternalServerError(NeptuneApiException):
-    def __init__(self):
+    def __init__(self, response):
         message = """
 {h1}
 ----InternalServerError-----------------------------------------------------------------------
 {end}
 Neptune Client Library encountered an unexpected Internal Server Error.
 
+Server response was:
+{fail}{response}{end}
+
 Please try again later or contact Neptune support.
 
 {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
+        inputs = dict(list({"response": response}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
 
 
@@ -404,9 +446,25 @@ You have no permission to access given resource.
         super().__init__(message.format(**inputs))
 
 
-class OfflineModeFetchException(NeptuneException):
+class NeptuneOfflineModeFetchException(NeptuneException):
     def __init__(self):
-        super().__init__('It is not possible to fetch data from the server in offline mode')
+        message = """
+{h1}
+----NeptuneOfflineModeFetchException---------------------------------------------------
+{end}
+It seems you are trying to fetch data from the server, while working in an offline mode.
+You need to work in non-offline connection mode to fetch data from the server. 
+
+You can set connection mode when creating a new run:
+    {python}run = neptune.init(connection_mode="async"){end}
+    
+You may also want to check the following docs pages:
+    - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes
+    
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class OperationNotSupported(NeptuneException):
@@ -414,17 +472,31 @@ class OperationNotSupported(NeptuneException):
         super().__init__('Operation not supported: {}'.format(message))
 
 
-class OldProjectException(NeptuneException):
+class NeptuneLegacyProjectException(NeptuneException):
     def __init__(self, project: str):
-        super().__init__('{} is an old Neptune Project. Do not use `neptune.new` module to work with this project.'
-                         'Use old client from `neptune` module instead.'.format(project))
+        message = """
+{h1}
+----NeptuneLegacyProjectException---------------------------------------------------------
+{end}
+Your project "{project}" has not been migrated to the new structure yet.
+Unfortunately neptune.new Python API is incompatible with projects using old structure,
+please use legacy neptune Python API.
+Don't worry - we are working hard on migrating all the projects and you will be able to use the neptune.new API soon. 
+
+You can find documentation for legacy neptune Python API here:
+    - https://docs-legacy.neptune.ai/index.html
+    
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({'project': project}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class NeptuneUninitializedException(NeptuneException):
     def __init__(self):
         message = """
 {h1}     
-----NeptuneUninitializedException---------------------------------------------------------------------------------------
+----NeptuneUninitializedException----------------------------------------------------
 {end}
 You must initialize neptune-client before you access `get_last_exp`.
 

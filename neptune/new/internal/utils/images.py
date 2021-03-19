@@ -21,6 +21,7 @@ import warnings
 from io import StringIO, BytesIO
 from typing import Optional
 
+from packaging import version
 from pandas import DataFrame
 
 from neptune.new.exceptions import PlotlyIncompatibilityException
@@ -151,20 +152,17 @@ def _matplotlib_to_plotly(chart):
     # E.g. when trying to convert a Seaborn confusion matrix or a hist2d, it emits a UserWarning with message
     # "Dang! That path collection is out of this world. I totally don't know what to do with it yet!
     # Plotly can only import path collections linked to 'data' coordinates"
+    plotly_version = plotly.__version__
+    matplotlib_version = matplotlib.__version__
+    if version.parse(matplotlib_version) >= version.parse("3.3.0"):
+        raise PlotlyIncompatibilityException(matplotlib_version, plotly_version)
+
     with warnings.catch_warnings():
         warnings.filterwarnings(
             "error",
             category=UserWarning,
             message=".*Plotly can only import path collections linked to 'data' coordinates.*")
-        try:
-            chart = plotly.tools.mpl_to_plotly(chart)
-        except AttributeError as e:
-            if "is_frame_like" in e.args[0]:
-                plotly_version = plotly.__version__
-                matplotlib_version = matplotlib.__version__
-                raise PlotlyIncompatibilityException(matplotlib_version, plotly_version) from e
-            else:
-                raise e
+        chart = plotly.tools.mpl_to_plotly(chart)
 
     return chart
 

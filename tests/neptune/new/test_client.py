@@ -26,7 +26,8 @@ from mock import patch, Mock
 from neptune.new import init, ANONYMOUS, get_project, get_last_exp, Experiment
 from neptune.new.attributes.atoms import String
 from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.new.exceptions import MetadataInconsistency, OfflineModeFetchException, NeptuneUninitializedException
+from neptune.new.exceptions import MetadataInconsistency, NeptuneOfflineModeFetchException, \
+    NeptuneUninitializedException
 from neptune.new.internal.backends.api_model import (
     ApiExperiment,
     Attribute,
@@ -58,7 +59,7 @@ class TestClient(unittest.TestCase):
     def test_offline_mode(self):
         exp = init(connection_mode='offline')
         exp["some/variable"] = 13
-        with self.assertRaises(OfflineModeFetchException):
+        with self.assertRaises(NeptuneOfflineModeFetchException):
             exp["some/variable"].get()
         self.assertIn(str(exp._uuid), os.listdir(".neptune/offline"))
         self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(exp._uuid)))
@@ -246,7 +247,7 @@ class TestClient(unittest.TestCase):
         exp['file'].download("some_directory")
         backend_mock.download_file.assert_called_with(exp_id, ["file"], "some_directory")
 
-        exp['file/set'].download_zip("some_directory")
+        exp['file/set'].download("some_directory")
         backend_mock.download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
 
     def test_last_exp_is_raising_exception_when_non_initialized(self):

@@ -22,7 +22,7 @@ from typing import Optional, List
 
 import click
 
-from neptune.new.exceptions import ConnectionLost
+from neptune.new.exceptions import NeptuneConnectionLostException
 from neptune.new.internal.containers.storage_queue import StorageQueue
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
@@ -123,7 +123,7 @@ class AsyncOperationProcessor(OperationProcessor):
                     for error in result:
                         _logger.error("Error occurred during asynchronous operation processing: %s", error)
                     break
-                except ConnectionLost:
+                except NeptuneConnectionLostException:
                     if retry >= self.RETRIES - 1:
                         click.echo("Experiencing connection interruptions. Killing Neptune asynchronous thread. "
                                    "All data is safe on disk.",
