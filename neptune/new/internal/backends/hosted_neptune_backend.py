@@ -54,10 +54,12 @@ from neptune.new.internal.backends.api_model import (
     StringPointValue,
     FloatSeriesValues,
     FloatPointValue,
+    ImageSeriesValues,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
     download_file_set_attribute,
+    download_image_series_element,
     upload_file_attribute,
     upload_file_set_attribute,
 )
@@ -321,8 +323,17 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
 
     def download_file_series_by_index(self, experiment_uuid: uuid.UUID, path: List[str],
-                                      index: int, destination: Optional[str] = None):
-        pass
+                                      index: int, destination: str):
+        try:
+            download_image_series_element(
+                swagger_client=self.leaderboard_client,
+                experiment_uuid=experiment_uuid,
+                attribute=path_to_str(path),
+                index=index,
+                destination=destination
+            )
+        except HTTPNotFound:
+            raise  MetadataInconsistency("Image series attribute {} not found".format(path_to_str(path)))
 
     def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         try:
@@ -413,6 +424,21 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
             return StringSetAttribute(result.values)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_image_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> ImageSeriesValues:
+        params = {
+            'experimentId': str(experiment_uuid),
+            'attribute': path_to_str(path),
+            'limit': limit,
+            'offset': offset
+        }
+        try:
+            result = self.leaderboard_client.api.getImageSeriesValues(**params).response().result
+            return ImageSeriesValues(result.totalItemCount)
         except HTTPNotFound:
             raise MetadataInconsistency("Attribute {} not found".format(path))
 

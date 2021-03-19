@@ -28,6 +28,7 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     StringSeriesValues,
     FloatSeriesValues,
+    ImageSeriesValues,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
@@ -61,4 +62,12 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
 
     def get_float_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
                                 offset: int, limit: int) -> FloatSeriesValues:
+        raise NeptuneOfflineModeFetchException
+
+    def get_image_series_values(self, experiment_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> ImageSeriesValues:
+        raise NeptuneOfflineModeFetchException
+
+    def download_file_series_by_index(self, experiment_uuid: uuid.UUID, path: List[str],
+                                      index: int, destination: str):
         raise NeptuneOfflineModeFetchException

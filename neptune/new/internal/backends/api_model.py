@@ -116,6 +116,11 @@ class StringPointValue:
 
 
 @dataclass
+class ImageSeriesValues:
+    totalItemCount: int
+
+
+@dataclass
 class StringSeriesValues:
     totalItemCount: int
     values: List[StringPointValue]
