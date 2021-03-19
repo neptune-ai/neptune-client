@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
-from typing import Union, Optional, Iterable, Dict
+from typing import Union, Optional, Iterable
 
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.internal.backends.api_model import FloatSeriesValues

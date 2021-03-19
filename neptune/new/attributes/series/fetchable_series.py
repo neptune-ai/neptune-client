@@ -14,18 +14,10 @@
 # limitations under the License.
 #
 import abc
-import time
 from datetime import datetime
-from typing import Optional, TypeVar, Generic, Union, Iterable, Dict
+from typing import TypeVar, Generic, Union, Dict
 
-from neptune.new.internal.backends.api_model import StringPointValue, FloatSeriesValues, StringSeriesValues
-from neptune.new.internal.operation import Operation
-
-from neptune.new.internal.utils import verify_type, is_collection
-
-from neptune.new.types.series.series import Series as SeriesVal
-
-from neptune.new.attributes.attribute import Attribute
+from neptune.new.internal.backends.api_model import FloatSeriesValues, StringSeriesValues
 
 Row = TypeVar('Row', StringSeriesValues, FloatSeriesValues)
 
