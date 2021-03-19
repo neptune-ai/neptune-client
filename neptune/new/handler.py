@@ -102,16 +102,6 @@ class Handler:
             else:
                 raise ValueError("Attribute does not exist: {}".format(self._path))
 
-    def download(self, destination: Optional[str] = None):
-        with self._experiment.lock():
-            attr = self._experiment.get_attribute(self._path)
-            if attr:
-                if isinstance(attr, FileSeries):
-                    return attr.download(destination=destination)
-                raise TypeError("download is available only for file series")
-            else:
-                raise ValueError("Attribute does not exist: {}".format(self._path))
-
     def log(self,
             value: Union[int, float, str, FileVal, Iterable[int], Iterable[float], Iterable[str], Iterable[FileVal]],
             step=None,
