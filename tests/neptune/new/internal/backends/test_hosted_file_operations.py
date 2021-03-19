@@ -42,7 +42,7 @@ class TestHostedFileOperations(unittest.TestCase):
         with NamedTemporaryFile("w") as f:
             upload_file_attribute(
                 swagger_client=swagger_mock,
-                experiment_uuid=exp_uuid,
+                run_uuid=exp_uuid,
                 attribute="target/path.txt",
                 source=f.name,
                 ext="txt")
@@ -70,7 +70,7 @@ class TestHostedFileOperations(unittest.TestCase):
         # when
         upload_file_attribute(
             swagger_client=swagger_mock,
-            experiment_uuid=exp_uuid,
+            run_uuid=exp_uuid,
             attribute="target/path.txt",
             source=b"Some content of test stream",
             ext="txt")
@@ -100,7 +100,7 @@ class TestHostedFileOperations(unittest.TestCase):
         with NamedTemporaryFile("w") as temp_file:
             upload_file_set_attribute(
                 swagger_client=swagger_mock,
-                experiment_uuid=exp_uuid,
+                run_uuid=exp_uuid,
                 attribute="some/attribute",
                 file_globs=[temp_file.name],
                 reset=True)
@@ -132,7 +132,7 @@ class TestHostedFileOperations(unittest.TestCase):
             with NamedTemporaryFile("w") as temp_file_2:
                 upload_file_set_attribute(
                     swagger_client=swagger_mock,
-                    experiment_uuid=exp_uuid,
+                    run_uuid=exp_uuid,
                     attribute="some/attribute",
                     file_globs=[temp_file_1.name, temp_file_2.name],
                     reset=True)
@@ -163,7 +163,7 @@ class TestHostedFileOperations(unittest.TestCase):
                 with TemporaryDirectory() as temp_dir:
                     upload_file_set_attribute(
                         swagger_client=swagger_mock,
-                        experiment_uuid=exp_uuid,
+                        run_uuid=exp_uuid,
                         attribute="some/attribute",
                         file_globs=[temp_file_1.name, temp_file_2.name, os.path.abspath("missing_file"), temp_dir],
                         reset=True)
@@ -200,7 +200,7 @@ class TestHostedFileOperations(unittest.TestCase):
 
         # when
         download_file_attribute(swagger_client=swagger_mock,
-                                experiment_uuid=exp_uuid,
+                                run_uuid=exp_uuid,
                                 attribute="some/attribute",
                                 destination=None)
 

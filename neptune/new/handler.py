@@ -28,24 +28,24 @@ from neptune.new.internal.utils.paths import join_paths, parse_path
 from neptune.new.types.atoms.file import File as FileVal
 
 if TYPE_CHECKING:
-    from neptune.new.experiment import Experiment
+    from neptune.new.run import Run
 
 
 class Handler:
 
-    def __init__(self, _experiment: 'Experiment', path: str):
+    def __init__(self, run: 'Run', path: str):
         super().__init__()
-        self._experiment = _experiment
+        self._run = run
         self._path = path
 
     def __getitem__(self, path: str) -> 'Handler':
-        return Handler(self._experiment, join_paths(self._path, path))
+        return Handler(self._run, join_paths(self._path, path))
 
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
 
     def __getattr__(self, attribute_name):
-        attr = self._experiment.get_attribute(self._path)
+        attr = self._run.get_attribute(self._path)
         if attr:
             return getattr(attr, attribute_name)
         else:
@@ -58,22 +58,22 @@ class Handler:
             self[key].assign(value, wait)
 
     def _assign_impl(self, value, wait: bool = False) -> None:
-        with self._experiment.lock():
-            attr = self._experiment.get_attribute(self._path)
+        with self._run.lock():
+            attr = self._run.get_attribute(self._path)
             if attr:
                 attr.assign(value, wait)
             else:
-                self._experiment.define(self._path, value, wait)
+                self._run.define(self._path, value, wait)
 
     def upload(self, value, wait: bool = False) -> None:
         value = FileVal.create_from(value)
 
-        with self._experiment.lock():
-            attr = self._experiment.get_attribute(self._path)
+        with self._run.lock():
+            attr = self._run.get_attribute(self._path)
             if not attr:
-                attr = File(self._experiment, parse_path(self._path))
+                attr = File(self._run, parse_path(self._path))
                 attr.upload(value, wait)
-                self._experiment.set_attribute(self._path, attr)
+                self._run.set_attribute(self._path, attr)
             else:
                 attr.upload(value, wait)
 
@@ -83,18 +83,18 @@ class Handler:
         else:
             verify_type("value", value, str)
 
-        with self._experiment.lock():
-            attr = self._experiment.get_attribute(self._path)
+        with self._run.lock():
+            attr = self._run.get_attribute(self._path)
             if not attr:
-                attr = FileSet(self._experiment, parse_path(self._path))
+                attr = FileSet(self._run, parse_path(self._path))
                 attr.upload_files(value, wait)
-                self._experiment.set_attribute(self._path, attr)
+                self._run.set_attribute(self._path, attr)
             else:
                 attr.upload_files(value, wait)
 
     def fetch_values(self, include_timestamp: Optional[bool] = True):
-        with self._experiment.lock():
-            attr = self._experiment.get_attribute(self._path)
+        with self._run.lock():
+            attr = self._run.get_attribute(self._path)
             if attr:
                 if isinstance(attr, FetchableSeries):
                     return attr.fetch_values(include_timestamp=include_timestamp)
@@ -110,8 +110,8 @@ class Handler:
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", timestamp, (int, float, type(None)))
 
-        with self._experiment.lock():
-            attr = self._experiment.get_attribute(self._path)
+        with self._run.lock():
+            attr = self._run.get_attribute(self._path)
             if not attr:
                 if is_collection(value):
                     if value:
@@ -122,37 +122,37 @@ class Handler:
                     first_value = value
 
                 if is_float(first_value):
-                    attr = FloatSeries(self._experiment, parse_path(self._path))
+                    attr = FloatSeries(self._run, parse_path(self._path))
                 elif is_string(first_value):
-                    attr = StringSeries(self._experiment, parse_path(self._path))
+                    attr = StringSeries(self._run, parse_path(self._path))
                 elif isinstance(first_value, FileVal):
-                    attr = FileSeries(self._experiment, parse_path(self._path))
+                    attr = FileSeries(self._run, parse_path(self._path))
                 elif is_float_like(first_value):
-                    attr = FloatSeries(self._experiment, parse_path(self._path))
+                    attr = FloatSeries(self._run, parse_path(self._path))
                 elif is_string_like(first_value):
-                    attr = StringSeries(self._experiment, parse_path(self._path))
+                    attr = StringSeries(self._run, parse_path(self._path))
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))
 
                 attr.log(value, step=step, timestamp=timestamp, wait=wait)
-                self._experiment.set_attribute(self._path, attr)
+                self._run.set_attribute(self._path, attr)
             else:
                 attr.log(value, step=step, timestamp=timestamp, wait=wait)
 
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         verify_type("values", values, (str, Iterable))
-        with self._experiment.lock():
-            attr = self._experiment.get_attribute(self._path)
+        with self._run.lock():
+            attr = self._run.get_attribute(self._path)
             if not attr:
-                attr = StringSet(self._experiment, parse_path(self._path))
+                attr = StringSet(self._run, parse_path(self._path))
                 attr.add(values, wait)
-                self._experiment.set_attribute(self._path, attr)
+                self._run.set_attribute(self._path, attr)
             else:
                 attr.add(values, wait)
 
     def pop(self, path: str, wait: bool = False) -> None:
         verify_type("path", path, str)
-        self._experiment.pop(join_paths(self._path, path), wait)
+        self._run.pop(join_paths(self._path, path), wait)
 
     def __delitem__(self, path) -> None:
         self.pop(path)

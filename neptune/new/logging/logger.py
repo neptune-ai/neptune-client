@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 
-from neptune.new.experiment import Experiment
+from neptune.new.run import Run
 
 
 class Logger(object):
 
-    def __init__(self, experiment: Experiment, attribute_name: str):
-        self._experiment = experiment
+    def __init__(self, run: Run, attribute_name: str):
+        self._run = run
         self._attribute_name = attribute_name
 
     def log(self, msg: str):
-        self._experiment[self._attribute_name].log(msg)
+        self._run[self._attribute_name].log(msg)

@@ -25,7 +25,7 @@ from typing import Dict, Any, Union, List, Optional
 import click
 
 from neptune.new.attributes.atoms.datetime import Datetime as DatetimeAttr
-from neptune.new.attributes.atoms.experiment_state import ExperimentState as ExperimentStateAttr
+from neptune.new.attributes.atoms.run_state import RunState as RunStateAttr
 from neptune.new.attributes.atoms.file import File as FileAttr
 from neptune.new.attributes.atoms.float import Float as FloatAttr
 from neptune.new.attributes.atoms.git_ref import GitRef as GitRefAttr
@@ -41,7 +41,7 @@ from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
-from neptune.new.internal.experiment_structure import ExperimentStructure
+from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.utils import verify_type, is_float, is_string, is_float_like, is_string_like
@@ -54,8 +54,8 @@ from neptune.new.types.value import Value
 from neptune.exceptions import UNIX_STYLES
 
 
-class Experiment(AbstractContextManager):
-    last_exp = None  # "static" instance of recently created Experiment
+class Run(AbstractContextManager):
+    last_run = None  # "static" instance of recently created Run
 
     def __init__(
             self,
@@ -68,11 +68,11 @@ class Experiment(AbstractContextManager):
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
-        self._structure = ExperimentStructure[Attribute]()
+        self._structure = RunStructure[Attribute]()
         self._lock = threading.RLock()
         self._started = False
 
-        Experiment.last_exp = self
+        Run.last_run = self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         traceback.print_exception(exc_type, exc_val, exc_tb)
@@ -91,7 +91,7 @@ class Experiment(AbstractContextManager):
         self[""].assign(value, wait)
 
     def ping(self):
-        self._backend.ping_experiment(self._uuid)
+        self._backend.ping_run(self._uuid)
 
     def start(self):
         atexit.register(self._shutdown_hook)
@@ -222,8 +222,8 @@ class Experiment(AbstractContextManager):
             self._structure.set(_path, StringSetAttr(self, _path))
         if _type == AttributeType.GIT_REF:
             self._structure.set(_path, GitRefAttr(self, _path))
-        if _type == AttributeType.EXPERIMENT_STATE:
-            self._structure.set(_path, ExperimentStateAttr(self, _path))
+        if _type == AttributeType.RUN_STATE:
+            self._structure.set(_path, RunStateAttr(self, _path))
 
     def _shutdown_hook(self):
         self.stop()

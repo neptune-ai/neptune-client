@@ -23,7 +23,7 @@ from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBa
 from neptune.new.internal.utils.paths import join_paths, parse_path
 
 
-class ExperimentsTableEntry:
+class RunsTableEntry:
 
     def __init__(self, backend: HostedNeptuneBackend, _id: uuid.UUID, attributes: List[AttributeWithProperties]):
         self._backend = backend
@@ -43,7 +43,7 @@ class ExperimentsTableEntry:
         for attr in self._attributes:
             if attr.path == path:
                 _type = attr.type
-                if _type == AttributeType.EXPERIMENT_STATE:
+                if _type == AttributeType.RUN_STATE:
                     return attr.properties.value
                 if _type == AttributeType.FLOAT or _type == AttributeType.STRING or _type == AttributeType.DATETIME:
                     return attr.properties.value
@@ -87,34 +87,33 @@ class ExperimentsTableEntry:
 
 class LeaderboardHandler:
 
-    def __init__(self, experiment: ExperimentsTableEntry, path: str):
-        self._experiment = experiment
+    def __init__(self, run: RunsTableEntry, path: str):
+        self._run = run
         self._path = path
 
     def __getitem__(self, path: str) -> 'LeaderboardHandler':
-        return LeaderboardHandler(self._experiment, join_paths(self._path, path))
+        return LeaderboardHandler(self._run, join_paths(self._path, path))
 
     def get(self):
-        return self._experiment.get_attribute_value(self._path)
+        return self._run.get_attribute_value(self._path)
 
     def download(self, destination: Optional[str]):
-        attr_type = self._experiment.get_attribute_type(self._path)
+        attr_type = self._run.get_attribute_type(self._path)
         if attr_type == AttributeType.FILE:
-            return self._experiment.download_file_attribute(self._path, destination)
+            return self._run.download_file_attribute(self._path, destination)
         elif attr_type == AttributeType.FILE_SET:
-            return self._experiment.download_file_set_attribute(self._path, destination)
+            return self._run.download_file_set_attribute(self._path, destination)
         raise MetadataInconsistency("Cannot download file from attribute of type {}".format(attr_type))
 
 
-
-class ExperimentsTable:
+class RunsTable:
 
     def __init__(self, backend: HostedNeptuneBackend, entries: List[LeaderboardEntry]):
         self._backend = backend
         self._entries = entries
 
-    def as_experiments(self) -> List[ExperimentsTableEntry]:
-        return [ExperimentsTableEntry(self._backend, e.id, e.attributes) for e in self._entries]
+    def as_runs(self) -> List[RunsTableEntry]:
+        return [RunsTableEntry(self._backend, e.id, e.attributes) for e in self._entries]
 
     def as_pandas(self):
         # pylint:disable=import-outside-toplevel
@@ -123,7 +122,7 @@ class ExperimentsTable:
         def make_attribute_value(attribute: AttributeWithProperties) -> Optional[Union[str, float, datetime]]:
             _type = attribute.type
             _properties = attribute.properties
-            if _type == AttributeType.EXPERIMENT_STATE:
+            if _type == AttributeType.RUN_STATE:
                 return _properties.value
             if _type == AttributeType.FLOAT or _type == AttributeType.STRING or _type == AttributeType.DATETIME:
                 return _properties.value

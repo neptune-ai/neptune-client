@@ -37,7 +37,7 @@ class File(Atom):
         else:
             raise ValueError("File path and content are None")
 
-        with self._experiment.lock():
+        with self._run.lock():
             self._enqueue_operation(operation, wait)
 
     def upload(self, value, wait: bool = False) -> None:
@@ -46,5 +46,5 @@ class File(Atom):
     def download(self, destination: Optional[str] = None, wait=True) -> None:
         verify_type("destination", destination, (str, type(None)))
         if wait:
-            self._experiment.wait()
-        self._backend.download_file(self._experiment_uuid, self._path, destination)
+            self._run.wait()
+        self._backend.download_file(self._run_uuid, self._path, destination)

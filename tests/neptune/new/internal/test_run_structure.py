@@ -16,17 +16,17 @@
 import unittest
 
 from neptune.new.exceptions import MetadataInconsistency
-from neptune.new.internal.experiment_structure import ExperimentStructure
+from neptune.new.internal.run_structure import RunStructure
 
 
-class TestExperimentStructure(unittest.TestCase):
+class TestRunStructure(unittest.TestCase):
 
     def test_get_none(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         self.assertEqual(exp.get(["some", "path", "val"]), None)
 
     def test_get_nested_variable_fails(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         exp.set(["some", "path", "val"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.get(["some", "path", "val", "nested"])
@@ -34,18 +34,18 @@ class TestExperimentStructure(unittest.TestCase):
             exp.get(["some", "path", "val", "nested", "nested"])
 
     def test_get_ns_fails(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         exp.set(["some", "path", "val"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.get(["some", "path"])
 
     def test_set(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         exp.set(["some", "path", "val"], 3)
         self.assertEqual(exp.get(["some", "path", "val"]), 3)
 
     def test_set_nested_variable_fails(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         exp.set(["some", "path", "val"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.set(["some", "path", "val", "nested"], 3)
@@ -53,13 +53,13 @@ class TestExperimentStructure(unittest.TestCase):
             exp.set(["some", "path", "val", "nested", "nested"], 3)
 
     def test_set_ns_collision(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         exp.set(["some", "path", "val"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.set(["some", "path"], 5)
 
     def test_pop(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         exp.set(["some", "path", "val1"], 3)
         exp.set(["some", "path", "val2"], 5)
         exp.pop(["some", "path", "val2"])
@@ -68,19 +68,19 @@ class TestExperimentStructure(unittest.TestCase):
         self.assertTrue("some" in exp.get_structure() and "path" in exp.get_structure()["some"])
 
     def test_pop_whole_ns(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         exp.set(["some", "path", "val"], 3)
         exp.pop(["some", "path", "val"])
         self.assertEqual(exp.get(["some", "path", "val"]), None)
         self.assertFalse("some" in exp.get_structure())
 
     def test_pop_not_found(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         with self.assertRaises(MetadataInconsistency):
             exp.pop(["some", "path"])
 
     def test_pop_ns_fail(self):
-        exp = ExperimentStructure[int]()
+        exp = RunStructure[int]()
         exp.set(["some", "path", "val1"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.pop(["some", "path"])
