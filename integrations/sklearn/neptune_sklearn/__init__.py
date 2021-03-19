@@ -28,8 +28,8 @@ from yellowbrick.model_selection import FeatureImportances
 from yellowbrick.regressor import ResidualsPlot, PredictionError, CooksDistance
 
 import neptune.new as neptune
-
 from ._version import get_versions
+
 __version__ = get_versions()['version']
 del get_versions
 
