@@ -23,13 +23,13 @@ from neptune.new.internal.operation_processors.operation_processor import Operat
 
 class SyncOperationProcessor(OperationProcessor):
 
-    def __init__(self, experiment_uuid: uuid.UUID, backend: NeptuneBackend):
-        self._experiment_uuid = experiment_uuid
+    def __init__(self, run_uuid: uuid.UUID, backend: NeptuneBackend):
+        self._run_uuid = run_uuid
         self._backend = backend
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument
-        errors = self._backend.execute_operations(self._experiment_uuid, [op])
+        errors = self._backend.execute_operations(self._run_uuid, [op])
         if errors:
             raise errors[0]
 

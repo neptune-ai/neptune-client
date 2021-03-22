@@ -17,5 +17,5 @@
 from neptune.new.attributes.atoms.atom import Atom
 
 
-class ExperimentState(Atom):
+class RunState(Atom):
     pass

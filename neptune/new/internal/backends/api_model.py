@@ -31,7 +31,7 @@ class Project:
 
 
 @dataclass
-class ApiExperiment:
+class ApiRun:
     uuid: uuid.UUID
     short_id: str
     workspace: str
@@ -85,7 +85,7 @@ class AttributeType(Enum):
     IMAGE_SERIES = "imageSeries"
     STRING_SET = "stringSet"
     GIT_REF = "gitRef"
-    EXPERIMENT_STATE = "experimentState"
+    RUN_STATE = "experimentState"
     NOTEBOOK_REF = "notebookRef"
 
 
@@ -106,6 +106,37 @@ class AttributeWithProperties:
 class LeaderboardEntry:
     id: uuid.UUID
     attributes: List[AttributeWithProperties]
+
+
+@dataclass
+class StringPointValue:
+    timestampMillis: int
+    step: float
+    value: str
+
+
+@dataclass
+class ImageSeriesValues:
+    totalItemCount: int
+
+
+@dataclass
+class StringSeriesValues:
+    totalItemCount: int
+    values: List[StringPointValue]
+
+
+@dataclass
+class FloatPointValue:
+    timestampMillis: int
+    step: float
+    value: float
+
+
+@dataclass
+class FloatSeriesValues:
+    totalItemCount: int
+    values: List[FloatPointValue]
 
 
 @dataclass

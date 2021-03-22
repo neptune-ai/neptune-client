@@ -19,7 +19,7 @@ from typing import Union, Optional, Iterable
 
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.utils import verify_type, verify_collection_type
-from neptune.new.experiments_table import ExperimentsTable
+from neptune.new.runs_table import RunsTable
 
 
 class Project:
@@ -31,12 +31,12 @@ class Project:
         self._backend = backend
 
     # pylint:disable=redefined-builtin
-    def get_experiments_table(self,
-                              id: Optional[Union[str, Iterable[str]]] = None,
-                              state: Optional[Union[str, Iterable[str]]] = None,
-                              owner: Optional[Union[str, Iterable[str]]] = None,
-                              tag: Optional[Union[str, Iterable[str]]] = None
-                              ) -> ExperimentsTable:
+    def get_runs_table(self,
+                       id: Optional[Union[str, Iterable[str]]] = None,
+                       state: Optional[Union[str, Iterable[str]]] = None,
+                       owner: Optional[Union[str, Iterable[str]]] = None,
+                       tag: Optional[Union[str, Iterable[str]]] = None
+                       ) -> RunsTable:
         id = self._as_list("id", id)
         state = self._as_list("state", state)
         owner = self._as_list("owner", owner)
@@ -44,7 +44,7 @@ class Project:
 
         leaderboard_entries = self._backend.get_leaderboard(self._uuid, id, state, owner, tags)
 
-        return ExperimentsTable(self._backend, leaderboard_entries)
+        return RunsTable(self._backend, leaderboard_entries)
 
     @staticmethod
     def _as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Optional[Iterable[str]]:

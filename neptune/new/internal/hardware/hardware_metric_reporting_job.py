@@ -37,7 +37,7 @@ from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
-    from neptune.new.experiment import Experiment
+    from neptune.new.run import Run
 
 _logger = logging.getLogger(__name__)
 
@@ -55,7 +55,7 @@ class HardwareMetricReportingJob(BackgroundJob):
     def _requirements_installed() -> bool:
         return SystemMonitor.requirements_installed()
 
-    def start(self, experiment: 'Experiment'):
+    def start(self, run: 'Run'):
         if not self._requirements_installed():
             _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
             return
@@ -75,13 +75,13 @@ class HardwareMetricReportingJob(BackgroundJob):
         for metric in metrics_container.metrics():
             for gauge in metric.gauges:
                 path = self.get_attribute_name(metric.resource_type, gauge.name())
-                if not experiment.get_attribute(path):
-                    experiment[path] = FloatSeries([], min=metric.min_value, max=metric.max_value, unit=metric.unit)
+                if not run.get_attribute(path):
+                    run[path] = FloatSeries([], min=metric.min_value, max=metric.max_value, unit=metric.unit)
 
         self._thread = self.ReportingThread(
             self,
             self._period,
-            experiment,
+            run,
             metric_reporter)
         self._thread.start()
         self._started = True
@@ -108,18 +108,18 @@ class HardwareMetricReportingJob(BackgroundJob):
                 self,
                 outer: 'HardwareMetricReportingJob',
                 period: float,
-                experiment: 'Experiment',
+                run: 'Run',
                 metric_reporter: MetricReporter):
             super().__init__(sleep_time=period)
             self._outer = outer
-            self._experiment = experiment
+            self._run = run
             self._metric_reporter = metric_reporter
 
         def work(self) -> None:
             metric_reports = self._metric_reporter.report(time.time())
             for report in metric_reports:
                 for gauge_name, metric_values in groupby(report.values, lambda value: value.gauge_name):
-                    attr = self._experiment[self._outer.get_attribute_name(report.metric.resource_type, gauge_name)]
+                    attr = self._run[self._outer.get_attribute_name(report.metric.resource_type, gauge_name)]
                     # TODO: Avoid loop
                     for metric_value in metric_values:
                         attr.log(value=metric_value.value, timestamp=metric_value.timestamp)

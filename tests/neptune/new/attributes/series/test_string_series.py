@@ -33,7 +33,7 @@ class TestStringSeries(TestAttributeBase):
                 StringSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
-        exp, path = self._create_experiment(), self._random_path()
+        exp, path = self._create_run(), self._random_path()
         var = StringSeries(exp, path)
         var.log("asdfhadh")
         var.log("hej!")

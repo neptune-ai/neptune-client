@@ -27,16 +27,16 @@ import click
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
-    NEPTUNE_EXPERIMENT_DIRECTORY,
+    NEPTUNE_RUNS_DIRECTORY,
     OFFLINE_DIRECTORY,
 )
-from neptune.new.envs import PROJECT_ENV_NAME, CUSTOM_EXP_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH
+from neptune.new.envs import PROJECT_ENV_NAME, CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH
 from neptune.new.exceptions import (
-    NeptuneExperimentResumeAndCustomIdCollision,
+    NeptuneRunResumeAndCustomIdCollision,
     NeptuneIncorrectProjectNameException,
     NeptuneMissingProjectNameException,
 )
-from neptune.new.experiment import Experiment
+from neptune.new.run import Run
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.notebooks.notebooks import create_checkpoint
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
@@ -74,8 +74,8 @@ SYNC = "sync"
 
 def init(project: Optional[str] = None,
          api_token: Optional[str] = None,
-         experiment: Optional[str] = None,
-         custom_experiment_id: Optional[str] = None,
+         run: Optional[str] = None,
+         custom_run_id: Optional[str] = None,
          connection_mode: str = ASYNC,
          name: Optional[str] = None,
          description: Optional[str] = None,
@@ -85,11 +85,11 @@ def init(project: Optional[str] = None,
          capture_stderr: bool = True,
          capture_hardware_metrics: bool = True,
          monitoring_namespace: str = "monitoring",
-         flush_period: float = 5) -> Experiment:
+         flush_period: float = 5) -> Run:
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
-    verify_type("experiment", experiment, (str, type(None)))
-    verify_type("custom_experiment_id", custom_experiment_id, (str, type(None)))
+    verify_type("run", run, (str, type(None)))
+    verify_type("custom_run_id", custom_run_id, (str, type(None)))
     verify_type("connection_mode", connection_mode, str)
     verify_type("name", name, (str, type(None)))
     verify_type("description", description, (str, type(None)))
@@ -109,13 +109,13 @@ def init(project: Optional[str] = None,
         else:
             verify_collection_type("source_files", source_files, str)
 
-    name = "Untitled" if experiment is None and name is None else name
-    description = "" if experiment is None and description is None else description
-    hostname = get_hostname() if experiment is None else None
-    custom_experiment_id = custom_experiment_id or os.getenv(CUSTOM_EXP_ID_ENV_NAME)
+    name = "Untitled" if run is None and name is None else name
+    description = "" if run is None and description is None else description
+    hostname = get_hostname() if run is None else None
+    custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
 
-    if experiment and custom_experiment_id:
-        raise NeptuneExperimentResumeAndCustomIdCollision()
+    if run and custom_run_id:
+        raise NeptuneRunResumeAndCustomIdCollision()
 
     if connection_mode == ASYNC:
         # TODO Initialize backend in async thread
@@ -139,39 +139,39 @@ def init(project: Optional[str] = None,
             raise NeptuneIncorrectProjectNameException(project)
 
     project_obj = backend.get_project(project)
-    if experiment:
-        exp = backend.get_experiment(project + '/' + experiment)
+    if run:
+        api_run = backend.get_run(project + '/' + run)
     else:
         git_ref = get_git_info(discover_git_repo_location())
-        if custom_experiment_id and len(custom_experiment_id) > 32:
-            _logger.warning('Given custom_experiment_id exceeds 32 characters and it will be ignored.')
-            custom_experiment_id = None
+        if custom_run_id and len(custom_run_id) > 32:
+            _logger.warning('Given custom_run_id exceeds 32 characters and it will be ignored.')
+            custom_run_id = None
 
         notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
 
-        exp = backend.create_experiment(project_obj.uuid, git_ref, custom_experiment_id, notebook_id, checkpoint_id)
+        api_run = backend.create_run(project_obj.uuid, git_ref, custom_run_id, notebook_id, checkpoint_id)
 
     if connection_mode == ASYNC:
-        experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, ASYNC_DIRECTORY, exp.uuid)
+        run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, ASYNC_DIRECTORY, api_run.uuid)
         try:
-            execution_id = len(os.listdir(experiment_path))
+            execution_id = len(os.listdir(run_path))
         except FileNotFoundError:
             execution_id = 0
-        execution_path = "{}/exec-{}-{}".format(experiment_path, execution_id, datetime.now())
+        execution_path = "{}/exec-{}-{}".format(run_path, execution_id, datetime.now())
         execution_path = execution_path.replace(" ", "_").replace(":", ".")
         operation_processor = AsyncOperationProcessor(
-            exp.uuid,
+            api_run.uuid,
             DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
             backend,
             sleep_time=flush_period)
     elif connection_mode == SYNC:
-        operation_processor = SyncOperationProcessor(exp.uuid, backend)
+        operation_processor = SyncOperationProcessor(api_run.uuid, backend)
     elif connection_mode == DEBUG:
-        operation_processor = SyncOperationProcessor(exp.uuid, backend)
+        operation_processor = SyncOperationProcessor(api_run.uuid, backend)
     elif connection_mode == OFFLINE:
-        # Experiment was returned by mocked backend and has some random UUID.
-        experiment_path = "{}/{}/{}".format(NEPTUNE_EXPERIMENT_DIRECTORY, OFFLINE_DIRECTORY, exp.uuid)
-        storage_queue = DiskQueue(Path(experiment_path),
+        # Run was returned by mocked backend and has some random UUID.
+        run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, OFFLINE_DIRECTORY, api_run.uuid)
+        storage_queue = DiskQueue(Path(run_path),
                                   lambda x: x.to_dict(),
                                   Operation.from_dict)
         operation_processor = OfflineOperationProcessor(storage_queue)
@@ -190,39 +190,39 @@ def init(project: Optional[str] = None,
         background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
     background_jobs.append(PingBackgroundJob())
 
-    _experiment = Experiment(exp.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
+    _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
     if connection_mode != OFFLINE:
-        _experiment.sync(wait=False)
+        _run.sync(wait=False)
 
     if name is not None:
-        _experiment[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
+        _run[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
     if description is not None:
-        _experiment[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
+        _run[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
     if hostname is not None:
-        _experiment[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
+        _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
     if tags is not None:
-        _experiment[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
+        _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
 
-    if capture_stdout and not _experiment.exists(stdout_path):
-        _experiment.define(stdout_path, StringSeries([]))
-    if capture_stderr and not _experiment.exists(stderr_path):
-        _experiment.define(stderr_path, StringSeries([]))
+    if capture_stdout and not _run.exists(stdout_path):
+        _run.define(stdout_path, StringSeries([]))
+    if capture_stderr and not _run.exists(stderr_path):
+        _run.define(stderr_path, StringSeries([]))
 
-    upload_source_code(source_files=source_files, experiment=_experiment)
+    upload_source_code(source_files=source_files, run=_run)
 
-    _experiment.start()
+    _run.start()
 
     if connection_mode == OFFLINE:
-        click.echo("offline/{}".format(exp.uuid))
+        click.echo("offline/{}".format(api_run.uuid))
     elif connection_mode != DEBUG:
-        click.echo("{base_url}/{workspace}/{project}/e/{exp_id}".format(
+        click.echo("{base_url}/{workspace}/{project}/e/{run_id}".format(
             base_url=backend.get_display_address(),
-            workspace=exp.workspace,
-            project=exp.project_name,
-            exp_id=exp.short_id
+            workspace=api_run.workspace,
+            project=api_run.project_name,
+            run_id=api_run.short_id
         ))
 
-    return _experiment
+    return _run
 
 
 def _create_notebook_checkpoint(backend: NeptuneBackend) -> (uuid.UUID, uuid.UUID):

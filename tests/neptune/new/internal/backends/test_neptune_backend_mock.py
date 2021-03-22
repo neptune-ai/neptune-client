@@ -37,7 +37,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_float_attribute(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AssignFloat(["x"], 5)])
 
         # when
@@ -49,7 +49,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_string_attribute(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AssignString(["x"], "abcx")])
 
         # when
@@ -61,7 +61,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_datetime_attribute(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         now = datetime.datetime.now()
         now = now.replace(microsecond=1000*int(now.microsecond/1000))
         backend.execute_operations(exp.uuid, [AssignDatetime(["x"], now)])
@@ -75,7 +75,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_float_series_attribute(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [LogFloats(["x"], [LogFloats.ValueType(5, None, time()),
                                                                 LogFloats.ValueType(3, None, time())])])
         backend.execute_operations(exp.uuid, [LogFloats(["x"], [LogFloats.ValueType(2, None, time()),
@@ -90,7 +90,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_string_series_attribute(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [LogStrings(["x"], [LogStrings.ValueType("adf", None, time()),
                                                                  LogStrings.ValueType("sdg", None, time())])])
         backend.execute_operations(exp.uuid, [LogStrings(["x"], [LogStrings.ValueType("dfh", None, time()),
@@ -105,7 +105,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_string_set_attribute(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AddStrings(["x"], {"abcx", "qwe"})])
 
         # when
@@ -117,7 +117,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_float_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
 
         # then
@@ -127,7 +127,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_string_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AssignFloat(["x"], 5)])
 
         # then
@@ -137,7 +137,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_datetime_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
 
         # then
@@ -147,7 +147,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_float_series_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
 
         # then
@@ -157,7 +157,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_string_series_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
 
         # then
@@ -167,7 +167,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_get_string_set_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
-        exp = backend.create_experiment(self.project_uuid)
+        exp = backend.create_run(self.project_uuid)
         backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
 
         # then

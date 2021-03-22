@@ -30,27 +30,27 @@ from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.new.sync import (
-    ApiExperiment,
+    ApiRun,
     get_project,
     get_qualified_name,
-    sync_all_experiments,
-    sync_selected_experiments,
+    sync_all_runs,
+    sync_selected_runs,
     synchronization_status,
 )
 
 
-def an_experiment():
-    return ApiExperiment(uuid.uuid4(), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj', False)
+def a_run():
+    return ApiRun(uuid.uuid4(), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj', False)
 
 
-def prepare_experiments(path):
-    unsync_exp = an_experiment()
-    sync_exp = an_experiment()
-    registered_experiments = (unsync_exp, sync_exp)
+def prepare_runs(path):
+    unsync_exp = a_run()
+    sync_exp = a_run()
+    registered_runs = (unsync_exp, sync_exp)
 
     execution_id = "exec-0"
 
-    for exp in registered_experiments:
+    for exp in registered_runs:
         exp_path = path / "async" / str(exp.uuid) / execution_id
         exp_path.mkdir(parents=True)
         queue = DiskQueue(exp_path, lambda x: x, lambda x: x)
@@ -63,15 +63,15 @@ def prepare_experiments(path):
     SyncOffsetFile(path / "async" / str(sync_exp.uuid) / execution_id / "last_ack_version").write(2)
     SyncOffsetFile(path / "async" / str(sync_exp.uuid) / execution_id / "last_put_version").write(2)
 
-    def get_experiment_impl(experiment_id):
-        for exp in registered_experiments:
-            if experiment_id in (str(exp.uuid), get_qualified_name(exp)):
-                return exp
+    def get_run_impl(run_id):
+        for run in registered_runs:
+            if run_id in (str(run.uuid), get_qualified_name(run)):
+                return run
 
-    return unsync_exp, sync_exp, get_experiment_impl
+    return unsync_exp, sync_exp, get_run_impl
 
 
-def prepare_offline_experiment(path):
+def prepare_offline_run(path):
     offline_exp_uuid = str(uuid.uuid4())
     offline_exp_path = path / OFFLINE_DIRECTORY / offline_exp_uuid
     offline_exp_path.mkdir(parents=True)
@@ -84,13 +84,13 @@ def prepare_offline_experiment(path):
     return offline_exp_uuid
 
 
-def test_list_experiments(tmp_path, mocker, capsys):
+def test_list_runs(tmp_path, mocker, capsys):
     # given
-    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
-    offline_exp_uuid = prepare_offline_experiment(tmp_path)
+    unsync_exp, sync_exp, get_run_impl = prepare_runs(tmp_path)
+    offline_exp_uuid = prepare_offline_run(tmp_path)
 
     # and
-    mocker.patch.object(neptune.new.sync, 'get_experiment', get_experiment_impl)
+    mocker.patch.object(neptune.new.sync, 'get_run', get_run_impl)
     mocker.patch.object(Operation, 'from_dict')
 
     # when
@@ -99,12 +99,12 @@ def test_list_experiments(tmp_path, mocker, capsys):
     # then
     captured = capsys.readouterr()
     assert captured.err == ''
-    assert 'Synchronized experiments:\n- {}'.format(get_qualified_name(sync_exp)) in captured.out
-    assert 'Unsynchronized experiments:\n- {}'.format(get_qualified_name(unsync_exp)) in captured.out
-    assert 'Unsynchronized offline experiments:\n- offline/{}'.format(offline_exp_uuid) in captured.out
+    assert 'Synchronized runs:\n- {}'.format(get_qualified_name(sync_exp)) in captured.out
+    assert 'Unsynchronized runs:\n- {}'.format(get_qualified_name(unsync_exp)) in captured.out
+    assert 'Unsynchronized offline runs:\n- offline/{}'.format(offline_exp_uuid) in captured.out
 
 
-def test_list_experiments_when_no_experiment(tmp_path, capsys):
+def test_list_runs_when_no_run(tmp_path, capsys):
     (tmp_path / "async").mkdir()
     # when
     with pytest.raises(SystemExit):
@@ -113,75 +113,75 @@ def test_list_experiments_when_no_experiment(tmp_path, capsys):
     # then
     captured = capsys.readouterr()
     assert captured.err == ''
-    assert 'There are no Neptune experiments' in captured.out
+    assert 'There are no Neptune runs' in captured.out
 
 
-def test_sync_all_experiments(tmp_path, mocker, capsys):
+def test_sync_all_runs(tmp_path, mocker, capsys):
     # given
-    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
-    offline_exp_uuid = prepare_offline_experiment(tmp_path)
-    registered_offline_experiment = an_experiment()
+    unsync_exp, sync_exp, get_run_impl = prepare_runs(tmp_path)
+    offline_exp_uuid = prepare_offline_run(tmp_path)
+    registered_offline_run = a_run()
 
     # and
-    mocker.patch.object(neptune.new.sync, 'get_experiment', get_experiment_impl)
+    mocker.patch.object(neptune.new.sync, 'get_run', get_run_impl)
     mocker.patch.object(neptune.new.sync, 'backend')
     mocker.patch.object(neptune.new.sync.backend, 'execute_operations')
     mocker.patch.object(neptune.new.sync.backend, 'get_project',
                         lambda _: Project(uuid.uuid4(), 'project', 'workspace'))
-    mocker.patch.object(neptune.new.sync, 'register_offline_experiment', lambda _: registered_offline_experiment)
+    mocker.patch.object(neptune.new.sync, 'register_offline_run', lambda _: registered_offline_run)
     mocker.patch.object(Operation, 'from_dict', lambda x: x)
 
     # when
-    sync_all_experiments(tmp_path, 'foo')
+    sync_all_runs(tmp_path, 'foo')
 
     # then
     captured = capsys.readouterr()
     assert captured.err == ''
-    assert ('Offline experiment {} registered as {}'
-            .format(offline_exp_uuid, get_qualified_name(registered_offline_experiment))) in captured.out
+    assert ('Offline run {} registered as {}'
+            .format(offline_exp_uuid, get_qualified_name(registered_offline_run))) in captured.out
     assert 'Synchronising {}'.format(get_qualified_name(unsync_exp)) in captured.out
-    assert 'Synchronization of experiment {} completed.'.format(get_qualified_name(unsync_exp)) in captured.out
+    assert 'Synchronization of run {} completed.'.format(get_qualified_name(unsync_exp)) in captured.out
     assert 'Synchronising {}'.format(get_qualified_name(sync_exp)) not in captured.out
 
     # and
     # pylint: disable=no-member
     neptune.new.sync.backend.execute_operations.has_calls([
         mocker.call(unsync_exp.uuid, ['op-1']),
-        mocker.call(registered_offline_experiment.uuid, ['op-1'])
+        mocker.call(registered_offline_run.uuid, ['op-1'])
     ], any_order=True)
 
 
-def test_sync_selected_experiments(tmp_path, mocker, capsys):
+def test_sync_selected_runs(tmp_path, mocker, capsys):
     # given
-    unsync_exp, sync_exp, get_experiment_impl = prepare_experiments(tmp_path)
-    offline_exp_uuid = prepare_offline_experiment(tmp_path)
-    registered_offline_exp = an_experiment()
+    unsync_exp, sync_exp, get_run_impl = prepare_runs(tmp_path)
+    offline_exp_uuid = prepare_offline_run(tmp_path)
+    registered_offline_exp = a_run()
 
-    def get_experiment_impl_(experiment_id: str):
-        if experiment_id in (str(registered_offline_exp.uuid), get_qualified_name(registered_offline_exp)):
+    def get_run_impl_(run_id: str):
+        if run_id in (str(registered_offline_exp.uuid), get_qualified_name(registered_offline_exp)):
             return registered_offline_exp
         else:
-            return get_experiment_impl(experiment_id)
+            return get_run_impl(run_id)
 
     # and
-    mocker.patch.object(neptune.new.sync, 'get_experiment', get_experiment_impl_)
+    mocker.patch.object(neptune.new.sync, 'get_run', get_run_impl_)
     mocker.patch.object(neptune.new.sync, 'backend')
     mocker.patch.object(neptune.new.sync.backend, 'execute_operations')
     mocker.patch.object(neptune.new.sync.backend, 'get_project',
                         lambda _: Project(uuid.uuid4(), 'project', 'workspace'))
-    mocker.patch.object(neptune.new.sync, 'register_offline_experiment', lambda _: registered_offline_exp)
+    mocker.patch.object(neptune.new.sync, 'register_offline_run', lambda _: registered_offline_exp)
     mocker.patch.object(Operation, 'from_dict', lambda x: x)
 
     # when
-    sync_selected_experiments(tmp_path, 'some-name', [get_qualified_name(sync_exp), 'offline/' + offline_exp_uuid])
+    sync_selected_runs(tmp_path, 'some-name', [get_qualified_name(sync_exp), 'offline/' + offline_exp_uuid])
 
     # then
     captured = capsys.readouterr()
     assert captured.err == ''
     assert 'Synchronising {}'.format(get_qualified_name(sync_exp)) in captured.out
-    assert 'Synchronization of experiment {} completed.'.format(get_qualified_name(sync_exp)) in captured.out
+    assert 'Synchronization of run {} completed.'.format(get_qualified_name(sync_exp)) in captured.out
     assert 'Synchronising {}'.format(get_qualified_name(registered_offline_exp)) in captured.out
-    assert 'Synchronization of experiment {} completed.'.format(get_qualified_name(registered_offline_exp)) \
+    assert 'Synchronization of run {} completed.'.format(get_qualified_name(registered_offline_exp)) \
            in captured.out
     assert 'Synchronising {}'.format(get_qualified_name(unsync_exp)) not in captured.out
 
@@ -210,15 +210,15 @@ def test_get_project_project_not_found(mocker):
     assert get_project('foo') is None
 
 
-def test_sync_non_existent_experiment(tmp_path, mocker, capsys):
+def test_sync_non_existent_run(tmp_path, mocker, capsys):
     # given
     mocker.patch.object(neptune.new.sync, 'get_project')
-    mocker.patch.object(neptune.new.sync, 'get_experiment')
-    neptune.new.sync.get_experiment.return_value = an_experiment()
+    mocker.patch.object(neptune.new.sync, 'get_run')
+    neptune.new.sync.get_run.return_value = a_run()
 
     # when
-    sync_selected_experiments(tmp_path, 'foo', ['bar'])
+    sync_selected_runs(tmp_path, 'foo', ['bar'])
 
     # then
     captured = capsys.readouterr()
-    assert "Warning: Experiment 'bar' does not exist in location" in captured.err
+    assert "Warning: Run 'bar' does not exist in location" in captured.err

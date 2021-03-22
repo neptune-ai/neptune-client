@@ -25,7 +25,7 @@ from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 
 
-class TestExperiment(unittest.TestCase):
+class TestRun(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -63,7 +63,7 @@ class TestExperiment(unittest.TestCase):
         self.assertTrue('num' in exp.get_structure()['some']['path'])
         self.assertTrue('text' not in exp.get_structure()['some']['path'])
 
-    def test_experiment_as_handler(self):
+    def test_run_as_handler(self):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"))

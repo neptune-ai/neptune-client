@@ -15,6 +15,7 @@
 #
 import imghdr
 import os
+import pathlib
 
 from typing import Optional, Iterable
 
@@ -72,3 +73,24 @@ class FileSeries(Series[Val, Data]):
                                         "Other file types will be implemented in future.")
 
         return base64_encode(file.content)
+
+    def download(self, destination: Optional[str]):
+        target_dir = self._get_destination(destination)
+        item_count = self._backend.get_image_series_values(self._run_uuid, self._path, 0, 1).totalItemCount
+        for i in range(0, item_count):
+            self._backend.download_file_series_by_index(self._run_uuid, self._path, i, target_dir)
+
+    def download_last(self, destination: Optional[str]):
+        target_dir = self._get_destination(destination)
+        item_count = self._backend.get_image_series_values(self._run_uuid, self._path, 0, 1).totalItemCount
+        if item_count > 0:
+            self._backend.download_file_series_by_index(self._run_uuid, self._path, item_count - 1, target_dir)
+        else:
+            raise ValueError("Unable to download last file - series is empty")
+
+    def _get_destination(self, destination: Optional[str]):
+        target_dir = destination
+        if destination is None:
+            target_dir = os.path.join('neptune', self._path[-1])
+        pathlib.Path(os.path.abspath(target_dir)).mkdir(parents=True, exist_ok=True)
+        return target_dir

@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from typing import Optional, Iterable
 
-
+from neptune.new.attributes.series.fetchable_series import FetchableSeries
+from neptune.new.internal.backends.api_model import StringSeriesValues
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 
 from neptune.new.internal.operation import LogStrings, ClearStringLog, Operation
@@ -26,7 +26,7 @@ Val = StringSeriesVal
 Data = str
 
 
-class StringSeries(Series[Val, Data]):
+class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in value.values]
@@ -50,6 +50,9 @@ class StringSeries(Series[Val, Data]):
     def get_last(self, wait=True) -> str:
         # pylint: disable=protected-access
         if wait:
-            self._experiment.wait()
-        val = self._backend.get_string_series_attribute(self._experiment_uuid, self._path)
+            self._run.wait()
+        val = self._backend.get_string_series_attribute(self._run_uuid, self._path)
         return val.last
+
+    def _fetch_values_from_backend(self, offset, limit) -> StringSeriesValues:
+        return self._backend.get_string_series_values(self._run_uuid, self._path, offset, limit)

@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from typing import Union, Optional, Iterable
 
+from neptune.new.attributes.series.fetchable_series import FetchableSeries
+from neptune.new.internal.backends.api_model import FloatSeriesValues
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 
 from neptune.new.internal.utils import verify_type
@@ -27,7 +28,7 @@ Val = FloatSeriesVal
 Data = Union[float, int]
 
 
-class FloatSeries(Series[Val, Data]):
+class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     # pylint: disable=redefined-builtin
     def configure(self,
@@ -38,7 +39,7 @@ class FloatSeries(Series[Val, Data]):
         verify_type("min", min, (float, int))
         verify_type("max", max, (float, int))
         verify_type("unit", unit, str)
-        with self._experiment.lock():
+        with self._run.lock():
             self._enqueue_operation(ConfigFloatSeries(self._path, min, max, unit), wait)
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
@@ -66,6 +67,9 @@ class FloatSeries(Series[Val, Data]):
     def get_last(self, wait=True) -> float:
         # pylint: disable=protected-access
         if wait:
-            self._experiment.wait()
-        val = self._backend.get_float_series_attribute(self._experiment_uuid, self._path)
+            self._run.wait()
+        val = self._backend.get_float_series_attribute(self._run_uuid, self._path)
         return val.last
+
+    def _fetch_values_from_backend(self, offset, limit) -> FloatSeriesValues:
+        return self._backend.get_float_series_values(self._run_uuid, self._path, offset, limit)

@@ -37,12 +37,12 @@ _logger = logging.getLogger(__name__)
 class AsyncOperationProcessor(OperationProcessor):
 
     def __init__(self,
-                 experiment_uuid: uuid.UUID,
+                 run_uuid: uuid.UUID,
                  queue: StorageQueue[Operation],
                  backend: NeptuneBackend,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
-        self._experiment_uuid = experiment_uuid
+        self._run_uuid = run_uuid
         self._queue = queue
         self._backend = backend
         self._batch_size = batch_size
@@ -118,7 +118,7 @@ class AsyncOperationProcessor(OperationProcessor):
             # TODO: Handle Metadata errors
             for retry in range(0, self.RETRIES):
                 try:
-                    result = self._processor._backend.execute_operations(self._processor._experiment_uuid, batch)
+                    result = self._processor._backend.execute_operations(self._processor._run_uuid, batch)
                     self._processor._queue.ack(version)
                     for error in result:
                         _logger.error("Error occurred during asynchronous operation processing: %s", error)

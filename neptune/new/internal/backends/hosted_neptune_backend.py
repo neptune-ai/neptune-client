@@ -27,8 +27,8 @@ from packaging import version
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.exceptions import (
-    ExperimentNotFound,
-    ExperimentUUIDNotFound,
+    RunNotFound,
+    RunUUIDNotFound,
     InternalClientError,
     MetadataInconsistency,
     NeptuneException,
@@ -37,7 +37,7 @@ from neptune.new.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.new.internal.backends.api_model import (
-    ApiExperiment,
+    ApiRun,
     Attribute,
     AttributeType,
     AttributeWithProperties,
@@ -50,10 +50,16 @@ from neptune.new.internal.backends.api_model import (
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
+    StringSeriesValues,
+    StringPointValue,
+    FloatSeriesValues,
+    FloatPointValue,
+    ImageSeriesValues,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
     download_file_set_attribute,
+    download_image_series_element,
     upload_file_attribute,
     upload_file_set_attribute,
 )
@@ -149,21 +155,21 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ProjectNotFound(project_id)
 
     @with_api_exceptions_handler
-    def get_experiment(self, experiment_id: str):
+    def get_run(self, run_id: str):
         try:
-            exp = self.leaderboard_client.api.getExperiment(experimentId=experiment_id).response().result
-            return ApiExperiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
+            run = self.leaderboard_client.api.getExperiment(experimentId=run_id).response().result
+            return ApiRun(uuid.UUID(run.id), run.shortId, run.organizationName, run.projectName, run.trashed)
         except HTTPNotFound:
-            raise ExperimentNotFound(experiment_id)
+            raise RunNotFound(run_id)
 
     @with_api_exceptions_handler
-    def create_experiment(self,
-                          project_uuid: uuid.UUID,
-                          git_ref: Optional[GitRef] = None,
-                          custom_experiment_id: Optional[str] = None,
-                          notebook_id: Optional[uuid.UUID] = None,
-                          checkpoint_id: Optional[uuid.UUID] = None
-                          ) -> ApiExperiment:
+    def create_run(self,
+                   project_uuid: uuid.UUID,
+                   git_ref: Optional[GitRef] = None,
+                   custom_run_id: Optional[str] = None,
+                   notebook_id: Optional[uuid.UUID] = None,
+                   checkpoint_id: Optional[uuid.UUID] = None
+                   ) -> ApiRun:
         verify_type("project_uuid", project_uuid, uuid.UUID)
 
         git_info = {
@@ -183,7 +189,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             "projectIdentifier": str(project_uuid),
             "cliVersion": str(neptune_client_version),
             "gitInfo": git_info,
-            "customId": custom_experiment_id
+            "customId": custom_run_id
         }
 
         if notebook_id is not None and checkpoint_id is not None:
@@ -196,8 +202,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            exp = self.leaderboard_client.api.createExperiment(**kwargs).response().result
-            return ApiExperiment(uuid.UUID(exp.id), exp.shortId, exp.organizationName, exp.projectName, exp.trashed)
+            run = self.leaderboard_client.api.createExperiment(**kwargs).response().result
+            return ApiRun(uuid.UUID(run.id), run.shortId, run.organizationName, run.projectName, run.trashed)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_uuid)
 
@@ -214,13 +220,13 @@ class HostedNeptuneBackend(NeptuneBackend):
             return None
 
     @with_api_exceptions_handler
-    def ping_experiment(self, experiment_uuid: uuid.UUID):
+    def ping_run(self, run_uuid: uuid.UUID):
         try:
-            self.leaderboard_client.api.ping(experimentId=str(experiment_uuid)).response().result
+            self.leaderboard_client.api.ping(experimentId=str(run_uuid)).response().result
         except HTTPNotFound:
-            raise ExperimentUUIDNotFound(experiment_uuid)
+            raise RunUUIDNotFound(run_uuid)
 
-    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
+    def execute_operations(self, run_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
         errors = []
 
         operations_preprocessor = OperationsPreprocessor()
@@ -234,17 +240,17 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         # Upload operations should be done first since they are idempotent
         errors.extend(
-            self._execute_upload_operations(experiment_uuid=experiment_uuid,
+            self._execute_upload_operations(run_uuid=run_uuid,
                                             upload_operations=upload_operations)
         )
 
         if other_operations:
-            errors.extend(self._execute_operations(experiment_uuid, other_operations))
+            errors.extend(self._execute_operations(run_uuid, other_operations))
 
         return errors
 
     def _execute_upload_operations(self,
-                                   experiment_uuid: uuid.UUID,
+                                   run_uuid: uuid.UUID,
                                    upload_operations: List[Operation]) -> List[NeptuneException]:
         errors = list()
 
@@ -253,7 +259,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 try:
                     upload_file_attribute(
                         swagger_client=self.leaderboard_client,
-                        experiment_uuid=experiment_uuid,
+                        run_uuid=run_uuid,
                         attribute=path_to_str(op.path),
                         source=op.file_path,
                         ext=op.ext)
@@ -263,7 +269,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 try:
                     upload_file_attribute(
                         swagger_client=self.leaderboard_client,
-                        experiment_uuid=experiment_uuid,
+                        run_uuid=run_uuid,
                         attribute=path_to_str(op.path),
                         source=base64_decode(op.file_content),
                         ext=op.ext)
@@ -273,7 +279,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 try:
                     upload_file_set_attribute(
                         swagger_client=self.leaderboard_client,
-                        experiment_uuid=experiment_uuid,
+                        run_uuid=run_uuid,
                         attribute=path_to_str(op.path),
                         file_globs=op.file_globs,
                         reset=op.reset)
@@ -286,10 +292,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def _execute_operations(self,
-                            experiment_uuid: uuid.UUID,
+                            run_uuid: uuid.UUID,
                             operations: List[Operation]) -> List[MetadataInconsistency]:
         kwargs = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
             'operations': [{
                 'path': path_to_str(op.path),
                 OperationApiNameVisitor().visit(op): OperationApiObjectConverter().convert(op)
@@ -300,34 +306,47 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.executeOperations(**kwargs).response().result
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
-            raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid) from e
+            raise RunUUIDNotFound(run_uuid=run_uuid) from e
 
     @with_api_exceptions_handler
-    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
+    def get_attributes(self, run_uuid: uuid.UUID) -> List[Attribute]:
         def to_attribute(attr) -> Attribute:
             return Attribute(attr.name, AttributeType(attr.type))
 
         params = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
         }
         try:
-            experiment = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
-            return [to_attribute(attr) for attr in experiment.attributes]
+            run = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
+            return [to_attribute(attr) for attr in run.attributes]
         except HTTPNotFound:
-            raise ExperimentUUIDNotFound(exp_uuid=experiment_uuid)
+            raise RunUUIDNotFound(run_uuid=run_uuid)
 
-    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+    def download_file_series_by_index(self, run_uuid: uuid.UUID, path: List[str],
+                                      index: int, destination: str):
+        try:
+            download_image_series_element(
+                swagger_client=self.leaderboard_client,
+                run_uuid=run_uuid,
+                attribute=path_to_str(path),
+                index=index,
+                destination=destination
+            )
+        except HTTPNotFound:
+            raise  MetadataInconsistency("Image series attribute {} not found".format(path_to_str(path)))
+
+    def download_file(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         try:
             download_file_attribute(
                 swagger_client=self.leaderboard_client,
-                experiment_uuid=experiment_uuid,
+                run_uuid=run_uuid,
                 attribute=path_to_str(path),
                 destination=destination)
         except HTTPNotFound:
             raise MetadataInconsistency("File attribute {} not found".format(path_to_str(path)))
 
-    def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
-        download_request = self._get_file_set_download_request(experiment_uuid, path)
+    def download_file_set(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+        download_request = self._get_file_set_download_request(run_uuid, path)
         try:
             download_file_set_attribute(
                 swagger_client=self.leaderboard_client,
@@ -337,9 +356,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise MetadataInconsistency("File attribute {} not found".format(path_to_str(path)))
 
     @with_api_exceptions_handler
-    def get_float_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
         params = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
             'attribute': path_to_str(path)
         }
         try:
@@ -349,9 +368,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise MetadataInconsistency("Attribute {} not found".format(path))
 
     @with_api_exceptions_handler
-    def get_string_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
+    def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
         params = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
             'attribute': path_to_str(path)
         }
         try:
@@ -361,9 +380,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise MetadataInconsistency("Attribute {} not found".format(path))
 
     @with_api_exceptions_handler
-    def get_datetime_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+    def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
         params = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
             'attribute': path_to_str(path)
         }
         try:
@@ -373,9 +392,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise MetadataInconsistency("Attribute {} not found".format(path))
 
     @with_api_exceptions_handler
-    def get_float_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
+    def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
         params = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
             'attribute': path_to_str(path)
         }
         try:
@@ -385,9 +404,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise MetadataInconsistency("Attribute {} not found".format(path))
 
     @with_api_exceptions_handler
-    def get_string_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
+    def get_string_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
         params = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
             'attribute': path_to_str(path)
         }
         try:
@@ -397,9 +416,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise MetadataInconsistency("Attribute {} not found".format(path))
 
     @with_api_exceptions_handler
-    def get_string_set_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
+    def get_string_set_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
         params = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
             'attribute': path_to_str(path)
         }
         try:
@@ -409,9 +428,56 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise MetadataInconsistency("Attribute {} not found".format(path))
 
     @with_api_exceptions_handler
-    def _get_file_set_download_request(self, experiment_uuid: uuid.UUID, path: List[str]):
+    def get_image_series_values(self, run_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> ImageSeriesValues:
         params = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': str(run_uuid),
+            'attribute': path_to_str(path),
+            'limit': limit,
+            'offset': offset
+        }
+        try:
+            result = self.leaderboard_client.api.getImageSeriesValues(**params).response().result
+            return ImageSeriesValues(result.totalItemCount)
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_string_series_values(self, run_uuid: uuid.UUID, path: List[str],
+                                 offset: int, limit: int) -> StringSeriesValues:
+        params = {
+            'experimentId': str(run_uuid),
+            'attribute': path_to_str(path),
+            'limit': limit,
+            'offset': offset
+        }
+        try:
+            result = self.leaderboard_client.api.getStringSeriesValues(**params).response().result
+            return StringSeriesValues(result.totalItemCount,
+                                      [StringPointValue(v.timestampMillis, v.step, v.value) for v in result.values])
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> FloatSeriesValues:
+        params = {
+            'experimentId': str(run_uuid),
+            'attribute': path_to_str(path),
+            'limit': limit,
+            'offset': offset
+        }
+        try:
+            result = self.leaderboard_client.api.getFloatSeriesValues(**params).response().result
+            return FloatSeriesValues(result.totalItemCount,
+                                     [FloatPointValue(v.timestampMillis, v.step, v.value) for v in result.values])
+        except HTTPNotFound:
+            raise MetadataInconsistency("Attribute {} not found".format(path))
+
+    @with_api_exceptions_handler
+    def _get_file_set_download_request(self, run_uuid: uuid.UUID, path: List[str]):
+        params = {
+            'experimentId': str(run_uuid),
             'attribute': path_to_str(path)
         }
         try:

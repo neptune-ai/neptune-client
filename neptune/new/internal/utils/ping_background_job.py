@@ -22,7 +22,7 @@ from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
-    from neptune.new.experiment import Experiment
+    from neptune.new.run import Run
 
 _logger = logging.getLogger(__name__)
 
@@ -34,8 +34,8 @@ class PingBackgroundJob(BackgroundJob):
         self._thread = None
         self._started = False
 
-    def start(self, experiment: 'Experiment'):
-        self._thread = self.ReportingThread(self._period, experiment)
+    def start(self, run: 'Run'):
+        self._thread = self.ReportingThread(self._period, run)
         self._thread.start()
         self._started = True
 
@@ -54,9 +54,9 @@ class PingBackgroundJob(BackgroundJob):
         def __init__(
                 self,
                 period: float,
-                experiment: 'Experiment'):
+                run: 'Run'):
             super().__init__(sleep_time=period)
-            self._experiment = experiment
+            self._run = run
 
         def work(self) -> None:
-            self._experiment.ping()
+            self._run.ping()

@@ -19,7 +19,7 @@ from typing import List, TYPE_CHECKING, Optional
 from neptune.new.internal.background_job import BackgroundJob
 
 if TYPE_CHECKING:
-    from neptune.new.experiment import Experiment
+    from neptune.new.run import Run
 
 
 class BackgroundJobList(BackgroundJob):
@@ -27,9 +27,9 @@ class BackgroundJobList(BackgroundJob):
     def __init__(self, jobs: List[BackgroundJob]):
         self._jobs = jobs
 
-    def start(self, experiment: 'Experiment'):
+    def start(self, run: 'Run'):
         for job in self._jobs:
-            job.start(experiment)
+            job.start(run)
 
     def stop(self):
         for job in self._jobs:

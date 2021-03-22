@@ -18,13 +18,13 @@ from typing import Optional
 from neptune.new import types
 from neptune.new.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
 from neptune.new.exceptions import NeptuneUninitializedException
-from neptune.new.experiment import Experiment
-from neptune.new.internal.get_project_impl import get_project, get_experiments_table
+from neptune.new.run import Run
+from neptune.new.internal.get_project_impl import get_project, get_runs_table
 from neptune.new.internal.init_impl import __version__, init
 
 
-def get_last_exp() -> Optional[Experiment]:
-    last_exp = Experiment.last_exp
-    if last_exp is None:
+def get_last_run() -> Optional[Run]:
+    last_run = Run.last_run
+    if last_run is None:
         raise NeptuneUninitializedException()
-    return last_exp
+    return last_run

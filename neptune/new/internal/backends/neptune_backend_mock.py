@@ -21,14 +21,14 @@ from typing import Optional, List, Dict, TypeVar, Type
 from zipfile import ZipFile
 
 from neptune.new.exceptions import (
-    ExperimentNotFound,
-    ExperimentUUIDNotFound,
+    RunNotFound,
+    RunUUIDNotFound,
     InternalClientError,
     MetadataInconsistency,
     NeptuneException,
 )
 from neptune.new.internal.backends.api_model import (
-    ApiExperiment,
+    ApiRun,
     Attribute,
     AttributeType,
     DatetimeAttribute,
@@ -38,10 +38,13 @@ from neptune.new.internal.backends.api_model import (
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
+    StringSeriesValues,
+    FloatSeriesValues,
+    ImageSeriesValues,
 )
 from neptune.new.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.experiment_structure import ExperimentStructure
+from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
     AddStrings,
     AssignDatetime,
@@ -85,7 +88,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def __init__(self, credentials=None):
         # pylint: disable=unused-argument
-        self._experiments: Dict[uuid.UUID, ExperimentStructure[Value]] = dict()
+        self._runs: Dict[uuid.UUID, RunStructure[Value]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
 
     def get_display_address(self) -> str:
@@ -94,47 +97,47 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_project(self, project_id: str) -> Project:
         return Project(uuid.uuid4(), "sandbox", "workspace")
 
-    def create_experiment(self,
-                          project_uuid: uuid.UUID,
-                          git_ref: Optional[GitRef] = None,
-                          custom_experiment_id: Optional[str] = None,
-                          notebook_id: Optional[uuid.UUID] = None,
-                          checkpoint_id: Optional[uuid.UUID] = None
-                          ) -> ApiExperiment:
-        short_id = "OFFLINE-{}".format(len(self._experiments) + 1)
-        new_experiment_uuid = uuid.uuid4()
-        self._experiments[new_experiment_uuid] = ExperimentStructure[Value]()
-        self._experiments[new_experiment_uuid].set(["sys", "id"], String(short_id))
-        self._experiments[new_experiment_uuid].set(["sys", "state"], String("running"))
-        self._experiments[new_experiment_uuid].set(["sys", "owner"], String("offline_user"))
-        self._experiments[new_experiment_uuid].set(["sys", "size"], Float(0))
-        self._experiments[new_experiment_uuid].set(["sys", "tags"], StringSet(set()))
-        self._experiments[new_experiment_uuid].set(["sys", "creation_time"], Datetime(datetime.now()))
-        self._experiments[new_experiment_uuid].set(["sys", "modification_time"], Datetime(datetime.now()))
+    def create_run(self,
+                   project_uuid: uuid.UUID,
+                   git_ref: Optional[GitRef] = None,
+                   custom_run_id: Optional[str] = None,
+                   notebook_id: Optional[uuid.UUID] = None,
+                   checkpoint_id: Optional[uuid.UUID] = None
+                   ) -> ApiRun:
+        short_id = "OFFLINE-{}".format(len(self._runs) + 1)
+        new_run_uuid = uuid.uuid4()
+        self._runs[new_run_uuid] = RunStructure[Value]()
+        self._runs[new_run_uuid].set(["sys", "id"], String(short_id))
+        self._runs[new_run_uuid].set(["sys", "state"], String("running"))
+        self._runs[new_run_uuid].set(["sys", "owner"], String("offline_user"))
+        self._runs[new_run_uuid].set(["sys", "size"], Float(0))
+        self._runs[new_run_uuid].set(["sys", "tags"], StringSet(set()))
+        self._runs[new_run_uuid].set(["sys", "creation_time"], Datetime(datetime.now()))
+        self._runs[new_run_uuid].set(["sys", "modification_time"], Datetime(datetime.now()))
         if git_ref:
-            self._experiments[new_experiment_uuid].set(["source_code", "git"], git_ref)
-        return ApiExperiment(new_experiment_uuid, short_id, 'workspace', 'sandbox', False)
+            self._runs[new_run_uuid].set(["source_code", "git"], git_ref)
+        return ApiRun(new_run_uuid, short_id, 'workspace', 'sandbox', False)
 
     def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
         return None
 
-    def get_experiment(self, experiment_id: str) -> ApiExperiment:
-        raise ExperimentNotFound(experiment_id)
+    def get_run(self, run_id: str) -> ApiRun:
+        raise RunNotFound(run_id)
 
-    def execute_operations(self, experiment_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
+    def execute_operations(self, run_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
         result = []
         for op in operations:
             try:
-                self._execute_operation(experiment_uuid, op)
+                self._execute_operation(run_uuid, op)
             except NeptuneException as e:
                 result.append(e)
         return result
 
-    def _execute_operation(self, experiment_uuid: uuid.UUID, op: Operation) -> None:
-        if experiment_uuid not in self._experiments:
-            raise ExperimentUUIDNotFound(experiment_uuid)
-        exp = self._experiments[experiment_uuid]
-        val = exp.get(op.path)
+    def _execute_operation(self, run_uuid: uuid.UUID, op: Operation) -> None:
+        if run_uuid not in self._runs:
+            raise RunUUIDNotFound(run_uuid)
+        run = self._runs[run_uuid]
+        val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):
                 raise MetadataInconsistency("{} is a namespace, not an attribute".format(op.path))
@@ -143,15 +146,15 @@ class NeptuneBackendMock(NeptuneBackend):
         visitor = NeptuneBackendMock.NewValueOpVisitor(op.path, val)
         new_val = visitor.visit(op)
         if new_val:
-            exp.set(op.path, new_val)
+            run.set(op.path, new_val)
         else:
-            exp.pop(op.path)
+            run.pop(op.path)
 
-    def get_attributes(self, experiment_uuid: uuid.UUID) -> List[Attribute]:
-        if experiment_uuid not in self._experiments:
-            raise ExperimentUUIDNotFound(experiment_uuid)
-        exp = self._experiments[experiment_uuid]
-        return list(self._generate_attributes(None, exp.get_structure()))
+    def get_attributes(self, run_uuid: uuid.UUID) -> List[Attribute]:
+        if run_uuid not in self._runs:
+            raise RunUUIDNotFound(run_uuid)
+        run = self._runs[run_uuid]
+        return list(self._generate_attributes(None, run.get_structure()))
 
     def _generate_attributes(self, base_path: Optional[str], values: dict):
         for key, value_or_dict in values.items():
@@ -161,8 +164,8 @@ class NeptuneBackendMock(NeptuneBackend):
             else:
                 yield Attribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
 
-    def download_file(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
-        value: File = self._experiments[experiment_uuid].get(path)
+    def download_file(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+        value: File = self._runs[run_uuid].get(path)
         target_path = os.path.abspath(destination or (path[-1] + ("." + value.extension if value.extension else "")))
         if value.content is not None:
             with open(target_path, 'wb') as target_file:
@@ -170,8 +173,8 @@ class NeptuneBackendMock(NeptuneBackend):
         elif value.path != target_path:
             copyfile(value.path, target_path)
 
-    def download_file_set(self, experiment_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
-        source_file_set_value: FileSet = self._experiments[experiment_uuid].get(path)
+    def download_file_set(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+        source_file_set_value: FileSet = self._runs[run_uuid].get(path)
 
         if destination is None:
             target_file = path[-1] + ".zip"
@@ -186,40 +189,57 @@ class NeptuneBackendMock(NeptuneBackend):
             for upload_entry in upload_entries:
                 zipObj.write(upload_entry.source_path, upload_entry.target_path)
 
-    def get_float_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
-        val = self._get_attribute(experiment_uuid, path, Float)
+    def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+        val = self._get_attribute(run_uuid, path, Float)
         return FloatAttribute(val.value)
 
-    def get_string_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
-        val = self._get_attribute(experiment_uuid, path, String)
+    def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
+        val = self._get_attribute(run_uuid, path, String)
         return StringAttribute(val.value)
 
-    def get_datetime_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
-        val = self._get_attribute(experiment_uuid, path, Datetime)
+    def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+        val = self._get_attribute(run_uuid, path, Datetime)
         return DatetimeAttribute(val.value)
 
-    def get_float_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
-        val = self._get_attribute(experiment_uuid, path, FloatSeries)
+    def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
+        val = self._get_attribute(run_uuid, path, FloatSeries)
         return FloatSeriesAttribute(val.values[-1] if val.values else None)
 
-    def get_string_series_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
-        val = self._get_attribute(experiment_uuid, path, StringSeries)
+    def get_string_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
+        val = self._get_attribute(run_uuid, path, StringSeries)
         return StringSeriesAttribute(val.values[-1] if val.values else None)
 
-    def get_string_set_attribute(self, experiment_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
-        val = self._get_attribute(experiment_uuid, path, StringSet)
+    def get_string_set_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
+        val = self._get_attribute(run_uuid, path, StringSet)
         return StringSetAttribute(val.values)
 
-    def _get_attribute(self, experiment_uuid: uuid.UUID, path: List[str], expected_type: Type[Val]) -> Val:
-        if experiment_uuid not in self._experiments:
-            raise ExperimentUUIDNotFound(experiment_uuid)
-        value: Optional[Value] = self._experiments[experiment_uuid].get(path)
+    def _get_attribute(self, run_uuid: uuid.UUID, path: List[str], expected_type: Type[Val]) -> Val:
+        if run_uuid not in self._runs:
+            raise RunUUIDNotFound(run_uuid)
+        value: Optional[Value] = self._runs[run_uuid].get(path)
         str_path = path_to_str(path)
         if value is None:
             raise MetadataInconsistency("Attribute {} not found".format(str_path))
         if isinstance(value, expected_type):
             return value
         raise MetadataInconsistency("Attribute {} is not {}".format(str_path, type.__name__))
+
+    def get_string_series_values(self, run_uuid: uuid.UUID, path: List[str],
+                                 offset: int, limit: int) -> StringSeriesValues:
+        return StringSeriesValues(0, [])
+
+    def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> FloatSeriesValues:
+        return FloatSeriesValues(0, [])
+
+    def get_image_series_values(self, run_uuid: uuid.UUID, path: List[str],
+                                offset: int, limit: int) -> ImageSeriesValues:
+        return ImageSeriesValues(0)
+
+    def download_file_series_by_index(self, run_uuid: uuid.UUID, path: List[str],
+                                      index: int, destination: str):
+        pass
+
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 
