@@ -39,6 +39,7 @@ def main():
         long_description=readme,
         long_description_content_type="text/markdown",
         license='MIT License',
+        setup_requires=['tensorflow'],
         install_requires=base_libs,
         extras_require=extras,
         packages=['neptune_tensorflow_keras'],
