@@ -22,10 +22,12 @@ from typing import List, Optional, Dict, Iterable, Callable, Set, Union
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
+from bravado.exception import HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
-from neptune.new.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, FileSetUploadError
+from neptune.new.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, \
+    NeptuneException, StorageLimitReached
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
@@ -38,9 +40,9 @@ def upload_file_attribute(swagger_client: SwaggerClient,
                           attribute: str,
                           source: Union[str, bytes],
                           ext: str
-                          ) -> None:
+                          ) -> Optional[NeptuneException]:
     if isinstance(source, str) and not os.path.isfile(source):
-        raise FileUploadError(source, "Path not found or is a not a file.")
+        return FileUploadError(source, "Path not found or is a not a file.")
 
     target = attribute
     if ext:
@@ -58,10 +60,8 @@ def upload_file_attribute(swagger_client: SwaggerClient,
                          "attribute": attribute,
                          "ext": ext
                      })
-    except MetadataInconsistency:
-        raise
-    except Exception as e:
-        raise FileUploadError(target, getattr(e, 'message', repr(e)))
+    except MetadataInconsistency as e:
+        return e
 
 
 def upload_file_set_attribute(swagger_client: SwaggerClient,
@@ -69,7 +69,7 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                               attribute: str,
                               file_globs: Iterable[str],
                               reset: bool,
-                              ) -> None:
+                              ) -> Optional[NeptuneException]:
     unique_upload_entries = get_unique_upload_entries(file_globs)
 
     try:
@@ -111,11 +111,8 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                              })
 
             reset = False
-    except MetadataInconsistency:
-        raise
-    except Exception as e:
-        msg = getattr(e, 'message', repr(e))
-        raise FileSetUploadError(list(file_globs), msg)
+    except MetadataInconsistency as e:
+        return e
 
 
 def get_unique_upload_entries(file_globs: Iterable[str]) -> Set[UploadEntry]:
@@ -142,7 +139,7 @@ def _attribute_upload_response_handler(result: bytes) -> None:
         if "errorDescription" in parsed:
             raise MetadataInconsistency(parsed["errorDescription"])
         else:
-            InternalClientError("Unexpected response from server: {}".format(bytes))
+            raise InternalClientError("Unexpected response from server: {}".format(bytes))
 
 
 def _upload_loop(file_chunk_stream: FileChunkStream, response_handler: Callable[[bytes], None], **kwargs):
@@ -181,6 +178,8 @@ def upload_raw_data(http_client: RequestsClient,
     request = http_client.authenticator.apply(Request(method='POST', url=url, data=data, headers=headers))
 
     response = session.send(session.prepare_request(request))
+    if response.status_code == HTTPUnprocessableEntity.status_code:
+        raise StorageLimitReached()
     response.raise_for_status()
     return response.content
 
