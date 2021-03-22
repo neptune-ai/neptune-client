@@ -16,13 +16,6 @@
 
 from typing import Optional
 
-from neptune.new import Run
-from neptune.new.exceptions import NeptuneException
-
-from ._version import get_versions
-__version__ = get_versions()['version']
-del get_versions
-
 # Note: we purposefully try to import `tensorflow.keras.callbacks.Callback`
 # before `keras.callbacks.Callback` because the former is compatible with both
 # `tensorflow.keras` and `keras`, while the latter is only compatible
@@ -82,8 +75,9 @@ class NeptuneCallback(Callback):
         You need to have Keras or Tensorflow 2 installed on your computer to use this module.
     """
 
-    def __init__(self, experiment: Run, base_namespace: Optional[str] = None):
+    def __init__(self, experiment: 'Run', base_namespace: Optional[str] = None):
         super().__init__()
+        from neptune.new import Run
         if experiment is None or not isinstance(experiment, Run):
             raise ValueError("Neptune experiment is missing")
         self._base_namespace = ''
@@ -98,6 +92,7 @@ class NeptuneCallback(Callback):
             self._metric_logger = experiment
 
     def _log_metrics(self, logs, trigger):
+        from neptune.new.exceptions import NeptuneException
         if not logs:
             return
 

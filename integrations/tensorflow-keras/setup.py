@@ -1,4 +1,6 @@
-import versioneer
+import os
+
+from neptune_tensorflow_keras._version import get_versions
 from setuptools import setup
 
 
@@ -16,9 +18,19 @@ def main():
 
     base_libs = ['neptune-client>=0.5.1', 'tensorflow']
 
+    version = None
+    if os.path.exists('PKG-INFO'):
+        with open('PKG-INFO', 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            if line.startswith('Version:'):
+                version = line[8:].strip()
+    else:
+        version = get_versions()["version"]
+
     setup(
         name='neptune-tensorflow-keras',
-        version=versioneer.get_version(),
+        version=version,
         description='Neptune.ai tensorflow-keras integration library',
         author='neptune.ai',
         support='contact@neptune.ai',
