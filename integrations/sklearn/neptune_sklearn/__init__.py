@@ -45,7 +45,7 @@ def create_regressor_summary(regressor, X_train, X_test, y_train, y_test, nrows=
     * test scores,
     * model performance visualizations.
 
-    Returned ``dict`` can be assigned to the experiment's namespace defined by the user (see example below).
+    Returned ``dict`` can be assigned to the run's namespace defined by the user (see example below).
 
     Regressor should be fitted before calling this function.
 
@@ -128,7 +128,7 @@ def create_classifier_summary(classifier, X_train, X_test, y_train, y_test, nrow
     * test scores,
     * model performance visualizations.
 
-    Returned ``dict`` can be assigned to the experiment's namespace defined by the user (see example below).
+    Returned ``dict`` can be assigned to the run's namespace defined by the user (see example below).
 
     Classifier should be fitted before calling this function.
 
@@ -209,7 +209,7 @@ def create_kmeans_summary(model, X, nrows=1000, **kwargs):
     * cluster labels,
     * clustering visualizations: KMeans elbow chart and silhouette coefficients chart.
 
-    Returned ``dict`` can be assigned to the experiment's namespace defined by the user (see example below).
+    Returned ``dict`` can be assigned to the run's namespace defined by the user (see example below).
 
     Tip:
         Check Sklearn-Neptune integration
@@ -298,7 +298,7 @@ def get_pickled_model(estimator):
             | Scikit-learn estimator to pickle.
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -341,7 +341,7 @@ def get_test_preds(estimator, X_test, y_test, y_pred=None, nrows=1000):
             | Number of rows to log.
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -404,7 +404,7 @@ def get_test_preds_proba(classifier, X_test=None, y_pred_proba=None, nrows=1000)
             | Number of rows to log.
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -549,7 +549,7 @@ def create_learning_curve_chart(regressor, X_train, y_train):
             | The regression target for training
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -595,7 +595,7 @@ def create_feature_importance_chart(regressor, X_train, y_train):
             | The regression target for training
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -647,7 +647,7 @@ def create_residuals_chart(regressor, X_train, X_test, y_train, y_test):
             | The regression target for testing
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -699,7 +699,7 @@ def create_prediction_error_chart(regressor, X_train, X_test, y_train, y_test):
             | The regression target for testing
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -747,7 +747,7 @@ def create_cooks_distance_chart(regressor, X_train, y_train):
             | The regression target for training
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -798,7 +798,7 @@ def create_classification_report_chart(classifier, X_train, X_test, y_train, y_t
             | The classification target for testing
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -851,7 +851,7 @@ def create_confusion_matrix_chart(classifier, X_train, X_test, y_train, y_test):
             | The classification target for testing
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -904,7 +904,7 @@ def create_roc_auc_chart(classifier, X_train, X_test, y_train, y_test):
             | The classification target for testing
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -954,7 +954,7 @@ def create_precision_recall_chart(classifier, X_test, y_test, y_pred_proba=None)
             | Classifier predictions probabilities on test data.
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -1011,7 +1011,7 @@ def create_class_prediction_error_chart(classifier, X_train, X_test, y_train, y_
             | The classification target for testing
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -1062,7 +1062,7 @@ def get_cluster_labels(model, X, nrows=1000, **kwargs):
             KMeans parameters.
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -1103,7 +1103,7 @@ def create_kelbow_chart(model, X, **kwargs):
             KMeans parameters.
 
     Returns:
-        ``neptune.types.File`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.File`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
@@ -1159,7 +1159,7 @@ def create_silhouette_chart(model, X, **kwargs):
             KMeans parameters.
 
     Returns:
-        ``neptune.types.FileSeries`` object that you can assign to experiment ``base_namespace``.
+        ``neptune.types.FileSeries`` object that you can assign to run's ``base_namespace``.
 
     Examples:
         .. code:: python3
