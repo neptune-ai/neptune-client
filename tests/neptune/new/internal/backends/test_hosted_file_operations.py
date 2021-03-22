@@ -183,7 +183,7 @@ class TestHostedFileOperations(unittest.TestCase):
     def test_get_content_disposition_filename(self):
         # given
         response_mock = MagicMock()
-        response_mock.headers = {'Content-Disposition': 'attachment; filename=sample.file'}
+        response_mock.headers = {'Content-Disposition': 'attachment; filename="sample.file"'}
 
         # when
         filename = _get_content_disposition_filename(response_mock)
