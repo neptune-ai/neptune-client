@@ -40,11 +40,11 @@ class NeptuneCallback(Callback):
     Goes over the `last_metrics` and `smooth_loss` after each batch and epoch
     and logs them to Neptune.
 
-    See the example experiment here https://ui.neptune.ai/shared/keras-integration/e/KERAS-23/logs
+    See the example run here https://ui.neptune.ai/shared/keras-integration/e/KERAS-23/logs
 
     Args:
-        experiment: `neptune.new.Experiment`:
-            Neptune experiment, required.
+        run: `neptune.new.Run`:
+            Neptune run, required.
         base_namespace: str, optional:
             Namespace, in which all series will be put.
 
@@ -56,7 +56,7 @@ class NeptuneCallback(Callback):
 
             import neptune.new as neptune
 
-            experiment = neptune.init(api_token='ANONYMOUS',
+            run = neptune.init(api_token='ANONYMOUS',
                                       project='shared/keras-integration')
 
         Instantiate the callback and pass
@@ -69,17 +69,17 @@ class NeptuneCallback(Callback):
             model.fit(x_train, y_train,
                       epochs=PARAMS['epoch_nr'],
                       batch_size=PARAMS['batch_size'],
-                      callbacks=[NeptuneMonitor(experiment)])
+                      callbacks=[NeptuneMonitor(run)])
 
     Note:
         You need to have Keras or Tensorflow 2 installed on your computer to use this module.
     """
 
-    def __init__(self, experiment: 'Run', base_namespace: Optional[str] = None):
+    def __init__(self, run: 'Run', base_namespace: Optional[str] = None):
         super().__init__()
         from neptune.new import Run
-        if experiment is None or not isinstance(experiment, Run):
-            raise ValueError("Neptune experiment is missing")
+        if run is None or not isinstance(run, Run):
+            raise ValueError("Neptune run is missing")
         self._base_namespace = ''
         if base_namespace:
             if base_namespace.endswith("/"):
@@ -87,9 +87,9 @@ class NeptuneCallback(Callback):
             else:
                 self._base_namespace = base_namespace
         if self._base_namespace:
-            self._metric_logger = experiment[self._base_namespace]
+            self._metric_logger = run[self._base_namespace]
         else:
-            self._metric_logger = experiment
+            self._metric_logger = run
 
     def _log_metrics(self, logs, trigger):
         from neptune.new.exceptions import NeptuneException
