@@ -21,7 +21,7 @@ from typing import List, Optional, Dict, Iterable
 import click
 import urllib3
 from bravado.client import SwaggerClient
-from bravado.exception import HTTPNotFound
+from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from packaging import version
 
@@ -34,6 +34,7 @@ from neptune.new.exceptions import (
     NeptuneException,
     NeptuneLegacyProjectException,
     ProjectNotFound,
+    StorageLimitReached,
     UnsupportedClientVersion,
 )
 from neptune.new.internal.backends.api_model import (
@@ -256,35 +257,32 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         for op in upload_operations:
             if isinstance(op, UploadFile):
-                try:
-                    upload_file_attribute(
-                        swagger_client=self.leaderboard_client,
-                        run_uuid=run_uuid,
-                        attribute=path_to_str(op.path),
-                        source=op.file_path,
-                        ext=op.ext)
-                except NeptuneException as e:
-                    errors.append(e)
+                error = upload_file_attribute(
+                    swagger_client=self.leaderboard_client,
+                    run_uuid=run_uuid,
+                    attribute=path_to_str(op.path),
+                    source=op.file_path,
+                    ext=op.ext)
+                if error:
+                    errors.append(error)
             elif isinstance(op, UploadFileContent):
-                try:
-                    upload_file_attribute(
-                        swagger_client=self.leaderboard_client,
-                        run_uuid=run_uuid,
-                        attribute=path_to_str(op.path),
-                        source=base64_decode(op.file_content),
-                        ext=op.ext)
-                except NeptuneException as e:
-                    errors.append(e)
+                error = upload_file_attribute(
+                    swagger_client=self.leaderboard_client,
+                    run_uuid=run_uuid,
+                    attribute=path_to_str(op.path),
+                    source=base64_decode(op.file_content),
+                    ext=op.ext)
+                if error:
+                    errors.append(error)
             elif isinstance(op, UploadFileSet):
-                try:
-                    upload_file_set_attribute(
-                        swagger_client=self.leaderboard_client,
-                        run_uuid=run_uuid,
-                        attribute=path_to_str(op.path),
-                        file_globs=op.file_globs,
-                        reset=op.reset)
-                except NeptuneException as e:
-                    errors.append(e)
+                error = upload_file_set_attribute(
+                    swagger_client=self.leaderboard_client,
+                    run_uuid=run_uuid,
+                    attribute=path_to_str(op.path),
+                    file_globs=op.file_globs,
+                    reset=op.reset)
+                if error:
+                    errors.append(error)
             else:
                 raise InternalClientError("Upload operation in neither File or FileSet")
 
@@ -307,6 +305,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
             raise RunUUIDNotFound(run_uuid=run_uuid) from e
+        except HTTPUnprocessableEntity:
+            raise StorageLimitReached()
 
     @with_api_exceptions_handler
     def get_attributes(self, run_uuid: uuid.UUID) -> List[Attribute]:

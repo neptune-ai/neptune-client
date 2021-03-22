@@ -535,6 +535,18 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**inputs))
 
 
+class StorageLimitReached(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}     
+----StorageLimitReached-----------------------------------------
+{end}
+Storage limit reached.
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
+
+
 class PlotlyIncompatibilityException(Exception):
     def __init__(self, matplotlib_version, plotly_version):
         super().__init__(

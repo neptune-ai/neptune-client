@@ -54,7 +54,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         response_error.errorDescription = "error1"
         swagger_client.api.executeOperations().response().result = [response_error]
         swagger_client.api.executeOperations.reset_mock()
-        upload_mock.side_effect = FileUploadError("file1", "error2")
+        upload_mock.return_value = FileUploadError("file1", "error2")
         some_text = "Some streamed text"
         some_binary = b"Some streamed binary"
 
