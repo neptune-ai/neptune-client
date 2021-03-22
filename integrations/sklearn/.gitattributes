@@ -1,0 +1,2 @@
+neptune/new/integrations/sklearn/impl/_version.py export-subst
+neptune_sklearn/_version.py export-subst
