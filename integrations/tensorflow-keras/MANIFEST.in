@@ -1,2 +1,3 @@
+include neptune_tensorflow_keras/impl/__init__.py
 include neptune_tensorflow_keras/__init__.py
 include neptune_tensorflow_keras/_version.py
