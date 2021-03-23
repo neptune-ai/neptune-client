@@ -27,7 +27,9 @@ from packaging import version
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.exceptions import (
-    ClientHttpError, FetchAttributeNotFoundException, RunNotFound,
+    ClientHttpError,
+    FetchAttributeNotFoundException,
+    RunNotFound,
     RunUUIDNotFound,
     InternalClientError,
     MetadataInconsistency,
