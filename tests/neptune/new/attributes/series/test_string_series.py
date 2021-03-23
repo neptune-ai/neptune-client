@@ -37,4 +37,4 @@ class TestStringSeries(TestAttributeBase):
         var = StringSeries(exp, path)
         var.log("asdfhadh")
         var.log("hej!")
-        self.assertEqual("hej!", var.get_last())
+        self.assertEqual("hej!", var.fetch_last())

@@ -184,7 +184,6 @@ def upload_raw_data(http_client: RequestsClient,
     return response.content
 
 
-@with_api_exceptions_handler
 def download_image_series_element(swagger_client: SwaggerClient,
                                   run_uuid: uuid.UUID,
                                   attribute: str,
@@ -199,7 +198,6 @@ def download_image_series_element(swagger_client: SwaggerClient,
                                                    .format(index, response.headers['content-type'].split('/')[-1])))
 
 
-@with_api_exceptions_handler
 def download_file_attribute(swagger_client: SwaggerClient,
                             run_uuid: uuid.UUID,
                             attribute: str,
@@ -212,7 +210,6 @@ def download_file_attribute(swagger_client: SwaggerClient,
     _store_response_as_file(response, destination)
 
 
-@with_api_exceptions_handler
 def download_file_set_attribute(swagger_client: SwaggerClient,
                                 download_id: uuid.UUID,
                                 destination: Optional[str] = None):
@@ -255,6 +252,7 @@ def _get_content_disposition_filename(response: Response) -> str:
     return content_disposition[content_disposition.rfind("filename=") + 10:-1]
 
 
+@with_api_exceptions_handler
 def _download_raw_data(http_client: RequestsClient,
                        url: str,
                        path_params: Optional[Dict[str, str]] = None,

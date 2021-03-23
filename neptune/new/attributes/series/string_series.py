@@ -47,10 +47,8 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)
 
-    def get_last(self, wait=True) -> str:
+    def fetch_last(self) -> str:
         # pylint: disable=protected-access
-        if wait:
-            self._run.wait()
         val = self._backend.get_string_series_attribute(self._run_uuid, self._path)
         return val.last
 

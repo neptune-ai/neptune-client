@@ -43,4 +43,4 @@ class TestFloatSeries(TestAttributeBase):
         var = FloatSeries(exp, path)
         var.log(5)
         var.log(34)
-        self.assertEqual(34, var.get_last())
+        self.assertEqual(34, var.fetch_last())

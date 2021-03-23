@@ -35,19 +35,19 @@ class TestRun(unittest.TestCase):
     def test_define(self):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/value", Float(5), wait=True)
-        self.assertEqual(exp.get_structure()['some']['path']['value'].get(), 5)
+        self.assertEqual(exp.get_structure()['some']['path']['value'].fetch(), 5)
 
     def test_define_string(self):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/value", String("Some string"), wait=True)
-        self.assertEqual(exp.get_structure()['some']['path']['value'].get(), "Some string")
+        self.assertEqual(exp.get_structure()['some']['path']['value'].fetch(), "Some string")
 
     def test_define_few_variables(self):
         exp = init(connection_mode="debug", flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"), wait=True)
-        self.assertEqual(exp.get_structure()['some']['path']['num'].get(), 3)
-        self.assertEqual(exp.get_structure()['some']['path']['text'].get(), "Some text")
+        self.assertEqual(exp.get_structure()['some']['path']['num'].fetch(), 3)
+        self.assertEqual(exp.get_structure()['some']['path']['text'].fetch(), "Some text")
 
     def test_define_conflict(self):
         exp = init(connection_mode="debug", flush_period=0.5)

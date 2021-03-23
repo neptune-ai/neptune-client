@@ -93,4 +93,4 @@ class TestStringSet(TestAttributeBase):
         var.add(["abc", "xyz"])
         var.remove(["abc"])
         var.add(["hej", "lol"])
-        self.assertEqual({"xyz", "hej", "lol"}, var.get())
+        self.assertEqual({"xyz", "hej", "lol"}, var.fetch())

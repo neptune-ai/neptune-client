@@ -31,12 +31,12 @@ class Project:
         self._backend = backend
 
     # pylint:disable=redefined-builtin
-    def get_runs_table(self,
-                       id: Optional[Union[str, Iterable[str]]] = None,
-                       state: Optional[Union[str, Iterable[str]]] = None,
-                       owner: Optional[Union[str, Iterable[str]]] = None,
-                       tag: Optional[Union[str, Iterable[str]]] = None
-                       ) -> RunsTable:
+    def fetch_runs_table(self,
+                         id: Optional[Union[str, Iterable[str]]] = None,
+                         state: Optional[Union[str, Iterable[str]]] = None,
+                         owner: Optional[Union[str, Iterable[str]]] = None,
+                         tag: Optional[Union[str, Iterable[str]]] = None
+                         ) -> RunsTable:
         id = self._as_list("id", id)
         state = self._as_list("state", state)
         owner = self._as_list("owner", owner)

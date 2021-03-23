@@ -80,13 +80,13 @@ def with_api_exceptions_handler(func):
                     last_exception = e
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
-                    raise InternalServerError(str(e.response)) from e
+                    raise InternalServerError(e.response.text) from e
                 elif status_code == HTTPUnauthorized.status_code:
                     raise Unauthorized()
                 elif status_code == HTTPForbidden.status_code:
                     raise Forbidden()
                 elif 400 <= status_code < 500:
-                    raise ClientHttpError(status_code, str(e.response)) from e
+                    raise ClientHttpError(status_code, e.response.text) from e
                 else:
                     raise
         raise NeptuneConnectionLostException() from last_exception

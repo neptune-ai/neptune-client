@@ -27,7 +27,7 @@ from packaging import version
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.exceptions import (
-    RunNotFound,
+    ClientHttpError, FetchAttributeNotFoundException, RunNotFound,
     RunUUIDNotFound,
     InternalClientError,
     MetadataInconsistency,
@@ -332,8 +332,11 @@ class HostedNeptuneBackend(NeptuneBackend):
                 index=index,
                 destination=destination
             )
-        except HTTPNotFound:
-            raise  MetadataInconsistency("Image series attribute {} not found".format(path_to_str(path)))
+        except ClientHttpError as e:
+            if e.status == HTTPNotFound.status_code:
+                raise FetchAttributeNotFoundException(path_to_str(path))
+            else:
+                raise
 
     def download_file(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         try:
@@ -342,8 +345,11 @@ class HostedNeptuneBackend(NeptuneBackend):
                 run_uuid=run_uuid,
                 attribute=path_to_str(path),
                 destination=destination)
-        except HTTPNotFound:
-            raise MetadataInconsistency("File attribute {} not found".format(path_to_str(path)))
+        except ClientHttpError as e:
+            if e.status == HTTPNotFound.status_code:
+                raise FetchAttributeNotFoundException(path_to_str(path))
+            else:
+                raise
 
     def download_file_set(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
         download_request = self._get_file_set_download_request(run_uuid, path)
@@ -352,8 +358,11 @@ class HostedNeptuneBackend(NeptuneBackend):
                 swagger_client=self.leaderboard_client,
                 download_id=download_request.id,
                 destination=destination)
-        except HTTPNotFound:
-            raise MetadataInconsistency("File attribute {} not found".format(path_to_str(path)))
+        except ClientHttpError as e:
+            if e.status == HTTPNotFound.status_code:
+                raise FetchAttributeNotFoundException(path_to_str(path))
+            else:
+                raise
 
     @with_api_exceptions_handler
     def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
@@ -365,7 +374,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getFloatAttribute(**params).response().result
             return FloatAttribute(result.value)
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
@@ -377,7 +386,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getStringAttribute(**params).response().result
             return StringAttribute(result.value)
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
@@ -389,7 +398,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getDatetimeAttribute(**params).response().result
             return DatetimeAttribute(result.value)
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
@@ -401,7 +410,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getFloatSeriesAttribute(**params).response().result
             return FloatSeriesAttribute(result.last)
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_string_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
@@ -413,7 +422,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getStringSeriesAttribute(**params).response().result
             return StringSeriesAttribute(result.last)
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_string_set_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
@@ -425,7 +434,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
             return StringSetAttribute(result.values)
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_image_series_values(self, run_uuid: uuid.UUID, path: List[str],
@@ -440,7 +449,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.leaderboard_client.api.getImageSeriesValues(**params).response().result
             return ImageSeriesValues(result.totalItemCount)
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_string_series_values(self, run_uuid: uuid.UUID, path: List[str],
@@ -456,7 +465,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             return StringSeriesValues(result.totalItemCount,
                                       [StringPointValue(v.timestampMillis, v.step, v.value) for v in result.values])
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
@@ -472,7 +481,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             return FloatSeriesValues(result.totalItemCount,
                                      [FloatPointValue(v.timestampMillis, v.step, v.value) for v in result.values])
         except HTTPNotFound:
-            raise MetadataInconsistency("Attribute {} not found".format(path))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def _get_file_set_download_request(self, run_uuid: uuid.UUID, path: List[str]):
@@ -483,7 +492,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             return self.leaderboard_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
         except HTTPNotFound:
-            raise MetadataInconsistency("File set attribute {} not found".format(path_to_str(path)))
+            raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:

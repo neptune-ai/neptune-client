@@ -175,7 +175,7 @@ class TestClient(unittest.TestCase):
         backend_mock.get_leaderboard = Mock(return_value=[empty_entry, filled_entry])
 
         # when
-        df = get_project().get_runs_table().as_pandas()
+        df = get_project().fetch_runs_table().as_pandas()
 
         # then
         self.assertEqual("idle", df['run/state'][1])
@@ -224,7 +224,7 @@ class TestClient(unittest.TestCase):
         backend_mock.get_leaderboard = Mock(return_value=[LeaderboardEntry(exp_id, attributes)])
 
         # when
-        exp = get_project().get_runs_table().as_runs()[0]
+        exp = get_project().fetch_runs_table().as_runs()[0]
 
         # then
         self.assertEqual("idle", exp['run/state'].get())
