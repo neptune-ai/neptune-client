@@ -1,0 +1,3 @@
+include versioneer.py
+include neptune/new/integrations/sklearn/impl/_version.py
+include neptune_sklearn/_version.py

@@ -1,3 +1,8 @@
+# Neptune data
+.neptune/
+tests/.neptune/
+tests/neptune/.neptune/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -86,8 +91,10 @@ celerybeat-schedule
 # Environments
 .env
 .venv
+.venv3.5
 env/
 venv/
+venv3.5/
 ENV/
 env.bak/
 venv.bak/
@@ -115,3 +122,5 @@ venv.bak/
 # VS Code
 .history
 .vscode
+
+stream.bin

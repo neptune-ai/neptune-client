@@ -18,18 +18,20 @@ import unittest
 import uuid
 
 import mock
-from mock import MagicMock
+from mock import call, MagicMock
 
 from neptune.exceptions import DeprecatedApiToken, CannotResolveHostname, UnsupportedClientVersion
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.api_clients import HostedNeptuneBackendApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
+    HostedNeptuneLeaderboardApiClient
 from tests.neptune.api_models import ApiParameter
-
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
 
 
-@mock.patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
+@mock.patch('neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator',
+            new=MagicMock)
 class TestHostedNeptuneBackend(unittest.TestCase):
     # pylint:disable=protected-access
 
@@ -40,7 +42,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.13')
 
         # expect
-        HostedNeptuneBackend(api_token=API_TOKEN)
+        HostedNeptuneBackendApiClient(api_token=API_TOKEN)
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.__version__', '0.5.13')
@@ -50,7 +52,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(UnsupportedClientVersion) as ex:
-            HostedNeptuneBackend(api_token=API_TOKEN)
+            HostedNeptuneBackendApiClient(api_token=API_TOKEN)
 
         self.assertTrue("Please install neptune-client>=0.5.14" in str(ex.exception))
 
@@ -61,7 +63,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.13')
 
         # expect
-        HostedNeptuneBackend(api_token=API_TOKEN)
+        HostedNeptuneBackendApiClient(api_token=API_TOKEN)
 
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.__version__', '0.5.13')
@@ -71,7 +73,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(UnsupportedClientVersion) as ex:
-            HostedNeptuneBackend(api_token=API_TOKEN)
+            HostedNeptuneBackendApiClient(api_token=API_TOKEN)
 
         self.assertTrue("Please install neptune-client==0.5.12" in str(ex.exception))
 
@@ -87,13 +89,14 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         uuid4.return_value = some_uuid
 
         # and
-        backend = HostedNeptuneBackend(api_token=API_TOKEN)
+        backend = HostedNeptuneBackendApiClient(api_token=API_TOKEN)
+        leaderboard = HostedNeptuneLeaderboardApiClient(backend)
 
         # and
         some_object = SomeClass()
 
         # when
-        api_params = backend._convert_to_api_parameters({
+        api_params = leaderboard._convert_to_api_parameters({
             'str': 'text',
             'bool': False,
             'float': 1.23,
@@ -121,13 +124,13 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     # pylint: disable=unused-argument
     @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.backends.credentials.os.getenv', return_value=API_TOKEN)
+    @mock.patch('neptune.internal.api_clients.credentials.os.getenv', return_value=API_TOKEN)
     def test_should_take_default_credentials_from_env(self, env, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
 
         # when
-        backend = HostedNeptuneBackend()
+        backend = HostedNeptuneBackendApiClient()
 
         # then
         self.assertEqual(API_TOKEN, backend.credentials.api_token)
@@ -138,7 +141,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self._get_swagger_client_mock(swagger_client_factory)
 
         # when
-        session = HostedNeptuneBackend(API_TOKEN)
+        session = HostedNeptuneBackendApiClient(API_TOKEN)
 
         # then
         self.assertEqual(API_TOKEN, session.credentials.api_token)
@@ -153,7 +156,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(DeprecatedApiToken):
-            HostedNeptuneBackend(token)
+            HostedNeptuneBackendApiClient(token)
 
     @mock.patch('socket.gethostbyname')
     def test_cannot_resolve_host(self, gethostname_mock):
@@ -165,7 +168,44 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         # expect
         with self.assertRaises(CannotResolveHostname):
-            HostedNeptuneBackend(token)
+            HostedNeptuneBackendApiClient(token)
+
+    @mock.patch('bravado.client.SwaggerClient.from_url')
+    @mock.patch('neptune.__version__', '0.5.13')
+    def test_delete_artifact(self, swagger_client_factory):
+        # given
+        self._get_swagger_client_mock(swagger_client_factory)
+        experiment = mock.MagicMock()
+        backend = HostedNeptuneBackendApiClient(API_TOKEN)
+        leaderboard = HostedNeptuneLeaderboardApiClient(backend)
+        leaderboard.rm_data = mock.MagicMock()
+
+        # and
+        def build_call(path):
+            return call(
+                experiment=experiment,
+                path=path
+            )
+
+        # when
+        leaderboard.delete_artifacts(experiment=experiment, path='/an_abs_path_in_exp_output')
+        leaderboard.delete_artifacts(experiment=experiment, path='/../an_abs_path_in_exp')
+        leaderboard.delete_artifacts(experiment=experiment, path='/../../an_abs_path_in_prj')
+        leaderboard.delete_artifacts(experiment=experiment, path='a_path_in_exp_output')
+        self.assertRaises(ValueError, leaderboard.delete_artifacts,
+                          experiment=experiment, path='test/../../a_path_outside_exp')
+        self.assertRaises(ValueError, leaderboard.delete_artifacts,
+                          experiment=experiment, path='../a_path_outside_exp')
+        self.assertRaises(ValueError, leaderboard.delete_artifacts,
+                          experiment=experiment, path="..")
+
+        # then
+        leaderboard.rm_data.assert_has_calls([
+            build_call('/an_abs_path_in_exp_output'),
+            build_call('/../an_abs_path_in_exp'),
+            build_call('/../../an_abs_path_in_prj'),
+            build_call('a_path_in_exp_output'),
+        ])
 
     @staticmethod
     def _get_swagger_client_mock(
@@ -188,6 +228,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         swagger_client_factory.return_value = swagger_client
 
         return swagger_client
+
 
 class SomeClass(object):
     pass

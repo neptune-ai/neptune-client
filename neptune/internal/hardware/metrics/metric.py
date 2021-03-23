@@ -73,7 +73,7 @@ class Metric(object):
 
 class MetricResourceType(object):
     CPU = u'CPU'
-    RAM = u'RAM'
+    RAM = u'MEMORY'
     GPU = u'GPU'
-    GPU_RAM = u'GPU_RAM'
+    GPU_RAM = u'GPU_MEMORY'
     OTHER = u'OTHER'

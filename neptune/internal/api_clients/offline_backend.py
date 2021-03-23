@@ -16,13 +16,12 @@
 import logging
 from io import StringIO
 
-from neptune.backend import Backend
+from neptune.backend import BackendApiClient, LeaderboardApiClient
 
 _logger = logging.getLogger(__name__)
 
 
-class OfflineBackend(Backend):
-
+class OfflineBackendApiClient(BackendApiClient):
     def __init__(self):
         _logger.warning('Neptune is running in offline mode. No data is being logged to Neptune.')
         _logger.warning('Disable offline mode to log your experiments.')
@@ -45,6 +44,23 @@ class OfflineBackend(Backend):
     def get_projects(self, namespace):
         return []
 
+    def create_leaderboard_backend(self, project) -> 'OfflineLeaderboardApiClient':
+        return OfflineLeaderboardApiClient()
+
+
+class OfflineLeaderboardApiClient(LeaderboardApiClient):
+    @property
+    def api_address(self):
+        return 'OFFLINE'
+
+    @property
+    def display_address(self):
+        return 'OFFLINE'
+
+    @property
+    def proxies(self):
+        return None
+
     def get_project_members(self, project_identifier):
         return []
 
@@ -62,6 +78,9 @@ class OfflineBackend(Backend):
                           monitored, git_info, hostname, entrypoint,
                           notebook_id, checkpoint_id):
         return NoopObject()
+
+    def upload_source_code(self, experiment, source_target_pairs):
+        pass
 
     def get_notebook(self, project, notebook_id):
         return NoopObject()
@@ -81,6 +100,12 @@ class OfflineBackend(Backend):
     def update_experiment(self, experiment, properties):
         pass
 
+    def set_property(self, experiment, key, value):
+        pass
+
+    def remove_property(self, experiment, key):
+        pass
+
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         pass
 
@@ -93,14 +118,17 @@ class OfflineBackend(Backend):
     def create_channel(self, experiment, name, channel_type):
         return NoopObject()
 
-    def reset_channel(self, channel_id):
+    def reset_channel(self, experiment, channel_id, channel_type):
         pass
+
+    def get_channels(self, experiment):
+        return {}
 
     def create_system_channel(self, experiment, name, channel_type):
         return NoopObject()
 
     def get_system_channels(self, experiment):
-        return []
+        return {}
 
     def send_channels_values(self, experiment, channels_with_values):
         pass
@@ -120,10 +148,10 @@ class OfflineBackend(Backend):
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
         pass
 
-    def upload_experiment_output(self, experiment, data, progress_indicator):
+    def log_artifact(self, experiment, artifact, destination=None):
         pass
 
-    def extract_experiment_output(self, experiment, data):
+    def delete_artifacts(self, experiment, path):
         pass
 
     def rm_data(self, experiment, path):
@@ -149,3 +177,7 @@ class NoopObject(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
+
+
+# define deprecated OfflineBackend class
+OfflineBackend = OfflineBackendApiClient

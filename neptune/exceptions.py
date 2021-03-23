@@ -19,6 +19,7 @@ from neptune import envs
 
 UNIX_STYLES = {'h1': '\033[95m',
                'h2': '\033[94m',
+               'blue': '\033[94m',
                'python': '\033[96m',
                'bash': '\033[95m',
                'warning': '\033[93m',
@@ -60,14 +61,6 @@ else:
 
 class NeptuneException(Exception):
     pass
-
-
-class AlphaProjectException(NeptuneException):
-    def __init__(self, project):
-        super(AlphaProjectException, self).__init__(
-            'You are trying to create an experiment in an alpha-enabled project ({}). '
-            'In order to work with this project you need to use the alpha version of the neptune-client - '
-            'https://docs-alpha.neptune.ai/instalation.'.format(project))
 
 
 class NeptuneUninitializedException(NeptuneException):

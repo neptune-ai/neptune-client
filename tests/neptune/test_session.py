@@ -24,8 +24,10 @@ from neptune.sessions import Session
 from tests.neptune.api_objects_factory import a_project
 
 
-@patch('neptune.internal.backends.hosted_neptune_backend.SwaggerClient.from_url', MagicMock())
-@patch('neptune.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', MagicMock())
+@patch('neptune.internal.api_clients.hosted_api_clients.mixins.SwaggerClient.from_url',
+       MagicMock())
+@patch('neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator',
+       MagicMock())
 class TestSession(unittest.TestCase):
 
     # threading.RLock needs to be mocked, because it breaks the equality of Projects
@@ -36,7 +38,9 @@ class TestSession(unittest.TestCase):
 
         # and
         backend = MagicMock()
+        leaderboard = MagicMock()
         backend.get_projects.return_value = api_projects
+        backend.create_leaderboard_backend.return_value = leaderboard
 
         # and
         session = Session(backend=backend)
@@ -49,7 +53,8 @@ class TestSession(unittest.TestCase):
 
         # then
         expected_projects = OrderedDict(
-            (custom_namespace + '/' + p.name, Project(backend, p.id, custom_namespace, p.name)) for p in api_projects
+            (custom_namespace + '/' + p.name, Project(leaderboard, p.id, custom_namespace, p.name))
+            for p in api_projects
         )
         self.assertEqual(expected_projects, projects)
 

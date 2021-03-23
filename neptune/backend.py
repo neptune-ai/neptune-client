@@ -14,26 +14,31 @@
 # limitations under the License.
 #
 
-from abc import ABCMeta, abstractmethod, abstractproperty
+from abc import ABC, abstractmethod
+from typing import Dict
 
-import six
+from neptune.model import ChannelWithLastValue
 
 
-@six.add_metaclass(ABCMeta)
-class Backend(object):
+class ApiClient(ABC):
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def api_address(self):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def display_address(self):
         pass
 
-    @abstractproperty
+    @property
+    @abstractmethod
     def proxies(self):
         pass
 
+
+class BackendApiClient(ApiClient, ABC):
     @abstractmethod
     def get_project(self, project_qualified_name):
         pass
@@ -42,6 +47,12 @@ class Backend(object):
     def get_projects(self, namespace):
         pass
 
+    @abstractmethod
+    def create_leaderboard_backend(self, project) -> 'LeaderboardApiClient':
+        pass
+
+
+class LeaderboardApiClient(ApiClient, ABC):
     @abstractmethod
     def get_project_members(self, project_identifier):
         pass
@@ -63,6 +74,10 @@ class Backend(object):
                           params, properties, tags, abortable,
                           monitored, git_info, hostname, entrypoint,
                           notebook_id, checkpoint_id):
+        pass
+
+    @abstractmethod
+    def upload_source_code(self, experiment, source_target_pairs):
         pass
 
     @abstractmethod
@@ -90,6 +105,14 @@ class Backend(object):
         pass
 
     @abstractmethod
+    def set_property(self, experiment, key, value):
+        pass
+
+    @abstractmethod
+    def remove_property(self, experiment, key):
+        pass
+
+    @abstractmethod
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         pass
 
@@ -102,19 +125,23 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def create_channel(self, experiment, name, channel_type):
+    def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         pass
 
     @abstractmethod
-    def reset_channel(self, channel_id):
+    def get_channels(self, experiment) -> Dict[str, object]:
         pass
 
     @abstractmethod
-    def create_system_channel(self, experiment, name, channel_type):
+    def reset_channel(self, experiment, channel_id, channel_type):
         pass
 
     @abstractmethod
-    def get_system_channels(self, experiment):
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+        pass
+
+    @abstractmethod
+    def get_system_channels(self, experiment) -> Dict[str, object]:
         pass
 
     @abstractmethod
@@ -142,11 +169,11 @@ class Backend(object):
         pass
 
     @abstractmethod
-    def upload_experiment_output(self, experiment, data, progress_indicator):
+    def log_artifact(self, experiment, artifact, destination=None):
         pass
 
     @abstractmethod
-    def extract_experiment_output(self, experiment, data):
+    def delete_artifacts(self, experiment, path):
         pass
 
     @abstractmethod

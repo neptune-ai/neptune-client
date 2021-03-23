@@ -17,11 +17,16 @@
 import click
 import pkg_resources
 
+from neptune.new.cli import sync, status
+
 
 @click.group()
 def main():
     pass
 
+
+main.add_command(sync)
+main.add_command(status)
 
 plugins = {
     entry_point.name: entry_point

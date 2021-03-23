@@ -2,15 +2,15 @@ clean:
 	rm -fr .tox/ dist/ VERSION
 
 prepare:
-	pip install -r requirements.txt -r test_requirements.txt
+	pip3 install -r requirements.txt -r test_requirements.txt
 
 build:
-	python setup.py sdist
+	python3 setup.py sdist
 
 tests: checkstyle_tests unit_tests
 
 checkstyle_tests:
-	python -m pylint -j 0 -f parseable neptune tests
+	python3 -m pylint -j 0 -f parseable neptune tests
 
 unit_tests:
 	tox

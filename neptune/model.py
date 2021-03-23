@@ -15,7 +15,7 @@
 #
 
 
-class ChannelWithLastValue(object):
+class ChannelWithLastValue:
     def __init__(self, channel_with_value_dto):
         self.channel_with_value_dto = channel_with_value_dto
 

@@ -15,7 +15,6 @@
 #
 
 import logging
-import time
 
 from neptune.vendor.pynvml import NVMLError, nvmlDeviceGetCount, nvmlDeviceGetHandleByIndex, nvmlDeviceGetMemoryInfo, \
     nvmlDeviceGetUtilizationRates, nvmlInit
@@ -24,8 +23,7 @@ _logger = logging.getLogger(__name__)
 
 class GPUMonitor(object):
 
-    nvml_error_time = 0
-    nvml_error_period = 30
+    nvml_error_printed = False
 
     def get_card_count(self):
         return self.__nvml_get_or_else(nvmlDeviceGetCount, default=0)
@@ -60,11 +58,10 @@ class GPUMonitor(object):
             nvmlInit()
             return getter()
         except NVMLError as e:
-            timestamp = time.time()
-            if timestamp - GPUMonitor.nvml_error_time > GPUMonitor.nvml_error_period:
+            if not GPUMonitor.nvml_error_printed:
                 warning = "Info (NVML): %s. GPU usage metrics may not be reported. For more information, " \
                           "see https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment" \
                           "-data.html#hardware-consumption "
                 _logger.warning(warning, e)
-                GPUMonitor.nvml_error_time = timestamp
+                GPUMonitor.nvml_error_printed = True
             return default

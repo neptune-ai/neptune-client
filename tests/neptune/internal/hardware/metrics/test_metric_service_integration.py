@@ -29,6 +29,7 @@ from neptune.internal.hardware.gauges.memory import SystemMemoryUsageGauge
 from neptune.internal.hardware.metrics.metric import Metric, MetricResourceType
 from neptune.internal.hardware.metrics.reports.metric_report import MetricReport, MetricValue
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
+from neptune.utils import IS_MACOS
 
 
 class TestMetricServiceIntegration(unittest.TestCase):
@@ -36,6 +37,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
         self.backend = MagicMock()
         self.metric_service_factory = MetricServiceFactory(backend=self.backend, os_environ=os.environ)
 
+    @unittest.skipIf(IS_MACOS, "MacOS behaves strangely")
     def test_create_system_metrics(self):
         # given
         memory_amount_gb = psutil.virtual_memory().total / float(BYTES_IN_ONE_GB)
@@ -82,6 +84,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
             )
         ])
 
+    @unittest.skipIf(IS_MACOS, "MacOS behaves strangely")
     def test_report_and_send_metrics(self):
         # given
         experiment_start = time.time()
