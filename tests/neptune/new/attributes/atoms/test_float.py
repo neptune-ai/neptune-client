@@ -50,4 +50,4 @@ class TestFloat(TestAttributeBase):
         exp, path = self._create_run(), self._random_path()
         var = Float(exp, path)
         var.assign(5)
-        self.assertEqual(5, var.get())
+        self.assertEqual(5, var.fetch())

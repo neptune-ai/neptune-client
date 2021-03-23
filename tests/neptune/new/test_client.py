@@ -48,34 +48,35 @@ class TestClient(unittest.TestCase):
 
     def test_incorrect_mode(self):
         with self.assertRaises(ValueError):
-            init(connection_mode='srtgj')
+            init(mode='srtgj')
 
     def test_debug_mode(self):
-        exp = init(connection_mode='debug')
+        exp = init(mode='debug')
         exp["some/variable"] = 13
-        self.assertEqual(13, exp["some/variable"].get())
+        self.assertEqual(13, exp["some/variable"].fetch())
         self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
 
     def test_offline_mode(self):
-        exp = init(connection_mode='offline')
+        exp = init(mode='offline')
         exp["some/variable"] = 13
         with self.assertRaises(NeptuneOfflineModeFetchException):
-            exp["some/variable"].get()
+            exp["some/variable"].fetch()
         self.assertIn(str(exp._uuid), os.listdir(".neptune/offline"))
         self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(exp._uuid)))
 
     def test_sync_mode(self):
-        exp = init(connection_mode='sync')
+        exp = init(mode='sync')
         exp["some/variable"] = 13
-        self.assertEqual(13, exp["some/variable"].get())
+        self.assertEqual(13, exp["some/variable"].fetch())
         self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
 
     def test_async_mode(self):
-        exp = init(connection_mode='async', flush_period=0.5)
+        exp = init(mode='async', flush_period=0.5)
         exp["some/variable"] = 13
         with self.assertRaises(MetadataInconsistency):
-            exp["some/variable"].get(wait=False)
-        self.assertEqual(13, exp["some/variable"].get(wait=True))
+            exp["some/variable"].fetch()
+        exp.wait()
+        self.assertEqual(13, exp["some/variable"].fetch())
         self.assertIn(str(exp._uuid), os.listdir(".neptune/async"))
         execution_dir = os.listdir(".neptune/async/{}".format(exp._uuid))[0]
         self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))
@@ -97,37 +98,37 @@ class TestClient(unittest.TestCase):
            new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
     @patch('neptune.new.internal.utils.os.getcwd', new=lambda: "/home/user/main_dir")
     def test_entrypoint(self):
-        exp = init(connection_mode='debug')
-        self.assertEqual(exp["source_code/entrypoint"].get(), "main.py")
+        exp = init(mode='debug')
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
 
-        exp = init(connection_mode='debug', source_files=[])
-        self.assertEqual(exp["source_code/entrypoint"].get(), "main.py")
+        exp = init(mode='debug', source_files=[])
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
 
-        exp = init(connection_mode='debug', source_files=["../*"])
-        self.assertEqual(exp["source_code/entrypoint"].get(), "main_dir/main.py")
+        exp = init(mode='debug', source_files=["../*"])
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "main_dir/main.py")
 
-        exp = init(connection_mode='debug', source_files=["internal/*"])
-        self.assertEqual(exp["source_code/entrypoint"].get(), "main.py")
+        exp = init(mode='debug', source_files=["internal/*"])
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
 
-        exp = init(connection_mode='debug', source_files=["../other_dir/*"])
-        self.assertEqual(exp["source_code/entrypoint"].get(), "../main_dir/main.py")
+        exp = init(mode='debug', source_files=["../other_dir/*"])
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main_dir/main.py")
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
     @patch("neptune.new.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
-        exp = init(connection_mode='debug')
+        exp = init(mode='debug')
         with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
-        exp = init(connection_mode='debug', source_files=[])
+        exp = init(mode='debug', source_files=[])
         with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
-        exp = init(connection_mode='debug', source_files=["../*"])
+        exp = init(mode='debug', source_files=["../*"])
         with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
-        exp = init(connection_mode='debug', source_files=["internal/*"])
+        exp = init(mode='debug', source_files=["internal/*"])
         with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
@@ -138,11 +139,11 @@ class TestClient(unittest.TestCase):
     @patch('neptune.new.internal.utils.os.path.abspath',
            new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
     def test_entrypoint_without_common_root(self):
-        exp = init(connection_mode='debug', source_files=["../*"])
-        self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")
+        exp = init(mode='debug', source_files=["../*"])
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
-        exp = init(connection_mode='debug', source_files=["internal/*"])
-        self.assertEqual(exp["source_code/entrypoint"].get(), "/home/user/main_dir/main.py")
+        exp = init(mode='debug', source_files=["internal/*"])
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
     @patch("neptune.new.internal.get_project_impl.HostedNeptuneBackend")
     def test_get_table_as_pandas(self, backend_init_mock):
@@ -175,7 +176,7 @@ class TestClient(unittest.TestCase):
         backend_mock.get_leaderboard = Mock(return_value=[empty_entry, filled_entry])
 
         # when
-        df = get_project().get_runs_table().as_pandas()
+        df = get_project().fetch_runs_table().to_pandas()
 
         # then
         self.assertEqual("idle", df['run/state'][1])
@@ -224,7 +225,7 @@ class TestClient(unittest.TestCase):
         backend_mock.get_leaderboard = Mock(return_value=[LeaderboardEntry(exp_id, attributes)])
 
         # when
-        exp = get_project().get_runs_table().as_runs()[0]
+        exp = get_project().fetch_runs_table().to_runs()[0]
 
         # then
         self.assertEqual("idle", exp['run/state'].get())

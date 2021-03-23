@@ -32,12 +32,12 @@ _logger = logging.getLogger(__name__)
 
 
 # pylint:disable=redefined-builtin
-def get_runs_table(id: Optional[Union[str, Iterable[str]]] = None,
-                   state: Optional[Union[str, Iterable[str]]] = None,
-                   owner: Optional[Union[str, Iterable[str]]] = None,
-                   tag: Optional[Union[str, Iterable[str]]] = None
-                   ) -> RunsTable:
-    return get_project().get_runs_table(id=id, state=state, owner=owner, tag=tag)
+def fetch_runs_table(id: Optional[Union[str, Iterable[str]]] = None,
+                     state: Optional[Union[str, Iterable[str]]] = None,
+                     owner: Optional[Union[str, Iterable[str]]] = None,
+                     tag: Optional[Union[str, Iterable[str]]] = None
+                     ) -> RunsTable:
+    return get_project().fetch_runs_table(id=id, state=state, owner=owner, tag=tag)
 
 
 def get_project(name: Optional[str] = None) -> Project:

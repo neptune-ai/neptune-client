@@ -17,7 +17,5 @@ from packaging import version
 
 from neptune._version import get_versions
 
-# TODO Temporary hardcoded version to make work installing from github
-# version = version.parse(get_versions()['version'])
-version = version.parse("1.0.0-alpha")
+version = version.parse(get_versions()['version'])
 del get_versions

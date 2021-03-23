@@ -83,6 +83,7 @@ Please contact Neptune support.
 
 class ClientHttpError(NeptuneException):
     def __init__(self, status, response):
+        self.status = status
         message = """
 {h1}
 ----ClientHttpError-----------------------------------------------------------------------
@@ -361,7 +362,7 @@ You can upload it later using Neptune Command Line Interface:
 What should I do?
     - Check if your computer is connected to the internet.
     - If your connection is unstable you can consider working using the offline mode:
-        {python}run = neptune.init(connection_mode="offline"){end}
+        {python}run = neptune.init(mode="offline"){end}
         
 You can read in detail how it works and how to upload your data on the following doc pages:
     - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes#offline
@@ -456,7 +457,7 @@ It seems you are trying to fetch data from the server, while working in an offli
 You need to work in non-offline connection mode to fetch data from the server. 
 
 You can set connection mode when creating a new run:
-    {python}run = neptune.init(connection_mode="async"){end}
+    {python}run = neptune.init(mode="async"){end}
     
 You may also want to check the following docs pages:
     - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes
@@ -544,6 +545,32 @@ class StorageLimitReached(NeptuneException):
 Storage limit reached.
 """
         inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
+
+
+class FetchAttributeNotFoundException(MetadataInconsistency):
+    def __init__(self, attribute_path: str):
+        message = """
+{h1}
+----MetadataInconsistency----------------------------------------------------------------------
+{end}
+Field {python}{attribute_path}{end} was not found.
+
+Remember that in the default asynchronous mode data is synchronized
+with the Neptune servers in the background and may have not reached
+it yet before it's fetched. Before fetching the data you can force
+wait for all the requests sent by invoking:
+
+    {python}exp.wait(){end}
+    
+Remember that each use of {python}wait{end} introduces a delay in code execution.
+
+You may also want to check the following docs pages:
+    - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes
+
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help.html
+"""
+        inputs = dict(list({'attribute_path': attribute_path}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
 
 

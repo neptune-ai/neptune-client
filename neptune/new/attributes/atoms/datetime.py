@@ -33,9 +33,7 @@ class Datetime(Atom):
         with self._run.lock():
             self._enqueue_operation(AssignDatetime(self._path, value), wait)
 
-    def get(self, wait=True) -> datetime:
+    def fetch(self) -> datetime:
         # pylint: disable=protected-access
-        if wait:
-            self._run.wait()
         val = self._backend.get_datetime_attribute(self._run_uuid, self._path)
         return val.value

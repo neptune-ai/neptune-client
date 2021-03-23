@@ -64,10 +64,8 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
     def _is_value_type(self, value) -> bool:
         return isinstance(value, FloatSeriesVal)
 
-    def get_last(self, wait=True) -> float:
+    def fetch_last(self) -> float:
         # pylint: disable=protected-access
-        if wait:
-            self._run.wait()
         val = self._backend.get_float_series_attribute(self._run_uuid, self._path)
         return val.last
 

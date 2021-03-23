@@ -76,7 +76,7 @@ def init(project: Optional[str] = None,
          api_token: Optional[str] = None,
          run: Optional[str] = None,
          custom_run_id: Optional[str] = None,
-         connection_mode: str = ASYNC,
+         mode: str = ASYNC,
          name: Optional[str] = None,
          description: Optional[str] = None,
          tags: Optional[Union[List[str], str]] = None,
@@ -90,7 +90,7 @@ def init(project: Optional[str] = None,
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("run", run, (str, type(None)))
     verify_type("custom_run_id", custom_run_id, (str, type(None)))
-    verify_type("connection_mode", connection_mode, str)
+    verify_type("mode", mode, str)
     verify_type("name", name, (str, type(None)))
     verify_type("description", description, (str, type(None)))
     verify_type("capture_stdout", capture_stdout, bool)
@@ -117,19 +117,19 @@ def init(project: Optional[str] = None,
     if run and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
 
-    if connection_mode == ASYNC:
+    if mode == ASYNC:
         # TODO Initialize backend in async thread
         backend = HostedNeptuneBackend(Credentials(api_token=api_token))
-    elif connection_mode == SYNC:
+    elif mode == SYNC:
         backend = HostedNeptuneBackend(Credentials(api_token=api_token))
-    elif connection_mode == DEBUG:
+    elif mode == DEBUG:
         backend = NeptuneBackendMock()
-    elif connection_mode == OFFLINE:
+    elif mode == OFFLINE:
         backend = OfflineNeptuneBackend()
     else:
-        raise ValueError('connection_mode should be one of ["async", "sync", "offline", "debug"]')
+        raise ValueError('mode should be one of ["async", "sync", "offline", "debug"]')
 
-    if connection_mode == OFFLINE or connection_mode == DEBUG:
+    if mode == OFFLINE or mode == DEBUG:
         project = 'offline/project-placeholder'
     elif not project:
         project = os.getenv(PROJECT_ENV_NAME)
@@ -151,7 +151,7 @@ def init(project: Optional[str] = None,
 
         api_run = backend.create_run(project_obj.uuid, git_ref, custom_run_id, notebook_id, checkpoint_id)
 
-    if connection_mode == ASYNC:
+    if mode == ASYNC:
         run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, ASYNC_DIRECTORY, api_run.uuid)
         try:
             execution_id = len(os.listdir(run_path))
@@ -164,11 +164,11 @@ def init(project: Optional[str] = None,
             DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
             backend,
             sleep_time=flush_period)
-    elif connection_mode == SYNC:
+    elif mode == SYNC:
         operation_processor = SyncOperationProcessor(api_run.uuid, backend)
-    elif connection_mode == DEBUG:
+    elif mode == DEBUG:
         operation_processor = SyncOperationProcessor(api_run.uuid, backend)
-    elif connection_mode == OFFLINE:
+    elif mode == OFFLINE:
         # Run was returned by mocked backend and has some random UUID.
         run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, OFFLINE_DIRECTORY, api_run.uuid)
         storage_queue = DiskQueue(Path(run_path),
@@ -176,7 +176,7 @@ def init(project: Optional[str] = None,
                                   Operation.from_dict)
         operation_processor = OfflineOperationProcessor(storage_queue)
     else:
-        raise ValueError('connection_mode should be on of ["async", "sync", "offline", "debug"]')
+        raise ValueError('mode should be on of ["async", "sync", "offline", "debug"]')
 
     stdout_path = "{}/stdout".format(monitoring_namespace)
     stderr_path = "{}/stderr".format(monitoring_namespace)
@@ -191,7 +191,7 @@ def init(project: Optional[str] = None,
     background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
-    if connection_mode != OFFLINE:
+    if mode != OFFLINE:
         _run.sync(wait=False)
 
     if name is not None:
@@ -212,9 +212,9 @@ def init(project: Optional[str] = None,
 
     _run.start()
 
-    if connection_mode == OFFLINE:
+    if mode == OFFLINE:
         click.echo("offline/{}".format(api_run.uuid))
-    elif connection_mode != DEBUG:
+    elif mode != DEBUG:
         click.echo("{base_url}/{workspace}/{project}/e/{run_id}".format(
             base_url=backend.get_display_address(),
             workspace=api_run.workspace,

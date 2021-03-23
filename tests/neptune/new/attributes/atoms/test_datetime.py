@@ -53,4 +53,4 @@ class TestDatetime(TestAttributeBase):
         now = datetime.now()
         now = now.replace(microsecond=int(now.microsecond/1000)*1000)
         var.assign(now)
-        self.assertEqual(now, var.get())
+        self.assertEqual(now, var.fetch())

@@ -29,9 +29,7 @@ class Float(Atom):
         with self._run.lock():
             self._enqueue_operation(AssignFloat(self._path, value.value), wait)
 
-    def get(self, wait=True) -> float:
+    def fetch(self) -> float:
         # pylint: disable=protected-access
-        if wait:
-            self._run.wait()
         val = self._backend.get_float_attribute(self._run_uuid, self._path)
         return val.value

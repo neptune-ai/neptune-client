@@ -43,4 +43,4 @@ class TestString(TestAttributeBase):
         exp, path = self._create_run(), self._random_path()
         var = String(exp, path)
         var.assign("adfh")
-        self.assertEqual("adfh", var.get())
+        self.assertEqual("adfh", var.fetch())

@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import TYPE_CHECKING, Union, Iterable, Optional
+from typing import TYPE_CHECKING, Union, Iterable
 
 from neptune.new.attributes import File
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.attributes.series import FileSeries
-from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
@@ -91,16 +90,6 @@ class Handler:
                 self._run.set_attribute(self._path, attr)
             else:
                 attr.upload_files(value, wait)
-
-    def fetch_values(self, include_timestamp: Optional[bool] = True):
-        with self._run.lock():
-            attr = self._run.get_attribute(self._path)
-            if attr:
-                if isinstance(attr, FetchableSeries):
-                    return attr.fetch_values(include_timestamp=include_timestamp)
-                raise TypeError("fetch_values is available only for string and float series")
-            else:
-                raise ValueError("Attribute does not exist: {}".format(self._path))
 
     def log(self,
             value: Union[int, float, str, FileVal, Iterable[int], Iterable[float], Iterable[str], Iterable[FileVal]],

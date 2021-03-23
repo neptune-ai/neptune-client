@@ -43,8 +43,6 @@ class File(Atom):
     def upload(self, value, wait: bool = False) -> None:
         self.assign(FileVal.create_from(value), wait)
 
-    def download(self, destination: Optional[str] = None, wait=True) -> None:
+    def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
-        if wait:
-            self._run.wait()
         self._backend.download_file(self._run_uuid, self._path, destination)
