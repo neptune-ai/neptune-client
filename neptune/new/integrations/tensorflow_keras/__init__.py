@@ -15,7 +15,7 @@
 #
 
 try:
-    from neptune_tensorflow_keras import NeptuneCallback
+    from neptune_tensorflow_keras.impl import NeptuneCallback
 except ImportError:
     from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
     raise NeptuneIntegrationNotInstalledException("tensorflow-keras") from None
