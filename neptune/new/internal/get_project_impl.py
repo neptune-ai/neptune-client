@@ -15,10 +15,13 @@
 #
 import logging
 import os
+import re
 from typing import Optional, Union, Iterable
 
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+
 from neptune.new.envs import PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneMissingProjectNameException
+from neptune.new.exceptions import NeptuneIncorrectProjectNameException, NeptuneMissingProjectNameException
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.utils import verify_type
@@ -40,15 +43,18 @@ def fetch_runs_table(id: Optional[Union[str, Iterable[str]]] = None,
     return get_project().fetch_runs_table(id=id, state=state, owner=owner, tag=tag)
 
 
-def get_project(name: Optional[str] = None) -> Project:
+def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> Project:
     verify_type("name", name, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
 
     if not name:
         name = os.getenv(PROJECT_ENV_NAME)
     if not name:
         raise NeptuneMissingProjectNameException()
+    if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, name):
+        raise NeptuneIncorrectProjectNameException(name)
 
-    backend = HostedNeptuneBackend(Credentials())
+    backend = HostedNeptuneBackend(Credentials(api_token=api_token))
 
     project_obj = backend.get_project(name)
 

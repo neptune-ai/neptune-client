@@ -151,7 +151,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             if warning:
                 click.echo(warning)  # TODO print in color once colored exceptions are added
             project = response.result
-            if project.version < 2:
+            project_version = project.version if hasattr(project, 'version') else 1
+            if project_version < 2:
                 raise NeptuneLegacyProjectException(project_id)
             return Project(uuid.UUID(project.id), project.name, project.organizationName)
         except HTTPNotFound:
