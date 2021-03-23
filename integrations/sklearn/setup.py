@@ -1,4 +1,6 @@
-import versioneer
+import os
+
+from neptune_sklearn._version import get_versions
 from setuptools import setup
 
 
@@ -15,9 +17,19 @@ def main():
 
     base_libs = ['neptune-client>=0.5.1', 'scikit-learn>=0.24.1', 'yellowbrick>=1.3', 'scikit-plot>=0.3.7']
 
+    version = None
+    if os.path.exists('PKG-INFO'):
+        with open('PKG-INFO', 'r') as f:
+            lines = f.readlines()
+        for line in lines:
+            if line.startswith('Version:'):
+                version = line[8:].strip()
+    else:
+        version = get_versions()["version"]
+
     setup(
         name='neptune-sklearn',
-        version=versioneer.get_version(),
+        version=version,
         description='Neptune.ai scikit-learn integration library',
         author='neptune.ai',
         support='contact@neptune.ai',
@@ -28,7 +40,7 @@ def main():
         license='MIT License',
         install_requires=base_libs,
         extras_require=extras,
-        packages=['neptune_sklearn'],
+        packages=['neptune_sklearn', 'neptune_sklearn.impl'],
         zip_safe=False
     )
 
