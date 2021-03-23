@@ -396,11 +396,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         self._execute_operations(experiment, operations)
 
     def log_artifact(self, experiment, artifact, destination=None):
-        target_name = os.path.basename(artifact) if destination is None else destination
-        target_name = f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{target_name}'
-        dest_path = alpha_path_utils.parse_path(normalize_file_name(target_name))
-        ext = os.path.splitext(target_name)[1]
         if isinstance(artifact, str):
+            target_name = os.path.basename(artifact) if destination is None else destination
+            dest_path, ext = self._get_dest_and_ext(target_name)
             if os.path.exists(artifact):
                 operation = alpha_operation.UploadFile(
                     path=dest_path,
@@ -410,18 +408,27 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             else:
                 raise FileNotFound(artifact)
         elif hasattr(artifact, 'read'):
-            if destination is not None:
-                operation = alpha_operation.UploadFileContent(
-                    path=dest_path,
-                    ext=ext,
-                    file_content=base64_encode(artifact.read().encode('utf-8')),
-                )
-            else:
-                raise ValueError("destination is required for file streams")
+            if not destination:
+                raise ValueError("destination is required for IO streams")
+            dest_path, ext = self._get_dest_and_ext(destination)
+            data = artifact.read()
+            content = data.encode('utf-8') if isinstance(data, str) else data
+            operation = alpha_operation.UploadFileContent(
+                path=dest_path,
+                ext=ext,
+                file_content=base64_encode(content)
+            )
         else:
             raise ValueError("Artifact must be a local path or an IO object")
 
         self._execute_upload_operation(experiment, operation)
+
+    @staticmethod
+    def _get_dest_and_ext(target_name):
+        qualified_target_name = f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{target_name}'
+        dest_path = alpha_path_utils.parse_path(normalize_file_name(qualified_target_name))
+        ext = os.path.splitext(target_name)[1]
+        return dest_path, ext
 
     def delete_artifacts(self, experiment, path):
         self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
