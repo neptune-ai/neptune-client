@@ -19,6 +19,8 @@ import threading
 
 from neptune import constants
 from neptune import envs
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.internal.api_clients.offline_backend import OfflineBackend
 from neptune.exceptions import (
     InvalidNeptuneBackend,
     NeptuneMissingProjectQualifiedNameException,
