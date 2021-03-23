@@ -112,10 +112,10 @@ class RunsTable:
         self._backend = backend
         self._entries = entries
 
-    def as_runs(self) -> List[RunsTableEntry]:
+    def to_runs(self) -> List[RunsTableEntry]:
         return [RunsTableEntry(self._backend, e.id, e.attributes) for e in self._entries]
 
-    def as_pandas(self):
+    def to_pandas(self):
         # pylint:disable=import-outside-toplevel
         import pandas as pd
 
