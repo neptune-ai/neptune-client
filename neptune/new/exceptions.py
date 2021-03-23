@@ -103,7 +103,17 @@ Verify the correctness of your call or contact Neptune support.
 
 class ProjectNotFound(NeptuneException):
     def __init__(self, project_id):
-        super().__init__("Project {} not found.".format(project_id))
+        message = """
+{h1}
+----ProjectNotFound-------------------------------------------------------------------------
+{end}
+Project {python}{project}{end} not found.
+
+Verify if your project's name was not misspelled.
+You can find proper name after logging into Neptune UI: ui.neptune.ai.
+"""
+        inputs = dict(list({'project': project_id}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class RunNotFound(NeptuneException):
