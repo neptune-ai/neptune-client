@@ -15,7 +15,7 @@
 #
 
 try:
-    from neptune_sklearn import (
+    from neptune_sklearn.impl import (
         create_regressor_summary,
         create_classifier_summary,
         create_kmeans_summary,
