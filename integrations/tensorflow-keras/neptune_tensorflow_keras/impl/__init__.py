@@ -16,12 +16,14 @@
 
 from neptune.new import Run
 from neptune.new.exceptions import NeptuneException
+from neptune.new.internal.utils import verify_type
 from typing import Optional
 
 # Note: we purposefully try to import `tensorflow.keras.callbacks.Callback`
 # before `keras.callbacks.Callback` because the former is compatible with both
 # `tensorflow.keras` and `keras`, while the latter is only compatible
 # with `keras`. See https://github.com/keras-team/keras/issues/14125
+
 try:
     from tensorflow.keras.callbacks import Callback
 except ImportError:
@@ -34,6 +36,9 @@ except ImportError:
         As Keras is now part of Tensorflow you should install it by running
             pip install tensorflow"""
         raise ModuleNotFoundError(msg) # pylint:disable=undefined-variable
+
+
+from neptune_tensorflow_keras import __version__
 
 
 class NeptuneCallback(Callback):
@@ -80,8 +85,9 @@ class NeptuneCallback(Callback):
     def __init__(self, run: Run, base_namespace: Optional[str] = None):
         super().__init__()
 
-        if run is None or not isinstance(run, Run):
-            raise ValueError("Neptune run is missing")
+        verify_type('run', run, Run)
+        verify_type('base_namespace', base_namespace, str)
+
         self._base_namespace = ''
         if base_namespace:
             if base_namespace.endswith("/"):
@@ -92,6 +98,8 @@ class NeptuneCallback(Callback):
             self._metric_logger = run[self._base_namespace]
         else:
             self._metric_logger = run
+
+        self._run['source_code/integrations/neptune-tensorflow-keras'] = __version__
 
     def _log_metrics(self, logs, trigger):
         if not logs:

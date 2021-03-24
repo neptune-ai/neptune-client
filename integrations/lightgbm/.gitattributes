@@ -1,0 +1,2 @@
+neptune/new/integrations/lightgbm/impl/_version.py export-subst
+neptune_lightgbm/_version.py export-subst
