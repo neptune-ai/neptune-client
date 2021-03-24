@@ -1,0 +1,3 @@
+include versioneer.py
+include neptune/new/integrations/lightgbm/impl/_version.py
+include neptune_lightgbm/_version.py
