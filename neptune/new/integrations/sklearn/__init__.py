@@ -38,7 +38,9 @@ try:
         create_kelbow_chart,
         create_silhouette_chart
     )
-
-except ImportError:
-    from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-    raise NeptuneIntegrationNotInstalledException("sklearn") from None
+except ModuleNotFoundError as e:
+    if 'neptune_sklearn' == e.name:
+        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        raise NeptuneIntegrationNotInstalledException("sklearn") from None
+    else:
+        raise
