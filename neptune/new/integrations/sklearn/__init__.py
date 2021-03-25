@@ -15,6 +15,7 @@
 #
 
 try:
+    # pylint: disable=import-error
     from neptune_sklearn.impl import (
         create_regressor_summary,
         create_classifier_summary,
@@ -38,7 +39,9 @@ try:
         create_kelbow_chart,
         create_silhouette_chart
     )
-
-except ImportError:
-    from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-    raise NeptuneIntegrationNotInstalledException("sklearn") from None
+except ModuleNotFoundError as e:
+    if e.name == 'neptune_sklearn':
+        from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+        raise NeptuneIntegrationNotInstalledException("sklearn") from None
+    else:
+        raise

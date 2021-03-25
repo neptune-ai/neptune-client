@@ -99,7 +99,7 @@ class NeptuneCallback(Callback):
         else:
             self._metric_logger = run
 
-        self._run['source_code/integrations/neptune-tensorflow-keras'] = __version__
+        run['source_code/integrations/neptune-tensorflow-keras'] = __version__
 
     def _log_metrics(self, logs, trigger):
         if not logs:
