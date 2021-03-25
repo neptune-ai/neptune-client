@@ -15,6 +15,7 @@
 #
 
 try:
+    # pylint: disable=import-error
     from neptune_lightgbm.impl import NeptuneCallback
 except ModuleNotFoundError as e:
     if e.name == 'neptune_lightgbm':

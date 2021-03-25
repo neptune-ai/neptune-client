@@ -15,6 +15,7 @@
 #
 
 try:
+    # pylint: disable=import-error
     from neptune_sklearn.impl import (
         create_regressor_summary,
         create_classifier_summary,
