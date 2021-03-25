@@ -17,7 +17,7 @@
 try:
     from neptune_lightgbm.impl import NeptuneCallback
 except ModuleNotFoundError as e:
-    if 'neptune_lightgbm' == e.name:
+    if e.name == 'neptune_lightgbm':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
         raise NeptuneIntegrationNotInstalledException("lightgbm") from None
     else:

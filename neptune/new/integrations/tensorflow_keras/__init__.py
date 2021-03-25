@@ -17,7 +17,7 @@
 try:
     from neptune_tensorflow_keras.impl import NeptuneCallback
 except ModuleNotFoundError as e:
-    if 'neptune_tensorflow_keras' == e.name:
+    if e.name == 'neptune_tensorflow_keras':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
         raise NeptuneIntegrationNotInstalledException("tensorflow-keras") from None
     else:

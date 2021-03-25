@@ -39,7 +39,7 @@ try:
         create_silhouette_chart
     )
 except ModuleNotFoundError as e:
-    if 'neptune_sklearn' == e.name:
+    if e.name == 'neptune_sklearn':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
         raise NeptuneIntegrationNotInstalledException("sklearn") from None
     else:
