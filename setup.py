@@ -12,6 +12,7 @@ def main():
         requirements = [r.strip() for r in f]
         setup(
             name='neptune-client',
+            python_requires='>=3.6.0',
             version=versioneer.get_version(),
             description='Neptune Client',
             author='neptune.ai',
@@ -24,7 +25,8 @@ def main():
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
               "tensorflow-keras": ["neptune-tensorflow-keras"],
-              "sklearn": ["neptune-sklearn"]
+              "sklearn": ["neptune-sklearn"],
+              "lightgbm": ["neptune-lightgbm"]
             },
             entry_points={
                 'console_scripts': [
@@ -48,7 +50,6 @@ def main():
                 'Operating System :: Unix',
                 'Operating System :: Microsoft :: Windows',
                 'Programming Language :: Python',
-                'Programming Language :: Python :: 2',
                 'Programming Language :: Python :: 3',
                 'Topic :: Software Development :: Libraries :: Python Modules',
             ]
