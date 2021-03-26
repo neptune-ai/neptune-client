@@ -253,8 +253,8 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         )
 
     def upload_experiment_source(self, experiment, data, progress_indicator):
-        # TODO: handle `FileChunkStream` or update `neptune.experiments.Experiment._start`
-        pass
+        raise NeptuneException(
+            'This function should never be called for alpha project.')
 
     def _create_channel(self, experiment: Experiment, channel_id: str, channel_name: str, channel_type: str):
         """This function is responsible for creating 'fake' channels in alpha projects.
