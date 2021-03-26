@@ -19,6 +19,7 @@ import uuid
 from collections import namedtuple
 from io import StringIO
 from itertools import groupby
+from pathlib import Path
 from typing import List, Dict
 
 import six
@@ -397,14 +398,18 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
 
     def log_artifact(self, experiment, artifact, destination=None):
         if isinstance(artifact, str):
-            target_name = os.path.basename(artifact) if destination is None else destination
-            dest_path, ext = self._get_dest_and_ext(target_name)
-            if os.path.exists(artifact):
+            if os.path.isfile(artifact):
+                target_name = os.path.basename(artifact) if destination is None else destination
+                dest_path, ext = self._get_dest_and_ext(target_name)
                 operation = alpha_operation.UploadFile(
                     path=dest_path,
                     ext=ext,
                     file_path=os.path.abspath(artifact),
                 )
+            elif os.path.isdir(artifact):
+                for path, file_destination in self._log_dir_artifacts(artifact, destination):
+                    self.log_artifact(experiment, path, file_destination)
+                return
             else:
                 raise FileNotFound(artifact)
         elif hasattr(artifact, 'read'):
@@ -429,6 +434,15 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         dest_path = alpha_path_utils.parse_path(normalize_file_name(qualified_target_name))
         ext = os.path.splitext(target_name)[1]
         return dest_path, ext
+
+    def _log_dir_artifacts(self, directory_path, destination):
+        directory_path = Path(directory_path)
+        prefix = directory_path.name if destination is None else destination
+        for path in directory_path.glob('**/*'):
+            if path.is_file():
+                relative_path = path.relative_to(directory_path)
+                file_destination = prefix + '/' + str(relative_path)
+                yield str(path), file_destination
 
     def delete_artifacts(self, experiment, path):
         self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
