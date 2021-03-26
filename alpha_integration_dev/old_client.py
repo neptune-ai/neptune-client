@@ -66,8 +66,9 @@ class OldClientFeatures(ClientFeatures):
     def modify_tags(self):
         neptune.append_tags('tag1')
         neptune.append_tag(['tag2_to_remove', 'tag3'])
-        # neptune.remove_tag('tag2_to_remove')  # TODO: NPT-9222
-        # neptune.remove_tag('tag4_remove_non_existing')  # TODO: NPT-9222
+        # TODO: dramatic performance drop when removing tags
+        # neptune.remove_tag('tag2_to_remove')
+        # neptune.remove_tag('tag4_remove_non_existing')
 
         exp = neptune.get_experiment()
         assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag2_to_remove', 'tag3'}
@@ -143,23 +144,48 @@ class OldClientFeatures(ClientFeatures):
         with self.with_check_if_file_appears('custom_dest/something.txt'):
             exp.download_artifact('something.txt', 'custom_dest')
 
+        # dirs
         neptune.log_artifact(self.text_file_path, destination='dir/text file artifact')
+        neptune.log_artifact(self.text_file_path, destination='dir/artifact_to_delete')
+
+        # deleting
+        neptune.delete_artifacts('dir/artifact_to_delete')
+
+        # streams
         with open(self.text_file_path, mode='r') as f:
             neptune.send_artifact(f, destination='file stream.txt')
-        neptune.log_artifact(self.img_path, destination='dir to delete/art1')
-        neptune.log_artifact(self.img_path, destination='dir to delete/art2')
-        # neptune.delete_artifacts('dir to delete')  # doesn't work for alpha NPT-9250
-        neptune.delete_artifacts('dir to delete/art1')
 
     def handle_directories(self):
-        neptune.send_artifact(self.data_dir)
         exp = neptune.get_experiment()
+
+        # download_artifacts
+        neptune.send_artifact(self.data_dir)
         if self._api_version == 1:
             with self.with_check_if_file_appears('output.zip'):
                 exp.download_artifacts()
         else:
             with self.with_assert_raises(UnsupportedException):
                 exp.download_artifacts()
+
+        # deleting artifacts
+        neptune.log_artifact(self.img_path, destination='main dir/sub dir/art1')
+        neptune.log_artifact(self.img_path, destination='main dir/sub dir/art2')
+        neptune.log_artifact(self.img_path, destination='main dir/sub dir/art3')
+        neptune.delete_artifacts('main dir/sub dir/art1')
+
+        # delete non existing artifact
+        if self._api_version == 1:
+            neptune.delete_artifacts('main dir/sub dir/art100')
+        else:
+            with self.with_assert_raises(UnsupportedException):
+                neptune.delete_artifacts('main dir/sub dir')
+
+        # delete dir
+        if self._api_version == 1:
+            neptune.delete_artifacts('main dir/sub dir')
+        else:
+            with self.with_assert_raises(UnsupportedException):
+                neptune.delete_artifacts('main dir/sub dir')
 
     def finalize(self):
         pass

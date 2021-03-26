@@ -446,7 +446,12 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                 yield str(path), file_destination
 
     def delete_artifacts(self, experiment, path):
-        self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
+        try:
+            self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
+        except ExperimentOperationErrors as e:
+            if all(isinstance(err, alpha_exceptions.MetadataInconsistency) for err in e.errors):
+                raise UnsupportedException from None
+            raise
 
     @with_api_exceptions_handler
     def download_data(self, experiment: Experiment, path: str, destination):

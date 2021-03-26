@@ -250,10 +250,10 @@ class ExperimentOperationErrors(NeptuneApiException):
     """Handles minor errors returned by calling `client.executeOperations`"""
     def __init__(self, errors):
         super().__init__()
-        self._errors = errors
+        self.errors = errors
 
     def __str__(self):
         lines = [f'Caused by:']
-        for error in self._errors:
+        for error in self.errors:
             lines.append(f'\t* {error}')
         return '\n'.join(lines)

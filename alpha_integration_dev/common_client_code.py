@@ -69,7 +69,6 @@ class ClientFeatures(abc.ABC):
         else:
             self._remove_file_if_exists(filepath)
 
-
     @abc.abstractmethod
     def modify_tags(self):
         pass
