@@ -721,13 +721,15 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
             raise e
 
     @with_api_exceptions_handler
-    def download_data(self, project, path, destination):
+    def download_data(self, experiment, path, destination):
+        project_storage_path = "/{exp_id}/output/{file}".format(exp_id=experiment.id, file=path)
+        project = experiment._project  # pylint: disable=protected-access
         with self._download_raw_data(api_method=self.backend_swagger_client.api.downloadData,
                                      headers={"Accept": "application/octet-stream"},
                                      path_params={},
                                      query_params={
                                          "projectId": project.internal_id,
-                                         "path": path
+                                         "path": project_storage_path
                                      }) as response:
             if response.status_code == NOT_FOUND:
                 raise PathInProjectNotFound(path=path, project_identifier=project.full_id)

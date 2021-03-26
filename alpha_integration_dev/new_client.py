@@ -49,26 +49,26 @@ class NewClientFeatures(ClientFeatures):
         # del self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH]  # TODO: NPT-9222
 
         self.exp.sync()
-        assert set(self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].get()) == {'tag1', 'tag3'}
+        assert set(self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].fetch()) == {'tag1', 'tag3'}
 
     def modify_properties(self):
-        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop'] = 'some text'
-        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_number'] = 42
-        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}nested/prop'] = 42
-        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del'] = 42
-        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_list'] = [1, 2, 3]
+        self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop'] = 'some text'
+        self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_number'] = 42
+        self.exp[PROPERTIES_ATTRIBUTE_SPACE]['nested/prop'] = 42
+        self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_to_del'] = 42
+        self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_list'] = [1, 2, 3]
         with open(self.text_file_path, mode='r') as f:
-            self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_IO'] = f
-        self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_datetime'] = datetime.now()
+            self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_IO'] = f
+        self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_datetime'] = datetime.now()
         self.exp.sync()
-        del self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del']
+        del self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_to_del']
 
-        assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop'].get() == 'some text'
-        assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_number'].get() == 42
-        assert self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}nested/prop'].get() == 42
+        assert self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop'].fetch() == 'some text'
+        assert self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_number'].fetch() == 42
+        assert self.exp[PROPERTIES_ATTRIBUTE_SPACE]['nested/prop'].fetch() == 42
         prop_to_del_absent = False
         try:
-            self.exp[f'{PROPERTIES_ATTRIBUTE_SPACE}prop_to_del'].get()
+            self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_to_del'].fetch()
         except AttributeError:
             prop_to_del_absent = True
         assert prop_to_del_absent
@@ -81,39 +81,46 @@ class NewClientFeatures(ClientFeatures):
 
     def log_series(self):
         # floats
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}m1'].log(1)
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}m1'].log(2)
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}m1'].log(3)
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}m1'].log(2)
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}nested/m1'].log(1)
+        self.exp[LOG_ATTRIBUTE_SPACE]['m1'].log(1)
+        self.exp[LOG_ATTRIBUTE_SPACE]['m1'].log(2)
+        self.exp[LOG_ATTRIBUTE_SPACE]['m1'].log(3)
+        self.exp[LOG_ATTRIBUTE_SPACE]['m1'].log(2)
+        self.exp[LOG_ATTRIBUTE_SPACE]['nested']['m1'].log(1)
 
         # texts
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}m2'].log('a')
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}m2'].log('b')
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}m2'].log('c')
+        self.exp[LOG_ATTRIBUTE_SPACE]['m2'].log('a')
+        self.exp[LOG_ATTRIBUTE_SPACE]['m2'].log('b')
+        self.exp[LOG_ATTRIBUTE_SPACE]['m2'].log('c')
 
         # images
         im_frame = Image.open(self.img_path)
         g_img = File.as_image(im_frame)
-        self.exp[f'{LOG_ATTRIBUTE_SPACE}g_img'].log(g_img)
+        self.exp[LOG_ATTRIBUTE_SPACE]['g_img'].log(g_img)
 
     def handle_files_and_images(self):
         # image
         im_frame = Image.open(self.img_path)
         g_img = File.as_image(im_frame)
-        self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned image'] = g_img
-        self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged image'].log(g_img)
+        self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned image'] = g_img
+        self.exp.wait()
+        with self.with_check_if_file_appears('assigned image.png'):
+            self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned image'].download()
+        with self.with_check_if_file_appears('custom_dest.png'):
+            self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned image'].download('custom_dest.png')
+
+        self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged image'].log(g_img)
+
         with open(self.img_path, mode='r') as f:
-            # self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned image stream'] = f
-            self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged image stream'].log(f)
+            # self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned image stream'] = f
+            self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged image stream'].log(f)
 
         # artifact
         text_file = neptune.types.File(self.text_file_path)
-        self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned file'] = text_file
-        # self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged file'].log(text_file)  # wrong type
+        self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned file'] = text_file
+        # self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged file'].log(text_file)  # wrong type
         with open(self.text_file_path, mode='r') as f:
-            self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}assigned file stream'] = f
-            self.exp[f'{ARTIFACT_ATTRIBUTE_SPACE}logged file stream'].log(f)
+            self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned file stream'] = f
+            self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged file stream'].log(f)
 
     def finalize(self):
         return

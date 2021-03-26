@@ -177,5 +177,5 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def download_data(self, project, path, destination):
+    def download_data(self, experiment, path, destination):
         pass

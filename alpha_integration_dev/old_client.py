@@ -114,9 +114,22 @@ class OldClientFeatures(ClientFeatures):
         # `image_name` and `description` will be lost (`send_image` the same as `log_image`)
         neptune.send_image('image', self.img_path, name='name', description='desc')
 
-        # artifact
-        # (`log_artifact` the same as `log_artifact`)
+        # artifact with default dest
         neptune.send_artifact(self.text_file_path)
+        exp = neptune.get_experiment()
+        with self.with_check_if_file_appears('text.txt'):
+            exp.download_artifact('text.txt')
+        with self.with_check_if_file_appears('custom_dest/text.txt'):
+            exp.download_artifact('text.txt', 'custom_dest')
+
+        # artifact with custom dest
+        neptune.send_artifact(self.text_file_path, destination='something.txt')
+        exp = neptune.get_experiment()
+        with self.with_check_if_file_appears('something.txt'):
+            exp.download_artifact('something.txt')
+        with self.with_check_if_file_appears('custom_dest/something.txt'):
+            exp.download_artifact('something.txt', 'custom_dest')
+
         neptune.log_artifact(self.text_file_path, destination='dir/text file artifact')
         with open(self.text_file_path, mode='r') as f:
             neptune.send_artifact(f, destination='file stream.txt')

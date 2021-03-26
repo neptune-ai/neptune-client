@@ -659,7 +659,6 @@ class Experiment(object):
         if not destination_dir:
             destination_dir = os.getcwd()
 
-        project_storage_path = "/{exp_id}/output/{file}".format(exp_id=self.id, file=path)
         destination_path = os.path.join(destination_dir, os.path.basename(path))
 
         if not os.path.exists(destination_dir):
@@ -668,9 +667,9 @@ class Experiment(object):
             raise NotADirectory(destination_dir)
 
         try:
-            self._backend.download_data(self._project, project_storage_path, destination_path)
-        except PathInProjectNotFound:
-            raise FileNotFound(path)
+            self._backend.download_data(self, path, destination_path)
+        except PathInProjectNotFound as e:
+            raise FileNotFound(path) from e
 
     def download_sources(self, path=None, destination_dir=None):
         """Download a directory or a single file from experiment's sources as a ZIP archive.
