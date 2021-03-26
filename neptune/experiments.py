@@ -16,18 +16,15 @@
 import base64
 import logging
 import os
-import re
-import time
 import traceback
 
 import pandas as pd
-import requests
 import six
 from pandas.errors import EmptyDataError
 
-from neptune.api_exceptions import ExperimentAlreadyFinished, ChannelDoesNotExist, PathInProjectNotFound
+from neptune.api_exceptions import ChannelDoesNotExist, ExperimentAlreadyFinished, PathInProjectNotFound
 from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NotADirectory
-from neptune.internal.channels.channels import ChannelValue, ChannelType, ChannelNamespace
+from neptune.internal.channels.channels import ChannelNamespace, ChannelType, ChannelValue
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.utils.image import get_image_content
@@ -716,8 +713,8 @@ class Experiment(object):
         elif not os.path.isdir(destination_dir):
             raise NotADirectory(destination_dir)
 
-        download_request = self._backend.prepare_source_download_reuqest(self, path)
-        self._download_from_request(download_request, destination_dir, path)
+        download_request = self._backend.prepare_source_download_request(self, path)
+        self._backend.download_from_request(download_request, destination_dir, path)
 
     def download_artifacts(self, path=None, destination_dir=None):
         """Download a directory or a single file from experiment's artifacts as a ZIP archive.
@@ -754,55 +751,7 @@ class Experiment(object):
                 # Download a single directory to user-defined directory
                 experiment.download_artifacts('data/images', 'artifacts/')
         """
-        if not path:
-            path = ""
-        if not destination_dir:
-            destination_dir = os.getcwd()
-
-        if not os.path.exists(destination_dir):
-            os.makedirs(destination_dir)
-        elif not os.path.isdir(destination_dir):
-            raise NotADirectory(destination_dir)
-
-        download_request = self._backend.prepare_output_download_reuqest(self, path)
-        self._download_from_request(download_request, destination_dir, path)
-
-    def _download_from_request(self, download_request, destination_dir, path):
-        sleep_time = 1
-        max_sleep_time = 16
-        while not hasattr(download_request, "downloadUrl"):
-            time.sleep(sleep_time)
-            sleep_time = min(sleep_time * 2, max_sleep_time)
-            download_request = self._backend.get_download_request(download_request.id)
-
-        ssl_verify = True
-        if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
-            ssl_verify = False
-
-        # We do not use ApiClient here cause `downloadUrl` can be any url (not only Neptune API endpoint)
-        response = requests.get(
-            url=download_request.downloadUrl,
-            headers={"Accept": "application/zip"},
-            stream=True,
-            verify=ssl_verify
-        )
-
-        with response:
-            filename = None
-            if 'content-disposition' in response.headers:
-                content_disposition = response.headers['content-disposition']
-                filenames = re.findall("filename=(.+)", content_disposition)
-                if filenames:
-                    filename = filenames[0]
-
-            if not filename:
-                filename = os.path.basename(path.rstrip("/")) + ".zip"
-
-            destination_path = os.path.join(destination_dir, filename)
-            with open(destination_path, "wb") as f:
-                for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
-                    if chunk:
-                        f.write(chunk)
+        return self._backend.download_artifacts(self, path, destination_dir)
 
     def reset_log(self, log_name):
         """Resets the log.

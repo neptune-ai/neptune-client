@@ -43,10 +43,10 @@ from neptune.api_exceptions import (
     ExperimentNotFound,
     PathInExperimentNotFound, ProjectNotFound,
 )
-from neptune.exceptions import NeptuneException, FileNotFound
+from neptune.exceptions import NeptuneException, FileNotFound, UnsupportedException
 from neptune.experiments import Experiment
-from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
-    HostedNeptuneLeaderboardApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client \
+    import HostedNeptuneLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
@@ -469,6 +469,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                 for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
                     if chunk:
                         f.write(chunk)
+
+    def download_artifacts(self, experiment: Experiment, path=None, destination_dir=None):
+        raise UnsupportedException()
 
     def _get_attributes(self, experiment_id) -> list:
         return self._get_api_experiment_attributes(experiment_id).attributes

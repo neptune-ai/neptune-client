@@ -23,6 +23,16 @@ from datetime import datetime
 
 import neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
+from neptune.exceptions import UnsupportedException
+from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client \
+    import HostedAlphaLeaderboardApiClient
+
+
+def get_api_version(exp):
+    backend = exp._backend
+    if isinstance(backend, HostedAlphaLeaderboardApiClient):
+        return 2
+    return 1
 
 
 class OldClientFeatures(ClientFeatures):
@@ -43,6 +53,9 @@ class OldClientFeatures(ClientFeatures):
         )
 
         exp = neptune.get_experiment()
+
+        self._api_version = get_api_version(exp)
+
         properties = exp.get_properties()
         assert properties['init_text_property'] == 'some text'
         assert properties['init_number property'] == '42'
@@ -137,6 +150,16 @@ class OldClientFeatures(ClientFeatures):
         neptune.log_artifact(self.img_path, destination='dir to delete/art2')
         # neptune.delete_artifacts('dir to delete')  # doesn't work for alpha NPT-9250
         neptune.delete_artifacts('dir to delete/art1')
+
+    def handle_directories(self):
+        neptune.send_artifact(self.data_dir)
+        exp = neptune.get_experiment()
+        if self._api_version == 1:
+            with self.with_check_if_file_appears('output.zip'):
+                exp.download_artifacts()
+        else:
+            with self.with_assert_raises(UnsupportedException):
+                exp.download_artifacts()
 
     def finalize(self):
         pass

@@ -21,7 +21,9 @@ import json
 import logging
 import math
 import os
+import re
 import uuid
+from datetime import time
 from functools import partial
 from http.client import NOT_FOUND  # pylint:disable=no-name-in-module
 from io import StringIO
@@ -48,6 +50,7 @@ from neptune.backend import LeaderboardApiClient
 from neptune.checkpoint import Checkpoint
 from neptune.exceptions import (
     FileNotFound,
+    NotADirectory,
 )
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
@@ -742,7 +745,7 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
                         f.write(chunk)
 
     @with_api_exceptions_handler
-    def prepare_source_download_reuqest(self, experiment, path):
+    def prepare_source_download_request(self, experiment, path):
         try:
             return self.backend_swagger_client.api.prepareForDownload(
                 experimentIdentity=experiment.internal_id,
@@ -752,8 +755,22 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
         except HTTPNotFound:
             raise FileNotFound(path)
 
+    def download_artifacts(self, experiment: Experiment, path=None, destination_dir=None):
+        if not path:
+            path = ""
+        if not destination_dir:
+            destination_dir = os.getcwd()
+
+        if not os.path.exists(destination_dir):
+            os.makedirs(destination_dir)
+        elif not os.path.isdir(destination_dir):
+            raise NotADirectory(destination_dir)
+
+        download_request = self.prepare_output_download_request(experiment, path)
+        self.download_from_request(download_request, destination_dir, path)
+
     @with_api_exceptions_handler
-    def prepare_output_download_reuqest(self, experiment, path):
+    def prepare_output_download_request(self, experiment, path):
         try:
             return self.backend_swagger_client.api.prepareForDownload(
                 experimentIdentity=experiment.internal_id,
@@ -762,6 +779,43 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
             ).response().result
         except HTTPNotFound:
             raise FileNotFound(path)
+
+    def download_from_request(self, download_request, destination_dir, path):
+        sleep_time = 1
+        max_sleep_time = 16
+        while not hasattr(download_request, "downloadUrl"):
+            time.sleep(sleep_time)
+            sleep_time = min(sleep_time * 2, max_sleep_time)
+            download_request = self.get_download_request(download_request.id)
+
+        ssl_verify = True
+        if os.getenv("NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE"):
+            ssl_verify = False
+
+        # We do not use ApiClient here cause `downloadUrl` can be any url (not only Neptune API endpoint)
+        response = requests.get(
+            url=download_request.downloadUrl,
+            headers={"Accept": "application/zip"},
+            stream=True,
+            verify=ssl_verify
+        )
+
+        with response:
+            filename = None
+            if 'content-disposition' in response.headers:
+                content_disposition = response.headers['content-disposition']
+                filenames = re.findall("filename=(.+)", content_disposition)
+                if filenames:
+                    filename = filenames[0]
+
+            if not filename:
+                filename = os.path.basename(path.rstrip("/")) + ".zip"
+
+            destination_path = os.path.join(destination_dir, filename)
+            with open(destination_path, "wb") as f:
+                for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
+                    if chunk:
+                        f.write(chunk)
 
     @with_api_exceptions_handler
     def get_download_request(self, request_id):

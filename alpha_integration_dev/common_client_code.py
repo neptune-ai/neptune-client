@@ -33,8 +33,9 @@ class ClientFeatures(abc.ABC):
         'init_datetime': datetime.now(),
     }
 
-    img_path = 'alpha_integration_dev/data/g.png'
-    text_file_path = 'alpha_integration_dev/data/text.txt'
+    data_dir = 'alpha_integration_dev/data'
+    img_path = f'{data_dir}/g.png'
+    text_file_path = f'{data_dir}/text.txt'
 
     @contextmanager
     def with_assert_raises(self, exception):
@@ -44,21 +45,29 @@ class ClientFeatures(abc.ABC):
             yield
         except exception:
             pass
-        finally:
+        else:
             raise AssertionError(f'Should raise {exception}')
 
-    @contextmanager
-    def with_check_if_file_appears(self, filepath):
-        """Checks if file will be present when leaving the block.
-        File is removed if exists when entering the block."""
+    @staticmethod
+    def _remove_file_if_exists(filepath):
         try:
             os.remove(filepath)
         except OSError:
             pass
 
-        yield
+    @contextmanager
+    def with_check_if_file_appears(self, filepath):
+        """Checks if file will be present when leaving the block.
+        File is removed if exists when entering the block."""
+        self._remove_file_if_exists(filepath)
 
-        assert os.path.exists(filepath)
+        try:
+            yield
+            assert os.path.exists(filepath)
+        except:
+            raise
+        else:
+            self._remove_file_if_exists(filepath)
 
 
     @abc.abstractmethod
@@ -82,6 +91,10 @@ class ClientFeatures(abc.ABC):
         pass
 
     @abc.abstractmethod
+    def handle_directories(self):
+        pass
+
+    @abc.abstractmethod
     def finalize(self):
         pass
 
@@ -91,5 +104,6 @@ class ClientFeatures(abc.ABC):
         self.log_std()
         self.log_series()
         self.handle_files_and_images()
+        self.handle_directories()
 
         self.finalize()

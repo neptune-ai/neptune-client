@@ -310,3 +310,7 @@ class UnsupportedClientVersion(NeptuneException):
                 version,
                 "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion)
             ))
+
+
+class UnsupportedException(NeptuneException):
+    pass

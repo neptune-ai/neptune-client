@@ -122,6 +122,9 @@ class NewClientFeatures(ClientFeatures):
             self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned file stream'] = f
             self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged file stream'].log(f)
 
+    def handle_directories(self):
+        pass
+
     def finalize(self):
         return
 
