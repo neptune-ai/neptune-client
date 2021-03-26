@@ -102,7 +102,14 @@ class NewClientFeatures(ClientFeatures):
         im_frame = Image.open(self.img_path)
         g_img = File.as_image(im_frame)
         self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned image'] = g_img
+        self.exp.wait()
+        with self.with_check_if_file_appears('assigned image.png'):
+            self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned image'].download()
+        with self.with_check_if_file_appears('custom_dest.png'):
+            self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned image'].download('custom_dest.png')
+
         self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged image'].log(g_img)
+
         with open(self.img_path, mode='r') as f:
             # self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned image stream'] = f
             self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged image stream'].log(f)

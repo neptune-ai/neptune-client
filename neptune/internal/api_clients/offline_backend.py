@@ -157,7 +157,7 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def rm_data(self, experiment, path):
         pass
 
-    def download_data(self, project, path, destination):
+    def download_data(self, experiment, path, destination):
         pass
 
 

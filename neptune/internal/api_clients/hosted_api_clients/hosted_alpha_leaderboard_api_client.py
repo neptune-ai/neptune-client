@@ -17,6 +17,7 @@ import logging
 import os
 import uuid
 from collections import namedtuple
+from http.client import NOT_FOUND
 from io import StringIO
 from itertools import groupby
 from pathlib import Path
@@ -40,7 +41,7 @@ from neptune.new.internal.utils.paths import parse_path
 from neptune.api_exceptions import (
     ExperimentOperationErrors,
     ExperimentNotFound,
-    ProjectNotFound,
+    PathInExperimentNotFound, ProjectNotFound,
 )
 from neptune.exceptions import NeptuneException, FileNotFound
 from neptune.experiments import Experiment
@@ -446,6 +447,28 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
 
     def delete_artifacts(self, experiment, path):
         self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
+
+    @with_api_exceptions_handler
+    def download_data(self, experiment: Experiment, path: str, destination):
+        project_storage_path = f"artifacts/{path}"
+        with self._download_raw_data(api_method=self.leaderboard_swagger_client.api.downloadAttribute,
+                                     headers={"Accept": "application/octet-stream"},
+                                     path_params={},
+                                     query_params={
+                                         "experimentId": experiment.internal_id,
+                                         "attribute": project_storage_path
+                                     }) as response:
+            if response.status_code == NOT_FOUND:
+                raise PathInExperimentNotFound(
+                    path=path,
+                    exp_identifier=experiment.internal_id)
+            else:
+                response.raise_for_status()
+
+            with open(destination, "wb") as f:
+                for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
+                    if chunk:
+                        f.write(chunk)
 
     def _get_attributes(self, experiment_id) -> list:
         return self._get_api_experiment_attributes(experiment_id).attributes

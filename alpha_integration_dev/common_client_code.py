@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import os
+from contextlib import contextmanager
 from datetime import datetime
 import abc
 
@@ -34,6 +35,31 @@ class ClientFeatures(abc.ABC):
 
     img_path = 'alpha_integration_dev/data/g.png'
     text_file_path = 'alpha_integration_dev/data/text.txt'
+
+    @contextmanager
+    def with_assert_raises(self, exception):
+        """Checks given exception is raised inside block,
+        raises AssertionError otherwise"""
+        try:
+            yield
+        except exception:
+            pass
+        finally:
+            raise AssertionError(f'Should raise {exception}')
+
+    @contextmanager
+    def with_check_if_file_appears(self, filepath):
+        """Checks if file will be present when leaving the block.
+        File is removed if exists when entering the block."""
+        try:
+            os.remove(filepath)
+        except OSError:
+            pass
+
+        yield
+
+        assert os.path.exists(filepath)
+
 
     @abc.abstractmethod
     def modify_tags(self):
