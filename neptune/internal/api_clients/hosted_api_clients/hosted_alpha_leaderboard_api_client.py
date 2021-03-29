@@ -756,16 +756,16 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         numeric_channels = [
             HostedAlphaLeaderboardApiClient._float_series_to_channel_last_value_dto(attr)
             for attr in attributes
-            if attr.type == AttributeType.FLOAT_SERIES.value
-               and is_channel_namespace(attr.name)
-               and attr.floatSeriesProperties.last is not None
+            if (attr.type == AttributeType.FLOAT_SERIES.value
+                and is_channel_namespace(attr.name)
+                and attr.floatSeriesProperties.last is not None)
         ]
         text_channels = [
             HostedAlphaLeaderboardApiClient._string_series_to_channel_last_value_dto(attr)
             for attr in attributes
-            if attr.type == AttributeType.STRING_SERIES.value
-               and is_channel_namespace(attr.name)
-               and attr.stringSeriesProperties.last is not None
+            if (attr.type == AttributeType.STRING_SERIES.value
+                and is_channel_namespace(attr.name)
+                and attr.stringSeriesProperties.last is not None)
         ]
 
         return LegacyLeaderboardEntry(
