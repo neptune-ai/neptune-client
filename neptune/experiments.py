@@ -15,20 +15,19 @@
 #
 import base64
 import logging
-import os
 import traceback
 
 import pandas as pd
 import six
 from pandas.errors import EmptyDataError
 
-from neptune.api_exceptions import ChannelDoesNotExist, ExperimentAlreadyFinished, PathInProjectNotFound
-from neptune.exceptions import FileNotFound, InvalidChannelValue, NoChannelValue, NotADirectory
+from neptune.api_exceptions import ChannelDoesNotExist, ExperimentAlreadyFinished
+from neptune.exceptions import InvalidChannelValue, NoChannelValue
 from neptune.internal.channels.channels import ChannelNamespace, ChannelType, ChannelValue
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.utils.image import get_image_content
-from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
+from neptune.utils import align_channels_on_x, assure_directory_exists, is_float, is_nan_or_inf
 
 _logger = logging.getLogger(__name__)
 
@@ -653,20 +652,7 @@ class Experiment(object):
 
                 experiment.download_artifact('forest_results.pkl', '/home/user/files/')
         """
-        if not destination_dir:
-            destination_dir = os.getcwd()
-
-        destination_path = os.path.join(destination_dir, os.path.basename(path))
-
-        if not os.path.exists(destination_dir):
-            os.makedirs(destination_dir)
-        elif not os.path.isdir(destination_dir):
-            raise NotADirectory(destination_dir)
-
-        try:
-            self._backend.download_data(self, path, destination_path)
-        except PathInProjectNotFound as e:
-            raise FileNotFound(path) from e
+        return self._backend.download_artifact(self, path, destination_dir)
 
     def download_sources(self, path=None, destination_dir=None):
         """Download a directory or a single file from experiment's sources as a ZIP archive.
@@ -705,13 +691,7 @@ class Experiment(object):
         """
         if not path:
             path = ""
-        if not destination_dir:
-            destination_dir = os.getcwd()
-
-        if not os.path.exists(destination_dir):
-            os.makedirs(destination_dir)
-        elif not os.path.isdir(destination_dir):
-            raise NotADirectory(destination_dir)
+        destination_dir = assure_directory_exists(destination_dir)
 
         download_request = self._backend.prepare_source_download_request(self, path)
         self._backend.download_from_request(download_request, destination_dir, path)

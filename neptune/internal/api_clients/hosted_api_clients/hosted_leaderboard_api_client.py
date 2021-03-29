@@ -48,17 +48,14 @@ from neptune.api_exceptions import (
 )
 from neptune.backend import LeaderboardApiClient
 from neptune.checkpoint import Checkpoint
-from neptune.exceptions import (
-    FileNotFound,
-    NotADirectory,
-)
+from neptune.exceptions import FileNotFound
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_name, upload_to_storage
 from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
-from neptune.utils import with_api_exceptions_handler
+from neptune.utils import assure_directory_exists, with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
 
@@ -758,16 +755,19 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
     def download_artifacts(self, experiment: Experiment, path=None, destination_dir=None):
         if not path:
             path = ""
-        if not destination_dir:
-            destination_dir = os.getcwd()
-
-        if not os.path.exists(destination_dir):
-            os.makedirs(destination_dir)
-        elif not os.path.isdir(destination_dir):
-            raise NotADirectory(destination_dir)
+        destination_dir = assure_directory_exists(destination_dir)
 
         download_request = self.prepare_output_download_request(experiment, path)
         self.download_from_request(download_request, destination_dir, path)
+
+    def download_artifact(self, experiment: Experiment, path=None, destination_dir=None):
+        destination_dir = assure_directory_exists(destination_dir)
+        destination_path = os.path.join(destination_dir, os.path.basename(path))
+
+        try:
+            self.download_data(experiment, path, destination_path)
+        except PathInProjectNotFound as e:
+            raise FileNotFound(path) from e
 
     @with_api_exceptions_handler
     def prepare_output_download_request(self, experiment, path):

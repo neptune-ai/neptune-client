@@ -41,9 +41,9 @@ from neptune.new.internal.utils.paths import parse_path
 from neptune.api_exceptions import (
     ExperimentOperationErrors,
     ExperimentNotFound,
-    PathInExperimentNotFound, ProjectNotFound,
+    PathInExperimentNotFound, PathInProjectNotFound, ProjectNotFound,
 )
-from neptune.exceptions import NeptuneException, FileNotFound, UnsupportedException
+from neptune.exceptions import NeptuneException, FileNotFound, NotADirectory, UnsupportedException
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client \
     import HostedNeptuneLeaderboardApiClient
@@ -59,7 +59,7 @@ from neptune.internal.utils.alpha_integration import (
     deprecated_img_to_alpha_image, channel_type_to_clear_operation,
 )
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
-from neptune.utils import with_api_exceptions_handler
+from neptune.utils import assure_directory_exists, with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
 
@@ -477,6 +477,15 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
 
     def download_artifacts(self, experiment: Experiment, path=None, destination_dir=None):
         raise UnsupportedException()
+
+    def download_artifact(self, experiment: Experiment, path=None, destination_dir=None):
+        destination_dir = assure_directory_exists(destination_dir)
+        destination_path = os.path.join(destination_dir, os.path.basename(path))
+
+        try:
+            self.download_data(experiment, path, destination_path)
+        except PathInExperimentNotFound:
+            raise UnsupportedException from None
 
     def _get_attributes(self, experiment_id) -> list:
         return self._get_api_experiment_attributes(experiment_id).attributes

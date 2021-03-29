@@ -183,3 +183,7 @@ class LeaderboardApiClient(ApiClient, ABC):
     @abstractmethod
     def download_artifacts(self, experiment, path=None, destination_dir=None):
         pass
+
+    @abstractmethod
+    def download_artifact(self, experiment, path=None, destination_dir=None):
+        pass

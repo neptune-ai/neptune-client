@@ -21,9 +21,12 @@
 import sys
 from datetime import datetime
 
+from requests import HTTPError
+
 import neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
-from neptune.exceptions import UnsupportedException
+from neptune.api_exceptions import PathInExperimentNotFound
+from neptune.exceptions import FileNotFound, UnsupportedException
 from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client \
     import HostedAlphaLeaderboardApiClient
 
@@ -144,7 +147,7 @@ class OldClientFeatures(ClientFeatures):
         with self.with_check_if_file_appears('custom_dest/something.txt'):
             exp.download_artifact('something.txt', 'custom_dest')
 
-        # dirs
+        # destination dirs
         neptune.log_artifact(self.text_file_path, destination='dir/text file artifact')
         neptune.log_artifact(self.text_file_path, destination='dir/artifact_to_delete')
 
@@ -167,10 +170,28 @@ class OldClientFeatures(ClientFeatures):
             with self.with_assert_raises(UnsupportedException):
                 exp.download_artifacts()
 
-        # deleting artifacts
+        # create some nested artifacts
         neptune.log_artifact(self.img_path, destination='main dir/sub dir/art1')
         neptune.log_artifact(self.img_path, destination='main dir/sub dir/art2')
         neptune.log_artifact(self.img_path, destination='main dir/sub dir/art3')
+
+        # downloading artifact - download_artifact
+        # non existing artifact
+        if self._api_version == 1:
+            with self.with_assert_raises(FileNotFound):
+                exp.download_artifact('main dir/sub dir/art100')
+        else:
+            with self.with_assert_raises(UnsupportedException):
+                exp.download_artifact('main dir/sub dir/art100')
+        # artifact directories
+        if self._api_version == 1:
+            with self.with_assert_raises(HTTPError):
+                exp.download_artifact('main dir/sub dir')
+        else:
+            with self.with_assert_raises(UnsupportedException):
+                exp.download_artifact('main dir/sub dir')
+
+        # deleting artifacts
         neptune.delete_artifacts('main dir/sub dir/art1')
 
         # delete non existing artifact
@@ -178,7 +199,7 @@ class OldClientFeatures(ClientFeatures):
             neptune.delete_artifacts('main dir/sub dir/art100')
         else:
             with self.with_assert_raises(UnsupportedException):
-                neptune.delete_artifacts('main dir/sub dir')
+                neptune.delete_artifacts('main dir/sub dir/art100')
 
         # delete dir
         if self._api_version == 1:
