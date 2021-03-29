@@ -27,7 +27,7 @@ from neptune.internal.channels.channels import ChannelNamespace, ChannelType, Ch
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.utils.image import get_image_content
-from neptune.utils import align_channels_on_x, assure_directory_exists, is_float, is_nan_or_inf
+from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
 
 _logger = logging.getLogger(__name__)
 

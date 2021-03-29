@@ -67,10 +67,25 @@ class OldClientFeatures(ClientFeatures):
         assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2'}
 
         # download sources
-        with self.with_check_if_file_appears('old_client.py.zip'):
-            exp.download_sources('alpha_integration_dev/old_client.py')
-        with self.with_check_if_file_appears('alpha_integration_dev.zip'):
-            exp.download_sources('alpha_integration_dev')
+        if self._api_version == 1:
+            # old domain
+
+            with self.with_check_if_file_appears('old_client.py.zip'):
+                exp.download_sources('alpha_integration_dev/old_client.py')
+            with self.with_check_if_file_appears('alpha_integration_dev.zip'):
+                exp.download_sources('alpha_integration_dev')
+
+            with self.with_assert_raises(FileNotFound):
+                exp.download_sources('non_existing')
+        else:
+            # new api
+
+            with self.with_check_if_file_appears('iles.zi'):  # TODO
+                exp.download_sources()
+            with self.with_assert_raises(UnsupportedException):
+                exp.download_sources('whatever')
+            with self.with_check_if_file_appears('file_set_sources.zip'):  # TODO
+                exp.download_sources(destination_dir='file_set_sources.zip')
 
     def modify_tags(self):
         neptune.append_tags('tag1')

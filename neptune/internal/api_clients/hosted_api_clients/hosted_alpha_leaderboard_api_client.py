@@ -21,44 +21,36 @@ from http.client import NOT_FOUND
 from io import StringIO
 from itertools import groupby
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 
 import six
 from bravado.exception import HTTPNotFound
-from neptune.new.internal.backends.api_model import AttributeType
 
-from neptune.new import exceptions as alpha_exceptions
-from neptune.new.attributes import constants as alpha_consts
-from neptune.new.internal import operation as alpha_operation
-from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
-from neptune.new.internal.backends.operation_api_name_visitor import \
-    OperationApiNameVisitor as AlphaOperationApiNameVisitor
-from neptune.new.internal.backends.operation_api_object_converter import \
-    OperationApiObjectConverter as AlphaOperationApiObjectConverter
-from neptune.new.internal.operation import ConfigFloatSeries, LogFloats, AssignString
-from neptune.new.internal.utils import paths as alpha_path_utils, base64_encode, base64_decode
-from neptune.new.internal.utils.paths import parse_path
-from neptune.api_exceptions import (
-    ExperimentOperationErrors,
-    ExperimentNotFound,
-    PathInExperimentNotFound, PathInProjectNotFound, ProjectNotFound,
-)
-from neptune.exceptions import NeptuneException, FileNotFound, NotADirectory, UnsupportedException
+from neptune.api_exceptions import (ExperimentNotFound, ExperimentOperationErrors, PathInExperimentNotFound,
+                                    ProjectNotFound)
+from neptune.exceptions import FileNotFound, NeptuneException, UnsupportedException
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client \
     import HostedNeptuneLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
-from neptune.internal.utils.alpha_integration import (
-    AlphaChannelDTO,
-    AlphaChannelWithValueDTO,
-    AlphaParameterDTO,
-    AlphaPropertyDTO,
-    channel_type_to_operation,
-    channel_value_type_to_operation,
-    deprecated_img_to_alpha_image, channel_type_to_clear_operation,
-)
+from neptune.internal.utils.alpha_integration import (AlphaChannelDTO, AlphaChannelWithValueDTO, AlphaParameterDTO,
+                                                      AlphaPropertyDTO, channel_type_to_clear_operation,
+                                                      channel_type_to_operation, channel_value_type_to_operation,
+                                                      deprecated_img_to_alpha_image)
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
+from neptune.new import exceptions as alpha_exceptions
+from neptune.new.attributes import constants as alpha_consts
+from neptune.new.internal import operation as alpha_operation
+from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
+from neptune.new.internal.backends.api_model import AttributeType
+from neptune.new.internal.backends.operation_api_name_visitor import \
+    OperationApiNameVisitor as AlphaOperationApiNameVisitor
+from neptune.new.internal.backends.operation_api_object_converter import \
+    OperationApiObjectConverter as AlphaOperationApiObjectConverter
+from neptune.new.internal.operation import AssignString, ConfigFloatSeries, LogFloats
+from neptune.new.internal.utils import base64_decode, base64_encode, paths as alpha_path_utils
+from neptune.new.internal.utils.paths import parse_path
 from neptune.utils import assure_directory_exists, with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
@@ -475,8 +467,29 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                     if chunk:
                         f.write(chunk)
 
-    def download_sources(self, experiment, path=None, destination_dir=None):
-        pass
+    def download_sources(self, experiment: Experiment, path=None, destination_dir=None):
+        if path is not None:
+            # in alpha all source files stored as single FileSet must be downloaded at once
+            raise UnsupportedException
+        path = alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH
+
+        destination_dir = assure_directory_exists(destination_dir)
+
+        download_request = self._get_file_set_download_request(
+            uuid.UUID(experiment.internal_id),
+            path)
+        alpha_hosted_file_operations.download_file_set_attribute(
+            swagger_client=self.leaderboard_swagger_client,
+            download_id=download_request.id,
+            destination=destination_dir)
+
+    @with_api_exceptions_handler
+    def _get_file_set_download_request(self, run_uuid: uuid.UUID, path: str):
+        params = {
+            'experimentId': str(run_uuid),
+            'attribute': path,
+        }
+        return self.leaderboard_swagger_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
 
     def download_artifacts(self, experiment: Experiment, path=None, destination_dir=None):
         raise UnsupportedException()
