@@ -34,10 +34,16 @@ from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_clie
     import HostedNeptuneLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
-from neptune.internal.utils.alpha_integration import (AlphaChannelDTO, AlphaChannelWithValueDTO, AlphaParameterDTO,
-                                                      AlphaPropertyDTO, channel_type_to_clear_operation,
-                                                      channel_type_to_operation, channel_value_type_to_operation,
-                                                      deprecated_img_to_alpha_image)
+from neptune.internal.utils.alpha_integration import (
+    AlphaChannelDTO,
+    AlphaChannelWithValueDTO,
+    AlphaParameterDTO,
+    AlphaPropertyDTO,
+    channel_type_to_clear_operation,
+    channel_type_to_operation,
+    channel_value_type_to_operation,
+    deprecated_img_to_alpha_image
+)
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.new import exceptions as alpha_exceptions
 from neptune.new.attributes import constants as alpha_consts
@@ -732,6 +738,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                     sortBy=['sys/id'], sortFieldType=['string'], sortDirection=['ascending'],
                     limit=limit, offset=offset
                 ).response().result.entries
+
             return [LeaderboardEntry(self._to_leaderboard_entry_dto(e))
                     for e in self._get_all_items(get_portion, step=100)]
         except HTTPNotFound:
@@ -743,22 +750,22 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         system_attributes = experiment_attributes.systemAttributes
 
         def is_channel_namespace(name):
-            return name.startswith(alpha_consts.LOG_ATTRIBUTE_SPACE)\
+            return name.startswith(alpha_consts.LOG_ATTRIBUTE_SPACE) \
                    or name.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE)
 
         numeric_channels = [
             HostedAlphaLeaderboardApiClient._float_series_to_channel_last_value_dto(attr)
             for attr in attributes
             if attr.type == AttributeType.FLOAT_SERIES.value
-            and is_channel_namespace(attr.name)
-            and attr.floatSeriesProperties.last is not None
+               and is_channel_namespace(attr.name)
+               and attr.floatSeriesProperties.last is not None
         ]
         text_channels = [
             HostedAlphaLeaderboardApiClient._string_series_to_channel_last_value_dto(attr)
             for attr in attributes
             if attr.type == AttributeType.STRING_SERIES.value
-            and is_channel_namespace(attr.name)
-            and attr.stringSeriesProperties.last is not None
+               and is_channel_namespace(attr.name)
+               and attr.stringSeriesProperties.last is not None
         ]
 
         return LegacyLeaderboardEntry(
