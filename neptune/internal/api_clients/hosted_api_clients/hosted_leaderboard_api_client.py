@@ -741,6 +741,14 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
                     if chunk:
                         f.write(chunk)
 
+    def download_sources(self, experiment, path=None, destination_dir=None):
+        if not path:
+            path = ""
+        destination_dir = assure_directory_exists(destination_dir)
+
+        download_request = self.prepare_source_download_request(experiment, path)
+        self.download_from_request(download_request, destination_dir, path)
+
     @with_api_exceptions_handler
     def prepare_source_download_request(self, experiment, path):
         try:

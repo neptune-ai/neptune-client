@@ -689,12 +689,7 @@ class Experiment(object):
                 # Download a single directory to user-defined directory
                 experiment.download_sources('src/my-module', 'sources/')
         """
-        if not path:
-            path = ""
-        destination_dir = assure_directory_exists(destination_dir)
-
-        download_request = self._backend.prepare_source_download_request(self, path)
-        self._backend.download_from_request(download_request, destination_dir, path)
+        return self._backend.download_sources(self, path, destination_dir)
 
     def download_artifacts(self, path=None, destination_dir=None):
         """Download a directory or a single file from experiment's artifacts as a ZIP archive.

@@ -475,6 +475,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                     if chunk:
                         f.write(chunk)
 
+    def download_sources(self, experiment, path=None, destination_dir=None):
+        pass
+
     def download_artifacts(self, experiment: Experiment, path=None, destination_dir=None):
         raise UnsupportedException()
 

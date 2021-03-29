@@ -66,6 +66,12 @@ class OldClientFeatures(ClientFeatures):
 
         assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2'}
 
+        # download sources
+        with self.with_check_if_file_appears('old_client.py.zip'):
+            exp.download_sources('alpha_integration_dev/old_client.py')
+        with self.with_check_if_file_appears('alpha_integration_dev.zip'):
+            exp.download_sources('alpha_integration_dev')
+
     def modify_tags(self):
         neptune.append_tags('tag1')
         neptune.append_tag(['tag2_to_remove', 'tag3'])
