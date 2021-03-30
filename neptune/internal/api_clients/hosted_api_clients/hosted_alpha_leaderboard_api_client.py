@@ -28,7 +28,9 @@ from bravado.exception import HTTPNotFound
 
 from neptune.api_exceptions import (ExperimentNotFound, ExperimentOperationErrors, PathInExperimentNotFound,
                                     ProjectNotFound)
-from neptune.exceptions import FileNotFound, NeptuneException, UnsupportedException
+from neptune.exceptions import DeleteArtifactUnsupportedInAlphaException, DownloadArtifactUnsupportedException, \
+    DownloadArtifactsUnsupportedException, DownloadSourcesException, FileNotFound, \
+    NeptuneException
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client \
     import HostedNeptuneLeaderboardApiClient
@@ -448,7 +450,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
         except ExperimentOperationErrors as e:
             if all(isinstance(err, alpha_exceptions.MetadataInconsistency) for err in e.errors):
-                raise UnsupportedException from None
+                raise DeleteArtifactUnsupportedInAlphaException(path, experiment) from None
             raise
 
     @with_api_exceptions_handler
@@ -476,7 +478,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
     def download_sources(self, experiment: Experiment, path=None, destination_dir=None):
         if path is not None:
             # in alpha all source files stored as single FileSet must be downloaded at once
-            raise UnsupportedException
+            raise DownloadSourcesException(experiment)
         path = alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH
 
         destination_dir = assure_directory_exists(destination_dir)
@@ -498,7 +500,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         return self.leaderboard_swagger_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
 
     def download_artifacts(self, experiment: Experiment, path=None, destination_dir=None):
-        raise UnsupportedException()
+        raise DownloadArtifactsUnsupportedException(experiment)
 
     def download_artifact(self, experiment: Experiment, path=None, destination_dir=None):
         destination_dir = assure_directory_exists(destination_dir)
@@ -507,7 +509,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         try:
             self.download_data(experiment, path, destination_path)
         except PathInExperimentNotFound:
-            raise UnsupportedException from None
+            raise DownloadArtifactUnsupportedException(path, experiment) from None
 
     def _get_attributes(self, experiment_id) -> list:
         return self._get_api_experiment_attributes(experiment_id).attributes
