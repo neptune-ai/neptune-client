@@ -16,16 +16,20 @@
 
 import functools
 import glob as globlib
+import json
 import logging
 import os
 import sys
 import time
 
 import math
+from json.decoder import JSONDecodeError
+
+import click
 import numpy as np
 import pandas as pd
 import requests
-from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
+from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPClientError, HTTPForbidden, \
     HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
     HTTPGatewayTimeout, HTTPBadGateway
 
@@ -207,17 +211,44 @@ def get_git_info(repo_path=None):
 
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
-        for retry in range(0, 11):
+        migration_reported = False
+        retries = 11
+        retry = 0
+        while retry < retries:
             try:
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
                 raise SSLError()
+            except HTTPServiceUnavailable as e:
+                try:
+                    error_data = json.loads(e.response.text)
+                    error_type = error_data.get("errorType")
+                except JSONDecodeError:
+                    error_type = None
+                if error_type == 'PROJECT_MIGRATION_IN_PROGRESS':
+                    retry = min(retry + 1, 8)
+                    if not migration_reported:
+                        click.echo(click.style("""WARNING: Your project is currently migrating to new structure.
+All operations will be suspended until migration is finished.
+It can take up to few hours for big projects.
+Contact Neptune support if you think this operation takes too long.""", fg='yellow'))
+                        migration_reported = True
+                    time.sleep(2 ** retry)
+                    continue
+                else:
+                    if retry >= 6:
+                        _logger.warning(
+                            'Experiencing connection interruptions. Reestablishing communication with Neptune.')
+                    time.sleep(2 ** retry)
+                    retry += 1
+                    continue
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
                     HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway):
                 if retry >= 6:
                     _logger.warning('Experiencing connection interruptions. Reestablishing communication with Neptune.')
                 time.sleep(2 ** retry)
+                retry += 1
                 continue
             except HTTPServerError:
                 raise ServerError()
@@ -237,6 +268,7 @@ def with_api_exceptions_handler(func):
                         _logger.warning(
                             'Experiencing connection interruptions. Reestablishing communication with Neptune.')
                     time.sleep(2 ** retry)
+                    retry += 1
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
                     raise ServerError()
