@@ -228,9 +228,9 @@ def with_api_exceptions_handler(func):
                 if error_type == 'PROJECT_MIGRATION_IN_PROGRESS':
                     retry = min(retry + 1, 8)
                     if not migration_reported:
-                        click.echo(click.style("""WARNING: Your project is currently migrating to new structure.
+                        click.echo(click.style("""NOTICE: Your project is currently being migrated to the new structure.
 All operations will be suspended until migration is finished.
-It can take up to few hours for big projects.
+It can take up to few hours for projects with a large number of runs (experiments).
 Contact Neptune support if you think this operation takes too long.""", fg='yellow'))
                         migration_reported = True
                     time.sleep(2 ** retry)
