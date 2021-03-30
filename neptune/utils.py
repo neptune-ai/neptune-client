@@ -16,12 +16,16 @@
 
 import functools
 import glob as globlib
+import json
 import logging
 import os
 import sys
 import time
 
 import math
+from json.decoder import JSONDecodeError
+
+import click
 import numpy as np
 import pandas as pd
 import requests
@@ -37,6 +41,9 @@ _logger = logging.getLogger(__name__)
 
 IS_WINDOWS = sys.platform == 'win32'
 IS_MACOS = sys.platform == 'darwin'
+
+
+MIGRATION_IN_PROGRESS = 'PROJECT_MIGRATION_IN_PROGRESS'
 
 
 def map_values(f_value, dictionary):
@@ -205,19 +212,53 @@ def get_git_info(repo_path=None):
         return None
 
 
+def parse_error_type(ex):
+    try:
+        error_data = json.loads(ex.response.text)
+        return error_data.get("errorType")
+    except JSONDecodeError:
+        return None
+
+
+def print_migration_in_progress_message():
+    click.echo(click.style("""NOTICE: Your project is currently being migrated to the new structure.
+All operations will be suspended until migration is finished.
+It can take up to few hours for projects with a large number of runs (experiments).
+Contact Neptune support if you think this operation takes too long.""", fg='yellow'))
+
+
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
-        for retry in range(0, 11):
+        migration_reported = False
+        retries = 11
+        retry = 0
+        while retry < retries:
             try:
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
                 raise SSLError()
+            except HTTPServiceUnavailable as e:
+                if parse_error_type(e) == MIGRATION_IN_PROGRESS:
+                    retry = min(retry + 1, 8)
+                    if not migration_reported:
+                        print_migration_in_progress_message()
+                        migration_reported = True
+                    time.sleep(2 ** retry)
+                    continue
+                else:
+                    if retry >= 6:
+                        _logger.warning(
+                            'Experiencing connection interruptions. Reestablishing communication with Neptune.')
+                    time.sleep(2 ** retry)
+                    retry += 1
+                    continue
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway):
+                    HTTPRequestTimeout, HTTPGatewayTimeout, HTTPBadGateway):
                 if retry >= 6:
                     _logger.warning('Experiencing connection interruptions. Reestablishing communication with Neptune.')
                 time.sleep(2 ** retry)
+                retry += 1
                 continue
             except HTTPServerError:
                 raise ServerError()
@@ -229,7 +270,14 @@ def with_api_exceptions_handler(func):
                 if e.response is None:
                     raise
                 status_code = e.response.status_code
-                if status_code in (
+                if status_code == HTTPServiceUnavailable.status_code and parse_error_type(e) == MIGRATION_IN_PROGRESS:
+                    retry = min(retry + 1, 8)
+                    if not migration_reported:
+                        print_migration_in_progress_message()
+                        migration_reported = True
+                    time.sleep(2 ** retry)
+                    continue
+                elif status_code in (
                         HTTPBadGateway.status_code,
                         HTTPServiceUnavailable.status_code,
                         HTTPGatewayTimeout.status_code):
@@ -237,6 +285,7 @@ def with_api_exceptions_handler(func):
                         _logger.warning(
                             'Experiencing connection interruptions. Reestablishing communication with Neptune.')
                     time.sleep(2 ** retry)
+                    retry += 1
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:
                     raise ServerError()
