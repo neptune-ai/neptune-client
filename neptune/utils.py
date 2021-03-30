@@ -29,7 +29,7 @@ import click
 import numpy as np
 import pandas as pd
 import requests
-from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPClientError, HTTPForbidden, \
+from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
     HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
     HTTPGatewayTimeout, HTTPBadGateway
 
@@ -244,7 +244,7 @@ Contact Neptune support if you think this operation takes too long.""", fg='yell
                     continue
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway):
+                    HTTPRequestTimeout, HTTPGatewayTimeout, HTTPBadGateway):
                 if retry >= 6:
                     _logger.warning('Experiencing connection interruptions. Reestablishing communication with Neptune.')
                 time.sleep(2 ** retry)
