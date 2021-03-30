@@ -95,12 +95,11 @@ class OldClientFeatures(ClientFeatures):
     def modify_tags(self):
         neptune.append_tags('tag1')
         neptune.append_tag(['tag2_to_remove', 'tag3'])
-        # TODO: dramatic performance drop when removing tags
-        # neptune.remove_tag('tag2_to_remove')
-        # neptune.remove_tag('tag4_remove_non_existing')
+        neptune.remove_tag('tag2_to_remove')
+        neptune.remove_tag('tag4_remove_non_existing')
 
         exp = neptune.get_experiment()
-        assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag2_to_remove', 'tag3'}
+        assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag3'}
 
     def modify_properties(self):
         neptune.set_property('prop', 'some text')

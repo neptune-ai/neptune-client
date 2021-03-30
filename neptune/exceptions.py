@@ -322,7 +322,7 @@ class DownloadSourcesException(UnsupportedInAlphaException):
 {h1}
 ----DownloadSourcesException-----------------------------------------------------------------------
 {end}
-Neptune Client Library was not able to single file from sources.
+Neptune Client Library was not able to download single file from sources.
 
 Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
@@ -349,7 +349,7 @@ class DownloadArtifactsUnsupportedException(UnsupportedInAlphaException):
 {h1}
 ----DownloadArtifactsUnsupportedException-----------------------------------------------------------------------
 {end}
-Neptune Client Library was not able to download attribute.
+Neptune Client Library was not able to download artifacts.
 Function `download_artifacts` is deprecated.
 
 Why am I seeing this?
@@ -359,7 +359,7 @@ Why am I seeing this?
     {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
 
 If you don't want to adapt your code to new api yet,
-you can use `download_artifact` and delete files one by one.
+you can use `download_artifact` and download files one by one.
 """
 
     def __init__(self, experiment):
