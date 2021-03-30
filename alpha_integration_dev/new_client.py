@@ -46,7 +46,7 @@ class NewClientFeatures(ClientFeatures):
 
         # download sources
         self.exp.sync()
-        with self.with_check_if_file_appears('iles.zi'):
+        with self.with_check_if_file_appears('files.zip'):
             self.exp[SOURCE_CODE_FILES_ATTRIBUTE_PATH].download()
 
     def modify_tags(self):

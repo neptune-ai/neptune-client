@@ -85,12 +85,11 @@ class OldClientFeatures(ClientFeatures):
         else:
             # new api
 
-            with self.with_check_if_file_appears('iles.zi'):  # TODO
+            with self.with_check_if_file_appears('files.zip'):
                 exp.download_sources()
-            # exp.download_sources()
             with self.with_assert_raises(DownloadSourcesException):
                 exp.download_sources('whatever')
-            with self.with_check_if_file_appears('file_set_sources/iles.zi'):
+            with self.with_check_if_file_appears('file_set_sources/files.zip'):
                 exp.download_sources(destination_dir='file_set_sources')
 
     def modify_tags(self):
