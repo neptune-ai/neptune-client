@@ -156,6 +156,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     def create_leaderboard_backend(self, project) -> LeaderboardApiClient:
         project_version = project.version if hasattr(project, 'version') else 1
         if project_version == 1:
+            # pylint: disable=abstract-class-instantiated
             return MigrationSwitchLeaderboardApiClientProxy(
                 api_client=self.get_old_leaderboard_client(),
                 backend_client=self)
