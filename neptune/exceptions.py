@@ -432,3 +432,7 @@ If you don't want to adapt your code to new api yet:
                 **STYLES,
             )
         )
+
+
+class ProjectMigratedToNewStructure(NeptuneException):
+    pass

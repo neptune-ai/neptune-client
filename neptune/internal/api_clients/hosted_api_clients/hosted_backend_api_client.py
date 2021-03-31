@@ -41,6 +41,8 @@ from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_ap
     HostedAlphaLeaderboardApiClient
 from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
     HostedNeptuneLeaderboardApiClient
+from neptune.internal.api_clients.hosted_api_clients.migration_switch_leaderboard_api_client_proxy import \
+    MigrationSwitchLeaderboardApiClientProxy
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
@@ -154,13 +156,21 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     def create_leaderboard_backend(self, project) -> LeaderboardApiClient:
         project_version = project.version if hasattr(project, 'version') else 1
         if project_version == 1:
-            if self._old_leaderboard_client is None:
-                self._old_leaderboard_client = HostedNeptuneLeaderboardApiClient(backend_api_client=self)
-            return self._old_leaderboard_client
+            return MigrationSwitchLeaderboardApiClientProxy(
+                api_client=self.get_old_leaderboard_client(),
+                backend_client=self)
         else:
-            if self._new_leaderboard_client is None:
-                self._new_leaderboard_client = HostedAlphaLeaderboardApiClient(backend_api_client=self)
-            return self._new_leaderboard_client
+            return self.get_new_leaderboard_client()
+
+    def get_old_leaderboard_client(self) -> HostedNeptuneLeaderboardApiClient:
+        if self._old_leaderboard_client is None:
+            self._old_leaderboard_client = HostedNeptuneLeaderboardApiClient(backend_api_client=self)
+        return self._old_leaderboard_client
+
+    def get_new_leaderboard_client(self) -> HostedAlphaLeaderboardApiClient:
+        if self._new_leaderboard_client is None:
+            self._new_leaderboard_client = HostedAlphaLeaderboardApiClient(backend_api_client=self)
+        return self._new_leaderboard_client
 
     @with_api_exceptions_handler
     def _create_authenticator(self, api_token, ssl_verify, proxies, backend_client):

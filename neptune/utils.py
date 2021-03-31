@@ -29,12 +29,12 @@ import click
 import numpy as np
 import pandas as pd
 import requests
-from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
+from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
     HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
     HTTPGatewayTimeout, HTTPBadGateway
 
 from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, Unauthorized, SSLError
-from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotADirectory, NotAFile
+from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotADirectory, NotAFile, ProjectMigratedToNewStructure
 from neptune.git_info import GitInfo
 
 _logger = logging.getLogger(__name__)
@@ -44,6 +44,7 @@ IS_MACOS = sys.platform == 'darwin'
 
 
 MIGRATION_IN_PROGRESS = 'PROJECT_MIGRATION_IN_PROGRESS'
+MIGRATION_FINISHED = 'NEW_PROJECT_VERSION'
 
 
 def map_values(f_value, dictionary):
@@ -234,10 +235,16 @@ def parse_error_type(ex):
 
 
 def print_migration_in_progress_message():
-    click.echo(click.style("""NOTICE: Your project is currently being migrated to the new structure.
-All operations will be suspended until migration is finished.
-It can take up to few hours for projects with a large number of runs (experiments).
-Contact Neptune support if you think this operation takes too long.""", fg='yellow'))
+    click.echo(click.style("""
+NOTICE: Attention needed
+Your Neptune project is currently being migrated to the new structure. 
+The execution of the script is paused until migration is finished. 
+It will automatically resume once it's finished.
+Depending on the number of runs (experiments) in the project
+the migration process can take from few minutes to up to few hours.
+If you think this operation takes too long please contact Neptune support:
+    - https://neptune.ai/?chat-with-us
+""", fg='yellow'))
 
 
 def with_api_exceptions_handler(func):
@@ -250,6 +257,11 @@ def with_api_exceptions_handler(func):
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
                 raise SSLError()
+            except HTTPBadRequest as e:
+                if parse_error_type(e) == MIGRATION_FINISHED:
+                    raise ProjectMigratedToNewStructure()
+                else:
+                    raise
             except HTTPServiceUnavailable as e:
                 if parse_error_type(e) == MIGRATION_IN_PROGRESS:
                     retry = min(retry + 1, 8)
@@ -283,7 +295,9 @@ def with_api_exceptions_handler(func):
                 if e.response is None:
                     raise
                 status_code = e.response.status_code
-                if status_code == HTTPServiceUnavailable.status_code and parse_error_type(e) == MIGRATION_IN_PROGRESS:
+                if status_code == HTTPBadRequest.status_code and parse_error_type(e) == MIGRATION_FINISHED:
+                    raise ProjectMigratedToNewStructure()
+                elif status_code == HTTPServiceUnavailable.status_code and parse_error_type(e) == MIGRATION_IN_PROGRESS:
                     retry = min(retry + 1, 8)
                     if not migration_reported:
                         print_migration_in_progress_message()
