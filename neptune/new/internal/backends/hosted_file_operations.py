@@ -249,7 +249,7 @@ def _store_response_as_file(response: Response, destination: Optional[str] = Non
 
 def _get_content_disposition_filename(response: Response) -> str:
     content_disposition = response.headers['Content-Disposition']
-    return content_disposition[content_disposition.rfind("filename=") + 10:-1]
+    return content_disposition[content_disposition.rfind("filename=") + 9:].strip('"')
 
 
 @with_api_exceptions_handler

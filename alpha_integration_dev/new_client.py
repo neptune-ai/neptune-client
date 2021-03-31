@@ -32,6 +32,7 @@ from neptune.new.attributes.constants import (
     ARTIFACT_ATTRIBUTE_SPACE,
     LOG_ATTRIBUTE_SPACE,
     PROPERTIES_ATTRIBUTE_SPACE,
+    SOURCE_CODE_FILES_ATTRIBUTE_PATH,
     SYSTEM_TAGS_ATTRIBUTE_PATH,
 )
 
@@ -39,7 +40,14 @@ from neptune.new.attributes.constants import (
 class NewClientFeatures(ClientFeatures):
     def __init__(self):
         super().__init__()
-        self.exp = neptune.init()
+        self.exp = neptune.init(
+            source_files='alpha_integration_dev/*.py'
+        )
+
+        # download sources
+        self.exp.sync()
+        with self.with_check_if_file_appears('files.zip'):
+            self.exp[SOURCE_CODE_FILES_ATTRIBUTE_PATH].download()
 
     def modify_tags(self):
         self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].add('tag1')
@@ -121,6 +129,9 @@ class NewClientFeatures(ClientFeatures):
         with open(self.text_file_path, mode='r') as f:
             self.exp[ARTIFACT_ATTRIBUTE_SPACE]['assigned file stream'] = f
             self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged file stream'].log(f)
+
+    def handle_directories(self):
+        pass
 
     def finalize(self):
         return

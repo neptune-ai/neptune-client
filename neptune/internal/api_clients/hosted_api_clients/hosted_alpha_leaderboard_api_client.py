@@ -21,32 +21,19 @@ from http.client import NOT_FOUND
 from io import StringIO
 from itertools import groupby
 from pathlib import Path
-from typing import List, Dict
+from typing import Dict, List
 
 import six
 from bravado.exception import HTTPNotFound
-from neptune.new.internal.backends.api_model import AttributeType
 
-from neptune.new import exceptions as alpha_exceptions
-from neptune.new.attributes import constants as alpha_consts
-from neptune.new.internal import operation as alpha_operation
-from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
-from neptune.new.internal.backends.operation_api_name_visitor import \
-    OperationApiNameVisitor as AlphaOperationApiNameVisitor
-from neptune.new.internal.backends.operation_api_object_converter import \
-    OperationApiObjectConverter as AlphaOperationApiObjectConverter
-from neptune.new.internal.operation import ConfigFloatSeries, LogFloats, AssignString
-from neptune.new.internal.utils import paths as alpha_path_utils, base64_encode, base64_decode
-from neptune.new.internal.utils.paths import parse_path
-from neptune.api_exceptions import (
-    ExperimentOperationErrors,
-    ExperimentNotFound,
-    PathInExperimentNotFound, ProjectNotFound,
-)
-from neptune.exceptions import NeptuneException, FileNotFound
+from neptune.api_exceptions import (ExperimentNotFound, ExperimentOperationErrors, PathInExperimentNotFound,
+                                    ProjectNotFound)
+from neptune.exceptions import DeleteArtifactUnsupportedInAlphaException, DownloadArtifactUnsupportedException, \
+    DownloadArtifactsUnsupportedException, DownloadSourcesException, FileNotFound, \
+    NeptuneException
 from neptune.experiments import Experiment
-from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
-    HostedNeptuneLeaderboardApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client \
+    import HostedNeptuneLeaderboardApiClient
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
@@ -54,12 +41,25 @@ from neptune.internal.utils.alpha_integration import (
     AlphaChannelWithValueDTO,
     AlphaParameterDTO,
     AlphaPropertyDTO,
+    channel_type_to_clear_operation,
     channel_type_to_operation,
     channel_value_type_to_operation,
-    deprecated_img_to_alpha_image, channel_type_to_clear_operation,
+    deprecated_img_to_alpha_image
 )
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
-from neptune.utils import with_api_exceptions_handler
+from neptune.new import exceptions as alpha_exceptions
+from neptune.new.attributes import constants as alpha_consts
+from neptune.new.internal import operation as alpha_operation
+from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
+from neptune.new.internal.backends.api_model import AttributeType
+from neptune.new.internal.backends.operation_api_name_visitor import \
+    OperationApiNameVisitor as AlphaOperationApiNameVisitor
+from neptune.new.internal.backends.operation_api_object_converter import \
+    OperationApiObjectConverter as AlphaOperationApiObjectConverter
+from neptune.new.internal.operation import AssignString, ConfigFloatSeries, LogFloats
+from neptune.new.internal.utils import base64_decode, base64_encode, paths as alpha_path_utils
+from neptune.new.internal.utils.paths import parse_path
+from neptune.utils import assure_directory_exists, with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
 
@@ -446,7 +446,12 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                 yield str(path), file_destination
 
     def delete_artifacts(self, experiment, path):
-        self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
+        try:
+            self._remove_attribute(experiment, str_path=f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{path}')
+        except ExperimentOperationErrors as e:
+            if all(isinstance(err, alpha_exceptions.MetadataInconsistency) for err in e.errors):
+                raise DeleteArtifactUnsupportedInAlphaException(path, experiment) from None
+            raise
 
     @with_api_exceptions_handler
     def download_data(self, experiment: Experiment, path: str, destination):
@@ -469,6 +474,42 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                 for chunk in response.iter_content(chunk_size=10 * 1024 * 1024):
                     if chunk:
                         f.write(chunk)
+
+    def download_sources(self, experiment: Experiment, path=None, destination_dir=None):
+        if path is not None:
+            # in alpha all source files stored as single FileSet must be downloaded at once
+            raise DownloadSourcesException(experiment)
+        path = alpha_consts.SOURCE_CODE_FILES_ATTRIBUTE_PATH
+
+        destination_dir = assure_directory_exists(destination_dir)
+
+        download_request = self._get_file_set_download_request(
+            uuid.UUID(experiment.internal_id),
+            path)
+        alpha_hosted_file_operations.download_file_set_attribute(
+            swagger_client=self.leaderboard_swagger_client,
+            download_id=download_request.id,
+            destination=destination_dir)
+
+    @with_api_exceptions_handler
+    def _get_file_set_download_request(self, run_uuid: uuid.UUID, path: str):
+        params = {
+            'experimentId': str(run_uuid),
+            'attribute': path,
+        }
+        return self.leaderboard_swagger_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
+
+    def download_artifacts(self, experiment: Experiment, path=None, destination_dir=None):
+        raise DownloadArtifactsUnsupportedException(experiment)
+
+    def download_artifact(self, experiment: Experiment, path=None, destination_dir=None):
+        destination_dir = assure_directory_exists(destination_dir)
+        destination_path = os.path.join(destination_dir, os.path.basename(path))
+
+        try:
+            self.download_data(experiment, path, destination_path)
+        except PathInExperimentNotFound:
+            raise DownloadArtifactUnsupportedException(path, experiment) from None
 
     def _get_attributes(self, experiment_id) -> list:
         return self._get_api_experiment_attributes(experiment_id).attributes
@@ -699,6 +740,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                     sortBy=['sys/id'], sortFieldType=['string'], sortDirection=['ascending'],
                     limit=limit, offset=offset
                 ).response().result.entries
+
             return [LeaderboardEntry(self._to_leaderboard_entry_dto(e))
                     for e in self._get_all_items(get_portion, step=100)]
         except HTTPNotFound:
@@ -710,22 +752,22 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         system_attributes = experiment_attributes.systemAttributes
 
         def is_channel_namespace(name):
-            return name.startswith(alpha_consts.LOG_ATTRIBUTE_SPACE)\
+            return name.startswith(alpha_consts.LOG_ATTRIBUTE_SPACE) \
                    or name.startswith(alpha_consts.MONITORING_ATTRIBUTE_SPACE)
 
         numeric_channels = [
             HostedAlphaLeaderboardApiClient._float_series_to_channel_last_value_dto(attr)
             for attr in attributes
-            if attr.type == AttributeType.FLOAT_SERIES.value
-            and is_channel_namespace(attr.name)
-            and attr.floatSeriesProperties.last is not None
+            if (attr.type == AttributeType.FLOAT_SERIES.value
+                and is_channel_namespace(attr.name)
+                and attr.floatSeriesProperties.last is not None)
         ]
         text_channels = [
             HostedAlphaLeaderboardApiClient._string_series_to_channel_last_value_dto(attr)
             for attr in attributes
-            if attr.type == AttributeType.STRING_SERIES.value
-            and is_channel_namespace(attr.name)
-            and attr.stringSeriesProperties.last is not None
+            if (attr.type == AttributeType.STRING_SERIES.value
+                and is_channel_namespace(attr.name)
+                and attr.stringSeriesProperties.last is not None)
         ]
 
         return LegacyLeaderboardEntry(

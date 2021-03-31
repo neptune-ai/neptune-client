@@ -275,7 +275,7 @@ class InvalidNeptuneBackend(NeptuneException):
             'Unknown {} "{}". '
             'Use this environment variable to modify neptune-client behaviour at runtime, '
             'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
-            .format(envs.BACKEND, provided_backend_name, envs.BACKEND))
+            ''.format(envs.BACKEND, provided_backend_name, envs.BACKEND))
 
 
 class DeprecatedApiToken(NeptuneException):
@@ -310,3 +310,125 @@ class UnsupportedClientVersion(NeptuneException):
                 version,
                 "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion)
             ))
+
+
+class UnsupportedInAlphaException(NeptuneException):
+    """Raised for operations which was available in old client,
+    but aren't supported in alpha version"""
+
+
+class DownloadSourcesException(UnsupportedInAlphaException):
+    message = """
+{h1}
+----DownloadSourcesException-----------------------------------------------------------------------
+{end}
+Neptune Client Library was not able to download single file from sources.
+
+Why am I seeing this?
+    Your project "{project}" has been migrated to new structure.
+    Old version of `neptune-api` is not supporting downloading particular source files.
+    We recommend you to use new version of api: `neptune.new`.
+    {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+
+If you don't want to adapt your code to new api yet,
+you can use `download_sources` with `path` parameter set to None.
+"""
+
+    def __init__(self, experiment):
+        assert self.message is not None
+        super().__init__(
+            self.message.format(
+                project=experiment._project.internal_id,
+                **STYLES,
+            )
+        )
+
+
+class DownloadArtifactsUnsupportedException(UnsupportedInAlphaException):
+    message = """
+{h1}
+----DownloadArtifactsUnsupportedException-----------------------------------------------------------------------
+{end}
+Neptune Client Library was not able to download artifacts.
+Function `download_artifacts` is deprecated.
+
+Why am I seeing this?
+    Your project "{project}" has been migrated to new structure.
+    Old version of `neptune-api` is not supporting downloading artifact directories.
+    We recommend you to use new version of api: `neptune.new`.
+    {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+
+If you don't want to adapt your code to new api yet,
+you can use `download_artifact` and download files one by one.
+"""
+
+    def __init__(self, experiment):
+        assert self.message is not None
+        super().__init__(
+            self.message.format(
+                project=experiment._project.internal_id,
+                **STYLES,
+            )
+        )
+
+
+class DownloadArtifactUnsupportedException(UnsupportedInAlphaException):
+    message = """
+{h1}
+----DownloadArtifactUnsupportedException-----------------------------------------------------------------------
+{end}
+Neptune Client Library was not able to download attribute: "{artifact_path}".
+It's not present in experiment {experiment} or is a directory.
+
+Why am I seeing this?
+    Your project "{project}" has been migrated to new structure.
+    Old version of `neptune-api` is not supporting downloading whole artifact directories.
+    We recommend you to use new version of api: `neptune.new`.
+    {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+
+If you don't want to adapt your code to new api yet:
+    - Make sure that artifact "{artifact_path}" is present in experiment "{experiment}".
+    - Make sure that you're addressing artifact which is file, not whole directory.
+"""
+
+    def __init__(self, artifact_path, experiment):
+        assert self.message is not None
+        super().__init__(
+            self.message.format(
+                artifact_path=artifact_path,
+                experiment=experiment.id,
+                project=experiment._project.internal_id,
+                **STYLES,
+            )
+        )
+
+
+class DeleteArtifactUnsupportedInAlphaException(UnsupportedInAlphaException):
+    message = """
+{h1}
+----DeleteArtifactUnsupportedInAlphaException-----------------------------------------------------------------------
+{end}
+Neptune Client Library was not able to delete attribute: "{artifact_path}".
+It's not present in experiment {experiment} or is a directory.
+
+Why am I seeing this?
+    Your project "{project}" has been migrated to new structure.
+    Old version of `neptune-api` is not supporting deleting whole artifact directories.
+    We recommend you to use new version of api: `neptune.new`.
+    {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+
+If you don't want to adapt your code to new api yet:
+    - Make sure that artifact "{artifact_path}" is present in experiment "{experiment}".
+    - Make sure that you're addressing artifact which is file, not whole directory.
+"""
+
+    def __init__(self, artifact_path, experiment):
+        assert self.message is not None
+        super().__init__(
+            self.message.format(
+                artifact_path=artifact_path,
+                experiment=experiment.id,
+                project=experiment._project.internal_id,
+                **STYLES,
+            )
+        )

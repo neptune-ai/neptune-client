@@ -160,6 +160,15 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def download_data(self, experiment, path, destination):
         pass
 
+    def download_sources(self, experiment, path=None, destination_dir=None):
+        pass
+
+    def download_artifacts(self, experiment, path=None, destination_dir=None):
+        pass
+
+    def download_artifact(self, experiment, path=None, destination_dir=None):
+        pass
+
 
 class NoopObject(object):
 

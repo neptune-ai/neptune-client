@@ -21,8 +21,26 @@
 import sys
 from datetime import datetime
 
+from requests import HTTPError
+
 import neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
+from neptune.exceptions import (
+    DeleteArtifactUnsupportedInAlphaException,
+    DownloadArtifactUnsupportedException,
+    DownloadArtifactsUnsupportedException,
+    DownloadSourcesException,
+    FileNotFound,
+)
+from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client \
+    import HostedAlphaLeaderboardApiClient
+
+
+def get_api_version(exp):
+    backend = exp._backend
+    if isinstance(backend, HostedAlphaLeaderboardApiClient):
+        return 2
+    return 1
 
 
 class OldClientFeatures(ClientFeatures):
@@ -43,6 +61,9 @@ class OldClientFeatures(ClientFeatures):
         )
 
         exp = neptune.get_experiment()
+
+        self._api_version = get_api_version(exp)
+
         properties = exp.get_properties()
         assert properties['init_text_property'] == 'some text'
         assert properties['init_number property'] == '42'
@@ -50,14 +71,35 @@ class OldClientFeatures(ClientFeatures):
 
         assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2'}
 
+        # download sources
+        if self._api_version == 1:
+            # old domain
+
+            with self.with_check_if_file_appears('old_client.py.zip'):
+                exp.download_sources('alpha_integration_dev/old_client.py')
+            with self.with_check_if_file_appears('alpha_integration_dev.zip'):
+                exp.download_sources('alpha_integration_dev')
+
+            with self.with_assert_raises(FileNotFound):
+                exp.download_sources('non_existing')
+        else:
+            # new api
+
+            with self.with_check_if_file_appears('files.zip'):
+                exp.download_sources()
+            with self.with_assert_raises(DownloadSourcesException):
+                exp.download_sources('whatever')
+            with self.with_check_if_file_appears('file_set_sources/files.zip'):
+                exp.download_sources(destination_dir='file_set_sources')
+
     def modify_tags(self):
         neptune.append_tags('tag1')
         neptune.append_tag(['tag2_to_remove', 'tag3'])
-        # neptune.remove_tag('tag2_to_remove')  # TODO: NPT-9222
-        # neptune.remove_tag('tag4_remove_non_existing')  # TODO: NPT-9222
+        neptune.remove_tag('tag2_to_remove')
+        neptune.remove_tag('tag4_remove_non_existing')
 
         exp = neptune.get_experiment()
-        assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag2_to_remove', 'tag3'}
+        assert set(exp.get_tags()) == {'initial tag 1', 'initial tag 2', 'tag1', 'tag3'}
 
     def modify_properties(self):
         neptune.set_property('prop', 'some text')
@@ -130,13 +172,66 @@ class OldClientFeatures(ClientFeatures):
         with self.with_check_if_file_appears('custom_dest/something.txt'):
             exp.download_artifact('something.txt', 'custom_dest')
 
+        # destination dirs
         neptune.log_artifact(self.text_file_path, destination='dir/text file artifact')
+        neptune.log_artifact(self.text_file_path, destination='dir/artifact_to_delete')
+
+        # deleting
+        neptune.delete_artifacts('dir/artifact_to_delete')
+
+        # streams
         with open(self.text_file_path, mode='r') as f:
             neptune.send_artifact(f, destination='file stream.txt')
-        neptune.log_artifact(self.img_path, destination='dir to delete/art1')
-        neptune.log_artifact(self.img_path, destination='dir to delete/art2')
-        # neptune.delete_artifacts('dir to delete')  # doesn't work for alpha NPT-9250
-        neptune.delete_artifacts('dir to delete/art1')
+
+    def handle_directories(self):
+        exp = neptune.get_experiment()
+
+        # download_artifacts
+        neptune.send_artifact(self.data_dir)
+        if self._api_version == 1:
+            with self.with_check_if_file_appears('output.zip'):
+                exp.download_artifacts()
+        else:
+            with self.with_assert_raises(DownloadArtifactsUnsupportedException):
+                exp.download_artifacts()
+
+        # create some nested artifacts
+        neptune.log_artifact(self.img_path, destination='main dir/sub dir/art1')
+        neptune.log_artifact(self.img_path, destination='main dir/sub dir/art2')
+        neptune.log_artifact(self.img_path, destination='main dir/sub dir/art3')
+
+        # downloading artifact - download_artifact
+        # non existing artifact
+        if self._api_version == 1:
+            with self.with_assert_raises(FileNotFound):
+                exp.download_artifact('main dir/sub dir/art100')
+        else:
+            with self.with_assert_raises(DownloadArtifactUnsupportedException):
+                exp.download_artifact('main dir/sub dir/art100')
+        # artifact directories
+        if self._api_version == 1:
+            with self.with_assert_raises(HTTPError):
+                exp.download_artifact('main dir/sub dir')
+        else:
+            with self.with_assert_raises(DownloadArtifactUnsupportedException):
+                exp.download_artifact('main dir/sub dir')
+
+        # deleting artifacts
+        neptune.delete_artifacts('main dir/sub dir/art1')
+
+        # delete non existing artifact
+        if self._api_version == 1:
+            neptune.delete_artifacts('main dir/sub dir/art100')
+        else:
+            with self.with_assert_raises(DeleteArtifactUnsupportedInAlphaException):
+                neptune.delete_artifacts('main dir/sub dir/art100')
+
+        # delete dir
+        if self._api_version == 1:
+            neptune.delete_artifacts('main dir/sub dir')
+        else:
+            with self.with_assert_raises(DeleteArtifactUnsupportedInAlphaException):
+                neptune.delete_artifacts('main dir/sub dir')
 
     def finalize(self):
         pass

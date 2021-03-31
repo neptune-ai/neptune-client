@@ -34,7 +34,7 @@ from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPF
     HTTPGatewayTimeout, HTTPBadGateway
 
 from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, Unauthorized, SSLError
-from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotAFile
+from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotADirectory, NotAFile
 from neptune.git_info import GitInfo
 
 _logger = logging.getLogger(__name__)
@@ -74,6 +74,19 @@ def validate_notebook_path(path):
 
     if not os.path.isfile(path):
         raise NotAFile(path)
+
+
+def assure_directory_exists(destination_dir):
+    """Check if `destination_dir` DIRECTORY exists, or creates one"""
+    if not destination_dir:
+        destination_dir = os.getcwd()
+
+    if not os.path.exists(destination_dir):
+        os.makedirs(destination_dir)
+    elif not os.path.isdir(destination_dir):
+        raise NotADirectory(destination_dir)
+
+    return destination_dir
 
 
 def align_channels_on_x(dataframe):
