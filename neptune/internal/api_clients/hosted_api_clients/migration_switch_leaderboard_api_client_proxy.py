@@ -16,13 +16,16 @@
 
 import logging
 import threading
+from typing import TYPE_CHECKING
 
 from neptune.backend import LeaderboardApiClient
 
 from neptune.exceptions import ProjectMigratedToNewStructure
-from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
     HostedNeptuneLeaderboardApiClient
+
+if TYPE_CHECKING:
+    from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 
 _logger = logging.getLogger(__name__)
 
@@ -30,14 +33,17 @@ _logger = logging.getLogger(__name__)
 # pylint: disable=abstract-method
 class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
 
-    def __init__(self, api_client: HostedNeptuneLeaderboardApiClient, backend_client: HostedNeptuneBackendApiClient):
+    def __init__(self, api_client: HostedNeptuneLeaderboardApiClient, backend_client: 'HostedNeptuneBackendApiClient'):
         self._client = api_client
         self._backend_client = backend_client
 
         self._lock = threading.RLock()
         self._switched = False
 
-    def __getattr__(self, item):
+    def __getattribute__(self, item):
+        if item not in dir(LeaderboardApiClient):
+            return super().__getattribute__(item)
+
         def func(*args, **kwargs):
             try:
                 return getattr(self._client, item)(*args, **kwargs)
@@ -48,5 +54,5 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
                         self._client = self._backend_client.get_new_leaderboard_client()
                         self._switched = True
                     self._lock.release()
-                return getattr(self._client, item)
+                return getattr(self._client, item)(*args, **kwargs)
         return func
