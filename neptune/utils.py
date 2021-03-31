@@ -234,7 +234,12 @@ def parse_error_type(ex):
         return None
 
 
+migration_reported = False
+
+
 def print_migration_in_progress_message():
+    global migration_reported
+    migration_reported = True
     click.echo(click.style("""
 NOTICE: Attention needed
 Your Neptune project is currently being migrated to the new structure. 
@@ -249,7 +254,7 @@ If you think this operation takes too long please contact Neptune support:
 
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
-        migration_reported = False
+        global migration_reported
         retries = 11
         retry = 0
         while retry < retries:
@@ -267,7 +272,6 @@ def with_api_exceptions_handler(func):
                     retry = min(retry + 1, 8)
                     if not migration_reported:
                         print_migration_in_progress_message()
-                        migration_reported = True
                     time.sleep(2 ** retry)
                     continue
                 else:
@@ -301,7 +305,6 @@ def with_api_exceptions_handler(func):
                     retry = min(retry + 1, 8)
                     if not migration_reported:
                         print_migration_in_progress_message()
-                        migration_reported = True
                     time.sleep(2 ** retry)
                     continue
                 elif status_code in (

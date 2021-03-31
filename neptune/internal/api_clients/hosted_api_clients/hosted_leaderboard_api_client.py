@@ -898,7 +898,8 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
         ]
 
     def _convert_to_experiment(self, api_experiment, project):
-        return Experiment(backend=self,
+        # pylint: disable=protected-access
+        return Experiment(backend=project._backend,
                           project=project,
                           _id=api_experiment.shortId,
                           internal_id=api_experiment.id)
