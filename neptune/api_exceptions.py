@@ -55,7 +55,7 @@ class Unauthorized(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+      See: https://docs-legacy.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
       
     - Verify if you set your Project qualified name correctly
       The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
@@ -78,7 +78,7 @@ class Forbidden(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+      See: https://docs-legacy.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
       
     - Verify if you set your Project qualified name correctly
       The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
@@ -101,7 +101,7 @@ class InvalidApiKey(NeptuneApiException):
 Your API token is invalid.
     
 Learn how to get it in this docs page:
-https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+https://docs-legacy.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
 
 There are two options to add it:
     - specify it in your code 
@@ -126,10 +126,10 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-legacy.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+    - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
         inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
         super(InvalidApiKey, self).__init__(message.format(**inputs))
