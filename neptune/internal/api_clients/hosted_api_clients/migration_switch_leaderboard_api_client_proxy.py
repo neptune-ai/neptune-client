@@ -16,6 +16,7 @@
 
 import logging
 import threading
+from functools import wraps
 from typing import Dict, TYPE_CHECKING
 
 from neptune.model import ChannelWithLastValue
@@ -34,17 +35,18 @@ _logger = logging.getLogger(__name__)
 
 # pylint: disable=protected-access
 def with_migration_handling(func):
-    def wrapper(self: 'MigrationSwitchLeaderboardApiClientProxy', *args, **kwargs):
+    @wraps(func)
+    def wrapper(api_proxy: 'MigrationSwitchLeaderboardApiClientProxy', *args, **kwargs):
         try:
-            return func(self, *args, **kwargs)
+            return func(api_proxy, *args, **kwargs)
         except ProjectMigratedToNewStructure:
-            if not self._switched:
-                self._lock.acquire()
-                if not self._switched:
-                    self._client = self._backend_client.get_new_leaderboard_client()
-                    self._switched = True
-                self._lock.release()
-            return func(self, *args, **kwargs)
+            if not api_proxy._switched:
+                api_proxy._lock.acquire()
+                if not api_proxy._switched:
+                    api_proxy._client = api_proxy._backend_client.get_new_leaderboard_client()
+                    api_proxy._switched = True
+                api_proxy._lock.release()
+            return func(api_proxy, *args, **kwargs)
 
     return wrapper
 
