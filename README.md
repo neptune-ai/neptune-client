@@ -79,7 +79,7 @@ Neptune can especially helpful with the following problems:
 * [Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)
 
 # Use Neptune with your favourite AI/ML libraries
-![frameworks-logos](https://docs.neptune.ai/_static/images/integrations/framework-logos.png)
+![frameworks-logos](https://neptune.ai/wp-content/uploads/framework-logos.png)
 
 Neptune comes with **25+ integrations** with Python libraries popular in machine learning, deep learning and reinforcement learning.
 
@@ -98,7 +98,7 @@ Integrations lets you automatically:
 
 ## PyTorch Lightning
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2020/02/PyTorch-blue.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/PyTorch-blue.png" width="400" /><br><br>
 </div>
 
 PyTorch Lightning is a lightweight PyTorch wrapper for high-performance AI research. You can automatically log PyTorch Lightning experiments to Neptune using `NeptuneLogger` (part of the pytorch-lightning library).
@@ -132,7 +132,7 @@ Check full code example:
 
 ## TensorFow/Keras
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2020/04/keras_metrics-3.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/keras_metrics-3.png" width="400" /><br><br>
 </div>
 
 TensorFlow is an open source deep learning framework commonly used for building neural network models. Keras is an official higher level API on top of TensorFlow. Neptune helps with keeping track of model training metadata.
@@ -172,7 +172,7 @@ Check full code example:
 
 ## Use with Scikit-learn
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2019/08/1200px-Scikit_learn_logo_small.svg.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/1200px-Scikit_learn_logo_small.svg.png" width="400" /><br><br>
 </div>
 
 Scikit-learn is an open source machine learning framework commonly used for building predictive models. Neptune helps with keeping track of model training metadata.
@@ -205,7 +205,7 @@ Check full code example:
 
 ## Use with LightGBM
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2019/08/LightGBM-e1612188069560.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/Lightgbm_logo_nobg.png" width="400" /><br><br>
 </div>
 
 LightGBM is a popular gradient boosting library.
@@ -251,7 +251,7 @@ Check full code example:
 
 ## Use with Optuna
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2020/03/optuna-logo.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/optuna-logo.png" width="400" /><br><br>
 </div>
 
 Optuna is an open source hyperparameter optimization framework to automate hyperparameter search.
@@ -309,12 +309,12 @@ If you got stuck or simply want to talk to us about something here are your opti
 
 # Neptune.ai is trusted by great companies
 ![Roche](https://neptune.ai/wp-content/uploads/Roche-logo.png)
-![nnaisense](https://neptune.ai/wp-content/uploads/2020/07/NNAISENSE.png)
-![senseye](https://neptune.ai/wp-content/uploads/2020/06/Senseye-1.png)
+![nnaisense](https://neptune.ai/wp-content/uploads/NNAISENSE.png)
+![senseye](https://neptune.ai/wp-content/uploads/Senseye-1.png)
 
-![zestyai](https://neptune.ai/wp-content/uploads/2020/07/Zesty.png)
-![newyorker](https://neptune.ai/wp-content/uploads/2020/07/NewYorker-2.png)
-![intive](https://neptune.ai/wp-content/uploads/2020/07/Intive-1.png)
+![zestyai](https://neptune.ai/wp-content/uploads/Zesty.png)
+![newyorker](https://neptune.ai/wp-content/uploads/NewYorker-2.png)
+![intive](https://neptune.ai/wp-content/uploads/Intive-1.png)
 
 # People behind Neptune
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
