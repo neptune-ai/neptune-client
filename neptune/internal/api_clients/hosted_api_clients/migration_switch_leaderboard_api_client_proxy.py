@@ -105,8 +105,8 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
         return self._client.get_leaderboard_entries(project, entry_types, ids, states, owners, tags, min_running_time)
 
     @with_migration_handling
-    def get_channel_points_csv(self, experiment, channel_internal_id):
-        return self._client.get_channel_points_csv(experiment, channel_internal_id)
+    def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
+        return self._client.get_channel_points_csv(experiment, channel_internal_id, channel_name)
 
     @with_migration_handling
     def get_metrics_csv(self, experiment):
@@ -180,8 +180,8 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
         return self._client.get_channels(experiment)
 
     @with_migration_handling
-    def reset_channel(self, experiment, channel_id, channel_type):
-        return self._client.reset_channel(experiment, channel_id, channel_type)
+    def reset_channel(self, experiment, channel_id, channel_name, channel_type):
+        return self._client.reset_channel(experiment, channel_id, channel_name, channel_type)
 
     @with_migration_handling
     def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:

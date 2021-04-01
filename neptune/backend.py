@@ -65,7 +65,7 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def get_channel_points_csv(self, experiment, channel_internal_id):
+    def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
         pass
 
     @abstractmethod
@@ -136,7 +136,7 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def reset_channel(self, experiment, channel_id, channel_type):
+    def reset_channel(self, experiment, channel_id, channel_name, channel_type):
         pass
 
     @abstractmethod

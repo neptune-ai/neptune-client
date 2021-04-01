@@ -92,8 +92,11 @@ class ChannelValue(object):
 
 
 class ChannelIdWithValues:
-    def __init__(self, channel_id, channel_values):
+    def __init__(self, channel_id, channel_name, channel_type, channel_namespace, channel_values):
         self._channel_id = channel_id
+        self._channel_name = channel_name
+        self._channel_type = channel_type
+        self._channel_namespace = channel_namespace
         self._channel_values = channel_values
 
     @property
@@ -101,20 +104,27 @@ class ChannelIdWithValues:
         return self._channel_id
 
     @property
+    def channel_name(self) -> str:
+        return self._channel_name
+
+    @property
     def channel_values(self) -> List[ChannelValue]:
         return self._channel_values
 
     @property
     def channel_type(self) -> ChannelValueType:
-        unique_channel_value_types = set([
-            ch_val.value_type for ch_val in self.channel_values
-        ])
-        if len(unique_channel_value_types) > 1:
-            raise NeptuneException(f'There are mixed value types in this channel: {self.channel_id}')
-        if not unique_channel_value_types:
-            raise NeptuneException(f"Can't determine type of channel: {self.channel_id}")
+        if self._channel_type == ChannelType.NUMERIC.value:
+            return ChannelValueType.NUMERIC_VALUE
+        elif self._channel_type == ChannelType.TEXT.value:
+            return ChannelValueType.TEXT_VALUE
+        elif self._channel_type == ChannelType.IMAGE.value:
+            return ChannelValueType.IMAGE_VALUE
+        else:
+            raise NeptuneException(f"Unknown channel type: {self._channel_type}")
 
-        return next(iter(unique_channel_value_types))
+    @property
+    def channel_namespace(self) -> ChannelNamespace:
+        return self._channel_namespace
 
     def __eq__(self, other):
         return self.channel_id == other.channel_id and self.channel_values == other.channel_values

@@ -135,21 +135,22 @@ class ChannelsValuesSendingThread(NeptuneThread):
         self._sleep_time = self._SLEEP_TIME - (time.time() - send_start)
 
     def _send_values(self, queued_channels_values):
-        def get_channel_id(value):
-            return value.channel_id
+        def get_channel_metadata(value):
+            return value.channel_id, value.channel_name, value.channel_type, value.channel_namespace
 
-        queued_grouped_by_channel = {channel_id: list(values)
-                                     for channel_id, values
-                                     in groupby(sorted(queued_channels_values, key=get_channel_id),
-                                                get_channel_id)}
+        queued_grouped_by_channel = {channel_metadata: list(values)
+                                     for channel_metadata, values
+                                     in groupby(sorted(queued_channels_values, key=get_channel_metadata),
+                                                get_channel_metadata)}
         channels_with_values = []
-        for channel_id in queued_grouped_by_channel:
+        for channel_metadata in queued_grouped_by_channel:
             channel_values = []
-            for queued_value in queued_grouped_by_channel[channel_id]:
+            for queued_value in queued_grouped_by_channel[channel_metadata]:
                 channel_values.append(ChannelValue(ts=queued_value.channel_value.ts,
                                                    x=queued_value.channel_value.x,
                                                    y=queued_value.channel_value.y))
-            channels_with_values.append(ChannelIdWithValues(channel_id, channel_values))
+            channels_with_values.append(
+                ChannelIdWithValues(*channel_metadata, channel_values))
 
         try:
             # pylint:disable=protected-access

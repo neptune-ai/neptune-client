@@ -67,7 +67,7 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def get_leaderboard_entries(self, project, entry_types, ids, states, owners, tags, min_running_time):
         return []
 
-    def get_channel_points_csv(self, experiment, channel_internal_id):
+    def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
         return StringIO()
 
     def get_metrics_csv(self, experiment):
@@ -118,7 +118,7 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def create_channel(self, experiment, name, channel_type):
         return NoopObject()
 
-    def reset_channel(self, experiment, channel_id, channel_type):
+    def reset_channel(self, experiment, channel_id, channel_name, channel_type):
         pass
 
     def get_channels(self, experiment):
