@@ -304,17 +304,21 @@ If you got stuck or simply want to talk to us about something here are your opti
 
 * [documentation](https://docs.neptune.ai),
 * [video tutorials](https://www.youtube.com/playlist?list=PLKePQLVx9tOd8TEGdG4PAKz0Owqdv1aaw),
-* Chat! When in application click on the [blue message icon](https://docs.neptune.ai/_static/images/getting-started/intercom.gif) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP),
+* Chat! When in application click on the [blue message icon](https://docs.neptune.ai/getting-started/getting-help#chat) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP),
 * You can just shoot us an email at [contact@neptune.ai](mailto:contact@neptune.ai).
 
 # Neptune.ai is trusted by great companies
-![Roche](https://neptune.ai/wp-content/uploads/Roche-logo.png)
-![nnaisense](https://neptune.ai/wp-content/uploads/NNAISENSE.png)
-![senseye](https://neptune.ai/wp-content/uploads/Senseye-1.png)
+<div align="center">
+  <img src="https://neptune.ai/wp-content/uploads/Roche-logo.png" width="300" />
+  <img src="https://neptune.ai/wp-content/uploads/NNAISENSE.png" width="300" />
+  <img src="https://neptune.ai/wp-content/uploads/Senseye-1.png" width="300" />
+</div>
 
-![zestyai](https://neptune.ai/wp-content/uploads/Zesty.png)
-![newyorker](https://neptune.ai/wp-content/uploads/NewYorker-2.png)
-![intive](https://neptune.ai/wp-content/uploads/Intive-1.png)
+<div align="center">
+  <img src="https://neptune.ai/wp-content/uploads/Zesty.png" width="300" />
+  <img src="https://neptune.ai/wp-content/uploads/NewYorker-2.png" width="300" />
+  <img src="https://neptune.ai/wp-content/uploads/Intive-1.png" width="300" />
+</div>
 
 # People behind Neptune
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
