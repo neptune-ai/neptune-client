@@ -64,7 +64,8 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def get_project_members(self, project_identifier):
         return []
 
-    def get_leaderboard_entries(self, project, entry_types, ids, states, owners, tags, min_running_time):
+    def get_leaderboard_entries(
+            self, project, entry_types=None, ids=None, states=None, owners=None, tags=None, min_running_time=None):
         return []
 
     def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
@@ -91,7 +92,7 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def create_notebook(self, project):
         return NoopObject()
 
-    def create_checkpoint(self, notebook_id, jupyter_path, _file):
+    def create_checkpoint(self, notebook_id, jupyter_path, _file=None):
         pass
 
     def get_experiment(self, experiment_id):

@@ -238,6 +238,7 @@ migration_reported = False
 
 
 def print_migration_in_progress_message():
+    # pylint: disable=global-statement
     global migration_reported
     migration_reported = True
     click.echo(click.style("""
@@ -254,6 +255,7 @@ If you think this operation takes too long please contact Neptune support:
 
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
+        # pylint: disable=global-statement
         global migration_reported
         retries = 11
         retry = 0
