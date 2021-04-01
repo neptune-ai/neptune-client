@@ -72,11 +72,11 @@ neptune.log_artifact('model_weights.pth')
 # What is Neptune good for?
 Neptune can especially helpful with the following problems:
 
-* [Logging experiments metadata](https://docs.neptune.ai/logging-and-managing-experiment-results/index.html)
-* [Monitoring ML runs live](https://docs.neptune.ai/getting-started/quick-starts/how-to-monitor-live.html#use-cases-monitor-runs-live)
-* [Organizing and exploring experiments results](https://docs.neptune.ai/organizing-and-exploring-results-in-the-ui/index.html)
-* [Comparing/debugging ML experiments and models](https://docs.neptune.ai/getting-started/quick-starts/how-to-compare-experiments.html#use-cases-compare-and-debug-experiments)
-* [Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)
+* [Logging runs metadata](https://docs.neptune.ai/user-guides/logging-and-managing-runs-results)
+* [Monitoring ML runs live](https://docs.neptune.ai/getting-started/quick-starts/how-to-monitor-ml-runs-live-step-by-step-guide)
+* [Organizing and exploring runs](https://docs.neptune.ai/user-guides/organizing-and-exploring-results-in-the-ui)
+* [Comparing/debugging ML runs and models](https://docs.neptune.ai/user-guides/organizing-and-exploring-results-in-the-ui/comparing-runs)
+* [Sharing results of experiments with your team/departament](https://docs.neptune.ai/user-guides/sharing-results-and-models-with-the-team)
 
 # Use Neptune with your favourite AI/ML libraries
 ![frameworks-logos](https://neptune.ai/wp-content/uploads/framework-logos.png)
@@ -92,9 +92,9 @@ Integrations lets you automatically:
 * save model checkpoints,
 * log interactive visualizations,
 * log csv files, pandas Datraframes,
-* [log much more](https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment-data.html#what-you-can-log).
+* [log much more](https://docs.neptune.ai/user-guides/logging-and-managing-runs-results/logging-runs-data#what-objects-can-you-log-to-neptune).
 
-### [All integrations](https://docs.neptune.ai/integrations/index.html)
+### [All integrations](https://docs.neptune.ai/essentials/integrations)
 
 ## PyTorch Lightning
 <div align="center">
@@ -321,4 +321,4 @@ Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
 Piotr, Michał, Jakub, Paulina, Kamil, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Szymon, Jakub, Maciej, Piotr, Paweł, Patrycja, Grzegorz, Paweł, Natalia, Marcin and [you?](https://neptune.ai/jobs)
 
-![neptune.ai](https://neptune.ai/wp-content/uploads/2020/04/logo.png)
+![neptune.ai](https://neptune.ai/wp-content/uploads/logo.png)
