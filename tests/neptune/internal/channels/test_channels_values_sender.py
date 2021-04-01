@@ -87,6 +87,9 @@ class TestChannelsValuesSender(unittest.TestCase):
         # pylint: disable=protected-access
         self._EXPERIMENT._send_channels_values.assert_called_with([ChannelIdWithValues(
             channel_id=self._TEXT_CHANNEL.id,
+            channel_name=self._TEXT_CHANNEL.name,
+            channel_type=self._TEXT_CHANNEL.channelType,
+            channel_namespace=ChannelNamespace.USER,
             channel_values=[channel_value]
         )])
 
@@ -108,14 +111,23 @@ class TestChannelsValuesSender(unittest.TestCase):
         self.assertEqual(self._EXPERIMENT._send_channels_values.mock_calls, [
             mock.call._send_channels_values([ChannelIdWithValues(
                 channel_id=self._TEXT_CHANNEL.id,
+                channel_name=self._TEXT_CHANNEL.name,
+                channel_type=self._TEXT_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=channels_values[0:self._BATCH_SIZE]
             )]),
             mock.call._send_channels_values([ChannelIdWithValues(
                 channel_id=self._TEXT_CHANNEL.id,
+                channel_name=self._TEXT_CHANNEL.name,
+                channel_type=self._TEXT_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=channels_values[self._BATCH_SIZE:self._BATCH_SIZE * 2]
             )]),
             mock.call._send_channels_values([ChannelIdWithValues(
                 channel_id=self._TEXT_CHANNEL.id,
+                channel_name=self._TEXT_CHANNEL.name,
+                channel_type=self._TEXT_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=channels_values[self._BATCH_SIZE * 2:self._BATCH_SIZE * 3]
             )])
         ])
@@ -146,14 +158,23 @@ class TestChannelsValuesSender(unittest.TestCase):
         self.assertEqual(self._EXPERIMENT._send_channels_values.mock_calls, [
             mock.call._send_channels_values([ChannelIdWithValues(
                 channel_id=self._IMAGE_CHANNEL.id,
+                channel_name=self._IMAGE_CHANNEL.name,
+                channel_type=self._IMAGE_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=channels_values[0:self._IMAGES_BATCH_SIZE]
             )]),
             mock.call._send_channels_values([ChannelIdWithValues(
                 channel_id=self._IMAGE_CHANNEL.id,
+                channel_name=self._IMAGE_CHANNEL.name,
+                channel_type=self._IMAGE_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=channels_values[self._IMAGES_BATCH_SIZE:self._IMAGES_BATCH_SIZE * 2]
             )]),
             mock.call._send_channels_values([ChannelIdWithValues(
                 channel_id=self._IMAGE_CHANNEL.id,
+                channel_name=self._IMAGE_CHANNEL.name,
+                channel_type=self._IMAGE_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=channels_values[self._IMAGES_BATCH_SIZE * 2:]
             )])
         ])
@@ -195,14 +216,23 @@ class TestChannelsValuesSender(unittest.TestCase):
         self.assertEqual(sorted(args[0]), sorted([
             ChannelIdWithValues(
                 channel_id=self._NUMERIC_CHANNEL.id,
+                channel_name=self._NUMERIC_CHANNEL.name,
+                channel_type=self._NUMERIC_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=numeric_values
             ),
             ChannelIdWithValues(
                 channel_id=self._TEXT_CHANNEL.id,
+                channel_name=self._NUMERIC_CHANNEL.name,
+                channel_type=self._NUMERIC_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=text_values
             ),
             ChannelIdWithValues(
                 channel_id=self._IMAGE_CHANNEL.id,
+                channel_name=self._NUMERIC_CHANNEL.name,
+                channel_type=self._NUMERIC_CHANNEL.channelType,
+                channel_namespace=ChannelNamespace.USER,
                 channel_values=image_values
             )]))
 
@@ -234,6 +264,9 @@ class TestChannelsValuesSender(unittest.TestCase):
         semaphore.acquire()
         self._EXPERIMENT._send_channels_values.assert_called_with([ChannelIdWithValues(
             channel_id=self._NUMERIC_CHANNEL.id,
+            channel_name=self._NUMERIC_CHANNEL.name,
+            channel_type=self._NUMERIC_CHANNEL.channelType,
+            channel_namespace=ChannelNamespace.USER,
             channel_values=numeric_values
         )])
 
