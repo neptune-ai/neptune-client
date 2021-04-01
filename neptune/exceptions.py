@@ -78,9 +78,9 @@ before you ran:
     {python}neptune.create_experiment(){end}
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
     
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """.format(**STYLES)
         super(NeptuneUninitializedException, self).__init__(message)
 
@@ -123,9 +123,9 @@ To install run:
     {bash}pip install {library}{end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/getting-started/installation/index.html
+    - https://docs-legacy.neptune.ai/getting-started/installation/index.html
     
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
         inputs = dict(list({'library': library}.items()) + list(STYLES.items()))
         super(NeptuneLibraryNotInstalledException, self).__init__(message.format(**inputs))
@@ -150,9 +150,9 @@ Looks like you forgot to run:
     {python}neptune.create_experiment(){end}
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
         super(NeptuneNoExperimentContextException, self).__init__(message.format(**STYLES))
 
@@ -166,7 +166,7 @@ class NeptuneMissingApiTokenException(NeptuneException):
 Neptune client couldn't find your API token.
 
 Learn how to get it in this docs page:
-https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+https://docs-legacy.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
 
 There are two options to add it:
     - specify it in your code 
@@ -191,10 +191,10 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-legacy.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
+    - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
         inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
         super(NeptuneMissingApiTokenException, self).__init__(message.format(**inputs))
@@ -231,10 +231,10 @@ and skip the {bold}project_qualified_name{end} argument of {bold}neptune.init(){
     {python}neptune.init(api_token='YOUR_API_TOKEN'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/workspace-project-and-user-management/index.html
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-legacy.neptune.ai/workspace-project-and-user-management/index.html
+    - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
     
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
         inputs = dict(list({'env_project': envs.PROJECT_ENV_NAME}.items()) + list(STYLES.items()))
         super(NeptuneMissingProjectQualifiedNameException, self).__init__(message.format(**inputs))
@@ -260,10 +260,10 @@ For example, a project {correct}neptune-ai/credit-default-prediction{end} parts 
 The URL to this project looks like this: https://ui.neptune.ai/neptune-ai/credit-default-prediction
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/workspace-project-and-user-management/index.html
-    - https://docs.neptune.ai/getting-started/quick-starts/log_first_experiment.html
+    - https://docs-legacy.neptune.ai/workspace-project-and-user-management/index.html
+    - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
         inputs = dict(list({'project_qualified_name': project_qualified_name}.items()) + list(STYLES.items()))
         super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message.format(**inputs))
@@ -296,7 +296,7 @@ What should I do?
     - Check if your computer is connected to the internet.
     - Check if your computer should use any proxy to access internet.
       If so, you may want to use {python}proxies{end} parameter of {python}neptune.init(){end} function.
-      See https://docs.neptune.ai/api-reference/neptune/index.html#neptune.init
+      See https://docs-legacy.neptune.ai/api-reference/neptune/index.html#neptune.init
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
 """
         inputs = dict(list({'host': host}.items()) + list(STYLES.items()))
@@ -328,7 +328,7 @@ Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
     Old version of `neptune-api` is not supporting downloading particular source files.
     We recommend you to use new version of api: `neptune.new`.
-    {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 
 If you don't want to adapt your code to new api yet,
 you can use `download_sources` with `path` parameter set to None.
@@ -356,7 +356,7 @@ Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
     Old version of `neptune-api` is not supporting downloading artifact directories.
     We recommend you to use new version of api: `neptune.new`.
-    {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 
 If you don't want to adapt your code to new api yet,
 you can use `download_artifact` and download files one by one.
@@ -384,7 +384,7 @@ Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
     Old version of `neptune-api` is not supporting downloading whole artifact directories.
     We recommend you to use new version of api: `neptune.new`.
-    {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 
 If you don't want to adapt your code to new api yet:
     - Make sure that artifact "{artifact_path}" is present in experiment "{experiment}".
@@ -415,7 +415,7 @@ Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
     Old version of `neptune-api` is not supporting deleting whole artifact directories.
     We recommend you to use new version of api: `neptune.new`.
-    {correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 
 If you don't want to adapt your code to new api yet:
     - Make sure that artifact "{artifact_path}" is present in experiment "{experiment}".

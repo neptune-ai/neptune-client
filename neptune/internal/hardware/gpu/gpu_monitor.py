@@ -60,7 +60,8 @@ class GPUMonitor(object):
         except NVMLError as e:
             if not GPUMonitor.nvml_error_printed:
                 warning = "Info (NVML): %s. GPU usage metrics may not be reported. For more information, " \
-                          "see https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment" \
+                          "see https://docs-legacy.neptune.ai/logging-and-managing-experiment-results" \
+                          "/logging-experiment" \
                           "-data.html#hardware-consumption "
                 _logger.warning(warning, e)
                 GPUMonitor.nvml_error_printed = True

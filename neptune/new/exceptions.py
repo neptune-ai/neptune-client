@@ -75,7 +75,7 @@ Neptune Client Library encountered an unexpected Internal Error:
 
 Please contact Neptune support.
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({"msg": msg}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -95,7 +95,7 @@ Server response was:
 
 Verify the correctness of your call or contact Neptune support.
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({"status": status, "response": response}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -158,10 +158,10 @@ and skip the {bold}project{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(){end}
 
 You may also want to check the following docs pages:
-    - https://docs-beta.neptune.ai/administration/workspace-project-and-user-management
-    - https://docs-beta.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/administration/workspace-project-and-user-management
+    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'env_project': envs.PROJECT_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -187,10 +187,10 @@ For example, a project {correct}neptune-ai/credit-default-prediction{end} parts 
 The URL to this project looks like this: https://ui.neptune.ai/neptune-ai/credit-default-prediction
 
 You may also want to check the following docs pages:
-    - https://docs-beta.neptune.ai/administration/workspace-project-and-user-management
-    - https://docs-beta.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/administration/workspace-project-and-user-management
+    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'project': project}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -205,7 +205,7 @@ class NeptuneMissingApiTokenException(NeptuneException):
 Neptune client couldn't find your API token.
 
 Learn how to get it in this docs page:
-https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
 
 There are two options to add it:
     - specify it in your code 
@@ -230,10 +230,10 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
-    - https://docs-beta.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -249,7 +249,7 @@ Provided API token is invalid.
 Make sure you copied and provided your API token correctly.
 
 Learn how to get it in this docs page:
-https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
 
 There are two options to add it:
     - specify it in your code 
@@ -274,10 +274,10 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
-    - https://docs-beta.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -300,7 +300,7 @@ Parameters {python}run{end} and {python}custom_run_id{end} of {python}neptune.in
 Make sure you have no {bash}{custom_id_env}{end} environment variable defined
 and no value explicitly passed to `custom_run_id` argument if you meant to resume run.
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'custom_id_env': CUSTOM_RUN_ID_ENV_NAME}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -322,7 +322,7 @@ Your version of neptune-client ({current_version}) library is not supported by t
 
 Please install neptune-client{required_version}
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list(
             {'current_version': current_version, 'required_version': required_version}.items()
@@ -345,7 +345,7 @@ What should I do?
       See (TODO: paste docs link here)
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'host': host}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -375,14 +375,14 @@ What should I do?
         {python}run = neptune.init(mode="offline"){end}
         
 You can read in detail how it works and how to upload your data on the following doc pages:
-    - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes#offline
-    - https://docs-beta.neptune.ai/advanced-user-guides/uploading-offline-data
+    - https://docs.neptune.ai/advanced-user-guides/connection-modes#offline
+    - https://docs.neptune.ai/advanced-user-guides/uploading-offline-data
     
 You may also want to check the following docs pages:
-    - https://docs-beta.neptune.ai/advanced-user-guides/connectivity-issues
-    - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/advanced-user-guides/connectivity-issues
+    - https://docs.neptune.ai/advanced-user-guides/connection-modes
     
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -401,7 +401,7 @@ Server response was:
 
 Please try again later or contact Neptune support.
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({"response": response}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -416,7 +416,7 @@ class Unauthorized(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      See: https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
       
     - Verify if you set up your project correctly
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
@@ -426,7 +426,7 @@ You have no permission to access given resource.
           
    - Ask your organization administrator to grant you necessary privileges to the project
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -441,7 +441,7 @@ class Forbidden(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs-beta.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      See: https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
       
     - Verify if you set up your project correctly
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
@@ -451,7 +451,7 @@ You have no permission to access given resource.
           
    - Ask your organization administrator to grant you necessary privileges to the project
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -470,9 +470,9 @@ You can set connection mode when creating a new run:
     {python}run = neptune.init(mode="async"){end}
     
 You may also want to check the following docs pages:
-    - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/advanced-user-guides/connection-modes
     
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -497,7 +497,7 @@ Don't worry - we are working hard on migrating all the projects and you will be 
 You can find documentation for legacy neptune Python API here:
     - https://docs-legacy.neptune.ai/index.html
     
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'project': project}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -520,7 +520,7 @@ before you ran:
 You may also want to check the following docs pages:
     - TODO: paste docs link here
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """.format(**STYLES)
         super().__init__(message)
 
@@ -538,9 +538,9 @@ Or:
     {bash}pip install neptune-client[{framework}]{end}
 
 You may also want to check the following docs pages:
-    - https://docs-beta.neptune.ai/essentials/integrations
+    - https://docs.neptune.ai/essentials/integrations
     
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'framework': framework}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -576,9 +576,9 @@ wait for all the requests sent by invoking:
 Remember that each use of {python}wait{end} introduces a delay in code execution.
 
 You may also want to check the following docs pages:
-    - https://docs-beta.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/advanced-user-guides/connection-modes
 
-{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """
         inputs = dict(list({'attribute_path': attribute_path}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
