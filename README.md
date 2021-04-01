@@ -72,14 +72,14 @@ neptune.log_artifact('model_weights.pth')
 # What is Neptune good for?
 Neptune can especially helpful with the following problems:
 
-* [Logging experiments metadata](https://docs.neptune.ai/logging-and-managing-experiment-results/index.html)
-* [Monitoring ML runs live](https://docs.neptune.ai/getting-started/quick-starts/how-to-monitor-live.html#use-cases-monitor-runs-live)
-* [Organizing and exploring experiments results](https://docs.neptune.ai/organizing-and-exploring-results-in-the-ui/index.html)
-* [Comparing/debugging ML experiments and models](https://docs.neptune.ai/getting-started/quick-starts/how-to-compare-experiments.html#use-cases-compare-and-debug-experiments)
-* [Sharing results of experiments with your team/departament](https://docs.neptune.ai/getting-started/quick-starts/how-to-share-results.html#use-cases-share-results-with-team)
+* [Logging runs metadata](https://docs.neptune.ai/user-guides/logging-and-managing-runs-results)
+* [Monitoring ML runs live](https://docs.neptune.ai/getting-started/quick-starts/how-to-monitor-ml-runs-live-step-by-step-guide)
+* [Organizing and exploring runs](https://docs.neptune.ai/user-guides/organizing-and-exploring-results-in-the-ui)
+* [Comparing/debugging ML runs and models](https://docs.neptune.ai/user-guides/organizing-and-exploring-results-in-the-ui/comparing-runs)
+* [Sharing results of experiments with your team/departament](https://docs.neptune.ai/user-guides/sharing-results-and-models-with-the-team)
 
 # Use Neptune with your favourite AI/ML libraries
-![frameworks-logos](https://docs.neptune.ai/_static/images/integrations/framework-logos.png)
+![frameworks-logos](https://neptune.ai/wp-content/uploads/framework-logos.png)
 
 Neptune comes with **25+ integrations** with Python libraries popular in machine learning, deep learning and reinforcement learning.
 
@@ -92,13 +92,13 @@ Integrations lets you automatically:
 * save model checkpoints,
 * log interactive visualizations,
 * log csv files, pandas Datraframes,
-* [log much more](https://docs.neptune.ai/logging-and-managing-experiment-results/logging-experiment-data.html#what-you-can-log).
+* [log much more](https://docs.neptune.ai/user-guides/logging-and-managing-runs-results/logging-runs-data#what-objects-can-you-log-to-neptune).
 
-### [All integrations](https://docs.neptune.ai/integrations/index.html)
+### [All integrations](https://docs.neptune.ai/essentials/integrations)
 
 ## PyTorch Lightning
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2020/02/PyTorch-blue.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/PyTorch-blue.png" width="400" /><br><br>
 </div>
 
 PyTorch Lightning is a lightweight PyTorch wrapper for high-performance AI research. You can automatically log PyTorch Lightning experiments to Neptune using `NeptuneLogger` (part of the pytorch-lightning library).
@@ -132,7 +132,7 @@ Check full code example:
 
 ## TensorFow/Keras
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2020/04/keras_metrics-3.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/keras_metrics-3.png" width="400" /><br><br>
 </div>
 
 TensorFlow is an open source deep learning framework commonly used for building neural network models. Keras is an official higher level API on top of TensorFlow. Neptune helps with keeping track of model training metadata.
@@ -172,7 +172,7 @@ Check full code example:
 
 ## Use with Scikit-learn
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2019/08/1200px-Scikit_learn_logo_small.svg.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/1200px-Scikit_learn_logo_small.svg.png" width="400" /><br><br>
 </div>
 
 Scikit-learn is an open source machine learning framework commonly used for building predictive models. Neptune helps with keeping track of model training metadata.
@@ -205,7 +205,7 @@ Check full code example:
 
 ## Use with LightGBM
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2019/08/LightGBM-e1612188069560.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/Lightgbm_logo_nobg.png" width="400" /><br><br>
 </div>
 
 LightGBM is a popular gradient boosting library.
@@ -251,7 +251,7 @@ Check full code example:
 
 ## Use with Optuna
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/2020/03/optuna-logo.png" width="400" /><br><br>
+  <img src="https://neptune.ai/wp-content/uploads/optuna-logo.png" width="400" /><br><br>
 </div>
 
 Optuna is an open source hyperparameter optimization framework to automate hyperparameter search.
@@ -304,21 +304,25 @@ If you got stuck or simply want to talk to us about something here are your opti
 
 * [documentation](https://docs.neptune.ai),
 * [video tutorials](https://www.youtube.com/playlist?list=PLKePQLVx9tOd8TEGdG4PAKz0Owqdv1aaw),
-* Chat! When in application click on the [blue message icon](https://docs.neptune.ai/_static/images/getting-started/intercom.gif) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP),
+* Chat! When in application click on the [blue message icon](https://docs.neptune.ai/getting-started/getting-help#chat) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP),
 * You can just shoot us an email at [contact@neptune.ai](mailto:contact@neptune.ai).
 
 # Neptune.ai is trusted by great companies
-![Roche](https://neptune.ai/wp-content/uploads/Roche-logo.png)
-![nnaisense](https://neptune.ai/wp-content/uploads/2020/07/NNAISENSE.png)
-![senseye](https://neptune.ai/wp-content/uploads/2020/06/Senseye-1.png)
+<div align="center">
+  <img src="https://neptune.ai/wp-content/uploads/Roche-logo.png" width="300" />
+  <img src="https://neptune.ai/wp-content/uploads/NNAISENSE.png" width="300" />
+  <img src="https://neptune.ai/wp-content/uploads/Senseye-1.png" width="300" />
+</div>
 
-![zestyai](https://neptune.ai/wp-content/uploads/2020/07/Zesty.png)
-![newyorker](https://neptune.ai/wp-content/uploads/2020/07/NewYorker-2.png)
-![intive](https://neptune.ai/wp-content/uploads/2020/07/Intive-1.png)
+<div align="center">
+  <img src="https://neptune.ai/wp-content/uploads/Zesty.png" width="300" />
+  <img src="https://neptune.ai/wp-content/uploads/NewYorker-2.png" width="300" />
+  <img src="https://neptune.ai/wp-content/uploads/Intive-1.png" width="300" />
+</div>
 
 # People behind Neptune
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
 Piotr, Michał, Jakub, Paulina, Kamil, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Szymon, Jakub, Maciej, Piotr, Paweł, Patrycja, Grzegorz, Paweł, Natalia, Marcin and [you?](https://neptune.ai/jobs)
 
-![neptune.ai](https://neptune.ai/wp-content/uploads/2020/04/logo.png)
+![neptune.ai](https://neptune.ai/wp-content/uploads/logo.png)
