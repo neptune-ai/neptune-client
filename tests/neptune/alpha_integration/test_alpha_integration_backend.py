@@ -25,7 +25,7 @@ from mock import MagicMock
 from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import \
     HostedAlphaLeaderboardApiClient
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelValue
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNamespace, ChannelValue, ChannelType
 from tests.neptune.new.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL2FscG' \
@@ -54,12 +54,17 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
         )
 
     @freeze_time()
-    def _test_send_channel_values(self, channel_y_elements: List[tuple], expected_operation: str):
+    def _test_send_channel_values(
+            self, channel_y_elements: List[tuple], expected_operation: str, channel_type: ChannelType):
         # given prepared `ChannelIdWithValues`
         channel_id = 'channel_id'
+        channel_name = 'channel_name'
         now_ms = int(time.time() * 1000)
         channel_with_values = ChannelIdWithValues(
             channel_id=channel_id,
+            channel_name=channel_name,
+            channel_type=channel_type.value,
+            channel_namespace=ChannelNamespace.USER,
             channel_values=[
                 ChannelValue(x=None, y={channel_y_key: channel_y_value}, ts=None)
                 for channel_y_key, channel_y_value in channel_y_elements
@@ -73,7 +78,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
         expected_call_args = {
             'experimentId': '00000000-0000-0000-0000-000000000000',
             'operations': [{
-                'path': channel_id,
+                'path': f'logs/{channel_name}',
                 expected_operation: {
                     'entries': [
                         {'value': channel_y_value, 'step': None, 'timestampMilliseconds': now_ms}
@@ -92,14 +97,16 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
             ('text_value', 'Line of text'),
             ('text_value', 'Another line of text'),
         ]
-        self._test_send_channel_values(channel_y_elements, expected_operation='logStrings')
+        self._test_send_channel_values(
+            channel_y_elements, expected_operation='logStrings', channel_type=ChannelType.TEXT)
 
     def test_send_channels_numeric_values(self):
         channel_y_elements = [
             ('numeric_value', 42),
             ('numeric_value', 0.07),
         ]
-        self._test_send_channel_values(channel_y_elements, expected_operation='logFloats')
+        self._test_send_channel_values(
+            channel_y_elements, expected_operation='logFloats', channel_type=ChannelType.NUMERIC)
 
     def test_send_channels_image_values(self):
         """TODO: implement in NPT-9207"""

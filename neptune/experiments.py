@@ -752,7 +752,7 @@ class Experiment(object):
         channel = self._find_channel(log_name, ChannelNamespace.USER)
         if channel is None:
             raise ChannelDoesNotExist(self.id, log_name)
-        self._backend.reset_channel(self, channel.id, channel.channelType)
+        self._backend.reset_channel(self, channel.id, log_name, channel.channelType)
 
     def get_parameters(self):
         """Retrieve parameters for this experiment.
@@ -907,7 +907,7 @@ class Experiment(object):
             channel_id = channels_by_name[channel_name].id
             try:
                 channels_data[channel_name] = pd.read_csv(
-                    self._backend.get_channel_points_csv(self, channel_id),
+                    self._backend.get_channel_points_csv(self, channel_id, channel_name),
                     header=None,
                     names=['x_{}'.format(channel_name), 'y_{}'.format(channel_name)],
                     dtype=float

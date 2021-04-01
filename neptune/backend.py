@@ -58,11 +58,14 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def get_leaderboard_entries(self, project, entry_types, ids, states, owners, tags, min_running_time):
+    def get_leaderboard_entries(self, project,
+                                entry_types=None, ids=None,
+                                states=None, owners=None, tags=None,
+                                min_running_time=None):
         pass
 
     @abstractmethod
-    def get_channel_points_csv(self, experiment, channel_internal_id):
+    def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
         pass
 
     @abstractmethod
@@ -93,7 +96,7 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def create_checkpoint(self, notebook_id, jupyter_path, _file):
+    def create_checkpoint(self, notebook_id, jupyter_path, _file=None):
         pass
 
     @abstractmethod
@@ -133,7 +136,7 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def reset_channel(self, experiment, channel_id, channel_type):
+    def reset_channel(self, experiment, channel_id, channel_name, channel_type):
         pass
 
     @abstractmethod

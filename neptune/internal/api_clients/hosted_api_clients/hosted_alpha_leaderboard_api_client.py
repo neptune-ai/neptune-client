@@ -34,7 +34,7 @@ from neptune.exceptions import DeleteArtifactUnsupportedInAlphaException, Downlo
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client \
     import HostedNeptuneLeaderboardApiClient
-from neptune.internal.channels.channels import ChannelType, ChannelValueType
+from neptune.internal.channels.channels import ChannelNamespace, ChannelType, ChannelValueType
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
@@ -256,15 +256,29 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         raise NeptuneException(
             'This function should never be called for alpha project.')
 
-    def _create_channel(self, experiment: Experiment, channel_id: str, channel_name: str, channel_type: str):
+    @staticmethod
+    def _get_channel_attribute_path(channel_name: str, channel_namespace: ChannelNamespace) -> str:
+        if channel_namespace == ChannelNamespace.USER:
+            prefix = alpha_consts.LOG_ATTRIBUTE_SPACE
+        else:
+            prefix = alpha_consts.MONITORING_ATTRIBUTE_SPACE
+        return f'{prefix}{channel_name}'
+
+    def _create_channel(
+            self,
+            experiment: Experiment,
+            channel_id: str,
+            channel_name: str,
+            channel_type: ChannelType,
+            channel_namespace: ChannelNamespace):
         """This function is responsible for creating 'fake' channels in alpha projects.
 
         Since channels are abandoned in alpha api, we're mocking them using empty logging operation."""
 
-        operation = channel_type_to_operation(ChannelType(channel_type))
+        operation = channel_type_to_operation(channel_type)
 
         log_empty_operation = operation(
-            path=alpha_path_utils.parse_path(channel_id),
+            path=alpha_path_utils.parse_path(self._get_channel_attribute_path(channel_name, channel_namespace)),
             values=[],
         )  # this operation is used to create empty attribute
         self._execute_operations(
@@ -275,7 +289,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             AlphaChannelWithValueDTO(
                 channelId=channel_id,
                 channelName=channel_name,
-                channelType=channel_type,
+                channelType=channel_type.value,
                 x=None,
                 y=None
             )
@@ -286,7 +300,8 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         channel_id = f'{alpha_consts.LOG_ATTRIBUTE_SPACE}{name}'
         return self._create_channel(experiment, channel_id,
                                     channel_name=name,
-                                    channel_type=channel_type)
+                                    channel_type=ChannelType(channel_type),
+                                    channel_namespace=ChannelNamespace.USER)
 
     def _get_channels(self, experiment) -> List[AlphaChannelDTO]:
         try:
@@ -313,7 +328,8 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         channel_id = f'{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}'
         return self._create_channel(experiment, channel_id,
                                     channel_name=name,
-                                    channel_type=ChannelType.TEXT.value)
+                                    channel_type=ChannelType(channel_type),
+                                    channel_namespace=ChannelNamespace.SYSTEM)
 
     @with_api_exceptions_handler
     def get_system_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
@@ -347,7 +363,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                 for ch_value in channel_with_values.channel_values
             ]
             send_operations.append(operation(
-                path=alpha_path_utils.parse_path(channel_with_values.channel_id),
+                path=alpha_path_utils.parse_path(self._get_channel_attribute_path(
+                    channel_with_values.channel_name,
+                    channel_with_values.channel_namespace)),
                 values=ch_values,
             ))
 
@@ -664,18 +682,19 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         return init_operations
 
     @with_api_exceptions_handler
-    def reset_channel(self, experiment, channel_id, channel_type):
+    def reset_channel(self, experiment, channel_id, channel_name, channel_type):
         op = channel_type_to_clear_operation(ChannelType(channel_type))
+        attr_path = self._get_channel_attribute_path(channel_name, ChannelNamespace.USER)
         self._execute_operations(
             experiment=experiment,
-            operations=[op(path=alpha_path_utils.parse_path(channel_id))],
+            operations=[op(path=alpha_path_utils.parse_path(attr_path))],
         )
 
     @with_api_exceptions_handler
-    def _get_channel_tuples_from_csv(self, experiment, channel_internal_id):
+    def _get_channel_tuples_from_csv(self, experiment, channel_attribute_path):
         try:
             csv = self.leaderboard_swagger_client.api.getFloatSeriesValuesCSV(
-                experimentId=experiment.internal_id, attribute=channel_internal_id
+                experimentId=experiment.internal_id, attribute=channel_attribute_path
             ).response().incoming_response.text
             lines = csv.split('\n')[:-1]
             return [line.split(',') for line in lines]
@@ -685,9 +704,10 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                 experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
 
     @with_api_exceptions_handler
-    def get_channel_points_csv(self, experiment, channel_internal_id):
+    def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
         try:
-            values = self._get_channel_tuples_from_csv(experiment, channel_internal_id)
+            channel_attr_path = self._get_channel_attribute_path(channel_name, ChannelNamespace.USER)
+            values = self._get_channel_tuples_from_csv(experiment, channel_attr_path)
             step_and_value = [val[0] + ',' + val[2] for val in values]
             csv = StringIO()
             for line in step_and_value:

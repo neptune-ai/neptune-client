@@ -141,7 +141,7 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
             raise ProjectNotFound(project_identifier=project.full_id)
 
     @with_api_exceptions_handler
-    def get_channel_points_csv(self, experiment, channel_internal_id):
+    def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
         try:
             csv = StringIO()
             csv.write(
@@ -484,7 +484,7 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
         return channels
 
     @with_api_exceptions_handler
-    def reset_channel(self, experiment, channel_id, channel_type):
+    def reset_channel(self, experiment, channel_id, channel_name, channel_type):
         try:
             self.backend_swagger_client.api.resetChannel(
                 id=channel_id
@@ -898,7 +898,8 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
         ]
 
     def _convert_to_experiment(self, api_experiment, project):
-        return Experiment(backend=self,
+        # pylint: disable=protected-access
+        return Experiment(backend=project._backend,
                           project=project,
                           _id=api_experiment.shortId,
                           internal_id=api_experiment.id)
