@@ -55,8 +55,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._drop_operations = False
 
         if sys.version_info >= (3, 7):
+            # pylint: disable=no-member
             os.register_at_fork(after_in_child=self._handle_fork_in_child)
-            
+
     def _handle_fork_in_child(self):
         self._drop_operations = True
 
