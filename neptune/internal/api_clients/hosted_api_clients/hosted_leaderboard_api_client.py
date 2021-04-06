@@ -22,6 +22,7 @@ import logging
 import math
 import os
 import re
+import sys
 import uuid
 from datetime import time
 from functools import partial
@@ -33,6 +34,7 @@ from typing import Dict
 import requests
 import six
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity, HTTPConflict
+from mock import MagicMock
 
 from neptune.api_exceptions import (
     ChannelAlreadyExists,
@@ -72,6 +74,13 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
             '{}/api/leaderboard/swagger.json'.format(self._client_config.api_url),
             self._backend_api_client.http_client
         )
+
+        if sys.version_info >= (3, 7):
+            # pylint: disable=no-member
+            os.register_at_fork(after_in_child=self._handle_fork_in_child)
+
+    def _handle_fork_in_child(self):
+        self.leaderboard_swagger_client = MagicMock()
 
     @property
     def http_client(self):

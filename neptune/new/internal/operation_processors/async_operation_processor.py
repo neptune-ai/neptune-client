@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import logging
+import os
 import sys
 import uuid
 from threading import Event
@@ -51,8 +52,18 @@ class AsyncOperationProcessor(OperationProcessor):
         self._waiting_for_version = 0
         self._waiting_event = Event()
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
+        self._drop_operations = False
+
+        if sys.version_info >= (3, 7):
+            # pylint: disable=no-member
+            os.register_at_fork(after_in_child=self._handle_fork_in_child)
+
+    def _handle_fork_in_child(self):
+        self._drop_operations = True
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
+        if self._drop_operations:
+            return
         self._last_version = self._queue.put(op)
         if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()

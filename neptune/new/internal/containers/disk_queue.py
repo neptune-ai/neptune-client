@@ -127,6 +127,8 @@ class DiskQueue(StorageQueue[T]):
 
     def flush(self):
         self._writer.flush()
+        self._last_ack_file.flush()
+        self._last_put_file.flush()
 
     def close(self):
         self._reader.close()

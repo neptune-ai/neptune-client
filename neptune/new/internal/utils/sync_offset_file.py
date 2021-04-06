@@ -42,5 +42,8 @@ class SyncOffsetFile:
     def read_local(self) -> Optional[int]:
         return self._last
 
+    def flush(self):
+        self._file.flush()
+
     def close(self):
         self._file.close()
