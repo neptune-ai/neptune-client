@@ -18,30 +18,37 @@ import functools
 import glob as globlib
 import json
 import logging
+import math
 import os
+import re
 import sys
 import time
-
-import math
 from json.decoder import JSONDecodeError
 
 import click
 import numpy as np
 import pandas as pd
 import requests
-from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPBadRequest, HTTPForbidden, \
-    HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
-    HTTPGatewayTimeout, HTTPBadGateway
+from bravado.exception import (
+    BravadoConnectionError, BravadoTimeoutError, HTTPBadGateway, HTTPBadRequest,
+    HTTPForbidden, HTTPGatewayTimeout, HTTPInternalServerError, HTTPRequestTimeout,
+    HTTPServerError, HTTPServiceUnavailable, HTTPUnauthorized
+)
 
-from neptune.api_exceptions import ConnectionLost, Forbidden, ServerError, Unauthorized, SSLError
-from neptune.exceptions import InvalidNotebookPath, FileNotFound, NotADirectory, NotAFile, ProjectMigratedToNewStructure
+from neptune import envs
+from neptune.api_exceptions import ConnectionLost, Forbidden, SSLError, ServerError, Unauthorized
+from neptune.exceptions import (
+    FileNotFound, InvalidNotebookPath, NeptuneIncorrectProjectQualifiedNameException,
+    NeptuneMissingProjectQualifiedNameException,
+    NotADirectory, NotAFile, ProjectMigratedToNewStructure
+)
 from neptune.git_info import GitInfo
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 _logger = logging.getLogger(__name__)
 
 IS_WINDOWS = sys.platform == 'win32'
 IS_MACOS = sys.platform == 'darwin'
-
 
 MIGRATION_IN_PROGRESS = 'PROJECT_MIGRATION_IN_PROGRESS'
 MIGRATION_FINISHED = 'NEW_PROJECT_VERSION'
@@ -348,3 +355,14 @@ def is_ipython():
         return ipython is not None
     except ImportError:
         return False
+
+
+def assure_project_qualified_name(project_qualified_name):
+    project_qualified_name = project_qualified_name or os.getenv(envs.PROJECT_ENV_NAME)
+
+    if not project_qualified_name:
+        raise NeptuneMissingProjectQualifiedNameException()
+    if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project_qualified_name):
+        raise NeptuneIncorrectProjectQualifiedNameException(project_qualified_name)
+
+    return project_qualified_name

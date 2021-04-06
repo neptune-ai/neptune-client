@@ -17,19 +17,18 @@ import logging
 import os
 import threading
 
-from neptune import constants
-from neptune import envs
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.internal.api_clients.offline_backend import OfflineBackend
+from neptune import constants, envs
+from neptune._version import get_versions
 from neptune.exceptions import (
     InvalidNeptuneBackend,
-    NeptuneMissingProjectQualifiedNameException,
     NeptuneUninitializedException,
 )
 from neptune.internal.api_clients import backend_factory
+from neptune.internal.api_clients.offline_backend import OfflineBackend
+from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.projects import Project
 from neptune.sessions import Session
-from ._version import get_versions
+from neptune.utils import assure_project_qualified_name
 
 __version__ = get_versions()['version']
 
@@ -139,9 +138,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             neptune.init(backend=neptune.OfflineApiClient())
     """
 
-    project_qualified_name = project_qualified_name or os.getenv(envs.PROJECT_ENV_NAME)
-    if not project_qualified_name:
-        raise NeptuneMissingProjectQualifiedNameException()
+    project_qualified_name = assure_project_qualified_name(project_qualified_name)
 
     # pylint: disable=global-statement
     with __lock:

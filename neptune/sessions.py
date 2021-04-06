@@ -15,14 +15,11 @@
 #
 
 import logging
-import re
 from collections import OrderedDict
 
-from neptune.api_exceptions import ProjectNotFound
 from neptune.internal.api_clients import HostedNeptuneBackendApiClient
-from neptune.exceptions import NeptuneIncorrectProjectQualifiedNameException
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.projects import Project
+from neptune.utils import assure_project_qualified_name
 
 _logger = logging.getLogger(__name__)
 
@@ -104,6 +101,7 @@ class Session(object):
             session = Session(backend=OfflineApiClient())
 
     """
+
     def __init__(self, api_token=None, proxies=None, backend=None):
         self._backend = backend
 
@@ -142,6 +140,7 @@ class Session(object):
         Args:
             project_qualified_name (:obj:`str`):
                 Qualified name of a project in a form of ``namespace/project_name``.
+                If ``None``, the value of ``NEPTUNE_PROJECT`` environment variable will be taken.
 
         Returns:
             :class:`~neptune.projects.Project` object.
@@ -161,11 +160,7 @@ class Session(object):
                 my_project = session.get_project('namespace/project_name')
 
         """
-        if not project_qualified_name:
-            raise ProjectNotFound(project_qualified_name)
-
-        if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project_qualified_name):
-            raise NeptuneIncorrectProjectQualifiedNameException(project_qualified_name)
+        project_qualified_name = assure_project_qualified_name(project_qualified_name)
 
         return self._backend.get_project(project_qualified_name)
 
