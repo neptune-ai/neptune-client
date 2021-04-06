@@ -33,6 +33,7 @@ from typing import Dict
 import requests
 import six
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity, HTTPConflict
+from mock import MagicMock
 
 from neptune.api_exceptions import (
     ChannelAlreadyExists,
@@ -72,6 +73,11 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
             '{}/api/leaderboard/swagger.json'.format(self._client_config.api_url),
             self._backend_api_client.http_client
         )
+
+        os.register_at_fork(after_in_child=self._handle_fork_in_child)
+
+    def _handle_fork_in_child(self):
+        self.leaderboard_swagger_client = MagicMock()
 
     @property
     def http_client(self):
