@@ -113,13 +113,19 @@ class Session(object):
             self._backend = HostedNeptuneBackendApiClient(api_token, proxies)
 
     @classmethod
-    def with_default_backend(cls, api_token=None):
+    def with_default_backend(cls, api_token=None, proxies=None):
         """The simplest way to instantiate a ``Session``.
 
         Args:
             api_token (:obj:`str`):
                 User's API token.
                 If ``None``, the value of ``NEPTUNE_API_TOKEN`` environment variable will be taken.
+
+            proxies (:obj:`str`, optional, default is ``None``):
+                Argument passed to HTTP calls made via the `Requests <https://2.python-requests.org/en/master/>`_
+                library.
+                For more information see their proxies
+                `section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
 
         Examples:
 
@@ -129,7 +135,9 @@ class Session(object):
                 session = Session.with_default_backend()
 
         """
-        return cls(backend=HostedNeptuneBackendApiClient(api_token))
+        return cls(backend=HostedNeptuneBackendApiClient(api_token=api_token,
+                                                         proxies=proxies)
+                   )
 
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.
