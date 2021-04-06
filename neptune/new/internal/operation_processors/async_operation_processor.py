@@ -54,8 +54,9 @@ class AsyncOperationProcessor(OperationProcessor):
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
         self._drop_operations = False
 
-        os.register_at_fork(after_in_child=self._handle_fork_in_child)
-
+        if sys.version_info >= (3, 7):
+            os.register_at_fork(after_in_child=self._handle_fork_in_child)
+            
     def _handle_fork_in_child(self):
         self._drop_operations = True
 

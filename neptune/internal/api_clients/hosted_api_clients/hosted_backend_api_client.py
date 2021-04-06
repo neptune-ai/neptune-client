@@ -111,7 +111,8 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
                                                         backend_client=self.backend_client)
         self.http_client.authenticator = self.authenticator
 
-        os.register_at_fork(after_in_child=self._handle_fork_in_child)
+        if sys.version_info >= (3, 7):
+            os.register_at_fork(after_in_child=self._handle_fork_in_child)
 
     def _handle_fork_in_child(self):
         self.backend_swagger_client = MagicMock()

@@ -22,6 +22,7 @@ import logging
 import math
 import os
 import re
+import sys
 import uuid
 from datetime import time
 from functools import partial
@@ -74,7 +75,8 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
             self._backend_api_client.http_client
         )
 
-        os.register_at_fork(after_in_child=self._handle_fork_in_child)
+        if sys.version_info >= (3, 7):
+            os.register_at_fork(after_in_child=self._handle_fork_in_child)
 
     def _handle_fork_in_child(self):
         self.leaderboard_swagger_client = MagicMock()
