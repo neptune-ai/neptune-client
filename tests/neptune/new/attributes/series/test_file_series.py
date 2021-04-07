@@ -42,7 +42,7 @@ class TestFileSeries(TestAttributeBase):
                 FileSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_log_type_error(self):
-        values = [[5.], ["text"], [[]], 55, None]
+        values = [[5.], [[]], 55, None]
         for value in values:
             with self.assertRaises(TypeError):
                 FileSeries(MagicMock(), MagicMock()).log(value)
