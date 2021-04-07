@@ -20,7 +20,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 from platform import node as get_hostname
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 import click
 
@@ -30,22 +30,18 @@ from neptune.new.constants import (
     NEPTUNE_RUNS_DIRECTORY,
     OFFLINE_DIRECTORY,
 )
-from neptune.new.envs import PROJECT_ENV_NAME, CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH
-from neptune.new.exceptions import (
-    NeptuneRunResumeAndCustomIdCollision,
-    NeptuneIncorrectProjectNameException,
-    NeptuneMissingProjectNameException,
-)
-from neptune.new.run import Run
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.notebooks.notebooks import create_checkpoint
+from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH, PROJECT_ENV_NAME
+from neptune.new.exceptions import (NeptuneIncorrectProjectNameException, NeptuneMissingProjectNameException,
+                                    NeptuneRunResumeAndCustomIdCollision)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
+from neptune.new.internal.notebooks.notebooks import create_checkpoint
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.new.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
@@ -54,10 +50,11 @@ from neptune.new.internal.streams.std_capture_background_job import (
     StderrCaptureBackgroundJob,
     StdoutCaptureBackgroundJob,
 )
-from neptune.new.internal.utils import verify_type, verify_collection_type
-from neptune.new.internal.utils.git import get_git_info, discover_git_repo_location
-from neptune.new.internal.utils.source_code import upload_source_code
+from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
+from neptune.new.internal.utils.source_code import upload_source_code
+from neptune.new.run import Run
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.version import version as parsed_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -85,7 +82,8 @@ def init(project: Optional[str] = None,
          capture_stderr: bool = True,
          capture_hardware_metrics: bool = True,
          monitoring_namespace: str = "monitoring",
-         flush_period: float = 5) -> Run:
+         flush_period: float = 5,
+         proxies: dict = None) -> Run:
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("run", run, (str, type(None)))
@@ -98,6 +96,7 @@ def init(project: Optional[str] = None,
     verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
     verify_type("monitoring_namespace", monitoring_namespace, str)
     verify_type("flush_period", flush_period, (int, float))
+    verify_type("proxies", proxies, (dict, type(None)))
     if tags is not None:
         if isinstance(tags, str):
             tags = [tags]
@@ -119,9 +118,13 @@ def init(project: Optional[str] = None,
 
     if mode == ASYNC:
         # TODO Initialize backend in async thread
-        backend = HostedNeptuneBackend(Credentials(api_token=api_token))
+        backend = HostedNeptuneBackend(
+            credentials=Credentials(api_token=api_token),
+            proxies=proxies)
     elif mode == SYNC:
-        backend = HostedNeptuneBackend(Credentials(api_token=api_token))
+        backend = HostedNeptuneBackend(
+            credentials=Credentials(api_token=api_token),
+            proxies=proxies)
     elif mode == DEBUG:
         backend = NeptuneBackendMock()
     elif mode == OFFLINE:
