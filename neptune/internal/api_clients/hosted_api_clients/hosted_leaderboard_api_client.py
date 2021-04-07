@@ -34,7 +34,6 @@ from typing import Dict
 import requests
 import six
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity, HTTPConflict
-from mock import MagicMock
 
 from neptune.api_exceptions import (
     ChannelAlreadyExists,
@@ -57,7 +56,7 @@ from neptune.internal.storage.storage_utils import UploadEntry, normalize_file_n
 from neptune.internal.utils.http_utils import extract_response_field, handle_quota_limits
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.notebook import Notebook
-from neptune.utils import assure_directory_exists, with_api_exceptions_handler
+from neptune.utils import NoopObject, assure_directory_exists, with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
 
@@ -80,7 +79,7 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
             os.register_at_fork(after_in_child=self._handle_fork_in_child)
 
     def _handle_fork_in_child(self):
-        self.leaderboard_swagger_client = MagicMock()
+        self.leaderboard_swagger_client = NoopObject()
 
     @property
     def http_client(self):

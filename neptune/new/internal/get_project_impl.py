@@ -16,7 +16,7 @@
 import logging
 import os
 import re
-from typing import Optional, Union, Iterable
+from typing import Optional
 
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
@@ -25,22 +25,12 @@ from neptune.new.exceptions import NeptuneIncorrectProjectNameException, Neptune
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.utils import verify_type
-from neptune.new.runs_table import RunsTable
 from neptune.new.project import Project
 from neptune.new.version import version as parsed_version
 
 __version__ = str(parsed_version)
 
 _logger = logging.getLogger(__name__)
-
-
-# pylint:disable=redefined-builtin
-def fetch_runs_table(id: Optional[Union[str, Iterable[str]]] = None,
-                     state: Optional[Union[str, Iterable[str]]] = None,
-                     owner: Optional[Union[str, Iterable[str]]] = None,
-                     tag: Optional[Union[str, Iterable[str]]] = None
-                     ) -> RunsTable:
-    return get_project().fetch_runs_table(id=id, state=state, owner=owner, tag=tag)
 
 
 def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> Project:

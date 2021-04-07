@@ -19,7 +19,7 @@ from neptune.new import types
 from neptune.new.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
 from neptune.new.exceptions import NeptuneUninitializedException
 from neptune.new.run import Run
-from neptune.new.internal.get_project_impl import get_project, fetch_runs_table
+from neptune.new.internal.get_project_impl import get_project
 from neptune.new.internal.init_impl import __version__, init
 
 

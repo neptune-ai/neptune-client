@@ -17,6 +17,7 @@ import logging
 from io import StringIO
 
 from neptune.backend import BackendApiClient, LeaderboardApiClient
+from neptune.utils import NoopObject
 
 _logger = logging.getLogger(__name__)
 
@@ -168,24 +169,6 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
         pass
 
     def download_artifact(self, experiment, path=None, destination_dir=None):
-        pass
-
-
-class NoopObject(object):
-
-    def __getattr__(self, name):
-        return self
-
-    def __getitem__(self, key):
-        return self
-
-    def __call__(self, *args, **kwargs):
-        return self
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
         pass
 
 
