@@ -32,6 +32,7 @@ from neptune.new.attributes.atoms.float import Float
 from neptune.new.attributes.atoms.string import String
 from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
+from neptune.new.exceptions import FileNotFound
 from neptune.new.types import File as FileVal
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.new.types.atoms.float import Float as FloatVal
@@ -169,6 +170,7 @@ class TestHandler(unittest.TestCase):
         exp['some/num/val'].log(5)
         exp['some/str/val'].log("some text")
         exp['some/img/val'].log(FileVal.as_image(PIL.Image.new('RGB', (60, 30), color='red')))
+        exp['some/img/val'].log(PIL.Image.new('RGB', (60, 30), color='red'))
         self.assertEqual(exp['some']['num']['val'].fetch_last(), 5)
         self.assertEqual(exp['some']['str']['val'].fetch_last(), "some text")
         self.assertIsInstance(exp.get_structure()['some']['img']['val'], FileSeries)
@@ -208,8 +210,8 @@ class TestHandler(unittest.TestCase):
         exp['some/img/val'].log([])
         with self.assertRaises(TypeError):
             exp['some/img/val'].log(5)
-        with self.assertRaises(TypeError):
-            exp['some/img/val'].log("str")
+        with self.assertRaises(FileNotFound):
+            exp['some/img/val'].log("path")
 
         self.assertEqual(exp['some']['num']['val'].fetch_last(), 5)
         self.assertEqual(exp['some']['str']['val'].fetch_last(), "str")

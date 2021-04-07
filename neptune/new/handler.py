@@ -92,7 +92,7 @@ class Handler:
                 attr.upload_files(value, wait)
 
     def log(self,
-            value: Union[int, float, str, FileVal, Iterable[int], Iterable[float], Iterable[str], Iterable[FileVal]],
+            value,
             step=None,
             timestamp=None,
             wait: bool = False) -> None:
@@ -114,7 +114,7 @@ class Handler:
                     attr = FloatSeries(self._run, parse_path(self._path))
                 elif is_string(first_value):
                     attr = StringSeries(self._run, parse_path(self._path))
-                elif isinstance(first_value, FileVal):
+                elif FileVal.is_convertable(first_value):
                     attr = FileSeries(self._run, parse_path(self._path))
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._run, parse_path(self._path))

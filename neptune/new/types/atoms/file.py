@@ -111,3 +111,14 @@ class File(Atom):
         elif isinstance(value, File):
             return value
         raise TypeError("Value of type {} is not supported.".format(type(value)))
+
+    @staticmethod
+    def is_convertable(value):
+        return is_pil_image(value) \
+               or is_matplotlib_figure(value) \
+               or is_plotly_figure(value) \
+               or is_altair_chart(value) \
+               or is_bokeh_figure(value) \
+               or is_numpy_array(value) \
+               or is_pandas_dataframe(value) \
+               or isinstance(value, File)

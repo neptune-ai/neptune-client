@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
-from typing import TypeVar, Iterable, TYPE_CHECKING, List
+from typing import TypeVar, TYPE_CHECKING, List
 
 from neptune.new.types import File
 
-from neptune.new.internal.utils import verify_collection_type
+from neptune.new.internal.utils import is_collection
 
 from neptune.new.types.series.series import Series
 
@@ -30,9 +30,10 @@ Ret = TypeVar('Ret')
 
 class FileSeries(Series):
 
-    def __init__(self, values: Iterable[File]):
-        verify_collection_type("values", values, File)
-        self._values = list(values)
+    def __init__(self, values):
+        if not is_collection(values):
+            raise TypeError("`values` is not a collection")
+        self._values = [File.create_from(value) for value in values]
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_image_series(self)
