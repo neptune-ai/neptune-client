@@ -25,7 +25,6 @@ import click
 import urllib3
 from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
-from mock import MagicMock
 from packaging import version
 
 from neptune.api_exceptions import (
@@ -47,7 +46,7 @@ from neptune.internal.api_clients.hosted_api_clients.migration_switch_leaderboar
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
-from neptune.utils import with_api_exceptions_handler, update_session_proxies
+from neptune.utils import NoopObject, with_api_exceptions_handler, update_session_proxies
 
 _logger = logging.getLogger(__name__)
 
@@ -116,7 +115,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             os.register_at_fork(after_in_child=self._handle_fork_in_child)
 
     def _handle_fork_in_child(self):
-        self.backend_swagger_client = MagicMock()
+        self.backend_swagger_client = NoopObject()
 
     @property
     def api_address(self):

@@ -366,3 +366,21 @@ def assure_project_qualified_name(project_qualified_name):
         raise NeptuneIncorrectProjectQualifiedNameException(project_qualified_name)
 
     return project_qualified_name
+
+
+class NoopObject(object):
+
+    def __getattr__(self, name):
+        return self
+
+    def __getitem__(self, key):
+        return self
+
+    def __call__(self, *args, **kwargs):
+        return self
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
