@@ -86,7 +86,7 @@ Val = TypeVar('Val', bound=Value)
 
 class NeptuneBackendMock(NeptuneBackend):
 
-    def __init__(self, credentials=None):
+    def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
         self._runs: Dict[uuid.UUID, RunStructure[Value]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
