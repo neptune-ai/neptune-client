@@ -419,10 +419,10 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         if isinstance(artifact, str):
             if os.path.isfile(artifact):
                 target_name = os.path.basename(artifact) if destination is None else destination
-                dest_path, ext = self._get_dest_and_ext(target_name)
+                dest_path = self._get_dest_and_ext(target_name)
                 operation = alpha_operation.UploadFile(
                     path=dest_path,
-                    ext=ext,
+                    ext="",
                     file_path=os.path.abspath(artifact),
                 )
             elif os.path.isdir(artifact):
@@ -434,12 +434,12 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         elif hasattr(artifact, 'read'):
             if not destination:
                 raise ValueError("destination is required for IO streams")
-            dest_path, ext = self._get_dest_and_ext(destination)
+            dest_path = self._get_dest_and_ext(destination)
             data = artifact.read()
             content = data.encode('utf-8') if isinstance(data, str) else data
             operation = alpha_operation.UploadFileContent(
                 path=dest_path,
-                ext=ext,
+                ext="",
                 file_content=base64_encode(content)
             )
         else:
@@ -450,9 +450,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
     @staticmethod
     def _get_dest_and_ext(target_name):
         qualified_target_name = f'{alpha_consts.ARTIFACT_ATTRIBUTE_SPACE}{target_name}'
-        dest_path = alpha_path_utils.parse_path(normalize_file_name(qualified_target_name))
-        ext = os.path.splitext(target_name)[1]
-        return dest_path, ext
+        return alpha_path_utils.parse_path(normalize_file_name(qualified_target_name))
 
     def _log_dir_artifacts(self, directory_path, destination):
         directory_path = Path(directory_path)
