@@ -558,7 +558,7 @@ and your data is being stored safely on the disk. You can upload it later using 
     {bash}neptune sync -p project_name{end}
 What should I do?
     - Go to your projects and remove runs or model metadata you don't need
-    - ... or update your subscription plan here: https://ui.neptune.ai/-/subscription
+    - ... or update your subscription plan here: https://app.neptune.ai/-/subscription
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/advanced-user-guides/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
