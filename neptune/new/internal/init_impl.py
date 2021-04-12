@@ -138,8 +138,8 @@ def init(project: Optional[str] = None,
         project = os.getenv(PROJECT_ENV_NAME)
         if not project:
             raise NeptuneMissingProjectNameException()
-        if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
-            raise NeptuneIncorrectProjectNameException(project)
+    if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
+        raise NeptuneIncorrectProjectNameException(project)
 
     project_obj = backend.get_project(project)
     if run:
