@@ -36,7 +36,7 @@ from neptune.new.exceptions import (
     NeptuneException,
     NeptuneLegacyProjectException,
     ProjectNotFound,
-    StorageLimitReached,
+    NeptuneStorageLimitException,
     UnsupportedClientVersion,
 )
 from neptune.new.internal.backends.api_model import (
@@ -309,7 +309,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound as e:
             raise RunUUIDNotFound(run_uuid=run_uuid) from e
         except HTTPUnprocessableEntity:
-            raise StorageLimitReached()
+            raise NeptuneStorageLimitException()
 
     @with_api_exceptions_handler
     def get_attributes(self, run_uuid: uuid.UUID) -> List[Attribute]:

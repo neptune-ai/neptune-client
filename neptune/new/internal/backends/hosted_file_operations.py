@@ -27,7 +27,7 @@ from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
 from neptune.new.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, \
-    NeptuneException, StorageLimitReached
+    NeptuneException, NeptuneStorageLimitException
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
@@ -179,7 +179,7 @@ def upload_raw_data(http_client: RequestsClient,
 
     response = session.send(session.prepare_request(request))
     if response.status_code == HTTPUnprocessableEntity.status_code:
-        raise StorageLimitReached()
+        raise NeptuneStorageLimitException()
     response.raise_for_status()
     return response.content
 
