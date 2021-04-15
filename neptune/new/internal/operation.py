@@ -19,6 +19,8 @@ from datetime import datetime
 from typing import List, TypeVar, Generic, Optional, Set
 from typing import TYPE_CHECKING
 
+from neptune.new.exceptions import InternalClientError
+
 if TYPE_CHECKING:
     from neptune.new.internal.operation_visitor import OperationVisitor
 
@@ -178,16 +180,16 @@ class LogSeriesValue(Generic[T]):
     step: Optional[float]
     ts: float
 
-    def to_dict(self) -> dict:
+    def to_dict(self, value_serializer=lambda x: x) -> dict:
         return {
-            "value": self.value,
+            "value": value_serializer(self.value),
             "step": self.step,
             "ts": self.ts
         }
 
     @staticmethod
-    def from_dict(data: dict) -> 'LogSeriesValue[T]':
-        return LogSeriesValue[T](data["value"], data.get("step", None), data["ts"])
+    def from_dict(data: dict, value_deserializer=lambda x: x) -> 'LogSeriesValue[T]':
+        return LogSeriesValue[T](value_deserializer(data["value"]), data.get("step", None), data["ts"])
 
 
 @dataclass
@@ -237,9 +239,31 @@ class LogStrings(Operation):
 
 
 @dataclass
+class ImageValue:
+    data: Optional[str]
+    name: Optional[str]
+    description: Optional[str]
+
+    @staticmethod
+    def serializer(obj: 'ImageValue'):
+        return dict(data=obj.data, name=obj.name, description=obj.description)
+
+    @staticmethod
+    def deserializer(obj) -> 'ImageValue':
+        if obj is None:
+            return ImageValue(None, None, None)
+        if isinstance(obj, str):
+            return ImageValue(data=obj, name=None, description=None)
+        if isinstance(obj, dict):
+            return ImageValue(data=obj["data"], name=obj["name"], description=obj["description"])
+        else:
+            raise InternalClientError("Run data on disk is malformed or was saved by newer version of Neptune Library")
+
+
+@dataclass
 class LogImages(Operation):
 
-    ValueType = LogSeriesValue[Optional[str]]
+    ValueType = LogSeriesValue[ImageValue]
 
     values: List[ValueType]
 
@@ -248,14 +272,14 @@ class LogImages(Operation):
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["values"] = [value.to_dict() for value in self.values]
+        ret["values"] = [value.to_dict(ImageValue.serializer) for value in self.values]
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'LogImages':
         return LogImages(
             data["path"],
-            [LogImages.ValueType.from_dict(value) for value in data["values"]]
+            [LogImages.ValueType.from_dict(value, ImageValue.deserializer) for value in data["values"]]
         )
 
 

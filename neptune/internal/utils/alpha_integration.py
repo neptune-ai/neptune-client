@@ -23,6 +23,8 @@ from neptune.exceptions import NeptuneException
 from neptune.internal.channels.channels import ChannelType, ChannelValueType
 
 # Alpha equivalent of old api's `KeyValueProperty` used in `Experiment.properties`
+from neptune.new.internal.operation import ImageValue
+
 AlphaKeyValueProperty = namedtuple('AlphaKeyValueProperty', ['key', 'value'])
 
 
@@ -224,5 +226,5 @@ def channel_value_type_to_operation(channel_value_type: ChannelValueType) -> alp
     return _map_using_dict(channel_value_type, 'channel value type', _channel_value_type_to_operation)
 
 
-def deprecated_img_to_alpha_image(img: dict) -> str:
-    return img['data']
+def deprecated_img_to_alpha_image(img: dict) -> ImageValue:
+    return ImageValue(data=img['data'], name=img['name'], description=img['description'])
