@@ -38,13 +38,6 @@ class Series(Attribute, Generic[Val, Data]):
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
         pass
 
-    @abc.abstractmethod
-    def _get_log_operation_from_data(self,
-                                     data_list: Iterable[Data],
-                                     step: Optional[float],
-                                     timestamp: float) -> Operation:
-        pass
-
     # pylint: disable=unused-argument
     # pylint: disable=assignment-from-none
     def _get_config_operation_from_value(self, value: Val) -> Optional[Operation]:
@@ -55,7 +48,7 @@ class Series(Attribute, Generic[Val, Data]):
         pass
 
     @abc.abstractmethod
-    def _data_to_value(self, value: Iterable) -> Val:
+    def _data_to_value(self, values: Iterable, **kwargs) -> Val:
         pass
 
     @abc.abstractmethod
@@ -81,13 +74,14 @@ class Series(Attribute, Generic[Val, Data]):
             value: Union[Data, Iterable[Data]],
             step: Optional[float] = None,
             timestamp: Optional[float] = None,
-            wait: bool = False) -> None:
+            wait: bool = False,
+            **kwargs) -> None:
         if is_collection(value):
             if step is not None and len(value) > 1:
                 raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
-            value = self._data_to_value(value)
+            value = self._data_to_value(value, **kwargs)
         else:
-            value = self._data_to_value([value])
+            value = self._data_to_value([value], **kwargs)
 
         if step is not None:
             verify_type("step", step, (float, int))
@@ -97,7 +91,7 @@ class Series(Attribute, Generic[Val, Data]):
         if not timestamp:
             timestamp = time.time()
 
-        op = self._get_log_operation_from_data(value.values, step, timestamp)
+        op = self._get_log_operation_from_value(value, step, timestamp)
 
         with self._run.lock():
             self._enqueue_operation(op, wait)

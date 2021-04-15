@@ -331,7 +331,7 @@ class NeptuneBackendMock(NeptuneBackend):
             return StringSeries(self._current_value.values + raw_values)
 
         def visit_log_images(self, op: LogImages) -> Optional[Value]:
-            raw_values = [File.from_content(base64_decode(x.value)) for x in op.values]
+            raw_values = [File.from_content(base64_decode(x.value.data)) for x in op.values]
             if self._current_value is None:
                 return FileSeries(raw_values)
             if not isinstance(self._current_value, FileSeries):

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import TYPE_CHECKING, Union, Iterable
+from typing import Optional, TYPE_CHECKING, Union, Iterable
 
 from neptune.new.attributes import File
 from neptune.new.attributes.file_set import FileSet
@@ -93,9 +93,10 @@ class Handler:
 
     def log(self,
             value,
-            step=None,
-            timestamp=None,
-            wait: bool = False) -> None:
+            step: Optional[float] = None,
+            timestamp: Optional[float] = None,
+            wait: bool = False,
+            **kwargs) -> None:
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", timestamp, (int, float, type(None)))
 
@@ -123,10 +124,10 @@ class Handler:
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))
 
-                attr.log(value, step=step, timestamp=timestamp, wait=wait)
+                attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
                 self._run.set_attribute(self._path, attr)
             else:
-                attr.log(value, step=step, timestamp=timestamp, wait=wait)
+                attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         verify_type("values", values, (str, Iterable))

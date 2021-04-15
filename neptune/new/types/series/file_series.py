@@ -16,6 +16,8 @@
 
 from typing import TypeVar, TYPE_CHECKING, List
 
+import click
+
 from neptune.new.types import File
 
 from neptune.new.internal.utils import is_collection
@@ -30,10 +32,15 @@ Ret = TypeVar('Ret')
 
 class FileSeries(Series):
 
-    def __init__(self, values):
+    def __init__(self, values, **kwargs):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
         self._values = [File.create_from(value) for value in values]
+
+        self.name = kwargs.pop("name", None)
+        self.description = kwargs.pop("description", None)
+        if kwargs:
+            click.echo("Warning: unexpected arguments ({kwargs}) in FileSeries".format(kwargs=kwargs), err=True)
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_image_series(self)

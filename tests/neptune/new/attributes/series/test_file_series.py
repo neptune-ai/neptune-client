@@ -23,7 +23,7 @@ from neptune.new.exceptions import OperationNotSupported
 
 from neptune.new.internal.utils import base64_encode
 
-from neptune.new.internal.operation import LogImages, ClearImageLog
+from neptune.new.internal.operation import ImageValue, LogImages, ClearImageLog
 
 from neptune.new.types import File
 
@@ -58,11 +58,14 @@ class TestFileSeries(TestAttributeBase):
         file = File.as_image(numpy.random.rand(10, 10) * 255)
 
         # when
-        attr.log(file, step=3, timestamp=self._now(), wait=wait)
+        attr.log(file, step=3, timestamp=self._now(), wait=wait, name="nazwa", description="opis")
 
         # then
         op_processor.enqueue_operation.assert_called_once_with(
-            LogImages(path, [LogImages.ValueType(base64_encode(file.content), 3, self._now())]), wait
+            LogImages(path, [LogImages.ValueType(
+                ImageValue(base64_encode(file.content), "nazwa", "opis"),
+                3,
+                self._now())]), wait
         )
 
     def test_assign_content(self):
@@ -81,7 +84,10 @@ class TestFileSeries(TestAttributeBase):
         # then
         op_processor.enqueue_operation.assert_has_calls([
             call(ClearImageLog(path), False),
-            call(LogImages(path, [LogImages.ValueType(base64_encode(file.content), None, self._now())]), wait),
+            call(LogImages(path, [LogImages.ValueType(
+                ImageValue(base64_encode(file.content), None, None),
+                None,
+                self._now())]), wait),
         ])
 
     def test_log_path(self):
@@ -97,11 +103,14 @@ class TestFileSeries(TestAttributeBase):
             saved_file = File(tmp_file.name)
 
             # when
-            attr.log(saved_file, step=3, timestamp=self._now(), wait=wait)
+            attr.log(saved_file, step=3, timestamp=self._now(), wait=wait, description="something")
 
             # then
             op_processor.enqueue_operation.assert_called_once_with(
-                LogImages(path, [LogImages.ValueType(base64_encode(file.content), 3, self._now())]), wait
+                LogImages(path, [LogImages.ValueType(
+                    ImageValue(base64_encode(file.content), None, "something"),
+                    3,
+                    self._now())]), wait
             )
 
     def test_log_raise_not_image(self):
