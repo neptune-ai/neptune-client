@@ -15,6 +15,8 @@
 #
 from typing import Union, Optional, Iterable
 
+import click
+
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.internal.backends.api_model import FloatSeriesValues
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
@@ -46,20 +48,16 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
         values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
         return LogFloats(self._path, values)
 
-    def _get_log_operation_from_data(self,
-                                     data_list: Iterable[Data],
-                                     step: Optional[float],
-                                     timestamp: float) -> Operation:
-        return LogFloats(self._path, [LogFloats.ValueType(data, step, timestamp) for data in data_list])
-
     def _get_clear_operation(self) -> Operation:
         return ClearFloatLog(self._path)
 
     def _get_config_operation_from_value(self, value: Val) -> Optional[Operation]:
         return ConfigFloatSeries(self._path, value.min, value.max, value.unit)
 
-    def _data_to_value(self, value: Iterable) -> Val:
-        return FloatSeriesVal(value)
+    def _data_to_value(self, values: Iterable, **kwargs) -> Val:
+        if kwargs:
+            click.echo("Warning: unexpected arguments ({kwargs}) in FloatSeries".format(kwargs=kwargs), err=True)
+        return FloatSeriesVal(values)
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, FloatSeriesVal)

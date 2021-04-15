@@ -15,6 +15,8 @@
 #
 from typing import Optional, Iterable
 
+import click
+
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.internal.backends.api_model import StringSeriesValues
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
@@ -32,17 +34,13 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in value.values]
         return LogStrings(self._path, values)
 
-    def _get_log_operation_from_data(self,
-                                     data_list: Iterable[Data],
-                                     step: Optional[float],
-                                     timestamp: float) -> Operation:
-        return LogStrings(self._path, [LogStrings.ValueType(data, step, timestamp) for data in data_list])
-
     def _get_clear_operation(self) -> Operation:
         return ClearStringLog(self._path)
 
-    def _data_to_value(self, value: Iterable) -> Val:
-        return StringSeriesVal(value)
+    def _data_to_value(self, values: Iterable, **kwargs) -> Val:
+        if kwargs:
+            click.echo("Warning: unexpected arguments ({kwargs}) in StringSeries".format(kwargs=kwargs), err=True)
+        return StringSeriesVal(values)
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)

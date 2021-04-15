@@ -134,17 +134,11 @@ class TestSeries(TestAttributeBase):
             values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
             return LogFloats(self._path, values)
 
-        def _get_log_operation_from_data(self,
-                                         data_list: Iterable[int],
-                                         step: Optional[float],
-                                         timestamp: float) -> Operation:
-            return LogFloats(self._path, [LogFloats.ValueType(data_list, step, timestamp)])
-
         def _get_clear_operation(self) -> Operation:
             return ClearFloatLog(self._path)
 
-        def _data_to_value(self, value: Iterable) -> FloatSeriesVal:
-            return FloatSeriesVal(value)
+        def _data_to_value(self, values: Iterable, **kwargs) -> FloatSeriesVal:
+            return FloatSeriesVal(values)
 
         def _is_value_type(self, value) -> bool:
             return isinstance(value, FloatSeriesVal)

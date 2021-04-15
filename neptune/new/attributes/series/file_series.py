@@ -25,7 +25,7 @@ from neptune.new.exceptions import FileNotFound, OperationNotSupported
 
 from neptune.new.types import File
 from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
-from neptune.new.internal.operation import LogImages, ClearImageLog, Operation
+from neptune.new.internal.operation import ImageValue, LogImages, ClearImageLog, Operation
 from neptune.new.attributes.series.series import Series
 
 Val = FileSeriesVal
@@ -36,25 +36,19 @@ class FileSeries(Series[Val, Data]):
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
         values = [
-            LogImages.ValueType(self._get_base64_image_content(val), step=step, ts=timestamp)
+            LogImages.ValueType(
+                ImageValue(data=self._get_base64_image_content(val), name=value.name, description=value.description),
+                step=step,
+                ts=timestamp)
             for val in value.values
         ]
         return LogImages(self._path, values)
 
-    def _get_log_operation_from_data(self,
-                                     data_list: Iterable[Data],
-                                     step: Optional[float],
-                                     timestamp: float) -> Operation:
-        return LogImages(self._path, [
-            LogImages.ValueType(self._get_base64_image_content(data), step, timestamp)
-            for data in data_list
-        ])
-
     def _get_clear_operation(self) -> Operation:
         return ClearImageLog(self._path)
 
-    def _data_to_value(self, value: Iterable) -> Val:
-        return FileSeriesVal(value)
+    def _data_to_value(self, values: Iterable, **kwargs) -> Val:
+        return FileSeriesVal(values, **kwargs)
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, FileSeriesVal)
