@@ -137,6 +137,7 @@ class TestSeries(TestAttributeBase):
         def _get_clear_operation(self) -> Operation:
             return ClearFloatLog(self._path)
 
+        # pylint: disable=unused-argument
         def _data_to_value(self, values: Iterable, **kwargs) -> FloatSeriesVal:
             return FloatSeriesVal(values)
 
