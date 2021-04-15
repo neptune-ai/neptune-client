@@ -72,7 +72,9 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
         return {
             'entries': [{
                 'value': {
-                    'data': value.value
+                    'data': value.value.data,
+                    'name': value.value.name,
+                    'description': value.value.description
                 },
                 'step': value.step,
                 'timestampMilliseconds': int(value.ts * 1000)
