@@ -57,8 +57,8 @@ class TestOperations(unittest.TestCase):
                 LogStrings.ValueType("ghsr", 13, 53682)
             ]),
             LogImages(TestOperations._random_path(), [
-                LogImages.ValueType("base64_image_1", None, 2),
-                LogImages.ValueType("base64_image_2", 0, 5),
+                LogImages.ValueType(ImageValue("base64_image_1", "name1", "description1"), None, 2),
+                LogImages.ValueType(ImageValue("base64_image_2", "name2", "description2"), 0, 5),
             ]),
             ClearFloatLog(TestOperations._random_path()),
             ClearStringLog(TestOperations._random_path()),
