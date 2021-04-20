@@ -15,7 +15,8 @@
 #
 
 from neptune.new.exceptions import InternalClientError
-from neptune.new.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
+from neptune.new.internal.operation import AssignBool, AssignInt, Operation, AssignFloat, AssignString, LogFloats, \
+    LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
     ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
 from neptune.new.internal.operation_visitor import OperationVisitor, Ret
@@ -28,6 +29,12 @@ class OperationApiNameVisitor(OperationVisitor[str]):
 
     def visit_assign_float(self, _: AssignFloat) -> str:
         return "assignFloat"
+
+    def visit_assign_int(self, op: AssignInt) -> str:
+        return "assignInt"
+
+    def visit_assign_bool(self, op: AssignBool) -> str:
+        return "assignBool"
 
     def visit_assign_string(self, _: AssignString) -> str:
         return "assignString"

@@ -17,8 +17,10 @@ import abc
 from typing import TypeVar, Generic
 
 from neptune.new.types.atoms import GitRef
+from neptune.new.types.atoms.boolean import Boolean
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
+from neptune.new.types.atoms.integer import Integer
 from neptune.new.types.atoms.string import String
 from neptune.new.types.atoms.file import File
 from neptune.new.types.file_set import FileSet
@@ -38,6 +40,14 @@ class ValueVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_float(self, value: Float) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_integer(self, value: Integer) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_boolean(self, value: Boolean) -> Ret:
         pass
 
     @abc.abstractmethod

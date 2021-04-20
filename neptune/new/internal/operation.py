@@ -78,6 +78,42 @@ class AssignFloat(Operation):
 
 
 @dataclass
+class AssignInt(Operation):
+
+    value: int
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_assign_int(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["value"] = self.value
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'AssignInt':
+        return AssignInt(data["path"], data["value"])
+
+
+@dataclass
+class AssignBool(Operation):
+
+    value: bool
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_assign_bool(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["value"] = self.value
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'AssignBool':
+        return AssignBool(data["path"], data["value"])
+
+
+@dataclass
 class AssignString(Operation):
 
     value: str
