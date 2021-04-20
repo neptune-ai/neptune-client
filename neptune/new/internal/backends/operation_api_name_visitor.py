@@ -30,10 +30,10 @@ class OperationApiNameVisitor(OperationVisitor[str]):
     def visit_assign_float(self, _: AssignFloat) -> str:
         return "assignFloat"
 
-    def visit_assign_int(self, op: AssignInt) -> str:
+    def visit_assign_int(self, _: AssignInt) -> str:
         return "assignInt"
 
-    def visit_assign_bool(self, op: AssignBool) -> str:
+    def visit_assign_bool(self, _: AssignBool) -> str:
         return "assignBool"
 
     def visit_assign_string(self, _: AssignString) -> str:

@@ -31,10 +31,10 @@ from neptune.new.internal.backends.api_model import (
     ApiRun,
     Attribute,
     AttributeType,
-    DatetimeAttribute,
+    BoolAttribute, DatetimeAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
-    Project,
+    IntAttribute, Project,
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
@@ -194,6 +194,14 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(run_uuid, path, Float)
         return FloatAttribute(val.value)
 
+    def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
+        val = self._get_attribute(run_uuid, path, Integer)
+        return IntAttribute(val.value)
+
+    def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
+        val = self._get_attribute(run_uuid, path, Boolean)
+        return BoolAttribute(val.value)
+
     def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
         val = self._get_attribute(run_uuid, path, String)
         return StringAttribute(val.value)
@@ -246,10 +254,10 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_float(self, _: Float) -> AttributeType:
             return AttributeType.FLOAT
 
-        def visit_integer(self, value: Integer) -> AttributeType:
+        def visit_integer(self, _: Integer) -> AttributeType:
             return AttributeType.INT
 
-        def visit_boolean(self, value: Boolean) -> AttributeType:
+        def visit_boolean(self, _: Boolean) -> AttributeType:
             return AttributeType.BOOL
 
         def visit_string(self, _: String) -> AttributeType:

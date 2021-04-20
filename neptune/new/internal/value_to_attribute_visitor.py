@@ -54,10 +54,10 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
     def visit_float(self, _: Float) -> Attribute:
         return FloatAttr(self._run, self._path)
 
-    def visit_integer(self, value: Integer) -> Attribute:
+    def visit_integer(self, _: Integer) -> Attribute:
         return IntegerAttr(self._run, self._path)
 
-    def visit_boolean(self, value: Boolean) -> Attribute:
+    def visit_boolean(self, _: Boolean) -> Attribute:
         return BooleanAttr(self._run, self._path)
 
     def visit_string(self, _: String) -> Attribute:
