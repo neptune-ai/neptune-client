@@ -23,6 +23,9 @@ from tempfile import TemporaryDirectory, NamedTemporaryFile
 from unittest.mock import patch
 
 import PIL
+
+from neptune.new.attributes.atoms.boolean import Boolean
+from neptune.new.attributes.atoms.integer import Integer
 from neptune.new.attributes.series import FileSeries
 
 from neptune.new import init, ANONYMOUS
@@ -53,11 +56,11 @@ class TestHandler(unittest.TestCase):
     def test_set(self):
         exp = init(mode="debug", flush_period=0.5)
         now = datetime.now()
-        exp['some/num/val'] = 5
+        exp['some/num/val'] = 5.
         exp['some/str/val'] = "some text"
         exp['some/datetime/val'] = now
         exp.wait()
-        self.assertEqual(exp['some/num/val'].fetch(), 5)
+        self.assertEqual(exp['some/num/val'].fetch(), 5.)
         self.assertEqual(exp['some/str/val'].fetch(), "some text")
         self.assertEqual(exp['some/datetime/val'].fetch(), now.replace(microsecond=1000*int(now.microsecond/1000)))
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
@@ -67,14 +70,20 @@ class TestHandler(unittest.TestCase):
     def test_assign_atom(self):
         exp = init(mode="debug", flush_period=0.5)
         now = datetime.now()
-        exp['some/num/val'].assign(5)
+        exp['some/num/val'].assign(5.)
+        exp['some/int/val'].assign(50)
         exp['some/str/val'].assign("some text", wait=True)
+        exp['some/bool/val'].assign(True)
         exp['some/datetime/val'].assign(now)
-        self.assertEqual(exp['some/num/val'].fetch(), 5)
+        self.assertEqual(exp['some/num/val'].fetch(), 5.)
+        self.assertEqual(exp['some/int/val'].fetch(), 50)
         self.assertEqual(exp['some/str/val'].fetch(), "some text")
+        self.assertEqual(exp['some/bool/val'].fetch(), True)
         self.assertEqual(exp['some/datetime/val'].fetch(), now.replace(microsecond=1000*int(now.microsecond/1000)))
         self.assertIsInstance(exp.get_structure()['some']['num']['val'], Float)
+        self.assertIsInstance(exp.get_structure()['some']['int']['val'], Integer)
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], String)
+        self.assertIsInstance(exp.get_structure()['some']['bool']['val'], Boolean)
         self.assertIsInstance(exp.get_structure()['some']['datetime']['val'], Datetime)
 
         now = now + timedelta(seconds=3, microseconds=500000)

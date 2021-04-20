@@ -20,8 +20,8 @@ from typing import List
 from neptune.new.exceptions import NeptuneOfflineModeFetchException
 from neptune.new.internal.backends.api_model import (
     Attribute,
-    FloatAttribute,
-    StringAttribute,
+    BoolAttribute, FloatAttribute,
+    IntAttribute, StringAttribute,
     DatetimeAttribute,
     FloatSeriesAttribute,
     StringSeriesAttribute,
@@ -39,6 +39,12 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         raise NeptuneOfflineModeFetchException
 
     def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+        raise NeptuneOfflineModeFetchException
+
+    def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
+        raise NeptuneOfflineModeFetchException
+
+    def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
         raise NeptuneOfflineModeFetchException
 
     def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:

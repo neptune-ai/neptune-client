@@ -44,9 +44,10 @@ from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.new.internal.utils import verify_type, is_float, is_string, is_float_like, is_string_like
+from neptune.new.internal.utils import is_bool, is_int, verify_type, is_float, is_string, is_float_like, is_string_like
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
@@ -140,6 +141,10 @@ class Run(AbstractContextManager):
                ) -> Attribute:
         if isinstance(value, Value):
             pass
+        elif is_bool(value):
+            value = Boolean(value)
+        elif is_int(value):
+            value = Integer(value)
         elif is_float(value):
             value = Float(value)
         elif is_string(value):

@@ -21,9 +21,11 @@ from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     Attribute,
+    BoolAttribute,
     DatetimeAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
+    IntAttribute,
     Project,
     StringAttribute,
     StringSeriesAttribute,
@@ -84,6 +86,14 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
         pass
 
     @abc.abstractmethod

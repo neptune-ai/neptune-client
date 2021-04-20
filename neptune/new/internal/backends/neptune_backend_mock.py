@@ -31,10 +31,10 @@ from neptune.new.internal.backends.api_model import (
     ApiRun,
     Attribute,
     AttributeType,
-    DatetimeAttribute,
+    BoolAttribute, DatetimeAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
-    Project,
+    IntAttribute, Project,
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
@@ -47,9 +47,9 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
     AddStrings,
-    AssignDatetime,
+    AssignBool, AssignDatetime,
     AssignFloat,
-    AssignString,
+    AssignInt, AssignString,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -68,6 +68,7 @@ from neptune.new.internal.operation import (
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.paths import path_to_str
+from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.file import File
@@ -193,6 +194,14 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(run_uuid, path, Float)
         return FloatAttribute(val.value)
 
+    def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
+        val = self._get_attribute(run_uuid, path, Integer)
+        return IntAttribute(val.value)
+
+    def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
+        val = self._get_attribute(run_uuid, path, Boolean)
+        return BoolAttribute(val.value)
+
     def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
         val = self._get_attribute(run_uuid, path, String)
         return StringAttribute(val.value)
@@ -240,11 +249,16 @@ class NeptuneBackendMock(NeptuneBackend):
                                       index: int, destination: str):
         pass
 
-
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 
         def visit_float(self, _: Float) -> AttributeType:
             return AttributeType.FLOAT
+
+        def visit_integer(self, _: Integer) -> AttributeType:
+            return AttributeType.INT
+
+        def visit_boolean(self, _: Boolean) -> AttributeType:
+            return AttributeType.BOOL
 
         def visit_string(self, _: String) -> AttributeType:
             return AttributeType.STRING
@@ -283,6 +297,16 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, Float):
                 raise self._create_type_error("assign", Float.__name__)
             return Float(op.value)
+
+        def visit_assign_int(self, op: AssignInt) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Integer):
+                raise self._create_type_error("assign", Integer.__name__)
+            return Integer(op.value)
+
+        def visit_assign_bool(self, op: AssignBool) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Boolean):
+                raise self._create_type_error("assign", Boolean.__name__)
+            return Boolean(op.value)
 
         def visit_assign_string(self, op: AssignString) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, String):

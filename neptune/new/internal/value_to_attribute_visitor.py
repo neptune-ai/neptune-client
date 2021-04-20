@@ -19,6 +19,8 @@ from neptune.new.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.new.attributes.atoms.file import File as FileAttr
 from neptune.new.attributes.file_set import FileSet as FileSetAttr
 from neptune.new.attributes.atoms.float import Float as FloatAttr
+from neptune.new.attributes.atoms.integer import Integer as IntegerAttr
+from neptune.new.attributes.atoms.boolean import Boolean as BooleanAttr
 from neptune.new.attributes.atoms.string import String as StringAttr
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.series.float_series import FloatSeries as FloatSeriesAttr
@@ -26,6 +28,7 @@ from neptune.new.attributes.series.file_series import FileSeries as ImageSeriesA
 from neptune.new.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.new.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.new.exceptions import OperationNotSupported
+from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.file import File
@@ -50,6 +53,12 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
     def visit_float(self, _: Float) -> Attribute:
         return FloatAttr(self._run, self._path)
+
+    def visit_integer(self, _: Integer) -> Attribute:
+        return IntegerAttr(self._run, self._path)
+
+    def visit_boolean(self, _: Boolean) -> Attribute:
+        return BooleanAttr(self._run, self._path)
 
     def visit_string(self, _: String) -> Attribute:
         return StringAttr(self._run, self._path)

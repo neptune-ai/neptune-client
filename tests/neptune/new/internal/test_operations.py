@@ -37,7 +37,10 @@ class TestOperations(unittest.TestCase):
     def _list_objects():
         now = datetime.now()
         return [
-            AssignFloat(TestOperations._random_path(), 5),
+            AssignFloat(TestOperations._random_path(), 5.),
+            AssignInt(TestOperations._random_path(), 5),
+            AssignBool(TestOperations._random_path(), True),
+            AssignBool(TestOperations._random_path(), False),
             AssignString(TestOperations._random_path(), "a\rsdf\thr"),
             AssignDatetime(TestOperations._random_path(), now.replace(microsecond=1000*int(now.microsecond/1000))),
             UploadFile(TestOperations._random_path(), "f.txt", "file/path/f.txt"),

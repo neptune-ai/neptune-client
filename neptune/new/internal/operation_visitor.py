@@ -16,7 +16,8 @@
 import abc
 from typing import TypeVar, Generic
 
-from neptune.new.internal.operation import Operation, AssignFloat, AssignString, LogFloats, LogStrings, \
+from neptune.new.internal.operation import AssignBool, AssignInt, Operation, AssignFloat, AssignString, LogFloats, \
+    LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
     ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
 
@@ -30,6 +31,14 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_assign_float(self, op: AssignFloat) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_assign_int(self, op: AssignInt) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_assign_bool(self, op: AssignBool) -> Ret:
         pass
 
     @abc.abstractmethod

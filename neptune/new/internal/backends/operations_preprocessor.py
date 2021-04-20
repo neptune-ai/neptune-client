@@ -17,7 +17,9 @@ from enum import Enum
 from typing import List, TypeVar, Callable
 
 from neptune.new.exceptions import MetadataInconsistency, InternalClientError
-from neptune.new.internal.operation import Operation, AssignFloat, AssignString, UploadFile, LogFloats, LogStrings, \
+from neptune.new.internal.operation import AssignBool, AssignInt, Operation, AssignFloat, AssignString, UploadFile, \
+    LogFloats, \
+    LogStrings, \
     LogImages, ClearFloatLog, ClearStringLog, ClearImageLog, AddStrings, RemoveStrings, DeleteAttribute, \
     ClearStringSet, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
 from neptune.new.internal.operation_visitor import OperationVisitor
@@ -55,6 +57,8 @@ class OperationsPreprocessor:
 
 class _DataType(Enum):
     FLOAT = "Float"
+    INT = "Int"
+    BOOL = "Bool"
     STRING = "String"
     FILE = "File"
     DATETIME = "Datetime"
@@ -116,6 +120,12 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_assign_float(self, op: AssignFloat) -> None:
         self._process_modify_op(_DataType.FLOAT, op, self._assign_modifier())
+
+    def visit_assign_int(self, op: AssignInt) -> None:
+        self._process_modify_op(_DataType.INT, op, self._assign_modifier())
+
+    def visit_assign_bool(self, op: AssignBool) -> None:
+        self._process_modify_op(_DataType.BOOL, op, self._assign_modifier())
 
     def visit_assign_string(self, op: AssignString) -> None:
         self._process_modify_op(_DataType.STRING, op, self._assign_modifier())

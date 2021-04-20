@@ -44,10 +44,12 @@ from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
     AttributeWithProperties,
+    BoolAttribute,
     ClientConfig,
     DatetimeAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
+    IntAttribute,
     LeaderboardEntry,
     Project,
     StringAttribute,
@@ -376,6 +378,30 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.getFloatAttribute(**params).response().result
             return FloatAttribute(result.value)
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
+    def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
+        params = {
+            'experimentId': str(run_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getIntAttribute(**params).response().result
+            return IntAttribute(result.value)
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
+    def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
+        params = {
+            'experimentId': str(run_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getBoolAttribute(**params).response().result
+            return BoolAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 

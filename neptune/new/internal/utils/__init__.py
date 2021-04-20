@@ -51,6 +51,14 @@ def is_stream(var):
     return isinstance(var, IOBase) and hasattr(var, 'read')
 
 
+def is_bool(var):
+    return isinstance(var, bool)
+
+
+def is_int(var):
+    return isinstance(var, int)
+
+
 def is_float(var):
     return isinstance(var, (float, int))
 

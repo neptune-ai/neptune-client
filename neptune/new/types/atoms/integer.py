@@ -13,19 +13,30 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from dataclasses import dataclass
+from typing import TypeVar, TYPE_CHECKING
 
-from .atoms.float import Float
-from .atoms.integer import Integer
-from .atoms.boolean import Boolean
-from .atoms.string import String
-from .atoms.datetime import Datetime
-from .atoms.file import File
-from .atoms.git_ref import GitRef
+from neptune.new.types.atoms.atom import Atom
 
-from .series.float_series import FloatSeries
-from .series.string_series import StringSeries
-from .series.file_series import FileSeries
+if TYPE_CHECKING:
+    from neptune.new.types.value_visitor import ValueVisitor
 
-from .sets.string_set import StringSet
+Ret = TypeVar('Ret')
 
-from .file_set import FileSet
+
+@dataclass
+class Integer(Atom):
+
+    value: int
+
+    def __init__(self, value):
+        self.value = int(value)
+
+    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+        return visitor.visit_integer(self)
+
+    def __str__(self):
+        return "Integer({})".format(str(self.value))
+
+    def __int__(self):
+        return self.value

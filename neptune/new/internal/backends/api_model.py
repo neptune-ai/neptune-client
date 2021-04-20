@@ -76,6 +76,8 @@ class ClientConfig(object):
 
 class AttributeType(Enum):
     FLOAT = "float"
+    INT = "int"
+    BOOL = "bool"
     STRING = "string"
     DATETIME = "datetime"
     FILE = "file"
@@ -142,6 +144,16 @@ class FloatSeriesValues:
 @dataclass
 class FloatAttribute:
     value: float
+
+
+@dataclass
+class IntAttribute:
+    value: int
+
+
+@dataclass
+class BoolAttribute:
+    value: bool
 
 
 @dataclass
