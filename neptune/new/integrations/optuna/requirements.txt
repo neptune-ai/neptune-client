@@ -1,0 +1,4 @@
+optuna==2.7.0
+lightgbm==3.2.1
+plotly==4.14.3
+neptune-client==0.9.5

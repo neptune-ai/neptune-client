@@ -1,9 +1,15 @@
+import optuna
+
+import neptune.new as neptune
+
+
 class NeptuneCallback:
     def __init__(self, run,
                  log_plots_freq=1,
                  log_study_freq=1,
                  log_trials_df_freq=1,
                  last_trial_id=None,
+                 vis_backend='plotly',
                  log_plot_contour=True,
                  log_plot_edf=True,
                  log_plot_parallel_coordinate=True,
@@ -19,7 +25,7 @@ class NeptuneCallback:
             assert last_trial_id, "Wne using log_{}_freq 'last' you need to specify last_trial_id"
 
         self._last_trial_id = last_trial_id
-
+        self._vis_backend = vis_backend
         self._log_plots_freq = log_plots_freq
         self._log_study_freq = log_study_freq
         self._log_trials_df_freq = log_trials_df_freq
@@ -37,14 +43,14 @@ class NeptuneCallback:
         self.run['trials/params'].log(trial.params)
         self.run['trials/values|params'].log(f'value: {trial.value}| params: {trial.params}')
 
-        self.run[f'trials/{trial._trial_id}/datetime_start'] = trial.datetime_start
-        self.run[f'trials/{trial._trial_id}/datetime_complete'] = trial.datetime_complete
-        self.run[f'trials/{trial._trial_id}/duration'] = trial.duration
-        self.run[f'trials/{trial._trial_id}/distributions'] = trial.distributions
-        self.run[f'trials/{trial._trial_id}/intermediate_values'] = trial.intermediate_values
-        self.run[f'trials/{trial._trial_id}/params'] = trial.params
-        self.run[f'trials/{trial._trial_id}/value'] = trial.value
-        self.run[f'trials/{trial._trial_id}/values'] = trial.values
+        self.run[f'trials/trials/{trial._trial_id}/datetime_start'] = trial.datetime_start
+        self.run[f'trials/trials/{trial._trial_id}/datetime_complete'] = trial.datetime_complete
+        self.run[f'trials/trials/{trial._trial_id}/duration'] = trial.duration
+        self.run[f'trials/trials/{trial._trial_id}/distributions'] = trial.distributions
+        self.run[f'trials/trials/{trial._trial_id}/intermediate_values'] = trial.intermediate_values
+        self.run[f'trials/trials/{trial._trial_id}/params'] = trial.params
+        self.run[f'trials/trials/{trial._trial_id}/value'] = trial.value
+        self.run[f'trials/trials/{trial._trial_id}/values'] = trial.values
 
         self.run['best/value'] = study.best_value
         self.run['best/params'] = study.best_params
@@ -62,10 +68,11 @@ class NeptuneCallback:
 
         # import pdb; pdb.set_trace()
         if trial._trial_id == 0:
-            log_study_metadata(run, study)
+            log_study_metadata(self.run, study)
 
         if self._should_log_plots(study, trial):
             log_plots(self.run, study,
+                      backend=self._vis_backend,
                       log_plot_contour=self._log_plot_contour,
                       log_plot_edf=self._log_plot_edf,
                       log_plot_parallel_coordinate=self._log_plot_parallel_coordinate,
@@ -159,6 +166,7 @@ def get_pickle(path, run):
 
 
 def log_plots(run, study,
+              backend='plotly',
               log_plot_contour=True,
               log_plot_edf=True,
               log_plot_parallel_coordinate=True,
@@ -168,7 +176,12 @@ def log_plots(run, study,
               log_plot_intermediate_values=True,
               log_plot_optimization_history=True,
               ):
-    import optuna.visualization as vis
+    if backend == 'matplotlib':
+        import optuna.visualization.matplotlib as vis
+    elif backend == 'plotly':
+        import optuna.visualization as vis
+    else:
+        raise NotImplementedError(f'{backend} backend is not implemented')
 
     if vis.is_available:
         if log_plot_contour:
@@ -180,7 +193,7 @@ def log_plots(run, study,
                 vis.plot_parallel_coordinate(study))
         if log_plot_param_importances and len(study.trials) > 1:
             run['visualizations/plot_param_importances'] = neptune.types.File.as_html(vis.plot_param_importances(study))
-        if log_plot_pareto_front and study._is_multi_objective():
+        if log_plot_pareto_front and study._is_multi_objective() and backend == 'plotly':
             run['visualizations/plot_pareto_front'] = neptune.types.File.as_html(vis.plot_pareto_front(study))
         if log_plot_slice:
             run['visualizations/plot_slice'] = neptune.types.File.as_html(vis.plot_slice(study))
