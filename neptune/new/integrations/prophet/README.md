@@ -18,7 +18,8 @@ This integration/example logs:
 
 ### Step 1: Download files and data
  
-Download everything from the ``neptune/new/integrations/prophet`` directory`
+Download everything from the ``neptune/new/integrations/prophet`` directory`.
+You can [find it here](https://github.com/neptune-ai/neptune-client/tree/integration/prophet/neptune/new/integrations/prophet).
 
 ### Step 2: Install packages
 
@@ -108,3 +109,14 @@ df_cv = cross_validation(m, initial="730 days", period="180 days", horizon="365 
 # log model config, model params, forecast plots, and cross validation plots
 prophet_utils.log_prophet_metadata(run, m, forecast, df_cv)
 ```
+
+## How to use it in your own code
+
+All logging functions are located in the ``neptune_prophet.py``.
+You can use simply copy the ``neptune_prohpet.py`` to your repository and import functions from it. 
+Included functions:
+* ``log_prophet_metadata``: logs all the metadata in available 
+* ``log_plot_cross_validation_metric``: logs the cross validation plot (can be interactive or static)
+* ``log_forecast_plots``: logs forecats plots (can be interactive or static)
+* ``log_model``: logs the actual model parameters
+* ``log_config``: logs model configuration (hyperparameters)
