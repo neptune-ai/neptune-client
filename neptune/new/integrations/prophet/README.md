@@ -2,6 +2,8 @@
 
 ## What you will get
 
+[Watch the video](https://www.loom.com/share/692ec75bc3034b0f8d5c27b04bd2efea)
+
 You can see examples of Prophet training runs logged to Neptune here:
 
 *  [See example in Neptune](https://app.neptune.ai/o/common/org/prophet-integration/e/PROP-7/all?path=plots)
