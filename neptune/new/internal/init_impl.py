@@ -54,6 +54,7 @@ from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.internal.utils.source_code import upload_source_code
+from neptune.new.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.new.run import Run
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.version import version as parsed_version
@@ -83,7 +84,7 @@ def init(project: Optional[str] = None,
          capture_hardware_metrics: bool = True,
          monitoring_namespace: str = "monitoring",
          flush_period: float = 5,
-         proxies: dict = None) -> Run:
+         proxies: Optional[dict] = None) -> Run:
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("run", run, (str, type(None)))
@@ -191,6 +192,9 @@ def init(project: Optional[str] = None,
         background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
     if capture_hardware_metrics:
         background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
+    websockets_factory = backend.websockets_factory(api_run.uuid)
+    if websockets_factory:
+        background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
     background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
