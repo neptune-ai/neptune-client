@@ -35,13 +35,19 @@ from neptune.new.internal.backends.api_model import (
     ImageSeriesValues,
 )
 from neptune.new.internal.operation import Operation
+from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 
 
 class NeptuneBackend:
 
+    @abc.abstractmethod
     def get_display_address(self) -> str:
         pass
+
+    # pylint: disable=unused-argument
+    def websockets_factory(self, run_uuid: uuid.UUID) -> Optional[WebsocketsFactory]:
+        return None
 
     @abc.abstractmethod
     def get_project(self, project_id: str) -> Project:
