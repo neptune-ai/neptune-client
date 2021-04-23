@@ -157,6 +157,13 @@ class BoolAttribute:
 
 
 @dataclass
+class FileAttribute:
+    name: str
+    ext: str
+    size: int
+
+
+@dataclass
 class StringAttribute:
     value: str
 

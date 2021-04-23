@@ -23,6 +23,7 @@ from neptune.new.internal.backends.api_model import (
     Attribute,
     BoolAttribute,
     DatetimeAttribute,
+    FileAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
     IntAttribute,
@@ -94,6 +95,10 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_file_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FileAttribute:
         pass
 
     @abc.abstractmethod

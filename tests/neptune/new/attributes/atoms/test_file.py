@@ -95,3 +95,18 @@ class TestFile(TestAttributeBase):
         for value in values:
             with self.assertRaises(TypeError):
                 FileSet(MagicMock(), MagicMock()).upload_files(value)
+
+    def test_fetch_extension(self):
+        value_and_expected_ext = [
+            (FileVal("some/file.txt"), "txt"),
+            (FileVal("some/file"), ""),
+            (FileVal.from_content("Some text stream"), "txt"),
+            (FileVal.from_content(b"Some binary stream"), "bin"),
+            (FileVal.from_content(b"Some binary stream", extension="png"), "png")
+        ]
+
+        for value, expected_ext in value_and_expected_ext:
+            exp, path, wait = self._create_run(), self._random_path(), self._random_wait()
+            var = File(exp, path)
+            var.assign(value, wait=wait)
+            self.assertEqual(expected_ext, var.fetch_extension())

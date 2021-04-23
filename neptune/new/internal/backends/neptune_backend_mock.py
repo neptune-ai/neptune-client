@@ -31,10 +31,13 @@ from neptune.new.internal.backends.api_model import (
     ApiRun,
     Attribute,
     AttributeType,
-    BoolAttribute, DatetimeAttribute,
+    BoolAttribute,
+    DatetimeAttribute,
+    FileAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
-    IntAttribute, Project,
+    IntAttribute,
+    Project,
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
@@ -201,6 +204,13 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
         val = self._get_attribute(run_uuid, path, Boolean)
         return BoolAttribute(val.value)
+
+    def get_file_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FileAttribute:
+        val = self._get_attribute(run_uuid, path, File)
+        return FileAttribute(
+            name=os.path.basename(val.path) if val.path else "",
+            ext=val.extension or "",
+            size=0)
 
     def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
         val = self._get_attribute(run_uuid, path, String)

@@ -47,6 +47,7 @@ from neptune.new.internal.backends.api_model import (
     BoolAttribute,
     ClientConfig,
     DatetimeAttribute,
+    FileAttribute,
     FloatAttribute,
     FloatSeriesAttribute,
     IntAttribute,
@@ -402,6 +403,18 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.getBoolAttribute(**params).response().result
             return BoolAttribute(result.value)
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
+    def get_file_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FileAttribute:
+        params = {
+            'experimentId': str(run_uuid),
+            'attribute': path_to_str(path)
+        }
+        try:
+            result = self.leaderboard_client.api.getFileAttribute(**params).response().result
+            return FileAttribute(name=result.name, ext=result.ext, size=result.size)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
