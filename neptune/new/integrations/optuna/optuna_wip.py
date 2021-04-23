@@ -8,7 +8,6 @@ class NeptuneCallback:
                  log_plots_freq=1,
                  log_study_freq=1,
                  log_trials_df_freq=1,
-                 last_trial_id=None,
                  vis_backend='plotly',
                  log_plot_contour=True,
                  log_plot_edf=True,
@@ -21,10 +20,6 @@ class NeptuneCallback:
 
         self.run = run
 
-        if any(l == 'last' for l in [log_plots_freq, log_study_freq, log_trials_df_freq]):
-            assert last_trial_id, "Wne using log_{}_freq 'last' you need to specify last_trial_id"
-
-        self._last_trial_id = last_trial_id
         self._vis_backend = vis_backend
         self._log_plots_freq = log_plots_freq
         self._log_study_freq = log_study_freq
@@ -39,36 +34,13 @@ class NeptuneCallback:
         self._log_plot_optimization_history = log_plot_optimization_history
 
     def __call__(self, study, trial):
-        self.run['trials/values'].log(trial.value)
-        self.run['trials/params'].log(trial.params)
-        self.run['trials/values|params'].log(f'value: {trial.value}| params: {trial.params}')
-
-        self.run[f'trials/trials/{trial._trial_id}/datetime_start'] = trial.datetime_start
-        self.run[f'trials/trials/{trial._trial_id}/datetime_complete'] = trial.datetime_complete
-        self.run[f'trials/trials/{trial._trial_id}/duration'] = trial.duration
-        self.run[f'trials/trials/{trial._trial_id}/distributions'] = trial.distributions
-        self.run[f'trials/trials/{trial._trial_id}/intermediate_values'] = trial.intermediate_values
-        self.run[f'trials/trials/{trial._trial_id}/params'] = trial.params
-        self.run[f'trials/trials/{trial._trial_id}/value'] = trial.value
-        self.run[f'trials/trials/{trial._trial_id}/values'] = trial.values
-
-        self.run['best/value'] = study.best_value
-        self.run['best/params'] = study.best_params
-        self.run['best/value|params'].log(f'value: {study.best_value}| params: {study.best_params}')
-
-        for _trial in study.best_trials:
-            self.run[f'best/trials/{_trial._trial_id}/datetime_start'] = _trial.datetime_start
-            self.run[f'best/trials/{_trial._trial_id}/datetime_complete'] = _trial.datetime_complete
-            self.run[f'best/trials/{_trial._trial_id}/duration'] = _trial.duration
-            self.run[f'best/trials/{_trial._trial_id}/distributions'] = _trial.distributions
-            self.run[f'best/trials/{_trial._trial_id}/intermediate_values'] = _trial.intermediate_values
-            self.run[f'best/trials/{_trial._trial_id}/params'] = _trial.params
-            self.run[f'best/trials/{_trial._trial_id}/value'] = _trial.value
-            self.run[f'best/trials/{_trial._trial_id}/values'] = _trial.values
+        self.run['trials'] = log_all_trials([trial])
+        self.run['study/distributions'].log(trial.distributions)
+        self.run['best'] = log_best_trials(study)
 
         # import pdb; pdb.set_trace()
         if trial._trial_id == 0:
-            log_study_metadata(self.run, study)
+            log_study_details(self.run, study)
 
         if self._should_log_plots(study, trial):
             log_plots(self.run, study,
@@ -89,7 +61,7 @@ class NeptuneCallback:
 
     def _should_log_plots(self, study, trial):
         if self._log_plots_freq == 'last':
-            if study._stop_flag or trial._trial_id == self._last_trial_id:
+            if study._stop_flag:
                 return True
         else:
             if trial._trial_id % self._log_plots_freq == 0:
@@ -98,7 +70,7 @@ class NeptuneCallback:
 
     def _should_log_study(self, study, trial):
         if self._log_study_freq == 'last':
-            if study._stop_flag or trial._trial_id == self._last_trial_id:
+            if study._stop_flag:
                 return True
         else:
             if trial._trial_id % self._log_study_freq == 0:
@@ -106,7 +78,7 @@ class NeptuneCallback:
         return False
 
 
-def log_study_metadata(run, study):
+def log_study_details(run, study):
     run['study/study_name'] = study.study_name
     run['study/direction'] = study.direction
     run['study/directions'] = study.directions
@@ -128,6 +100,7 @@ def log_study(run, study):
         run['study/study_name'] = study.study_name
         run['study/_storage'] = study._storage
         run['study/storage_type'] = 'DBStorage'  # "RDBStorage", "RedisStorage",
+        run['study/study'] = study._storage # I think this is a link to the database but if not it can be retrieved from this object
         """LOG just the link to _storage"""
 
 
@@ -203,3 +176,61 @@ def log_plots(run, study,
         if log_plot_optimization_history:
             run['visualizations/plot_optimization_history'] = neptune.types.File.as_html(
                 vis.plot_optimization_history(study))
+
+
+def log_best_trials(study):
+    best_results = {'value': study.best_value,
+                    'params': study.best_params,
+                    'value|params': f'value: {study.best_value}| params: {study.best_params}',
+                    }
+
+    for _trial in study.best_trials:
+        best_results[f'trials/{_trial._trial_id}/datetime_start'] = _trial.datetime_start
+        best_results[f'trials/{_trial._trial_id}/datetime_complete'] = _trial.datetime_complete
+        best_results[f'trials/{_trial._trial_id}/duration'] = _trial.duration
+        best_results[f'trials/{_trial._trial_id}/distributions'] = _trial.distributions
+        best_results[f'trials/{_trial._trial_id}/intermediate_values'] = _trial.intermediate_values
+        best_results[f'trials/{_trial._trial_id}/params'] = _trial.params
+        best_results[f'trials/{_trial._trial_id}/value'] = _trial.value
+        best_results[f'trials/{_trial._trial_id}/values'] = _trial.values
+
+    return best_results
+
+
+def log_all_trials(trials):
+    trials_results = {'values':[],'params':[],'values|params':[],
+    }
+    for trial in trials:
+        trials_results['values'].append(trial.value)
+        trials_results['params'].append(trial.params)
+        trials_results['values|params'].append(f'value: {trial.value}| params: {trial.params}')
+
+        trials_results[f'trials/{trial._trial_id}/datetime_start'] = trial.datetime_start
+        trials_results[f'trials/{trial._trial_id}/datetime_complete'] = trial.datetime_complete
+        trials_results[f'trials/{trial._trial_id}/duration'] = trial.duration
+        trials_results[f'trials/{trial._trial_id}/distributions'] = trial.distributions
+        trials_results[f'trials/{trial._trial_id}/intermediate_values'] = trial.intermediate_values
+        trials_results[f'trials/{trial._trial_id}/params'] = trial.params
+        trials_results[f'trials/{trial._trial_id}/value'] = trial.value
+        trials_results[f'trials/{trial._trial_id}/values'] = trial.values
+    return trials_results
+
+def log_study_metadata(study,
+                       log_plots=True,
+                       log_study=True,
+                       log_study_details=True,
+                       log_best_trials=True,
+                       log_all_trials=True,
+                       log_log_distributions=True,
+                       vis_backend='plotly',
+                       log_plot_contour=True,
+                       log_plot_edf=True,
+                       log_plot_parallel_coordinate=True,
+                       log_plot_param_importances=True,
+                       log_plot_pareto_front=True,
+                       log_plot_slice=True,
+                       log_plot_intermediate_values=True,
+                       log_plot_optimization_history=True):
+
+    return
+
