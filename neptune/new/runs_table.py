@@ -39,6 +39,18 @@ class RunsTableEntry:
                 return attr.type
         raise ValueError("Could not find {} attribute".format(path))
 
+    def get_attributes_from_path(self, path: str):
+        path_attributes = {}
+        prefix = path+'/'
+        for attr in self._attributes:
+            if attr.path.startswith(prefix):
+                key_name = attr.path[len(prefix):]
+                try:
+                    path_attributes[key_name] = self.get_attribute_value(attr.path)
+                except MetadataInconsistency as e:
+                    path_attributes[key_name] = e
+        return path_attributes
+
     def get_attribute_value(self, path: str):
         for attr in self._attributes:
             if attr.path == path:
@@ -96,6 +108,9 @@ class LeaderboardHandler:
 
     def get(self):
         return self._run.get_attribute_value(self._path)
+
+    def get_path(self):
+        return self._run.get_attributes_from_path(self._path)
 
     def download(self, destination: Optional[str]):
         attr_type = self._run.get_attribute_type(self._path)
