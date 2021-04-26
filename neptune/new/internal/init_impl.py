@@ -58,6 +58,7 @@ from neptune.new.internal.utils.traceback_job import TracebackJob
 from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.new.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.new.run import Run
+from neptune.new.types import Boolean
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.version import version as parsed_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -214,7 +215,7 @@ def init(project: Optional[str] = None,
     if tags is not None:
         _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
     if run is None:
-        _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
+        _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = Boolean(False)
 
     if capture_stdout and not _run.exists(stdout_path):
         _run.define(stdout_path, StringSeries([]))

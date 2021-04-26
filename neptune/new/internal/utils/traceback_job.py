@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Optional, List
 
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.utils.uncaught_exception_handler import instance as traceback_handler
+from neptune.new.types import Boolean
 
 if TYPE_CHECKING:
     from neptune.new.run import Run
@@ -41,7 +42,7 @@ class TracebackJob(BackgroundJob):
 
             def log_traceback(stacktrace_lines: List[str]):
                 run[path].log(stacktrace_lines)
-                run["sys/failed"] = True
+                run["sys/failed"] = Boolean(True)
 
             traceback_handler.register(self._uuid, log_traceback)
         self._started = True
