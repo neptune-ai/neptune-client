@@ -56,7 +56,7 @@ from neptune.new.internal.backends.operation_api_name_visitor import \
     OperationApiNameVisitor as AlphaOperationApiNameVisitor
 from neptune.new.internal.backends.operation_api_object_converter import \
     OperationApiObjectConverter as AlphaOperationApiObjectConverter
-from neptune.new.internal.operation import AssignString, ConfigFloatSeries, LogFloats
+from neptune.new.internal.operation import AssignString, ConfigFloatSeries, LogFloats, AssignBool, LogStrings
 from neptune.new.internal.utils import base64_decode, base64_encode, paths as alpha_path_utils
 from neptune.new.internal.utils.paths import parse_path
 from neptune.utils import assure_directory_exists, with_api_exceptions_handler
@@ -375,7 +375,11 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         pass
 
     def mark_failed(self, experiment, traceback):
-        pass
+        operations = []
+        path = parse_path("sys/failed")
+        operations.append(AssignBool(path=path, value=True))
+        operations.append(LogStrings(values=traceback.split("\n"), path=parse_path("monitoring/traceback")))
+        self._execute_operations(experiment, operations)
 
     def ping_experiment(self, experiment):
         try:
