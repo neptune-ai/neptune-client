@@ -39,16 +39,22 @@ class RunsTableEntry:
                 return attr.type
         raise ValueError("Could not find {} attribute".format(path))
 
+
     def get_attributes_from_path(self, path: str):
         path_attributes = {}
         prefix = path+'/'
         for attr in self._attributes:
             if attr.path.startswith(prefix):
                 key_name = attr.path[len(prefix):]
-                try:
-                    path_attributes[key_name] = self.get_attribute_value(attr.path)
-                except MetadataInconsistency as e:
-                    path_attributes[key_name] = e
+                if '/' in key_name:
+                    split = key_name.split('/')
+                    if split[0] not in path_attributes:
+                        path_attributes[split[0]] = self.get_attributes_from_path(prefix+split[0])
+                else:
+                    try:
+                        path_attributes[key_name] = self.get_attribute_value(attr.path)
+                    except MetadataInconsistency as e:
+                        path_attributes[key_name] = e
         return path_attributes
 
     def get_attribute_value(self, path: str):
@@ -57,7 +63,7 @@ class RunsTableEntry:
                 _type = attr.type
                 if _type == AttributeType.RUN_STATE:
                     return attr.properties.value
-                if _type == AttributeType.FLOAT or _type == AttributeType.STRING or _type == AttributeType.DATETIME:
+                if _type == AttributeType.INT or AttributeType.FLOAT or _type == AttributeType.STRING or _type == AttributeType.DATETIME:
                     return attr.properties.value
                 if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
                     return attr.properties.last
