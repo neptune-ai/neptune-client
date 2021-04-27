@@ -19,6 +19,7 @@ import uuid
 
 from typing import TYPE_CHECKING, Optional, List
 
+from neptune.new.attributes.constants import SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.utils.uncaught_exception_handler import instance as traceback_handler
 from neptune.new.types import Boolean
@@ -42,7 +43,7 @@ class TracebackJob(BackgroundJob):
 
             def log_traceback(stacktrace_lines: List[str]):
                 run[path].log(stacktrace_lines)
-                run["sys/failed"] = Boolean(True)
+                run[SYSTEM_FAILED_ATTRIBUTE_PATH] = Boolean(True)
 
             traceback_handler.register(self._uuid, log_traceback)
         self._started = True
@@ -51,4 +52,4 @@ class TracebackJob(BackgroundJob):
         traceback_handler.unregister(self._uuid)
 
     def join(self, seconds: Optional[float] = None):
-        self.stop()
+        pass

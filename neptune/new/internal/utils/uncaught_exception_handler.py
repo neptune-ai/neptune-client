@@ -16,6 +16,7 @@
 
 import logging
 import sys
+import threading
 import traceback
 import uuid
 from typing import TYPE_CHECKING, Callable, List
@@ -31,31 +32,36 @@ class UncaughtExceptionHandler:
     def __init__(self):
         self._previous_uncaught_exception_handler = None
         self._handlers = dict()
+        self.__lock__ = threading.Lock()
 
     def activate(self):
+        with self.__lock__:
+            this = self
+            def exception_handler(exc_type, exc_val, exc_tb):
 
-        def exception_handler(exc_type, exc_val, exc_tb):
-            traceback_lines = traceback.format_tb(exc_tb) + [repr(exc_val)]
-            for _, handler in self._handlers.items():
-                handler(traceback_lines)
+                traceback_lines = traceback.format_tb(exc_tb) + [repr(exc_val)]
+                for _, handler in self._handlers.items():
+                    handler(traceback_lines)
 
-            sys.__excepthook__(exc_type, exc_val, exc_tb)
+                this._previous_uncaught_exception_handler(exc_type, exc_val, exc_tb)
 
-        if self._previous_uncaught_exception_handler is None:
-            self._previous_uncaught_exception_handler = sys.excepthook
-            sys.excepthook = exception_handler
+            if self._previous_uncaught_exception_handler is None:
+                self._previous_uncaught_exception_handler = sys.excepthook
+                sys.excepthook = exception_handler
 
     def deactivate(self):
-        sys.excepthook = self._previous_uncaught_exception_handler
-        self._previous_uncaught_exception_handler = None
-        self._handlers = dict()
+        with self.__lock__:
+            sys.excepthook = self._previous_uncaught_exception_handler
+            self._previous_uncaught_exception_handler = None
 
     def register(self, uid: uuid.UUID, handler: Callable[[List[str]], None]):
-        self._handlers[uid] = handler
+        with self.__lock__:
+            self._handlers[uid] = handler
 
     def unregister(self, uid: uuid.UUID):
-        if uid in self._handlers:
-            del self._handlers[uid]
+        with self.__lock__:
+            if uid in self._handlers:
+                del self._handlers[uid]
 
 
 instance = UncaughtExceptionHandler()

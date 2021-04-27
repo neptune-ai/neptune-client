@@ -49,6 +49,7 @@ from neptune.internal.utils.alpha_integration import (
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.new import exceptions as alpha_exceptions
 from neptune.new.attributes import constants as alpha_consts
+from neptune.new.attributes.constants import MONITORIC_TRACEBACK, SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.new.internal import operation as alpha_operation
 from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
 from neptune.new.internal.backends.api_model import AttributeType
@@ -376,9 +377,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
 
     def mark_failed(self, experiment, traceback):
         operations = []
-        path = parse_path("sys/failed")
+        path = parse_path(SYSTEM_FAILED_ATTRIBUTE_PATH)
         operations.append(AssignBool(path=path, value=True))
-        operations.append(LogStrings(values=traceback.split("\n"), path=parse_path("monitoring/traceback")))
+        operations.append(LogStrings(values=traceback.split("\n"), path=parse_path(MONITORIC_TRACEBACK)))
         self._execute_operations(experiment, operations)
 
     def ping_experiment(self, experiment):
