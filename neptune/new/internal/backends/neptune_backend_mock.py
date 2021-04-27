@@ -115,6 +115,7 @@ class NeptuneBackendMock(NeptuneBackend):
         self._runs[new_run_uuid].set(["sys", "tags"], StringSet(set()))
         self._runs[new_run_uuid].set(["sys", "creation_time"], Datetime(datetime.now()))
         self._runs[new_run_uuid].set(["sys", "modification_time"], Datetime(datetime.now()))
+        self._runs[new_run_uuid].set(["sys", "failed"], Boolean(False))
         if git_ref:
             self._runs[new_run_uuid].set(["source_code", "git"], git_ref)
         return ApiRun(new_run_uuid, short_id, 'workspace', 'sandbox', False)
