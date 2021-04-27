@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.new.attributes.constants import SIGNAL_TYPE_ABORT, SIGNAL_TYPE_STOP
 
 
 class Message(object):
@@ -20,12 +21,18 @@ class Message(object):
         pass
 
     MESSAGE_TYPE = 'messageType'
+    MESSAGE_NEW_TYPE = 'type'
     MESSAGE_BODY = 'messageBody'
 
     @classmethod
     def from_json(cls, json_value):
-        message_type = json_value[Message.MESSAGE_TYPE]
+        message_type = json_value.get(Message.MESSAGE_TYPE) or json_value.get(Message.MESSAGE_NEW_TYPE)
         message_body = json_value[Message.MESSAGE_BODY]
+
+        if message_type == SIGNAL_TYPE_STOP:
+            message_type = MessageType.STOP
+        elif message_type == SIGNAL_TYPE_ABORT:
+            message_type = MessageType.ABORT
 
         if message_type in MessageClassRegistry.MESSAGE_CLASSES:
             return MessageClassRegistry.MESSAGE_CLASSES[message_type].from_json(message_body)
@@ -48,6 +55,19 @@ class AbortMessage(Message):
     @classmethod
     def from_json(cls, json_value):
         return AbortMessage()
+
+    def body_to_json(self):
+        return None
+
+
+class StopMessage(Message):
+    @classmethod
+    def get_type(cls):
+        return MessageType.STOP
+
+    @classmethod
+    def from_json(cls, json_value):
+        return StopMessage()
 
     def body_to_json(self):
         return None
@@ -87,6 +107,7 @@ class ActionInvocationMessage(Message):
 class MessageType(object):
     NEW_CHANNEL_VALUES = 'NewChannelValues'
     ABORT = 'Abort'
+    STOP = 'Stop'
     ACTION_INVOCATION = 'InvokeAction'
 
 

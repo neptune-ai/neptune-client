@@ -23,9 +23,9 @@ from neptune.internal.websockets.websocket_message_processor import WebsocketMes
 
 
 class AbortingThread(NeptuneThread):
-    def __init__(self, websocket_factory, abort_impl, experiment_id):
+    def __init__(self, websocket_factory, abort_impl, experiment):
         super(AbortingThread, self).__init__(is_daemon=True)
-        self._abort_message_processor = AbortMessageProcessor(abort_impl, experiment_id)
+        self._abort_message_processor = AbortMessageProcessor(abort_impl, experiment)
         self._ws_client = websocket_factory.create(shutdown_condition=threading.Event())
 
     def run(self):
@@ -46,14 +46,18 @@ class AbortingThread(NeptuneThread):
 
 
 class AbortMessageProcessor(WebsocketMessageProcessor):
-    def __init__(self, abort_impl, experiment_id):
+    def __init__(self, abort_impl, experiment):
         super(AbortMessageProcessor, self).__init__()
         self._abort_impl = abort_impl
-        self._experiment_id = experiment_id
+        self._experiment = experiment
         self.received_abort_message = False
 
     def _process_message(self, message):
-        if message.get_type() == MessageType.ABORT:
+        if message.get_type() == MessageType.STOP:
+            self._experiment.stop()
+            self._abort()
+        elif message.get_type() == MessageType.ABORT:
+            self._experiment.stop("Remotely aborted")
             self._abort()
 
     def _abort(self):

@@ -147,7 +147,7 @@ class ExecutionContext(object):
         self._aborting_thread = AbortingThread(
             websocket_factory=websocket_factory,
             abort_impl=abort_impl,
-            experiment_id=self._experiment.internal_id
+            experiment=self._experiment
         )
         self._aborting_thread.start()
 
