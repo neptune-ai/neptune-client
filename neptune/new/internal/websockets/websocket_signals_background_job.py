@@ -15,6 +15,7 @@
 #
 import json
 import logging
+import threading
 from json.decoder import JSONDecodeError
 
 from typing import TYPE_CHECKING, Optional
@@ -55,7 +56,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         self._thread.shutdown_ws_client()
 
     def join(self, seconds: Optional[float] = None):
-        if not self._started:
+        if not self._started or threading.get_ident() == self._thread.ident:
             return
         self._thread.join(seconds)
 
@@ -69,7 +70,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         def work(self) -> None:
             try:
                 raw_message = self._ws_client.recv()
-                if self._is_heartbeat(raw_message):
+                if raw_message is None or self._is_heartbeat(raw_message):
                     return
                 else:
                     self._handler_message(raw_message)
@@ -101,7 +102,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                 return
             seconds = msg_body.get("seconds")
             self._run.stop(seconds=seconds)
-            process_killer.exit_process(0)
+            process_killer.kill_me()
 
         def _handle_abort(self, msg_body):
             msg_body = msg_body or dict()
@@ -111,7 +112,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
             seconds = msg_body.get("seconds")
             self._run[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
             self._run.stop(seconds=seconds)
-            process_killer.exit_process(0)
+            process_killer.kill_me()
 
         def shutdown_ws_client(self):
             self._ws_client.shutdown()

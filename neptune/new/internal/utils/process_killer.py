@@ -15,7 +15,6 @@
 #
 
 import os
-import sys
 
 try:
     import psutil
@@ -27,11 +26,11 @@ except ImportError:
 KILL_TIMEOUT = 5
 
 
-def exit_process(code):
+def kill_me():
     if PSUTIL_INSTALLED:
-        pid = os.getpid()
+        process = psutil.Process(os.getpid())
         try:
-            children = _get_process_children(psutil.Process(pid))
+            children = _get_process_children(process) + [process]
         except psutil.NoSuchProcess:
             children = []
 
@@ -40,8 +39,6 @@ def exit_process(code):
         _, alive = psutil.wait_procs(children, timeout=KILL_TIMEOUT)
         for process in alive:
             _kill(process)
-
-    sys.exit(code)
 
 
 def _terminate(process):

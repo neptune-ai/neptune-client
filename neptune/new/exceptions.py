@@ -110,7 +110,7 @@ class ProjectNotFound(NeptuneException):
 Project {python}{project}{end} not found.
 
 Verify if your project's name was not misspelled.
-You can find proper name after logging into Neptune UI: ui.neptune.ai.
+You can find proper name after logging into Neptune UI.
 """
         inputs = dict(list({'project': project_id}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
@@ -184,7 +184,7 @@ For example, a project {correct}neptune-ai/credit-default-prediction{end} parts 
     - {correct}neptune-ai{end}: {underline}WORKSPACE{end} our company organization name
     - {correct}credit-default-prediction{end}: {underline}PROJECT_NAME{end} a project name
 
-The URL to this project looks like this: https://ui.neptune.ai/neptune-ai/credit-default-prediction
+The URL to this project looks like this: https://app.neptune.ai/neptune-ai/credit-default-prediction
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/workspace-project-and-user-management
