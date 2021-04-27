@@ -32,10 +32,10 @@ class UncaughtExceptionHandler:
     def __init__(self):
         self._previous_uncaught_exception_handler = None
         self._handlers = dict()
-        self.__lock__ = threading.Lock()
+        self._lock = threading.Lock()
 
     def activate(self):
-        with self.__lock__:
+        with self._lock:
             this = self
             def exception_handler(exc_type, exc_val, exc_tb):
 
@@ -43,6 +43,7 @@ class UncaughtExceptionHandler:
                 for _, handler in self._handlers.items():
                     handler(traceback_lines)
 
+                # pylint: disable=protected-access
                 this._previous_uncaught_exception_handler(exc_type, exc_val, exc_tb)
 
             if self._previous_uncaught_exception_handler is None:
@@ -50,16 +51,16 @@ class UncaughtExceptionHandler:
                 sys.excepthook = exception_handler
 
     def deactivate(self):
-        with self.__lock__:
+        with self._lock:
             sys.excepthook = self._previous_uncaught_exception_handler
             self._previous_uncaught_exception_handler = None
 
     def register(self, uid: uuid.UUID, handler: Callable[[List[str]], None]):
-        with self.__lock__:
+        with self._lock:
             self._handlers[uid] = handler
 
     def unregister(self, uid: uuid.UUID):
-        with self.__lock__:
+        with self._lock:
             if uid in self._handlers:
                 del self._handlers[uid]
 
