@@ -64,6 +64,10 @@ class LeaderboardApiClient(ApiClient, ABC):
                                 min_running_time=None):
         pass
 
+    # pylint: disable=unused-argument
+    def websockets_factory(self, project_uuid, experiment_id):
+        return None
+
     @abstractmethod
     def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
         pass

@@ -107,6 +107,10 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
         return self._client.get_leaderboard_entries(project, entry_types, ids, states, owners, tags, min_running_time)
 
     @with_migration_handling
+    def websockets_factory(self, project_uuid, experiment_id):
+        return self._client.websockets_factory(project_uuid, experiment_id)
+
+    @with_migration_handling
     def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
         return self._client.get_channel_points_csv(experiment, channel_internal_id, channel_name)
 

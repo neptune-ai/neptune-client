@@ -46,7 +46,7 @@ class NeptuneBackend:
         pass
 
     # pylint: disable=unused-argument
-    def websockets_factory(self, run_uuid: uuid.UUID) -> Optional[WebsocketsFactory]:
+    def websockets_factory(self, project_uuid: uuid.UUID, run_uuid: uuid.UUID) -> Optional[WebsocketsFactory]:
         return None
 
     @abc.abstractmethod

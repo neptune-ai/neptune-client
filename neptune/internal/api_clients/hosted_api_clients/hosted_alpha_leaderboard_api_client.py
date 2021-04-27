@@ -15,6 +15,7 @@
 #
 import logging
 import os
+import re
 import uuid
 from collections import namedtuple
 from http.client import NOT_FOUND
@@ -25,6 +26,7 @@ from typing import Dict, List
 
 import six
 from bravado.exception import HTTPNotFound
+from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
 
 from neptune.api_exceptions import (ExperimentNotFound, ExperimentOperationErrors, PathInExperimentNotFound,
                                     ProjectNotFound)
@@ -768,6 +770,13 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                     for e in self._get_all_items(get_portion, step=100)]
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
+
+    def websockets_factory(self, project_uuid, experiment_id):
+        base_url = re.sub(r'^http', 'ws', self.api_address) + '/api/notifications/v1'
+        return ReconnectingWebsocketFactory(
+            backend=self,
+            url=base_url + f'/runs/{project_uuid}/{experiment_id}/signal'
+        )
 
     @staticmethod
     def _to_leaderboard_entry_dto(experiment_attributes):
