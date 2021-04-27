@@ -16,6 +16,7 @@
 import logging
 import os
 import re
+import time
 import uuid
 from collections import namedtuple
 from http.client import NOT_FOUND
@@ -51,7 +52,7 @@ from neptune.internal.utils.alpha_integration import (
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.new import exceptions as alpha_exceptions
 from neptune.new.attributes import constants as alpha_consts
-from neptune.new.attributes.constants import MONITORING_TRACEBACK, SYSTEM_FAILED_ATTRIBUTE_PATH
+from neptune.new.attributes.constants import MONITORING_TRACEBACK_ATTRIBUTE_PATH, SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.new.internal import operation as alpha_operation
 from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
 from neptune.new.internal.backends.api_model import AttributeType
@@ -380,8 +381,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
     def mark_failed(self, experiment, traceback):
         operations = []
         path = parse_path(SYSTEM_FAILED_ATTRIBUTE_PATH)
+        traceback_values = [LogStrings.ValueType(val, step=None, ts=time.time()) for val in traceback.split("\n")]
         operations.append(AssignBool(path=path, value=True))
-        operations.append(LogStrings(values=traceback.split("\n"), path=parse_path(MONITORING_TRACEBACK)))
+        operations.append(LogStrings(values=traceback_values, path=parse_path(MONITORING_TRACEBACK_ATTRIBUTE_PATH)))
         self._execute_operations(experiment, operations)
 
     def ping_experiment(self, experiment):
