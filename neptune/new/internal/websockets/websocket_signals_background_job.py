@@ -13,17 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import json
 import logging
+from json.decoder import JSONDecodeError
 
 from typing import TYPE_CHECKING, Optional
 
+import click
 from websocket import WebSocketConnectionClosedException
 
 from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
+from neptune.new.attributes.constants import SYSTEM_FAILED_ATTRIBUTE_PATH
 
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
+from neptune.new.internal.utils import process_killer
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 
 if TYPE_CHECKING:
@@ -67,9 +71,36 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                 raw_message = self._ws_client.recv()
                 if self._is_heartbeat(raw_message):
                     return
-                # Handle messages here
+                else:
+                    self._handler_message(raw_message)
             except WebSocketConnectionClosedException:
                 pass
+
+        def _handler_message(self, msg: str):
+            try:
+                json_msg = json.loads(msg)
+                msg_type = json_msg.get("type")
+                msg_body = json_msg.get("body") or dict()
+                if not msg_type:
+                    click.echo(f"Malformed websocket signal: missing type", err=True)
+                    return
+                if not isinstance(msg_type, str):
+                    click.echo(f"Malformed websocket signal: type is {type(msg_type)}, should be str", err=True)
+                    return
+                if not isinstance(msg_body, dict):
+                    click.echo(f"Malformed websocket signal: body is {type(msg_body)}, should be dict", err=True)
+                    return
+                if msg_type.lower() == 'neptune/stop':
+                    seconds = msg_body.get("seconds")
+                    self._run.stop(seconds=seconds)
+                    process_killer.exit_process(0)
+                if msg_type.lower() == 'neptune/abort':
+                    seconds = msg_body.get("seconds")
+                    self._run[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
+                    self._run.stop(seconds=seconds)
+                    process_killer.exit_process(0)
+            except JSONDecodeError as ex:
+                click.echo(f"Malformed websocket signal: {ex}, message: {msg}", err=True)
 
         def shutdown_ws_client(self):
             self._ws_client.shutdown()

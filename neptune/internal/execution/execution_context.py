@@ -30,7 +30,6 @@ from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErr
 from neptune.internal.threads.aborting_thread import AbortingThread
 from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
-from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
 from neptune.utils import is_notebook, in_docker, is_ipython
 
 _logger = logging.getLogger(__name__)
@@ -137,10 +136,14 @@ class ExecutionContext(object):
         else:
             return
 
-        websocket_factory = ReconnectingWebsocketFactory(
-            backend=self._backend,
+        websocket_factory = self._backend.websockets_factory(
+            # pylint: disable=protected-access
+            project_uuid=self._experiment._project.internal_id,
             experiment_id=self._experiment.internal_id
         )
+        if not websocket_factory:
+            return
+
         self._aborting_thread = AbortingThread(
             websocket_factory=websocket_factory,
             abort_impl=abort_impl,

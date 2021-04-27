@@ -192,7 +192,7 @@ def init(project: Optional[str] = None,
         background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
     if capture_hardware_metrics:
         background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
-    websockets_factory = backend.websockets_factory(api_run.uuid)
+    websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
     if websockets_factory:
         background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
     background_jobs.append(PingBackgroundJob())

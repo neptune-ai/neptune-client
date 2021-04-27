@@ -147,10 +147,10 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_display_address(self) -> str:
         return self._client_config.display_url
 
-    def websockets_factory(self, run_uuid: uuid.UUID) -> Optional[WebsocketsFactory]:
+    def websockets_factory(self, project_uuid: uuid.UUID, run_uuid: uuid.UUID) -> Optional[WebsocketsFactory]:
         base_url = re.sub(r'^http', 'ws', self._client_config.api_url)
         return WebsocketsFactory(
-            url=base_url + '/api/notifications/v1/experiments/' + str(run_uuid) + '/operations',
+            url=base_url + f'/api/notifications/v1/runs/{str(project_uuid)}/{str(run_uuid)}/signal',
             session=self._authenticator.auth.session,
             proxies=self.proxies
         )
