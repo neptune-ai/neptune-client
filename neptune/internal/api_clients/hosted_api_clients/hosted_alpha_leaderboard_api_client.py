@@ -210,7 +210,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             tags=system_attributes.tags.values,
             description=system_attributes.description.value,
             hostname=system_attributes.hostname.value if system_attributes.hostname else None,
-            state="running" if system_attributes.state.value == "active" else "succeeded",
+            state="running" if system_attributes.state.value == "running" else "succeeded",
             properties=[
                 AlphaPropertyDTO(attr) for attr in attributes
                 if AlphaPropertyDTO.is_valid_attribute(attr)
@@ -757,7 +757,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                                 tags=None,
                                 min_running_time=None):
         if states is not None:
-            states = ["active" if state == "running" else "inactive" for state in states]
+            states = [state if state == "running" else "idle" for state in states]
         try:
             def get_portion(limit, offset):
                 return self.leaderboard_swagger_client.api.getLeaderboard(
@@ -810,7 +810,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             projectName=experiment_attributes.projectName,
             shortId=system_attributes.shortId.value,
             name=system_attributes.name.value,
-            state="running" if system_attributes.state.value == "active" else "succeeded",
+            state="running" if system_attributes.state.value == "running" else "succeeded",
             timeOfCreation=system_attributes.creationTime.value,
             timeOfCompletion=None,
             runningTime=system_attributes.runningTime.value,
