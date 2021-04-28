@@ -595,6 +595,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @staticmethod
     def _create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
         http_client = RequestsClient(ssl_verify=ssl_verify)
+        http_client.session.verify = ssl_verify
         update_session_proxies(http_client.session, proxies)
         return http_client
 
