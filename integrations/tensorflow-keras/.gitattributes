@@ -1,2 +1,0 @@
-neptune/alpha/integrations/tensorflow_keras/impl/_version.py export-subst
-neptune_tensorflow_keras/_version.py export-subst
