@@ -91,16 +91,16 @@ def init(project: Optional[str] = None,
     """Starts a new tracked run, and append it to the top of the Runs table view.
 
     Args:
-        project(str, optional): Name of a project in a form of namespace/project_name. Defaults to `None`.
-            If None, the value of `NEPTUNE_PROJECT` environment variable will be taken.
+        project(str, optional): Name of a project in a form of `namespace/project_name`. Defaults to `None`.
+            If `None`, the value of `NEPTUNE_PROJECT` environment variable will be taken.
         api_token(str, optional): User’s API token. Defaults to `None`.
-            If None, the value of `NEPTUNE_API_TOKEN` environment variable will be taken.
+            If `None`, the value of `NEPTUNE_API_TOKEN` environment variable will be taken.
             .. note::
                 It is strongly recommended to use `NEPTUNE_API_TOKEN` environment variable rather than placing your
                 API token in plain text in your source code.
         run (str, optional): An existing run's identifier like 'SAN-1' in case of resuming a tracked run.
             Defaults to `None`.
-            A run with such identifier must exist. If None is passed, starts a new tracked run.
+            A run with such identifier must exist. If `None` is passed, starts a new tracked run.
         custom_run_id (str, optional): A unique identifier to be used when running Neptune in pipelines.
             Defaults to `None`.
             Make sure you are using the same identifier throughout the whole pipeline execution.
@@ -117,7 +117,7 @@ def init(project: Optional[str] = None,
             Uploaded sources are displayed in the run’s Source code tab.
             Unix style pathname pattern expansion is supported. For example, you can pass '*.py' to upload all python
             source files from the current directory.
-            If None is passed, Python file from which run was created will be uploaded.
+            If `None` is passed, Python file from which run was created will be uploaded.
         capture_stdout (bool, optional): Whether to send run's stdout. Defaults to `True`.
             Tracked metadata will be stored inside monitoring_namespace.
         capture_stderr (bool, optional):  Whether to send run’s stderr. Defaults to `True`.
@@ -173,7 +173,9 @@ def init(project: Optional[str] = None,
         ...               tags=['list-of', 'tags', 'goes-here', 'as-list-of-strings'],
         ...               source_files=['training_with_pytorch.py', 'net.py'])
 
-    .. _Documentation Neptune init:
+    You may also want to check `init docs page`_.
+
+    .. _init docs page:
        https://docs.neptune.ai/api-reference/neptune#init
     """
     verify_type("project", project, (str, type(None)))

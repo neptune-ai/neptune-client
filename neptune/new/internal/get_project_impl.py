@@ -34,6 +34,35 @@ _logger = logging.getLogger(__name__)
 
 
 def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> Project:
+    """Get a project with given `name`.
+
+    Args:
+        name(str, optional): Name of a project in a form of namespace/project_name. Defaults to `None`.
+            If None, the value of `NEPTUNE_PROJECT` environment variable will be taken.
+        api_token(str, optional): User’s API token. Defaults to `None`.
+            If None, the value of `NEPTUNE_API_TOKEN` environment variable will be taken.
+            .. note::
+                It is strongly recommended to use `NEPTUNE_API_TOKEN` environment variable rather than placing your
+                API token in plain text in your source code.
+
+    Returns:
+        ``Project``: object that can be used to interact with the project as a whole like fetching data from Runs table.
+
+    Examples:
+
+        >>> import neptune.new as neptune
+
+        >>> # Fetch project 'jack/sandbox'
+        ... project = neptune.get_project(name='jack/sandbox')
+
+        >>> # Fetch all Runs metadata as Pandas DataFrame
+        ... runs_table_df = project.fetch_runs_table().to_pandas()
+
+    You may also want to check `get_project docs page`_.
+
+    .. _get_project docs page:
+       https://docs.neptune.ai/api-reference/neptune#get_project
+    """
     verify_type("name", name, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 

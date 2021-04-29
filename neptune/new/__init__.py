@@ -18,7 +18,9 @@
 
 It also provides some convenience functionalities like obtaining the last created run.
 
-.. _Documentation Neptune:
+You may also want to check `Neptune docs page`_.
+
+.. _Neptune docs page:
    https://docs.neptune.ai/api-reference/neptune
 """
 
@@ -48,7 +50,9 @@ def get_last_run() -> Optional[Run]:
         >>> # Not a problem! We've got you covered.
         ... run = neptune.get_last_run()
 
-    .. _Documentation Neptune get_last_run:
+    You may also want to check `get_last_run docs page`_.
+
+    .. _get_last_run docs page:
        https://docs.neptune.ai/api-reference/neptune#get_last_run
     """
     last_run = Run.last_run
