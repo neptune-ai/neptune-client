@@ -222,7 +222,6 @@ class Run(AbstractContextManager):
 
         .. _stop docs page:
             https://docs.neptune.ai/api-reference/run#stop
-
         """
         verify_type("seconds", seconds, (float, int, type(None)))
         if not self._started:
