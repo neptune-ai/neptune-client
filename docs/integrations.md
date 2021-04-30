@@ -5,6 +5,12 @@ Assuming that the new integration is called awesome-integration
 2. Update `setup.py`, `setup.cfg` replacing `tensorflow-keras` with `awesome-integration`
 3. [Update versioneer](https://github.com/python-versioneer/python-versioneer/blob/master/INSTALL.md)
 4. Write your integration
+4a. Remember to set the integration version as an attribute, e.g.
+
+```
+run['source_code/integrations/neptune-awesome-integration'] = __version__
+```
+
 5. Create the integration project once via manual upload
     ```shell script
     cd integrations/awesome-integration
