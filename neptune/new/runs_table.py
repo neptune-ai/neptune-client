@@ -66,7 +66,7 @@ class RunsTableEntry:
                 _type = attr.type
                 if _type == AttributeType.RUN_STATE:
                     return attr.properties.value
-                if _type == AttributeType.INT or _type == AttributeType.FLOAT or _type == AttributeType.STRING or _type == AttributeType.DATETIME:
+                if _type == AttributeType.BOOL or _type == AttributeType.INT or _type == AttributeType.FLOAT or _type == AttributeType.STRING or _type == AttributeType.DATETIME:
                     return attr.properties.value
                 if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
                     return attr.properties.last
