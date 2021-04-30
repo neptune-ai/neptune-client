@@ -39,17 +39,20 @@ class RunsTableEntry:
                 return attr.type
         raise ValueError("Could not find {} attribute".format(path))
 
+    def _get_key_name(self, path, prefix):
+        key_name = path[len(prefix):]
+        return key_name[1:] if len(key_name) > 0 and key_name[0] is '/' else key_name
 
     def get_attributes_from_path(self, path: str):
         path_attributes = {}
-        prefix = path  # +'/'
+        prefix = path
         for attr in self._attributes:
             if attr.path.startswith(prefix):
-                key_name = attr.path[len(prefix):]
+                key_name = self._get_key_name(attr.path, prefix)
                 if '/' in key_name:
                     split = key_name.split('/')
                     if split[0] not in path_attributes:
-                        path_attributes[split[0]] = self.get_attributes_from_path(prefix+split[0])
+                        path_attributes[split[0]] = self.get_attributes_from_path(f'{prefix}/{split[0]}')
                 else:
                     try:
                         path_attributes[key_name] = self.get_attribute_value(attr.path)
