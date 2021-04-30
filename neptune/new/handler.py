@@ -51,6 +51,55 @@ class Handler:
             raise AttributeError()
 
     def assign(self, value, wait: bool = False) -> None:
+        """Assigns the provided value to the field.
+
+        Available for following field types (`Field types docs page`_):
+            * `Integer`
+            * `Float`
+            * `Boolean`
+            * `String`
+
+        Args:
+            value: Value to be stored in a field.
+            wait (Boolean, optional): If `True` the client will wait to send all tracked metadata to the server.
+                This makes the call synchronous.
+                Defaults to `None`.
+
+        Examples:
+            Assigning Float values:
+
+            >>> import neptune.new as neptune
+            >>> run = neptune.init()
+
+            >>> # You can both use the Python assign operator (=)
+            ... run['parameters/max_epochs'] = 5
+            >>> # as well as directly use the .assign method
+            ... run['parameters/max_epochs'].assign(5)
+
+            You can assign integers, floats, bools, strings
+
+            >>> run['parameters/max_epochs'] = 5
+            >>> run['parameters/max_lr'] = 0.4
+            >>> run['parameters/early_stopping'] = True
+            >>> run['JIRA'] = 'NPT-952'
+
+            You can also assign values in batch through a dict
+
+            >>> params = {'max_epochs': 5, 'lr': 0.4}
+            >>> run['parameters'] = params
+
+        You may also want to check following pages:
+            * `Field types docs page`_
+            * `assign Float docs page`_
+            * `assign String docs page`_
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        .. _assign Float docs page:
+           https://docs.neptune.ai/api-reference/field-types#assign
+        .. _assign String docs page:
+           https://docs.neptune.ai/api-reference/field-types#assign-1
+        """
         if not isinstance(value, dict):
             return self._assign_impl(value, wait)
         for key, value in value.items():
@@ -97,6 +146,26 @@ class Handler:
             timestamp: Optional[float] = None,
             wait: bool = False,
             **kwargs) -> None:
+        """Logs the provided value or a collection of values.
+
+        * a TODO
+        * b
+        * c
+
+        Args:
+            value:
+            step (float or int, optional, default is None): Index of the log entry being appended.
+                Must be strictly increasing.
+                Defaults to `None`.
+            timestamp(float or int, optional): Time index of the log entry being appended in form of Unix time.
+                If `None` current time (`time.time()`) will be used as a timestamp.
+                Defaults to `None`.
+            wait (Boolean, optional): If `True` the client will wait to send all tracked metadata to the server.
+                This makes the call synchronous.
+                Defaults to `None`.
+            **kwargs:  TODO: missing docs
+
+        """
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", timestamp, (int, float, type(None)))
 

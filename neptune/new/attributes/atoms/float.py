@@ -23,6 +23,12 @@ from neptune.new.attributes.atoms.atom import Atom
 class Float(Atom):
 
     def assign(self, value: Union[FloatVal, float, int], wait: bool = False):
+        """assign Float Tmp
+
+        Args:
+            value:
+            wait:
+        """
         if not isinstance(value, FloatVal):
             value = FloatVal(value)
 

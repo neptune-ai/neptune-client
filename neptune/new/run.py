@@ -382,7 +382,7 @@ class Run(AbstractContextManager):
         Args:
             wait (bool, optional, default is False): If `True` the process will only wait for data to be saved
                 locally from memory, but will not wait for them to reach Neptune servers.
-                Defaults to `False`.
+                Defaults to `True`.
 
         Examples:
             >>> import neptune.new as neptune
