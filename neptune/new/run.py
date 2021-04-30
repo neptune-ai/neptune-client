@@ -214,8 +214,7 @@ class Run(AbstractContextManager):
         except KeyError:
             raise NeptuneException(f"Unexpected type: {_type}")
 
-        if attr_init is not None:
-            self._structure.set(_path, attr_init(self, _path))
+        self._structure.set(_path, attr_init(self, _path))
 
     def _shutdown_hook(self):
         self.stop()

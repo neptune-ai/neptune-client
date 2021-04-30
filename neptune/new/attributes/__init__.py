@@ -22,6 +22,7 @@ from .atoms.git_ref import GitRef
 from .atoms.boolean import Boolean
 from .atoms.integer import Integer
 from .atoms.run_state import RunState
+from .atoms.notebook_ref import NotebookRef
 
 from .series.float_series import FloatSeries
 from .series.string_series import StringSeries

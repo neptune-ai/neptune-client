@@ -29,7 +29,7 @@ class Datetime(Atom):
         if isinstance(value, DatetimeVal):
             value = value.value
         else:
-            value = value.replace(microsecond=1000*int(value.microsecond/1000))
+            value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
         with self._run.lock():
             self._enqueue_operation(AssignDatetime(self._path, value), wait)
 
