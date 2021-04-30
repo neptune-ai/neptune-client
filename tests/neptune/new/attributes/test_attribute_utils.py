@@ -21,7 +21,7 @@ from neptune.new.internal.backends.api_model import AttributeType
 
 
 class TestAttributeUtils(unittest.TestCase):
-    def test_attribute_to_type_to_atom(self):
+    def test_attribute_type_to_atom(self):
         # Expect all AttributeTypes are reflected in `attribute_type_to_atom`...
         self.assertEqual(set(at for at in AttributeType), set(attribute_type_to_atom.keys()))
 
