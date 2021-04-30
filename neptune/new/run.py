@@ -24,6 +24,7 @@ from typing import Dict, Any, Union, List, Optional
 
 import click
 
+from neptune.new.attributes import attribute_type_to_atom
 from neptune.new.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.new.attributes.atoms.run_state import RunState as RunStateAttr
 from neptune.new.attributes.atoms.integer import Integer as IntegerAttr
@@ -208,32 +209,13 @@ class Run(AbstractContextManager):
                 self._define_attribute(parse_path(attribute.path), attribute.type)
 
     def _define_attribute(self, _path: List[str], _type: AttributeType):
-        if _type == AttributeType.INT:
-            self._structure.set(_path, IntegerAttr(self, _path))
-        if _type == AttributeType.FLOAT:
-            self._structure.set(_path, FloatAttr(self, _path))
-        if _type == AttributeType.STRING:
-            self._structure.set(_path, StringAttr(self, _path))
-        if _type == AttributeType.DATETIME:
-            self._structure.set(_path, DatetimeAttr(self, _path))
-        if _type == AttributeType.FILE:
-            self._structure.set(_path, FileAttr(self, _path))
-        if _type == AttributeType.FILE_SET:
-            self._structure.set(_path, FileSetAttr(self, _path))
-        if _type == AttributeType.FLOAT_SERIES:
-            self._structure.set(_path, FloatSeriesAttr(self, _path))
-        if _type == AttributeType.STRING_SERIES:
-            self._structure.set(_path, StringSeriesAttr(self, _path))
-        if _type == AttributeType.IMAGE_SERIES:
-            self._structure.set(_path, ImageSeriesAttr(self, _path))
-        if _type == AttributeType.STRING_SET:
-            self._structure.set(_path, StringSetAttr(self, _path))
-        if _type == AttributeType.GIT_REF:
-            self._structure.set(_path, GitRefAttr(self, _path))
-        if _type == AttributeType.RUN_STATE:
-            self._structure.set(_path, RunStateAttr(self, _path))
+        try:
+            attr_init = attribute_type_to_atom[_type]
+        except KeyError:
+            raise NeptuneException(f"Unexpected type: {_type}")
 
-        raise NeptuneException(f"Unexpected type: {_type}")
+        if attr_init is not None:
+            self._structure.set(_path, attr_init(self, _path))
 
     def _shutdown_hook(self):
         self.stop()

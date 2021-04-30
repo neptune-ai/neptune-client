@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import os
 import platform
 import uuid
@@ -92,6 +93,8 @@ from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.oauth import NeptuneAuthenticator
+
+_logger = logging.getLogger(__name__)
 
 
 class HostedNeptuneBackend(NeptuneBackend):
@@ -324,7 +327,16 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             run = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
-            return [to_attribute(attr) for attr in run.attributes]
+
+            attribute_type_names = [at.value for at in AttributeType]
+            accepted_attributes = [attr for attr in run.attributes if attr.type in attribute_type_names]
+
+            # Notify about ignored attrs
+            ignored_attributes = set(run.attributes) - set(accepted_attributes)
+            if ignored_attributes:
+                logging.warning(f"Ignored following attributes (unknown type): {ignored_attributes}")
+
+            return [to_attribute(attr) for attr in accepted_attributes if attr.type in attribute_type_names]
         except HTTPNotFound:
             raise RunUUIDNotFound(run_uuid=run_uuid)
 
