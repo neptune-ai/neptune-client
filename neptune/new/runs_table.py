@@ -42,7 +42,7 @@ class RunsTableEntry:
 
     def get_attributes_from_path(self, path: str):
         path_attributes = {}
-        prefix = path+'/'
+        prefix = path  # +'/'
         for attr in self._attributes:
             if attr.path.startswith(prefix):
                 key_name = attr.path[len(prefix):]
