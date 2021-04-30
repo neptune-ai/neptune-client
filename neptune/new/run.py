@@ -20,33 +20,22 @@ import traceback
 import uuid
 from contextlib import AbstractContextManager
 from datetime import datetime
-from typing import Dict, Any, Union, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 import click
 
+from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import attribute_type_to_atom
-from neptune.new.attributes.atoms.datetime import Datetime as DatetimeAttr
-from neptune.new.attributes.atoms.run_state import RunState as RunStateAttr
-from neptune.new.attributes.atoms.integer import Integer as IntegerAttr
-from neptune.new.attributes.atoms.file import File as FileAttr
-from neptune.new.attributes.atoms.float import Float as FloatAttr
-from neptune.new.attributes.atoms.git_ref import GitRef as GitRefAttr
-from neptune.new.attributes.atoms.string import String as StringAttr
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.file_set import FileSet as FileSetAttr
-from neptune.new.attributes.series.float_series import FloatSeries as FloatSeriesAttr
-from neptune.new.attributes.series.file_series import FileSeries as ImageSeriesAttr
-from neptune.new.attributes.series.string_series import StringSeries as StringSeriesAttr
-from neptune.new.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.new.exceptions import MetadataInconsistency, NeptuneException
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
-from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.new.internal.utils import is_bool, is_int, verify_type, is_float, is_string, is_float_like, is_string_like
+from neptune.new.internal.run_structure import RunStructure
+from neptune.new.internal.utils import is_bool, is_float, is_float_like, is_int, is_string, is_string_like, verify_type
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types import Boolean, Integer
@@ -54,7 +43,6 @@ from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.value import Value
-from neptune.exceptions import UNIX_STYLES
 
 
 class Run(AbstractContextManager):
@@ -128,7 +116,7 @@ class Run(AbstractContextManager):
                     blue=UNIX_STYLES['blue'],
                     key=key,
                     end=UNIX_STYLES['end']))
-                self._print_structure_impl(struct[key], indent=indent+1)
+                self._print_structure_impl(struct[key], indent=indent + 1)
             else:
                 click.echo("{blue}'{key}'{end}: {type}".format(
                     blue=UNIX_STYLES['blue'],
