@@ -26,6 +26,7 @@ import click
 
 from neptune.new.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.new.attributes.atoms.run_state import RunState as RunStateAttr
+from neptune.new.attributes.atoms.integer import Integer as IntegerAttr
 from neptune.new.attributes.atoms.file import File as FileAttr
 from neptune.new.attributes.atoms.float import Float as FloatAttr
 from neptune.new.attributes.atoms.git_ref import GitRef as GitRefAttr
@@ -36,7 +37,7 @@ from neptune.new.attributes.series.float_series import FloatSeries as FloatSerie
 from neptune.new.attributes.series.file_series import FileSeries as ImageSeriesAttr
 from neptune.new.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.new.attributes.sets.string_set import StringSet as StringSetAttr
-from neptune.new.exceptions import MetadataInconsistency
+from neptune.new.exceptions import MetadataInconsistency, NeptuneException
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -207,6 +208,8 @@ class Run(AbstractContextManager):
                 self._define_attribute(parse_path(attribute.path), attribute.type)
 
     def _define_attribute(self, _path: List[str], _type: AttributeType):
+        if _type == AttributeType.INT:
+            self._structure.set(_path, IntegerAttr(self, _path))
         if _type == AttributeType.FLOAT:
             self._structure.set(_path, FloatAttr(self, _path))
         if _type == AttributeType.STRING:
@@ -229,6 +232,8 @@ class Run(AbstractContextManager):
             self._structure.set(_path, GitRefAttr(self, _path))
         if _type == AttributeType.RUN_STATE:
             self._structure.set(_path, RunStateAttr(self, _path))
+
+        raise NeptuneException(f"Unexpected type: {_type}")
 
     def _shutdown_hook(self):
         self.stop()
