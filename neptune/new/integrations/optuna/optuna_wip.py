@@ -3,11 +3,12 @@ import optuna
 import neptune.new as neptune
 
 
+
 class NeptuneCallback:
-    def __init__(self, run,
+    def __init__(self, run, # TODO base namespace
                  log_plots_freq=1,
                  log_study_freq=1,
-                 log_trials_df_freq=1,
+                 log_trials_df_freq=1, # TODO remove
                  vis_backend='plotly',
                  log_plot_contour=True,
                  log_plot_edf=True,
