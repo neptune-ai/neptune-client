@@ -593,6 +593,31 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**inputs))
 
 
+class NeptuneMultiprocessingException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneMultiprocessingException-----------------------------------------------------------------------
+{end}
+You are logging using the same Run object from multiple processes.
+What should I do?
+    - After creating a Run object, in other processes connect to the same Run
+    by providing Run's identifier (e.g. 'SAND-48') as run parameter of neptune.init()
+    - Create a Run object in each process and use custom_run_id parameter of
+    neptune.init()
+In both cases you should define a different monitoring namespace for each process 
+by setting `monitoring_namespace` parameter of neptune.init():
+    {python}neptune.init(custom_run_id='MY_COMMON_ID', monitoring_namespace='monitoring/<hostname>/<pid>'){end}
+See neptune.init() doc page: 
+    - https://docs.neptune.ai/api-reference/neptune#init
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/how-to-guides/neptune-api/distributed-computing
+{correct}Need help?{end}-> https://docs-beta.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
+
+
 class PlotlyIncompatibilityException(Exception):
     def __init__(self, matplotlib_version, plotly_version):
         super().__init__(

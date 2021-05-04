@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import os
 import sys
 import threading
 
@@ -29,13 +30,24 @@ class StdStreamCaptureLogger:
         self._logger = NeptuneLogger(run, attribute_name)
         self.stream = stream
         self._thread_local = threading.local()
+        self._drop_logs = False
+
+        if sys.version_info >= (3, 7):
+            try:
+                # pylint: disable=no-member
+                os.register_at_fork(after_in_child=self._handle_fork_in_child)
+            except AttributeError:
+                pass
+
+    def _handle_fork_in_child(self):
+        self._drop_logs = True
 
     def write(self, data: str):
         if not hasattr(self._thread_local, "inside_write"):
             self._thread_local.inside_write = False
 
         self.stream.write(data)
-        if not self._thread_local.inside_write:
+        if not self._thread_local.inside_write and not self._drop_logs:
             try:
                 self._thread_local.inside_write = True
                 self._logger.log(data)

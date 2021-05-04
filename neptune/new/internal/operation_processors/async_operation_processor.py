@@ -23,7 +23,7 @@ from typing import Optional, List
 
 import click
 
-from neptune.new.exceptions import NeptuneConnectionLostException
+from neptune.new.exceptions import NeptuneConnectionLostException, NeptuneMultiprocessingException
 from neptune.new.internal.containers.storage_queue import StorageQueue
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
@@ -66,7 +66,8 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         if self._drop_operations:
-            return
+            print("lol")
+            raise NeptuneMultiprocessingException()
         self._last_version = self._queue.put(op)
         if self._queue.size() > self._batch_size / 2:
             self._consumer.wake_up()
