@@ -102,7 +102,8 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                 return
             seconds = msg_body.get("seconds")
             self._run.stop(seconds=seconds)
-            process_killer.kill_me()
+            print("stopping")
+            process_killer.kill_me(self._run["sys/id"].fetch(), 0)
 
         def _handle_abort(self, msg_body):
             msg_body = msg_body or dict()
@@ -112,7 +113,8 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
             seconds = msg_body.get("seconds")
             self._run[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
             self._run.stop(seconds=seconds)
-            process_killer.kill_me()
+            print("aborting")
+            process_killer.kill_me(self._run["sys/id"].fetch(), 1)
 
         def shutdown_ws_client(self):
             self._ws_client.shutdown()
