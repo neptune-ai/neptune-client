@@ -17,8 +17,6 @@
 import os
 import signal
 
-import click
-
 try:
     import psutil
     PSUTIL_INSTALLED = True
@@ -29,7 +27,7 @@ except ImportError:
 KILL_TIMEOUT = 5
 
 
-def kill_me(run_id, exit_code):
+def kill_me():
     if PSUTIL_INSTALLED:
         process = psutil.Process(os.getpid())
         try:
@@ -43,7 +41,6 @@ def kill_me(run_id, exit_code):
         for process in alive:
             _kill(process)
     else:
-        click.echo(f"Run {run_id} received {'stop' if exit_code else 'abort'} signal. Exiting", err=True)
         os.kill(os.getpid(), signal.SIGINT)
 
 
