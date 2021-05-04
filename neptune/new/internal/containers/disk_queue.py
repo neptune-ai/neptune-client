@@ -46,9 +46,6 @@ class DiskQueue(StorageQueue[T]):
         self._from_dict = from_dict
         self._max_file_size = max_file_size
 
-        self._event_empty = Event()
-        self._event_empty.set()
-
         try:
             os.makedirs(self._dir_path)
         except FileExistsError:
@@ -62,6 +59,12 @@ class DiskQueue(StorageQueue[T]):
         self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
         self._file_size = 0
         self._should_skip_to_ack = True
+
+        self._event_empty = Event()
+        if self.is_empty():
+            self._event_empty.set()
+        else:
+            self._event_empty.clear()
 
     def put(self, obj: T) -> int:
         version = self._last_put_file.read_local() + 1
@@ -101,7 +104,6 @@ class DiskQueue(StorageQueue[T]):
         _json = self._reader.get()
         if not _json:
             if self._read_file_version >= self._write_file_version:
-                self._event_empty.set()
                 return None, self._last_put_file.read_local()
             self._reader.close()
             self._read_file_version = self._next_log_file_version(self._read_file_version)
@@ -141,6 +143,9 @@ class DiskQueue(StorageQueue[T]):
 
     def ack(self, version: int) -> None:
         self._last_ack_file.write(version)
+        if self.is_empty():
+            self._event_empty.set()
+
         log_versions = self._get_all_log_file_versions()
         for i in range(0, len(log_versions) - 1):
             if log_versions[i + 1] <= version:
