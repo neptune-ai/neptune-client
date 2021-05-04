@@ -15,14 +15,14 @@
 #
 import os
 import unittest
+from datetime import datetime
 
-from neptune.new.types.series import StringSeries, FloatSeries
-
-from neptune.new import init, ANONYMOUS
-from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
+from neptune.new import ANONYMOUS, init
+from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
+from neptune.new.types.series import FloatSeries, StringSeries
 
 
 class TestRun(unittest.TestCase):
@@ -74,6 +74,7 @@ class TestRun(unittest.TestCase):
 
     def test_assign_dict(self):
         exp = init(mode="debug", flush_period=0.5)
+        now = datetime.now()
         exp.assign({
             "x": 5,
             "metadata": {
@@ -85,6 +86,13 @@ class TestRun(unittest.TestCase):
                 "nested": {
                     "deep_secret": FloatSeries([13, 15])
                 }
+            },
+            "simple_types": {
+                "int": 42,
+                "str": "imagine",
+                "float": 3.14,
+                "datetime": now,
+                "list": list(range(10)),
             }
         })
         self.assertEqual(exp['x'].fetch(), 5)
@@ -92,3 +100,9 @@ class TestRun(unittest.TestCase):
         self.assertEqual(exp['metadata/age'].fetch(), 376)
         self.assertEqual(exp['toys'].fetch_last(), "hat")
         self.assertEqual(exp['nested/nested/deep_secret'].fetch_last(), 15)
+        self.assertEqual(exp['simple_types/int'].fetch(), 42)
+        self.assertEqual(exp['simple_types/str'].fetch(), 'imagine')
+        self.assertEqual(exp['simple_types/float'].fetch(), 3.14)
+        self.assertEqual(exp['simple_types/datetime'].fetch(),
+                         now.replace(microsecond=1000 * int(now.microsecond / 1000)))
+        self.assertEqual(exp['simple_types/list'].fetch(), str(list(range(10))))
