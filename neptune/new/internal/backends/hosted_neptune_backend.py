@@ -344,7 +344,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             accepted_attributes = [attr for attr in run.attributes if attr.type in attribute_type_names]
 
             # Notify about ignored attrs
-            ignored_attributes = set(run.attributes) - set(accepted_attributes)
+            ignored_attributes = \
+                set(attr.type for attr in run.attributes) - set(attr.type for attr in accepted_attributes)
             if ignored_attributes:
                 _logger.warning(
                     f"Ignored following attributes (unknown type): {ignored_attributes}.\n"
