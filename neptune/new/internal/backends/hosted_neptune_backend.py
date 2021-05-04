@@ -334,7 +334,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             # Notify about ignored attrs
             ignored_attributes = set(run.attributes) - set(accepted_attributes)
             if ignored_attributes:
-                logging.warning(f"Ignored following attributes (unknown type): {ignored_attributes}")
+                _logger.warning(
+                    f"Ignored following attributes (unknown type): {ignored_attributes}.\n"
+                    f"Try to upgrade `neptune-client."
+                )
 
             return [to_attribute(attr) for attr in accepted_attributes if attr.type in attribute_type_names]
         except HTTPNotFound:
