@@ -21,7 +21,7 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import MissingAttributeException
+from neptune.new.exceptions import MissingAttributeException, NeptuneException
 from neptune.new.internal.utils import verify_type, is_collection, verify_collection_type, is_float, is_string, \
     is_float_like, is_string_like
 from neptune.new.internal.utils.paths import join_paths, parse_path
@@ -49,7 +49,14 @@ class Handler:
         if attr:
             return getattr(attr, attribute_name)
         else:
+            raise MissingAttributeException()
+
+    def __getattribute__(self, attribute_name):
+        _docstring_attrs = super().__getattribute__('DOCSTRING_ATTRIBUTES')
+        if attribute_name in _docstring_attrs:
             raise AttributeError()
+        return super().__getattribute__(attribute_name)
+
 
     def assign(self, value, wait: bool = False) -> None:
         """Assigns the provided value to the field.
@@ -252,6 +259,18 @@ class Handler:
         verify_type("path", path, str)
         self._run.pop(join_paths(self._path, path), wait)
 
+    # Following attributes are implemented only for docstring hints and autocomplete
+    DOCSTRING_ATTRIBUTES = [
+        'remove',
+        'clear',
+        'fetch',
+        'fetch_last',
+        'fetch_values',
+        'delete_files',
+        'download',
+        'download_last',
+    ]
+
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Fetches all tags from Neptune servers.
 
@@ -267,7 +286,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise MissingAttributeException()
+        raise NeptuneException('Should be never called.')
 
     def clear(self, wait: bool = False):
         """Removes all tags from the `StringSet`.
@@ -283,7 +302,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise MissingAttributeException()
+        raise NeptuneException('Should be never called.')
 
     def fetch(self):
         """Fetches field value from Neptune servers.
@@ -302,7 +321,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise MissingAttributeException()
+        raise NeptuneException('Should be never called.')
 
     def fetch_last(self):
         """Fetches last value stored in the series from Neptune servers.
@@ -317,7 +336,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise MissingAttributeException()
+        raise NeptuneException('Should be never called.')
 
     def fetch_values(self, include_timestamp: Optional[bool] = True):
         """Fetches all values stored in the series from Neptune servers.
@@ -336,7 +355,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise MissingAttributeException()
+        raise NeptuneException('Should be never called.')
 
     def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Delete the file or files specified by paths from the `FileSet` stored on the Neptune servers.
@@ -356,6 +375,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
+        raise NeptuneException('Should be never called.')
 
     def download(self, destination: str = None, wait: bool = True) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
@@ -379,7 +399,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise MissingAttributeException()
+        raise NeptuneException('Should be never called.')
 
     def download_last(self, destination: str = None, wait: bool = True) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
@@ -398,7 +418,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise MissingAttributeException()
+        raise NeptuneException('Should be never called.')
 
     def __delitem__(self, path) -> None:
         self.pop(path)
