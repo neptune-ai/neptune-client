@@ -34,6 +34,7 @@ from typing import Dict
 import requests
 import six
 from bravado.exception import HTTPBadRequest, HTTPNotFound, HTTPUnprocessableEntity, HTTPConflict
+from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
 
 from neptune.api_exceptions import (
     ChannelAlreadyExists,
@@ -150,6 +151,13 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
             return [LeaderboardEntry(e) for e in self._get_all_items(get_portion, step=100)]
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
+
+    def websockets_factory(self, project_uuid, experiment_id):
+        base_url = re.sub(r'^http', 'ws', self.api_address) + '/api/notifications/v1'
+        return ReconnectingWebsocketFactory(
+            backend=self,
+            url=base_url + '/experiments/' + experiment_id + '/operations'
+        )
 
     @with_api_exceptions_handler
     def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2021, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,18 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
-
-
-class ReconnectingWebsocketFactory(object):
-    def __init__(self, backend, url):
-        self._backend = backend
-        self._url = url
-
-    def create(self, shutdown_condition):
-        return ReconnectingWebsocket(
-            url=self._url,
-            oauth2_session=self._backend.authenticator.auth.session,
-            shutdown_event=shutdown_condition,
-            proxies=self._backend.proxies)

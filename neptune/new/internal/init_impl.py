@@ -54,6 +54,9 @@ from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.internal.utils.source_code import upload_source_code
+from neptune.new.internal.utils.traceback_job import TracebackJob
+from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
+from neptune.new.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.new.run import Run
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.version import version as parsed_version
@@ -83,7 +86,7 @@ def init(project: Optional[str] = None,
          capture_hardware_metrics: bool = True,
          monitoring_namespace: str = "monitoring",
          flush_period: float = 5,
-         proxies: dict = None) -> Run:
+         proxies: Optional[dict] = None) -> Run:
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("run", run, (str, type(None)))
@@ -183,6 +186,7 @@ def init(project: Optional[str] = None,
 
     stdout_path = "{}/stdout".format(monitoring_namespace)
     stderr_path = "{}/stderr".format(monitoring_namespace)
+    traceback_path = "{}/traceback".format(monitoring_namespace)
 
     background_jobs = []
     if capture_stdout:
@@ -191,6 +195,10 @@ def init(project: Optional[str] = None,
         background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
     if capture_hardware_metrics:
         background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
+    websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
+    if websockets_factory:
+        background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
+    background_jobs.append(TracebackJob(traceback_path))
     background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
@@ -205,6 +213,8 @@ def init(project: Optional[str] = None,
         _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
     if tags is not None:
         _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
+    if run is None:
+        _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
 
     if capture_stdout and not _run.exists(stdout_path):
         _run.define(stdout_path, StringSeries([]))
@@ -224,6 +234,8 @@ def init(project: Optional[str] = None,
             project=api_run.project_name,
             run_id=api_run.short_id
         ))
+
+    uncaught_exception_handler.activate()
 
     return _run
 

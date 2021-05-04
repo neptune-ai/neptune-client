@@ -13,18 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import threading
+from typing import Optional
+from requests_oauthlib import OAuth2Session
 
 from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
 
 
-class ReconnectingWebsocketFactory(object):
-    def __init__(self, backend, url):
-        self._backend = backend
+class WebsocketsFactory:
+    def __init__(self, url: str, session: OAuth2Session, proxies: Optional[dict] = None):
         self._url = url
+        self._session = session
+        self._proxies = proxies
 
-    def create(self, shutdown_condition):
+    def create(self):
         return ReconnectingWebsocket(
             url=self._url,
-            oauth2_session=self._backend.authenticator.auth.session,
-            shutdown_event=shutdown_condition,
-            proxies=self._backend.proxies)
+            oauth2_session=self._session,
+            shutdown_event=threading.Event(),
+            proxies=self._proxies)

@@ -157,7 +157,7 @@ class ProjectNotFound(NeptuneApiException):
 {end}
 Project {python}{project}{end} not found.
 
-Verify if your project's name was not misspelled. You can find proper name after logging into Neptune UI: ui.neptune.ai.
+Verify if your project's name was not misspelled. You can find proper name after logging into Neptune UI.
 """
         inputs = dict(list({'project': project_identifier}.items()) + list(STYLES.items()))
         super(ProjectNotFound, self).__init__(message.format(**inputs))

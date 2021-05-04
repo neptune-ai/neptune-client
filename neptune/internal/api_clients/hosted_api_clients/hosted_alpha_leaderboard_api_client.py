@@ -15,6 +15,8 @@
 #
 import logging
 import os
+import re
+import time
 import uuid
 from collections import namedtuple
 from http.client import NOT_FOUND
@@ -25,6 +27,7 @@ from typing import Dict, List
 
 import six
 from bravado.exception import HTTPNotFound
+from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
 
 from neptune.api_exceptions import (ExperimentNotFound, ExperimentOperationErrors, PathInExperimentNotFound,
                                     ProjectNotFound)
@@ -49,6 +52,7 @@ from neptune.internal.utils.alpha_integration import (
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.new import exceptions as alpha_exceptions
 from neptune.new.attributes import constants as alpha_consts
+from neptune.new.attributes.constants import MONITORING_TRACEBACK_ATTRIBUTE_PATH, SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.new.internal import operation as alpha_operation
 from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
 from neptune.new.internal.backends.api_model import AttributeType
@@ -56,7 +60,7 @@ from neptune.new.internal.backends.operation_api_name_visitor import \
     OperationApiNameVisitor as AlphaOperationApiNameVisitor
 from neptune.new.internal.backends.operation_api_object_converter import \
     OperationApiObjectConverter as AlphaOperationApiObjectConverter
-from neptune.new.internal.operation import AssignString, ConfigFloatSeries, LogFloats
+from neptune.new.internal.operation import AssignString, ConfigFloatSeries, LogFloats, AssignBool, LogStrings
 from neptune.new.internal.utils import base64_decode, base64_encode, paths as alpha_path_utils
 from neptune.new.internal.utils.paths import parse_path
 from neptune.utils import assure_directory_exists, with_api_exceptions_handler
@@ -375,7 +379,12 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         pass
 
     def mark_failed(self, experiment, traceback):
-        pass
+        operations = []
+        path = parse_path(SYSTEM_FAILED_ATTRIBUTE_PATH)
+        traceback_values = [LogStrings.ValueType(val, step=None, ts=time.time()) for val in traceback.split("\n")]
+        operations.append(AssignBool(path=path, value=True))
+        operations.append(LogStrings(values=traceback_values, path=parse_path(MONITORING_TRACEBACK_ATTRIBUTE_PATH)))
+        self._execute_operations(experiment, operations)
 
     def ping_experiment(self, experiment):
         try:
@@ -763,6 +772,13 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                     for e in self._get_all_items(get_portion, step=100)]
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
+
+    def websockets_factory(self, project_uuid, experiment_id):
+        base_url = re.sub(r'^http', 'ws', self.api_address) + '/api/notifications/v1'
+        return ReconnectingWebsocketFactory(
+            backend=self,
+            url=base_url + f'/runs/{project_uuid}/{experiment_id}/signal'
+        )
 
     @staticmethod
     def _to_leaderboard_entry_dto(experiment_attributes):

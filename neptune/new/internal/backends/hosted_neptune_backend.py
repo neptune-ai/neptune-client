@@ -16,6 +16,7 @@
 import logging
 import os
 import platform
+import re
 import uuid
 from typing import List, Optional, Dict, Iterable
 
@@ -90,6 +91,7 @@ from neptune.new.internal.operation import (
 )
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.paths import path_to_str
+from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.oauth import NeptuneAuthenticator
@@ -103,6 +105,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
         self.credentials = credentials
+        self.proxies = proxies
 
         ssl_verify = True
         if os.getenv(NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE):
@@ -132,11 +135,12 @@ class HostedNeptuneBackend(NeptuneBackend):
                                                         self._http_client)
 
         # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
-        self._http_client.authenticator = NeptuneAuthenticator(
+        self._authenticator = NeptuneAuthenticator(
             self.credentials.api_token,
             token_client,
             ssl_verify,
             proxies)
+        self._http_client.authenticator = self._authenticator
 
         user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
             lib_version=neptune_client_version,
@@ -146,6 +150,14 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     def get_display_address(self) -> str:
         return self._client_config.display_url
+
+    def websockets_factory(self, project_uuid: uuid.UUID, run_uuid: uuid.UUID) -> Optional[WebsocketsFactory]:
+        base_url = re.sub(r'^http', 'ws', self._client_config.api_url)
+        return WebsocketsFactory(
+            url=base_url + f'/api/notifications/v1/runs/{str(project_uuid)}/{str(run_uuid)}/signal',
+            session=self._authenticator.auth.session,
+            proxies=self.proxies
+        )
 
     @with_api_exceptions_handler
     def get_project(self, project_id: str) -> Project:
