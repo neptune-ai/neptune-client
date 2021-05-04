@@ -61,12 +61,12 @@ class Handler:
 
         Args:
             value: Value to be stored in a field.
-            wait (Boolean, optional): If `True` the client will wait to send all tracked metadata to the server.
+            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
                 This makes the call synchronous.
                 Defaults to `None`.
 
         Examples:
-            Assigning Float values:
+            Assigning values:
 
             >>> import neptune.new as neptune
             >>> run = neptune.init()
@@ -88,17 +88,8 @@ class Handler:
             >>> params = {'max_epochs': 5, 'lr': 0.4}
             >>> run['parameters'] = params
 
-        You may also want to check following pages:
-            * `Field types docs page`_
-            * `assign Float docs page`_
-            * `assign String docs page`_
-
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
-        .. _assign Float docs page:
-           https://docs.neptune.ai/api-reference/field-types#assign
-        .. _assign String docs page:
-           https://docs.neptune.ai/api-reference/field-types#assign-1
         """
         if not isinstance(value, dict):
             return self._assign_impl(value, wait)
@@ -114,6 +105,36 @@ class Handler:
                 self._run.define(self._path, value, wait)
 
     def upload(self, value, wait: bool = False) -> None:
+        """Uploads provided file under specified field path.
+
+        Args:
+            value (str or File): Path to the file to be uploaded or `File` value object.
+            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
+                This makes the call synchronous.
+                Defaults to `False`.
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> run = neptune.init()
+
+            >>> # Upload example data
+            ... run["dataset/data_sample"].upload("sample_data.csv")
+
+            >>> # Both the content and the extension is stored
+            ... # When download the filename is a combination of path and the extension
+            ... run["dataset/data_sample"].download() # data_sample.csv
+
+            Explicitely create File value object
+
+            >>> from neptune.new.types import File
+            >>> run["dataset/data_sample"].upload(File("sample_data.csv"))
+
+        You may also want to check `upload docs page`_.
+
+        .. _upload docs page:
+           https://docs.neptune.ai/api-reference/field-types#upload
+
+        """
         value = FileVal.create_from(value)
 
         with self._run.lock():
@@ -148,9 +169,13 @@ class Handler:
             **kwargs) -> None:
         """Logs the provided value or a collection of values.
 
-        * a TODO
-        * b
-        * c
+        Available for following field types (`Field types docs page`_):
+            * `Integer`
+            * `Float`
+            * `String`
+            * `Collection`
+            * `File`
+
 
         Args:
             value:
@@ -160,10 +185,13 @@ class Handler:
             timestamp(float or int, optional): Time index of the log entry being appended in form of Unix time.
                 If `None` current time (`time.time()`) will be used as a timestamp.
                 Defaults to `None`.
-            wait (Boolean, optional): If `True` the client will wait to send all tracked metadata to the server.
+            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
                 This makes the call synchronous.
-                Defaults to `None`.
+                Defaults to `False`.
             **kwargs:  TODO: missing docs
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
 
         """
         verify_type("step", step, (int, float, type(None)))
@@ -199,6 +227,16 @@ class Handler:
                 attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
+        """Adds the provided tag or tags to the run's tags.
+
+        Args:
+            values (str or collection of str): Tag or tags to be added.
+                .. note::
+                    If you want you can use emojis in your tags eg. Exploration 🧪
+            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
+                This makes the call synchronous.
+                Defaults to `False`.
+        """
         verify_type("values", values, (str, Iterable))
         with self._run.lock():
             attr = self._run.get_attribute(self._path)
@@ -212,6 +250,153 @@ class Handler:
     def pop(self, path: str, wait: bool = False) -> None:
         verify_type("path", path, str)
         self._run.pop(join_paths(self._path, path), wait)
+
+    def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
+        """Fetches all tags from Neptune servers.
+
+        Available for following field types (`Field types docs page`_):
+            * `StringSet`
+
+        Args:
+            values (str or collection of str): Tag or tags to be added.
+            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
+                This makes the call synchronous.
+                Defaults to `False`.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        """
+        raise Exception('oops')
+
+    def clear(self, wait: bool = False):
+        """Removes all tags from the `StringSet`.
+
+        Available for following field types (`Field types docs page`_):
+            * `StringSet`
+
+        Args:
+            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
+                This makes the call synchronous.
+                Defaults to `False`.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        """
+
+    def fetch(self):
+        """Fetches field value from Neptune servers.
+
+        Available for following field types (`Field types docs page`_):
+            * `Integer`
+            * `Float`
+            * `Boolean`
+            * `String`
+            * `DateTime`
+            * `StringSet`
+
+        Returns:
+            Value stored in the field in form of `set` or sigle value.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        """
+        raise Exception('oops')
+
+    def fetch_last(self):
+        """Fetches last value stored in the series from Neptune servers.
+
+        Available for following field types (`Field types docs page`_):
+            * `FloatSeries`
+            * `StringSeries`
+
+        Returns:
+            Fetches last value stored in the series from Neptune servers.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        """
+        raise Exception('oops')
+
+    def fetch_values(self, include_timestamp: Optional[bool] = True):
+        """Fetches all values stored in the series from Neptune servers.
+
+        Available for following field types (`Field types docs page`_):
+            * `FloatSeries`
+            * `StringSeries`
+
+        Args:
+            include_timestamp (bool, optional): Whether the fetched data should include the timestamp field.
+                Defaults to `True`.
+
+        Returns:
+            ``Pandas.DataFrame``: containing all the values and their indexes stored in the series field.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        """
+        raise Exception('oops')
+
+    def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
+        """Delete the file or files specified by paths from the `FileSet` stored on the Neptune servers.
+
+        Available for following field types (`Field types docs page`_):
+            * `FileSet`
+
+        Args:
+            paths (str or collection of str): `Path` or paths to files or folders to be deleted.
+                Note that these are paths relative to the FileSet itself e.g. if the `FileSet` contains
+                file `example.txt`, `varia/notes.txt`, `varia/data.csv` to delete whole subfolder you would pass
+                varia as the argument.
+            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
+                This makes the call synchronous.
+                Defaults to `None`.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        """
+
+    def download(self, destination: str = None, wait: bool = True) -> None:
+        """Downloads the stored file or files to the working directory or specified destination.
+
+        Available for following field types (`Field types docs page`_):
+            * `File`
+            * `FileSeries`
+            * `FileSet`
+
+        Args:
+            destination (str, optional): Path to where the file(s) should be downloaded.
+                If `None` file will be downloaded to the working directory.
+                If `destination` is a directory, the file will be downloaded to the specified directory with a filename
+                composed from field name and extension (if present).
+                If `destination` is a path to a file, the file will be downloaded under the specified name.
+                Defaults to `None`.
+            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
+                This makes the call synchronous.
+                Defaults to `None`.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        """
+        raise Exception('oops')
+
+    def download_last(self, destination: str = None, wait: bool = True) -> None:
+        """Downloads the stored file or files to the working directory or specified destination.
+
+        Available for following field types (`Field types docs page`_):
+            * `FileSeries`
+
+        Args:
+            destination (str, optional): Path to where the file(s) should be downloaded.
+                If `None` file will be downloaded to the working directory.
+                If `destination` is a directory, the file will be downloaded to the specified directory with a filename
+                composed from field name and extension (if present).
+                If `destination` is a path to a file, the file will be downloaded under the specified name.
+                Defaults to `None`.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
+        """
+        raise Exception('oops')
 
     def __delitem__(self, path) -> None:
         self.pop(path)
