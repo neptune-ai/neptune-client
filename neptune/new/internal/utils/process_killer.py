@@ -19,8 +19,6 @@ import signal
 
 import click
 
-from neptune.new.internal.utils import is_ipython
-
 try:
     import psutil
     PSUTIL_INSTALLED = True
@@ -32,10 +30,7 @@ KILL_TIMEOUT = 5
 
 
 def kill_me(run_id, exit_code):
-    if is_ipython or not PSUTIL_INSTALLED:
-        click.echo(f"Run {run_id} received {'stop' if exit_code else 'abort'} signal. Exiting", err=True)
-        os.kill(os.getpid(), signal.SIGINT)
-    else:
+    if PSUTIL_INSTALLED:
         process = psutil.Process(os.getpid())
         try:
             children = _get_process_children(process) + [process]
@@ -47,6 +42,9 @@ def kill_me(run_id, exit_code):
         _, alive = psutil.wait_procs(children, timeout=KILL_TIMEOUT)
         for process in alive:
             _kill(process)
+    else:
+        click.echo(f"Run {run_id} received {'stop' if exit_code else 'abort'} signal. Exiting", err=True)
+        os.kill(os.getpid(), signal.SIGINT)
 
 
 def _terminate(process):

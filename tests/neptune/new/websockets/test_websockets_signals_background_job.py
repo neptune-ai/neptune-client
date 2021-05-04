@@ -32,6 +32,7 @@ class TestClient(unittest.TestCase):
         listener = WebsocketSignalsBackgroundJob._ListenerThread(run, ws)
 
         ws.recv.return_value = '{"type": "neptune/stop", "body": {"seconds": 5}}'
+        run["sys/id"].fetch.return_value = "RUN-1"
 
         # when
         listener.work()
@@ -39,7 +40,7 @@ class TestClient(unittest.TestCase):
         # then
         self.assertEqual(0, run.__setitem__.call_count)
         run.stop.assert_called_once_with(seconds=5)
-        process_killer.kill_me.assert_called_once_with()
+        process_killer.kill_me.assert_called_once_with("RUN-1", 0)
 
     @patch('neptune.new.internal.websockets.websocket_signals_background_job.process_killer')
     def test_listener_abort(self, process_killer):
@@ -48,6 +49,7 @@ class TestClient(unittest.TestCase):
         listener = WebsocketSignalsBackgroundJob._ListenerThread(run, ws)
 
         ws.recv.return_value = '{"type": "neptune/abort", "body": {"seconds": 5}}'
+        run["sys/id"].fetch.return_value = "RUN-1"
 
         # when
         listener.work()
@@ -55,4 +57,4 @@ class TestClient(unittest.TestCase):
         # then
         run.__setitem__.assert_called_once_with("sys/failed", True)
         run.stop.assert_called_once_with(seconds=5)
-        process_killer.kill_me.assert_called_once_with()
+        process_killer.kill_me.assert_called_once_with("RUN-1", 1)
