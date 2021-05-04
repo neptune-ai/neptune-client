@@ -57,7 +57,6 @@ class Handler:
             raise AttributeError()
         return super().__getattribute__(attribute_name)
 
-
     def assign(self, value, wait: bool = False) -> None:
         """Assigns the provided value to the field.
 
