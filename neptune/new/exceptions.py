@@ -56,10 +56,7 @@ class MissingAttributeException(NeptuneException):
 Neptune Client Library can't access given `Attribute`.
 
 Probably `Attribute` wasn't synced with backend API yet.
-You can sync it by either calling:
-* `.wait()`
-* `.sync()`
-* or creating an attribute with option `wait=True`.
+You can sync it by calling `.sync()`.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
