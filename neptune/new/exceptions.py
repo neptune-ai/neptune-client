@@ -45,6 +45,28 @@ class MetadataInconsistency(NeptuneException):
     pass
 
 
+class MissingAttributeException(NeptuneException):
+    """Raised when get-like action is called on `Handler`, instead of on `Attribute`."""
+
+    def __init__(self):
+        message = """
+{h1}
+----MissingAttributeException---------------------------------------------------
+{end}
+Neptune Client Library can't access given `Attribute`.
+
+Probably `Attribute` wasn't synced with backend API yet.
+You can sync it by either calling:
+* `.wait()`
+* `.sync()`
+* or creating an attribute with option `wait=True`.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list(STYLES.items()))
+        super().__init__(message.format(**inputs))
+
+
 class MalformedOperation(NeptuneException):
     pass
 

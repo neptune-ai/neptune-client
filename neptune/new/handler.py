@@ -21,6 +21,7 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
+from neptune.new.exceptions import MissingAttributeException
 from neptune.new.internal.utils import verify_type, is_collection, verify_collection_type, is_float, is_string, \
     is_float_like, is_string_like
 from neptune.new.internal.utils.paths import join_paths, parse_path
@@ -266,7 +267,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise Exception('oops')
+        raise MissingAttributeException()
 
     def clear(self, wait: bool = False):
         """Removes all tags from the `StringSet`.
@@ -282,6 +283,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
+        raise MissingAttributeException()
 
     def fetch(self):
         """Fetches field value from Neptune servers.
@@ -300,7 +302,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise Exception('oops')
+        raise MissingAttributeException()
 
     def fetch_last(self):
         """Fetches last value stored in the series from Neptune servers.
@@ -315,7 +317,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise Exception('oops')
+        raise MissingAttributeException()
 
     def fetch_values(self, include_timestamp: Optional[bool] = True):
         """Fetches all values stored in the series from Neptune servers.
@@ -334,7 +336,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise Exception('oops')
+        raise MissingAttributeException()
 
     def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Delete the file or files specified by paths from the `FileSet` stored on the Neptune servers.
@@ -377,7 +379,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise Exception('oops')
+        raise MissingAttributeException()
 
     def download_last(self, destination: str = None, wait: bool = True) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
@@ -396,7 +398,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise Exception('oops')
+        raise MissingAttributeException()
 
     def __delitem__(self, path) -> None:
         self.pop(path)
