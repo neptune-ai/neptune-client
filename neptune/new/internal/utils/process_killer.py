@@ -15,6 +15,7 @@
 #
 
 import os
+import signal
 
 try:
     import psutil
@@ -39,6 +40,8 @@ def kill_me():
         _, alive = psutil.wait_procs(children, timeout=KILL_TIMEOUT)
         for process in alive:
             _kill(process)
+    else:
+        os.kill(os.getpid(), signal.SIGINT)
 
 
 def _terminate(process):

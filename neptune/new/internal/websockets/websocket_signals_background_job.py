@@ -100,6 +100,8 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
             if not isinstance(msg_body, dict):
                 click.echo(f"Malformed websocket signal: body is {type(msg_body)}, should be dict", err=True)
                 return
+            run_id = self._run["sys/id"].fetch()
+            click.echo(f"Run {run_id} received stop signal. Exiting", err=True)
             seconds = msg_body.get("seconds")
             self._run.stop(seconds=seconds)
             process_killer.kill_me()
@@ -109,6 +111,8 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
             if not isinstance(msg_body, dict):
                 click.echo(f"Malformed websocket signal: body is {type(msg_body)}, should be dict", err=True)
                 return
+            run_id = self._run["sys/id"].fetch()
+            click.echo(f"Run {run_id} received abort signal. Exiting", err=True)
             seconds = msg_body.get("seconds")
             self._run[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
             self._run.stop(seconds=seconds)
