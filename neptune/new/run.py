@@ -51,7 +51,7 @@ class Run(AbstractContextManager):
     Beginning when you start a tracked run with `neptune.init()` and ending when the script finishes
     or when you explicitly stop the experiment with `.stop()`.
 
-    You can log many ML metadata types, including:  TODO
+    You can log many ML metadata types, including:
         * metrics
         * losses
         * model weights
@@ -59,10 +59,6 @@ class Run(AbstractContextManager):
         * interactive charts
         * predictions
         * and much more
-
-    Have a look at the complete list of metadata types you can log.
-    Besides logging data, you can also download run's data to your local machine.
-    You can also resume the runs you have created in the past and update them or continue logging metadata to them.
 
     Examples:
         >>> import neptune.new as neptune

@@ -119,12 +119,12 @@ def init(project: Optional[str] = None,
             source files from the current directory.
             If `None` is passed, Python file from which run was created will be uploaded.
         capture_stdout (bool, optional): Whether to send run's stdout. Defaults to `True`.
-            Tracked metadata will be stored inside monitoring_namespace.
+            Tracked metadata will be stored inside `monitoring_namespace`.
         capture_stderr (bool, optional):  Whether to send run’s stderr. Defaults to `True`.
-            Tracked metadata will be stored inside monitoring_namespace.
+            Tracked metadata will be stored inside `monitoring_namespace`.
         capture_hardware_metrics (bool, optional): Whether to send hardware monitoring logs
             (CPU, GPU, Memory utilization). Defaults to `True`.
-            Tracked metadata will be stored inside monitoring_namespace.
+            Tracked metadata will be stored inside `monitoring_namespace`.
         monitoring_namespace (str, optional): Namespace inside which all monitoring logs be stored.
             Defaults to 'monitoring'.
         flush_period (float, optional): In an asynchronous (default) connection mode how often asynchronous thread

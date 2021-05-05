@@ -128,7 +128,7 @@ class Handler:
             ... run["dataset/data_sample"].upload("sample_data.csv")
 
             >>> # Both the content and the extension is stored
-            ... # When download the filename is a combination of path and the extension
+            ... # When downloaded the filename is a combination of path and the extension
             ... run["dataset/data_sample"].download() # data_sample.csv
 
             Explicitely create File value object
@@ -177,15 +177,13 @@ class Handler:
         """Logs the provided value or a collection of values.
 
         Available for following field types (`Field types docs page`_):
-            * `Integer`
-            * `Float`
-            * `String`
-            * `Collection`
-            * `File`
+            * `FloatSeries`
+            * `StringSeries`
+            * `FileSeries`
 
 
         Args:
-            value:
+            value: Value or collection of values to be added to the field.
             step (float or int, optional, default is None): Index of the log entry being appended.
                 Must be strictly increasing.
                 Defaults to `None`.
@@ -236,13 +234,19 @@ class Handler:
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Adds the provided tag or tags to the run's tags.
 
+        Available for following field types (`Field types docs page`_):
+            * `StringSet`
+
         Args:
             values (str or collection of str): Tag or tags to be added.
                 .. note::
-                    If you want you can use emojis in your tags eg. Exploration 🧪
+                    If you want you can use emojis in your tags eg. "Exploration 🧪"
             wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
                 This makes the call synchronous.
                 Defaults to `False`.
+
+        .. _Field types docs page:
+           https://docs.neptune.ai/api-reference/field-types
         """
         verify_type("values", values, (str, Iterable))
         with self._run.lock():
