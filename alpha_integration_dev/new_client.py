@@ -58,7 +58,7 @@ class NewClientFeatures(ClientFeatures):
         # del self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH]  # TODO: NPT-9222
 
         self.exp.sync()
-        assert set(self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].fetch()) == {'tag1', 'tag3'}
+        assert self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].fetch() == {'tag1', 'tag3'}
 
     def modify_properties(self):
         self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop'] = 'some text'

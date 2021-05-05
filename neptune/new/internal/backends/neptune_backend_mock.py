@@ -231,7 +231,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_string_set_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
         val = self._get_attribute(run_uuid, path, StringSet)
-        return StringSetAttribute(val.values)
+        return StringSetAttribute(set(val.values))
 
     def _get_attribute(self, run_uuid: uuid.UUID, path: List[str], expected_type: Type[Val]) -> Val:
         if run_uuid not in self._runs:
