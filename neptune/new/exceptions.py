@@ -45,22 +45,26 @@ class MetadataInconsistency(NeptuneException):
     pass
 
 
-class MissingAttributeException(NeptuneException):
+class MissingAttributeException(NeptuneException, AttributeError, KeyError):
     """Raised when get-like action is called on `Handler`, instead of on `Attribute`."""
 
-    def __init__(self):
+    def __init__(self, field_path):
         message = """
 {h1}
 ----MissingAttributeException---------------------------------------------------
 {end}
-Neptune Client Library can't access given `Attribute`.
+Field "{field_path}" not found.
 
-Probably `Attribute` wasn't synced with backend API yet.
-You can sync it by calling `.sync()`.
+There are two possible reasons:
+* There is a typo in a path. Double-check your code for typos.
+* You are fetching a field that other process created, but local representation is not synchronized.
+
+If you are sending metadata from multiple processes at the same time, synchronize the local representation before fetching values:
+\t{python}run.sync(){end}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list(STYLES.items()))
+        inputs = dict(list({"field_path": field_path}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
 
 

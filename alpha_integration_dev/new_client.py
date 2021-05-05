@@ -24,7 +24,6 @@ import sys
 from datetime import datetime
 
 from PIL import Image
-from neptune.new.types import File
 
 import neptune.new as neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
@@ -35,6 +34,8 @@ from neptune.new.attributes.constants import (
     SOURCE_CODE_FILES_ATTRIBUTE_PATH,
     SYSTEM_TAGS_ATTRIBUTE_PATH,
 )
+from neptune.new.exceptions import MissingAttributeException
+from neptune.new.types import File
 
 
 class NewClientFeatures(ClientFeatures):
@@ -77,7 +78,7 @@ class NewClientFeatures(ClientFeatures):
         prop_to_del_absent = False
         try:
             self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_to_del'].fetch()
-        except AttributeError:
+        except MissingAttributeException:
             prop_to_del_absent = True
         assert prop_to_del_absent
 

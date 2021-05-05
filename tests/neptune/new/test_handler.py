@@ -279,6 +279,10 @@ class TestHandler(unittest.TestCase):
         exp = init(mode="debug", flush_period=0.5)
         with self.assertRaises(MissingAttributeException):
             exp['var'].something()
+        with self.assertRaises(AttributeError):
+            exp['var'].something()
+        with self.assertRaises(KeyError):
+            exp['var'].something()
 
     def test_float_like_types(self):
         exp = init(mode="debug", flush_period=0.5)

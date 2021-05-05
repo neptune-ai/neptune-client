@@ -49,7 +49,7 @@ class Handler:
         if attr:
             return getattr(attr, attribute_name)
         else:
-            raise MissingAttributeException()
+            raise MissingAttributeException(self._path)
 
     def __getattribute__(self, attribute_name):
         _docstring_attrs = super().__getattribute__('DOCSTRING_ATTRIBUTES')
