@@ -21,7 +21,7 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import MissingAttributeException, NeptuneException
+from neptune.new.exceptions import MissingFieldException, NeptuneException
 from neptune.new.internal.utils import verify_type, is_collection, verify_collection_type, is_float, is_string, \
     is_float_like, is_string_like
 from neptune.new.internal.utils.paths import join_paths, parse_path
@@ -49,7 +49,7 @@ class Handler:
         if attr:
             return getattr(attr, attribute_name)
         else:
-            raise MissingAttributeException(self._path)
+            raise MissingFieldException(self._path)
 
     def __getattribute__(self, attribute_name):
         _docstring_attrs = super().__getattribute__('DOCSTRING_ATTRIBUTES')
@@ -233,9 +233,6 @@ class Handler:
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Adds the provided tag or tags to the run's tags.
 
-        Available for following field types (`Field types docs page`_):
-            * `StringSet`
-
         Args:
             values (str or collection of str): Tag or tags to be added.
                 .. note::
@@ -244,8 +241,10 @@ class Handler:
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        .. _Field types docs page:
-           https://docs.neptune.ai/api-reference/field-types
+        You may also want to check `add docs page`_.
+
+        .. _add types docs page:
+           https://docs.neptune.ai/api-reference/field-types#add
         """
         verify_type("values", values, (str, Iterable))
         with self._run.lock():
@@ -282,9 +281,9 @@ class Handler:
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        You may also want to check `remove page`_.
+        You may also want to check `remove docs page`_.
 
-        .. _remove page:
+        .. _remove docs page:
            https://docs.neptune.ai/api-reference/field-types#remove
         """
         raise NeptuneException('Should be never called.')
@@ -297,9 +296,9 @@ class Handler:
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        You may also want to check `clear page`_.
+        You may also want to check `clear docs page`_.
 
-        .. _clear page:
+        .. _clear docs page:
            https://docs.neptune.ai/api-reference/field-types#clear
         """
         raise NeptuneException('Should be never called.')
@@ -369,9 +368,9 @@ class Handler:
                 This makes the call synchronous.
                 Defaults to `None`.
 
-        You may also want to check `delete_files page`_.
+        You may also want to check `delete_files docs page`_.
 
-        .. _delete_files page:
+        .. _delete_files docs page:
             https://docs.neptune.ai/api-reference/field-types#delete_files
         """
         raise NeptuneException('Should be never called.')
@@ -411,9 +410,9 @@ class Handler:
                 If `destination` is a path to a file, the file will be downloaded under the specified name.
                 Defaults to `None`.
 
-        You may also want to check `download_last page`_.
+        You may also want to check `download_last docs page`_.
 
-        .. _download_last page:
+        .. _download_last docs page:
            https://docs.neptune.ai/api-reference/field-types#download_last
         """
         raise NeptuneException('Should be never called.')

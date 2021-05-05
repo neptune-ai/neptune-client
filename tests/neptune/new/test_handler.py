@@ -35,7 +35,7 @@ from neptune.new.attributes.atoms.float import Float
 from neptune.new.attributes.atoms.string import String
 from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.new.exceptions import FileNotFound, MissingAttributeException
+from neptune.new.exceptions import FileNotFound, MissingFieldException
 from neptune.new.types import File as FileVal
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.new.types.atoms.float import Float as FloatVal
@@ -277,7 +277,7 @@ class TestHandler(unittest.TestCase):
 
     def test_attribute_error(self):
         exp = init(mode="debug", flush_period=0.5)
-        with self.assertRaises(MissingAttributeException):
+        with self.assertRaises(MissingFieldException):
             exp['var'].something()
         with self.assertRaises(AttributeError):
             exp['var'].something()

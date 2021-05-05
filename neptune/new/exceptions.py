@@ -45,13 +45,13 @@ class MetadataInconsistency(NeptuneException):
     pass
 
 
-class MissingAttributeException(NeptuneException, AttributeError, KeyError):
+class MissingFieldException(NeptuneException, AttributeError, KeyError):
     """Raised when get-like action is called on `Handler`, instead of on `Attribute`."""
 
     def __init__(self, field_path):
         message = """
 {h1}
-----MissingAttributeException---------------------------------------------------
+----MissingFieldException---------------------------------------------------
 {end}
 Field "{field_path}" not found.
 

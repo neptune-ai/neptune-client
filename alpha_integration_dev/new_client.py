@@ -34,7 +34,7 @@ from neptune.new.attributes.constants import (
     SOURCE_CODE_FILES_ATTRIBUTE_PATH,
     SYSTEM_TAGS_ATTRIBUTE_PATH,
 )
-from neptune.new.exceptions import MissingAttributeException
+from neptune.new.exceptions import MissingFieldException
 from neptune.new.types import File
 
 
@@ -78,7 +78,7 @@ class NewClientFeatures(ClientFeatures):
         prop_to_del_absent = False
         try:
             self.exp[PROPERTIES_ATTRIBUTE_SPACE]['prop_to_del'].fetch()
-        except MissingAttributeException:
+        except MissingFieldException:
             prop_to_del_absent = True
         assert prop_to_del_absent
 
