@@ -193,7 +193,6 @@ class Handler:
             wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
                 This makes the call synchronous.
                 Defaults to `False`.
-            **kwargs:  TODO: missing docs
 
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
@@ -275,35 +274,33 @@ class Handler:
     ]
 
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
-        """Fetches all tags from Neptune servers.
-
-        Available for following field types (`Field types docs page`_):
-            * `StringSet`
+        """Removes the provided tag or tags from the set.
 
         Args:
-            values (str or collection of str): Tag or tags to be added.
+            values (str or collection of str): Tag or tags to be removed.
             wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        .. _Field types docs page:
-           https://docs.neptune.ai/api-reference/field-types
+        You may also want to check `remove page`_.
+
+        .. _remove page:
+           https://docs.neptune.ai/api-reference/field-types#remove
         """
         raise NeptuneException('Should be never called.')
 
     def clear(self, wait: bool = False):
         """Removes all tags from the `StringSet`.
 
-        Available for following field types (`Field types docs page`_):
-            * `StringSet`
-
         Args:
             wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server first.
                 This makes the call synchronous.
                 Defaults to `False`.
 
-        .. _Field types docs page:
-           https://docs.neptune.ai/api-reference/field-types
+        You may also want to check `clear page`_.
+
+        .. _clear page:
+           https://docs.neptune.ai/api-reference/field-types#clear
         """
         raise NeptuneException('Should be never called.')
 
@@ -319,7 +316,7 @@ class Handler:
             * `StringSet`
 
         Returns:
-            Value stored in the field in form of `set` or sigle value.
+            Value stored in the field.
 
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
@@ -363,9 +360,6 @@ class Handler:
     def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Delete the file or files specified by paths from the `FileSet` stored on the Neptune servers.
 
-        Available for following field types (`Field types docs page`_):
-            * `FileSet`
-
         Args:
             paths (str or collection of str): `Path` or paths to files or folders to be deleted.
                 Note that these are paths relative to the FileSet itself e.g. if the `FileSet` contains
@@ -375,8 +369,10 @@ class Handler:
                 This makes the call synchronous.
                 Defaults to `None`.
 
-        .. _Field types docs page:
-           https://docs.neptune.ai/api-reference/field-types
+        You may also want to check `delete_files page`_.
+
+        .. _delete_files page:
+            https://docs.neptune.ai/api-reference/field-types#delete_files
         """
         raise NeptuneException('Should be never called.')
 
@@ -407,9 +403,6 @@ class Handler:
     def download_last(self, destination: str = None, wait: bool = True) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
 
-        Available for following field types (`Field types docs page`_):
-            * `FileSeries`
-
         Args:
             destination (str, optional): Path to where the file(s) should be downloaded.
                 If `None` file will be downloaded to the working directory.
@@ -418,8 +411,10 @@ class Handler:
                 If `destination` is a path to a file, the file will be downloaded under the specified name.
                 Defaults to `None`.
 
-        .. _Field types docs page:
-           https://docs.neptune.ai/api-reference/field-types
+        You may also want to check `download_last page`_.
+
+        .. _download_last page:
+           https://docs.neptune.ai/api-reference/field-types#download_last
         """
         raise NeptuneException('Should be never called.')
 

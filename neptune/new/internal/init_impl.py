@@ -107,8 +107,8 @@ def init(project: Optional[str] = None,
         mode (str, optional): Connection mode in which the tracking will work. Defaults to `'async'`.
             Possible values 'async', 'sync', 'offline', and 'debug'.
         name (str, optional): Editable name of the run. Defaults to `'Untitled'`.
-            Name is displayed in the run's Details and in runs view as a column.
-        description (str, optional): Editable description of the run `''`.
+            Name is displayed in the run's Details and in Runs table as a column.
+        description (str, optional): Editable description of the run. Defaults to `''`.
             Description is displayed in the run's Details and can be displayed in the runs view as a column.
         tags (list of str or str, optional): Tags of the run. Defaults to `[]`.
             They are editable after run is created.
