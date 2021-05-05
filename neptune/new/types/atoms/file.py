@@ -68,6 +68,25 @@ class File(Atom):
 
     @staticmethod
     def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> 'File':
+        """Factory method for creating File value objects directly from binary and text content.
+
+        In the case of text content, UTF-8 encoding will be used.
+
+        Args:
+            content	(str or bytes): Text or binary content to stored in the `File` value object.
+            extension (str, optional, default is None): Extension of the created file.
+                File will be used for interpreting the type of content for visualization.
+                If `None` it will be bin for binary content and txt for text content.
+                Defaults to `None`.
+
+        Returns:
+            ``File``: value object created from the content
+
+        You may also want to check `from_content docs page`_.
+
+        .. _from_content docs page:
+           https://docs.neptune.ai/api-reference/field-types#from_content
+        """
         if isinstance(content, str):
             ext = "txt"
             content = content.encode("utf-8")
@@ -77,22 +96,142 @@ class File(Atom):
 
     @staticmethod
     def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> 'File':
+        """Factory method for creating File value objects directly from binary and text streams.
+
+        In the case of text stream, UTF-8 encoding will be used.
+
+        Args:
+            stream (IOBase): Stream to be converted.
+            seek (int, optional): See IOBase documentation.
+                Defaults to `0`.
+            extension (str, optional): Extension of the file created that will be used for interpreting the type
+                of content for visualization.
+                If `None` it will be bin for binary stream and txt for text stream.
+                Defaults to `None`.
+
+        Returns:
+            ``File``: value object created from the stream.
+
+        You may also want to check `from_stream docs page`_ and `IOBase documentation`_.
+
+        .. _from_stream docs page:
+           https://docs.neptune.ai/api-reference/field-types#from_stream
+        .. _IOBase documentation:
+            https://docs.python.org/3/library/io.html#io.IOBase
+        """
         verify_type("stream", stream, IOBase)
         content, stream_default_ext = get_stream_content(stream, seek)
         return File(content=content, extension=extension or stream_default_ext)
 
     @staticmethod
     def as_image(image) -> 'File':
+        """Static method for converting image objects or image-like objects to an image File value object.
+
+        This way you can upload `Matplotlib` figures, `PIL` images, `NumPy` arrays, as static images.
+
+        Args:
+            image: Image-like object to be converted.
+                Supported are `PyTorch` tensors, `TensorFlow/Keras` tensors, `NumPy` arrays, `PIL` images
+                and `Matplotlib` figures.
+
+        Returns:
+            ``File``: value object with converted image
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> from neptune.new.types import File
+            >>> run = neptune.init()
+
+            Convert NumPy array to File value object and upload it
+
+            >>> run["train/prediction_example"].upload(File.as_image(numpy_array))
+
+            Convert PIL image to File value object and upload it
+
+            >>> pil_file = File.as_image(pil_image)
+            >>> run["dataset/data_sample/img1"].upload(pil_file)
+
+            You can upload PIL image without explicit conversion
+
+            >>> run["dataset/data_sample/img2"].upload(pil_image)
+
+        You may also want to check `as_image docs page`_.
+
+        .. _as_image docs page:
+           https://docs.neptune.ai/api-reference/field-types#as_image
+        """
         content_bytes = get_image_content(image)
         return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
 
     @staticmethod
     def as_html(chart) -> 'File':
+        """Converts an object to an HTML File value object.
+
+        This way you can upload `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts
+        or upload directly `Pandas` `DataFrame` objects to explore them in Neptune UI.
+
+        Args:
+            chart: An object to be converted.
+                Supported are `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts,
+                and `Pandas` `DataFrame` objects.
+
+        Returns:
+            ``File``: value object with converted object.
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> from neptune.new.types import File
+            >>> run = neptune.init()
+
+            Convert Pandas DataFrame to File value object and upload it
+
+            >>> run["train/results"].upload(File.as_html(df_predictions))
+
+            Convert Altair interactive chart to File value object and upload it
+
+            >>> altair_file = File.as_html(altair_chart)
+            >>> run["dataset/data_sample/img1"].upload(altair_file)
+
+            You can upload Altair interactive chart without explicit conversion
+
+            >>> run["dataset/data_sample/img2"].upload(altair_chart)
+
+        You may also want to check `as_html docs page`_.
+
+        .. _as_html docs page:
+           https://docs.neptune.ai/api-reference/field-types#as_html
+        """
         content = get_html_content(chart)
         return File.from_content(content if content is not None else "", extension="html")
 
     @staticmethod
     def as_pickle(obj) -> 'File':
+        """Pickles a Python object and stores it in `File` value object.
+
+        This way you can upload any Python object for future use.
+
+        Args:
+            obj: An object to be converted.
+                Supported are `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts,
+                and `Pandas` `DataFrame` objects.
+
+        Returns:
+            ``File``: value object with pickled object.
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> from neptune.new.types import File
+            >>> run = neptune.init()
+
+            Pickle model object and upload it
+
+            >>> run["results/pickled_model"].upload(File.as_pickle(trained_model))
+
+        You may also want to check `as_pickle docs page`_.
+
+        .. _as_pickle docs page:
+           https://docs.neptune.ai/api-reference/field-types#as_pickle
+        """
         content = get_pickle_content(obj)
         return File.from_content(content if content is not None else b"", extension="pkl")
 
