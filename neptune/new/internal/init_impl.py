@@ -19,6 +19,7 @@ import os
 import re
 import uuid
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from platform import node as get_hostname
 from typing import List, Optional, Union
@@ -32,12 +33,17 @@ from neptune.new.constants import (
     OFFLINE_DIRECTORY,
 )
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH, PROJECT_ENV_NAME
-from neptune.new.exceptions import (NeptuneIncorrectProjectNameException, NeptuneMissingProjectNameException,
-                                    NeptuneRunResumeAndCustomIdCollision)
+from neptune.new.exceptions import (
+    NeptuneIncorrectProjectNameException,
+    NeptuneMissingProjectNameException,
+    NeptuneRunResumeAndCustomIdCollision,
+    NeedExistingRunForReadOnlyMode,
+)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
+from neptune.new.internal.backends.read_only_neptune_backend import ReadOnlyNeptuneBackend
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.credentials import Credentials
@@ -67,17 +73,23 @@ __version__ = str(parsed_version)
 
 _logger = logging.getLogger(__name__)
 
-OFFLINE = "offline"
-DEBUG = "debug"
-ASYNC = "async"
-SYNC = "sync"
+
+class RunMode(str, Enum):
+    OFFLINE = "offline"
+    DEBUG = "debug"
+    ASYNC = "async"
+    SYNC = "sync"
+    READ_ONLY = "read-only"
+
+    def __repr__(self):
+        return f'"{self.value}"'
 
 
 def init(project: Optional[str] = None,
          api_token: Optional[str] = None,
          run: Optional[str] = None,
          custom_run_id: Optional[str] = None,
-         mode: str = ASYNC,
+         mode: str = RunMode.ASYNC,
          name: Optional[str] = None,
          description: Optional[str] = None,
          tags: Optional[Union[List[str], str]] = None,
@@ -106,7 +118,7 @@ def init(project: Optional[str] = None,
             Defaults to `None`.
             Make sure you are using the same identifier throughout the whole pipeline execution.
         mode (str, optional): Connection mode in which the tracking will work. Defaults to `'async'`.
-            Possible values 'async', 'sync', 'offline', and 'debug'.
+            Possible values 'async', 'sync', 'offline', 'read-only' and 'debug'.
         name (str, optional): Editable name of the run. Defaults to `'Untitled'`.
             Name is displayed in the run's Details and in Runs table as a column.
         description (str, optional): Editable description of the run. Defaults to `''`.
@@ -213,23 +225,27 @@ def init(project: Optional[str] = None,
     if run and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
 
-    if mode == ASYNC:
+    if mode == RunMode.ASYNC:
         # TODO Initialize backend in async thread
         backend = HostedNeptuneBackend(
             credentials=Credentials(api_token=api_token),
             proxies=proxies)
-    elif mode == SYNC:
+    elif mode == RunMode.SYNC:
         backend = HostedNeptuneBackend(
             credentials=Credentials(api_token=api_token),
             proxies=proxies)
-    elif mode == DEBUG:
+    elif mode == RunMode.DEBUG:
         backend = NeptuneBackendMock()
-    elif mode == OFFLINE:
+    elif mode == RunMode.OFFLINE:
         backend = OfflineNeptuneBackend()
+    elif mode == RunMode.READ_ONLY:
+        backend = ReadOnlyNeptuneBackend(
+            credentials=Credentials(api_token=api_token),
+            proxies=proxies)
     else:
-        raise ValueError('mode should be one of ["async", "sync", "offline", "debug"]')
+        raise ValueError(f'mode should be one of {[m for m in RunMode]}')
 
-    if mode == OFFLINE or mode == DEBUG:
+    if mode == RunMode.OFFLINE or mode == RunMode.DEBUG:
         project = 'offline/project-placeholder'
     elif not project:
         project = os.getenv(PROJECT_ENV_NAME)
@@ -242,6 +258,8 @@ def init(project: Optional[str] = None,
     if run:
         api_run = backend.get_run(project + '/' + run)
     else:
+        if mode == RunMode.READ_ONLY:
+            raise NeedExistingRunForReadOnlyMode()
         git_ref = get_git_info(discover_git_repo_location())
         if custom_run_id and len(custom_run_id) > 32:
             _logger.warning('Given custom_run_id exceeds 32 characters and it will be ignored.')
@@ -251,7 +269,7 @@ def init(project: Optional[str] = None,
 
         api_run = backend.create_run(project_obj.uuid, git_ref, custom_run_id, notebook_id, checkpoint_id)
 
-    if mode == ASYNC:
+    if mode == RunMode.ASYNC:
         run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, ASYNC_DIRECTORY, api_run.uuid)
         try:
             execution_id = len(os.listdir(run_path))
@@ -264,19 +282,21 @@ def init(project: Optional[str] = None,
             DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
             backend,
             sleep_time=flush_period)
-    elif mode == SYNC:
+    elif mode == RunMode.SYNC:
         operation_processor = SyncOperationProcessor(api_run.uuid, backend)
-    elif mode == DEBUG:
+    elif mode == RunMode.DEBUG:
         operation_processor = SyncOperationProcessor(api_run.uuid, backend)
-    elif mode == OFFLINE:
+    elif mode == RunMode.OFFLINE:
         # Run was returned by mocked backend and has some random UUID.
         run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, OFFLINE_DIRECTORY, api_run.uuid)
         storage_queue = DiskQueue(Path(run_path),
                                   lambda x: x.to_dict(),
                                   Operation.from_dict)
         operation_processor = OfflineOperationProcessor(storage_queue)
+    elif mode == RunMode.READ_ONLY:
+        operation_processor = SyncOperationProcessor(api_run.uuid, backend)
     else:
-        raise ValueError('mode should be on of ["async", "sync", "offline", "debug"]')
+        raise ValueError(f'mode should be one of {[m for m in RunMode]}')
 
     stdout_path = "{}/stdout".format(monitoring_namespace)
     stderr_path = "{}/stderr".format(monitoring_namespace)
@@ -296,7 +316,7 @@ def init(project: Optional[str] = None,
     background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
-    if mode != OFFLINE:
+    if mode != RunMode.OFFLINE:
         _run.sync(wait=False)
 
     if name is not None:
@@ -319,9 +339,9 @@ def init(project: Optional[str] = None,
 
     _run.start()
 
-    if mode == OFFLINE:
+    if mode == RunMode.OFFLINE:
         click.echo("offline/{}".format(api_run.uuid))
-    elif mode != DEBUG:
+    elif mode != RunMode.DEBUG:
         click.echo("{base_url}/{workspace}/{project}/e/{run_id}".format(
             base_url=backend.get_display_address(),
             workspace=api_run.workspace,

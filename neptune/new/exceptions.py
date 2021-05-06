@@ -316,6 +316,11 @@ class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
         super().__init__("Cannot synchronize offline runs without a project.")
 
 
+class NeedExistingRunForReadOnlyMode(NeptuneException):
+    def __init__(self):
+        super().__init__("An existing run must be provided when running in read-only mode.")
+
+
 class NeptuneRunResumeAndCustomIdCollision(NeptuneException):
     def __init__(self):
         message = """
