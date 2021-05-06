@@ -35,7 +35,7 @@ from neptune.new.attributes.atoms.float import Float
 from neptune.new.attributes.atoms.string import String
 from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.new.exceptions import FileNotFound, MissingFieldException
+from neptune.new.exceptions import FileNotFound, MetadataInconsistency, MissingFieldException
 from neptune.new.types import File as FileVal
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.new.types.atoms.float import Float as FloatVal
@@ -367,6 +367,10 @@ class TestHandler(unittest.TestCase):
                 'string': 'Some text',
             }
         })
+
+        # only `fetch` is allowed
+        with self.assertRaises(MetadataInconsistency):
+            exp['params'].download()
 
     @dataclass
     class FloatLike:
