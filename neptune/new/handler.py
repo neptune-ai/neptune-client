@@ -54,14 +54,14 @@ class Handler:
     def __getattr__(self, attribute_name):
         attr = self._run.get_attribute(self._path)
         if attr:
-            if isinstance(attr, dict):
+            if not isinstance(attr, dict):
+                return getattr(attr, attribute_name)
+            else:
                 if attribute_name == 'fetch':
                     return lambda: self._fetch_namespace_as_dict(attr)
                 else:
                     raise MetadataInconsistency(f"Cannot access `{attribute_name}` on attribute '{self._path}'.\n"
                                                 "'{self._path}' is a namespace, only `fetch()` is allowed.")
-            else:
-                return getattr(attr, attribute_name)
         else:
             raise MissingFieldException(self._path)
 
@@ -79,6 +79,7 @@ class Handler:
             * `Float`
             * `Boolean`
             * `String`
+            * `DateTime`
 
         Args:
             value: Value to be stored in a field.

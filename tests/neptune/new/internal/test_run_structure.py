@@ -33,7 +33,7 @@ class TestRunStructure(unittest.TestCase):
         with self.assertRaises(MetadataInconsistency):
             exp.get(["some", "path", "val", "nested", "nested"])
 
-    def test_get_ns_fails(self):
+    def test_get_namespace(self):
         exp = RunStructure[int]()
         exp.set(["some", "path", "val"], 3)
         path_namespace = exp.get(["some", "path"])

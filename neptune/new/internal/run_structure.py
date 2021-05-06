@@ -40,9 +40,6 @@ class RunStructure(Generic[T]):
                 return None
             ref = ref[part]
 
-        # if isinstance(ref, dict):
-        #     raise MetadataInconsistency("Cannot get attribute '{}'. It's a namespace".format(path_to_str(path)))
-
         return ref
 
     def set(self, path: List[str], attr: T) -> None:
