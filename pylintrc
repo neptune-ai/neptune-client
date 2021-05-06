@@ -45,7 +45,8 @@ file-header=#\n# Copyright \(c\) (2019|2020|2021), Neptune Labs Sp\. z o\.o\.\n#
 # W1202 Allow logging-format-interpolation.
 # I0011 Do not show Locally disabled warnings in report
 # C0412 Disable checking imports from package %s are not grouped
-disable=R,C0103,C0111,W0401,W0511,W0614,W0703,W1202,I0011,C0412
+# E1111 Disable Assigning result of a function call, where the function has no return (functions from `Handler`)
+disable=R,C0103,C0111,W0401,W0511,W0614,W0703,W1202,I0011,C0412,E1111
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

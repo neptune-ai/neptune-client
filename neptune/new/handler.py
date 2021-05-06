@@ -15,13 +15,13 @@
 #
 from typing import Optional, TYPE_CHECKING, Union, Iterable
 
-from neptune.new.attributes import File
+from neptune.new.attributes import File, Integer, String, Float, Boolean, Datetime
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import MissingFieldException, NeptuneException
+from neptune.new.exceptions import MetadataInconsistency, MissingFieldException, NeptuneException
 from neptune.new.internal.utils import verify_type, is_collection, verify_collection_type, is_float, is_string, \
     is_float_like, is_string_like
 from neptune.new.internal.utils.paths import join_paths, parse_path
@@ -44,10 +44,24 @@ class Handler:
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
 
+    def _fetch_namespace_as_dict(self, namespace_attr):
+        return {
+            k: self._fetch_namespace_as_dict(v) if isinstance(v, dict) else v.fetch()
+            for k, v in namespace_attr.items()
+            if isinstance(v, (Integer, String, Float, Boolean, Datetime, dict))
+        }
+
     def __getattr__(self, attribute_name):
         attr = self._run.get_attribute(self._path)
         if attr:
-            return getattr(attr, attribute_name)
+            if isinstance(attr, dict):
+                if attribute_name == 'fetch':
+                    return lambda: self._fetch_namespace_as_dict(attr)
+                else:
+                    raise MetadataInconsistency(f"Cannot access `{attribute_name}` on attribute '{self._path}'.\n"
+                                                "'{self._path}' is a namespace, only `fetch()` is allowed.")
+            else:
+                return getattr(attr, attribute_name)
         else:
             raise MissingFieldException(self._path)
 

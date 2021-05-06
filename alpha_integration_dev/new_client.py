@@ -132,10 +132,31 @@ class NewClientFeatures(ClientFeatures):
             self.exp[ARTIFACT_ATTRIBUTE_SPACE]['logged file stream'].log(f)
 
     def handle_directories(self):
-        pass
+        dict_attr = {
+            'integer': 42,
+            'string': 'text',
+            'nested': {
+                'integer': 42,
+                'string': 'text',
+            },
+        }
+        self.exp['dict_attr'] = dict_attr
+
+        # add attributes to be ignored
+        self.exp['dict_attr/int_series'].log(1)
+        self.exp['dict_attr/str_series'].log('foo')
+
+        self.exp.sync()
+        result = self.exp['dict_attr'].fetch()
+        print(result)
+        assert result == dict_attr
 
     def finalize(self):
         return
+
+    def run(self):
+        super().run()
+        self.handle_directories()
 
 
 if __name__ == '__main__':
