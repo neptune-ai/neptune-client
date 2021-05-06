@@ -502,7 +502,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
-            return StringSetAttribute(result.values)
+            return StringSetAttribute(set(result.values))
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 

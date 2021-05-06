@@ -51,7 +51,7 @@ class MissingFieldException(NeptuneException, AttributeError, KeyError):
     def __init__(self, field_path):
         message = """
 {h1}
-----MissingFieldException---------------------------------------------------
+----MissingFieldException-------------------------------------------------------
 {end}
 Field "{field_path}" not found.
 
@@ -65,7 +65,12 @@ If you are sending metadata from multiple processes at the same time, synchroniz
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({"field_path": field_path}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        self._msg = message.format(**inputs)
+        super().__init__(self._msg)
+
+    def __str__(self):
+        # required because of overriden `__str__` in `KeyError`
+        return self._msg
 
 
 class MalformedOperation(NeptuneException):
