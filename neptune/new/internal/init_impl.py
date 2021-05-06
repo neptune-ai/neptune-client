@@ -303,39 +303,41 @@ def init(project: Optional[str] = None,
     traceback_path = "{}/traceback".format(monitoring_namespace)
 
     background_jobs = []
-    if capture_stdout:
-        background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
-    if capture_stderr:
-        background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
-    if capture_hardware_metrics:
-        background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
-    websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
-    if websockets_factory:
-        background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
-    background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
-    background_jobs.append(PingBackgroundJob())
+    if mode != RunMode.READ_ONLY:
+        if capture_stdout:
+            background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
+        if capture_stderr:
+            background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
+        if capture_hardware_metrics:
+            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
+        websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
+        if websockets_factory:
+            background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
+        background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
+        background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
     if mode != RunMode.OFFLINE:
         _run.sync(wait=False)
 
-    if name is not None:
-        _run[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
-    if description is not None:
-        _run[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
-    if hostname is not None:
-        _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
-    if tags is not None:
-        _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
-    if run is None:
-        _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
+    if mode != RunMode.READ_ONLY:
+        if name is not None:
+            _run[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
+        if description is not None:
+            _run[attr_consts.SYSTEM_DESCRIPTION_ATTRIBUTE_PATH] = description
+        if hostname is not None:
+            _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
+        if tags is not None:
+            _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
+        if run is None:
+            _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
 
-    if capture_stdout and not _run.exists(stdout_path):
-        _run.define(stdout_path, StringSeries([]))
-    if capture_stderr and not _run.exists(stderr_path):
-        _run.define(stderr_path, StringSeries([]))
+        if capture_stdout and not _run.exists(stdout_path):
+            _run.define(stdout_path, StringSeries([]))
+        if capture_stderr and not _run.exists(stderr_path):
+            _run.define(stderr_path, StringSeries([]))
 
-    upload_source_code(source_files=source_files, run=_run)
+        upload_source_code(source_files=source_files, run=_run)
 
     _run.start()
 
