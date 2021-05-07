@@ -85,6 +85,7 @@ def init(project: Optional[str] = None,
          capture_stdout: bool = True,
          capture_stderr: bool = True,
          capture_hardware_metrics: bool = True,
+         fail_on_exception: bool = True,
          monitoring_namespace: str = "monitoring",
          flush_period: float = 5,
          proxies: Optional[dict] = None) -> Run:
@@ -125,6 +126,8 @@ def init(project: Optional[str] = None,
         capture_hardware_metrics (bool, optional): Whether to send hardware monitoring logs
             (CPU, GPU, Memory utilization). Defaults to `True`.
             Tracked metadata will be stored inside `monitoring_namespace`.
+        fail_on_exception (bool, optional): Whether to register an uncaught exception handler to this process and,
+            in case of an exception log it and set run's sys/failed to True
         monitoring_namespace (str, optional): Namespace inside which all monitoring logs be stored.
             Defaults to 'monitoring'.
         flush_period (float, optional): In an asynchronous (default) connection mode how often asynchronous thread
@@ -289,7 +292,8 @@ def init(project: Optional[str] = None,
     websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
     if websockets_factory:
         background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
-    background_jobs.append(TracebackJob(traceback_path))
+    if fail_on_exception:
+        background_jobs.append(TracebackJob(traceback_path))
     background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
@@ -326,7 +330,8 @@ def init(project: Optional[str] = None,
             run_id=api_run.short_id
         ))
 
-    uncaught_exception_handler.activate()
+    if fail_on_exception:
+        uncaught_exception_handler.activate()
 
     return _run
 
