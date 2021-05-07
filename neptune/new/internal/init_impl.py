@@ -329,8 +329,7 @@ def init(project: Optional[str] = None,
             run_id=api_run.short_id
         ))
 
-    if fail_on_exception:
-        uncaught_exception_handler.activate()
+    uncaught_exception_handler.activate()
 
     return _run
 
