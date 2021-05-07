@@ -19,6 +19,7 @@ import click
 
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.internal.backends.api_model import StringSeriesValues
+from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 
 from neptune.new.internal.operation import LogStrings, ClearStringLog, Operation
@@ -42,12 +43,12 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
         values = [v[:MAX_STRING_SERIES_VALUE_LENGTH] for v in value.values]
         if not self._value_truncation_occurred \
-                and len([1 for v in value.values if len(v) > MAX_STRING_SERIES_VALUE_LENGTH]) > 0:
+                and any([len(v) > MAX_STRING_SERIES_VALUE_LENGTH for v in value.values]):
             # the first truncation
             self._value_truncation_occurred = True
-            click.echo(f"Warning: string series '{'/'.join(self._path)}' value was "
+            click.echo(f"Warning: string series '{ path_to_str(self._path)}' value was "
                        f"longer than {MAX_STRING_SERIES_VALUE_LENGTH} characters and was truncated. "
-                       f"This warning is printed only once per series", err=True)
+                       f"This warning is printed only once per series.", err=True)
 
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in values]
         return LogStrings(self._path, values)
