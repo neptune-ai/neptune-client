@@ -25,6 +25,7 @@ def main():
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
               "lightgbm": ["neptune-lightgbm"],
+              "optuna": ["neptune-optuna"],
               "sacred": ["neptune-sacred"],
               "sklearn": ["neptune-sklearn"],
               "tensorflow-keras": ["neptune-tensorflow-keras"],
