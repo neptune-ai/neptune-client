@@ -31,18 +31,21 @@ _logger = logging.getLogger(__name__)
 
 class TracebackJob(BackgroundJob):
 
-    def __init__(self, path: str):
+    def __init__(self, path: str, fail_on_exception: bool = True):
         self._uuid = uuid.uuid4()
         self._started = False
         self._path = path
+        self._fail_on_exception = fail_on_exception
 
     def start(self, run: 'Run'):
         if not self._started:
             path = self._path
+            fail_on_exception = self._fail_on_exception
 
             def log_traceback(stacktrace_lines: List[str]):
                 run[path].log(stacktrace_lines)
-                run[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
+                if fail_on_exception:
+                    run[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
 
             traceback_handler.register(self._uuid, log_traceback)
         self._started = True

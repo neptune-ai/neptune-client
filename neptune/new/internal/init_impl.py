@@ -127,7 +127,7 @@ def init(project: Optional[str] = None,
             (CPU, GPU, Memory utilization). Defaults to `True`.
             Tracked metadata will be stored inside `monitoring_namespace`.
         fail_on_exception (bool, optional): Whether to register an uncaught exception handler to this process and,
-            in case of an exception log it and set run's sys/failed to True
+            in case of an exception, set run's sys/failed to True. Exception is always logged
         monitoring_namespace (str, optional): Namespace inside which all monitoring logs be stored.
             Defaults to 'monitoring'.
         flush_period (float, optional): In an asynchronous (default) connection mode how often asynchronous thread
@@ -292,8 +292,7 @@ def init(project: Optional[str] = None,
     websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
     if websockets_factory:
         background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
-    if fail_on_exception:
-        background_jobs.append(TracebackJob(traceback_path))
+    background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
     background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
