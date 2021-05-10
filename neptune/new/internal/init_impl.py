@@ -43,7 +43,6 @@ from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBa
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
-from neptune.new.internal.backends.read_only_neptune_backend import ReadOnlyNeptuneBackend
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.credentials import Credentials
@@ -52,6 +51,7 @@ from neptune.new.internal.notebooks.notebooks import create_checkpoint
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
 from neptune.new.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
+from neptune.new.internal.operation_processors.read_only_operation_processor import ReadOnlyOperationProcessor
 from neptune.new.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
 from neptune.new.internal.streams.std_capture_background_job import (
     StderrCaptureBackgroundJob,
@@ -239,7 +239,7 @@ def init(project: Optional[str] = None,
     elif mode == RunMode.OFFLINE:
         backend = OfflineNeptuneBackend()
     elif mode == RunMode.READ_ONLY:
-        backend = ReadOnlyNeptuneBackend(
+        backend = HostedNeptuneBackend(
             credentials=Credentials(api_token=api_token),
             proxies=proxies)
     else:
@@ -294,7 +294,7 @@ def init(project: Optional[str] = None,
                                   Operation.from_dict)
         operation_processor = OfflineOperationProcessor(storage_queue)
     elif mode == RunMode.READ_ONLY:
-        operation_processor = SyncOperationProcessor(api_run.uuid, backend)
+        operation_processor = ReadOnlyOperationProcessor(api_run.uuid, backend)
     else:
         raise ValueError(f'mode should be one of {[m for m in RunMode]}')
 
