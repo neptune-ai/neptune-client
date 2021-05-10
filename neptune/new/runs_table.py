@@ -13,14 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import logging
 import uuid
 from datetime import datetime
 from typing import List, Dict, Optional, Union
 
-from neptune.new.exceptions import MetadataInconsistency, InternalClientError
+from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import LeaderboardEntry, AttributeWithProperties, AttributeType
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.utils.paths import join_paths, parse_path
+
+logger = logging.getLogger(__name__)
 
 
 class RunsTableEntry:
@@ -45,7 +48,7 @@ class RunsTableEntry:
                 _type = attr.type
                 if _type == AttributeType.RUN_STATE:
                     return attr.properties.value
-                if _type == AttributeType.FLOAT or _type == AttributeType.STRING or _type == AttributeType.DATETIME:
+                if _type in (AttributeType.FLOAT, AttributeType.STRING, AttributeType.DATETIME, AttributeType.BOOL):
                     return attr.properties.value
                 if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
                     return attr.properties.last
@@ -61,7 +64,8 @@ class RunsTableEntry:
                     return attr.properties.commit.commitId
                 if _type == AttributeType.NOTEBOOK_REF:
                     return attr.properties.notebookName
-                raise InternalClientError("Unsupported attribute type {}".format(_type))
+                logger.error("Unsupported attribute type %s, yielding None", _type)
+                return None
         raise ValueError("Could not find {} attribute".format(path))
 
     def download_file_attribute(self, path: str, destination: Optional[str]):
@@ -124,7 +128,7 @@ class RunsTable:
             _properties = attribute.properties
             if _type == AttributeType.RUN_STATE:
                 return _properties.value
-            if _type == AttributeType.FLOAT or _type == AttributeType.STRING or _type == AttributeType.DATETIME:
+            if _type in (AttributeType.FLOAT, AttributeType.STRING, AttributeType.DATETIME, AttributeType.BOOL):
                 return _properties.value
             if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
                 return _properties.last
@@ -138,7 +142,8 @@ class RunsTable:
                 return _properties.commit.commitId
             if _type == AttributeType.NOTEBOOK_REF:
                 return _properties.notebookName
-            raise InternalClientError("Unsupported attribute type {}".format(_type))
+            logger.error("Unsupported attribute type %s, yielding None", _type)
+            return None
 
         def make_row(entry: LeaderboardEntry) -> Dict[str, Optional[Union[str, float, datetime]]]:
             row: Dict[str, Union[str, float, datetime]] = dict()
