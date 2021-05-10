@@ -35,6 +35,7 @@ from neptune.new.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
     LeaderboardEntry,
+    IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
@@ -81,6 +82,28 @@ class TestClient(unittest.TestCase):
         self.assertIn(str(exp._uuid), os.listdir(".neptune/async"))
         execution_dir = os.listdir(".neptune/async/{}".format(exp._uuid))[0]
         self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))
+
+    @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
+           new=lambda _, _id:
+           ApiRun(uuid.UUID('12345678-1234-5678-1234-567812345678'), "SAN-94", "workspace", "sandbox", False))
+    @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+           new=lambda _, _uuid: [Attribute("some/variable", AttributeType.INT)])
+    @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
+           new=lambda _, _uuid, _path: IntAttribute(42))
+    def test_read_only_mode(self):
+        exp = init(mode='read-only', run="SAN-94")
+
+        with self.assertLogs() as caplog:
+            exp["some/variable"] = 13
+            exp["some/other_variable"] = 11
+            self.assertEqual(
+                caplog.output,
+                ['WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:'
+                 'Client in read-only mode, nothing will be saved to server.']
+            )
+
+        self.assertEqual(42, exp["some/variable"].fetch())
+        self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
 
     @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
            new=lambda _, _id:
