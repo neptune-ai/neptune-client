@@ -24,9 +24,10 @@ def main():
             packages=find_packages(),
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
-              "tensorflow-keras": ["neptune-tensorflow-keras"],
+              "lightgbm": ["neptune-lightgbm"],
+              "sacred": ["neptune-sacred"],
               "sklearn": ["neptune-sklearn"],
-              "lightgbm": ["neptune-lightgbm"]
+              "tensorflow-keras": ["neptune-tensorflow-keras"],
             },
             entry_points={
                 'console_scripts': [
