@@ -48,7 +48,10 @@ class RunsTableEntry:
                 _type = attr.type
                 if _type == AttributeType.RUN_STATE:
                     return attr.properties.value
-                if _type in (AttributeType.FLOAT, AttributeType.STRING, AttributeType.DATETIME, AttributeType.BOOL):
+                if _type in (
+                        AttributeType.FLOAT, AttributeType.INT, AttributeType.BOOL,
+                        AttributeType.STRING, AttributeType.DATETIME,
+                ):
                     return attr.properties.value
                 if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
                     return attr.properties.last
@@ -64,7 +67,10 @@ class RunsTableEntry:
                     return attr.properties.commit.commitId
                 if _type == AttributeType.NOTEBOOK_REF:
                     return attr.properties.notebookName
-                logger.error("Unsupported attribute type %s, yielding None", _type)
+                logger.error(
+                    "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
+                    _type
+                )
                 return None
         raise ValueError("Could not find {} attribute".format(path))
 
@@ -128,7 +134,10 @@ class RunsTable:
             _properties = attribute.properties
             if _type == AttributeType.RUN_STATE:
                 return _properties.value
-            if _type in (AttributeType.FLOAT, AttributeType.STRING, AttributeType.DATETIME, AttributeType.BOOL):
+            if _type in (
+                    AttributeType.FLOAT, AttributeType.INT, AttributeType.BOOL,
+                    AttributeType.STRING, AttributeType.DATETIME,
+            ):
                 return _properties.value
             if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
                 return _properties.last
@@ -142,7 +151,10 @@ class RunsTable:
                 return _properties.commit.commitId
             if _type == AttributeType.NOTEBOOK_REF:
                 return _properties.notebookName
-            logger.error("Unsupported attribute type %s, yielding None", _type)
+            logger.error(
+                "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
+                _type
+            )
             return None
 
         def make_row(entry: LeaderboardEntry) -> Dict[str, Optional[Union[str, float, datetime]]]:
