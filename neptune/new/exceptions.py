@@ -318,7 +318,19 @@ class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
 
 class NeedExistingRunForReadOnlyMode(NeptuneException):
     def __init__(self):
-        super().__init__("An existing run must be provided when running in read-only mode.")
+        message = """
+    {h1}
+    ----NeedExistingRunForReadOnlyMode-----------------------------------------
+    {end}
+    Incorrect call of function {python}neptune.init(){end}.
+
+    Parameter {python}run{end} of {python}neptune.init(){end} must be provided and reference
+    an existing run when using {python}mode="read-only"{end}.
+
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+    """
+        inputs = dict(list(list({}.items()) + list(STYLES.items())))
+        super().__init__(message.format(**inputs))
 
 
 class NeptuneRunResumeAndCustomIdCollision(NeptuneException):
