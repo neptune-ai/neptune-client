@@ -24,6 +24,7 @@ from neptune.new.types.atoms.integer import Integer
 from neptune.new.types.atoms.string import String
 from neptune.new.types.atoms.file import File
 from neptune.new.types.file_set import FileSet
+from neptune.new.types.namespace import Namespace
 from neptune.new.types.series.float_series import FloatSeries
 from neptune.new.types.series.file_series import FileSeries
 from neptune.new.types.series.string_series import StringSeries
@@ -84,4 +85,8 @@ class ValueVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_git_ref(self, value: GitRef) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_namespace(self, value: Namespace) -> Ret:
         pass

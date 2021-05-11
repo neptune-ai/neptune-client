@@ -98,12 +98,6 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        if not isinstance(value, dict):
-            return self._assign_impl(value, wait)
-        for key, value in value.items():
-            self[key].assign(value, wait)
-
-    def _assign_impl(self, value, wait: bool = False) -> None:
         with self._run.lock():
             attr = self._run.get_attribute(self._path)
             if attr:

@@ -14,12 +14,11 @@
 # limitations under the License.
 #
 import base64
-from io import IOBase, StringIO, BytesIO
+from io import IOBase, BytesIO
 import logging
 import os
 from glob import glob
-from typing import Union, TypeVar, Iterable, List, Set, Optional, Any
-from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
+from typing import Union, TypeVar, Iterable, List, Set, Optional, Mapping
 
 T = TypeVar('T')
 
@@ -73,6 +72,10 @@ def is_float_like(var):
         return True
     except (ValueError, TypeError):
         return False
+
+
+def is_dict_like(var):
+    return isinstance(var, (dict, Mapping))
 
 
 def is_string_like(var):

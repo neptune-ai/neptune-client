@@ -27,6 +27,7 @@ import click
 from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import attribute_type_to_atom
 from neptune.new.attributes.attribute import Attribute
+from neptune.new.attributes.namespace import NamespaceBuilder
 from neptune.new.exceptions import MetadataInconsistency, NeptuneException
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
@@ -35,13 +36,16 @@ from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.run_structure import RunStructure
-from neptune.new.internal.utils import is_bool, is_float, is_float_like, is_int, is_string, is_string_like, verify_type
+from neptune.new.internal.utils import (
+    is_bool, is_float, is_float_like, is_int, is_string, is_string_like, verify_type, is_dict_like,
+)
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
+from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
 
 
@@ -103,7 +107,7 @@ class Run(AbstractContextManager):
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
-        self._structure = RunStructure[Attribute]()
+        self._structure = RunStructure[Attribute](NamespaceBuilder(self))
         self._lock = threading.RLock()
         self._started = False
         self._workspace = workspace
@@ -157,7 +161,7 @@ class Run(AbstractContextManager):
         .. _assign docs page:
             https://docs.neptune.ai/api-reference/run#assign
         """
-        self[""].assign(value, wait)
+        self.root.assign(value, wait)
 
     def ping(self):
         self._backend.ping_run(self._uuid)
@@ -301,6 +305,8 @@ class Run(AbstractContextManager):
             value = Datetime(value)
         elif is_float_like(value):
             value = Float(float(value))
+        elif is_dict_like(value):
+            value = Namespace(value)
         elif is_string_like(value):
             value = String(str(value))
         else:
@@ -418,6 +424,10 @@ class Run(AbstractContextManager):
             self._structure.clear()
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)
+
+    @property
+    def root(self):
+        return Handler(self, "")
 
     def _define_attribute(self, _path: List[str], _type: AttributeType):
         try:

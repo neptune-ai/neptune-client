@@ -150,3 +150,7 @@ class NeptuneBackend:
     @abc.abstractmethod
     def get_run_url(self, run_uuid: uuid, workspace: str, project_name: str, short_id: str) -> str:
         pass
+
+    @abc.abstractmethod
+    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]):
+        pass

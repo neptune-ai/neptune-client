@@ -22,6 +22,7 @@ from neptune.new.attributes.atoms.float import Float as FloatAttr
 from neptune.new.attributes.atoms.integer import Integer as IntegerAttr
 from neptune.new.attributes.atoms.boolean import Boolean as BooleanAttr
 from neptune.new.attributes.atoms.string import String as StringAttr
+from neptune.new.attributes.namespace import Namespace as NamespaceAttr
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.series.float_series import FloatSeries as FloatSeriesAttr
 from neptune.new.attributes.series.file_series import FileSeries as ImageSeriesAttr
@@ -35,6 +36,7 @@ from neptune.new.types.atoms.file import File
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.file_set import FileSet
+from neptune.new.types.namespace import Namespace
 from neptune.new.types.series.float_series import FloatSeries
 from neptune.new.types.series.file_series import FileSeries
 from neptune.new.types.series.string_series import StringSeries
@@ -86,3 +88,6 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
     def visit_git_ref(self, _: GitRef) -> Attribute:
         raise OperationNotSupported("Cannot create custom attribute of type GitRef")
+
+    def visit_namespace(self, value: Namespace) -> Attribute:
+        return NamespaceAttr(self._run, self._path)
