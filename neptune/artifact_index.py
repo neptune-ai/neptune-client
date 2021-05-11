@@ -17,7 +17,7 @@ class File:
 
     rel_path - file's path relative to the FileSet directory root.
     sha1 - file's SHA1
-    ctime - file's modification time when its SHA was last calculated. Allows for caching SHAs.
+    mtime - file's modification time when its SHA was last calculated. Allows for caching SHAs.
     """
     rel_path: Path = field(
         metadata=config(
@@ -27,7 +27,7 @@ class File:
         )
     )
     sha1: str
-    ctime: float
+    mtime: float
 
 
 # IndexData is a mapping from relative file paths to File records. Closely analogous to Git's repo index.
@@ -64,8 +64,8 @@ def get_file_record(path: Path, rel_path: Path) -> File:
     """
     stat = path.stat()
     sha = sha1sum(path)
-    ctime = max(stat.st_ctime, stat.st_mtime)
-    return File(rel_path, sha, ctime)
+    mtime = stat.st_mtime
+    return File(rel_path, sha, mtime)
 
 
 def get_index_path(base_path: Path) -> Path:
@@ -104,6 +104,8 @@ def read_index(base_path: Path) -> Optional[IndexData]:
 def get_index_data_with_cache(index_data: IndexData, path: Path) -> IndexData:
     """
     Calculates index data for a directory, using cached SHAs from a previous index on disk if one exists.
+
+    TODO remove non-existent files from the index
     """
     res = {}
     for p in path.iterdir():
@@ -111,8 +113,8 @@ def get_index_data_with_cache(index_data: IndexData, path: Path) -> IndexData:
         if p in index_data:
             record = index_data[rel_path]
             stat = p.stat()
-            ctime = max(stat.st_ctime, stat.st_mtime)
-            if record.ctime >= ctime:
+            mtime = stat.st_mtime
+            if record.mtime == mtime:
                 res[str(rel_path)] = record
                 continue
         res[str(rel_path)] = get_file_record(p, rel_path)
