@@ -89,5 +89,5 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
     def visit_git_ref(self, _: GitRef) -> Attribute:
         raise OperationNotSupported("Cannot create custom attribute of type GitRef")
 
-    def visit_namespace(self, value: Namespace) -> Attribute:
+    def visit_namespace(self, _: Namespace) -> Attribute:
         return NamespaceAttr(self._run, self._path)
