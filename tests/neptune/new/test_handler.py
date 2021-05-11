@@ -356,6 +356,8 @@ class TestHandler(unittest.TestCase):
         exp['params/sub-namespace/int_series'].log(100)
         exp['some/num/attr_name'] = FileVal.from_stream(BytesIO(b'Some stream'))
 
+        # pylint: disable=assignment-from-no-return
+        # that's a false positive, pylint looks at Handler.fetch()
         params_dict = exp['params'].fetch()
         self.assertDictEqual(params_dict, {
             'int': 1,
