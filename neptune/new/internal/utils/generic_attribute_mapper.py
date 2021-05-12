@@ -42,8 +42,4 @@ def map_attribute_result_to_value(attribute):
     source_property = _attribute_types_map.get(attribute.type, None)
     if source_property is None:
         return Omit
-    a = getattr(attribute, source_property)
-    if not hasattr(a, "value"):
-        print(attribute.type)
-    else:
-        return a.value
+    return getattr(attribute, source_property).value

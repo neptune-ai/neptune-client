@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import abc
+import typing
 import uuid
 from typing import List, Optional
 
@@ -152,5 +153,5 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]):
+    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]) -> typing.Union[typing.Mapping, dict]:
         pass

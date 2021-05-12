@@ -27,6 +27,7 @@ from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from packaging import version
 
+from neptune.new.attributes.namespace import Namespace
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.exceptions import (
     ClientHttpError,
@@ -596,7 +597,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]):
+    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]) -> Namespace:
         params = {
             'experimentId': str(run_uuid),
         }
@@ -615,7 +616,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 run_struct.set(parse_path(attr.name), value)
             return run_struct.get_structure()
         except HTTPNotFound:
-            raise FetchAttributeNotFoundException(path_to_str(path))
+            raise RunUUIDNotFound(run_uuid)
 
     @with_api_exceptions_handler
     def _get_file_set_download_request(self, run_uuid: uuid.UUID, path: List[str]):

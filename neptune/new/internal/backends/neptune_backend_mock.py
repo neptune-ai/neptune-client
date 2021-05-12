@@ -278,7 +278,7 @@ class NeptuneBackendMock(NeptuneBackend):
         else:
             return Omit
 
-    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]):
+    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]) -> dict:
         return self._get_attribute_value(self._runs[run_uuid].get(path))
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):

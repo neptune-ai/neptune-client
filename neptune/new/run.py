@@ -316,7 +316,7 @@ class Run(AbstractContextManager):
         with self._lock:
             old_attr = self._structure.get(parsed_path)
             if old_attr:
-                raise MetadataInconsistency("Attribute {} is already defined".format(path))
+                raise MetadataInconsistency("Attribute or namespace {} is already defined".format(path))
             attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
             attr.assign(value, wait)
             self._structure.set(parsed_path, attr)
