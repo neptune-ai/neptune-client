@@ -18,8 +18,8 @@
 
 ANONYMOUS = 'ANONYMOUS'
 
-ANONYMOUS_API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL3VpLm5lcHR1bmUuYW' \
-                      'kiLCJhcGlfa2V5IjoiYjcwNmJjOGYtNzZmOS00YzJlLTkzOWQtNGJhMDM2ZjkzMmU0In0='
+ANONYMOUS_API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS' \
+                      '5haSIsImFwaV9rZXkiOiJiNzA2YmM4Zi03NmY5LTRjMmUtOTM5ZC00YmEwMzZmOTMyZTQifQo='
 
 NEPTUNE_RUNS_DIRECTORY = '.neptune'
 
