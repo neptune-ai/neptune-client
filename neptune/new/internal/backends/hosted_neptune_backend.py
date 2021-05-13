@@ -228,7 +228,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             "cliVersion": str(neptune_client_version),
             "gitInfo": git_info,
             "customId": custom_run_id,
-            **self.DEFAULT_REQUEST_KWARGS,
         }
 
         if notebook_id is not None and checkpoint_id is not None:

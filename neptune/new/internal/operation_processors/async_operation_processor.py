@@ -92,6 +92,7 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]):
         waiting_start = monotonic()
+        time_elapsed = 0
         max_reconnect_wait_time = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:
@@ -99,16 +100,21 @@ class AsyncOperationProcessor(OperationProcessor):
                            f"Neptune client will now try to resume connection and sync data for the next "
                            f"{max_reconnect_wait_time} seconds. "
                            f"You can also kill this process and synchronize your data manually later "
-                           f"using neptune sync command.",
+                           f"using `neptune sync` command.",
                            sys.stderr)
             else:
                 click.echo(f"Waiting for the remaining {initial_queue_size} operations to synchronize with Neptune. "
                            f"Do not kill this process.",
                            sys.stderr)
 
-        time_remaining = seconds or float('inf')
         while True:
-            wait_time = min(time_remaining, self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS)
+            wait_time = max(
+                min(
+                    max_reconnect_wait_time - time_elapsed,
+                    self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS
+                ),
+                0
+            )
             self._queue.wait_for_empty(wait_time)
             size_remaining = self._queue.size()
             already_synced = initial_queue_size - size_remaining
@@ -121,7 +127,8 @@ class AsyncOperationProcessor(OperationProcessor):
             if self._consumer.last_backoff_time > 0 and time_elapsed >= max_reconnect_wait_time:
                 click.echo(
                     f"Failed to reconnect with Neptune in {max_reconnect_wait_time} seconds."
-                    f" You have {initial_queue_size} operations saved on disk that can be manually synced later.",
+                    f" You have {initial_queue_size} operations saved on disk that can be manually synced"
+                    f" using `neptune sync` command.",
                     sys.stderr
                 )
                 return
@@ -131,7 +138,6 @@ class AsyncOperationProcessor(OperationProcessor):
                 f"({already_synced_proc:.2f}% done). Please wait.",
                 sys.stderr
             )
-            time_remaining -= wait_time
 
     def stop(self, seconds: Optional[float] = None):
         ts = time()

@@ -90,7 +90,10 @@ class Daemon(threading.Thread):
                             self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)
                         time.sleep(self_.last_backoff_time)
                     except Exception:
-                        click.echo(f"Unexpected error occurred. {self.kill_message}", sys.stderr)
+                        click.echo(
+                            f"Unexpected error occurred in Neptune background thread: {self.kill_message}",
+                            sys.stderr
+                        )
                         raise
 
             return wrapper
