@@ -58,5 +58,6 @@ class PingBackgroundJob(BackgroundJob):
             super().__init__(sleep_time=period)
             self._run = run
 
+        @Daemon.ConnectionRetryWrapper()
         def work(self) -> None:
             self._run.ping()

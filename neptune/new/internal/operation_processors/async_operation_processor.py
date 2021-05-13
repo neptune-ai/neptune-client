@@ -18,12 +18,11 @@ import os
 import sys
 import uuid
 from threading import Event
-from time import time, sleep
+from time import time, monotonic
 from typing import Optional, List
 
 import click
 
-from neptune.new.exceptions import NeptuneConnectionLostException
 from neptune.new.internal.containers.storage_queue import StorageQueue
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
@@ -36,6 +35,8 @@ _logger = logging.getLogger(__name__)
 
 
 class AsyncOperationProcessor(OperationProcessor):
+    STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 10
+    STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = 30
 
     def __init__(self,
                  run_uuid: uuid.UUID,
@@ -89,13 +90,52 @@ class AsyncOperationProcessor(OperationProcessor):
     def start(self):
         self._consumer.start()
 
+    def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]):
+        waiting_start = monotonic()
+        max_wait_time = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
+        if initial_queue_size > 0:
+            if self._consumer.last_backoff_time > 0:
+                click.echo(f"We have been experiencing connection interruptions during your run. "
+                           f"Client will now try to resume connection and sync data for the next "
+                           f"{max_wait_time} seconds. "
+                           f"You can also synchronize manually using neptune sync command.",
+                           sys.stderr)
+            click.echo(f"Waiting for the remaining {initial_queue_size} operations to synchronize with Neptune. "
+                       f"Do not kill you application.",
+                       sys.stderr)
+        if seconds is not None:
+            return self._queue.wait_for_empty(seconds)
+        else:
+            size_remaining = initial_queue_size
+            while size_remaining > 0:
+                self._queue.wait_for_empty(self.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS)
+                size_remaining = self._queue.size()
+                already_synced = initial_queue_size - size_remaining
+                already_synced_proc = (already_synced / initial_queue_size) * 100
+                if size_remaining == 0:
+                    click.echo(f"All {initial_queue_size} operation synced, thanks for waiting!")
+                else:
+                    click.echo(
+                        f"Still waiting for the remaining {size_remaining} operations "
+                        f"({already_synced_proc:.2f}% done). Please wait.",
+                        sys.stderr
+                    )
+                time_elapsed = monotonic() - waiting_start
+                if self._consumer.last_backoff_time > 0 and time_elapsed >= max_wait_time:
+                    click.echo(
+                        f"Failed to reconnect with Neptune in {max_wait_time} seconds."
+                        f" You have {initial_queue_size} operations saved on disk that can be manually synced later.",
+                        sys.stderr
+                    )
+                    return
+
     def stop(self, seconds: Optional[float] = None):
         ts = time()
         self._queue.flush()
         if self._consumer.is_running():
             self._consumer.disable_sleep()
             self._consumer.wake_up()
-            self._queue.wait_for_empty(seconds)
+            self._wait_for_queue_empty(initial_queue_size=self._queue.size(), seconds=seconds)
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
@@ -103,10 +143,6 @@ class AsyncOperationProcessor(OperationProcessor):
         # self._queue.close()
 
     class ConsumerThread(Daemon):
-
-        RETRIES = 10
-        RETRY_WAIT = 30
-
         def __init__(self,
                      processor: 'AsyncOperationProcessor',
                      sleep_time: float,
@@ -128,29 +164,17 @@ class AsyncOperationProcessor(OperationProcessor):
                     return
                 self.process_batch(batch, version)
 
+        @Daemon.ConnectionRetryWrapper()
+        def process_loop(self, batch, version):
+            result = self._processor._backend.execute_operations(self._processor._run_uuid, batch)
+            self._processor._queue.ack(version)
+            for error in result:
+                _logger.error("Error occurred during asynchronous operation processing: %s", error)
+            return result
+
         def process_batch(self, batch: List[Operation], version: int) -> None:
             # TODO: Handle Metadata errors
-            for retry in range(0, self.RETRIES):
-                try:
-                    result = self._processor._backend.execute_operations(self._processor._run_uuid, batch)
-                    self._processor._queue.ack(version)
-                    for error in result:
-                        _logger.error("Error occurred during asynchronous operation processing: %s", error)
-                    break
-                except NeptuneConnectionLostException:
-                    if retry >= self.RETRIES - 1:
-                        click.echo("Experiencing connection interruptions. Killing Neptune asynchronous thread. "
-                                   "All data is safe on disk.",
-                                   sys.stderr)
-                        raise
-                    click.echo("Experiencing connection interruptions. Reestablishing communication with Neptune.",
-                               sys.stderr)
-                    sleep(self.RETRY_WAIT)
-                except Exception:
-                    click.echo("Unexpected error occurred. Killing Neptune asynchronous thread. "
-                               "All data is safe on disk.",
-                               sys.stderr)
-                    raise
+            self.process_loop(batch, version)
 
             self._processor._consumed_version = version
             if self._processor._waiting_for_version > 0:
