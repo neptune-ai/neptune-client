@@ -114,7 +114,7 @@ class AsyncOperationProcessor(OperationProcessor):
             already_synced = initial_queue_size - size_remaining
             already_synced_proc = (already_synced / initial_queue_size) * 100
             if size_remaining == 0:
-                click.echo(f"All {initial_queue_size} operation synced, thanks for waiting!")
+                click.echo(f"All {initial_queue_size} operations synced, thanks for waiting!")
                 return
 
             time_elapsed = monotonic() - waiting_start
