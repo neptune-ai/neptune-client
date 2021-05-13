@@ -175,7 +175,11 @@ class AsyncOperationProcessor(OperationProcessor):
                 self.process_batch(batch, version)
 
         @Daemon.ConnectionRetryWrapper(
-            kill_message="Killing Neptune asynchronous thread. All data is safe on disk.")
+            kill_message=(
+                    "Killing Neptune asynchronous thread. All data is safe on disk and can be later"
+                    " synced manually using `neptune sync` command."
+            )
+        )
         def process_batch(self, batch: List[Operation], version: int) -> None:
             # TODO: Handle Metadata errors
             result = self._processor._backend.execute_operations(self._processor._run_uuid, batch)
