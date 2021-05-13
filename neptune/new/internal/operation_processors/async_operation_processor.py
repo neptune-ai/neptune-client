@@ -176,8 +176,8 @@ class AsyncOperationProcessor(OperationProcessor):
 
         @Daemon.ConnectionRetryWrapper(
             kill_message=(
-                    "Killing Neptune asynchronous thread. All data is safe on disk and can be later"
-                    " synced manually using `neptune sync` command."
+                "Killing Neptune asynchronous thread. All data is safe on disk and can be later"
+                " synced manually using `neptune sync` command."
             )
         )
         def process_batch(self, batch: List[Operation], version: int) -> None:
