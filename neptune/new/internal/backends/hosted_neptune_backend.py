@@ -620,6 +620,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
 
+    def get_run_url(self, run_uuid: uuid.UUID, workspace: str, project_name: str, short_id: str) -> str:
+        base_url = self.get_display_address()
+        return f"{base_url}/{workspace}/{project_name}/e/{short_id}"
+
     @staticmethod
     def _create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
         http_client = RequestsClient(ssl_verify=ssl_verify)

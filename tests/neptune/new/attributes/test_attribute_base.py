@@ -40,7 +40,7 @@ class TestAttributeBase(unittest.TestCase):
         exp = backend.create_run(uuid.uuid4())
         if processor is None:
             processor = SyncOperationProcessor(exp.uuid, backend)
-        _run = Run(exp.uuid, backend, processor, MagicMock())
+        _run = Run(exp.uuid, backend, processor, MagicMock(), MagicMock(), MagicMock(), MagicMock())
         _run.sync()
         _run.start()
         return _run

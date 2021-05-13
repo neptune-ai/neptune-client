@@ -316,7 +316,8 @@ def init(project: Optional[str] = None,
         background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
         background_jobs.append(PingBackgroundJob())
 
-    _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs))
+    _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs),
+               api_run.workspace, api_run.project_name, api_run.short_id)
     if mode != RunMode.OFFLINE:
         _run.sync(wait=False)
 
@@ -341,15 +342,8 @@ def init(project: Optional[str] = None,
 
     _run.start()
 
-    if mode == RunMode.OFFLINE:
-        click.echo("offline/{}".format(api_run.uuid))
-    elif mode != RunMode.DEBUG:
-        click.echo("{base_url}/{workspace}/{project}/e/{run_id}".format(
-            base_url=backend.get_display_address(),
-            workspace=api_run.workspace,
-            project=api_run.project_name,
-            run_id=api_run.short_id
-        ))
+    if mode != RunMode.DEBUG:
+        click.echo(_run.get_run_url())
 
     uncaught_exception_handler.activate()
 

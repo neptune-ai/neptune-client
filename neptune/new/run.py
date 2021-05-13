@@ -94,7 +94,10 @@ class Run(AbstractContextManager):
             _uuid: uuid.UUID,
             backend: NeptuneBackend,
             op_processor: OperationProcessor,
-            background_job: BackgroundJob
+            background_job: BackgroundJob,
+            workspace: str,
+            project_name: str,
+            short_id: str
     ):
         self._uuid = _uuid
         self._backend = backend
@@ -103,6 +106,9 @@ class Run(AbstractContextManager):
         self._structure = RunStructure[Attribute]()
         self._lock = threading.RLock()
         self._started = False
+        self._workspace = workspace
+        self._project_name = project_name
+        self._short_id = short_id
 
         Run.last_run = self
 
@@ -252,6 +258,11 @@ class Run(AbstractContextManager):
         Paths are ordered lexicographically and the whole structure is neatly colored.
         """
         self._print_structure_impl(self.get_structure(), indent=0)
+
+    def get_run_url(self) -> str:
+        """Returns the URL the run can be accessed with in the browser
+        """
+        return self._backend.get_run_url(self._uuid, self._workspace, self._project_name, self._short_id)
 
     def _print_structure_impl(self, struct: dict, indent: int) -> None:
         for key in sorted(struct.keys()):
