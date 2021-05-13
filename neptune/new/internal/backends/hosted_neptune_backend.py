@@ -103,6 +103,16 @@ class HostedNeptuneBackend(NeptuneBackend):
     BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
     LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
 
+    CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
+    REQUEST_TIMEOUT = None
+
+    DEFAULT_REQUEST_KWARGS = {
+        '_request_options': {
+            "connect_timeout": CONNECT_TIMEOUT,
+            "timeout": REQUEST_TIMEOUT,
+        }
+    }
+
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
         self.credentials = credentials
         self.proxies = proxies
@@ -164,7 +174,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         verify_type("project_id", project_id, str)
 
         try:
-            response = self.backend_client.api.getProject(projectIdentifier=project_id).response()
+            response = self.backend_client.api.getProject(
+                projectIdentifier=project_id,
+                **self.DEFAULT_REQUEST_KWARGS,
+            ).response()
             warning = response.metadata.headers.get('X-Server-Warning')
             if warning:
                 click.echo(warning)  # TODO print in color once colored exceptions are added
@@ -179,7 +192,10 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def get_run(self, run_id: str):
         try:
-            run = self.leaderboard_client.api.getExperiment(experimentId=run_id).response().result
+            run = self.leaderboard_client.api.getExperiment(
+                experimentId=run_id,
+                **self.DEFAULT_REQUEST_KWARGS,
+            ).response().result
             return ApiRun(uuid.UUID(run.id), run.shortId, run.organizationName, run.projectName, run.trashed)
         except HTTPNotFound:
             raise RunNotFound(run_id)
@@ -211,7 +227,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             "projectIdentifier": str(project_uuid),
             "cliVersion": str(neptune_client_version),
             "gitInfo": git_info,
-            "customId": custom_run_id
+            "customId": custom_run_id,
+            **self.DEFAULT_REQUEST_KWARGS,
         }
 
         if notebook_id is not None and checkpoint_id is not None:
@@ -220,7 +237,8 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         kwargs = {
             'experimentCreationParams': params,
-            'X-Neptune-CliVersion': str(neptune_client_version)
+            'X-Neptune-CliVersion': str(neptune_client_version),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
 
         try:
@@ -236,7 +254,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 notebookId=notebook_id,
                 checkpoint={
                     "path": jupyter_path
-                }
+                },
+                **self.DEFAULT_REQUEST_KWARGS,
             ).response().result.id
         except HTTPNotFound:
             return None
@@ -244,7 +263,10 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def ping_run(self, run_uuid: uuid.UUID):
         try:
-            self.leaderboard_client.api.ping(experimentId=str(run_uuid)).response().result
+            self.leaderboard_client.api.ping(
+                experimentId=str(run_uuid),
+                **self.DEFAULT_REQUEST_KWARGS,
+            ).response().result
         except HTTPNotFound:
             raise RunUUIDNotFound(run_uuid)
 
@@ -318,7 +340,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             'operations': [{
                 'path': path_to_str(op.path),
                 OperationApiNameVisitor().visit(op): OperationApiObjectConverter().convert(op)
-            } for op in operations]
+            } for op in operations],
+            **self.DEFAULT_REQUEST_KWARGS,
         }
 
         try:
@@ -336,6 +359,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         params = {
             'experimentId': str(run_uuid),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             run = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
@@ -402,7 +426,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getFloatAttribute(**params).response().result
@@ -414,7 +439,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getIntAttribute(**params).response().result
@@ -426,7 +452,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getBoolAttribute(**params).response().result
@@ -438,7 +465,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_file_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FileAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getFileAttribute(**params).response().result
@@ -450,7 +478,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getStringAttribute(**params).response().result
@@ -462,7 +491,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getDatetimeAttribute(**params).response().result
@@ -474,7 +504,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getFloatSeriesAttribute(**params).response().result
@@ -486,7 +517,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_string_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getStringSeriesAttribute(**params).response().result
@@ -498,7 +530,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_string_set_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
@@ -513,7 +546,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             'experimentId': str(run_uuid),
             'attribute': path_to_str(path),
             'limit': limit,
-            'offset': offset
+            'offset': offset,
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getImageSeriesValues(**params).response().result
@@ -528,7 +562,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             'experimentId': str(run_uuid),
             'attribute': path_to_str(path),
             'limit': limit,
-            'offset': offset
+            'offset': offset,
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getStringSeriesValues(**params).response().result
@@ -544,7 +579,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             'experimentId': str(run_uuid),
             'attribute': path_to_str(path),
             'limit': limit,
-            'offset': offset
+            'offset': offset,
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getFloatSeriesValues(**params).response().result
@@ -557,7 +593,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def _get_file_set_download_request(self, run_uuid: uuid.UUID, path: List[str]):
         params = {
             'experimentId': str(run_uuid),
-            'attribute': path_to_str(path)
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
             return self.leaderboard_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
@@ -568,7 +605,8 @@ class HostedNeptuneBackend(NeptuneBackend):
     def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:
         config = backend_client.api.getClientConfig(
             X_Neptune_Api_Token=self.credentials.api_token,
-            alpha="true"
+            alpha="true",
+            **self.DEFAULT_REQUEST_KWARGS,
         ).response().result
 
         if hasattr(config, "pyLibVersions"):
@@ -599,7 +637,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 projectIdentifier=str(project_id),
                 shortId=_id, state=state, owner=owner, tags=tags, tagsMode='and',
                 sortBy=['shortId'], sortFieldType=['string'], sortDirection=['ascending'],
-                limit=limit, offset=offset
+                limit=limit, offset=offset,
+                **self.DEFAULT_REQUEST_KWARGS,
             ).response().result.entries
 
         def to_leaderboard_entry(entry) -> LeaderboardEntry:

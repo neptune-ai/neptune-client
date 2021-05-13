@@ -105,7 +105,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     'assignString': {
                         'value': "some text"
                     }
-                }]
+                }],
+                **backend.DEFAULT_REQUEST_KWARGS,
             }
         )
 
