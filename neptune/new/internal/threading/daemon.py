@@ -64,7 +64,10 @@ class Daemon(threading.Thread):
 
     class ConnectionRetryWrapper:
         INITIAL_RETRY_BACKOFF = 2
-        MAX_RETRY_BACKOFF = 20
+        MAX_RETRY_BACKOFF = 120
+
+        def __init__(self, kill_message):
+            self.kill_message = kill_message
 
         def __call__(self, func):
             @functools.wraps(func)
@@ -87,9 +90,7 @@ class Daemon(threading.Thread):
                             self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)
                         time.sleep(self_.last_backoff_time)
                     except Exception:
-                        click.echo("Unexpected error occurred. Killing Neptune asynchronous thread. "
-                                   "All data is safe on disk.",
-                                   sys.stderr)
+                        click.echo(f"Unexpected error occurred. {self.kill_message}", sys.stderr)
                         raise
 
             return wrapper
