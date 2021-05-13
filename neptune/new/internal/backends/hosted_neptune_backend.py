@@ -92,7 +92,7 @@ from neptune.new.internal.operation import (
 )
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.utils import verify_type, base64_decode
-from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value, Omit
+from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.new.internal.utils.paths import path_to_str, parse_path
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
@@ -611,9 +611,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             run_struct = RunStructure()
             for attr in attributes:
                 value = map_attribute_result_to_value(attr)
-                if value is Omit:
-                    continue
-                run_struct.set(parse_path(attr.name), value)
+                run_struct.set(parse_path(attr.name), (attr.type, value))
             return run_struct.get_structure()
         except HTTPNotFound:
             raise RunUUIDNotFound(run_uuid)

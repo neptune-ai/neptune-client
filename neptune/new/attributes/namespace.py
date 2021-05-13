@@ -17,6 +17,7 @@ from collections.abc import MutableMapping
 from typing import TYPE_CHECKING, Iterator, List, Mapping, Union
 
 from neptune.new.attributes.attribute import Attribute
+from neptune.new.internal.utils.generic_attribute_mapper import atomic_attribute_types_map, NoValue
 from neptune.new.types.namespace import Namespace as NamespaceVal
 from neptune.new.internal.utils.paths import path_to_str
 
@@ -56,9 +57,20 @@ class Namespace(Attribute, MutableMapping):
             else:
                 self._run.define(f"{self._str_path}/{k}", v)
 
+    def _collect_atom_values(self, attribute_dict) -> dict:
+        result = {}
+        for k, v in attribute_dict.items():
+            if isinstance(v, dict):
+                result[k] = self._collect_atom_values(v)
+            else:
+                attr_type, attr_value = v
+                if attr_type in atomic_attribute_types_map and attr_value is not NoValue:
+                    result[k] = v[1]
+        return result
+
     def fetch(self) -> dict:
-        # pylint: disable=protected-access
-        return self._backend.get_namespace_attributes(self._run_uuid, self._path)
+        namespace_values = self._backend.get_namespace_attributes(self._run_uuid, self._path)
+        return self._collect_atom_values(namespace_values)
 
 
 class NamespaceBuilder:

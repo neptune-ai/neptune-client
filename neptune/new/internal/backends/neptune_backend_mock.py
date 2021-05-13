@@ -70,7 +70,7 @@ from neptune.new.internal.operation import (
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils import base64_decode
-from neptune.new.internal.utils.generic_attribute_mapper import Omit
+from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
@@ -270,13 +270,14 @@ class NeptuneBackendMock(NeptuneBackend):
             result = {}
             for k, v in value.items():
                 mapped_value = self._get_attribute_value(v)
-                if mapped_value is not Omit:
-                    result[k] = mapped_value
+                result[k] = mapped_value
             return result
-        elif hasattr(value, "value"):
-            return value.value
         else:
-            return Omit
+            attr_type = value.accept(self._attribute_type_converter_value_visitor).value
+            if hasattr(value, "value"):
+                return attr_type, value.value
+            else:
+                return attr_type, NoValue
 
     def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]) -> dict:
         return self._get_attribute_value(self._runs[run_uuid].get(path))
