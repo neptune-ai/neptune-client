@@ -260,6 +260,9 @@ class NeptuneBackendMock(NeptuneBackend):
                                       index: int, destination: str):
         pass
 
+    def get_run_url(self, run_uuid: uuid, workspace: str, project_name: str, short_id: str) -> str:
+        return "offline/{}".format(run_uuid)
+
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 
         def visit_float(self, _: Float) -> AttributeType:

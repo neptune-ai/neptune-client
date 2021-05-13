@@ -146,3 +146,7 @@ class NeptuneBackend:
     def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
                                 offset: int, limit: int) -> FloatSeriesValues:
         pass
+
+    @abc.abstractmethod
+    def get_run_url(self, run_uuid: uuid, workspace: str, project_name: str, short_id: str) -> str:
+        pass
