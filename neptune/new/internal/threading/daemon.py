@@ -14,7 +14,14 @@
 # limitations under the License.
 #
 import abc
+import functools
+import sys
 import threading
+import time
+
+import click
+
+from neptune.new.exceptions import NeptuneConnectionLostException
 
 
 class Daemon(threading.Thread):
@@ -25,6 +32,7 @@ class Daemon(threading.Thread):
         self._interrupted = False
         self._event = threading.Event()
         self._is_running = False
+        self.last_backoff_time = 0  # used only with ConnectionRetryWrapper decorator
 
     def interrupt(self):
         self._interrupted = True
@@ -53,3 +61,39 @@ class Daemon(threading.Thread):
     @abc.abstractmethod
     def work(self):
         pass
+
+    class ConnectionRetryWrapper:
+        INITIAL_RETRY_BACKOFF = 2
+        MAX_RETRY_BACKOFF = 120
+
+        def __init__(self, kill_message):
+            self.kill_message = kill_message
+
+        def __call__(self, func):
+            @functools.wraps(func)
+            def wrapper(self_: Daemon, *args, **kwargs):
+                # pylint: disable=protected-access
+                while not self_._interrupted:
+                    try:
+                        result = func(self_, *args, **kwargs)
+                        if self_.last_backoff_time > 0:
+                            self_.last_backoff_time = 0
+                            click.echo("Communication with Neptune restored!", sys.stderr)
+                        return result
+                    except NeptuneConnectionLostException:
+                        if self_.last_backoff_time == 0:
+                            click.echo(f"Experiencing connection interruptions. "
+                                       f"Will try to reestablish communication with Neptune.",
+                                       sys.stderr)
+                            self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
+                        else:
+                            self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)
+                        time.sleep(self_.last_backoff_time)
+                    except Exception:
+                        click.echo(
+                            f"Unexpected error occurred in Neptune background thread: {self.kill_message}",
+                            sys.stderr
+                        )
+                        raise
+
+            return wrapper

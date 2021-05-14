@@ -58,5 +58,11 @@ class PingBackgroundJob(BackgroundJob):
             super().__init__(sleep_time=period)
             self._run = run
 
+        @Daemon.ConnectionRetryWrapper(
+            kill_message=(
+                "Killing Neptune ping thread. Your run's status will not be updated and"
+                " the run will be shown as inactive."
+            )
+        )
         def work(self) -> None:
             self._run.ping()

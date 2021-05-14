@@ -230,8 +230,10 @@ class Run(AbstractContextManager):
             return
         self._started = False
         ts = time.time()
+        click.echo(f"Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
         self._bg_job.join(seconds)
+        click.echo("Done!")
         with self._lock:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
