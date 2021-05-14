@@ -27,14 +27,14 @@ import requests
 
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
-    HTTPInternalServerError, HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
+    HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
     HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError, HTTPTooManyRequests
 from bravado.http_client import HttpClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
 from requests import Session
 
-from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, InternalServerError, \
+from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, \
     Unauthorized, Forbidden, CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.utils import replace_patch_version
