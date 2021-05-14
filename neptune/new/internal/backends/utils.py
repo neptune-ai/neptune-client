@@ -54,12 +54,10 @@ def with_api_exceptions_handler(func):
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
                     HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway,
-                    HTTPTooManyRequests) as e:
+                    HTTPTooManyRequests, HTTPServerError) as e:
                 time.sleep(2 ** retry)
                 last_exception = e
                 continue
-            except HTTPServerError as e:
-                raise InternalServerError(e.response.text) from e
             except HTTPUnauthorized:
                 raise Unauthorized()
             except HTTPForbidden:
@@ -75,12 +73,11 @@ def with_api_exceptions_handler(func):
                         HTTPBadGateway.status_code,
                         HTTPServiceUnavailable.status_code,
                         HTTPGatewayTimeout.status_code,
-                        HTTPTooManyRequests.status_code):
+                        HTTPTooManyRequests.status_code,
+                        HTTPServerError.status_code):
                     time.sleep(2 ** retry)
                     last_exception = e
                     continue
-                elif status_code >= HTTPInternalServerError.status_code:
-                    raise InternalServerError(e.response.text) from e
                 elif status_code == HTTPUnauthorized.status_code:
                     raise Unauthorized()
                 elif status_code == HTTPForbidden.status_code:
