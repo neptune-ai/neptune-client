@@ -21,31 +21,32 @@ from neptune.new.internal.utils import verify_type
 from neptune.new.logging import Logger
 
 
-class NeptuneLogHandler(logging.Handler):
-    """Custom handler that sends logged messages to Neptune
+class NeptuneHandler(logging.Handler):
+    """Handler that sends the log records created by the logger to Neptune
 
     Args:
         run (Run): An existing run reference (as returned by `neptune.init`)
-            Logger will send messages as a `StringSeries` attribute on this run.
+            Logger will send messages as a `StringSeries` field on this run.
         level (int, optional): Log level of the handler. Defaults to `logging.NOTSET`,
             which logs everything that matches logger's level.
-        path (str, optional): Path to the `StringSeries` attribute used for logging. Default to `None`.
+        path (str, optional): Path to the `StringSeries` field used for logging. Default to `None`.
             If `None`, `'monitoring/python_logger'` is used.
 
     Usage example:
         >>> import logging
         >>> import neptune.new as neptune
-        >>> from neptune.new.logging.handler import NeptuneLogHandler
+        >>> from neptune.new.integrations.python_logger import NeptuneHandler
 
         >>> logger = logging.getLogger("root_experiment")
         >>> logger.setLevel(logging.DEBUG)
 
         >>> run = neptune.init(project=‘neptune/sandbox’)
-        >>> npt_handler = NeptuneLoggerHandler(run=run, level=logging.WARNING, path="logging/root_experiment")
+        >>> npt_handler = NeptuneHandler(run=run)
         >>> logger.addHandler(npt_handler)
 
-        >>> logger.debug("this won't be sent")
-        >>> logger.error("but this will!!%d", 1)
+        >>> logger.debug("Starting data preparation")
+        ...
+        >>> logger.debug("Data preparation done")
     """
     def __init__(self, *, run: Run, level=logging.NOTSET, path: str = None):
         verify_type("run", run, Run)

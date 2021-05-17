@@ -19,7 +19,7 @@ import unittest
 
 from neptune.new import ANONYMOUS, init
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.logging.handler import NeptuneLogHandler
+from neptune.new.integrations.python_logger import NeptuneHandler
 
 
 class TestLogHandler(unittest.TestCase):
@@ -36,11 +36,11 @@ class TestLogHandler(unittest.TestCase):
 
     def test_no_run(self):
         with self.assertRaises(TypeError):
-            NeptuneLogHandler(run="PET-1")
+            NeptuneHandler(run="PET-1")
 
     def test_default_attribute(self):
         exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneLogHandler(run=exp)
+        handler = NeptuneHandler(run=exp)
         logger = logging.getLogger()
         logger.addHandler(handler)
 
@@ -51,7 +51,7 @@ class TestLogHandler(unittest.TestCase):
 
     def test_custom_target_attribute(self):
         exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneLogHandler(run=exp, path="logging/my/logger")
+        handler = NeptuneHandler(run=exp, path="logging/my/logger")
         logger = logging.getLogger()
         logger.addHandler(handler)
 
@@ -63,7 +63,7 @@ class TestLogHandler(unittest.TestCase):
 
     def test_custom_level(self):
         exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneLogHandler(run=exp, level=logging.ERROR)
+        handler = NeptuneHandler(run=exp, level=logging.ERROR)
         logger = logging.getLogger()
         logger.addHandler(handler)
 
@@ -74,7 +74,7 @@ class TestLogHandler(unittest.TestCase):
 
     def test_formatter_works(self):
         exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneLogHandler(run=exp)
+        handler = NeptuneHandler(run=exp)
         handler.setFormatter(logging.Formatter("%(levelname)s|%(name)s: %(message)s"))
         logger = logging.getLogger()
         logger.addHandler(handler)
@@ -86,7 +86,7 @@ class TestLogHandler(unittest.TestCase):
 
     def test_log_level_works(self):
         exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneLogHandler(run=exp)
+        handler = NeptuneHandler(run=exp)
         logger = logging.getLogger()
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
@@ -100,7 +100,7 @@ class TestLogHandler(unittest.TestCase):
 
     def test_log_level_works_with_level(self):
         exp = init(mode="debug", flush_period=0.5)
-        handler = NeptuneLogHandler(run=exp, level=logging.WARNING)
+        handler = NeptuneHandler(run=exp, level=logging.WARNING)
         logger = logging.getLogger()
         logger.addHandler(handler)
         logger.setLevel(logging.DEBUG)
