@@ -179,7 +179,7 @@ class Run(AbstractContextManager):
 
         You may also want to check `fetch docs page`_.
 
-        .. _assign docs page:
+        .. _fetch docs page:
             https://docs.neptune.ai/api-reference/run#fetch
         """
         return self.root.fetch()
