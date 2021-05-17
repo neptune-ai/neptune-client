@@ -165,9 +165,12 @@ class Run(AbstractContextManager):
 
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
-        The result will preserve the hierarchical structure of the runs metadata, but will contain only non-File Atom
+        The result will preserve the hierarchical structure of the run's metadata, but will contain only non-File Atom
         fields.
         You can use this method to quickly retrieve previous run's parameters.
+
+        Returns:
+            `dict` with hierarchy of the run's metadata, containing with all non-File Atom fields' values.
 
         Examples:
             >>> import neptune.new as neptune

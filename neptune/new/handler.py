@@ -298,7 +298,7 @@ class Handler:
         raise NeptuneException('Should be never called.')
 
     def fetch(self):
-        """Fetches field value from Neptune servers.
+        """Fetches fields value or in case of a namespace fetches values of all non-File Atom fields as a dictionary.
 
         Available for following field types (`Field types docs page`_):
             * `Integer`
@@ -307,9 +307,10 @@ class Handler:
             * `String`
             * `DateTime`
             * `StringSet`
+            * `Namespace handler`
 
         Returns:
-            Value stored in the field.
+            Value stored in the field or in case of a namespace a dictionary containing all non-Atom fields values.
 
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
