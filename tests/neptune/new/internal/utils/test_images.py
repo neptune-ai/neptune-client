@@ -15,6 +15,7 @@
 #
 
 # pylint: disable=protected-access
+import contextlib
 import io
 import os
 import sys
@@ -69,19 +70,26 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_3d_grayscale_array(self):
         # given
         image_array = numpy.array([
-            [[1], [2]],
-            [[3], [4]],
+            [[1], [0]],
+            [[-3], [4]],
             [[5], [6]]
         ])
         expected_array = numpy.array([
-            [1, 2],
-            [3, 4],
+            [1, 0],
+            [-3, 4],
             [5, 6]
         ]) * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
+        stderr = io.StringIO()
+        with contextlib.redirect_stderr(stderr):
+            self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
+        self.assertEqual(
+            stderr.getvalue(),
+            "Image values should be in [0, 1] range, but smallest array value is -3 and greatest array value is 6."
+            " Colour values may be interpreted incorrectly.\n"
+        )
 
     def test_get_image_content_from_rgb_array(self):
         # given
@@ -233,6 +241,6 @@ class TestImage(unittest.TestCase):
     @staticmethod
     def _random_image_array(w=20, h=30, d: Optional[int] = 3):
         if d:
-            return numpy.random.rand(w, h, d) * 255
+            return numpy.random.rand(w, h, d)
         else:
-            return numpy.random.rand(w, h) * 255
+            return numpy.random.rand(w, h)
