@@ -163,6 +163,27 @@ class Run(AbstractContextManager):
         """
         self.root.assign(value, wait)
 
+    def fetch(self) -> dict:
+        """Fetch values of multiple fields as a dictionary.
+        The result will contain only Namspaces and attributes of Atom type.
+        You can use this method to quickly retrieve previous run's parameters.
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> existing_run = neptune.init(run="HEL-3")
+
+            >>> run_data = existing_run.fetch()
+
+            >>> print(run_data)
+            >>> # this will print out all Atom attributes stored in run as a dict
+
+        You may also want to check `fetch docs page`_.
+
+        .. _assign docs page:
+            https://docs.neptune.ai/api-reference/run#fetch
+        """
+        return self.root.fetch()
+
     def ping(self):
         self._backend.ping_run(self._uuid)
 
