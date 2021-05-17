@@ -32,7 +32,7 @@ class NeptuneHandler(logging.Handler):
         path (str, optional): Path to the `StringSeries` field used for logging. Default to `None`.
             If `None`, `'monitoring/python_logger'` is used.
 
-    Usage example:
+    Examples:
         >>> import logging
         >>> import neptune.new as neptune
         >>> from neptune.new.integrations.python_logger import NeptuneHandler
