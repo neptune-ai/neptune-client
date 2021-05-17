@@ -161,18 +161,20 @@ class Run(AbstractContextManager):
         .. _assign docs page:
             https://docs.neptune.ai/api-reference/run#assign
         """
-        self.root.assign(value, wait)
+        self._get_root_handler().assign(value, wait)
 
     def fetch(self) -> dict:
-        """Fetch values of multiple fields as a dictionary.
-        The result will contain only Namspaces and attributes of Atom type.
+        """Fetch values of all non-File Atom fields as a dictionary.
+        The result will preserve the hierarchical structure of the runs metadata, but will contain only non-File Atom
+        fields.
         You can use this method to quickly retrieve previous run's parameters.
 
         Examples:
             >>> import neptune.new as neptune
-            >>> existing_run = neptune.init(run="HEL-3")
+            >>> resumed_run = neptune.init(run="HEL-3")
+            >>> params = resumed_run['model/parameters'].fetch()
 
-            >>> run_data = existing_run.fetch()
+            >>> run_data = resumed_run.fetch()
 
             >>> print(run_data)
             >>> # this will print out all Atom attributes stored in run as a dict
@@ -182,7 +184,7 @@ class Run(AbstractContextManager):
         .. _fetch docs page:
             https://docs.neptune.ai/api-reference/run#fetch
         """
-        return self.root.fetch()
+        return self._get_root_handler().fetch()
 
     def ping(self):
         self._backend.ping_run(self._uuid)
@@ -446,10 +448,6 @@ class Run(AbstractContextManager):
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)
 
-    @property
-    def root(self):
-        return Handler(self, "")
-
     def _define_attribute(self, _path: List[str], _type: AttributeType):
         try:
             attr_init = attribute_type_to_atom[_type]
@@ -457,6 +455,9 @@ class Run(AbstractContextManager):
             raise NeptuneException(f"Unexpected type: {_type}")
 
         self._structure.set(_path, attr_init(self, _path))
+
+    def _get_root_handler(self):
+        return Handler(self, "")
 
     def _shutdown_hook(self):
         self.stop()
