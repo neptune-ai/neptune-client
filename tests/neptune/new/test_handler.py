@@ -145,8 +145,7 @@ class TestHandler(unittest.TestCase):
             with open(temp_dir + '/attr_name.bin', "rb") as file:
                 self.assertEqual(file.read(), data)
 
-    @patch('neptune.new.internal.utils.glob',
-           new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.new.internal.utils.glob', new=lambda path, recursive=True: [path.replace('*', 'file.txt')])
     @patch('neptune.new.internal.backends.neptune_backend_mock.ZipFile.write')
     def test_save_files_download(self, zip_write_mock):
         exp = init(mode="debug", flush_period=0.5)
