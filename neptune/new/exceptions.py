@@ -258,7 +258,7 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+    - https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
     - https://docs.neptune.ai/getting-started/installation#setting-the-project-name
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -302,7 +302,7 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+    - https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
     - https://docs.neptune.ai/getting-started/installation#setting-the-project-name
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
