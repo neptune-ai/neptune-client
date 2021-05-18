@@ -13,7 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Dict, Any, Optional, List, TypeVar, Generic
+import typing
+from typing import Any, Optional, List, TypeVar, Generic, MutableMapping, Callable
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.utils.paths import path_to_str
@@ -21,27 +22,33 @@ from neptune.new.internal.utils.paths import path_to_str
 T = TypeVar('T')
 
 
+# pylint: disable=unused-argument
+def _default_node_factory(path):
+    return {}
+
+
 class RunStructure(Generic[T]):
+    def __init__(self, node_factory: typing.Optional[Callable] = None):
+        if node_factory is None:
+            node_factory = _default_node_factory
 
-    def __init__(self):
-        self._structure = dict()
+        self._structure = node_factory(path=[])
+        self._node_factory = node_factory
+        self._node_type = type(self._structure)
 
-    def get_structure(self) -> Dict[str, Any]:
+    def get_structure(self) -> MutableMapping[str, Any]:
         return self._structure
 
     def get(self, path: List[str]) -> Optional[T]:
         ref = self._structure
 
         for index, part in enumerate(path):
-            if not isinstance(ref, dict):
+            if not isinstance(ref, self._node_type):
                 raise MetadataInconsistency("Cannot access path '{}': '{}' is already defined as an attribute, "
                                             "not a namespace".format(path_to_str(path), path_to_str(path[:index])))
             if part not in ref:
                 return None
             ref = ref[part]
-
-        if isinstance(ref, dict):
-            raise MetadataInconsistency("Cannot get attribute '{}'. It's a namespace".format(path_to_str(path)))
 
         return ref
 
@@ -49,15 +56,18 @@ class RunStructure(Generic[T]):
         ref = self._structure
         location, attribute_name = path[:-1], path[-1]
 
-        for part in location:
+        for idx, part in enumerate(location):
             if part not in ref:
-                ref[part] = {}
+                ref[part] = self._node_factory(location[:idx + 1])
             ref = ref[part]
-            if not isinstance(ref, dict):
+            if not isinstance(ref, self._node_type):
                 raise MetadataInconsistency("Cannot access path '{}': '{}' is already defined as an attribute, "
                                             "not a namespace".format(path_to_str(path), part))
 
-        if attribute_name in ref and isinstance(ref[attribute_name], dict):
+        if attribute_name in ref and isinstance(ref[attribute_name], self._node_type):
+            if isinstance(attr, self._node_type):
+                # in-between nodes are auto-created, so ignore it's OK unless we want to change the type
+                return
             raise MetadataInconsistency("Cannot set attribute '{}'. It's a namespace".format(path_to_str(path)))
 
         ref[attribute_name] = attr
@@ -65,7 +75,7 @@ class RunStructure(Generic[T]):
     def pop(self, path: List[str]) -> None:
         self._pop_impl(self._structure, path, path)
 
-    def _pop_impl(self, ref: dict, sub_path: List[str], attr_path: List[str]):
+    def _pop_impl(self, ref, sub_path: List[str], attr_path: List[str]):
         if not sub_path:
             return
 
@@ -74,7 +84,7 @@ class RunStructure(Generic[T]):
             raise MetadataInconsistency("Cannot delete {}. Attribute not found.".format(path_to_str(attr_path)))
 
         if not tail:
-            if isinstance(ref[head], dict):
+            if isinstance(ref[head], self._node_type):
                 raise MetadataInconsistency(
                     "Cannot delete {}. It's a namespace, not an attribute.".format(path_to_str(attr_path)))
             del ref[head]

@@ -339,6 +339,35 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(exp['params/toys'].fetch_last(), "hat")
         self.assertEqual(exp['params/nested/nested/deep_secret'].fetch_last(), 15)
 
+    def test_fetch_dict(self):
+        now = datetime.now()
+
+        exp = init(mode='debug', flush_period=0.5)
+        exp['params/int'] = 1
+        exp['params/float'] = 3.14
+        exp['params/bool'] = True
+        exp['params/datetime'] = now
+        exp['params/sub-namespace/int'] = 42
+        exp['params/sub-namespace/string'] = 'Some text'
+
+        # attributes to be ignored
+        exp['params/sub-namespace/string_series'].log('Some text #1')
+        exp['params/sub-namespace/int_series'].log(100)
+        exp['some/num/attr_name'] = FileVal.from_stream(BytesIO(b'Some stream'))
+
+        # pylint: disable=assignment-from-no-return
+        # that's a false positive, pylint looks at Handler.fetch()
+        params_dict = exp['params'].fetch()
+        self.assertDictEqual(params_dict, {
+            'int': 1,
+            'float': 3.14,
+            'bool': True,
+            'datetime': now.replace(microsecond=1000 * int(now.microsecond / 1000)),
+            'sub-namespace': {
+                'int': 42,
+                'string': 'Some text',
+            }
+        })
 
     @dataclass
     class FloatLike:

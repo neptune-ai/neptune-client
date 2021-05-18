@@ -33,11 +33,10 @@ class TestRunStructure(unittest.TestCase):
         with self.assertRaises(MetadataInconsistency):
             exp.get(["some", "path", "val", "nested", "nested"])
 
-    def test_get_ns_fails(self):
+    def test_get_ns(self):
         exp = RunStructure[int]()
         exp.set(["some", "path", "val"], 3)
-        with self.assertRaises(MetadataInconsistency):
-            exp.get(["some", "path"])
+        self.assertEqual(exp.get(["some", "path"]), {"val": 3})
 
     def test_set(self):
         exp = RunStructure[int]()

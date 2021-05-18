@@ -98,12 +98,6 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        if not isinstance(value, dict):
-            return self._assign_impl(value, wait)
-        for key, value in value.items():
-            self[key].assign(value, wait)
-
-    def _assign_impl(self, value, wait: bool = False) -> None:
         with self._run.lock():
             attr = self._run.get_attribute(self._path)
             if attr:
@@ -304,7 +298,7 @@ class Handler:
         raise NeptuneException('Should be never called.')
 
     def fetch(self):
-        """Fetches field value from Neptune servers.
+        """Fetches fields value or in case of a namespace fetches values of all non-File Atom fields as a dictionary.
 
         Available for following field types (`Field types docs page`_):
             * `Integer`
@@ -313,9 +307,10 @@ class Handler:
             * `String`
             * `DateTime`
             * `StringSet`
+            * `Namespace handler`
 
         Returns:
-            Value stored in the field.
+            Value stored in the field or in case of a namespace a dictionary containing all non-Atom fields values.
 
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types

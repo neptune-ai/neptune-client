@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import abc
+import typing
 import uuid
 from typing import List, Optional
 
@@ -149,4 +150,8 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_run_url(self, run_uuid: uuid, workspace: str, project_name: str, short_id: str) -> str:
+        pass
+
+    @abc.abstractmethod
+    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> typing.Union[typing.Mapping, dict]:
         pass

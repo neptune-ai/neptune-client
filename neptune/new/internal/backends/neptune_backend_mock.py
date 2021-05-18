@@ -71,6 +71,7 @@ from neptune.new.internal.operation import (
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils import base64_decode
+from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
@@ -79,6 +80,7 @@ from neptune.new.types.atoms.file import File
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.file_set import FileSet
+from neptune.new.types.namespace import Namespace
 from neptune.new.types.series.float_series import FloatSeries
 from neptune.new.types.series.file_series import FileSeries
 from neptune.new.types.series.string_series import StringSeries
@@ -268,6 +270,23 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_run_url(self, run_uuid: uuid, workspace: str, project_name: str, short_id: str) -> str:
         return f"offline/{run_uuid}"
 
+    def _get_attribute_value(self, value):
+        if isinstance(value, dict):
+            result = {}
+            for k, v in value.items():
+                mapped_value = self._get_attribute_value(v)
+                result[k] = mapped_value
+            return result
+        else:
+            attr_type = value.accept(self._attribute_type_converter_value_visitor).value
+            if hasattr(value, "value"):
+                return attr_type, value.value
+            else:
+                return attr_type, NoValue
+
+    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> dict:
+        return self._get_attribute_value(self._runs[run_uuid].get(path))
+
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 
         def visit_float(self, _: Float) -> AttributeType:
@@ -305,6 +324,9 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_git_ref(self, _: GitRef) -> AttributeType:
             return AttributeType.GIT_REF
+
+        def visit_namespace(self, _: Namespace) -> AttributeType:
+            raise NotImplementedError
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
 
