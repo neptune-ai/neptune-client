@@ -279,7 +279,7 @@ class NeptuneBackendMock(NeptuneBackend):
             else:
                 return attr_type, NoValue
 
-    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]) -> dict:
+    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> dict:
         return self._get_attribute_value(self._runs[run_uuid].get(path))
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):

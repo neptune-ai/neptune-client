@@ -597,7 +597,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_namespace_attributes(self, run_uuid: uuid.UUID, path: List[str]) -> Namespace:
+    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> Namespace:
         params = {
             'experimentId': str(run_uuid),
         }

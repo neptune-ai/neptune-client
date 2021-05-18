@@ -69,7 +69,7 @@ class Namespace(Attribute, MutableMapping):
         return result
 
     def fetch(self) -> dict:
-        namespace_values = self._backend.get_namespace_attributes(self._run_uuid, self._path)
+        namespace_values = self._backend.fetch_atom_attribute_values(self._run_uuid, self._path)
         return self._collect_atom_values(namespace_values)
 
 
