@@ -187,7 +187,7 @@ and skip the {bold}project{end} argument of {bold}neptune.init(){end}:
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/workspace-project-and-user-management
-    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/getting-started/installation#setting-the-project-name
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -216,7 +216,7 @@ The URL to this project looks like this: https://app.neptune.ai/neptune-ai/credi
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/workspace-project-and-user-management
-    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/getting-started/installation#setting-the-project-name
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -233,7 +233,7 @@ class NeptuneMissingApiTokenException(NeptuneException):
 Neptune client couldn't find your API token.
 
 Learn how to get it in this docs page:
-https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
 
 There are two options to add it:
     - specify it in your code 
@@ -259,7 +259,7 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
-    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/getting-started/installation#setting-the-project-name
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -277,7 +277,7 @@ Provided API token is invalid.
 Make sure you copied and provided your API token correctly.
 
 Learn how to get it in this docs page:
-https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
 
 There are two options to add it:
     - specify it in your code 
@@ -303,7 +303,7 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
-    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/getting-started/installation#setting-the-project-name
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -420,12 +420,12 @@ What should I do?
         {python}run = neptune.init(mode="offline"){end}
         
 You can read in detail how it works and how to upload your data on the following doc pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes#offline
-    - https://docs.neptune.ai/advanced-user-guides/uploading-offline-data
+    - https://docs.neptune.ai/you-should-know/connection-modes#offline
+    - https://docs.neptune.ai/you-should-know/connection-modes#uploading-offline-data
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connectivity-issues
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes#checking-synchronization-status
+    - https://docs.neptune.ai/you-should-know/connection-modes
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -461,7 +461,7 @@ class Unauthorized(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      See: https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
       
     - Verify if you set up your project correctly
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
@@ -486,7 +486,7 @@ class Forbidden(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      See: https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
       
     - Verify if you set up your project correctly
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
@@ -515,7 +515,7 @@ You can set connection mode when creating a new run:
     {python}run = neptune.init(mode="async"){end}
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -583,7 +583,7 @@ Or:
     {bash}pip install neptune-client[{framework}]{end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/essentials/integrations
+    - https://docs.neptune.ai/integrations-and-supported-tools/intro
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -605,7 +605,7 @@ What should I do?
     - Go to your projects and remove runs or model metadata you don't need
     - ... or update your subscription plan here: https://app.neptune.ai/-/subscription
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({}.items()) + list(STYLES.items()))
@@ -630,9 +630,9 @@ wait for all the requests sent by invoking:
 Remember that each use of {python}wait{end} introduces a delay in code execution.
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         inputs = dict(list({'attribute_path': attribute_path}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
