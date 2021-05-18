@@ -25,6 +25,7 @@ def main():
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
               "lightgbm": ["neptune-lightgbm"],
+              "pytorch-lightning": ["neptune-pytorch-lightning"],
               "optuna": ["neptune-optuna"],
               "sacred": ["neptune-sacred"],
               "sklearn": ["neptune-sklearn"],
