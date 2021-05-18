@@ -108,7 +108,7 @@ class TestRun(unittest.TestCase):
         self.assertEqual(exp['simple_types/list'].fetch(), str(list(range(10))))
 
     def test_assign_false(self):
-        # https://neptune-labs.atlassian.net/browse/NPT-10137
+        # https://github.com/neptune-ai/neptune-client/issues/555
         exp = init(mode="debug")
         exp["params"] = {'predictor.cheat': False}
 
