@@ -106,3 +106,10 @@ class TestRun(unittest.TestCase):
         self.assertEqual(exp['simple_types/datetime'].fetch(),
                          now.replace(microsecond=1000 * int(now.microsecond / 1000)))
         self.assertEqual(exp['simple_types/list'].fetch(), str(list(range(10))))
+
+    def test_assign_false(self):
+        # https://github.com/neptune-ai/neptune-client/issues/555
+        exp = init(mode="debug")
+        exp["params"] = {'predictor.cheat': False}
+
+        self.assertFalse(exp["params/predictor.cheat"].fetch())

@@ -151,7 +151,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
         visitor = NeptuneBackendMock.NewValueOpVisitor(op.path, val)
         new_val = visitor.visit(op)
-        if new_val:
+        if new_val is not None:
             run.set(op.path, new_val)
         else:
             run.pop(op.path)
