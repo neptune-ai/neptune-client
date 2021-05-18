@@ -108,7 +108,7 @@ def base64_decode(data: str) -> bytes:
 def get_absolute_paths(file_globs: Iterable[str]) -> List[str]:
     expanded_paths: Set[str] = set()
     for file_glob in file_globs:
-        expanded_paths |= set(glob(file_glob))
+        expanded_paths |= set(glob(file_glob, recursive=True))
     return list(os.path.abspath(expanded_file) for expanded_file in expanded_paths)
 
 
