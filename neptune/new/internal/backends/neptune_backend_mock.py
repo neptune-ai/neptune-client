@@ -44,6 +44,7 @@ from neptune.new.internal.backends.api_model import (
     StringSeriesValues,
     FloatSeriesValues,
     ImageSeriesValues,
+    StringPointValue,
 )
 from neptune.new.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -150,7 +151,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
         visitor = NeptuneBackendMock.NewValueOpVisitor(op.path, val)
         new_val = visitor.visit(op)
-        if new_val:
+        if new_val is not None:
             run.set(op.path, new_val)
         else:
             run.pop(op.path)
@@ -246,7 +247,11 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_string_series_values(self, run_uuid: uuid.UUID, path: List[str],
                                  offset: int, limit: int) -> StringSeriesValues:
-        return StringSeriesValues(0, [])
+        val = self._get_attribute(run_uuid, path, StringSeries)
+        return StringSeriesValues(
+            len(val.values),
+            [StringPointValue(timestampMillis=-1, step=idx, value=v) for idx, v in enumerate(val.values)]
+        )
 
     def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
                                 offset: int, limit: int) -> FloatSeriesValues:

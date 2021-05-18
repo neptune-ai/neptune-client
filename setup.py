@@ -26,6 +26,7 @@ def main():
             extras_require={
               "lightgbm": ["neptune-lightgbm"],
               "pytorch-lightning": ["neptune-pytorch-lightning"],
+              "optuna": ["neptune-optuna"],
               "sacred": ["neptune-sacred"],
               "sklearn": ["neptune-sklearn"],
               "tensorflow-keras": ["neptune-tensorflow-keras"],

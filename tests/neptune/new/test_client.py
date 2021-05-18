@@ -117,7 +117,7 @@ class TestClient(unittest.TestCase):
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
     @patch("neptune.new.internal.init_impl.os.path.isfile", new=lambda file: "." in file)
-    @patch('neptune.new.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.new.internal.utils.glob', new=lambda path, recursive=False: [path.replace('*', 'file.txt')])
     @patch('neptune.new.internal.utils.os.path.abspath',
            new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
     @patch('neptune.new.internal.utils.os.getcwd', new=lambda: "/home/user/main_dir")
@@ -159,7 +159,7 @@ class TestClient(unittest.TestCase):
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
     @patch("neptune.new.internal.utils.source_code.get_common_root", new=lambda _: None)
     @patch("neptune.new.internal.init_impl.os.path.isfile", new=lambda file: "." in file)
-    @patch('neptune.new.internal.utils.glob', new=lambda path: [path.replace('*', 'file.txt')])
+    @patch('neptune.new.internal.utils.glob', new=lambda path, recursive=False: [path.replace('*', 'file.txt')])
     @patch('neptune.new.internal.utils.os.path.abspath',
            new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
     def test_entrypoint_without_common_root(self):
