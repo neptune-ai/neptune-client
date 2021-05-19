@@ -20,6 +20,8 @@ import os
 from glob import glob
 from typing import Union, TypeVar, Iterable, List, Set, Optional, Mapping
 
+from neptune.new.internal.utils import limits
+
 T = TypeVar('T')
 
 _logger = logging.getLogger(__name__)
@@ -127,22 +129,16 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
         return None
 
 
-STREAM_SIZE_LIMIT_MB = 15
-
-
 def get_stream_content(stream: IOBase, seek: Optional[int] = None) -> (Optional[str], str):
     if seek is not None and stream.seekable():
         stream.seek(seek)
 
-    content = stream.read(STREAM_SIZE_LIMIT_MB * 1024 * 1024 + 1)
+    content = stream.read(limits.STREAM_SIZE_LIMIT_BYTES + 1)
     default_ext = "txt" if isinstance(content, str) else "bin"
     if isinstance(content, str):
         content = content.encode('utf-8')
 
-    if len(content) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
-        _logger.warning('Your stream is larger than %dMB. '
-                        'Neptune supports saving files from streams smaller than %dMB.',
-                        STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
+    if limits.stream_size_exceeds_limit(len(content)):
         return None, default_ext
 
     while True:
@@ -157,9 +153,7 @@ def get_stream_content(stream: IOBase, seek: Optional[int] = None) -> (Optional[
                 content.seek(0, 2)
             if isinstance(chunk, str):
                 chunk = chunk.encode('utf-8')
-            if content.tell() + len(chunk) > STREAM_SIZE_LIMIT_MB * 1024 * 1024:
-                _logger.warning('Your stream is larger than %dMB. Neptune supports saving files smaller than %dMB.',
-                                STREAM_SIZE_LIMIT_MB, STREAM_SIZE_LIMIT_MB)
+            if limits.stream_size_exceeds_limit(content.tell() + len(chunk)):
                 return None, default_ext
             content.write(chunk)
     if isinstance(content, BytesIO):
