@@ -387,7 +387,7 @@ What should I do?
     - Check if your computer is connected to the internet.
     - Check if your computer should use any proxy to access internet.
       If so, you may want to use {python}proxies{end} parameter of {python}neptune.init(){end} function.
-      See (TODO: paste docs link here)
+      See https://docs.neptune.ai/api-reference/neptune#init
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -563,7 +563,7 @@ before you ran:
     {python}neptune.get_last_exp(){end}
 
 You may also want to check the following docs pages:
-    - TODO: paste docs link here
+    - https://docs.neptune.ai/api-reference/neptune#get_last_run
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """.format(**STYLES)
