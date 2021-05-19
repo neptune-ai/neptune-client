@@ -118,7 +118,7 @@ class AsyncOperationProcessor(OperationProcessor):
             self._queue.wait_for_empty(wait_time)
             size_remaining = self._queue.size()
             already_synced = initial_queue_size - size_remaining
-            already_synced_proc = (already_synced / initial_queue_size) * 100
+            already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             if size_remaining == 0:
                 click.echo(f"All {initial_queue_size} operations synced, thanks for waiting!")
                 return
