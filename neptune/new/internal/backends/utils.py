@@ -45,16 +45,16 @@ _logger = logging.getLogger(__name__)
 
 
 MAX_RETRY_TIME = 30
-retries_timeout = os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, 60)
+retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
 
 def with_api_exceptions_handler(func):
 
     def wrapper(*args, **kwargs):
         last_exception = None
-        start_time = time.time()
+        start_time = time.monotonic()
         for retry in itertools.count(0):
-            if time.time() - start_time > retries_timeout:
+            if time.monotonic() - start_time > retries_timeout:
                 break
 
             try:
@@ -65,7 +65,7 @@ def with_api_exceptions_handler(func):
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
                     HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway,
                     HTTPTooManyRequests, HTTPServerError) as e:
-                time.sleep(min(2 ** retry, MAX_RETRY_TIME))
+                time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
             except HTTPUnauthorized:
@@ -85,7 +85,7 @@ def with_api_exceptions_handler(func):
                         HTTPGatewayTimeout.status_code,
                         HTTPTooManyRequests.status_code,
                         HTTPServerError.status_code):
-                    time.sleep(min(2 ** retry, MAX_RETRY_TIME))
+                    time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                     last_exception = e
                     continue
                 elif status_code == HTTPUnauthorized.status_code:

@@ -53,7 +53,7 @@ from neptune.new.internal.operation import Operation
 # Set in CLI entry points block, patched in tests
 backend: NeptuneBackend = None
 
-retries_timeout = os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, 60 * 60)
+retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
 def get_run(run_id: str) -> Optional[ApiRun]:
@@ -220,13 +220,13 @@ def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
         if not batch:
             break
 
-        start_time = time.time()
+        start_time = time.monotonic()
         while True:
             try:
                 backend.execute_operations(run_uuid, batch)
                 break
             except NeptuneConnectionLostException as ex:
-                if time.time() - start_time > retries_timeout:
+                if time.monotonic() - start_time > retries_timeout:
                     raise ex
                 click.echo(f"Experiencing connection interruptions. "
                            f"Will try to reestablish communication with Neptune.",
