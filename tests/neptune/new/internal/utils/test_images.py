@@ -213,7 +213,7 @@ class TestImage(unittest.TestCase):
         self.assertEqual(
             caplog.output, [
                 'WARNING:neptune.new.internal.utils.limits:You are attempting to create an in-memory file that'
-                ' is 38.1MB large. Neptune supports logging files in-memory objects smaller than 32MB. '
+                ' is 38.1MB large. Neptune supports logging in-memory file objects smaller than 32MB. '
                 'Resize or increase compression of this object'
             ]
         )

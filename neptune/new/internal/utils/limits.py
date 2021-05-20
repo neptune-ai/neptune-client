@@ -41,7 +41,7 @@ def image_size_exceeds_limit(content_size):
 def file_size_exceeds_limit(content_size):
     if content_size > _IN_MEMORY_SIZE_LIMIT_MB * BYTES_IN_MB:
         _logger.warning('You are attempting to create an in-memory file that is %.1fMB large. '
-                        'Neptune supports logging files in-memory objects smaller than %dMB. '
+                        'Neptune supports logging in-memory file objects smaller than %dMB. '
                         'Resize or increase compression of this object',
                         content_size / BYTES_IN_MB,
                         _IN_MEMORY_SIZE_LIMIT_MB)
