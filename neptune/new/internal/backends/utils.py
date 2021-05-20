@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import itertools
 import logging
+import os
 import socket
 import sys
 import time
@@ -34,6 +35,7 @@ from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
 from requests import Session
 
+from neptune.new.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, \
     Unauthorized, Forbidden, CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
 from neptune.new.internal.backends.api_model import ClientConfig
@@ -42,11 +44,19 @@ from neptune.new.internal.utils import replace_patch_version
 _logger = logging.getLogger(__name__)
 
 
+MAX_RETRY_TIME = 30
+retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
+
+
 def with_api_exceptions_handler(func):
 
     def wrapper(*args, **kwargs):
         last_exception = None
-        for retry in range(0, 3):
+        start_time = time.monotonic()
+        for retry in itertools.count(0):
+            if time.monotonic() - start_time > retries_timeout:
+                break
+
             try:
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError as e:
@@ -55,7 +65,7 @@ def with_api_exceptions_handler(func):
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
                     HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway,
                     HTTPTooManyRequests, HTTPServerError) as e:
-                time.sleep(2 ** retry)
+                time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
             except HTTPUnauthorized:
@@ -75,7 +85,7 @@ def with_api_exceptions_handler(func):
                         HTTPGatewayTimeout.status_code,
                         HTTPTooManyRequests.status_code,
                         HTTPServerError.status_code):
-                    time.sleep(2 ** retry)
+                    time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                     last_exception = e
                     continue
                 elif status_code == HTTPUnauthorized.status_code:

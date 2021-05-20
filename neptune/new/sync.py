@@ -18,6 +18,7 @@ import logging
 import os
 import sys
 import textwrap
+import time
 import uuid
 from pathlib import Path
 from typing import Sequence, Iterable, List, Optional, Tuple, Any
@@ -30,10 +31,10 @@ from neptune.new.constants import (
     OFFLINE_DIRECTORY,
     OFFLINE_NAME_PREFIX,
 )
-from neptune.new.envs import PROJECT_ENV_NAME
+from neptune.new.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     CannotSynchronizeOfflineRunsWithoutProject,
-    NeptuneException,
+    NeptuneConnectionLostException, NeptuneException,
     ProjectNotFound,
     RunNotFound,
 )
@@ -51,6 +52,8 @@ from neptune.new.internal.operation import Operation
 
 # Set in CLI entry points block, patched in tests
 backend: NeptuneBackend = None
+
+retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
 def get_run(run_id: str) -> Optional[ApiRun]:
@@ -216,7 +219,19 @@ def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
         batch, version = disk_queue.get_batch(1000)
         if not batch:
             break
-        backend.execute_operations(run_uuid, batch)
+
+        start_time = time.monotonic()
+        while True:
+            try:
+                backend.execute_operations(run_uuid, batch)
+                break
+            except NeptuneConnectionLostException as ex:
+                if time.monotonic() - start_time > retries_timeout:
+                    raise ex
+                click.echo(f"Experiencing connection interruptions. "
+                           f"Will try to reestablish communication with Neptune.",
+                           sys.stderr)
+
         disk_queue.ack(version)
 
 
