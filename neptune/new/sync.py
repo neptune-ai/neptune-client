@@ -221,14 +221,16 @@ def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
             break
 
         start_time = time.time()
-        try:
-            backend.execute_operations(run_uuid, batch)
-        except NeptuneConnectionLostException as ex:
-            if time.time() - start_time > retries_timeout:
-                raise ex
-            click.echo(f"Experiencing connection interruptions. "
-                       f"Will try to reestablish communication with Neptune.",
-                       sys.stderr)
+        while True:
+            try:
+                backend.execute_operations(run_uuid, batch)
+                break
+            except NeptuneConnectionLostException as ex:
+                if time.time() - start_time > retries_timeout:
+                    raise ex
+                click.echo(f"Experiencing connection interruptions. "
+                           f"Will try to reestablish communication with Neptune.",
+                           sys.stderr)
 
         disk_queue.ack(version)
 
