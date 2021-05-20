@@ -25,6 +25,7 @@ from packaging import version
 from pandas import DataFrame
 
 from neptune.new.exceptions import PlotlyIncompatibilityException
+from neptune.new.internal.utils import limits
 
 _logger = logging.getLogger(__name__)
 
@@ -44,17 +45,10 @@ except ImportError:
         pass
 
 
-IMAGE_SIZE_LIMIT_MB = 15
-
-
 def get_image_content(image) -> Optional[bytes]:
     content = _image_to_bytes(image)
 
-    if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
-        _logger.warning('Your image is larger than %dMB. Neptune supports logging images smaller than %dMB. '
-                        'Resize or increase compression of this image',
-                        IMAGE_SIZE_LIMIT_MB,
-                        IMAGE_SIZE_LIMIT_MB)
+    if limits.image_size_exceeds_limit(len(content)):
         return None
 
     return content
@@ -63,12 +57,7 @@ def get_image_content(image) -> Optional[bytes]:
 def get_html_content(chart) -> Optional[str]:
     content = _to_html(chart)
 
-    if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
-        _logger.warning('Your file is larger than %dMB. '
-                        'Neptune supports logging files in-memory objects smaller than %dMB. '
-                        'Resize or increase compression of this object',
-                        IMAGE_SIZE_LIMIT_MB,
-                        IMAGE_SIZE_LIMIT_MB)
+    if limits.file_size_exceeds_limit(len(content)):
         return None
 
     return content
@@ -77,12 +66,7 @@ def get_html_content(chart) -> Optional[str]:
 def get_pickle_content(obj) -> Optional[bytes]:
     content = _export_pickle(obj)
 
-    if len(content) > IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
-        _logger.warning('Your file is larger than %dMB. '
-                        'Neptune supports logging files in-memory objects smaller than %dMB. '
-                        'Resize or increase compression of this object',
-                        IMAGE_SIZE_LIMIT_MB,
-                        IMAGE_SIZE_LIMIT_MB)
+    if limits.file_size_exceeds_limit(len(content)):
         return None
 
     return content

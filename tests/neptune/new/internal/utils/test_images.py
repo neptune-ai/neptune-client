@@ -20,6 +20,7 @@ import os
 import sys
 import unittest
 from typing import Optional
+from unittest import mock
 from uuid import uuid4
 
 import matplotlib
@@ -197,6 +198,25 @@ class TestImage(unittest.TestCase):
         # then
         self.assertTrue(result.startswith(
             '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">'))
+
+    def test_get_oversize_html_from_pandas(self):
+        # given
+        table = mock.Mock(spec=pandas.DataFrame)
+        table.to_html.return_value = 40_000_000 * 'a'
+
+        # when
+        with self.assertLogs() as caplog:
+            result = get_html_content(table)
+
+        # then
+        self.assertIsNone(result)
+        self.assertEqual(
+            caplog.output, [
+                'WARNING:neptune.new.internal.utils.limits:You are attempting to create an in-memory file that'
+                ' is 38.1MB large. Neptune supports logging in-memory file objects smaller than 32MB. '
+                'Resize or increase compression of this object'
+            ]
+        )
 
     @staticmethod
     def _encode_pil_image(image: Image) -> bytes:
