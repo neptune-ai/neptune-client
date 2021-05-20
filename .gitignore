@@ -53,6 +53,8 @@ results-*.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+# tapfiles
+*.tap
 
 # Translations
 *.mo
