@@ -2,7 +2,7 @@ clean:
 	rm -fr .tox/ dist/ VERSION
 
 prepare:
-	pip3 install -r requirements.txt -r test_requirements.txt
+	pip3 install requirements/test_requirements.txt
 
 build:
 	python3 setup.py sdist
