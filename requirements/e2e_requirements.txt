@@ -1,4 +1,5 @@
 -r requirements.txt
 
+Faker
 pytest
 pytest-tap
