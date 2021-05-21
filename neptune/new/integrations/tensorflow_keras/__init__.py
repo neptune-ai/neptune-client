@@ -16,7 +16,7 @@
 
 try:
     # pylint: disable=import-error
-    from neptune_tensorflow_keras.impl import NeptuneCallback
+    from neptune_tensorflow_keras.impl import *
 except ModuleNotFoundError as e:
     if e.name == 'neptune_tensorflow_keras':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException

@@ -16,7 +16,7 @@
 
 try:
     # pylint: disable=import-error
-    from neptune_xgboost.impl import NeptuneCallback
+    from neptune_xgboost.impl import *
 except ModuleNotFoundError as e:
     if e.name == 'neptune_xgboost':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
