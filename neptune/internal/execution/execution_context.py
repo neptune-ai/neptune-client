@@ -165,6 +165,6 @@ class ExecutionContext(object):
 
         self._hardware_metric_thread = HardwareMetricReportingThread(
             metric_service=metric_service,
-            metric_sending_interval_seconds=3
+            metric_sending_interval_seconds=10
         )
         self._hardware_metric_thread.start()
