@@ -21,6 +21,7 @@ import warnings
 from io import StringIO, BytesIO
 from typing import Optional
 
+import click
 from packaging import version
 from pandas import DataFrame
 
@@ -157,6 +158,20 @@ def _image_content_to_html(content: bytes) -> str:
 
 
 def _get_numpy_as_image(array):
+    data_range_warnings = []
+    array_min = array.min()
+    array_max = array.max()
+    if array_min < 0:
+        data_range_warnings.append(f"the smallest value in the array is {array_min}")
+    if array_max > 1:
+        data_range_warnings.append(f"the largest value in the array is {array_max}")
+    if data_range_warnings:
+        data_range_warning_message = (" and ".join(data_range_warnings) + ". ").capitalize()
+        click.echo(
+            f"{data_range_warning_message}"
+            f"To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
+            err=True
+        )
     array *= 255
     shape = array.shape
     if len(shape) == 2:
