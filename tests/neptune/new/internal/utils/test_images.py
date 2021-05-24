@@ -87,8 +87,8 @@ class TestImage(unittest.TestCase):
             self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
         self.assertEqual(
             stderr.getvalue(),
-            "Image values should be in [0, 1] range, but smallest array value is -3 and greatest array value is 6."
-            " Colour values may be interpreted incorrectly.\n"
+            "The smallest value in the array is -3 and the largest value in the array is 6."
+            " To be interpreted as colors correctly values in the array need to be in the [0, 1] range.\n"
         )
 
     def test_get_image_content_from_rgb_array(self):

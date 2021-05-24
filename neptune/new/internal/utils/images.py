@@ -162,14 +162,14 @@ def _get_numpy_as_image(array):
     array_min = array.min()
     array_max = array.max()
     if array_min < 0:
-        data_range_warnings.append(f"smallest array value is {array_min}")
+        data_range_warnings.append(f"the smallest value in the array is {array_min}")
     if array_max > 1:
-        data_range_warnings.append(f"greatest array value is {array_max}")
+        data_range_warnings.append(f"the largest value in the array is {array_max}")
     if data_range_warnings:
-        data_range_warning_message = " and ".join(data_range_warnings)
+        data_range_warning_message = (" and ".join(data_range_warnings) + ". ").capitalize()
         click.echo(
-            f"Image values should be in [0, 1] range, but {data_range_warning_message}."
-            f" Colour values may be interpreted incorrectly.",
+            f"{data_range_warning_message}"
+            f"To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
             err=True
         )
     array *= 255
