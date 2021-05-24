@@ -338,7 +338,9 @@ def init(project: Optional[str] = None,
         if capture_stderr and not _run.exists(stderr_path):
             _run.define(stderr_path, StringSeries([]))
 
-        upload_source_code(source_files=source_files, run=_run)
+        if run is None or source_files is not None:
+            # upload sources ONLY if creating a new run
+            upload_source_code(source_files=source_files, run=_run)
 
     _run.start()
 
