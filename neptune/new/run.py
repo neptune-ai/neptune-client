@@ -170,7 +170,7 @@ class Run(AbstractContextManager):
         You can use this method to quickly retrieve previous run's parameters.
 
         Returns:
-            `dict` containing all non-Atom fields values.
+            `dict` containing all non-File Atom fields values.
 
         Examples:
             >>> import neptune.new as neptune
