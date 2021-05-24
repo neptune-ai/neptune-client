@@ -339,7 +339,7 @@ def init(project: Optional[str] = None,
             _run.define(stderr_path, StringSeries([]))
 
         if run is None or source_files is not None:
-            # upload sources ONLY if creating a new run
+            # upload default sources ONLY if creating a new run
             upload_source_code(source_files=source_files, run=_run)
 
     _run.start()
