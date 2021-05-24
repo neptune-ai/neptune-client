@@ -34,10 +34,7 @@ def with_check_if_file_appears(filepath):
     File is removed if exists when entering the block."""
     _remove_file_if_exists(filepath)
 
-    try:
-        yield
-        assert os.path.exists(filepath)
-    except:
-        raise
-    else:
-        _remove_file_if_exists(filepath)
+    yield
+
+    assert os.path.exists(filepath)
+    _remove_file_if_exists(filepath)

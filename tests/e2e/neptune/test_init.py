@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 
+from faker import Faker
+
 import neptune.new as neptune
 from tests.e2e.base import BaseE2ETest
 from tests.e2e.utils import with_check_if_file_appears
-from faker import Faker
 
 fake = Faker()
 
@@ -34,7 +35,7 @@ class TestInit(BaseE2ETest):
 
         exp.sync()
 
-        exp2 = neptune.init(run=exp._short_id)
+        exp2 = neptune.init(run=exp._short_id)  # pylint: disable=protected-access
         assert exp2[key].fetch() == val
 
     def test_send_source_code(self):

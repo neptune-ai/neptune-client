@@ -17,6 +17,9 @@ jobs:
       - name: Install test dependencies
         run: |
           pip install -r requirements/test_requirements.txt
+      - name: Install e2e dependencies (just for pylint check)
+        run: |
+          pip install -r requirements/e2e_requirements.txt
       - name: Lint
         run : |
           python -m pylint -j 0 -f parseable neptune tests
