@@ -58,6 +58,11 @@ class NeptuneHandler(logging.Handler):
         super().__init__(level=level)
         self._logger = Logger(run, path)
 
+    def _is_ignored(self, record: logging.LogRecord):
+        """ these libraries log during sending logs, which would cause recursive logging """
+        return record.name in ('bravado.client', 'urllib3.connectionpool', 'requests_oauthlib.oauth2_session')
+
     def emit(self, record: logging.LogRecord) -> None:
-        message = self.format(record)
-        self._logger.log(message)
+        if not self._is_ignored(record):
+            message = self.format(record)
+            self._logger.log(message)
