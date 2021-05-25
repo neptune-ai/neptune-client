@@ -27,7 +27,7 @@ import click
 from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import attribute_type_to_atom
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.namespace import NamespaceBuilder
+from neptune.new.attributes.namespace import NamespaceBuilder, Namespace as NamespaceAttr
 from neptune.new.exceptions import MetadataInconsistency, NeptuneException
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
@@ -108,7 +108,7 @@ class Run(AbstractContextManager):
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
-        self._structure = RunStructure[Attribute](NamespaceBuilder(self))
+        self._structure: RunStructure[Attribute, NamespaceAttr] = RunStructure(NamespaceBuilder(self))
         self._lock = threading.RLock()
         self._started = False
         self._workspace = workspace
@@ -277,14 +277,16 @@ class Run(AbstractContextManager):
         automated workflows.
 
         .. danger::
-            The returned object is a shallow copy of an internal run's structure.
-            Any modifications to it may result in tracking malfunction.
+            The returned object is a deep copy of an internal run's structure.
 
         Returns:
             ``dict``: with the run's metadata structure.
 
         """
-        return self._structure.get_structure()
+
+        # This is very weird pylint false-positive.
+        # pylint: disable=no-member
+        return self._structure.get_structure().to_dict()
 
     def print_structure(self) -> None:
         """Pretty prints the structure of the run's metadata.

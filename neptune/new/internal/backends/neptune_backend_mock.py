@@ -95,7 +95,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
-        self._runs: Dict[uuid.UUID, RunStructure[Value]] = dict()
+        self._runs: Dict[uuid.UUID, RunStructure[Value, dict]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
 
     def get_display_address(self) -> str:
@@ -113,7 +113,7 @@ class NeptuneBackendMock(NeptuneBackend):
                    ) -> ApiRun:
         short_id = "OFFLINE-{}".format(len(self._runs) + 1)
         new_run_uuid = uuid.uuid4()
-        self._runs[new_run_uuid] = RunStructure[Value]()
+        self._runs[new_run_uuid] = RunStructure[Value, dict]()
         self._runs[new_run_uuid].set(["sys", "id"], String(short_id))
         self._runs[new_run_uuid].set(["sys", "state"], String("running"))
         self._runs[new_run_uuid].set(["sys", "owner"], String("offline_user"))

@@ -14,12 +14,13 @@
 # limitations under the License.
 #
 import typing
-from typing import Any, Optional, List, TypeVar, Generic, MutableMapping, Callable
+from typing import Optional, List, TypeVar, Generic, Callable
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.utils.paths import path_to_str
 
 T = TypeVar('T')
+Node = TypeVar('Node')
 
 
 # pylint: disable=unused-argument
@@ -27,8 +28,8 @@ def _default_node_factory(path):
     return {}
 
 
-class RunStructure(Generic[T]):
-    def __init__(self, node_factory: typing.Optional[Callable] = None):
+class RunStructure(Generic[T, Node]):
+    def __init__(self, node_factory: typing.Optional[Callable[[List[str]], Node]] = None):
         if node_factory is None:
             node_factory = _default_node_factory
 
@@ -36,7 +37,7 @@ class RunStructure(Generic[T]):
         self._node_factory = node_factory
         self._node_type = type(self._structure)
 
-    def get_structure(self) -> MutableMapping[str, Any]:
+    def get_structure(self) -> Node:
         return self._structure
 
     def get(self, path: List[str]) -> Optional[T]:
