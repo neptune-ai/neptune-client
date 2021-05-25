@@ -112,6 +112,7 @@ Please contact Neptune support.
 class ClientHttpError(NeptuneException):
     def __init__(self, status, response):
         self.status = status
+        self.response = response
         message = """
 {h1}
 ----ClientHttpError-----------------------------------------------------------------------

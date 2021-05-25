@@ -291,8 +291,9 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         # Upload operations should be done first since they are idempotent
         errors.extend(
-            self._execute_upload_operations(run_uuid=run_uuid,
-                                            upload_operations=upload_operations)
+            self._execute_upload_operations_with_400_retry(
+                run_uuid=run_uuid,
+                upload_operations=upload_operations)
         )
 
         if other_operations:
@@ -337,6 +338,17 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise InternalClientError("Upload operation in neither File or FileSet")
 
         return errors
+
+    def _execute_upload_operations_with_400_retry(
+            self,
+            run_uuid: uuid.UUID,
+            upload_operations: List[Operation]) -> List[NeptuneException]:
+        while True:
+            try:
+                return self._execute_upload_operations(run_uuid, upload_operations)
+            except ClientHttpError as ex:
+                if "Length of stream does not match given range" not in ex.response:
+                    raise ex
 
     @with_api_exceptions_handler
     def _execute_operations(self,
