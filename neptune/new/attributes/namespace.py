@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from collections.abc import MutableMapping
-from typing import TYPE_CHECKING, Iterator, List, Mapping, Union
+from typing import Any, Dict, TYPE_CHECKING, Iterator, List, Mapping, Union
 
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.internal.utils.generic_attribute_mapper import atomic_attribute_types_map, NoValue
@@ -46,6 +46,15 @@ class Namespace(Attribute, MutableMapping):
 
     def __iter__(self) -> Iterator[str]:
         yield from self._attributes.__iter__()
+
+    def to_dict(self) -> Dict[str, Any]:
+        result = {}
+        for key, value in self._attributes.items():
+            if isinstance(value, Namespace):
+                result[key] = value.to_dict()
+            else:
+                result[key] = value
+        return result
 
     def assign(self, value: Union[NamespaceVal, dict, Mapping], wait: bool = False):
         if not isinstance(value, NamespaceVal):
