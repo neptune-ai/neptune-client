@@ -64,7 +64,7 @@ class NeptuneHandler(logging.Handler):
         if not hasattr(self._thread_local, "inside_write"):
             self._thread_local.inside_write = False
 
-        if self._run.started and not self._thread_local.inside_write:
+        if self._run._started and not self._thread_local.inside_write:  # pylint: disable=protected-access
             try:
                 self._thread_local.inside_write = True
                 message = self.format(record)

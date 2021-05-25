@@ -194,10 +194,6 @@ class Run(AbstractContextManager):
     def ping(self):
         self._backend.ping_run(self._uuid)
 
-    @property
-    def started(self):
-        return self._started
-
     def start(self):
         atexit.register(self._shutdown_hook)
         self._op_processor.start()
