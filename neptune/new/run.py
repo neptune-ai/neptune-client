@@ -232,7 +232,7 @@ class Run(AbstractContextManager):
 
             >>> import neptune.new as neptune
 
-            >>> # If you are running consecutibe training jobs from the same script
+            >>> # If you are running consecutive training jobs from the same script
             ... # stop the tracked runs manually at the end of single training job
             ... for config in configs:
             ...   run = neptune.init()
