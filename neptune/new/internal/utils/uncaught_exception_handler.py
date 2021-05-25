@@ -41,11 +41,11 @@ class UncaughtExceptionHandler:
             def exception_handler(exc_type, exc_val, exc_tb):
                 header_lines = [
                     f"An uncaught exception occurred while run was active on worker {get_hostname()}.",
-                    "Making run as failed",
+                    "Marking run as failed",
                     "Traceback:"
                 ]
 
-                traceback_lines = header_lines + traceback.format_tb(exc_tb) + [repr(exc_val)]
+                traceback_lines = header_lines + traceback.format_tb(exc_tb) + str(exc_val).split("\n")
                 for _, handler in self._handlers.items():
                     handler(traceback_lines)
 
