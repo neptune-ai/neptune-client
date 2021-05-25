@@ -101,7 +101,8 @@ class Run(AbstractContextManager):
             background_job: BackgroundJob,
             workspace: str,
             project_name: str,
-            short_id: str
+            short_id: str,
+            monitoring_namespace: str = "monitoring",
     ):
         self._uuid = _uuid
         self._backend = backend
@@ -113,6 +114,7 @@ class Run(AbstractContextManager):
         self._workspace = workspace
         self._project_name = project_name
         self._short_id = short_id
+        self.monitoring_namespace = monitoring_namespace
 
         Run.last_run = self
 
@@ -230,7 +232,7 @@ class Run(AbstractContextManager):
 
             >>> import neptune.new as neptune
 
-            >>> # If you are running consecutibe training jobs from the same script
+            >>> # If you are running consecutive training jobs from the same script
             ... # stop the tracked runs manually at the end of single training job
             ... for config in configs:
             ...   run = neptune.init()

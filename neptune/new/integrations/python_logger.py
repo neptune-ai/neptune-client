@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 import logging
+import threading
 
 from neptune.new import Run
-from neptune.new.attributes.constants import MONITORING_DEFAULT_LOG_HANDLER_ATTRIBUTE_PATH
 from neptune.new.internal.utils import verify_type
 from neptune.new.logging import Logger
 
@@ -52,12 +52,22 @@ class NeptuneHandler(logging.Handler):
         verify_type("run", run, Run)
         verify_type("level", level, int)
         if path is None:
-            path = MONITORING_DEFAULT_LOG_HANDLER_ATTRIBUTE_PATH
+            path = f"{run.monitoring_namespace}/python_logger"
         verify_type("path", path, str)
 
         super().__init__(level=level)
+        self._run = run
         self._logger = Logger(run, path)
+        self._thread_local = threading.local()
 
     def emit(self, record: logging.LogRecord) -> None:
-        message = self.format(record)
-        self._logger.log(message)
+        if not hasattr(self._thread_local, "inside_write"):
+            self._thread_local.inside_write = False
+
+        if self._run._started and not self._thread_local.inside_write:  # pylint: disable=protected-access
+            try:
+                self._thread_local.inside_write = True
+                message = self.format(record)
+                self._logger.log(message)
+            finally:
+                self._thread_local.inside_write = False
