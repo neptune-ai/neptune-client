@@ -49,6 +49,17 @@ class TestLogHandler(unittest.TestCase):
         log_entries = list(exp['monitoring']['python_logger'].fetch_values().value)
         self.assertListEqual(log_entries, ["error message", "test message"])
 
+    def test_custom_monitoring_namespace(self):
+        exp = init(mode="debug", flush_period=0.5, monitoring_namespace="watching")
+        handler = NeptuneHandler(run=exp)
+        logger = logging.getLogger()
+        logger.addHandler(handler)
+
+        self._log_messages(logger)
+
+        log_entries = list(exp['watching']['python_logger'].fetch_values().value)
+        self.assertListEqual(log_entries, ["error message", "test message"])
+
     def test_custom_target_attribute(self):
         exp = init(mode="debug", flush_period=0.5)
         handler = NeptuneHandler(run=exp, path="logging/my/logger")

@@ -16,7 +16,6 @@
 import logging
 
 from neptune.new import Run
-from neptune.new.attributes.constants import MONITORING_DEFAULT_LOG_HANDLER_ATTRIBUTE_PATH
 from neptune.new.internal.utils import verify_type
 from neptune.new.logging import Logger
 
@@ -52,7 +51,7 @@ class NeptuneHandler(logging.Handler):
         verify_type("run", run, Run)
         verify_type("level", level, int)
         if path is None:
-            path = MONITORING_DEFAULT_LOG_HANDLER_ATTRIBUTE_PATH
+            path = f"{run.monitoring_namespace}/python_logger"
         verify_type("path", path, str)
 
         super().__init__(level=level)
