@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import logging
+import threading
 
 from neptune.new import Run
 from neptune.new.internal.utils import verify_type
@@ -55,13 +56,18 @@ class NeptuneHandler(logging.Handler):
         verify_type("path", path, str)
 
         super().__init__(level=level)
+        self._run = run
         self._logger = Logger(run, path)
-
-    def _is_ignored(self, record: logging.LogRecord):
-        """ these libraries log during sending logs, which would cause recursive logging """
-        return record.name in ('bravado.client', 'urllib3.connectionpool', 'requests_oauthlib.oauth2_session')
+        self._thread_local = threading.local()
 
     def emit(self, record: logging.LogRecord) -> None:
-        if not self._is_ignored(record):
-            message = self.format(record)
-            self._logger.log(message)
+        if not hasattr(self._thread_local, "inside_write"):
+            self._thread_local.inside_write = False
+
+        if self._run.started and not self._thread_local.inside_write:
+            try:
+                self._thread_local.inside_write = True
+                message = self.format(record)
+                self._logger.log(message)
+            finally:
+                self._thread_local.inside_write = False
