@@ -8,7 +8,7 @@ PyJWT
 requests>=2.20.0
 requests-oauthlib>=1.0.0
 six>=1.12.0
-websocket-client>=0.35.0,<1.0.0
+websocket-client>=0.35.0,!=1.0.0
 GitPython>=2.0.8
 packaging
 urllib3
