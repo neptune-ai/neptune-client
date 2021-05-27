@@ -18,6 +18,11 @@ def main():
             author='neptune.ai',
             author_email='contact@neptune.ai',
             url='https://neptune.ai/',
+            project_urls={
+                'Tracker': 'https://github.com/neptune-ai/neptune-client/issues',
+                'Source': 'https://github.com/neptune-ai/neptune-client',
+                'Documentation': 'https://docs.neptune.ai/',
+            },
             long_description='Neptune Client',
             license='Apache License 2.0',
             install_requires=requirements,
@@ -25,11 +30,12 @@ def main():
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
               "lightgbm": ["neptune-lightgbm"],
-              "pytorch-lightning": ["neptune-pytorch-lightning"],
               "optuna": ["neptune-optuna"],
+              "pytorch-lightning": ["neptune-pytorch-lightning"],
               "sacred": ["neptune-sacred"],
               "sklearn": ["neptune-sklearn"],
               "tensorflow-keras": ["neptune-tensorflow-keras"],
+              "xgboost": ["neptune-xgboost"],
             },
             entry_points={
                 'console_scripts': [
