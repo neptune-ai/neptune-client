@@ -61,13 +61,7 @@ class Namespace(Attribute, MutableMapping):
             value = NamespaceVal(value)
 
         for k, v in value.value.items():
-            abs_path = f"{self._str_path}/{k}"
-            attr = self._run.get_attribute(abs_path)
-
-            if attr:
-                attr.assign(v, wait)
-            else:
-                self._run.define(abs_path, v)
+            self._run[f"{self._str_path}/{k}"].assign(v, wait)
 
     def _collect_atom_values(self, attribute_dict) -> dict:
         result = {}
