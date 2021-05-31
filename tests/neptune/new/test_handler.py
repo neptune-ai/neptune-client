@@ -40,6 +40,7 @@ from neptune.new.types import File as FileVal
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.new.types.atoms.float import Float as FloatVal
 from neptune.new.types.atoms.string import String as StringVal
+from neptune.new.types.namespace import Namespace as NamespaceVal
 from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
@@ -234,6 +235,39 @@ class TestHandler(unittest.TestCase):
         exp['some/str/val'].assign(StringSetVal(["other_1", "other_2", "other_3"]), wait=True)
         self.assertEqual(exp['some/str/val'].fetch(), {"other_1", "other_2", "other_3"})
         self.assertIsInstance(exp.get_structure()['some']['str']['val'], StringSet)
+
+    def test_assign_namespace(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp['some/namespace'].assign(
+            NamespaceVal(
+                {
+                    'sub-namespace/val1': 1.0,
+                    'sub-namespace/val2': StringSetVal(["tag1", "tag2"])
+                }
+            )
+        )
+        self.assertEqual(exp['some/namespace/sub-namespace/val1'].fetch(), 1.0)
+        self.assertEqual(exp['some/namespace/sub-namespace/val2'].fetch(), {"tag1", "tag2"})
+        self.assertIsInstance(exp.get_structure()['some']['namespace']['sub-namespace']['val1'], Float)
+        self.assertIsInstance(exp.get_structure()['some']['namespace']['sub-namespace']['val2'], StringSet)
+
+        exp['some'].assign(NamespaceVal({'namespace/sub-namespace/val1': 2.0}))
+        self.assertEqual(exp['some/namespace/sub-namespace/val1'].fetch(), 2.0)
+        self.assertEqual(exp['some/namespace/sub-namespace/val2'].fetch(), {"tag1", "tag2"})
+        self.assertIsInstance(exp.get_structure()['some']['namespace']['sub-namespace']['val1'], Float)
+        self.assertIsInstance(exp.get_structure()['some']['namespace']['sub-namespace']['val2'], StringSet)
+
+        with self.assertRaises(TypeError):
+            exp['some'].assign(NamespaceVal({'namespace/sub-namespace/val1': {"tagA", "tagB"}}))
+
+    def test_assign_distinct_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp['some/str/val'].assign(FloatVal(1.0), wait=True)
+        self.assertEqual(exp['some/str/val'].fetch(), 1.0)
+        self.assertIsInstance(exp.get_structure()['some']['str']['val'], Float)
+
+        with self.assertRaises(TypeError):
+            exp['some/str/val'].assign(StringSetVal(["other_1", "other_2", "other_3"]), wait=True)
 
     def test_add(self):
         exp = init(mode="debug", flush_period=0.5)
