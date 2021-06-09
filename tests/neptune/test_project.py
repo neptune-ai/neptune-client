@@ -247,7 +247,12 @@ class TestProject(unittest.TestCase):
             target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
         ]
         self.assertTrue(
-            set(source_target_pairs_targets) == {"CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"}
+            set(source_target_pairs_targets) == {
+                "CODE_OF_CONDUCT.md",
+                "CHANGELOG.md",
+                "README.md",
+                "tests/neptune/test_project.py"
+            }
         )
 
     def test_create_experiment_with_absolute_upload_sources(self):
@@ -273,7 +278,12 @@ class TestProject(unittest.TestCase):
             target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
         ]
         self.assertTrue(
-            set(source_target_pairs_targets) == {"CODE_OF_CONDUCT.md", "README.md", "tests/neptune/test_project.py"}
+            set(source_target_pairs_targets) == {
+                "CODE_OF_CONDUCT.md",
+                "CHANGELOG.md",
+                "README.md",
+                "tests/neptune/test_project.py"
+            }
         )
 
     def test_create_experiment_with_upload_single_sources(self):
