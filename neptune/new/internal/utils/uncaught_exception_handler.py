@@ -28,6 +28,16 @@ if TYPE_CHECKING:
 _logger = logging.getLogger(__name__)
 
 
+def get_traceback_lines(exc_val, exc_tb):
+    header_lines = [
+        f"An uncaught exception occurred while run was active on worker {get_hostname()}.",
+        "Marking run as failed",
+        "Traceback:"
+    ]
+
+    return header_lines + traceback.format_tb(exc_tb) + str(exc_val).split("\n")
+
+
 class UncaughtExceptionHandler:
 
     def __init__(self):
@@ -39,13 +49,7 @@ class UncaughtExceptionHandler:
         with self._lock:
             this = self
             def exception_handler(exc_type, exc_val, exc_tb):
-                header_lines = [
-                    f"An uncaught exception occurred while run was active on worker {get_hostname()}.",
-                    "Marking run as failed",
-                    "Traceback:"
-                ]
-
-                traceback_lines = header_lines + traceback.format_tb(exc_tb) + str(exc_val).split("\n")
+                traceback_lines = get_traceback_lines(exc_val, exc_tb)
                 for _, handler in self._handlers.items():
                     handler(traceback_lines)
 

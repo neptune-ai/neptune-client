@@ -15,12 +15,14 @@
 #
 import atexit
 import threading
+from functools import partial
+
 import time
 import traceback
 import uuid
 from contextlib import AbstractContextManager
 from datetime import datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, Callable
 
 import click
 
@@ -40,6 +42,7 @@ from neptune.new.internal.utils import (
     is_bool, is_float, is_float_like, is_int, is_string, is_string_like, verify_type, is_dict_like,
 )
 from neptune.new.internal.utils.paths import parse_path
+from neptune.new.internal.utils.uncaught_exception_handler import get_traceback_lines
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms.datetime import Datetime
@@ -103,6 +106,7 @@ class Run(AbstractContextManager):
             project_name: str,
             short_id: str,
             monitoring_namespace: str = "monitoring",
+            log_traceback_handler: Callable[['Run', List[str]], None] = lambda run, lines: None
     ):
         self._uuid = _uuid
         self._backend = backend
@@ -115,11 +119,15 @@ class Run(AbstractContextManager):
         self._project_name = project_name
         self._short_id = short_id
         self.monitoring_namespace = monitoring_namespace
+        self._log_traceback_handler = partial(log_traceback_handler, self)
 
         Run.last_run = self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        traceback.print_exception(exc_type, exc_val, exc_tb)
+        if exc_tb is not None:
+            traceback.print_exception(exc_type, exc_val, exc_tb)
+            traceback_lines = get_traceback_lines(exc_val, exc_tb)
+            self._log_traceback_handler(traceback_lines)
         self.stop()
 
     def __getitem__(self, path: str) -> 'Handler':

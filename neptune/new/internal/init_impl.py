@@ -302,6 +302,11 @@ def init(project: Optional[str] = None,
     stderr_path = "{}/stderr".format(monitoring_namespace)
     traceback_path = "{}/traceback".format(monitoring_namespace)
 
+    def log_traceback_handler(run: Run, stacktrace_lines: List[str]) -> None:
+        run[traceback_path].log(stacktrace_lines)
+        if fail_on_exception:
+            run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = True
+
     background_jobs = []
     if mode != RunMode.READ_ONLY:
         if capture_stdout:
@@ -313,11 +318,11 @@ def init(project: Optional[str] = None,
         websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
         if websockets_factory:
             background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
-        background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
+        background_jobs.append(TracebackJob(log_traceback_handler))
         background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs),
-               api_run.workspace, api_run.project_name, api_run.short_id, monitoring_namespace)
+               api_run.workspace, api_run.project_name, api_run.short_id, monitoring_namespace, log_traceback_handler)
     if mode != RunMode.OFFLINE:
         _run.sync(wait=False)
 
