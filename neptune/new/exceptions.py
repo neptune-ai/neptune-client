@@ -487,7 +487,7 @@ class Forbidden(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      See: https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
       
     - Verify if you set up your project correctly
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
@@ -516,7 +516,7 @@ You can set connection mode when creating a new run:
     {python}run = neptune.init(mode="async"){end}
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -555,13 +555,13 @@ class NeptuneUninitializedException(NeptuneException):
 {h1}     
 ----NeptuneUninitializedException----------------------------------------------------
 {end}
-You must initialize neptune-client before you access `get_last_exp`.
+You must initialize neptune-client before you access `get_last_run`.
 
 Looks like you forgot to add:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 before you ran:
-    {python}neptune.get_last_exp(){end}
+    {python}neptune.get_last_run(){end}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/api-reference/neptune#get_last_run
@@ -584,7 +584,7 @@ Or:
     {bash}pip install neptune-client[{framework}]{end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/essentials/integrations
+    - https://docs.neptune.ai/integrations-and-supported-tools/intro
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -621,17 +621,17 @@ class FetchAttributeNotFoundException(MetadataInconsistency):
 {end}
 Field {python}{attribute_path}{end} was not found.
 
-Remember that in the default asynchronous mode data is synchronized
+Remember that in the asynchronous (default) connection mode data is synchronized
 with the Neptune servers in the background and may have not reached
 it yet before it's fetched. Before fetching the data you can force
 wait for all the requests sent by invoking:
 
-    {python}exp.wait(){end}
+    {python}run.wait(){end}
     
 Remember that each use of {python}wait{end} introduces a delay in code execution.
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """
