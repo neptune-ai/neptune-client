@@ -53,14 +53,13 @@ class MissingFieldException(NeptuneException, AttributeError, KeyError):
 {h1}
 ----MissingFieldException-------------------------------------------------------
 {end}
-Field "{field_path}" not found.
+Field "{field_path}" was not found.
 
 There are two possible reasons:
-* There is a typo in a path. Double-check your code for typos.
-* You are fetching a field that other process created, but local representation is not synchronized.
-
-If you are sending metadata from multiple processes at the same time, synchronize the local representation before fetching values:
-\t{python}run.sync(){end}
+    - There is a typo in a path. Double-check your code for typos.
+    - You are fetching a field that other process created, but local representation is not synchronized.
+    If you are sending metadata from multiple processes at the same time, synchronize the local representation before fetching values:
+        {python}run.sync(){end}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -187,8 +186,8 @@ and skip the {bold}project{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/workspace-project-and-user-management
-    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+    - https://docs.neptune.ai/getting-started/hello-world#project
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -202,9 +201,9 @@ class NeptuneIncorrectProjectNameException(NeptuneException):
 {h1}
 ----NeptuneIncorrectProjectNameException------------------------------------
 {end}
-Project qualified name {fail}"{project}"{end} you specified was incorrect.
+Project name {fail}"{project}"{end} you specified seems to be incorrect.
 
-The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
 It has two parts:
     - {correct}WORKSPACE{end}: which can be your username or your organization name
     - {correct}PROJECT_NAME{end}: which is the actual project name you chose 
@@ -216,8 +215,8 @@ For example, a project {correct}neptune-ai/credit-default-prediction{end} parts 
 The URL to this project looks like this: https://app.neptune.ai/neptune-ai/credit-default-prediction
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/workspace-project-and-user-management
-    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+    - https://docs.neptune.ai/getting-started/hello-world#project
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -233,8 +232,8 @@ class NeptuneMissingApiTokenException(NeptuneException):
 {end}
 Neptune client couldn't find your API token.
 
-Learn how to get it in this docs page:
-https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+You can get it here:
+    - https://app.neptune.ai/get_my_api_token
 
 There are two options to add it:
     - specify it in your code 
@@ -259,8 +258,7 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
-    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -277,12 +275,12 @@ class NeptuneInvalidApiTokenException(NeptuneException):
 Provided API token is invalid.
 Make sure you copied and provided your API token correctly.
 
-Learn how to get it in this docs page:
-https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+You can get it or check if it is correct here:
+    - https://app.neptune.ai/get_my_api_token
 
 There are two options to add it:
     - specify it in your code 
-    - set an environment variable in your operating system.
+    - set as an environment variable in your operating system.
 
 {h2}CODE{end}
 Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
@@ -303,8 +301,7 @@ and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
-    - https://docs.neptune.ai/getting-started/quick-starts/hello-world#step-2-create-a-quickstart-py
+    - https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -320,16 +317,20 @@ class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
 class NeedExistingRunForReadOnlyMode(NeptuneException):
     def __init__(self):
         message = """
-    {h1}
-    ----NeedExistingRunForReadOnlyMode-----------------------------------------
-    {end}
-    Incorrect call of function {python}neptune.init(){end}.
+{h1}
+----NeedExistingRunForReadOnlyMode-----------------------------------------
+{end}
+Read-only mode can be used only with an existing run.
 
-    Parameter {python}run{end} of {python}neptune.init(){end} must be provided and reference
-    an existing run when using {python}mode="read-only"{end}.
+Parameter {python}run{end} of {python}neptune.init(){end} must be provided and reference
+an existing run when using {python}mode="read-only"{end}.
 
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
-    """
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/you-should-know/connection-modes#read-only
+    - https://docs.neptune.ai/api-reference/neptune#init
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
         inputs = dict(list(list({}.items()) + list(STYLES.items())))
         super().__init__(message.format(**inputs))
 
@@ -340,11 +341,14 @@ class NeptuneRunResumeAndCustomIdCollision(NeptuneException):
 {h1}
 ----NeptuneRunResumeAndCustomIdCollision-----------------------------------------
 {end}
-Incorrect call of function {python}neptune.init(){end}.
+It's not possible to use {python}custom_run_id{end} while resuming a run.
 
 Parameters {python}run{end} and {python}custom_run_id{end} of {python}neptune.init(){end} are mutually exclusive.
-Make sure you have no {bash}{custom_id_env}{end} environment variable defined
-and no value explicitly passed to `custom_run_id` argument if you meant to resume run.
+Make sure you have no {bash}{custom_id_env}{end} environment variable set
+and no value is explicitly passed to `custom_run_id` argument when you are resuming a run.
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/api-reference/neptune#init
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -364,7 +368,7 @@ class UnsupportedClientVersion(NeptuneException):
 {h1}
 ----UnsupportedClientVersion-------------------------------------------------------------
 {end}
-Your version of neptune-client ({current_version}) library is not supported by this Neptune server.
+Your version of neptune-client ({current_version}) library is not supported by the Neptune server.
 
 Please install neptune-client{required_version}
 
@@ -390,6 +394,7 @@ What should I do?
       If so, you may want to use {python}proxies{end} parameter of {python}neptune.init(){end} function.
       See https://docs.neptune.ai/api-reference/neptune#init
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
+    - Check Neptune services status: https://status.neptune.ai/
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -411,8 +416,8 @@ class NeptuneConnectionLostException(NeptuneException):
 ----NeptuneConnectionLostException---------------------------------------------------------
 {end}
 A connection to the Neptune server was lost.
-If you are using asynchronous (default) connection mode Neptune automatically switched to an offline mode and your data is being stored safely on the disk.
-You can upload it later using Neptune Command Line Interface:
+If you are using asynchronous (default) connection mode Neptune will continue to locally track your metadata and will continuously try to re-establish connection with Neptune servers.
+If the connection is not re-established you can upload it later using Neptune Command Line Interface:
     {bash}neptune sync -p workspace_name/project_name{end}
 
 What should I do?
@@ -421,12 +426,12 @@ What should I do?
         {python}run = neptune.init(mode="offline"){end}
         
 You can read in detail how it works and how to upload your data on the following doc pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes#offline
-    - https://docs.neptune.ai/advanced-user-guides/uploading-offline-data
+    - https://docs.neptune.ai/you-should-know/connection-modes#offline
+    - https://docs.neptune.ai/you-should-know/connection-modes#uploading-offline-data
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connectivity-issues
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes#connectivity-issues
+    - https://docs.neptune.ai/you-should-know/connection-modes
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -462,9 +467,9 @@ class Unauthorized(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      See: https://app.neptune.ai/get_my_api_token
       
-    - Verify if you set up your project correctly
+    - Verify if your the provided project name is correct.
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
       It has two parts:
           - {correct}WORKSPACE{end}: which can be your username or your organization name
@@ -487,9 +492,9 @@ class Forbidden(NeptuneApiException):
 You have no permission to access given resource.
     
     - Verify your API token is correct.
-      See: https://docs.neptune.ai/administration/security-and-privacy/how-to-find-and-set-neptune-api-token
+      See: https://app.neptune.ai/get_my_api_token
       
-    - Verify if you set up your project correctly
+    - Verify if your the provided project name is correct.
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
       It has two parts:
           - {correct}WORKSPACE{end}: which can be your username or your organization name
@@ -516,7 +521,7 @@ You can set connection mode when creating a new run:
     {python}run = neptune.init(mode="async"){end}
     
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -555,13 +560,13 @@ class NeptuneUninitializedException(NeptuneException):
 {h1}     
 ----NeptuneUninitializedException----------------------------------------------------
 {end}
-You must initialize neptune-client before you access `get_last_exp`.
+You must initialize neptune-client before you access `get_last_run`.
 
 Looks like you forgot to add:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 before you ran:
-    {python}neptune.get_last_exp(){end}
+    {python}neptune.get_last_run(){end}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/api-reference/neptune#get_last_run
@@ -584,7 +589,7 @@ Or:
     {bash}pip install neptune-client[{framework}]{end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/essentials/integrations
+    - https://docs.neptune.ai/integrations-and-supported-tools/intro
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -621,17 +626,17 @@ class FetchAttributeNotFoundException(MetadataInconsistency):
 {end}
 Field {python}{attribute_path}{end} was not found.
 
-Remember that in the default asynchronous mode data is synchronized
+Remember that in the asynchronous (default) connection mode data is synchronized
 with the Neptune servers in the background and may have not reached
 it yet before it's fetched. Before fetching the data you can force
 wait for all the requests sent by invoking:
 
-    {python}exp.wait(){end}
+    {python}run.wait(){end}
     
 Remember that each use of {python}wait{end} introduces a delay in code execution.
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+    - https://docs.neptune.ai/you-should-know/connection-modes
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """
