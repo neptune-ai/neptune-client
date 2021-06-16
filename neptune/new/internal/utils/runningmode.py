@@ -27,8 +27,11 @@ def in_notebook():
     try:
         from IPython import get_ipython
         ipy = get_ipython()
-        if ipy is None or not hasattr(ipy, 'config') or 'IPKernelApp' not in ipy.config:  # pragma: no cover
+        if ipy is None \
+                or not hasattr(ipy, 'config') or not isinstance(ipy.config, dict) \
+                or 'IPKernelApp' not in ipy.config:
             return False
     except ImportError:
         return False
+
     return True
