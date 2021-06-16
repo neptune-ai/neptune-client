@@ -1,5 +1,8 @@
 name: neptune-client
 on: [push]
+env:
+  NEPTUNE_PROJECT: common/e2e-tests
+  NEPTUNE_API_TOKEN: ANONYMOUS
 jobs:
   test:
     runs-on: ${{ matrix.os }}
@@ -26,6 +29,32 @@ jobs:
       - name: Build and test
         run : |
           tox -e py
+
+  e2e:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        # Windows builds fail because of the file header check - not clear what causes this.
+        # There are no pylint-file-header issues about this, and Windows builds succeed in the old domain
+        os: [ ubuntu-latest ] #, windows-latest]
+        python-version: [ 3.6 ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install package
+        run: |
+          pip install -e .
+      - name: Clone E2E tests repository
+        run: |
+          git clone https://github.com/neptune-ai/neptune-client-e2e.git e2e_tests
+      - name: Install E2E tests dependencies
+        run: |
+          pip install -r e2e_tests/requirements/requirements.txt
+      - name: Run E2E tests
+        run: |
+          py.test e2e_tests
 
   publish:
     needs: test
