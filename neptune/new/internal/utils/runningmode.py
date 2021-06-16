@@ -26,7 +26,8 @@ def in_notebook():
     """Based on: https://stackoverflow.com/a/22424821/1565454"""
     try:
         from IPython import get_ipython
-        if 'IPKernelApp' not in get_ipython().config:  # pragma: no cover
+        ipy = get_ipython()
+        if ipy is None or 'IPKernelApp' not in ipy.config:  # pragma: no cover
             return False
     except ImportError:
         return False
