@@ -1,3 +1,8 @@
+## neptune-client 0.9.18
+
+### Fixes
+- Check get_ipython() for None ([#598](https://github.com/neptune-ai/neptune-client/pull/598))
+
 ## neptune-client 0.9.17
 
 ### Features
