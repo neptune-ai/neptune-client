@@ -17,11 +17,13 @@ import threading
 import time
 
 import jwt
+from bravado.exception import HTTPUnauthorized
 from bravado.requests_client import Authenticator
 from oauthlib.oauth2 import TokenExpiredError, OAuth2Error
 from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
 
+from neptune.new.exceptions import NeptuneInvalidApiTokenException
 from neptune.utils import with_api_exceptions_handler, update_session_proxies
 
 _decoding_options = {
@@ -86,7 +88,11 @@ class NeptuneAuthenticator(Authenticator):
 
         # We need to pass a lambda to be able to re-create fresh session at any time when needed
         def session_factory():
-            auth_tokens = backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
+            try:
+                auth_tokens = backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
+            except HTTPUnauthorized:
+                raise NeptuneInvalidApiTokenException()
+
             decoded_json_token = jwt.decode(auth_tokens.accessToken, options=_decoding_options)
             expires_at = decoded_json_token.get(u'exp')
             client_name = decoded_json_token.get(u'azp')
