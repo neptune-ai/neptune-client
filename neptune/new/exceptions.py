@@ -155,6 +155,29 @@ class RunUUIDNotFound(NeptuneException):
         super().__init__("Run with UUID {} not found. Could be deleted.".format(run_uuid))
 
 
+class InactiveRunException(NeptuneException):
+    def __init__(self, short_id: str):
+        message = """
+{h1}
+----InactiveRunException----------------------------------------
+{end}
+It seems you are trying to log (or fetch) metadata to a run that was stopped ({short_id}).
+What should I do?
+    - Resume the run to continue logging to it:
+    https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
+    - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only, 
+    you can resume a run in read-only mode:
+    https://docs.neptune.ai/you-should-know/connection-modes#read-only
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/api-reference/run#stop
+    - https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
+    - https://docs.neptune.ai/you-should-know/connection-modes
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({'short_id': short_id}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
+
+
 class NeptuneMissingProjectNameException(NeptuneException):
     def __init__(self):
         message = """

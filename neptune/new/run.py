@@ -20,6 +20,8 @@ import traceback
 import uuid
 from contextlib import AbstractContextManager
 from datetime import datetime
+from enum import Enum
+from functools import wraps
 from typing import Any, Dict, List, Optional, Union
 
 import click
@@ -28,7 +30,7 @@ from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import attribute_type_to_atom
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import NamespaceBuilder, Namespace as NamespaceAttr
-from neptune.new.exceptions import MetadataInconsistency, NeptuneException
+from neptune.new.exceptions import MetadataInconsistency, NeptuneException, InactiveRunException
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -47,6 +49,24 @@ from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
+
+
+class RunState(Enum):
+    CREATED = 'created'
+    STARTED = 'started'
+    STOPPING = 'stopping'
+    STOPPED = 'stopped'
+
+
+def assure_run_not_stopped(fun):
+    @wraps(fun)
+    def inner_fun(self, *args, **kwargs):
+        # pylint: disable=protected-access
+        if self._state == RunState.STOPPED:
+            raise InactiveRunException(short_id=self._short_id)
+        return fun(self, *args, **kwargs)
+
+    return inner_fun
 
 
 class Run(AbstractContextManager):
@@ -110,7 +130,7 @@ class Run(AbstractContextManager):
         self._bg_job = background_job
         self._structure: RunStructure[Attribute, NamespaceAttr] = RunStructure(NamespaceBuilder(self))
         self._lock = threading.RLock()
-        self._started = False
+        self._state = RunState.CREATED
         self._workspace = workspace
         self._project_name = project_name
         self._short_id = short_id
@@ -122,15 +142,19 @@ class Run(AbstractContextManager):
         traceback.print_exception(exc_type, exc_val, exc_tb)
         self.stop()
 
+    @assure_run_not_stopped
     def __getitem__(self, path: str) -> 'Handler':
         return Handler(self, path)
 
+    @assure_run_not_stopped
     def __setitem__(self, key: str, value) -> None:
         self.__getitem__(key).assign(value)
 
+    @assure_run_not_stopped
     def __delitem__(self, path) -> None:
         self.pop(path)
 
+    @assure_run_not_stopped
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.
         You can use this method to quickly log all run's parameters.
@@ -165,6 +189,7 @@ class Run(AbstractContextManager):
         """
         self._get_root_handler().assign(value, wait)
 
+    @assure_run_not_stopped
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
         The result will preserve the hierarchical structure of the run's metadata, but will contain only non-File Atom
@@ -198,7 +223,7 @@ class Run(AbstractContextManager):
         atexit.register(self._shutdown_hook)
         self._op_processor.start()
         self._bg_job.start(self)
-        self._started = True
+        self._state = RunState.STARTED
 
     def stop(self, seconds: Optional[Union[float, int]] = None) -> None:
         """Stops the tracked run and kills the synchronization thread.
@@ -258,9 +283,10 @@ class Run(AbstractContextManager):
             https://docs.neptune.ai/api-reference/run#stop
         """
         verify_type("seconds", seconds, (float, int, type(None)))
-        if not self._started:
+        if self._state != RunState.STARTED:
             return
-        self._started = False
+
+        self._state = RunState.STOPPING
         ts = time.time()
         click.echo(f"Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
@@ -269,6 +295,7 @@ class Run(AbstractContextManager):
         with self._lock:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
+        self._state = RunState.STOPPED
 
     def get_structure(self) -> Dict[str, Any]:
         """Returns a run's metadata structure in form of a dictionary.

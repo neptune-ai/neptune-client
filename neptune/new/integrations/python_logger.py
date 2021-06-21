@@ -19,6 +19,7 @@ import threading
 from neptune.new import Run
 from neptune.new.internal.utils import verify_type
 from neptune.new.logging import Logger
+from neptune.new.run import RunState
 
 
 class NeptuneHandler(logging.Handler):
@@ -64,7 +65,7 @@ class NeptuneHandler(logging.Handler):
         if not hasattr(self._thread_local, "inside_write"):
             self._thread_local.inside_write = False
 
-        if self._run._started and not self._thread_local.inside_write:  # pylint: disable=protected-access
+        if self._run._state == RunState.STARTED and not self._thread_local.inside_write:  # pylint: disable=protected-access
             try:
                 self._thread_local.inside_write = True
                 message = self.format(record)
