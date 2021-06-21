@@ -20,6 +20,7 @@ import traceback
 import uuid
 from contextlib import AbstractContextManager
 from datetime import datetime
+from enum import Enum
 from functools import wraps
 from typing import Any, Dict, List, Optional, Union
 
@@ -50,11 +51,18 @@ from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
 
 
+class RunState(Enum):
+    CREATED = 'created'
+    STARTED = 'started'
+    STOPPING = 'stopping'
+    STOPPED = 'stopped'
+
+
 def assure_run_not_stopped(fun):
     @wraps(fun)
     def inner_fun(self, *args, **kwargs):
         # pylint: disable=protected-access
-        if self._stopped:
+        if self._state == RunState.STOPPED:
             raise InactiveRunException(short_id=self._short_id)
         return fun(self, *args, **kwargs)
 
@@ -69,7 +77,7 @@ class Run(AbstractContextManager):
 
     You can log many ML metadata types, including:
         * metrics
-        * losses]
+        * losses
         * model weights
         * images
         * interactive charts
@@ -122,8 +130,7 @@ class Run(AbstractContextManager):
         self._bg_job = background_job
         self._structure: RunStructure[Attribute, NamespaceAttr] = RunStructure(NamespaceBuilder(self))
         self._lock = threading.RLock()
-        self._started = False
-        self._stopped = False
+        self._state = RunState.CREATED
         self._workspace = workspace
         self._project_name = project_name
         self._short_id = short_id
@@ -216,7 +223,7 @@ class Run(AbstractContextManager):
         atexit.register(self._shutdown_hook)
         self._op_processor.start()
         self._bg_job.start(self)
-        self._started = True
+        self._state = RunState.STARTED
 
     def stop(self, seconds: Optional[Union[float, int]] = None) -> None:
         """Stops the tracked run and kills the synchronization thread.
@@ -276,9 +283,10 @@ class Run(AbstractContextManager):
             https://docs.neptune.ai/api-reference/run#stop
         """
         verify_type("seconds", seconds, (float, int, type(None)))
-        if not self._started:
+        if self._state != RunState.STARTED:
             return
-        self._started = False
+
+        self._state = RunState.STOPPING
         ts = time.time()
         click.echo(f"Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
@@ -287,7 +295,7 @@ class Run(AbstractContextManager):
         with self._lock:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
-        self._stopped = True
+        self._state = RunState.STOPPED
 
     def get_structure(self) -> Dict[str, Any]:
         """Returns a run's metadata structure in form of a dictionary.
