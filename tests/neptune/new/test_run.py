@@ -19,7 +19,7 @@ from datetime import datetime
 
 from neptune.new import ANONYMOUS, init
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import MetadataInconsistency
+from neptune.new.exceptions import MetadataInconsistency, RunStoppedException
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.series import FloatSeries, StringSeries
@@ -113,3 +113,16 @@ class TestRun(unittest.TestCase):
         exp["params"] = {'predictor.cheat': False}
 
         self.assertFalse(exp["params/predictor.cheat"].fetch())
+
+    def test_access_blocked_after_stop(self):
+        exp = init(mode="debug")
+        exp['attr1'] = 1
+
+        exp.stop()
+
+        with self.assertRaises(RunStoppedException):
+            exp['attr1'].fetch()
+        with self.assertRaises(RunStoppedException):
+            exp['attr2'] = 2
+        with self.assertRaises(RunStoppedException):
+            exp['series'].log(1)
