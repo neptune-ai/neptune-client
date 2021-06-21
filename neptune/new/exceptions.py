@@ -155,6 +155,23 @@ class RunUUIDNotFound(NeptuneException):
         super().__init__("Run with UUID {} not found. Could be deleted.".format(run_uuid))
 
 
+class RunStoppedException(NeptuneException):
+    def __init__(self, run_uuid: uuid.UUID):
+        message = """
+    {h1}
+    ----RunStoppedException----------------------------------------
+    {end}
+    Run with UUID {run_uuid} has been stopped and you no longer can perform any action on it. 
+    
+    You may also want to check the following docs pages:
+        - https://docs.neptune.ai/api-reference/run#stop
+
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+    """
+        inputs = dict(list({'run_uuid': run_uuid}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
+
+
 class NeptuneMissingProjectNameException(NeptuneException):
     def __init__(self):
         message = """
