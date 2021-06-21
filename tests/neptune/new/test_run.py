@@ -19,7 +19,7 @@ from datetime import datetime
 
 from neptune.new import ANONYMOUS, init
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import MetadataInconsistency, RunStoppedException
+from neptune.new.exceptions import MetadataInconsistency, InactiveRunException
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.series import FloatSeries, StringSeries
@@ -120,9 +120,9 @@ class TestRun(unittest.TestCase):
 
         exp.stop()
 
-        with self.assertRaises(RunStoppedException):
+        with self.assertRaises(InactiveRunException):
             exp['attr1'].fetch()
-        with self.assertRaises(RunStoppedException):
+        with self.assertRaises(InactiveRunException):
             exp['attr2'] = 2
-        with self.assertRaises(RunStoppedException):
+        with self.assertRaises(InactiveRunException):
             exp['series'].log(1)

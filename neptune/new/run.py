@@ -29,7 +29,7 @@ from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import attribute_type_to_atom
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import NamespaceBuilder, Namespace as NamespaceAttr
-from neptune.new.exceptions import MetadataInconsistency, NeptuneException, RunStoppedException
+from neptune.new.exceptions import MetadataInconsistency, NeptuneException, InactiveRunException
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -55,7 +55,7 @@ def assure_run_not_stopped(fun):
     def inner_fun(self, *args, **kwargs):
         # pylint: disable=protected-access
         if self._stopped:
-            raise RunStoppedException(run_uuid=self._uuid)
+            raise InactiveRunException(short_id=self._short_id)
         return fun(self, *args, **kwargs)
 
     return inner_fun
@@ -69,7 +69,7 @@ class Run(AbstractContextManager):
 
     You can log many ML metadata types, including:
         * metrics
-        * losses
+        * losses]
         * model weights
         * images
         * interactive charts
