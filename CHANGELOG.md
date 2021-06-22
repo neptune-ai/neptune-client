@@ -1,3 +1,11 @@
+## neptune-client 0.9.19
+
+### Breaking changes
+- Prevent logging into stopped runs ([#602](https://github.com/neptune-ai/neptune-client/pull/602))
+
+### Features
+- Added more informal exception for invalid API token ([#601](https://github.com/neptune-ai/neptune-client/pull/601))
+
 ## neptune-client 0.9.18
 
 ### Fixes
