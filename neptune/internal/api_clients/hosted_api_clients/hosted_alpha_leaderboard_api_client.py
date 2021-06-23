@@ -53,6 +53,7 @@ from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.new import exceptions as alpha_exceptions
 from neptune.new.attributes import constants as alpha_consts
 from neptune.new.attributes.constants import MONITORING_TRACEBACK_ATTRIBUTE_PATH, SYSTEM_FAILED_ATTRIBUTE_PATH
+from neptune.new.exceptions import ClientHttpError
 from neptune.new.internal import operation as alpha_operation
 from neptune.new.internal.backends import hosted_file_operations as alpha_hosted_file_operations
 from neptune.new.internal.backends.api_model import AttributeType
@@ -190,7 +191,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             file_globs=file_globs,
             reset=True,
         )
-        self._execute_upload_operation(experiment, upload_files_operation)
+        self._execute_upload_operations_with_400_retry(experiment, upload_files_operation)
 
     @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
@@ -454,7 +455,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         else:
             raise ValueError("Artifact must be a local path or an IO object")
 
-        self._execute_upload_operation(experiment, operation)
+        self._execute_upload_operations_with_400_retry(experiment, operation)
 
     @staticmethod
     def _get_dest_and_ext(target_name):
@@ -593,6 +594,17 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             raise NeptuneException(e) from e
 
         return None
+
+    def _execute_upload_operations_with_400_retry(
+            self,
+            experiment: Experiment,
+            upload_operation: alpha_operation.Operation):
+        while True:
+            try:
+                return self._execute_upload_operation(experiment, upload_operation)
+            except ClientHttpError as ex:
+                if "Length of stream does not match given range" not in ex.response:
+                    raise ex
 
     @with_api_exceptions_handler
     def _execute_operations(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
