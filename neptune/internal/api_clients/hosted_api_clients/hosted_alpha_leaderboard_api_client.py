@@ -601,7 +601,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             upload_operation: alpha_operation.Operation):
         while True:
             try:
-                return self._execute_upload_operations(experiment, upload_operation)
+                return self._execute_upload_operation(experiment, upload_operation)
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
