@@ -7,7 +7,7 @@
 - Added more informal exception for invalid API token ([#601](https://github.com/neptune-ai/neptune-client/pull/601))
 
 ### Fixes
-- **Legacy client** Improved stability when uploading by retry on failure ([#604](https://github.com/neptune-ai/neptune-client/pull/604))
+- **Legacy client** Improved stability by adding retry on failure when uploading ([#604](https://github.com/neptune-ai/neptune-client/pull/604))
 
 ## neptune-client 0.9.18
 
