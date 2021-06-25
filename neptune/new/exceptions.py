@@ -22,6 +22,7 @@ from packaging.version import Version
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.utils import replace_patch_version
+from neptune.new.internal.backends.api_model import Project, Workspace
 from neptune.exceptions import STYLES
 
 
@@ -130,17 +131,50 @@ Verify the correctness of your call or contact Neptune support.
 
 
 class ProjectNotFound(NeptuneException):
-    def __init__(self, project_id):
+    def __init__(self,
+                 project_id: str,
+                 available_projects: List[Project] = (),
+                 available_workspaces: List[Workspace] = ()
+                 ):
         message = """
 {h1}
-----ProjectNotFound-------------------------------------------------------------------------
+----NeptuneProjectNotFoundException------------------------------------
 {end}
-Project {python}{project}{end} not found.
+We couldn’t find project {fail}"{project}"{end}.
+{available_projects_message}{available_workspaces_message}
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+    - https://docs.neptune.ai/getting-started/hello-world#project
 
-Verify if your project's name was not misspelled.
-You can find proper name after logging into Neptune UI.
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'project': project_id}.items()) + list(STYLES.items()))
+        available_projects_message = """
+Did you mean any of these?
+{projects}
+"""
+
+        available_workspaces_message = """
+You can check all of your projects on the Projects page:
+{workspaces_urls}
+"""
+
+        projects_formated_list = '\n'.join(
+            map(lambda project: f'    - {project.workspace}/{project.name}', available_projects)
+        )
+
+        workspaces_formated_list = '\n'.join(
+            map(lambda workspace: f'    - https://app.neptune.ai/{workspace.name}/-/projects', available_workspaces)
+        )
+
+        inputs = {
+            'project': project_id,
+            'available_projects_message': available_projects_message.format(
+                projects=projects_formated_list) if available_projects else '',
+            'available_workspaces_message': available_workspaces_message.format(
+                workspaces_urls=workspaces_formated_list) if available_workspaces else '',
+            **STYLES
+        }
+
         super().__init__(message.format(**inputs))
 
 
@@ -674,4 +708,4 @@ class PlotlyIncompatibilityException(Exception):
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
             "See https://stackoverflow.com/q/63120058 for details. "
             "Downgrade matplotlib to version 3.2 or use as_image to log static chart."
-            .format(matplotlib_version, plotly_version))
+                .format(matplotlib_version, plotly_version))
