@@ -30,6 +30,13 @@ class Project:
         self.workspace = workspace
 
 
+class Workspace:
+
+    def __init__(self, _uuid: uuid.UUID, name: str):
+        self.uuid = _uuid
+        self.name = name
+
+
 @dataclass
 class ApiRun:
     uuid: uuid.UUID

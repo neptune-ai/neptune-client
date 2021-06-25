@@ -38,6 +38,7 @@ from neptune.new.internal.backends.api_model import (
     FloatSeriesAttribute,
     IntAttribute,
     Project,
+    Workspace,
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
@@ -103,6 +104,15 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_project(self, project_id: str) -> Project:
         return Project(uuid.uuid4(), "sandbox", "workspace")
+
+    def get_available_projects(self,
+                               workspace_id: Optional[str] = None,
+                               search_term: Optional[str] = None
+                               ) -> List[Project]:
+        return [Project(uuid.uuid4(), "sandbox", "workspace")]
+
+    def get_available_workspaces(self) -> List[Workspace]:
+        return [Workspace(uuid.uuid4(), "workspace")]
 
     def create_run(self,
                    project_uuid: uuid.UUID,

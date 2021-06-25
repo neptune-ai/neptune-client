@@ -97,7 +97,7 @@ def init(project: Optional[str] = None,
          fail_on_exception: bool = True,
          monitoring_namespace: str = "monitoring",
          flush_period: float = 5,
-         proxies: Optional[dict] = None) -> Run:
+         proxies: Optional[dict] = None) -> HostedNeptuneBackend:
     """Starts a new tracked run, and append it to the top of the Runs table view.
 
     Args:

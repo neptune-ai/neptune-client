@@ -56,6 +56,7 @@ from neptune.new.internal.backends.api_model import (
     IntAttribute,
     LeaderboardEntry,
     Project,
+    Workspace,
     StringAttribute,
     StringSeriesAttribute,
     StringSetAttribute,
@@ -191,6 +192,47 @@ class HostedNeptuneBackend(NeptuneBackend):
             return Project(uuid.UUID(project.id), project.name, project.organizationName)
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
+
+    @with_api_exceptions_handler
+    def get_available_projects(self,
+                               workspace_id: Optional[str] = None,
+                               search_term: Optional[str] = None
+                               ) -> List[Project]:
+        try:
+            response = self.backend_client.api.listProjects(
+                limit=5,
+                organizationIdentifier=workspace_id,
+                searchTerm=search_term,
+                sortBy=['timeOfCreation'],
+                sortDirection=['descending'],
+                userRelation='memberOrHigher',
+                **self.DEFAULT_REQUEST_KWARGS,
+            ).response()
+            warning = response.metadata.headers.get('X-Server-Warning')
+            if warning:
+                click.echo(warning)  # TODO print in color once colored exceptions are added
+            projects = response.result.entries
+            return list(map(
+                lambda project: Project(uuid.UUID(project.id), project.name, project.organizationName),
+                projects))
+        except HTTPNotFound as e:
+            raise e
+
+    @with_api_exceptions_handler
+    def get_available_workspaces(self) -> List[Workspace]:
+        try:
+            response = self.backend_client.api.listOrganizations(
+                **self.DEFAULT_REQUEST_KWARGS,
+            ).response()
+            warning = response.metadata.headers.get('X-Server-Warning')
+            if warning:
+                click.echo(warning)  # TODO print in color once colored exceptions are added
+            workspaces = response.result
+            return list(map(
+                lambda workspace: Workspace(_uuid=uuid.UUID(workspace.id), name=workspace.name),
+                workspaces))
+        except HTTPNotFound as e:
+            raise e
 
     @with_api_exceptions_handler
     def get_run(self, run_id: str):
