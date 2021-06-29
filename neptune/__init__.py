@@ -53,7 +53,11 @@ You can pass this value as api_token during init() call, either by an environmen
 ANONYMOUS_API_TOKEN = constants.ANONYMOUS_API_TOKEN
 
 
-CURRENT_KWARGS = ('project', 'run', 'custom_run_id', 'mode')
+CURRENT_KWARGS = (
+    'project', 'run', 'custom_run_id', 'mode', 'name', 'description', 'tags',
+    'source_files', 'capture_stdout', 'capture_stderr', 'capture_hardware_metrics',
+    'fail_on_exception', 'monitoring_namespace', 'flush_period',
+)
 
 
 def _check_for_extra_kwargs(caller_name, kwargs: dict):
