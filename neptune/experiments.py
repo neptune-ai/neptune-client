@@ -82,7 +82,7 @@ class Experiment(object):
     def __setitem__(self, key, value):
         self._raise_new_client_expected()
 
-    def __delitem__(self, key, value):
+    def __delitem__(self, item):
         self._raise_new_client_expected()
 
     @property
