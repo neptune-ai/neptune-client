@@ -22,6 +22,7 @@ from neptune._version import get_versions
 from neptune.exceptions import (
     InvalidNeptuneBackend,
     NeptuneUninitializedException,
+    NeptuneIncorrectImportException,
 )
 from neptune.internal.api_clients import backend_factory
 from neptune.internal.api_clients.offline_backend import OfflineBackend
@@ -52,7 +53,19 @@ You can pass this value as api_token during init() call, either by an environmen
 ANONYMOUS_API_TOKEN = constants.ANONYMOUS_API_TOKEN
 
 
-def init(project_qualified_name=None, api_token=None, proxies=None, backend=None):
+CURRENT_KWARGS = ('project', 'run', 'custom_run_id', 'mode')
+
+
+def _check_for_extra_kwargs(caller_name, kwargs: dict):
+    for name in CURRENT_KWARGS:
+        if name in kwargs:
+            raise NeptuneIncorrectImportException()
+    if kwargs:
+        first_key = next(iter(kwargs.keys()))
+        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
+
+
+def init(project_qualified_name=None, api_token=None, proxies=None, backend=None, **kwargs):
     """Initialize `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with
     specific project.
 
@@ -138,6 +151,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
             neptune.init(backend=neptune.OfflineApiClient())
     """
 
+    _check_for_extra_kwargs(init.__name__, kwargs)
     project_qualified_name = assure_project_qualified_name(project_qualified_name)
 
     # pylint: disable=global-statement

@@ -434,5 +434,25 @@ If you don't want to adapt your code to new api yet:
         )
 
 
+class NeptuneIncorrectImportException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneIncorrectImportException----------------------------------------------------------------
+{end}
+It seems you are trying to use the new Python API, but imported the legacy API.
+
+Simply update your import statement to:
+    {python}import neptune.new as neptune{end}
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/migration-guide
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
+
+
 class ProjectMigratedToNewStructure(NeptuneException):
     pass
