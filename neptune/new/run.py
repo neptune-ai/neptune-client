@@ -30,7 +30,9 @@ from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import attribute_type_to_atom
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import NamespaceBuilder, Namespace as NamespaceAttr
-from neptune.new.exceptions import MetadataInconsistency, NeptuneException, InactiveRunException
+from neptune.new.exceptions import (
+    MetadataInconsistency, NeptuneException, InactiveRunException, NeptunePossibleLegacyUsageException,
+)
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -67,6 +69,19 @@ def assure_run_not_stopped(fun):
         return fun(self, *args, **kwargs)
 
     return inner_fun
+
+
+LEGACY_METHODS = (
+    'create_experiment',
+    'send_metric', 'log_metric',
+    'send_text', 'log_text',
+    'send_image', 'log_image',
+    'send_artifact', 'log_artifact', 'delete_artifacts',
+    'download_artifact', 'download_sources', 'download_artifacts',
+    'reset_log', 'get_parameters',
+    'get_properties', 'set_property', 'remove_property',
+    'get_hardware_utilization', 'get_numeric_channels_values',
+)
 
 
 class Run(AbstractContextManager):
@@ -141,6 +156,11 @@ class Run(AbstractContextManager):
     def __exit__(self, exc_type, exc_val, exc_tb):
         traceback.print_exception(exc_type, exc_val, exc_tb)
         self.stop()
+
+    def __getattr__(self, item):
+        if item in LEGACY_METHODS:
+            raise NeptunePossibleLegacyUsageException()
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
 
     @assure_run_not_stopped
     def __getitem__(self, path: str) -> 'Handler':

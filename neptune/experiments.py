@@ -22,7 +22,7 @@ import six
 from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ChannelDoesNotExist, ExperimentAlreadyFinished
-from neptune.exceptions import InvalidChannelValue, NoChannelValue
+from neptune.exceptions import InvalidChannelValue, NoChannelValue, NeptuneIncorrectImportException
 from neptune.internal.channels.channels import ChannelNamespace, ChannelType, ChannelValue
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
@@ -72,6 +72,18 @@ class Experiment(object):
         self._internal_id = internal_id
         self._channels_values_sender = ChannelsValuesSender(self)
         self._execution_context = ExecutionContext(backend, self)
+
+    def _raise_new_client_expected(self):
+        raise NeptuneIncorrectImportException()
+
+    def __getitem__(self, item):
+        self._raise_new_client_expected()
+
+    def __setitem__(self, key, value):
+        self._raise_new_client_expected()
+
+    def __delitem__(self, key, value):
+        self._raise_new_client_expected()
 
     @property
     def id(self):
