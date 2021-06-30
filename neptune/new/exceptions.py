@@ -675,3 +675,32 @@ class PlotlyIncompatibilityException(Exception):
             "See https://stackoverflow.com/q/63120058 for details. "
             "Downgrade matplotlib to version 3.2 or use as_image to log static chart."
             .format(matplotlib_version, plotly_version))
+
+
+class NeptunePossibleLegacyUsageException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptunePossibleLegacyUsageException----------------------------------------------------------------
+{end}
+It seems you are trying to use legacy API, but imported the new one.
+
+Simply update your import statement to:
+    {python}import neptune{end}
+
+You may want to check the Legacy API docs:
+    - https://docs-legacy.neptune.ai
+
+If you want to update your code with the new API we prepared a handy migration guide:
+    - https://docs.neptune.ai/migration-guide
+
+You can read more about neptune.new in the release blog post:
+    - https://neptune.ai/blog/neptune-new
+
+You may also want to check the following docs pages:
+    - https://docs-legacy.neptune.ai/getting-started/integrate-neptune-into-your-codebase.html
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))

@@ -1,3 +1,8 @@
+## neptune-client 0.9.20 [UNRELEASED]
+
+### Features
+- Heuristics to help users find out they're writing legacy code with new client API or vice versa ([#607](https://github.com/neptune-ai/neptune-client/pull/607))
+
 ## neptune-client 0.9.19
 
 ### Breaking changes
