@@ -1,7 +1,7 @@
 ## neptune-client 0.10.0 [UNRELEASED]
 
 ### Breaking changes
-- Return path from requested prefix instead of root when fetching namespace ([#XXX](https://github.com/neptune-ai/neptune-client/pull/XXX))
+- Return path from requested prefix instead of root when fetching namespace ([#609](https://github.com/neptune-ai/neptune-client/pull/609))
 
 ### Features
 - Heuristics to help users find out they're writing legacy code with new client API or vice versa ([#607](https://github.com/neptune-ai/neptune-client/pull/607))
