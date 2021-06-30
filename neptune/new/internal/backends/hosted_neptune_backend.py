@@ -27,7 +27,6 @@ from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from packaging import version
 
-from neptune.new.attributes.namespace import Namespace
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.exceptions import (
     ClientHttpError,
@@ -90,10 +89,9 @@ from neptune.new.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
-from neptune.new.internal.utils.paths import path_to_str, parse_path
+from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version

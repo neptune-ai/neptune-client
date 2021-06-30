@@ -414,7 +414,8 @@ class TestHandler(unittest.TestCase):
         exp['params/sub-namespace/int'] = 42
         exp['params/sub-namespace/string'] = 'Some text'
 
-        print(type(exp['params/sub-namespace'].fetch))
+        # pylint: disable=assignment-from-no-return
+        # that's a false positive, pylint looks at Handler.fetch()
         params_dict = exp['params/sub-namespace'].fetch()
         self.assertDictEqual(params_dict, {
             'int': 42,
