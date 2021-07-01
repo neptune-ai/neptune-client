@@ -155,8 +155,12 @@ You can check all of your projects on the Projects page:
         )
 
         self.inputs = {
-            'available_projects_message': available_projects_message.format(projects=projects_formated_list) if available_projects else '',
-            'available_workspaces_message': available_workspaces_message.format(workspaces_urls=workspaces_formated_list) if available_workspaces else '',
+            'available_projects_message': available_projects_message.format(
+                projects=projects_formated_list
+            ) if available_projects else '',
+            'available_workspaces_message': available_workspaces_message.format(
+                workspaces_urls=workspaces_formated_list
+            ) if available_workspaces else '',
             **STYLES,
             **kwargs
         }
@@ -712,5 +716,6 @@ class PlotlyIncompatibilityException(Exception):
             "Unable to convert plotly figure to matplotlib format. "
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
             "See https://stackoverflow.com/q/63120058 for details. "
-            "Downgrade matplotlib to version 3.2 or use as_image to log static chart."
-                .format(matplotlib_version, plotly_version))
+            "Downgrade matplotlib to version 3.2 or use as_image to log static chart.".format(
+                matplotlib_version,
+                plotly_version))

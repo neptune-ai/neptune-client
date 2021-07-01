@@ -184,7 +184,8 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         try:
             if not workspace:
-                available_projects = list(filter(lambda p: p.name == name, self.get_available_projects(search_term=name)))
+                available_projects = list(filter(lambda p: p.name == name,
+                                                 self.get_available_projects(search_term=name)))
 
                 if len(available_projects) == 1:
                     project = available_projects[0]
