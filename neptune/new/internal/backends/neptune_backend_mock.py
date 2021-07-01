@@ -17,7 +17,7 @@ import os
 import uuid
 from datetime import datetime
 from shutil import copyfile
-from typing import Optional, List, Dict, TypeVar, Type
+from typing import Optional, List, Dict, TypeVar, Type, Tuple, Any
 from zipfile import ZipFile
 
 from neptune.new.exceptions import (
@@ -270,22 +270,30 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_run_url(self, run_uuid: uuid, workspace: str, project_name: str, short_id: str) -> str:
         return f"offline/{run_uuid}"
 
-    def _get_attribute_value(self, value):
-        if isinstance(value, dict):
-            result = {}
-            for k, v in value.items():
-                mapped_value = self._get_attribute_value(v)
-                result[k] = mapped_value
-            return result
-        else:
-            attr_type = value.accept(self._attribute_type_converter_value_visitor).value
-            if hasattr(value, "value"):
-                return attr_type, value.value
+    def _get_attribute_values(self, value_dict, path_prefix: List[str]):
+        assert isinstance(value_dict, dict)
+        for k, value in value_dict.items():
+            if isinstance(value, dict):
+                yield from self._get_attribute_values(value, path_prefix + [k])
             else:
-                return attr_type, NoValue
+                attr_type = value.accept(self._attribute_type_converter_value_visitor).value
+                attr_path = '/'.join(path_prefix + [k])
+                if hasattr(value, "value"):
+                    yield attr_path, attr_type, value.value
+                else:
+                    return attr_path, attr_type, NoValue
 
-    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> dict:
-        return self._get_attribute_value(self._runs[run_uuid].get(path))
+    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> List[Tuple[str, AttributeType, Any]]:
+        values = self._get_attribute_values(self._runs[run_uuid].get(path), path)
+        namespace_prefix = path_to_str(path)
+        if namespace_prefix:
+            # don't want to catch "ns/attribute/other" while looking for "ns/attr"
+            namespace_prefix += "/"
+        return [
+            (full_path, attr_type, attr_value)
+            for (full_path, attr_type, attr_value) in values
+            if full_path.startswith(namespace_prefix)
+        ]
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
 

@@ -17,10 +17,10 @@ from collections.abc import MutableMapping
 from typing import Any, Dict, TYPE_CHECKING, Iterator, List, Mapping, Union
 
 from neptune.new.attributes.attribute import Attribute
+from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.utils.generic_attribute_mapper import atomic_attribute_types_map, NoValue
+from neptune.new.internal.utils.paths import parse_path, path_to_str
 from neptune.new.types.namespace import Namespace as NamespaceVal
-from neptune.new.internal.utils.paths import path_to_str
-
 
 if TYPE_CHECKING:
     from neptune.new.run import Run
@@ -75,8 +75,12 @@ class Namespace(Attribute, MutableMapping):
         return result
 
     def fetch(self) -> dict:
-        namespace_values = self._backend.fetch_atom_attribute_values(self._run_uuid, self._path)
-        return self._collect_atom_values(namespace_values)
+        attributes = self._backend.fetch_atom_attribute_values(self._run_uuid, self._path)
+        run_struct = RunStructure()
+        prefix_len = len(self._path)
+        for attr_name, attr_type, attr_value in attributes:
+            run_struct.set(parse_path(attr_name)[prefix_len:], (attr_type, attr_value))
+        return self._collect_atom_values(run_struct.get_structure())
 
 
 class NamespaceBuilder:
