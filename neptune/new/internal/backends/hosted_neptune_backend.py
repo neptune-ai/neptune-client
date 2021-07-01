@@ -213,8 +213,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             return list(map(
                 lambda project: Project(uuid.UUID(project.id), project.name, project.organizationName),
                 projects))
-        except HTTPNotFound as e:
-            raise e
+        except HTTPNotFound:
+            return []
 
     @with_api_exceptions_handler
     def get_available_workspaces(self) -> List[Workspace]:
@@ -229,8 +229,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             return list(map(
                 lambda workspace: Workspace(_uuid=uuid.UUID(workspace.id), name=workspace.name),
                 workspaces))
-        except HTTPNotFound as e:
-            raise e
+        except HTTPNotFound:
+            return []
 
     @with_api_exceptions_handler
     def get_run(self, run_id: str):
