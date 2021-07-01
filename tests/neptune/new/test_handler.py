@@ -403,6 +403,25 @@ class TestHandler(unittest.TestCase):
             }
         })
 
+    def test_fetch_dict_with_path(self):
+        now = datetime.now()
+
+        exp = init(mode='debug', flush_period=0.5)
+        exp['params/int'] = 1
+        exp['params/float'] = 3.14
+        exp['params/bool'] = True
+        exp['params/datetime'] = now
+        exp['params/sub-namespace/int'] = 42
+        exp['params/sub-namespace/string'] = 'Some text'
+
+        # pylint: disable=assignment-from-no-return
+        # that's a false positive, pylint looks at Handler.fetch()
+        params_dict = exp['params/sub-namespace'].fetch()
+        self.assertDictEqual(params_dict, {
+            'int': 42,
+            'string': 'Some text',
+        })
+
     @dataclass
     class FloatLike:
 

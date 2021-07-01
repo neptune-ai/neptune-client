@@ -18,7 +18,7 @@ import os
 import platform
 import re
 import uuid
-from typing import List, Optional, Dict, Iterable
+from typing import List, Optional, Dict, Iterable, Tuple, Any
 
 import click
 import urllib3
@@ -27,7 +27,6 @@ from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from packaging import version
 
-from neptune.new.attributes.namespace import Namespace
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.exceptions import (
@@ -93,10 +92,9 @@ from neptune.new.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
-from neptune.new.internal.utils.paths import path_to_str, parse_path
+from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
@@ -677,7 +675,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> Namespace:
+    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> List[Tuple[str, AttributeType, Any]]:
         params = {
             'experimentId': str(run_uuid),
         }
@@ -687,12 +685,10 @@ class HostedNeptuneBackend(NeptuneBackend):
                 # don't want to catch "ns/attribute/other" while looking for "ns/attr"
                 namespace_prefix += "/"
             result = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
-            attributes = [attr for attr in result.attributes if attr.name.startswith(namespace_prefix)]
-            run_struct = RunStructure()
-            for attr in attributes:
-                value = map_attribute_result_to_value(attr)
-                run_struct.set(parse_path(attr.name), (attr.type, value))
-            return run_struct.get_structure()
+            return [
+                (attr.name, attr.type, map_attribute_result_to_value(attr))
+                for attr in result.attributes if attr.name.startswith(namespace_prefix)
+            ]
         except HTTPNotFound:
             raise RunUUIDNotFound(run_uuid)
 

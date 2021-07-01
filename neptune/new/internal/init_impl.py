@@ -32,7 +32,8 @@ from neptune.new.constants import (
     OFFLINE_DIRECTORY,
 )
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH
-from neptune.new.exceptions import (NeedExistingRunForReadOnlyMode, NeptuneRunResumeAndCustomIdCollision)
+from neptune.new.exceptions import (NeedExistingRunForReadOnlyMode, NeptuneRunResumeAndCustomIdCollision,
+                                    NeptunePossibleLegacyUsageException)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
@@ -69,6 +70,9 @@ __version__ = str(parsed_version)
 _logger = logging.getLogger(__name__)
 
 
+LEGACY_KWARGS = ('project_qualified_name', 'backend')
+
+
 class RunMode(str, Enum):
     OFFLINE = "offline"
     DEBUG = "debug"
@@ -78,6 +82,15 @@ class RunMode(str, Enum):
 
     def __repr__(self):
         return f'"{self.value}"'
+
+
+def _check_for_extra_kwargs(caller_name, kwargs: dict):
+    for name in LEGACY_KWARGS:
+        if name in kwargs:
+            raise NeptunePossibleLegacyUsageException()
+    if kwargs:
+        first_key = next(iter(kwargs.keys()))
+        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
 def init(project: Optional[str] = None,
@@ -95,7 +108,8 @@ def init(project: Optional[str] = None,
          fail_on_exception: bool = True,
          monitoring_namespace: str = "monitoring",
          flush_period: float = 5,
-         proxies: Optional[dict] = None) -> HostedNeptuneBackend:
+         proxies: Optional[dict] = None,
+         **kwargs) -> Run:
     """Starts a new tracked run, and append it to the top of the Runs table view.
 
     Args:
@@ -188,6 +202,7 @@ def init(project: Optional[str] = None,
     .. _init docs page:
        https://docs.neptune.ai/api-reference/neptune#init
     """
+    _check_for_extra_kwargs(init.__name__, kwargs)
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("run", run, (str, type(None)))
