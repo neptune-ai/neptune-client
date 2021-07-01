@@ -259,6 +259,7 @@ def init(project: Optional[str] = None,
         project = 'offline/project-placeholder'
 
     project_obj = project_name_lookup(backend, project)
+    project = f'{project_obj.workspace}/{project_obj.name}'
 
     if run:
         api_run = backend.get_run(project + '/' + run)
