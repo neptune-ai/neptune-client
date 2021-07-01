@@ -6,6 +6,7 @@
 ### Features
 - Heuristics to help users find out they're writing legacy code with new client API or vice versa ([#607](https://github.com/neptune-ai/neptune-client/pull/607))
 - Lookup for projects without workspace specification and listing user projects and workspaces ([#615](https://github.com/neptune-ai/neptune-client/pull/615))
+- Mechanism to prevent using legacy Experiments in new-API integrations ([#XXX](https://github.com/neptune-ai/neptune-client/pull/XXX))
 
 ## neptune-client 0.9.19
 

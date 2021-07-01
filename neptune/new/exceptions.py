@@ -748,3 +748,23 @@ You may also want to check the following docs pages:
 """
         inputs = dict(list({}.items()) + list(STYLES.items()))
         super().__init__(message.format(**inputs))
+
+
+class NeptuneLegacyIncompatibilityException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneLegacyIncompatibilityException----------------------------------------
+{end}
+It seems you are passing the legacy Experiment object, when a Run object is expected.
+
+What can I do?
+    - Updating your code to the new Python API requires few changes, but to help you with this process we prepared a handy migration guide:
+    https://docs.neptune.ai/migration-guide
+    - You can read more about neptune.new in the release blog post:
+    https://neptune.ai/blog/neptune-new
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        inputs = dict(list({}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))

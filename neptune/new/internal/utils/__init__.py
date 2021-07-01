@@ -18,9 +18,13 @@ from io import IOBase, BytesIO
 import logging
 import os
 from glob import glob
-from typing import Union, TypeVar, Iterable, List, Set, Optional, Mapping
+from typing import Union, TypeVar, Iterable, List, Set, Optional, Mapping, TYPE_CHECKING
 
 from neptune.new.internal.utils import limits
+
+if TYPE_CHECKING:
+    from neptune.new import Run
+
 
 T = TypeVar('T')
 
@@ -170,3 +174,13 @@ def is_ipython() -> bool:
         return ipython is not None
     except ImportError:
         return False
+
+
+def expect_not_an_experiment(run: 'Run'):
+    from neptune.new.exceptions import NeptuneLegacyIncompatibilityException
+    try:
+        from neptune.experiments import Experiment
+        if isinstance(run, Experiment):
+            raise NeptuneLegacyIncompatibilityException()
+    except ImportError:
+        pass
