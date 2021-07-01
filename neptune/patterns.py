@@ -15,4 +15,4 @@
 #
 
 
-PROJECT_QUALIFIED_NAME_PATTERN = "^([^/]+)/([^/]+)$"
+PROJECT_QUALIFIED_NAME_PATTERN = "^((?P<workspace>[^/]+)/){0,1}(?P<project>[^/]+)$"

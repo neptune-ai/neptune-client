@@ -130,24 +130,12 @@ Verify the correctness of your call or contact Neptune support.
         super().__init__(message.format(**inputs))
 
 
-class ProjectNotFound(NeptuneException):
+class ExceptionWithProjectsWorkspacesListing(NeptuneException):
     def __init__(self,
-                 project_id: str,
+                 message: str,
                  available_projects: List[Project] = (),
-                 available_workspaces: List[Workspace] = ()
-                 ):
-        message = """
-{h1}
-----NeptuneProjectNotFoundException------------------------------------
-{end}
-We couldn’t find project {fail}"{project}"{end}.
-{available_projects_message}{available_workspaces_message}
-You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
-    - https://docs.neptune.ai/getting-started/hello-world#project
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
-"""
+                 available_workspaces: List[Workspace] = (),
+                 **kwargs):
         available_projects_message = """
 Did you mean any of these?
 {projects}
@@ -166,16 +154,37 @@ You can check all of your projects on the Projects page:
             map(lambda workspace: f'    - https://app.neptune.ai/{workspace.name}/-/projects', available_workspaces)
         )
 
-        inputs = {
-            'project': project_id,
-            'available_projects_message': available_projects_message.format(
-                projects=projects_formated_list) if available_projects else '',
-            'available_workspaces_message': available_workspaces_message.format(
-                workspaces_urls=workspaces_formated_list) if available_workspaces else '',
-            **STYLES
+        self.inputs = {
+            'available_projects_message': available_projects_message.format(projects=projects_formated_list) if available_projects else '',
+            'available_workspaces_message': available_workspaces_message.format(workspaces_urls=workspaces_formated_list) if available_workspaces else '',
+            **STYLES,
+            **kwargs
         }
 
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**self.inputs))
+
+
+class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
+    def __init__(self,
+                 project_id: str,
+                 available_projects: List[Project] = (),
+                 available_workspaces: List[Workspace] = ()):
+        message = """
+{h1}
+----NeptuneProjectNotFoundException------------------------------------
+{end}
+We couldn’t find project {fail}"{project}"{end}.
+{available_projects_message}{available_workspaces_message}
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+    - https://docs.neptune.ai/getting-started/hello-world#project
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message=message,
+                         available_projects=available_projects,
+                         available_workspaces=available_workspaces,
+                         project=project_id)
 
 
 class RunNotFound(NeptuneException):
@@ -212,14 +221,16 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**inputs))
 
 
-class NeptuneMissingProjectNameException(NeptuneException):
-    def __init__(self):
+class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing):
+    def __init__(self,
+                 available_projects: List[Project] = (),
+                 available_workspaces: List[Workspace] = ()):
         message = """
 {h1}
 ----NeptuneMissingProjectNameException----------------------------------------
 {end}
 Neptune client couldn't find your project name.
-
+{available_projects_message}{available_workspaces_message}
 There are two options two add it:
     - specify it in your code 
     - set an environment variable in your operating system.
@@ -248,18 +259,23 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'env_project': envs.PROJECT_ENV_NAME}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message=message,
+                         available_projects=available_projects,
+                         available_workspaces=available_workspaces,
+                         env_project=envs.PROJECT_ENV_NAME)
 
 
-class NeptuneIncorrectProjectNameException(NeptuneException):
-    def __init__(self, project):
+class NeptuneIncorrectProjectNameException(ExceptionWithProjectsWorkspacesListing):
+    def __init__(self,
+                 project: str,
+                 available_projects: List[Project] = (),
+                 available_workspaces: List[Workspace] = ()):
         message = """
 {h1}
 ----NeptuneIncorrectProjectNameException------------------------------------
 {end}
 Project name {fail}"{project}"{end} you specified seems to be incorrect.
-
+{available_projects_message}{available_workspaces_message}
 The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
 It has two parts:
     - {correct}WORKSPACE{end}: which can be your username or your organization name
@@ -277,8 +293,10 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'project': project}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message=message,
+                         available_projects=available_projects,
+                         available_workspaces=available_workspaces,
+                         project=project)
 
 
 class NeptuneMissingApiTokenException(NeptuneException):

@@ -37,6 +37,7 @@ from neptune.new.exceptions import (NeedExistingRunForReadOnlyMode, NeptuneIncor
                                     NeptuneMissingProjectNameException, NeptuneRunResumeAndCustomIdCollision)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.backends.project_lookup import project_lookup
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
@@ -244,14 +245,9 @@ def init(project: Optional[str] = None,
 
     if mode == RunMode.OFFLINE or mode == RunMode.DEBUG:
         project = 'offline/project-placeholder'
-    elif not project:
-        project = os.getenv(PROJECT_ENV_NAME)
-        if not project:
-            raise NeptuneMissingProjectNameException()
-    if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
-        raise NeptuneIncorrectProjectNameException(project)
 
-    project_obj = backend.get_project(project)
+    project_obj = project_lookup(backend, project)
+
     if run:
         api_run = backend.get_run(project + '/' + run)
     else:
