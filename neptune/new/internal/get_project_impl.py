@@ -17,7 +17,7 @@ import logging
 from typing import Optional
 
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.new.internal.backends.project_lookup import project_lookup
+from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.utils import verify_type
 from neptune.new.project import Project
@@ -62,6 +62,6 @@ def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> 
     verify_type("api_token", api_token, (str, type(None)))
 
     backend = HostedNeptuneBackend(Credentials(api_token=api_token))
-    project_obj = project_lookup(backend, name)
+    project_obj = project_name_lookup(backend, name)
 
     return Project(project_obj.uuid, backend)

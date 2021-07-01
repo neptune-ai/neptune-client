@@ -15,10 +15,7 @@
 #
 import logging
 import os
-import re
-from typing import Optional, List
-
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from typing import Optional
 
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import NeptuneMissingProjectNameException
@@ -32,7 +29,7 @@ __version__ = str(parsed_version)
 _logger = logging.getLogger(__name__)
 
 
-def project_lookup(backend: NeptuneBackend, name: Optional[str] = None) -> Project:
+def project_name_lookup(backend: NeptuneBackend, name: Optional[str] = None) -> Project:
     verify_type("name", name, (str, type(None)))
 
     if not name:

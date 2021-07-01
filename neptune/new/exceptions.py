@@ -187,38 +187,25 @@ You may also want to check the following docs pages:
                          project=project_id)
 
 
-class RunNotFound(NeptuneException):
-
-    def __init__(self, run_id: str) -> None:
-        super().__init__("Run {} not found.".format(run_id))
-
-
-class RunUUIDNotFound(NeptuneException):
-    def __init__(self, run_uuid: uuid.UUID):
-        super().__init__("Run with UUID {} not found. Could be deleted.".format(run_uuid))
-
-
-class InactiveRunException(NeptuneException):
-    def __init__(self, short_id: str):
+class ProjectNameCollision(ExceptionWithProjectsWorkspacesListing):
+    def __init__(self,
+                 project_id: str,
+                 available_projects: List[Project] = ()):
         message = """
 {h1}
-----InactiveRunException----------------------------------------
+----NeptuneProjectNameCollisionException------------------------------------
 {end}
-It seems you are trying to log (or fetch) metadata to a run that was stopped ({short_id}).
-What should I do?
-    - Resume the run to continue logging to it:
-    https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
-    - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only, 
-    you can resume a run in read-only mode:
-    https://docs.neptune.ai/you-should-know/connection-modes#read-only
+Cannot resolve project {fail}"{project}"{end}.
+{available_projects_message}
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/api-reference/run#stop
-    - https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
-    - https://docs.neptune.ai/you-should-know/connection-modes
+    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+    - https://docs.neptune.ai/getting-started/hello-world#project
+
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'short_id': short_id}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message=message,
+                         available_projects=available_projects,
+                         project=project_id)
 
 
 class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing):
@@ -265,38 +252,38 @@ You may also want to check the following docs pages:
                          env_project=envs.PROJECT_ENV_NAME)
 
 
-class NeptuneIncorrectProjectNameException(ExceptionWithProjectsWorkspacesListing):
-    def __init__(self,
-                 project: str,
-                 available_projects: List[Project] = (),
-                 available_workspaces: List[Workspace] = ()):
+class RunNotFound(NeptuneException):
+
+    def __init__(self, run_id: str) -> None:
+        super().__init__("Run {} not found.".format(run_id))
+
+
+class RunUUIDNotFound(NeptuneException):
+    def __init__(self, run_uuid: uuid.UUID):
+        super().__init__("Run with UUID {} not found. Could be deleted.".format(run_uuid))
+
+
+class InactiveRunException(NeptuneException):
+    def __init__(self, short_id: str):
         message = """
 {h1}
-----NeptuneIncorrectProjectNameException------------------------------------
+----InactiveRunException----------------------------------------
 {end}
-Project name {fail}"{project}"{end} you specified seems to be incorrect.
-{available_projects_message}{available_workspaces_message}
-The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
-It has two parts:
-    - {correct}WORKSPACE{end}: which can be your username or your organization name
-    - {correct}PROJECT_NAME{end}: which is the actual project name you chose 
-
-For example, a project {correct}neptune-ai/credit-default-prediction{end} parts are:
-    - {correct}neptune-ai{end}: {underline}WORKSPACE{end} our company organization name
-    - {correct}credit-default-prediction{end}: {underline}PROJECT_NAME{end} a project name
-
-The URL to this project looks like this: https://app.neptune.ai/neptune-ai/credit-default-prediction
-
+It seems you are trying to log (or fetch) metadata to a run that was stopped ({short_id}).
+What should I do?
+    - Resume the run to continue logging to it:
+    https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
+    - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only, 
+    you can resume a run in read-only mode:
+    https://docs.neptune.ai/you-should-know/connection-modes#read-only
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
-    - https://docs.neptune.ai/getting-started/hello-world#project
-
+    - https://docs.neptune.ai/api-reference/run#stop
+    - https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
+    - https://docs.neptune.ai/you-should-know/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message=message,
-                         available_projects=available_projects,
-                         available_workspaces=available_workspaces,
-                         project=project)
+        inputs = dict(list({'short_id': short_id}.items()) + list(STYLES.items()))
+        super().__init__(message.format(**inputs))
 
 
 class NeptuneMissingApiTokenException(NeptuneException):
