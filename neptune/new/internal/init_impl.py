@@ -255,8 +255,6 @@ def init(project: Optional[str] = None,
     else:
         raise ValueError(f'mode should be one of {[m for m in RunMode]}')
 
-    # return backend
-
     if mode == RunMode.OFFLINE or mode == RunMode.DEBUG:
         project = 'offline/project-placeholder'
 
