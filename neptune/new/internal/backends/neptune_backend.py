@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 import abc
-import typing
 import uuid
-from typing import List, Optional
+from typing import Any, List, Tuple, Optional
 
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     Attribute,
+    AttributeType,
     BoolAttribute,
     DatetimeAttribute,
     FileAttribute,
@@ -165,5 +165,5 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> typing.Union[typing.Mapping, dict]:
+    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> List[Tuple[str, AttributeType, Any]]:
         pass

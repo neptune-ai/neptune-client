@@ -13,8 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import typing
-from typing import Optional, List, TypeVar, Generic, Callable
+from typing import Optional, List, TypeVar, Generic, Callable, Union
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.utils.paths import path_to_str
@@ -29,7 +28,7 @@ def _default_node_factory(path):
 
 
 class RunStructure(Generic[T, Node]):
-    def __init__(self, node_factory: typing.Optional[Callable[[List[str]], Node]] = None):
+    def __init__(self, node_factory: Optional[Callable[[List[str]], Node]] = None):
         if node_factory is None:
             node_factory = _default_node_factory
 
@@ -40,7 +39,7 @@ class RunStructure(Generic[T, Node]):
     def get_structure(self) -> Node:
         return self._structure
 
-    def get(self, path: List[str]) -> Optional[T]:
+    def get(self, path: List[str]) -> Union[T, Node, None]:
         ref = self._structure
 
         for index, part in enumerate(path):

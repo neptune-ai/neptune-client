@@ -28,10 +28,19 @@ from typing import Optional
 
 from neptune.new import types
 from neptune.new.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
-from neptune.new.exceptions import NeptuneUninitializedException
+from neptune.new.exceptions import NeptuneUninitializedException, NeptunePossibleLegacyUsageException
 from neptune.new.run import Run
 from neptune.new.internal.get_project_impl import get_project
 from neptune.new.internal.init_impl import __version__, init
+
+
+def _raise_legacy_client_expected(*args, **kwargs):
+    raise NeptunePossibleLegacyUsageException()
+
+
+create_experiment = get_experiment = append_tag = append_tags = remove_tag = set_property = \
+    remove_property = send_metric = log_metric = send_text = log_text = send_image = log_image = \
+    send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
 
 
 def get_last_run() -> Optional[Run]:
