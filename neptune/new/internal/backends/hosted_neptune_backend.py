@@ -201,7 +201,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 limit=5,
                 organizationIdentifier=workspace_id,
                 searchTerm=search_term,
-                sortBy=['timeOfCreation'],
+                sortBy=['lastViewed'],
                 sortDirection=['descending'],
                 userRelation='memberOrHigher',
                 **self.DEFAULT_REQUEST_KWARGS,
