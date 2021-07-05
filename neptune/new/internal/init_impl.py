@@ -16,7 +16,6 @@
 
 import logging
 import os
-import re
 import uuid
 from datetime import datetime
 from enum import Enum
@@ -32,12 +31,12 @@ from neptune.new.constants import (
     NEPTUNE_RUNS_DIRECTORY,
     OFFLINE_DIRECTORY,
 )
-from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH, PROJECT_ENV_NAME
-from neptune.new.exceptions import (NeedExistingRunForReadOnlyMode, NeptuneIncorrectProjectNameException,
-                                    NeptuneMissingProjectNameException, NeptuneRunResumeAndCustomIdCollision,
+from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH
+from neptune.new.exceptions import (NeedExistingRunForReadOnlyMode, NeptuneRunResumeAndCustomIdCollision,
                                     NeptunePossibleLegacyUsageException)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
@@ -65,7 +64,6 @@ from neptune.new.internal.websockets.websocket_signals_background_job import Web
 from neptune.new.run import Run
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.version import version as parsed_version
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 __version__ = str(parsed_version)
 
@@ -259,14 +257,10 @@ def init(project: Optional[str] = None,
 
     if mode == RunMode.OFFLINE or mode == RunMode.DEBUG:
         project = 'offline/project-placeholder'
-    elif not project:
-        project = os.getenv(PROJECT_ENV_NAME)
-        if not project:
-            raise NeptuneMissingProjectNameException()
-    if not re.match(PROJECT_QUALIFIED_NAME_PATTERN, project):
-        raise NeptuneIncorrectProjectNameException(project)
 
-    project_obj = backend.get_project(project)
+    project_obj = project_name_lookup(backend, project)
+    project = f'{project_obj.workspace}/{project_obj.name}'
+
     if run:
         api_run = backend.get_run(project + '/' + run)
     else:
