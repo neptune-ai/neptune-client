@@ -28,6 +28,7 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.exceptions import (
     ClientHttpError,
     FetchAttributeNotFoundException,
@@ -38,6 +39,7 @@ from neptune.new.exceptions import (
     NeptuneException,
     NeptuneLegacyProjectException,
     ProjectNotFound,
+    ProjectNameCollision,
     NeptuneStorageLimitException,
     UnsupportedClientVersion,
 )
@@ -175,7 +177,29 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_project(self, project_id: str) -> Project:
         verify_type("project_id", project_id, str)
 
+        project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, project_id)
+        workspace, name = project_spec['workspace'], project_spec['project']
+
         try:
+            if not workspace:
+                available_projects = list(filter(lambda p: p.name == name,
+                                                 self.get_available_projects(search_term=name)))
+
+                if len(available_projects) == 1:
+                    project = available_projects[0]
+                    project_id = f'{project.workspace}/{project.name}'
+                elif len(available_projects) > 1:
+                    raise ProjectNameCollision(
+                        project_id=project_id,
+                        available_projects=available_projects
+                    )
+                else:
+                    raise ProjectNotFound(
+                        project_id=project_id,
+                        available_projects=self.get_available_projects(),
+                        available_workspaces=self.get_available_workspaces()
+                    )
+
             response = self.backend_client.api.getProject(
                 projectIdentifier=project_id,
                 **self.DEFAULT_REQUEST_KWARGS,
@@ -189,7 +213,9 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise NeptuneLegacyProjectException(project_id)
             return Project(uuid.UUID(project.id), project.name, project.organizationName)
         except HTTPNotFound:
-            raise ProjectNotFound(project_id)
+            raise ProjectNotFound(project_id,
+                                  available_projects=self.get_available_projects(workspace_id=workspace),
+                                  available_workspaces=list() if workspace else self.get_available_workspaces())
 
     @with_api_exceptions_handler
     def get_available_projects(self,
