@@ -22,6 +22,7 @@ from typing import Union, TypeVar, Iterable, List, Set, Optional, Mapping
 
 from neptune.new.internal.utils import limits
 
+
 T = TypeVar('T')
 
 _logger = logging.getLogger(__name__)
