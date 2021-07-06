@@ -1,4 +1,4 @@
-## neptune-client 0.10.0 [UNRELEASED]
+## neptune-client 0.10.0
 
 ### Breaking changes
 - Return path from requested prefix instead of root when fetching namespace ([#609](https://github.com/neptune-ai/neptune-client/pull/609))
