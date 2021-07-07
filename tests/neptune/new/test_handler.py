@@ -288,6 +288,13 @@ class TestHandler(unittest.TestCase):
         ns.pop('num/val', wait=True)
         self.assertNotIn('some', exp.get_structure())
 
+    def test_pop_self(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp['x'].assign(3, wait=True)
+        self.assertIn('x', exp.get_structure())
+        exp['x'].pop(wait=True)
+        self.assertNotIn('x', exp.get_structure())
+
     def test_del(self):
         exp = init(mode="debug", flush_period=0.5)
         exp['some/num/val'].assign(3)

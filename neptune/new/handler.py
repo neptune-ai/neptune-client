@@ -250,9 +250,12 @@ class Handler:
             else:
                 attr.add(values, wait)
 
-    def pop(self, path: str, wait: bool = False) -> None:
-        verify_type("path", path, str)
-        self._run.pop(join_paths(self._path, path), wait)
+    def pop(self, path: str = None, wait: bool = False) -> None:
+        if path:
+            verify_type("path", path, str)
+            self._run.pop(join_paths(self._path, path), wait)
+        else:
+            self._run.pop(self._path, wait)
 
     # Following attributes are implemented only for docstring hints and autocomplete
     DOCSTRING_ATTRIBUTES = [
