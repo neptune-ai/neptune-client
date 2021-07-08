@@ -127,8 +127,10 @@ You may also want to check the following docs pages:
     
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        inputs = dict(list({'library': library}.items()) + list(STYLES.items()))
-        super(NeptuneLibraryNotInstalledException, self).__init__(message.format(**inputs))
+        super(NeptuneLibraryNotInstalledException, self).__init__(message.format(
+            library=library,
+            **STYLES
+        ))
 
 
 class InvalidChannelValue(NeptuneException):
@@ -196,8 +198,10 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
-        super(NeptuneMissingApiTokenException, self).__init__(message.format(**inputs))
+        super(NeptuneMissingApiTokenException, self).__init__(message.format(
+            env_api_token=envs.API_TOKEN_ENV_NAME,
+            **STYLES
+        ))
 
 
 class NeptuneMissingProjectQualifiedNameException(NeptuneException):
@@ -236,8 +240,10 @@ You may also want to check the following docs pages:
     
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        inputs = dict(list({'env_project': envs.PROJECT_ENV_NAME}.items()) + list(STYLES.items()))
-        super(NeptuneMissingProjectQualifiedNameException, self).__init__(message.format(**inputs))
+        super(NeptuneMissingProjectQualifiedNameException, self).__init__(message.format(
+            env_project=envs.PROJECT_ENV_NAME,
+            **STYLES
+        ))
 
 
 class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
@@ -265,8 +271,10 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        inputs = dict(list({'project_qualified_name': project_qualified_name}.items()) + list(STYLES.items()))
-        super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message.format(**inputs))
+        super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message.format(
+            project_qualified_name=project_qualified_name,
+            **STYLES
+        ))
 
 
 class InvalidNeptuneBackend(NeptuneException):
@@ -299,8 +307,10 @@ What should I do?
       See https://docs-legacy.neptune.ai/api-reference/neptune/index.html#neptune.init
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
 """
-        inputs = dict(list({'host': host}.items()) + list(STYLES.items()))
-        super(CannotResolveHostname, self).__init__(message.format(**inputs))
+        super(CannotResolveHostname, self).__init__(message.format(
+            host=host,
+            **STYLES
+        ))
 
 
 class UnsupportedClientVersion(NeptuneException):
@@ -450,8 +460,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
 
 
 class ProjectMigratedToNewStructure(NeptuneException):

@@ -64,8 +64,10 @@ There are two possible reasons:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({"field_path": field_path}.items()) + list(STYLES.items()))
-        self._msg = message.format(**inputs)
+        self._msg = message.format(
+            field_path=field_path,
+            **STYLES
+        )
         super().__init__(self._msg)
 
     def __str__(self):
@@ -105,8 +107,10 @@ Please contact Neptune support.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({"msg": msg}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            msg=msg,
+            **STYLES
+        ))
 
 
 class ClientHttpError(NeptuneException):
@@ -126,8 +130,11 @@ Verify the correctness of your call or contact Neptune support.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({"status": status, "response": response}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            status=status,
+            response=response,
+            **STYLES
+        ))
 
 
 class ExceptionWithProjectsWorkspacesListing(NeptuneException):
@@ -154,18 +161,16 @@ You can check all of your projects on the Projects page:
             map(lambda workspace: f'    - https://app.neptune.ai/{workspace.name}/-/projects', available_workspaces)
         )
 
-        self.inputs = {
-            'available_projects_message': available_projects_message.format(
+        super().__init__(message.format(
+            available_projects_message=available_projects_message.format(
                 projects=projects_formated_list
             ) if available_projects else '',
-            'available_workspaces_message': available_workspaces_message.format(
+            available_workspaces_message=available_workspaces_message.format(
                 workspaces_urls=workspaces_formated_list
             ) if available_workspaces else '',
             **STYLES,
             **kwargs
-        }
-
-        super().__init__(message.format(**self.inputs))
+        ))
 
 
 class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
@@ -286,8 +291,10 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/you-should-know/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'short_id': short_id}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            short_id=short_id,
+            **STYLES
+        ))
 
 
 class NeptuneMissingApiTokenException(NeptuneException):
@@ -328,8 +335,10 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            env_api_token=envs.API_TOKEN_ENV_NAME,
+            **STYLES
+        ))
 
 
 class NeptuneInvalidApiTokenException(NeptuneException):
@@ -371,8 +380,10 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            env_api_token=envs.API_TOKEN_ENV_NAME,
+            **STYLES
+        ))
 
 
 class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
@@ -397,8 +408,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list(list({}.items()) + list(STYLES.items())))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
 
 
 class NeptuneRunResumeAndCustomIdCollision(NeptuneException):
@@ -418,8 +428,10 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'custom_id_env': CUSTOM_RUN_ID_ENV_NAME}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            custom_id_env=CUSTOM_RUN_ID_ENV_NAME,
+            **STYLES
+        ))
 
 
 class UnsupportedClientVersion(NeptuneException):
@@ -440,10 +452,11 @@ Please install neptune-client{required_version}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list(
-            {'current_version': current_version, 'required_version': required_version}.items()
-        ) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            current_version=current_version,
+            required_version=required_version,
+            **STYLES
+        ))
 
 
 class CannotResolveHostname(NeptuneException):
@@ -464,8 +477,10 @@ What should I do?
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'host': host}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            host=host,
+            **STYLES
+        ))
 
 
 class SSLError(NeptuneException):
@@ -501,8 +516,7 @@ You may also want to check the following docs pages:
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
 
 
 class InternalServerError(NeptuneApiException):
@@ -520,8 +534,10 @@ Please try again later or contact Neptune support.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({"response": response}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            response=response,
+            **STYLES
+        ))
 
 
 class Unauthorized(NeptuneApiException):
@@ -545,8 +561,7 @@ You have no permission to access given resource.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
 
 
 class Forbidden(NeptuneApiException):
@@ -570,8 +585,7 @@ You have no permission to access given resource.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
 
 
 class NeptuneOfflineModeFetchException(NeptuneException):
@@ -591,13 +605,12 @@ You may also want to check the following docs pages:
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
 
 
 class OperationNotSupported(NeptuneException):
     def __init__(self, message: str):
-        super().__init__('Operation not supported: {}'.format(message))
+        super().__init__(f'Operation not supported: {message}')
 
 
 class NeptuneLegacyProjectException(NeptuneException):
@@ -616,8 +629,10 @@ You can find documentation for legacy neptune Python API here:
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'project': project}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            project=project,
+            **STYLES
+        ))
 
 
 class NeptuneUninitializedException(NeptuneException):
@@ -638,8 +653,8 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/api-reference/neptune#get_last_run
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
-""".format(**STYLES)
-        super().__init__(message)
+"""
+        super().__init__(message.format(**STYLES))
 
 
 class NeptuneIntegrationNotInstalledException(NeptuneException):
@@ -659,8 +674,10 @@ You may also want to check the following docs pages:
     
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({'framework': framework}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            framework=framework,
+            **STYLES
+        ))
 
 
 class NeptuneStorageLimitException(NeptuneException):
@@ -680,8 +697,7 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/advanced-user-guides/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
 
 
 class FetchAttributeNotFoundException(MetadataInconsistency):
@@ -706,8 +722,10 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """
-        inputs = dict(list({'attribute_path': attribute_path}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(
+            attribute_path=attribute_path,
+            **STYLES
+        ))
 
 
 class PlotlyIncompatibilityException(Exception):
@@ -746,8 +764,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
 
 
 class NeptuneLegacyIncompatibilityException(NeptuneException):
@@ -766,5 +783,4 @@ What can I do?
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super().__init__(message.format(**inputs))
+        super().__init__(message.format(**STYLES))
