@@ -455,7 +455,7 @@ class Run(AbstractContextManager):
     def _pop_namespace(self, namespace: NamespaceAttr, wait: bool):
         children = list(namespace)
         for key in children:
-            sub_attr_path = namespace._path + [key]
+            sub_attr_path = namespace._path + [key] # pylint: disable=protected-access
             self._pop_impl(sub_attr_path, wait)
 
     def lock(self) -> threading.RLock:
