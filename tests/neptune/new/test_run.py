@@ -63,6 +63,14 @@ class TestRun(unittest.TestCase):
         self.assertTrue('num' in exp.get_structure()['some']['path'])
         self.assertTrue('text' not in exp.get_structure()['some']['path'])
 
+    def test_pop_namespace(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp.define("some/path/subpath/num", Float(3))
+        exp.define("some/path/text", String("Some text"))
+        exp.define("some/otherpath", Float(4))
+        exp.pop("some/path")
+        self.assertTrue('path' not in exp.get_structure()['some'])
+
     def test_run_as_handler(self):
         exp = init(mode="debug", flush_period=0.5)
         exp.define("some/path/num", Float(3))
