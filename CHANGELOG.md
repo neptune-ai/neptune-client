@@ -1,3 +1,8 @@
+## neptune-client 0.10.1
+
+### Features
+- Logging version when using python logger integration ([#622](https://github.com/neptune-ai/neptune-client/pull/622))
+
 ## neptune-client 0.10.0
 
 ### Breaking changes
