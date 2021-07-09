@@ -1,6 +1,8 @@
 ## neptune-client 0.10.1
 
 ### Features
+- Delete namespace (and all child fields and namespaces) ([#619](https://github.com/neptune-ai/neptune-client/pull/619))
+- .pop() works invoked on a field ([#617](https://github.com/neptune-ai/neptune-client/pull/617))
 - Logging version when using python logger integration ([#622](https://github.com/neptune-ai/neptune-client/pull/622))
 
 ## neptune-client 0.10.0
