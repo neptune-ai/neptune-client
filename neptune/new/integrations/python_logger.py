@@ -20,6 +20,10 @@ from neptune.new import Run
 from neptune.new.internal.utils import verify_type
 from neptune.new.logging import Logger
 from neptune.new.run import RunState
+from neptune.new.version import version as neptune_client_version
+
+
+INTEGRATION_VERSION_KEY = 'source_code/integrations/python-logger'
 
 
 class NeptuneHandler(logging.Handler):
@@ -60,6 +64,8 @@ class NeptuneHandler(logging.Handler):
         self._run = run
         self._logger = Logger(run, path)
         self._thread_local = threading.local()
+
+        self._run[INTEGRATION_VERSION_KEY] = neptune_client_version
 
     def emit(self, record: logging.LogRecord) -> None:
         if not hasattr(self._thread_local, "inside_write"):

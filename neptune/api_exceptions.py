@@ -42,8 +42,7 @@ Neptune Client Library encountered an unexpected Server Error.
 
 Please try again later or contact Neptune support.
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super(ServerError, self).__init__(message.format(**inputs))
+        super(ServerError, self).__init__(message.format(**STYLES))
 
 
 class Unauthorized(NeptuneApiException):
@@ -65,8 +64,7 @@ You have no permission to access given resource.
           
     - Ask your organization administrator to grant you necessary privileges to the project
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super(Unauthorized, self).__init__(message.format(**inputs))
+        super(Unauthorized, self).__init__(message.format(**STYLES))
 
 
 class Forbidden(NeptuneApiException):
@@ -88,8 +86,7 @@ You have no permission to access given resource.
           
    - Ask your organization administrator to grant you necessary privileges to the project
 """
-        inputs = dict(list({}.items()) + list(STYLES.items()))
-        super(Forbidden, self).__init__(message.format(**inputs))
+        super(Forbidden, self).__init__(message.format(**STYLES))
 
 
 class InvalidApiKey(NeptuneApiException):
@@ -131,8 +128,10 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        inputs = dict(list({'env_api_token': envs.API_TOKEN_ENV_NAME}.items()) + list(STYLES.items()))
-        super(InvalidApiKey, self).__init__(message.format(**inputs))
+        super(InvalidApiKey, self).__init__(message.format(
+            env_api_token=envs.API_TOKEN_ENV_NAME,
+            **STYLES
+        ))
 
 
 class WorkspaceNotFound(NeptuneApiException):
@@ -145,8 +144,10 @@ Workspace {python}{workspace}{end} not found.
 
 Workspace is your username or a name of your team organization.
 """
-        inputs = dict(list({'workspace': namespace_name}.items()) + list(STYLES.items()))
-        super(WorkspaceNotFound, self).__init__(message.format(**inputs))
+        super(WorkspaceNotFound, self).__init__(message.format(
+            workspace=namespace_name,
+            **STYLES
+        ))
 
 
 class ProjectNotFound(NeptuneApiException):
@@ -159,8 +160,10 @@ Project {python}{project}{end} not found.
 
 Verify if your project's name was not misspelled. You can find proper name after logging into Neptune UI.
 """
-        inputs = dict(list({'project': project_identifier}.items()) + list(STYLES.items()))
-        super(ProjectNotFound, self).__init__(message.format(**inputs))
+        super(ProjectNotFound, self).__init__(message.format(
+            project=project_identifier,
+            **STYLES
+        ))
 
 
 class PathInProjectNotFound(NeptuneApiException):
