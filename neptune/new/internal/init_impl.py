@@ -31,7 +31,8 @@ from neptune.new.constants import (
     NEPTUNE_RUNS_DIRECTORY,
     OFFLINE_DIRECTORY,
 )
-from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH
+from neptune.new.envs import (CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH,
+                              MONITORING_NAMESPACE)
 from neptune.new.exceptions import (NeedExistingRunForReadOnlyMode, NeptuneRunResumeAndCustomIdCollision,
                                     NeptunePossibleLegacyUsageException)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
@@ -106,7 +107,7 @@ def init(project: Optional[str] = None,
          capture_stderr: bool = True,
          capture_hardware_metrics: bool = True,
          fail_on_exception: bool = True,
-         monitoring_namespace: str = "monitoring",
+         monitoring_namespace: Optional[str] = None,
          flush_period: float = 5,
          proxies: Optional[dict] = None,
          **kwargs) -> Run:
@@ -213,7 +214,7 @@ def init(project: Optional[str] = None,
     verify_type("capture_stdout", capture_stdout, bool)
     verify_type("capture_stderr", capture_stderr, bool)
     verify_type("capture_hardware_metrics", capture_hardware_metrics, bool)
-    verify_type("monitoring_namespace", monitoring_namespace, str)
+    verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
     if tags is not None:
@@ -231,6 +232,7 @@ def init(project: Optional[str] = None,
     description = "" if run is None and description is None else description
     hostname = get_hostname() if run is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
+    monitoring_namespace = monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or 'monitoring'
 
     if run and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
