@@ -1,3 +1,8 @@
+## neptune-client 0.10.2 [UNRELEASED]
+
+### Features
+- Added NEPTUNE_MONITORING_NAMEPSACE environment variable ([#623](https://github.com/neptune-ai/neptune-client/pull/623))
+
 ## neptune-client 0.10.1
 
 ### Features
