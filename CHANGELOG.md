@@ -1,7 +1,11 @@
-## neptune-client 0.10.1
+## neptune-client 0.10.2 [UNRELEASED]
 
 ### Features
 - Added NEPTUNE_MONITORING_NAMEPSACE environment variable ([#623](https://github.com/neptune-ai/neptune-client/pull/623))
+
+## neptune-client 0.10.1
+
+### Features
 - Logging version when using python logger integration ([#622](https://github.com/neptune-ai/neptune-client/pull/622))
 - Delete namespace (and all child fields and namespaces) ([#619](https://github.com/neptune-ai/neptune-client/pull/619))
 - .pop() works invoked on a field ([#617](https://github.com/neptune-ai/neptune-client/pull/617))
