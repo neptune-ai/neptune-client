@@ -41,7 +41,7 @@ class DiskQueue(StorageQueue[T]):
             to_dict: Callable[[T], dict],
             from_dict: Callable[[dict], T],
             max_file_size: int = 64 * 1024**2):
-        self._dir_path = dir_path
+        self._dir_path = dir_path.resolve()
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
