@@ -31,7 +31,7 @@ from neptune.projects import Project
 from neptune.sessions import Session
 from neptune.utils import assure_project_qualified_name
 
-__version__ = get_versions()['version']
+__version__ = "0.9.9"
 
 del get_versions
 

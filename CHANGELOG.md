@@ -3,6 +3,10 @@
 ### Features
 - Added NEPTUNE_MONITORING_NAMEPSACE environment variable ([#623](https://github.com/neptune-ai/neptune-client/pull/623))
 
+### Fixes
+- Use absolute path for operations queue([#624](https://github.com/neptune-ai/neptune-client/pull/624))
+- Fix race condition in operations queue([#625](https://github.com/neptune-ai/neptune-client/pull/625))
+
 ## neptune-client 0.10.1
 
 ### Features

@@ -83,18 +83,20 @@ class DiskQueue(StorageQueue[T]):
 
     def get(self) -> Tuple[Optional[T], int]:
         if self._should_skip_to_ack:
-            self._should_skip_to_ack = False
             return self._skip_and_get()
         else:
             return self._get()
 
     def _skip_and_get(self) -> Tuple[Optional[T], int]:
         ack_version = self._last_ack_file.read_local()
+        ver = -1
         while True:
-            obj, ver = self._get()
+            obj, next_ver = self._get()
             if obj is None:
                 return None, ver
+            ver = next_ver
             if ver > ack_version:
+                self._should_skip_to_ack = False
                 if ver > ack_version + 1:
                     _logger.warning("Possible data loss. Last acknowledged operation version: %d, next: %d",
                                     ack_version, ver)
@@ -104,7 +106,7 @@ class DiskQueue(StorageQueue[T]):
         _json = self._reader.get()
         if not _json:
             if self._read_file_version >= self._write_file_version:
-                return None, self._last_put_file.read_local()
+                return None, -1
             self._reader.close()
             self._read_file_version = self._next_log_file_version(self._read_file_version)
             self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
@@ -121,9 +123,10 @@ class DiskQueue(StorageQueue[T]):
             return [], ver
         ret = [first]
         for _ in range(0, size - 1):
-            obj, ver = self._get()
+            obj, next_ver = self._get()
             if not obj:
                 break
+            ver = next_ver
             ret.append(obj)
         return ret, ver
 

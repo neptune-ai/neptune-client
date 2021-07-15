@@ -17,5 +17,5 @@ from packaging import version
 
 from neptune._version import get_versions
 
-version = version.parse(get_versions()['version'])
+version = version.parse("0.9.9")
 del get_versions
