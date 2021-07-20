@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 import unittest
+from unittest.mock import MagicMock
 
-from neptune.new.attributes import attribute_type_to_atom
+from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.internal.backends.api_model import AttributeType
 
@@ -23,7 +24,6 @@ from neptune.new.internal.backends.api_model import AttributeType
 class TestAttributeUtils(unittest.TestCase):
     def test_attribute_type_to_atom(self):
         # Expect all AttributeTypes are reflected in `attribute_type_to_atom`...
-        self.assertEqual(set(at for at in AttributeType), set(attribute_type_to_atom.keys()))
-
         # ... and this reflection is class based on `Attribute`
-        self.assertTrue(all(issubclass(attr_atom, Attribute) for attr_atom in attribute_type_to_atom.values()))
+        self.assertTrue(all(isinstance(create_attribute_from_type(attr_type, MagicMock(), ""), Attribute)
+                            for attr_type in AttributeType))

@@ -32,4 +32,4 @@ from .sets.string_set import StringSet
 
 from .file_set import FileSet
 
-from .utils import attribute_type_to_atom
+from .utils import create_attribute_from_type
