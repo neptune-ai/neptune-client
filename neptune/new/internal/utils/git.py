@@ -56,9 +56,4 @@ def get_git_info(repo_path=None):
 
 
 def discover_git_repo_location() -> Optional[str]:
-    # pylint:disable=bad-option-value,import-outside-toplevel
-    import __main__
-
-    if hasattr(__main__, '__file__'):
-        return os.path.dirname(os.path.abspath(__main__.__file__))
-    return None
+    return os.getcwd()

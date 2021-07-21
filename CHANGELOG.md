@@ -1,5 +1,8 @@
 ## neptune-client 0.10.2 [UNRELEASED]
 
+### Breaking changes
+- Checking current working directory instead of entrypoint when looking for git repository ([#631](https://github.com/neptune-ai/neptune-client/pull/631))
+
 ### Features
 - Added NEPTUNE_MONITORING_NAMEPSACE environment variable ([#623](https://github.com/neptune-ai/neptune-client/pull/623))
 
