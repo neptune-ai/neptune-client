@@ -27,11 +27,11 @@ from typing import Any, Dict, List, Optional, Union
 import click
 
 from neptune.exceptions import UNIX_STYLES
-from neptune.new.attributes import attribute_type_to_atom
+from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import NamespaceBuilder, Namespace as NamespaceAttr
 from neptune.new.exceptions import (
-    MetadataInconsistency, NeptuneException, InactiveRunException, NeptunePossibleLegacyUsageException,
+    MetadataInconsistency, InactiveRunException, NeptunePossibleLegacyUsageException,
 )
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
@@ -515,12 +515,8 @@ class Run(AbstractContextManager):
                 self._define_attribute(parse_path(attribute.path), attribute.type)
 
     def _define_attribute(self, _path: List[str], _type: AttributeType):
-        try:
-            attr_init = attribute_type_to_atom[_type]
-        except KeyError:
-            raise NeptuneException(f"Unexpected type: {_type}")
-
-        self._structure.set(_path, attr_init(self, _path))
+        attr = create_attribute_from_type(_type, self, _path)
+        self._structure.set(_path, attr)
 
     def _get_root_handler(self):
         return Handler(self, "")
