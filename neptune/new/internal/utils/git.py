@@ -78,4 +78,3 @@ def discover_git_repo_location() -> Optional[str]:
         git_path = get_git_repo_path(initial_path=os.getcwd())
 
     return git_path
-
