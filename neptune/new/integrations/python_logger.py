@@ -23,7 +23,7 @@ from neptune.new.run import RunState
 from neptune.new.version import version as neptune_client_version
 
 
-INTEGRATION_VERSION_KEY = 'source_code/integrations/python-logger'
+INTEGRATION_VERSION_KEY = 'source_code/integrations/neptune-python-logger'
 
 
 class NeptuneHandler(logging.Handler):
