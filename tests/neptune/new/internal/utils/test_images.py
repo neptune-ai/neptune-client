@@ -134,7 +134,7 @@ class TestImage(unittest.TestCase):
     def test_get_image_content_from_tensorflow_tensor(self):
         import tensorflow as tf  # pylint: disable=C0415
         # given
-        image_tensor = tf.random.uniform(shape=[200, 300, 3])
+        image_tensor = tf.random.uniform(shape=[200, 300, 3])  # pylint: disable=E1120 # false positive
         expected_array = image_tensor.numpy() * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 

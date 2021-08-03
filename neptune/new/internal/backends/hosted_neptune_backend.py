@@ -457,8 +457,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 set(attr.type for attr in run.attributes) - set(attr.type for attr in accepted_attributes)
             if ignored_attributes:
                 _logger.warning(
-                    f"Ignored following attributes (unknown type): {ignored_attributes}.\n"
-                    f"Try to upgrade `neptune-client."
+                    "Ignored following attributes (unknown type): %s.\n"
+                    "Try to upgrade `neptune-client.", ignored_attributes
                 )
 
             return [to_attribute(attr) for attr in accepted_attributes if attr.type in attribute_type_names]

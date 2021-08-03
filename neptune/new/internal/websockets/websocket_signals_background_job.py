@@ -83,7 +83,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                 msg_type = json_msg.get("type")
                 msg_body = json_msg.get("body")
                 if not msg_type:
-                    click.echo(f"Malformed websocket signal: missing type", err=True)
+                    click.echo("Malformed websocket signal: missing type", err=True)
                     return
                 if not isinstance(msg_type, str):
                     click.echo(f"Malformed websocket signal: type is {type(msg_type)}, should be str", err=True)
