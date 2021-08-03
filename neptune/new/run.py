@@ -308,7 +308,7 @@ class Run(AbstractContextManager):
 
         self._state = RunState.STOPPING
         ts = time.time()
-        click.echo(f"Shutting down background jobs, please wait a moment...")
+        click.echo("Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
         self._bg_job.join(seconds)
         click.echo("Done!")

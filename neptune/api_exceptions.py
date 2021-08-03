@@ -256,7 +256,7 @@ class ExperimentOperationErrors(NeptuneApiException):
         self.errors = errors
 
     def __str__(self):
-        lines = [f'Caused by:']
+        lines = ['Caused by:']
         for error in self.errors:
             lines.append(f'\t* {error}')
         return '\n'.join(lines)

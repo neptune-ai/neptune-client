@@ -45,17 +45,19 @@ file-header=#\n# Copyright \(c\) (2019|2020|2021), Neptune Labs Sp\. z o\.o\.\n#
 # W1202 Allow logging-format-interpolation.
 # I0011 Do not show Locally disabled warnings in report
 # C0412 Disable checking imports from package %s are not grouped
-disable=R,C0103,C0111,W0401,W0511,W0614,W0703,W1202,I0011,C0412
+# W0707 Consider explicitly re-raising using the 'from' keyword
+# C0415 Import outside toplevel
+disable=R,C0103,C0111,W0401,W0511,W0614,W0703,W1202,I0011,C0412,W0707,C0415
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
 # multiple time. See also the "--disable" option for examples.
 
 # R0401 Enable detection of cyclic imports.
-# R0801 Enable detection of similar code.
+# R0801 Enable detection of similar code.  // disabled (temporarily, because it get too aggressive for tests)
 # R0921 Enable checking for unused abstract classes.
 # R0923 Enable checking for unused interfaces.
-enable=R0401,R0801,R0921,R0923
+enable=R0401,R0921,R0923
 
 
 [REPORTS]

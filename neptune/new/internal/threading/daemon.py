@@ -82,8 +82,8 @@ class Daemon(threading.Thread):
                         return result
                     except NeptuneConnectionLostException:
                         if self_.last_backoff_time == 0:
-                            click.echo(f"Experiencing connection interruptions. "
-                                       f"Will try to reestablish communication with Neptune.",
+                            click.echo("Experiencing connection interruptions. "
+                                       "Will try to reestablish communication with Neptune.",
                                        sys.stderr)
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:

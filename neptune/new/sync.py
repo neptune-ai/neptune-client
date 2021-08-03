@@ -228,8 +228,8 @@ def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
             except NeptuneConnectionLostException as ex:
                 if time.monotonic() - start_time > retries_timeout:
                     raise ex
-                click.echo(f"Experiencing connection interruptions. "
-                           f"Will try to reestablish communication with Neptune.",
+                click.echo("Experiencing connection interruptions. "
+                           "Will try to reestablish communication with Neptune.",
                            sys.stderr)
 
         disk_queue.ack(version)
