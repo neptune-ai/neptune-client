@@ -87,10 +87,3 @@ class MetricsFactory(object):
                 for card_index in self.__system_resource_info.gpu_card_indices
             ]
         )
-
-    @staticmethod
-    def __format_core_count(core_count):
-        if core_count == int(core_count):
-            return str(int(core_count))
-        else:
-            return str(core_count)
