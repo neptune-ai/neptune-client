@@ -18,8 +18,10 @@ import uuid
 from typing import List
 
 from neptune.new.exceptions import NeptuneOfflineModeFetchException
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     Attribute,
+    ArtifactAttribute,
     BoolAttribute,
     FileAttribute,
     FloatAttribute,
@@ -57,6 +59,12 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         raise NeptuneOfflineModeFetchException
 
     def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+        raise NeptuneOfflineModeFetchException
+
+    def get_artifact_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> ArtifactAttribute:
+        raise NeptuneOfflineModeFetchException
+
+    def list_artifact_files(self, project_identifier: str, artifact_hash: str) -> List[ArtifactFileData]:
         raise NeptuneOfflineModeFetchException
 
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:

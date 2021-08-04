@@ -52,6 +52,15 @@ class ArtifactMetadataSerializer:
             (k, ArtifactMetadataSerializer._serialize_metadata_value(v)) for k, v in sorted(metadata.items())
         ]
 
+    @classmethod
+    def from_dto(cls, artifact_file_dto):
+        return cls(
+            file_path=artifact_file_dto.filePath,
+            file_hash=artifact_file_dto.fileHash,
+            type=artifact_file_dto.type,
+            metadata={m.key: m.value for m in artifact_file_dto.metadata}
+        )
+
 
 class ArtifactDriversMap:
     _implementations: typing.List[typing.Type['ArtifactDriver']] = []

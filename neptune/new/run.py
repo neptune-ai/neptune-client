@@ -342,6 +342,9 @@ class Run(AbstractContextManager):
         """
         self._print_structure_impl(self.get_structure(), indent=0)
 
+    def get_project_identifier(self) -> str:
+        return f'{self._workspace}/{self._project_name}'
+
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser
         """

@@ -60,6 +60,10 @@ class ValueVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
+    def visit_artifact(self, value: String) -> Ret:
+        pass
+
+    @abc.abstractmethod
     def visit_file(self, value: File) -> Ret:
         pass
 

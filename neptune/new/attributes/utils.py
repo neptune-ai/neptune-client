@@ -16,8 +16,8 @@
 from typing import List, TYPE_CHECKING
 
 from neptune.new.attributes import (
-    Boolean, Datetime, File, FileSeries, FileSet, Float, FloatSeries, GitRef, Integer, NotebookRef, RunState, String,
-    StringSeries, StringSet,
+    Artifact, Boolean, Datetime, File, FileSeries, FileSet, Float, FloatSeries, GitRef, Integer, NotebookRef, RunState,
+    String, StringSeries, StringSet
 )
 from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.backends.api_model import AttributeType
@@ -41,6 +41,7 @@ _attribute_type_to_attr_class_map = {
     AttributeType.GIT_REF: GitRef,
     AttributeType.RUN_STATE: RunState,
     AttributeType.NOTEBOOK_REF: NotebookRef,
+    AttributeType.ARTIFACT: Artifact,
 }
 
 

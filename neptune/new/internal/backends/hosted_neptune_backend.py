@@ -28,6 +28,7 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.exceptions import (
     ClientHttpError,
@@ -42,6 +43,7 @@ from neptune.new.exceptions import (
     ProjectNameCollision,
     NeptuneStorageLimitException,
     UnsupportedClientVersion,
+    ArtifactNotFoundException,
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
@@ -66,6 +68,7 @@ from neptune.new.internal.backends.api_model import (
     FloatSeriesValues,
     FloatPointValue,
     ImageSeriesValues,
+    ArtifactAttribute,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
@@ -106,6 +109,7 @@ _logger = logging.getLogger(__name__)
 class HostedNeptuneBackend(NeptuneBackend):
     BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
     LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
+    ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
 
     CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
     REQUEST_TIMEOUT = None
@@ -147,6 +151,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                                                     self._http_client)
         self.leaderboard_client = create_swagger_client(self._client_config.api_url + self.LEADERBOARD_SWAGGER_PATH,
                                                         self._http_client)
+        self.artifacts_client = create_swagger_client(self._client_config.api_url + self.ARTIFACTS_SWAGGER_PATH,
+                                                      self._http_client)
 
         # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
         self._authenticator = NeptuneAuthenticator(
@@ -584,6 +590,34 @@ class HostedNeptuneBackend(NeptuneBackend):
             return DatetimeAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
+    def get_artifact_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> ArtifactAttribute:
+        params = {
+            'experimentId': str(run_uuid),
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
+            return ArtifactAttribute(result.hash)
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
+    def list_artifact_files(self, project_identifier: str, artifact_hash: str) -> List[ArtifactFileData]:
+        params = {
+            'projectIdentifier': project_identifier,
+            'hash': artifact_hash,
+            **self.DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            result = self.artifacts_client.api.listArtifactFiles(**params).response().result
+            return [
+                ArtifactFileData.from_dto(a) for a in result.files
+            ]
+        except HTTPNotFound:
+            raise ArtifactNotFoundException(artifact_hash)
 
     @with_api_exceptions_handler
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
