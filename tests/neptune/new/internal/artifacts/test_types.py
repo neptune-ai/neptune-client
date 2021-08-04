@@ -16,7 +16,7 @@
 import unittest
 from urllib.parse import urlparse
 
-from neptune.internal.artifacts.types import ArtifactDriversMap, ArtifactDriver
+from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactDriver
 from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
 
 
