@@ -71,7 +71,3 @@ class TestArtifactDriversMap(unittest.TestCase):
     def test_unmatched_type_raises_exception(self):
         with self.assertRaises(NeptuneUnhandledArtifactTypeException):
             ArtifactDriversMap.match_type("test2")
-
-
-if __name__ == '__main__':
-    unittest.main()
