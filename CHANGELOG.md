@@ -1,8 +1,13 @@
-## neptune-client 0.10.3 [UNRELEASED]
+## neptune-client 0.10.4 [UNRELEASED]
+
+### Features
+- Added long description for PyPI ([#642](https://github.com/neptune-ai/neptune-client/pull/642))
+
+## neptune-client 0.10.3
 
 ### Features
 - Checking current working directory in addition to entrypoint when looking for git repository ([#633](https://github.com/neptune-ai/neptune-client/pull/633))
-- Added support for Kedro integration ([#640](https://github.com/neptune-ai/neptune-client/pull/640))
+- Added support for Kedro integration ([#641](https://github.com/neptune-ai/neptune-client/pull/641))
 
 ## neptune-client 0.10.2
 
