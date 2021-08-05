@@ -29,6 +29,7 @@ def main():
             packages=find_packages(),
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
+              "kedro": ["kedro-neptune"],
               "fastai": ["neptune-fastai"],
               "lightgbm": ["neptune-lightgbm"],
               "optuna": ["neptune-optuna"],
