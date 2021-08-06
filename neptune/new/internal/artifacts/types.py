@@ -32,15 +32,15 @@ class ArtifactFileType(enum.Enum):
 class ArtifactFileData:
     file_path: str
     file_hash: str
-    type: str
+    type: ArtifactFileType
     metadata: typing.Dict[str, str]
 
 
 class ArtifactDriversMap:
-    _implementations: typing.List['ArtifactDriver'] = []
+    _implementations: typing.List[typing.Type['ArtifactDriver']] = []
 
     @classmethod
-    def match_path(cls, path: str) -> 'ArtifactDriver':
+    def match_path(cls, path: str) -> typing.Type['ArtifactDriver']:
         for artifact_driver in cls._implementations:
             if artifact_driver.matches(path):
                 return artifact_driver
@@ -48,7 +48,7 @@ class ArtifactDriversMap:
         raise NeptuneUnhandledArtifactSchemeException(path)
 
     @classmethod
-    def match_type(cls, type_str: str) -> 'ArtifactDriver':
+    def match_type(cls, type_str: str) -> typing.Type['ArtifactDriver']:
         for artifact_driver in cls._implementations:
             if artifact_driver.get_type() == type_str:
                 return artifact_driver
@@ -59,7 +59,7 @@ class ArtifactDriversMap:
 class ArtifactDriver(abc.ABC):
     def __init_subclass__(cls):
         # pylint: disable=protected-access
-        ArtifactDriversMap._implementations.append(cls())
+        ArtifactDriversMap._implementations.append(cls)
 
     @staticmethod
     def get_type() -> str:
@@ -70,7 +70,7 @@ class ArtifactDriver(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_tracked_files(cls, path, name=None) -> typing.Iterable[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, name: str = None) -> typing.Iterable[ArtifactFileData]:
         raise NotImplementedError
 
     @classmethod
