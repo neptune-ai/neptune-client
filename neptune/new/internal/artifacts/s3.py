@@ -18,8 +18,13 @@ import pathlib
 from urllib.parse import urlparse
 
 import boto3
+from botocore.exceptions import NoCredentialsError
 
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
+from neptune.new.exceptions import (
+    NeptuneRemoteStorageAccessException,
+    NeptuneRemoteStorageCredentialsException
+)
 
 
 class S3ArtifactDriver(ArtifactDriver):
@@ -41,28 +46,44 @@ class S3ArtifactDriver(ArtifactDriver):
 
         stored_files: typing.List[ArtifactFileData] = list()
 
-        for remote_object in remote_storage.objects.filter(Prefix=prefix):
-            remote_key = pathlib.Path(name or '') / pathlib.Path(remote_object.key[len(prefix):])
+        try:
+            for remote_object in remote_storage.objects.filter(Prefix=prefix):
+                remote_key = pathlib.Path(name or '') / pathlib.Path(remote_object.key[len(prefix):])
 
-            stored_files.append(
-                ArtifactFileData(
-                    file_path=str(remote_key),
-                    file_hash=remote_object.e_tag.strip('"'),
-                    type=ArtifactFileType.S3,
-                    metadata={
-                        "location": f's3://{bucket_name}{remote_object.key}',
-                        "last_modified": remote_object.last_modified,
-                        "file_size": remote_object.size
-                    }
+                stored_files.append(
+                    ArtifactFileData(
+                        file_path=str(remote_key),
+                        file_hash=remote_object.e_tag.strip('"'),
+                        type=ArtifactFileType.S3,
+                        metadata={
+                            "location": f's3://{bucket_name}{remote_object.key}',
+                            "last_modified": remote_object.last_modified,
+                            "file_size": remote_object.size
+                        }
+                    )
                 )
-            )
+        except NoCredentialsError:
+            raise NeptuneRemoteStorageCredentialsException()
+        except (remote_storage.meta.client.exceptions.NoSuchBucket,
+                remote_storage.meta.client.exceptions.NoSuchBucket):
+            raise NeptuneRemoteStorageAccessException(location=path)
 
         return stored_files
 
     @classmethod
     def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
-        url = urlparse(file_definition.metadata.get('location'))
+        location = file_definition.metadata.get('location')
+        url = urlparse(location)
         bucket_name, path = url.netloc, url.path
 
-        # pylint: disable=no-member
-        boto3.resource('s3').Bucket(bucket_name).download_file(path, str(destination))
+        remote_storage = boto3.resource('s3')
+
+        try:
+            # pylint: disable=no-member
+            bucket = remote_storage.Bucket(bucket_name)
+            bucket.download_file(path, str(destination))
+        except NoCredentialsError:
+            raise NeptuneRemoteStorageCredentialsException()
+        except (remote_storage.meta.client.exceptions.NoSuchBucket,
+                remote_storage.meta.client.exceptions.NoSuchBucket):
+            raise NeptuneRemoteStorageAccessException(location=location)
