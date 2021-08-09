@@ -15,6 +15,7 @@
 #
 import os
 import logging
+import warnings
 from typing import Optional
 
 from neptune.new.types.atoms import GitRef
@@ -26,11 +27,11 @@ def get_git_repo(repo_path):
     # WARN: GitPython asserts the existence of `git` executable
     # which consists in failure during the preparation of conda package
     try:
+        # pylint:disable=import-outside-toplevel
         import git
+        return git.Repo(repo_path, search_parent_directories=True)
     except ImportError:
-        return
-
-    return git.Repo(repo_path, search_parent_directories=True)
+        warnings.warn("GitPython could not be initialized")
 
 
 def get_git_info(repo_path=None):
