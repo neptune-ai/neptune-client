@@ -15,8 +15,8 @@
 #
 import typing
 import hashlib
-import pathlib
 import datetime
+from pathlib import Path
 
 from dataclasses import dataclass
 from datalite import datalite, fetch_if
@@ -25,7 +25,10 @@ from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactMetad
 from neptune.new.internal.artifacts.utils import sha1
 
 
-@datalite(db_path=str(pathlib.Path.home() / ".neptune" / "files.db"))
+FILES_STORAGE_PATH = Path.home() / ".neptune"
+
+
+@datalite(db_path=str(FILES_STORAGE_PATH / "files.db"))
 @dataclass
 class FileHash:
     file_path: str
@@ -35,8 +38,8 @@ class FileHash:
 
 class FileHasher:
     @classmethod
-    def get_local_file_hash(cls, file_path: typing.Union[str, pathlib.Path]) -> str:
-        absolute = pathlib.Path(file_path).resolve()
+    def get_local_file_hash(cls, file_path: typing.Union[str, Path]) -> str:
+        absolute = Path(file_path).resolve()
         modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime('%Y%m%d_%H%M%S')
 
         found = fetch_if(FileHash, f"file_path = '{str(absolute)}'")
