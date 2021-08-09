@@ -33,7 +33,7 @@ class ArtifactFileType(enum.Enum):
 class ArtifactFileData:
     file_path: str
     file_hash: str
-    type: ArtifactFileType
+    type: str
     metadata: typing.Dict[str, typing.Any]
 
 

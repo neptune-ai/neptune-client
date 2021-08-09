@@ -16,24 +16,34 @@
 import unittest
 import datetime
 
-from neptune.new.internal.artifacts.file_hasher import ArtifactMetadataSerializer
+from neptune.new.internal.artifacts.file_hasher import FileHasher
+from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactFileType
 
 
 class TestFileHasher(unittest.TestCase):
     def test_artifact_hash(self):
-        metadata = {
-            'location': "s3://bucket/path/to/file",
-            'last_modification': datetime.datetime(2021, 8, 9, 9, 41, 53),
-            'file_size': 18
-        }
+        artifacts = [
+            ArtifactFileData(
+                file_path='to/file1',
+                file_hash='c38444d2ccff1a7aab3d323fb6234e1b4f0a81ac',
+                type="S3",
+                metadata={
+                    'location': f"s3://bucket/path/to/file1",
+                    "file_size": 18,
+                    "last_modification": datetime.datetime(2021, 8, 9, 10, 22, 53)
+                }
+            ),
+            ArtifactFileData(
+                file_path='to/file2',
+                file_hash='4347d0f8ba661234a8eadc005e2e1d1b646c9682',
+                type="S3",
+                metadata={
+                    'location': f"s3://bucket/path/to/file2",
+                    "file_size": 24,
+                    "last_modification": datetime.datetime(2021, 8, 9, 10, 32, 12)
+                }
+            )
+        ]
 
-        serialized = ArtifactMetadataSerializer.serialize(metadata)
-
-        self.assertListEqual(
-            [
-                ('file_size', '18'),
-                ('last_modification', '2021-08-09 09:41:53'),
-                ('location', 's3://bucket/path/to/file')
-            ],
-            serialized
-        )
+        self.assertEqual("63d995a30adf77a40305ce7c69417866666d7df3", FileHasher.get_artifact_hash(artifacts))
+        self.assertEqual("63d995a30adf77a40305ce7c69417866666d7df3", FileHasher.get_artifact_hash(reversed(artifacts)))
