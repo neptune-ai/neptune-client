@@ -54,7 +54,7 @@ class S3ArtifactDriver(ArtifactDriver):
                     ArtifactFileData(
                         file_path=str(remote_key),
                         file_hash=remote_object.e_tag.strip('"'),
-                        type=ArtifactFileType.S3,
+                        type=ArtifactFileType.S3.value,
                         metadata={
                             "location": f's3://{bucket_name}{remote_object.key}',
                             "last_modified": remote_object.last_modified,

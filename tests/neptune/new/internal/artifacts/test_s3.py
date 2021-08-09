@@ -53,7 +53,7 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         artifact_file = ArtifactFileData(
             file_path='to/file1',
             file_hash='2f249230a8e7c2bf6005ccd2679259ec',
-            type=ArtifactFileType.S3,
+            type=ArtifactFileType.S3.value,
             metadata={
                 'location': f"s3://{self.bucket_name}/path/to/file1"
             }
