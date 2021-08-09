@@ -355,6 +355,9 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_git_ref(self, _: GitRef) -> AttributeType:
             return AttributeType.GIT_REF
 
+        def visit_artifact(self, _: Artifact) -> AttributeType:
+            return AttributeType.ARTIFACT
+
         def visit_namespace(self, _: Namespace) -> AttributeType:
             raise NotImplementedError
 
