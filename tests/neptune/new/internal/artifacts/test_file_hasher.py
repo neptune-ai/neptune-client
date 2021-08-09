@@ -17,7 +17,7 @@ import unittest
 import datetime
 
 from neptune.new.internal.artifacts.file_hasher import FileHasher
-from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactFileType
+from neptune.new.internal.artifacts.types import ArtifactFileData
 
 
 class TestFileHasher(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestFileHasher(unittest.TestCase):
                 file_hash='c38444d2ccff1a7aab3d323fb6234e1b4f0a81ac',
                 type="S3",
                 metadata={
-                    'location': f"s3://bucket/path/to/file1",
+                    'location': "s3://bucket/path/to/file1",
                     "file_size": 18,
                     "last_modification": datetime.datetime(2021, 8, 9, 10, 22, 53)
                 }
@@ -38,7 +38,7 @@ class TestFileHasher(unittest.TestCase):
                 file_hash='4347d0f8ba661234a8eadc005e2e1d1b646c9682',
                 type="S3",
                 metadata={
-                    'location': f"s3://bucket/path/to/file2",
+                    'location': "s3://bucket/path/to/file2",
                     "file_size": 24,
                     "last_modification": datetime.datetime(2021, 8, 9, 10, 32, 12)
                 }
