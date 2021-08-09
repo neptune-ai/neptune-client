@@ -53,7 +53,7 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         artifact_file = ArtifactFileData(
             file_path='to/file1',
             file_hash='2f249230a8e7c2bf6005ccd2679259ec',
-            type=ArtifactFileType.S3,
+            type=ArtifactFileType.S3.value,
             metadata={
                 'location': f"s3://{self.bucket_name}/path/to/file1"
             }
@@ -74,7 +74,7 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
 
         self.assertEqual(1, len(files))
         self.assertIsInstance(files[0], ArtifactFileData)
-        self.assertEqual(ArtifactFileType.S3, files[0].type)
+        self.assertEqual(ArtifactFileType.S3.value, files[0].type)
         self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', files[0].file_hash)
         self.assertEqual('.', files[0].file_path)
         self.assertEqual(
