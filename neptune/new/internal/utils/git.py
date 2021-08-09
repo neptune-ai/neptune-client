@@ -17,18 +17,27 @@ import os
 import logging
 from typing import Optional
 
-import git
-
 from neptune.new.types.atoms import GitRef
 
 _logger = logging.getLogger(__name__)
+
+
+def get_git_repo(repo_path):
+    # WARN: GitPython asserts the existence of `git` executable
+    # which consists in failure during the preparation of conda package
+    try:
+        import git
+    except ImportError:
+        return
+
+    return git.Repo(repo_path, search_parent_directories=True)
 
 
 def get_git_info(repo_path=None):
     try:
         # pylint:disable=bad-option-value
 
-        repo = git.Repo(repo_path, search_parent_directories=True)
+        repo = get_git_repo(repo_path)
 
         commit = repo.head.commit
 
@@ -58,7 +67,7 @@ def get_git_info(repo_path=None):
 
 def get_git_repo_path(initial_path: str) -> Optional[str]:
     try:
-        return git.Repo(initial_path, search_parent_directories=True).git_dir
+        return get_git_repo(initial_path).git_dir
     except:  # pylint: disable=bare-except
         pass
 
