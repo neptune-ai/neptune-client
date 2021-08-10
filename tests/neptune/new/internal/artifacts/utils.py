@@ -15,11 +15,15 @@
 #
 import hashlib
 
+CHUNK_SIZE = 4096
+
 
 # from https://stackoverflow.com/a/3431838
 def md5(fname):
     hash_md5 = hashlib.md5()
+
     with open(fname, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
+        for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
             hash_md5.update(chunk)
+
     return hash_md5.hexdigest()
