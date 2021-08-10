@@ -22,13 +22,12 @@ from pathlib import Path
 from mock import patch
 
 from neptune.new.internal.artifacts.types import ArtifactFileData
+from neptune.new.internal.artifacts.file_hasher import FileHasher
 
 
 class TestFileHasher(unittest.TestCase):
     def setUp(self) -> None:
         self.temp = tempfile.TemporaryDirectory()
-
-        os.makedirs(Path(self.temp.name) / '.neptune', exist_ok=True)
 
         with open(f'{self.temp.name}/test', 'wb') as handler:
             handler.write(b'\xde\xad\xbe\xef')
@@ -37,9 +36,6 @@ class TestFileHasher(unittest.TestCase):
         self.temp.cleanup()
 
     def test_artifact_hash(self):
-        # Calling from method for mocking home directory before FileHash creation
-        from neptune.new.internal.artifacts.file_hasher import FileHasher
-
         artifacts = [
             ArtifactFileData(
                 file_path='to/file1',
@@ -69,9 +65,6 @@ class TestFileHasher(unittest.TestCase):
     @patch('pathlib.Path.home')
     def test_local_file_hash(self, home):
         home.return_value = Path(self.temp.name)
-
-        # Calling from method for mocking home directory before FileHash creation
-        from neptune.new.internal.artifacts.file_hasher import FileHasher
 
         self.assertEqual(
             'd78f8bb992a56a597f6c7a1fb918bb78271367eb',

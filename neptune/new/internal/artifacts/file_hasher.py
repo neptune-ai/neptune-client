@@ -18,27 +18,18 @@ import hashlib
 import datetime
 from pathlib import Path
 
-from dataclasses import dataclass
-from datalite import datalite, fetch_if
+from datalite import fetch_if
 
 from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactMetadataSerializer
 from neptune.new.internal.artifacts.utils import sha1
 
 
-FILES_STORAGE_PATH = Path.home() / ".neptune"
-
-
-@datalite(db_path=str(FILES_STORAGE_PATH / "files.db"))
-@dataclass
-class FileHash:
-    file_path: str
-    file_hash: str
-    modification_date: str
-
-
 class FileHasher:
     @classmethod
     def get_local_file_hash(cls, file_path: typing.Union[str, Path]) -> str:
+        # Calling from method for mocking before FileHash creation
+        from neptune.new.internal.artifacts.file_hash import FileHash
+
         absolute = Path(file_path).resolve()
         modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime('%Y%m%d_%H%M%S')
 
