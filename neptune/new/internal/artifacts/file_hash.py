@@ -16,9 +16,9 @@
 import os
 import typing
 from pathlib import Path
+from dataclasses import dataclass
 
 from datalite import datalite
-from dataclasses import dataclass
 
 
 def persist(cls) -> typing.Type:
