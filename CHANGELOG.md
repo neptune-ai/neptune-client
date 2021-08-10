@@ -1,4 +1,4 @@
-## neptune-client 0.10.4 [UNRELEASED]
+## neptune-client 0.10.4
 
 ### Features
 - Added long description for PyPI ([#642](https://github.com/neptune-ai/neptune-client/pull/642))
