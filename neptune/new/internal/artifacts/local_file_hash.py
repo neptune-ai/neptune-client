@@ -32,7 +32,7 @@ def persist(cls) -> typing.Type:
 
 @persist
 @dataclass
-class FileHash:
+class LocalFileHash:
     file_path: str
     file_hash: str
     modification_date: str

@@ -28,12 +28,12 @@ class FileHasher:
     @classmethod
     def get_local_file_hash(cls, file_path: typing.Union[str, Path]) -> str:
         # Calling from method for mocking before FileHash creation
-        from neptune.new.internal.artifacts.file_hash import FileHash
+        from neptune.new.internal.artifacts.local_file_hash import LocalFileHash
 
         absolute = Path(file_path).resolve()
         modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime('%Y%m%d_%H%M%S')
 
-        found = fetch_if(FileHash, f"file_path = '{str(absolute)}'")
+        found = fetch_if(LocalFileHash, f"file_path = '{str(absolute)}'")
         stored_file_hash = found[0] if found is not None and len(found) > 0 else None
 
         if stored_file_hash:
@@ -46,13 +46,13 @@ class FileHasher:
                 stored_file_hash.update_entry()
 
                 return computed_hash
+        else:
+            computed_hash = sha1(absolute)
 
-        computed_hash = sha1(absolute)
+            # pylint: disable=no-member
+            LocalFileHash(str(absolute), computed_hash, modification_date).create_entry()
 
-        # pylint: disable=no-member
-        FileHash(str(absolute), computed_hash, modification_date).create_entry()
-
-        return computed_hash
+            return computed_hash
 
     @classmethod
     def get_artifact_hash(cls, artifact_files: typing.Iterable[ArtifactFileData]) -> str:
