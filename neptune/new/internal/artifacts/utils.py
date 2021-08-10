@@ -19,9 +19,7 @@ import hashlib
 
 
 def sha1(fname: typing.Union[str, pathlib.Path], block_size: int = 2 ** 16) -> str:
-    print('dddddd')
     sha1sum = hashlib.sha1()
-    print(sha1sum)
 
     with open(fname, 'rb') as source:
         block = source.read(block_size)

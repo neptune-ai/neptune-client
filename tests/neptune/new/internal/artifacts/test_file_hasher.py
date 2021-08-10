@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import hashlib
 import unittest
 import datetime
 import tempfile
 from pathlib import Path
 
-from mock import patch
+from mock import patch, Mock
 
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.artifacts.file_hasher import FileHasher
@@ -69,3 +70,19 @@ class TestFileHasher(unittest.TestCase):
             'd78f8bb992a56a597f6c7a1fb918bb78271367eb',
             FileHasher.get_local_file_hash(f'{self.temp.name}/test')
         )
+
+    @patch('pathlib.Path.home')
+    def test_local_file_hashed_only_once(self, home):
+        home.return_value = Path(self.temp.name)
+        hashlib.sha1 = Mock(side_effect=hashlib.sha1)
+
+        hashes = {
+            FileHasher.get_local_file_hash(f'{self.temp.name}/test') for _ in range(10)
+        }
+
+        self.assertEqual(
+            {'d78f8bb992a56a597f6c7a1fb918bb78271367eb'},
+            hashes
+        )
+
+        self.assertEqual(1, hashlib.sha1.call_count)
