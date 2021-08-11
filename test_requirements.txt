@@ -13,6 +13,7 @@ tox==3.6.1
 pytest-timeout==1.4.2
 matplotlib==3.2
 pytest-mock==3.3.1
+moto[s3]==2.2.1
 plotly
 altair
 vega_datasets
