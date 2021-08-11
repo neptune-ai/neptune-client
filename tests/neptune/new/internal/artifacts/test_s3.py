@@ -67,9 +67,6 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
                 file_definition=artifact_file
             )
 
-            import os
-
-            print(os.listdir('.'))
             self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', md5(local_destination / 'to' / 'file1'))
 
     def test_single_retrieval(self):
