@@ -791,25 +791,51 @@ class NeptuneUnhandledArtifactSchemeException(NeptuneException):
     def __init__(self, path: str):
         scheme = urlparse(path).scheme
         message = """
-    {h1}
-    ----NeptuneUnhandledArtifactProtocolException------------------------------------
-    {end}
-    You have used a Neptune Artifact to track a file with scheme unhandled by this client ({scheme}).
-    Problematic path: {path}
+{h1}
+----NeptuneUnhandledArtifactProtocolException------------------------------------
+{end}
+You have used a Neptune Artifact to track a file with scheme unhandled by this client ({scheme}).
+Problematic path: {path}
 
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
-    """
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
         super().__init__(message.format(scheme=scheme, path=path, **STYLES))
 
 
 class NeptuneUnhandledArtifactTypeException(NeptuneException):
     def __init__(self, type_str: str):
         message = """
-    {h1}
-    ----NeptuneUnhandledArtifactTypeException----------------------------------------
-    {end}
-    A Neptune Artifact you're listing is tracking a file type unhandled by this client ({type_str}).
+{h1}
+----NeptuneUnhandledArtifactTypeException----------------------------------------
+{end}
+A Neptune Artifact you're listing is tracking a file type unhandled by this client ({type_str}).
 
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
-    """
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
         super().__init__(message.format(type_str=type_str, **STYLES))
+
+
+class NeptuneRemoteStorageCredentialsException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneRemoteStorageCredentialsException-------------------------------------
+{end}
+Neptune could not find suitable credentials for remote storage of a Neptune Artifact you're listing.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(**STYLES))
+
+
+class NeptuneRemoteStorageAccessException(NeptuneException):
+    def __init__(self, location: str):
+        message = """
+{h1}
+----NeptuneRemoteStorageAccessException------------------------------------------
+{end}
+Neptune could not access an object ({location}) from remote storage of a Neptune Artifact you're listing.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(location=location, **STYLES))
