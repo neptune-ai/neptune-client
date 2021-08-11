@@ -49,12 +49,16 @@ class S3ArtifactDriver(ArtifactDriver):
 
         try:
             for remote_object in remote_storage.objects.filter(Prefix=prefix):
+                # If prefix is path to file get only directories
+                if prefix == remote_object.key:
+                    prefix = str(pathlib.Path(prefix).parent)
+
                 file_path = pathlib.Path(name or '') / pathlib.Path(remote_object.key[len(prefix):])
                 remote_key = remote_object.key.lstrip('/')
 
                 stored_files.append(
                     ArtifactFileData(
-                        file_path=str(file_path),
+                        file_path=str(file_path).lstrip('/'),
                         file_hash=remote_object.e_tag.strip('"'),
                         type=ArtifactFileType.S3.value,
                         metadata={

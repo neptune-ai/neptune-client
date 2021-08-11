@@ -76,7 +76,7 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         self.assertIsInstance(files[0], ArtifactFileData)
         self.assertEqual(ArtifactFileType.S3.value, files[0].type)
         self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', files[0].file_hash)
-        self.assertEqual('.', files[0].file_path)
+        self.assertEqual('file1', files[0].file_path)
         self.assertEqual(
             {'location', 'file_size', 'last_modified'},
             files[0].metadata.keys()
