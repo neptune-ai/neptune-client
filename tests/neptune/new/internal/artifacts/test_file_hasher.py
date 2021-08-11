@@ -76,13 +76,10 @@ class TestFileHasher(unittest.TestCase):
         home.return_value = Path(self.temp.name)
         hashlib.sha1 = Mock(side_effect=hashlib.sha1)
 
-        hashes = {
-            FileHasher.get_local_file_hash(f'{self.temp.name}/test') for _ in range(10)
-        }
+        hash1 = FileHasher.get_local_file_hash(f'{self.temp.name}/test')
+        hash2 = FileHasher.get_local_file_hash(f'{self.temp.name}/test')
 
-        self.assertEqual(
-            {'d78f8bb992a56a597f6c7a1fb918bb78271367eb'},
-            hashes
-        )
+        self.assertEqual('d78f8bb992a56a597f6c7a1fb918bb78271367eb', hash1)
+        self.assertEqual('d78f8bb992a56a597f6c7a1fb918bb78271367eb', hash2)
 
         self.assertEqual(1, hashlib.sha1.call_count)
