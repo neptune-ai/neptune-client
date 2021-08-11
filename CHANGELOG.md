@@ -1,3 +1,8 @@
+## neptune-client 0.10.5 [UNRELEASED]
+
+### Fixes
+- Only print info if exception actually occurred when using Run as context manager ([#650](https://github.com/neptune-ai/neptune-client/pull/650))
+
 ## neptune-client 0.10.4
 
 ### Features
