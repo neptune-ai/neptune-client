@@ -18,39 +18,31 @@ import hashlib
 import datetime
 from pathlib import Path
 
-from datalite import fetch_if
-
 from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactMetadataSerializer
+from neptune.new.internal.artifacts.local_file_hash_storage import LocalFileHashStorage
 from neptune.new.internal.artifacts.utils import sha1
 
 
 class FileHasher:
     @classmethod
     def get_local_file_hash(cls, file_path: typing.Union[str, Path]) -> str:
-        # Calling from method for mocking before FileHash creation
-        from neptune.new.internal.artifacts.local_file_hash import LocalFileHash
-
         absolute = Path(file_path).resolve()
         modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime('%Y%m%d_%H%M%S')
+        local_storage = LocalFileHashStorage()
 
-        found = fetch_if(LocalFileHash, f"file_path = '{str(absolute)}'")
-        stored_file_hash = found[0] if found is not None and len(found) > 0 else None
+        stored_file_hash = local_storage.fetch_one(absolute)
 
         if stored_file_hash:
             if stored_file_hash.modification_date >= modification_date:
                 return stored_file_hash.file_hash
             else:
                 computed_hash = sha1(absolute)
-                stored_file_hash.file_hash = computed_hash
-                stored_file_hash.modification_date = modification_date
-                stored_file_hash.update_entry()
+                local_storage.update(absolute, computed_hash, modification_date)
 
                 return computed_hash
         else:
             computed_hash = sha1(absolute)
-
-            # pylint: disable=no-member
-            LocalFileHash(str(absolute), computed_hash, modification_date).create_entry()
+            local_storage.insert(absolute, computed_hash, modification_date)
 
             return computed_hash
 

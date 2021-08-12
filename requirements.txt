@@ -14,4 +14,3 @@ packaging
 urllib3
 dataclasses>=0.6; python_version<"3.7"
 boto3==1.18.14
-datalite==0.4.1
