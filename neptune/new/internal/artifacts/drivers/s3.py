@@ -33,7 +33,7 @@ class S3ArtifactDriver(ArtifactDriver):
 
     @staticmethod
     def get_type() -> str:
-        return "S3"
+        return ArtifactFileType.S3.value
 
     @classmethod
     def matches(cls, path: str) -> bool:
