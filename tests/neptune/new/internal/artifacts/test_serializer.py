@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import unittest
-import datetime
 
 from neptune.new.internal.artifacts.types import ArtifactMetadataSerializer
 
@@ -23,16 +22,16 @@ class TestArtifactMetadataSerializer(unittest.TestCase):
     def test_simple(self):
         metadata = {
             'location': "s3://bucket/path/to/file",
-            'last_modification': datetime.datetime(2021, 8, 9, 9, 41, 53),
-            'file_size': 18
+            'last_modification': '2021-08-09 09:41:53',
+            'file_size': '18'
         }
 
         serialized = ArtifactMetadataSerializer.serialize(metadata)
 
         self.assertListEqual(
             [
-                ('file_size', '|I|18'),
-                ('last_modification', '|D|2021-08-09 09:41:53'),
+                ('file_size', '18'),
+                ('last_modification', '2021-08-09 09:41:53'),
                 ('location', 's3://bucket/path/to/file')
             ],
             serialized

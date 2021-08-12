@@ -18,7 +18,6 @@ import abc
 import enum
 import typing
 import pathlib
-import datetime
 from dataclasses import dataclass
 
 from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
@@ -34,7 +33,7 @@ class ArtifactFileData:
     file_path: str
     file_hash: str
     type: str
-    metadata: typing.Dict[str, typing.Any]
+    metadata: typing.Dict[str, str]
 
     @classmethod
     def from_dto(cls, artifact_file_dto):
@@ -49,43 +48,13 @@ class ArtifactFileData:
 
 
 class ArtifactMetadataSerializer:
-    DATETIME_MARKER = "|D|"
-    INT_MARKER = "|I|"
-
-    DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-
-    @classmethod
-    def _serialize_metadata_value(cls, value: typing.Any) -> str:
-        if isinstance(value, datetime.datetime):
-            return value.strftime(f'{cls.DATETIME_MARKER}{cls.DATETIME_FORMAT}')
-        if isinstance(value, int):
-            return f"{cls.INT_MARKER}{value}"
-        if isinstance(value, str):
-            return value
-        return repr(value)
-
-    @classmethod
-    def _deserialize_metadata_value(cls, value: str):
-        if value.startswith(cls.DATETIME_MARKER):
-            return datetime.datetime.strptime(
-                value[len(cls.DATETIME_MARKER):], cls.DATETIME_FORMAT
-            )
-        if value.startswith(cls.INT_MARKER):
-            return int(value[len(cls.INT_MARKER):])
-
-        return value
+    @staticmethod
+    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Tuple[str, str]]:
+        return [(k, v) for k, v in sorted(metadata.items())]
 
     @staticmethod
-    def serialize(metadata: typing.Dict[str, typing.Any]) -> typing.List[typing.Tuple[str, str]]:
-        return [
-            (k, ArtifactMetadataSerializer._serialize_metadata_value(v)) for k, v in sorted(metadata.items())
-        ]
-
-    @staticmethod
-    def deserialize(metadata: typing.List[typing.Tuple[str, str]]) -> typing.Dict[str, typing.Any]:
-        return {
-            k: ArtifactMetadataSerializer._deserialize_metadata_value(v) for k, v in metadata
-        }
+    def deserialize(metadata: typing.List[typing.Tuple[str, str]]) -> typing.Dict[str, str]:
+        return {k: v for k, v in metadata}
 
 
 class ArtifactDriversMap:

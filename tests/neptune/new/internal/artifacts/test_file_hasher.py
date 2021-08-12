@@ -15,7 +15,6 @@
 #
 import hashlib
 import unittest
-import datetime
 import tempfile
 from pathlib import Path
 
@@ -43,8 +42,8 @@ class TestFileHasher(unittest.TestCase):
                 type="S3",
                 metadata={
                     'location': "s3://bucket/path/to/file1",
-                    "file_size": 18,
-                    "last_modification": datetime.datetime(2021, 8, 9, 10, 22, 53)
+                    "file_size": "18",
+                    "last_modification": "2021-08-09 10:22:53"
                 }
             ),
             ArtifactFileData(
@@ -53,14 +52,14 @@ class TestFileHasher(unittest.TestCase):
                 type="S3",
                 metadata={
                     'location': "s3://bucket/path/to/file2",
-                    "file_size": 24,
-                    "last_modification": datetime.datetime(2021, 8, 9, 10, 32, 12)
+                    "file_size": "24",
+                    "last_modification": "2021-08-09 10:32:12"
                 }
             )
         ]
 
-        self.assertEqual("32b214d24eab2420deea445bf511bba9d93ac5b0", FileHasher.get_artifact_hash(artifacts))
-        self.assertEqual("32b214d24eab2420deea445bf511bba9d93ac5b0", FileHasher.get_artifact_hash(reversed(artifacts)))
+        self.assertEqual("63d995a30adf77a40305ce7c69417866666d7df3", FileHasher.get_artifact_hash(artifacts))
+        self.assertEqual("63d995a30adf77a40305ce7c69417866666d7df3", FileHasher.get_artifact_hash(reversed(artifacts)))
 
     @patch('pathlib.Path.home')
     def test_local_file_hash(self, home):
