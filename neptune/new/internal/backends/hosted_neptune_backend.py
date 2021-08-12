@@ -605,9 +605,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def list_artifact_files(self, project_identifier: str, artifact_hash: str) -> List[ArtifactFileData]:
+    def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
         params = {
-            'projectIdentifier': project_identifier,
+            'projectIdentifier': project_uuid,
             'hash': artifact_hash,
             **self.DEFAULT_REQUEST_KWARGS,
         }

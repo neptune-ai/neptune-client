@@ -33,7 +33,7 @@ class TestArtifact(TestAttributeBase):
 
         self.exp.set_attribute(self.path_str, Artifact(self.exp, self.path))
         self.exp._backend._runs[self.exp._uuid].set(self.path, ArtifactAttr(self.artifact_hash))
-        self.exp._backend._artifacts[self.exp.get_project_identifier(), self.artifact_hash] = []
+        self.exp._backend._artifacts[self.exp._project_uuid, self.artifact_hash] = []
 
     def test_fetch_hash(self):
         fetched_hash = self.exp[self.path_str].fetch_hash()

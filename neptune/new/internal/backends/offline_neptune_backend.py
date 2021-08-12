@@ -64,7 +64,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def get_artifact_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> ArtifactAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def list_artifact_files(self, project_identifier: str, artifact_hash: str) -> List[ArtifactFileData]:
+    def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
         raise NeptuneOfflineModeFetchException
 
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:

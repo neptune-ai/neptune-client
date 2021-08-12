@@ -137,9 +137,11 @@ class Run(AbstractContextManager):
             workspace: str,
             project_name: str,
             short_id: str,
+            project_uuid: uuid.UUID,
             monitoring_namespace: str = "monitoring",
     ):
         self._uuid = _uuid
+        self._project_uuid = project_uuid
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
@@ -341,9 +343,6 @@ class Run(AbstractContextManager):
         Paths are ordered lexicographically and the whole structure is neatly colored.
         """
         self._print_structure_impl(self.get_structure(), indent=0)
-
-    def get_project_identifier(self) -> str:
-        return f'{self._workspace}/{self._project_name}'
 
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser

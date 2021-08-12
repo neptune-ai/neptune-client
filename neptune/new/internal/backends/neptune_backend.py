@@ -134,7 +134,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def list_artifact_files(self, project_identifier: str, artifact_hash: str) -> List[ArtifactFileData]:
+    def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
         pass
 
     @abc.abstractmethod

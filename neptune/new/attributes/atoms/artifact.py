@@ -27,7 +27,9 @@ class Artifact(Atom):
 
     def fetch_files_list(self) -> List[ArtifactFileData]:
         artifact_hash = self.fetch_hash()
-        return self._backend.list_artifact_files(self._run.get_project_identifier(), artifact_hash)
+        return self._backend.list_artifact_files(
+            self._run._project_uuid, artifact_hash  # pylint: disable=protected-access
+        )
 
     def download(self, destination: str = None):
         for file_definition in self.fetch_files_list():

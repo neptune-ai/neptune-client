@@ -17,6 +17,7 @@ import abc
 from typing import TypeVar, Generic
 
 from neptune.new.types.atoms import GitRef
+from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.boolean import Boolean
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
@@ -60,7 +61,7 @@ class ValueVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_artifact(self, value: String) -> Ret:
+    def visit_artifact(self, value: Artifact) -> Ret:
         pass
 
     @abc.abstractmethod
