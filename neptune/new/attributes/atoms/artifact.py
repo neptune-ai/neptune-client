@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 import pathlib
-from typing import List
+import typing
 
-from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactDriversMap
+from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactDriversMap, ArtifactDriver
 from neptune.new.attributes.atoms.atom import Atom
 
 
@@ -25,7 +25,7 @@ class Artifact(Atom):
         val = self._backend.get_artifact_attribute(self._run_uuid, self._path)
         return val.hash
 
-    def fetch_files_list(self) -> List[ArtifactFileData]:
+    def fetch_files_list(self) -> typing.List[ArtifactFileData]:
         artifact_hash = self.fetch_hash()
         return self._backend.list_artifact_files(
             self._run._project_uuid, artifact_hash  # pylint: disable=protected-access
@@ -33,10 +33,10 @@ class Artifact(Atom):
 
     def download(self, destination: str = None):
         for file_definition in self.fetch_files_list():
-            driver = ArtifactDriversMap.match_type(file_definition.type)
-            driver.download_file(
-                pathlib.Path(destination) / file_definition.file_path, file_definition
-            )
+            driver: typing.Type['ArtifactDriver'] = ArtifactDriversMap.match_type(file_definition.type)
+            file_destination = pathlib.Path(destination) / file_definition.file_path
+            file_destination.parent.mkdir(parents=True, exist_ok=True)
+            driver.download_file(file_destination, file_definition)
 
     def track_files_to_new(self, path: str):
         # FIXME: implement in NPT-10544

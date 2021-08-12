@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 import typing
 import pathlib
 from datetime import datetime
@@ -98,14 +97,10 @@ class S3ArtifactDriver(ArtifactDriver):
     @classmethod
     def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
         location = file_definition.metadata.get('location')
-        destination = destination / file_definition.file_path
         url = urlparse(location)
         bucket_name, path = url.netloc, url.path
 
         remote_storage = boto3.resource('s3')
-
-        os.makedirs(str(destination.parent), exist_ok=True)
-
         try:
             # pylint: disable=no-member
             bucket = remote_storage.Bucket(bucket_name)

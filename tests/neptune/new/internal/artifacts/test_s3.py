@@ -63,14 +63,14 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         )
 
         with tempfile.TemporaryDirectory() as temporary:
-            local_destination = Path(temporary)
+            local_destination = Path(temporary) / "target.txt"
 
             S3ArtifactDriver.download_file(
                 destination=local_destination,
                 file_definition=artifact_file
             )
 
-            self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', md5(local_destination / 'to' / 'file1'))
+            self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', md5(local_destination))
 
     def test_single_retrieval(self):
         files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/to/file1")
