@@ -62,7 +62,7 @@ class LocalFileHashStorage:
     def update(self, path: Path, computed_hash: str, modification_date: str):
         self.cursor.execute(
             f"UPDATE local_file_hashes"
-            f" SET file_hash={computed_hash}, modification_date={modification_date}"
+            f" SET file_hash='{computed_hash}', modification_date='{modification_date}'"
             f" WHERE file_path = '{str(path)}'"
         )
         self.session.commit()

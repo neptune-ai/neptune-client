@@ -29,7 +29,7 @@ class FileHasher:
     @classmethod
     def get_local_file_hash(cls, file_path: typing.Union[str, Path]) -> str:
         absolute = Path(file_path).resolve()
-        modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime('%Y%m%d_%H%M%S')
+        modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime('%Y%m%d_%H%M%S%f')
 
         stored_file_hash = FileHasher.local_storage.fetch_one(absolute)
 
