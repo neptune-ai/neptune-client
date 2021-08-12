@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import typing
 import pathlib
 from urllib.parse import urlparse
@@ -48,15 +49,20 @@ class S3ArtifactDriver(ArtifactDriver):
 
         try:
             for remote_object in remote_storage.objects.filter(Prefix=prefix):
-                remote_key = pathlib.Path(name or '') / pathlib.Path(remote_object.key[len(prefix):])
+                # If prefix is path to file get only directories
+                if prefix == remote_object.key:
+                    prefix = str(pathlib.Path(prefix).parent)
+
+                file_path = pathlib.Path(name or '') / pathlib.Path(remote_object.key[len(prefix):])
+                remote_key = remote_object.key.lstrip('/')
 
                 stored_files.append(
                     ArtifactFileData(
-                        file_path=str(remote_key),
+                        file_path=str(file_path).lstrip('/'),
                         file_hash=remote_object.e_tag.strip('"'),
                         type=ArtifactFileType.S3.value,
                         metadata={
-                            "location": f's3://{bucket_name}{remote_object.key}',
+                            "location": f's3://{bucket_name}/{remote_key}',
                             "last_modified": remote_object.last_modified,
                             "file_size": remote_object.size
                         }
@@ -65,7 +71,7 @@ class S3ArtifactDriver(ArtifactDriver):
         except NoCredentialsError:
             raise NeptuneRemoteStorageCredentialsException()
         except (remote_storage.meta.client.exceptions.NoSuchBucket,
-                remote_storage.meta.client.exceptions.NoSuchBucket):
+                remote_storage.meta.client.exceptions.NoSuchKey):
             raise NeptuneRemoteStorageAccessException(location=path)
 
         return stored_files
@@ -73,10 +79,13 @@ class S3ArtifactDriver(ArtifactDriver):
     @classmethod
     def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
         location = file_definition.metadata.get('location')
+        destination = destination / file_definition.file_path
         url = urlparse(location)
         bucket_name, path = url.netloc, url.path
 
         remote_storage = boto3.resource('s3')
+
+        os.makedirs(str(destination.parent), exist_ok=True)
 
         try:
             # pylint: disable=no-member
@@ -85,5 +94,5 @@ class S3ArtifactDriver(ArtifactDriver):
         except NoCredentialsError:
             raise NeptuneRemoteStorageCredentialsException()
         except (remote_storage.meta.client.exceptions.NoSuchBucket,
-                remote_storage.meta.client.exceptions.NoSuchBucket):
+                remote_storage.meta.client.exceptions.NoSuchKey):
             raise NeptuneRemoteStorageAccessException(location=location)

@@ -60,14 +60,14 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         )
 
         with tempfile.TemporaryDirectory() as temporary:
-            local_destination = Path(temporary) / 'file'
+            local_destination = Path(temporary)
 
             S3ArtifactDriver.download_file(
                 destination=local_destination,
                 file_definition=artifact_file
             )
 
-            self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', md5(local_destination))
+            self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', md5(local_destination / 'to' / 'file1'))
 
     def test_single_retrieval(self):
         files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/to/file1")
@@ -76,7 +76,7 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         self.assertIsInstance(files[0], ArtifactFileData)
         self.assertEqual(ArtifactFileType.S3.value, files[0].type)
         self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', files[0].file_hash)
-        self.assertEqual('.', files[0].file_path)
+        self.assertEqual('file1', files[0].file_path)
         self.assertEqual(
             {'location', 'file_size', 'last_modified'},
             files[0].metadata.keys()
