@@ -240,7 +240,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_artifact_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> ArtifactAttribute:
         val = self._get_attribute(run_uuid, path, Artifact)
-        return ArtifactAttribute(val.value)
+        return ArtifactAttribute(val.hash)
 
     def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
         files = self._artifacts[(project_uuid, artifact_hash)]

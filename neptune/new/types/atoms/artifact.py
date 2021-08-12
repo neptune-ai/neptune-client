@@ -27,13 +27,13 @@ Ret = TypeVar('Ret')
 @dataclass
 class Artifact(Atom):
 
-    value: str
+    hash: str
 
-    def __init__(self, value):
-        self.value = str(value)
+    def __init__(self, value: str):
+        self.hash = str(value)
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_artifact(self)
 
     def __str__(self):
-        return "Artifact({})".format(self.value)
+        return "Artifact({})".format(self.hash)
