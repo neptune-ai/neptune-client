@@ -19,6 +19,7 @@ import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
+from neptune.new.exceptions import NeptuneLocalStorageAccessException
 from neptune.new.internal.artifacts.file_hasher import FileHasher
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
 from tests.neptune.new.internal.artifacts.utils import append_non_relative_path
@@ -40,46 +41,41 @@ class LocalArtifactDriver(ArtifactDriver):
 
         stored_files: typing.List[ArtifactFileData] = list()
 
-        try:
-            files_to_check = source_location.rglob('*') if source_location.is_dir() else [source_location]
-            for file in files_to_check:
-                # symlink dirs are omitted by rglob('*')
-                if not file.is_file():
-                    continue
+        files_to_check = source_location.rglob('*') if source_location.is_dir() else [source_location]
+        for file in files_to_check:
+            # symlink dirs are omitted by rglob('*')
+            if not file.is_file():
+                continue
 
-                stored_files.append(
-                    ArtifactFileData(
-                        file_path=file.as_posix(),
-                        file_hash=FileHasher.get_local_file_hash(file),
-                        type=ArtifactFileType.LOCAL.value,
-                        metadata={
-                            'file_path': f'file://{file.as_posix()}',
-                            # TODO: add original location if it's symlink?
-                            'last_modified': datetime.fromtimestamp(
-                                file.stat().st_mtime
-                            ),
-                            'file_size': file.stat().st_size,
-                        }
-                    )
+            file_path = file.name if name is None else (pathlib.Path(name) / file.name).as_posix()
+
+            stored_files.append(
+                ArtifactFileData(
+                    file_path=file_path,
+                    file_hash=FileHasher.get_local_file_hash(file),
+                    type=ArtifactFileType.LOCAL.value,
+                    metadata={
+                        'file_path': f'file://{file.resolve().as_posix()}',
+                        'last_modified': datetime.fromtimestamp(
+                            file.stat().st_mtime
+                        ),
+                        'file_size': file.stat().st_size,
+                    }
                 )
-        finally:
-            # TODO: handle pathlib exceptions
-            pass
+            )
 
         return stored_files
 
     @classmethod
     def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
-        assert destination.is_dir()
-
         file_path_str = file_definition.file_path
         file_path = pathlib.Path(file_path_str)
-        assert file_path.is_file()
-        destination = append_non_relative_path(destination, file_path_str)
+        if not file_path.is_file():
+            raise NeptuneLocalStorageAccessException(
+                path=file_path_str,
+                expected_description="an existing file"
+            )
+        destination_path = append_non_relative_path(destination, file_path_str)
 
-        os.makedirs(str(destination.parent), exist_ok=True)
-        try:
-            destination.symlink_to(file_path)
-        finally:
-            # TODO
-            pass
+        os.makedirs(str(destination_path.parent), exist_ok=True)
+        destination_path.symlink_to(file_path)
