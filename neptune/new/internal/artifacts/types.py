@@ -16,8 +16,9 @@
 
 import abc
 import enum
-import pathlib
 import typing
+import pathlib
+import datetime
 from dataclasses import dataclass
 
 from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
@@ -33,7 +34,23 @@ class ArtifactFileData:
     file_path: str
     file_hash: str
     type: str
-    metadata: typing.Dict[str, str]
+    metadata: typing.Dict[str, typing.Any]
+
+
+class ArtifactMetadataSerializer:
+    @staticmethod
+    def _serialize_metadata_value(value: typing.Any) -> str:
+        if isinstance(value, datetime.datetime):
+            return value.strftime('%Y-%m-%d %H:%M:%S')
+        if isinstance(value, str):
+            return value
+        return repr(value)
+
+    @staticmethod
+    def serialize(metadata: typing.Dict[str, typing.Any]) -> typing.List[typing.Tuple[str, str]]:
+        return [
+            (k, ArtifactMetadataSerializer._serialize_metadata_value(v)) for k, v in sorted(metadata.items())
+        ]
 
 
 class ArtifactDriversMap:
