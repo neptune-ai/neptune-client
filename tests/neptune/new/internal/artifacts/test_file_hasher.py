@@ -59,8 +59,8 @@ class TestFileHasher(unittest.TestCase):
             )
         ]
 
-        self.assertEqual("63d995a30adf77a40305ce7c69417866666d7df3", FileHasher.get_artifact_hash(artifacts))
-        self.assertEqual("63d995a30adf77a40305ce7c69417866666d7df3", FileHasher.get_artifact_hash(reversed(artifacts)))
+        self.assertEqual("32b214d24eab2420deea445bf511bba9d93ac5b0", FileHasher.get_artifact_hash(artifacts))
+        self.assertEqual("32b214d24eab2420deea445bf511bba9d93ac5b0", FileHasher.get_artifact_hash(reversed(artifacts)))
 
     @patch('pathlib.Path.home')
     def test_local_file_hash(self, home):

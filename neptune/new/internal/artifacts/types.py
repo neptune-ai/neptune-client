@@ -36,15 +36,44 @@ class ArtifactFileData:
     type: str
     metadata: typing.Dict[str, typing.Any]
 
+    @classmethod
+    def from_dto(cls, artifact_file_dto):
+        return cls(
+            file_path=artifact_file_dto.filePath,
+            file_hash=artifact_file_dto.fileHash,
+            type=artifact_file_dto.type,
+            metadata=ArtifactMetadataSerializer.deserialize([
+                (m.key, m.value) for m in artifact_file_dto.metadata
+            ])
+        )
+
 
 class ArtifactMetadataSerializer:
-    @staticmethod
-    def _serialize_metadata_value(value: typing.Any) -> str:
+    DATETIME_MARKER = "|D|"
+    INT_MARKER = "|I|"
+
+    DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+    @classmethod
+    def _serialize_metadata_value(cls, value: typing.Any) -> str:
         if isinstance(value, datetime.datetime):
-            return value.strftime('%Y-%m-%d %H:%M:%S')
+            return value.strftime(f'{cls.DATETIME_MARKER}{cls.DATETIME_FORMAT}')
+        if isinstance(value, int):
+            return f"{cls.INT_MARKER}{value}"
         if isinstance(value, str):
             return value
         return repr(value)
+
+    @classmethod
+    def _deserialize_metadata_value(cls, value: str):
+        if value.startswith(cls.DATETIME_MARKER):
+            return datetime.datetime.strptime(
+                value[len(cls.DATETIME_MARKER):], cls.DATETIME_FORMAT
+            )
+        if value.startswith(cls.INT_MARKER):
+            return int(value[len(cls.INT_MARKER):])
+
+        return value
 
     @staticmethod
     def serialize(metadata: typing.Dict[str, typing.Any]) -> typing.List[typing.Tuple[str, str]]:
@@ -52,14 +81,11 @@ class ArtifactMetadataSerializer:
             (k, ArtifactMetadataSerializer._serialize_metadata_value(v)) for k, v in sorted(metadata.items())
         ]
 
-    @classmethod
-    def from_dto(cls, artifact_file_dto):
-        return cls(
-            file_path=artifact_file_dto.filePath,
-            file_hash=artifact_file_dto.fileHash,
-            type=artifact_file_dto.type,
-            metadata={m.key: m.value for m in artifact_file_dto.metadata}
-        )
+    @staticmethod
+    def deserialize(metadata: typing.List[typing.Tuple[str, str]]) -> typing.Dict[str, typing.Any]:
+        return {
+            k: ArtifactMetadataSerializer._deserialize_metadata_value(v) for k, v in metadata
+        }
 
 
 class ArtifactDriversMap:
