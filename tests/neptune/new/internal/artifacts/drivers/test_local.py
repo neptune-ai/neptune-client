@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import datetime
+import os
 import shutil
 import tempfile
 import unittest
@@ -37,7 +38,12 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         shutil.copytree(test_source_data / 'files_to_track', test_data)
 
         # symbolic and hard link files
-        (test_source_data / 'file_to_link.txt').link_to(test_data / 'hardlinked_file.txt')
+        # `link_to` is new in python 3.8
+        # (test_source_data / 'file_to_link.txt').link_to(test_data / 'hardlinked_file.txt')
+        os.link(
+            src=(test_source_data / 'file_to_link.txt').as_posix(),
+            dst=(test_data / 'hardlinked_file.txt').as_posix()
+        )
         (test_data / 'symlinked_file.txt').symlink_to(test_source_data / 'file_to_link.txt')
 
         # symlink dir - content of this file won't be discovered
