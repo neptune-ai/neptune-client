@@ -1,0 +1,2 @@
+I'm file which'll be symlinked in some path.
+

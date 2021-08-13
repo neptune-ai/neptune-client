@@ -23,13 +23,13 @@ import freezegun
 from moto import mock_s3
 
 from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactFileData, ArtifactFileType
-from neptune.new.internal.artifacts.s3 import S3ArtifactDriver
+from neptune.new.internal.artifacts.drivers.s3 import S3ArtifactDriver
 
 from tests.neptune.new.internal.artifacts.utils import md5
 
 
 @mock_s3
-class TestS3ArtifactDriversMap(unittest.TestCase):
+class TestS3ArtifactDrivers(unittest.TestCase):
     def setUp(self):
         self.bucket_name = 'kuiper_belt'
         self.s3 = boto3.client('s3')
@@ -109,10 +109,7 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         self.assertEqual(f's3://{self.bucket_name}/path/to/file2', files[1].metadata['location'])
 
     def test_multiple_retrieval_prefix(self):
-        files = S3ArtifactDriver.get_tracked_files(
-            f"s3://{self.bucket_name}/path/",
-            'my/custom_path'
-        )
+        files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/", 'my/custom_path')
         files = sorted(files, key=lambda file: file.file_path)
 
         self.assertEqual(len(files), 3)

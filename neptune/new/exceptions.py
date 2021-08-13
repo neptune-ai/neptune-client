@@ -843,6 +843,19 @@ A Neptune Artifact you're listing is tracking a file type unhandled by this clie
         super().__init__(message.format(type_str=type_str, **STYLES))
 
 
+class NeptuneLocalStorageAccessException(NeptuneException):
+    def __init__(self, path, expected_description):
+        message = """
+{h1}
+----NeptuneLocalStorageAccessException-------------------------------------
+{end}
+Neptune had problem processing "{path}", it expects it to be {expected_description}.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(path=path, expected_description=expected_description, **STYLES))
+
+
 class NeptuneRemoteStorageCredentialsException(NeptuneException):
     def __init__(self):
         message = """
