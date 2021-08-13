@@ -118,7 +118,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
             files[0].metadata.keys()
         )
         self.assertEqual(
-            f"file://{(self.test_dir / 'data/file1.txt').as_posix()}",
+            f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
             files[0].metadata['file_path']
         )
         self.assertIsInstance(
@@ -135,18 +135,20 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
         self.assertEqual('file1.txt', files[0].file_path)
         self.assertEqual('72fae1be9ff9c1d5fd7a0d97977bba9cc96d702d', files[0].file_hash)
-        self.assertEqual(f"file://{(self.test_dir / 'data/file1.txt').as_posix()}", files[0].metadata['file_path'])
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
+            files[0].metadata['file_path'])
         self.assertEqual(22, files[0].metadata['file_size'])
 
         self.assertEqual('hardlinked_file.txt', files[1].file_path)
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[1].file_hash)
-        self.assertEqual(f"file://{(self.test_dir / 'data/hardlinked_file.txt').as_posix()}",
+        self.assertEqual(f"file://{(self.test_dir.resolve() / 'data/hardlinked_file.txt').as_posix()}",
                          files[1].metadata['file_path'])
         self.assertEqual(46, files[1].metadata['file_size'])
 
         self.assertEqual('sub_dir/file_in_subdir.txt', files[2].file_path)
         self.assertEqual('66ac94061f0932fcb1954df995477cdcbb6b70b0', files[2].file_hash)
-        self.assertEqual(f"file://{(self.test_dir / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
+        self.assertEqual(f"file://{(self.test_dir.resolve() / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
                          files[2].metadata['file_path'])
         self.assertEqual(25, files[2].metadata['file_size'])
 
@@ -164,18 +166,20 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
         self.assertEqual('my/custom_path/file1.txt', files[0].file_path)
         self.assertEqual('72fae1be9ff9c1d5fd7a0d97977bba9cc96d702d', files[0].file_hash)
-        self.assertEqual(f"file://{(self.test_dir / 'data/file1.txt').as_posix()}", files[0].metadata['file_path'])
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
+            files[0].metadata['file_path'])
         self.assertEqual(22, files[0].metadata['file_size'])
 
         self.assertEqual('my/custom_path/hardlinked_file.txt', files[1].file_path)
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[1].file_hash)
-        self.assertEqual(f"file://{(self.test_dir / 'data/hardlinked_file.txt').as_posix()}",
+        self.assertEqual(f"file://{(self.test_dir.resolve() / 'data/hardlinked_file.txt').as_posix()}",
                          files[1].metadata['file_path'])
         self.assertEqual(46, files[1].metadata['file_size'])
 
         self.assertEqual('my/custom_path/sub_dir/file_in_subdir.txt', files[2].file_path)
         self.assertEqual('66ac94061f0932fcb1954df995477cdcbb6b70b0', files[2].file_hash)
-        self.assertEqual(f"file://{(self.test_dir / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
+        self.assertEqual(f"file://{(self.test_dir.resolve() / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
                          files[2].metadata['file_path'])
         self.assertEqual(25, files[2].metadata['file_size'])
 
