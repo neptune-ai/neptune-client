@@ -15,7 +15,6 @@
 #
 import hashlib
 import unittest
-import datetime
 import tempfile
 from pathlib import Path
 
@@ -43,8 +42,8 @@ class TestFileHasher(unittest.TestCase):
                 type="S3",
                 metadata={
                     'location': "s3://bucket/path/to/file1",
-                    "file_size": 18,
-                    "last_modification": datetime.datetime(2021, 8, 9, 10, 22, 53)
+                    "file_size": "18",
+                    "last_modification": "2021-08-09 10:22:53"
                 }
             ),
             ArtifactFileData(
@@ -53,8 +52,8 @@ class TestFileHasher(unittest.TestCase):
                 type="S3",
                 metadata={
                     'location': "s3://bucket/path/to/file2",
-                    "file_size": 24,
-                    "last_modification": datetime.datetime(2021, 8, 9, 10, 32, 12)
+                    "file_size": "24",
+                    "last_modification": "2021-08-09 10:32:12"
                 }
             )
         ]

@@ -729,6 +729,34 @@ You may also want to check the following docs pages:
         ))
 
 
+class ArtifactNotFoundException(MetadataInconsistency):
+    def __init__(self, artifact_hash: str):
+        message = """
+{h1}
+----MetadataInconsistency----------------------------------------------------------------------
+{end}
+Artifact with hash {python}{artifact_hash}{end} was not found.
+
+Remember that in the asynchronous (default) connection mode data is synchronized
+with the Neptune servers in the background and may have not reached
+it yet before it's fetched. Before fetching the data you can force
+wait for all the requests sent by invoking:
+
+    {python}run.wait(){end}
+
+Remember that each use of {python}wait{end} introduces a delay in code execution.
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/you-should-know/connection-modes
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
+"""
+        super().__init__(message.format(
+            artifact_hash=artifact_hash,
+            **STYLES
+        ))
+
+
 class PlotlyIncompatibilityException(Exception):
     def __init__(self, matplotlib_version, plotly_version):
         super().__init__(

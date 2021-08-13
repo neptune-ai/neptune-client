@@ -18,7 +18,6 @@ import abc
 import enum
 import typing
 import pathlib
-import datetime
 from dataclasses import dataclass
 
 from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
@@ -34,23 +33,28 @@ class ArtifactFileData:
     file_path: str
     file_hash: str
     type: str
-    metadata: typing.Dict[str, typing.Any]
+    metadata: typing.Dict[str, str]
+
+    @classmethod
+    def from_dto(cls, artifact_file_dto):
+        return cls(
+            file_path=artifact_file_dto.filePath,
+            file_hash=artifact_file_dto.fileHash,
+            type=artifact_file_dto.type,
+            metadata=ArtifactMetadataSerializer.deserialize([
+                (m.key, m.value) for m in artifact_file_dto.metadata
+            ])
+        )
 
 
 class ArtifactMetadataSerializer:
     @staticmethod
-    def _serialize_metadata_value(value: typing.Any) -> str:
-        if isinstance(value, datetime.datetime):
-            return value.strftime('%Y-%m-%d %H:%M:%S')
-        if isinstance(value, str):
-            return value
-        return repr(value)
+    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Tuple[str, str]]:
+        return [(k, v) for k, v in sorted(metadata.items())]
 
     @staticmethod
-    def serialize(metadata: typing.Dict[str, typing.Any]) -> typing.List[typing.Tuple[str, str]]:
-        return [
-            (k, ArtifactMetadataSerializer._serialize_metadata_value(v)) for k, v in sorted(metadata.items())
-        ]
+    def deserialize(metadata: typing.List[typing.Tuple[str, str]]) -> typing.Dict[str, str]:
+        return {k: v for k, v in metadata}
 
 
 class ArtifactDriversMap:

@@ -95,6 +95,7 @@ class AttributeType(Enum):
     GIT_REF = "gitRef"
     RUN_STATE = "experimentState"
     NOTEBOOK_REF = "notebookRef"
+    ARTIFACT = 'artifact'
 
 
 @dataclass
@@ -177,6 +178,11 @@ class StringAttribute:
 @dataclass
 class DatetimeAttribute:
     value: datetime
+
+
+@dataclass
+class ArtifactAttribute:
+    hash: str
 
 
 @dataclass
