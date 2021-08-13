@@ -91,7 +91,7 @@ class ArtifactDriver(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_tracked_files(cls, path: str, name: str = None) -> typing.Iterable[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.Iterable[ArtifactFileData]:
         raise NotImplementedError
 
     @classmethod
