@@ -18,6 +18,7 @@ import uuid
 from typing import Any, List, Tuple, Optional
 
 from neptune.new.exceptions import NeptuneException
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     Attribute,
@@ -35,7 +36,7 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     StringSeriesValues,
     FloatSeriesValues,
-    ImageSeriesValues,
+    ImageSeriesValues, ArtifactAttribute,
 )
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
@@ -126,6 +127,14 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+        pass
+
+    @abc.abstractmethod
+    def get_artifact_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> ArtifactAttribute:
+        pass
+
+    @abc.abstractmethod
+    def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
         pass
 
     @abc.abstractmethod

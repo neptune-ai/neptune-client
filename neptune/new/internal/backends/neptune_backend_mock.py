@@ -27,8 +27,10 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneException,
 )
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ApiRun,
+    ArtifactAttribute,
     Attribute,
     AttributeType,
     BoolAttribute,
@@ -76,6 +78,7 @@ from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
+from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.file import File
 from neptune.new.types.atoms.float import Float
@@ -97,6 +100,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
         self._runs: Dict[uuid.UUID, RunStructure[Value, dict]] = dict()
+        self._artifacts: Dict[Tuple[uuid.UUID, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
 
     def get_display_address(self) -> str:
@@ -234,6 +238,14 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(run_uuid, path, Datetime)
         return DatetimeAttribute(val.value)
 
+    def get_artifact_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> ArtifactAttribute:
+        val = self._get_attribute(run_uuid, path, Artifact)
+        return ArtifactAttribute(val.hash)
+
+    def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
+        files = self._artifacts[(project_uuid, artifact_hash)]
+        return files
+
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
         val = self._get_attribute(run_uuid, path, FloatSeries)
         return FloatSeriesAttribute(val.values[-1] if val.values else None)
@@ -342,6 +354,9 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_git_ref(self, _: GitRef) -> AttributeType:
             return AttributeType.GIT_REF
+
+        def visit_artifact(self, _: Artifact) -> AttributeType:
+            return AttributeType.ARTIFACT
 
         def visit_namespace(self, _: Namespace) -> AttributeType:
             raise NotImplementedError

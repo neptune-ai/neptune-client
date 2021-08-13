@@ -19,6 +19,7 @@ import unittest
 from pathlib import Path
 
 import boto3
+import freezegun
 from moto import mock_s3
 
 from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactFileData, ArtifactFileType
@@ -33,9 +34,11 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         self.bucket_name = 'kuiper_belt'
         self.s3 = boto3.client('s3')
         self.s3.create_bucket(Bucket=self.bucket_name)
-        self.s3.put_object(Bucket=self.bucket_name, Key='/path/to/file1', Body=b'\xde\xad\xbe\xef')
-        self.s3.put_object(Bucket=self.bucket_name, Key='/path/to/file2', Body=b'\x20')
-        self.s3.put_object(Bucket=self.bucket_name, Key='/path/file3', Body=b'\x21')
+        self.update_time = datetime.datetime(2021, 5, 23, 3, 55, 26)
+        with freezegun.freeze_time(self.update_time):
+            self.s3.put_object(Bucket=self.bucket_name, Key='/path/to/file1', Body=b'\xde\xad\xbe\xef')
+            self.s3.put_object(Bucket=self.bucket_name, Key='/path/to/file2', Body=b'\x20')
+            self.s3.put_object(Bucket=self.bucket_name, Key='/path/file3', Body=b'\x21')
 
     def test_match_by_path(self):
         self.assertEqual(
@@ -60,14 +63,14 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
         )
 
         with tempfile.TemporaryDirectory() as temporary:
-            local_destination = Path(temporary)
+            local_destination = Path(temporary) / "target.txt"
 
             S3ArtifactDriver.download_file(
                 destination=local_destination,
                 file_definition=artifact_file
             )
 
-            self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', md5(local_destination / 'to' / 'file1'))
+            self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', md5(local_destination))
 
     def test_single_retrieval(self):
         files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/to/file1")
@@ -85,11 +88,11 @@ class TestS3ArtifactDriversMap(unittest.TestCase):
             f's3://{self.bucket_name}/path/to/file1',
             files[0].metadata['location']
         )
-        self.assertIsInstance(
-            files[0].metadata['last_modified'],
-            datetime.datetime
+        self.assertEqual(
+            self.update_time.strftime(S3ArtifactDriver.DATETIME_FORMAT),
+            files[0].metadata['last_modified']
         )
-        self.assertEqual(4, files[0].metadata['file_size'])
+        self.assertEqual("4", files[0].metadata['file_size'])
 
     def test_multiple_retrieval(self):
         files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/to/")
