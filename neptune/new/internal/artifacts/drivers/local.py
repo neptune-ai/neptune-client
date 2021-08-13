@@ -22,7 +22,6 @@ from urllib.parse import urlparse
 from neptune.new.exceptions import NeptuneLocalStorageAccessException
 from neptune.new.internal.artifacts.file_hasher import FileHasher
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
-from tests.neptune.new.internal.artifacts.utils import append_non_relative_path
 
 
 class LocalArtifactDriver(ArtifactDriver):
@@ -35,7 +34,23 @@ class LocalArtifactDriver(ArtifactDriver):
         return urlparse(path).scheme in ('file', '')
 
     @classmethod
-    def get_tracked_files(cls, path: str, name: str = None) -> typing.List[ArtifactFileData]:
+    def _serialize_metadata(cls, metadata: typing.Dict[str, typing.Any]) -> typing.Dict[str, str]:
+        return {
+            "file_path": metadata['file_path'],
+            "last_modified": datetime.fromtimestamp(int(metadata['last_modified'])),
+            "file_size": int(metadata['file_size']),
+        }
+
+    @classmethod
+    def _deserialize_metadata(cls, metadata: typing.Dict[str, str]) -> typing.Dict[str, typing.Any]:
+        return {
+            "file_path": metadata['file_path'],
+            "last_modified": metadata['last_modified'].timestamp(),
+            "file_size": str(metadata['file_size']),
+        }
+
+    @classmethod
+    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
         parsed_path = urlparse(path).path
         source_location = pathlib.Path(parsed_path)
 
@@ -47,20 +62,18 @@ class LocalArtifactDriver(ArtifactDriver):
             if not file.is_file():
                 continue
 
-            file_path = file.name if name is None else (pathlib.Path(name) / file.name).as_posix()
+            file_path = file.name if namespace is None else (pathlib.Path(namespace) / file.name).as_posix()
 
             stored_files.append(
                 ArtifactFileData(
                     file_path=file_path,
                     file_hash=FileHasher.get_local_file_hash(file),
                     type=ArtifactFileType.LOCAL.value,
-                    metadata={
+                    metadata=cls._serialize_metadata({
                         'file_path': f'file://{file.resolve().as_posix()}',
-                        'last_modified': datetime.fromtimestamp(
-                            file.stat().st_mtime
-                        ),
+                        'last_modified': file.stat().st_mtime,
                         'file_size': file.stat().st_size,
-                    }
+                    })
                 )
             )
 
@@ -75,7 +88,6 @@ class LocalArtifactDriver(ArtifactDriver):
                 path=file_path_str,
                 expected_description="an existing file"
             )
-        destination_path = append_non_relative_path(destination, file_path_str)
 
-        os.makedirs(str(destination_path.parent), exist_ok=True)
-        destination_path.symlink_to(file_path)
+        os.makedirs(str(destination.parent), exist_ok=True)
+        destination.symlink_to(file_path)

@@ -109,10 +109,7 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         self.assertEqual(f's3://{self.bucket_name}/path/to/file2', files[1].metadata['location'])
 
     def test_multiple_retrieval_prefix(self):
-        files = S3ArtifactDriver.get_tracked_files(
-            f"s3://{self.bucket_name}/path/",
-            'my/custom_path'
-        )
+        files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/", 'my/custom_path')
         files = sorted(files, key=lambda file: file.file_path)
 
         self.assertEqual(len(files), 3)

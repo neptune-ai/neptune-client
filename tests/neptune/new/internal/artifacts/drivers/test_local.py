@@ -22,7 +22,7 @@ from pathlib import Path
 from neptune.new.exceptions import NeptuneLocalStorageAccessException
 from neptune.new.internal.artifacts.drivers.local import LocalArtifactDriver
 from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactFileData, ArtifactFileType
-from tests.neptune.new.internal.artifacts.utils import append_non_relative_path, md5
+from tests.neptune.new.internal.artifacts.utils import md5
 
 
 class TestLocalArtifactDrivers(unittest.TestCase):
@@ -49,11 +49,11 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
     def test_match_by_path(self):
         self.assertEqual(
-            ArtifactDriversMap.match_path(f'file:///path/to/'),
+            ArtifactDriversMap.match_path('file:///path/to/'),
             LocalArtifactDriver
         )
         self.assertEqual(
-            ArtifactDriversMap.match_path(f'/path/to/'),
+            ArtifactDriversMap.match_path('/path/to/'),
             LocalArtifactDriver
         )
 
@@ -73,14 +73,13 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         )
 
         with tempfile.TemporaryDirectory() as temporary:
-            local_destination = Path(temporary)
+            downloaded_file = Path(temporary) / 'downloaded_file.ext'
 
             LocalArtifactDriver.download_file(
-                destination=local_destination,
+                destination=downloaded_file,
                 file_definition=artifact_file
             )
 
-            downloaded_file = append_non_relative_path(local_destination, path)
             self.assertTrue(Path(downloaded_file).is_symlink())
             self.assertEqual('6d615241ff583a4b67e14a4448aa08b6', md5(downloaded_file))
 
@@ -101,9 +100,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
             )
 
     def test_single_retrieval(self):
-        files = LocalArtifactDriver.get_tracked_files(
-            (self.test_dir / 'data/file1.txt').as_posix()
-        )
+        files = LocalArtifactDriver.get_tracked_files((self.test_dir / 'data/file1.txt').as_posix())
 
         self.assertEqual(1, len(files))
         self.assertIsInstance(files[0], ArtifactFileData)
@@ -125,9 +122,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         self.assertEqual(22, files[0].metadata['file_size'])
 
     def test_multiple_retrieval(self):
-        files = LocalArtifactDriver.get_tracked_files(
-            (self.test_dir / 'data').as_posix()
-        )
+        files = LocalArtifactDriver.get_tracked_files((self.test_dir / 'data').as_posix())
         files = sorted(files, key=lambda file: file.file_path)
 
         self.assertEqual(4, len(files))
@@ -156,10 +151,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         self.assertEqual(46, files[3].metadata['file_size'])
 
     def test_multiple_retrieval_prefix(self):
-        files = LocalArtifactDriver.get_tracked_files(
-            (self.test_dir / 'data').as_posix(),
-            'my/custom_path'
-        )
+        files = LocalArtifactDriver.get_tracked_files((self.test_dir / 'data').as_posix(), 'my/custom_path')
         files = sorted(files, key=lambda file: file.file_path)
 
         self.assertEqual(4, len(files))
