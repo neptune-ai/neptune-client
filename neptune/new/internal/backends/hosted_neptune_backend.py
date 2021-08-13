@@ -651,6 +651,20 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ArtifactNotFoundException(artifact_hash)
 
     @with_api_exceptions_handler
+    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int):
+        params = {
+            'projectIdentifier': project_uuid,
+            'hash': artifact_hash,
+            'size': size,
+            **self.DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            result = self.artifacts_client.api.createNewArtifact(**params).response().result
+            return ArtifactAttribute(result.hash)
+        except HTTPNotFound:
+            return None
+
+    @with_api_exceptions_handler
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
         params = {
             'experimentId': str(run_uuid),
