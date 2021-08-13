@@ -62,7 +62,11 @@ class LocalArtifactDriver(ArtifactDriver):
             if not file.is_file():
                 continue
 
-            file_path = file.name if namespace is None else (pathlib.Path(namespace) / file.name).as_posix()
+            if source_location.is_dir():
+                file_path = file.relative_to(source_location).as_posix()
+            else:
+                file_path = file.name
+            file_path = file_path if namespace is None else (pathlib.Path(namespace) / file_path).as_posix()
 
             stored_files.append(
                 ArtifactFileData(
