@@ -70,6 +70,7 @@ class DiskQueue(StorageQueue[T]):
         version = self._last_put_file.read_local() + 1
         self._event_empty.clear()
         _json = json.dumps(self._serialize(obj, version))
+        print(_json)
         if self._file_size + len(_json) > self._max_file_size:
             self._writer.flush()
             self._writer.close()

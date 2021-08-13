@@ -16,8 +16,8 @@
 import abc
 from typing import TypeVar, Generic
 
-from neptune.new.internal.operation import AssignBool, AssignInt, Operation, AssignFloat, AssignString, LogFloats, \
-    LogStrings, \
+from neptune.new.internal.operation import AssignArtifact, AssignBool, AssignInt, Operation, AssignFloat, AssignString, \
+    LogFloats, LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
     ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
 
@@ -107,4 +107,8 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_delete_files(self, op: DeleteFiles) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_assign_artifact(self, op: AssignArtifact) -> Ret:
         pass

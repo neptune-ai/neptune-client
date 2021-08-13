@@ -15,10 +15,30 @@
 #
 
 from neptune.new.exceptions import InternalClientError
-from neptune.new.internal.operation import AssignBool, AssignInt, Operation, AssignFloat, AssignString, LogFloats, \
-    LogStrings, \
-    ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
+from neptune.new.internal.operation import (
+    AssignArtifact,
+    AssignBool,
+    AssignInt,
+    Operation,
+    AssignFloat,
+    AssignString,
+    LogFloats,
+    LogStrings,
+    ClearFloatLog,
+    ClearStringLog,
+    AddStrings,
+    RemoveStrings,
+    DeleteAttribute,
+    ClearStringSet,
+    LogImages,
+    ClearImageLog,
+    UploadFile,
+    AssignDatetime,
+    ConfigFloatSeries,
+    UploadFileSet,
+    UploadFileContent,
+    DeleteFiles
+)
 from neptune.new.internal.operation_visitor import OperationVisitor, Ret
 
 
@@ -128,3 +148,6 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
         return {
             'filePaths': list(op.file_paths)
         }
+
+    def visit_assign_artifact(self, op: AssignArtifact) -> dict:
+        raise InternalClientError("Specialized endpoint should be used to assign artifact")
