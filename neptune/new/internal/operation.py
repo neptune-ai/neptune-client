@@ -448,3 +448,23 @@ class DeleteAttribute(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'DeleteAttribute':
         return DeleteAttribute(data["path"])
+
+
+@dataclass
+class AssignArtifact(Operation):
+
+    location: str
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        print("ACCEPT", type(visitor))
+        return visitor.visit_assign_artifact(self)
+
+    def to_dict(self) -> dict:
+        print("TO DICT")
+        ret = super().to_dict()
+        ret["value"] = self.location
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'AssignArtifact':
+        return AssignArtifact(data["path"], data["value"])

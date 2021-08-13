@@ -16,6 +16,7 @@
 import pathlib
 import typing
 
+from neptune.new.internal.operation import AssignArtifact
 from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactDriversMap, ArtifactDriver
 from neptune.new.attributes.atoms.atom import Atom
 
@@ -38,9 +39,10 @@ class Artifact(Atom):
             file_destination.parent.mkdir(parents=True, exist_ok=True)
             driver.download_file(file_destination, file_definition)
 
-    def track_files_to_new(self, path: str):
-        # FIXME: implement in NPT-10544
-        raise NotImplementedError
+    def track_files_to_new(self, source_location: str, wait: bool = False):
+        print('Track files to new', source_location)
+        with self._run.lock():
+            self._enqueue_operation(AssignArtifact(self._path, source_location), wait)
 
     def track_files_to_existing(self, path: str):
         # FIXME: implement in NPT-10545

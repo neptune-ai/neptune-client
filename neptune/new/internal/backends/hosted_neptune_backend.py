@@ -319,7 +319,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             run = self.leaderboard_client.api.createExperiment(**kwargs).response().result
             return ApiRun(uuid.UUID(run.id), run.shortId, run.organizationName, run.projectName, run.trashed)
         except HTTPNotFound:
-            raise ProjectNotFound(project_id=project_uuid)
+            raise ProjectNotFound(project_id=str(project_uuid))
 
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
@@ -618,6 +618,20 @@ class HostedNeptuneBackend(NeptuneBackend):
             ]
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
+
+    @with_api_exceptions_handler
+    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int):
+        params = {
+            'projectIdentifier': project_uuid,
+            'hash': artifact_hash,
+            'size': size,
+            **self.DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            result = self.artifacts_client.api.createNewArtifact(**params).response().result
+            return ArtifactAttribute(result.hash)
+        except HTTPNotFound:
+            return None
 
     @with_api_exceptions_handler
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
