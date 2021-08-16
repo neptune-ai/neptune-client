@@ -150,21 +150,21 @@ class AssignDatetime(Operation):
 
 
 @dataclass
-class AssignArtifactHash(Operation):
+class AssignArtifact(Operation):
 
-    value: str
+    hash: str
 
-    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
-        return visitor.visit_assign_string(self)
+    def accept(self, visitor: 'AssignArtifact[Ret]') -> Ret:
+        return visitor.visit_assign_artifact(self)
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
-        ret["value"] = self.value
+        ret["hash"] = self.hash
         return ret
 
     @staticmethod
-    def from_dict(data: dict) -> 'AssignArtifactHash':
-        return AssignArtifactHash(data["path"], data["value"])
+    def from_dict(data: dict) -> 'AssignArtifact':
+        return AssignArtifact(data["path"], data["hash"])
 
 
 @dataclass

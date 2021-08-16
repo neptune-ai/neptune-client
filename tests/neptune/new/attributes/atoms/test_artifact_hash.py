@@ -18,8 +18,8 @@
 
 from mock import MagicMock
 
-from neptune.new.attributes.atoms.artifact_hash import ArtifactHash, ArtifactHashVal
-from neptune.new.internal.operation import AssignArtifactHash
+from neptune.new.attributes.atoms.artifact import Artifact, ArtifactVal
+from neptune.new.internal.operation import AssignArtifact
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -29,25 +29,25 @@ class TestArtifactHash(TestAttributeBase):
         value_and_expected = [
             ("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
              "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-            (ArtifactHashVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+            (ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
              "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
         ]
 
         for value, expected in value_and_expected:
             processor = MagicMock()
             exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
-            var = ArtifactHash(exp, path)
+            var = Artifact(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignArtifactHash(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(AssignArtifact(path, expected), wait)
 
     def test_assign_type_error(self):
         values = ["foo", 10, None]
         for value in values:
             with self.assertRaises(Exception):
-                ArtifactHash(MagicMock(), MagicMock()).assign(value)
+                Artifact(MagicMock(), MagicMock()).assign(value)
 
     def test_get(self):
         exp, path = self._create_run(), self._random_path()
-        var = ArtifactHash(exp, path)
+        var = Artifact(exp, path)
         var.assign("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
-        self.assertEqual("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", var.fetch())
+        self.assertEqual("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", var.fetch_hash())
