@@ -672,13 +672,18 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'projectIdentifier': project_uuid,
             'hash': artifact_hash,
-            'files': [
-                ArtifactFileData.to_dto(a) for a in files
-            ],
+            'artifactFilesDTO': {
+                'files': [
+                    ArtifactFileData.to_dto(a) for a in files
+                ]
+            },
             **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response().result
+            print("BEFORE RESULT")
+            response = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response()
+            print("RESULT", response)
+            result = response.result
             return ArtifactAttribute(hash=result.hash, size=result.size, received_metadata=result.received_metadata)
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)

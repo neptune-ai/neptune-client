@@ -57,8 +57,8 @@ class ArtifactFileData:
 
 class ArtifactMetadataSerializer:
     @staticmethod
-    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Tuple[str, str]]:
-        return [(k, v) for k, v in sorted(metadata.items())]
+    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Dict[str, str]]:
+        return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
 
     @staticmethod
     def deserialize(metadata: typing.List[typing.Tuple[str, str]]) -> typing.Dict[str, str]:
