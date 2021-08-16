@@ -16,20 +16,11 @@
 import pathlib
 import typing
 
-from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactDriversMap, ArtifactDriver
-from neptune.new.internal.operation import AssignArtifact
-from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 from neptune.new.attributes.atoms.atom import Atom
+from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
 
 
 class Artifact(Atom):
-    def assign(self, value: typing.Union[ArtifactVal, str], wait: bool = False):
-        if not isinstance(value, ArtifactVal):
-            value = ArtifactVal(value)
-
-        with self._run.lock():
-            self._enqueue_operation(AssignArtifact(self._path, value.hash), wait)
-
     def fetch_hash(self) -> str:
         val = self._backend.get_artifact_attribute(self._run_uuid, self._path)
         return val.hash
