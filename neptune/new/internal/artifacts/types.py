@@ -70,6 +70,7 @@ class ArtifactDriversMap:
 
     @classmethod
     def match_path(cls, path: str) -> typing.Type['ArtifactDriver']:
+        print(cls._implementations)
         for artifact_driver in cls._implementations:
             if artifact_driver.matches(path):
                 return artifact_driver
@@ -99,7 +100,7 @@ class ArtifactDriver(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.Iterable[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
         raise NotImplementedError
 
     @classmethod
