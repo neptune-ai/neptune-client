@@ -42,9 +42,6 @@ class OperationApiNameVisitor(OperationVisitor[str]):
     def visit_assign_datetime(self, _: AssignDatetime) -> Ret:
         return "assignDatetime"
 
-    def visit_artifact(self, _: AssignDatetime) -> Ret:
-        return "assignArtifact"
-
     def visit_upload_file(self, _: UploadFile) -> str:
         raise InternalClientError("Specialized endpoint should be used to upload file attribute")
 

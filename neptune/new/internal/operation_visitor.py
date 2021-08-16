@@ -50,10 +50,6 @@ class OperationVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_assign_artifact(self, op: AssignDatetime) -> Ret:
-        pass
-
-    @abc.abstractmethod
     def visit_upload_file(self, op: UploadFile) -> Ret:
         pass
 
