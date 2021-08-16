@@ -123,9 +123,9 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         )
         self.assertIsInstance(
             files[0].metadata['last_modified'],
-            datetime.datetime
+            str
         )
-        self.assertEqual(22, files[0].metadata['file_size'])
+        self.assertEqual('22', files[0].metadata['file_size'])
 
     def test_multiple_retrieval(self):
         files = LocalArtifactDriver.get_tracked_files((self.test_dir / 'data').as_posix())
@@ -138,25 +138,25 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         self.assertEqual(
             f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
             files[0].metadata['file_path'])
-        self.assertEqual(22, files[0].metadata['file_size'])
+        self.assertEqual('22', files[0].metadata['file_size'])
 
         self.assertEqual('hardlinked_file.txt', files[1].file_path)
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[1].file_hash)
         self.assertEqual(f"file://{(self.test_dir.resolve() / 'data/hardlinked_file.txt').as_posix()}",
                          files[1].metadata['file_path'])
-        self.assertEqual(46, files[1].metadata['file_size'])
+        self.assertEqual('46', files[1].metadata['file_size'])
 
         self.assertEqual('sub_dir/file_in_subdir.txt', files[2].file_path)
         self.assertEqual('66ac94061f0932fcb1954df995477cdcbb6b70b0', files[2].file_hash)
         self.assertEqual(f"file://{(self.test_dir.resolve() / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
                          files[2].metadata['file_path'])
-        self.assertEqual(25, files[2].metadata['file_size'])
+        self.assertEqual('25', files[2].metadata['file_size'])
 
         self.assertEqual('symlinked_file.txt', files[3].file_path)
         metadata_path_suffix = 'neptune-client/tests/data/local_artifact_drivers_data/file_to_link.txt'
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[3].file_hash)
         self.assertTrue(files[3].metadata['file_path'].endswith(metadata_path_suffix))
-        self.assertEqual(46, files[3].metadata['file_size'])
+        self.assertEqual('46', files[3].metadata['file_size'])
 
     def test_multiple_retrieval_prefix(self):
         files = LocalArtifactDriver.get_tracked_files((self.test_dir / 'data').as_posix(), 'my/custom_path')
@@ -169,22 +169,22 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         self.assertEqual(
             f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
             files[0].metadata['file_path'])
-        self.assertEqual(22, files[0].metadata['file_size'])
+        self.assertEqual('22', files[0].metadata['file_size'])
 
         self.assertEqual('my/custom_path/hardlinked_file.txt', files[1].file_path)
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[1].file_hash)
         self.assertEqual(f"file://{(self.test_dir.resolve() / 'data/hardlinked_file.txt').as_posix()}",
                          files[1].metadata['file_path'])
-        self.assertEqual(46, files[1].metadata['file_size'])
+        self.assertEqual('46', files[1].metadata['file_size'])
 
         self.assertEqual('my/custom_path/sub_dir/file_in_subdir.txt', files[2].file_path)
         self.assertEqual('66ac94061f0932fcb1954df995477cdcbb6b70b0', files[2].file_hash)
         self.assertEqual(f"file://{(self.test_dir.resolve() / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
                          files[2].metadata['file_path'])
-        self.assertEqual(25, files[2].metadata['file_size'])
+        self.assertEqual('25', files[2].metadata['file_size'])
 
         self.assertEqual('my/custom_path/symlinked_file.txt', files[3].file_path)
         metadata_path_suffix = 'neptune-client/tests/data/local_artifact_drivers_data/file_to_link.txt'
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[3].file_hash)
         self.assertTrue(files[3].metadata['file_path'].endswith(metadata_path_suffix))
-        self.assertEqual(46, files[3].metadata['file_size'])
+        self.assertEqual('46', files[3].metadata['file_size'])

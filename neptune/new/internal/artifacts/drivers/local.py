@@ -39,7 +39,7 @@ class LocalArtifactDriver(ArtifactDriver):
     def _serialize_metadata(cls, metadata: typing.Dict[str, typing.Any]) -> typing.Dict[str, str]:
         return {
             "file_path": metadata['file_path'],
-            "last_modified": datetime.fromtimestamp(int(metadata['last_modified'])).strftime(cls.DATETIME_FORMAT),
+            "last_modified": datetime.fromtimestamp(metadata['last_modified']).strftime(cls.DATETIME_FORMAT),
             "file_size": str(metadata['file_size']),
         }
 
