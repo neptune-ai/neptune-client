@@ -15,7 +15,8 @@
 #
 
 from neptune.new.exceptions import InternalClientError
-from neptune.new.internal.operation import AssignBool, AssignInt, Operation, AssignFloat, AssignString, LogFloats, \
+from neptune.new.internal.operation import AssignArtifactHash, AssignBool, AssignInt, Operation, AssignFloat, \
+    AssignString, LogFloats, \
     LogStrings, \
     ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
     ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
@@ -50,6 +51,11 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
     def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
         return {
             'valueMilliseconds': int(1000 * op.value.timestamp())
+        }
+
+    def visit_assign_artifact_hash(self, op: AssignArtifactHash) -> dict:
+        return {
+            'value': op.value
         }
 
     def visit_upload_file(self, _: UploadFile) -> dict:

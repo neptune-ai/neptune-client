@@ -150,6 +150,24 @@ class AssignDatetime(Operation):
 
 
 @dataclass
+class AssignArtifactHash(Operation):
+
+    value: str
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_assign_string(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["value"] = self.value
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'AssignArtifactHash':
+        return AssignArtifactHash(data["path"], data["value"])
+
+
+@dataclass
 class UploadFile(Operation):
 
     ext: str

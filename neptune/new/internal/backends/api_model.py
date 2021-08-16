@@ -97,6 +97,7 @@ class AttributeType(Enum):
     RUN_STATE = "experimentState"
     NOTEBOOK_REF = "notebookRef"
     ARTIFACT = 'artifact'
+    ARTIFACT_HASH = 'artifactHash'
 
 
 @dataclass
@@ -184,6 +185,11 @@ class DatetimeAttribute:
 @dataclass
 class ArtifactAttribute:
     hash: str
+
+
+@dataclass
+class ArtifactHashAttribute:
+    value: str
 
 
 @dataclass
