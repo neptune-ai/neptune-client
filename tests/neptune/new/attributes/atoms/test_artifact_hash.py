@@ -18,36 +18,26 @@
 
 from mock import MagicMock
 
-from neptune.new.attributes.atoms.artifact import Artifact, ArtifactVal
+from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.internal.operation import AssignArtifact
+from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestArtifactHash(TestAttributeBase):
-
-    def test_assign(self):
-        value_and_expected = [
-            ("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-            (ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-        ]
-
-        for value, expected in value_and_expected:
-            processor = MagicMock()
-            exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
-            var = Artifact(exp, path)
-            var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignArtifact(path, expected), wait)
-
     def test_assign_type_error(self):
         values = ["foo", 10, None]
         for value in values:
             with self.assertRaises(Exception):
                 Artifact(MagicMock(), MagicMock()).assign(value)
 
-    def test_get(self):
+    def test_fetch_hash(self):
         exp, path = self._create_run(), self._random_path()
         var = Artifact(exp, path)
-        var.assign("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+        var._enqueue_operation(
+            AssignArtifact(
+                var._path,
+                ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash
+            ),
+            False)
         self.assertEqual("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", var.fetch_hash())
