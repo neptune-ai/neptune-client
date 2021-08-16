@@ -53,12 +53,8 @@ class LocalArtifactDriver(ArtifactDriver):
 
     @classmethod
     def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
-
         parsed_path = urlparse(path).path
-        print(parsed_path)
         source_location = pathlib.Path(parsed_path)
-
-        print(source_location)
 
         stored_files: typing.List[ArtifactFileData] = list()
 
