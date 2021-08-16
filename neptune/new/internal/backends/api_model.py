@@ -183,7 +183,9 @@ class DatetimeAttribute:
 
 @dataclass
 class ArtifactAttribute:
+    received_metadata: bool
     hash: str
+    size: int
 
 
 @dataclass

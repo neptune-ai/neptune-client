@@ -77,6 +77,7 @@ from neptune.new.internal.backends.hosted_file_operations import (
     upload_file_attribute,
     upload_file_set_attribute,
 )
+from neptune.new.internal.backends.hosted_artifact_operations import track_artifact_files
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.new.internal.backends.operation_api_object_converter import OperationApiObjectConverter
@@ -94,6 +95,7 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileContent,
     UploadFileSet,
+    AssignArtifact
 )
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
@@ -356,9 +358,15 @@ class HostedNeptuneBackend(NeptuneBackend):
         operations_preprocessor.process(operations)
         errors.extend(operations_preprocessor.get_errors())
 
-        upload_operations, other_operations = [], []
+        upload_operations, artifact_operations, other_operations = [], [], []
         file_operations = (UploadFile, UploadFileContent, UploadFileSet)
         for op in operations_preprocessor.get_operations():
+            if isinstance(op, file_operations):
+                upload_operations.append(op)
+            elif isinstance(op, AssignArtifact):
+                artifact_operations.append(op)
+            else:
+                other_operations.append(op)
             (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
 
         # Upload operations should be done first since they are idempotent
@@ -367,6 +375,13 @@ class HostedNeptuneBackend(NeptuneBackend):
                 run_uuid=run_uuid,
                 upload_operations=upload_operations)
         )
+
+        # errors.extend(
+        #     self._execute_artifact_operations_with_400_retry(
+        #         project_uuid='rafal.neptune/test',
+        #         artifact_operations=artifact_operations
+        #     )
+        # )
 
         if other_operations:
             errors.extend(self._execute_operations(run_uuid, other_operations))
@@ -418,6 +433,23 @@ class HostedNeptuneBackend(NeptuneBackend):
         while True:
             try:
                 return self._execute_upload_operations(run_uuid, upload_operations)
+            except ClientHttpError as ex:
+                if "Length of stream does not match given range" not in ex.response:
+                    raise ex
+
+    def _execute_artifact_operations_with_400_retry(
+            self,
+            project_uuid: uuid.UUID,
+            artifact_operations: List[AssignArtifact]) -> List[NeptuneException]:
+        while True:
+            try:
+                for op in artifact_operations:
+                    track_artifact_files(
+                        backend=self,
+                        project_uuid=project_uuid,
+                        path=op.location,
+                        namespace=path_to_str(op.path)
+                    )
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
@@ -629,7 +661,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.artifacts_client.api.createNewArtifact(**params).response().result
-            return ArtifactAttribute(result.hash)
+            print(result)
+            return ArtifactAttribute(hash=result.artifactHash, received_metadata=result.receivedMetadata, size=result.size)
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
 
@@ -646,7 +679,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response().result
-            return ArtifactAttribute(result.hash)
+            return ArtifactAttribute(hash=result.hash, size=result.size, received_metadata=result.received_metadata)
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
 
