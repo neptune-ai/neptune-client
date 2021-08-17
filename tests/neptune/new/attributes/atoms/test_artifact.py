@@ -37,10 +37,12 @@ class TestArtifact(TestAttributeBase):
         self.path = self._random_path()
         self.path_str = path_to_str(self.path)
 
-        self.artifact_hash = "da39a3ee5e6b4b0d3255bfef95601890afd80709"
+        self.artifact_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         self.artifact_files = [
-            ArtifactFileData("fname.txt", "da39a3ee5e6b4b0d3255bfef95601890afd80709", "test", {}),
-            ArtifactFileData("subdir/other.mp3", "da39a3ee5e6b4b0d3255bfef95601890afd80709", "test", {}),
+            ArtifactFileData("fname.txt",
+                             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "test", {}),
+            ArtifactFileData("subdir/other.mp3",
+                             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "test", {}),
         ]
 
         self.exp.set_attribute(self.path_str, Artifact(self.exp, self.path))
