@@ -51,9 +51,10 @@ class LocalArtifactDriver(ArtifactDriver):
 
     @classmethod
     def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
-        path_parts = urlparse(path)
-        parsed_path = f'{path_parts.netloc}{path_parts.path}'
-        source_location = pathlib.Path(parsed_path)
+        file_protocol_prefix = 'file://'
+        if path.startswith(file_protocol_prefix):
+            path = path[len(file_protocol_prefix):]
+        source_location = pathlib.Path(path)
 
         stored_files: typing.List[ArtifactFileData] = list()
 
