@@ -54,7 +54,7 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
     AddStrings,
-    AssignArtifact,
+    TrackFilesToNewArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,
@@ -519,7 +519,7 @@ class NeptuneBackendMock(NeptuneBackend):
             return MetadataInconsistency("Cannot perform {} operation on {}. Expected {}, {} found."
                                          .format(op_name, self._path, expected, type(self._current_value)))
 
-        def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
+        def visit_assign_artifact(self, op: TrackFilesToNewArtifact) -> Optional[Value]:
             print('Artiact visited')
             if self._current_value is not None and not isinstance(self._current_value, Artifact):
                 raise self._create_type_error("assign", Artifact.__name__)

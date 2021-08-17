@@ -469,7 +469,7 @@ class DeleteAttribute(Operation):
 
 
 @dataclass
-class AssignArtifact(Operation):
+class TrackFilesToNewArtifact(Operation):
 
     location: str
 
@@ -484,5 +484,5 @@ class AssignArtifact(Operation):
         return ret
 
     @staticmethod
-    def from_dict(data: dict) -> 'AssignArtifact':
-        return AssignArtifact(data["path"], data["value"])
+    def from_dict(data: dict) -> 'TrackFilesToNewArtifact':
+        return TrackFilesToNewArtifact(data["path"], data["value"])

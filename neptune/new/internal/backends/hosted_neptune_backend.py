@@ -95,7 +95,7 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileContent,
     UploadFileSet,
-    AssignArtifact
+    TrackFilesToNewArtifact
 )
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
@@ -363,7 +363,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in operations_preprocessor.get_operations():
             if isinstance(op, file_operations):
                 upload_operations.append(op)
-            elif isinstance(op, AssignArtifact):
+            elif isinstance(op, TrackFilesToNewArtifact):
                 artifact_operations.append(op)
             else:
                 other_operations.append(op)
@@ -444,7 +444,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         errors = list()
 
         for op in upload_operations:
-            if isinstance(op, AssignArtifact):
+            if isinstance(op, TrackFilesToNewArtifact):
                 error = track_artifact_files(
                         backend=self,
                         run_uuid=run_uuid,

@@ -51,7 +51,7 @@ class Artifact(Atom):
     def track_files_to_new(self, source_location: str, wait: bool = False):
         print('Track files to new', source_location)
         with self._run.lock():
-            self._enqueue_operation(AssignArtifact(self._path, source_location), wait)
+            self._enqueue_operation(TrackFilesToNewArtifact(self._path, source_location), wait)
 
     def track_files_to_existing(self, path: str):
         # FIXME: implement in NPT-10545
