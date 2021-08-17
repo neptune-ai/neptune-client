@@ -61,13 +61,17 @@ class FileHasher:
         artifact_hash = hashlib.sha256()
 
         for artifact_file in sorted(artifact_files, key=lambda file: file.file_path):
+            print(artifact_file.metadata)
             artifact_hash.update(cls._int_to_bytes(len(artifact_file.file_path)))
             artifact_hash.update(artifact_file.file_path.encode(cls.ENCODING))
             artifact_hash.update(artifact_file.file_hash.encode(cls.ENCODING))
             artifact_hash.update(cls._int_to_bytes(len(artifact_file.type)))
             artifact_hash.update(artifact_file.type.encode(cls.ENCODING))
 
-            for metadata_name, metadata_value in ArtifactMetadataSerializer.serialize(artifact_file.metadata):
+            for metadata_key_value in ArtifactMetadataSerializer.serialize(artifact_file.metadata):
+                metadata_name, metadata_value = metadata_key_value.get('key'), metadata_key_value.get('value')
+
+                print(metadata_name, metadata_value, type(metadata_value))
                 artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
                 artifact_hash.update(cls._int_to_bytes(len(metadata_name)))
                 artifact_hash.update(metadata_name.encode(cls.ENCODING))
