@@ -24,25 +24,19 @@ from neptune.new.internal.artifacts.file_hasher import FileHasher
 _logger = logging.getLogger(__name__)
 
 
-def track_artifact_files(backend: NeptuneBackend, project_uuid: uuid.UUID, path, namespace):
-    # print(project_uuid)
-    # files: typing.List[ArtifactFileData] = ArtifactDriversMap.match_path(path).get_tracked_files(path=path, namespace=namespace)
-    # artifact_hash = FileHasher.get_artifact_hash(files)
-    # print('Computed hash', artifact_hash)
-    # artifact = backend.create_new_artifact(project_uuid, artifact_hash, len(files))
-    # print(artifact)
+def track_artifact_files(backend: NeptuneBackend, run_uuid: uuid.UUID, path, namespace):
+    api_run = backend.get_run(run_id=str(run_uuid))
+    project_qualified_name = f'{api_run.workspace}/{api_run.project_name}'
 
-    artifact_hash = '62ed634247b9dc03722c6193cca917ad93b7eb80a0a7c33e7677acf3c8cde23a'
-    artifact_files = backend.list_artifact_files(project_uuid, artifact_hash)
-    print("Artifact files", artifact_files)
+    driver: ArtifactDriver = ArtifactDriversMap.match_path(path)
+    files: typing.List[ArtifactFileData] = driver.get_tracked_files(path=path, namespace=namespace)
+    artifact_hash = FileHasher.get_artifact_hash(files)
 
-    # if not artifact.received_metadata:
-    #     backend.upload_artifact_files_metadata(
-    #         project_uuid,
-    #         artifact_hash,
-    #         files
-    #     )
+    artifact = backend.create_new_artifact(project_qualified_name, artifact_hash, len(files))
 
-    # artifact_hash = '81ce0fb16f8b233dd147092d3884623c6b182696'
-    # files = backend.list_artifact_files(project_uuid=project_uuid, artifact_hash=artifact_hash)
-    # print(files)
+    if not artifact.received_metadata:
+        backend.upload_artifact_files_metadata(
+            project_qualified_name,
+            artifact_hash,
+            files
+        )

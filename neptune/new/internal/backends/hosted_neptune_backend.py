@@ -376,12 +376,13 @@ class HostedNeptuneBackend(NeptuneBackend):
                 upload_operations=upload_operations)
         )
 
-        # errors.extend(
-        #     self._execute_artifact_operations_with_400_retry(
-        #         project_uuid='rafal.neptune/test',
-        #         artifact_operations=artifact_operations
-        #     )
-        # )
+        # At first it should create artifacts
+        errors.extend(
+            self._execute_artifact_operations_with_400_retry(
+                run_uuid=run_uuid,
+                artifact_operations=artifact_operations
+            )
+        )
 
         if other_operations:
             errors.extend(self._execute_operations(run_uuid, other_operations))
@@ -437,19 +438,33 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
 
-    def _execute_artifact_operations_with_400_retry(
-            self,
-            project_uuid: uuid.UUID,
-            artifact_operations: List[AssignArtifact]) -> List[NeptuneException]:
-        while True:
-            try:
-                for op in artifact_operations:
-                    track_artifact_files(
+    def _execute_artifact_operations(self,
+                                     run_uuid: uuid.UUID,
+                                     upload_operations: List[Operation]) -> List[NeptuneException]:
+        errors = list()
+
+        for op in upload_operations:
+            if isinstance(op, AssignArtifact):
+                error = track_artifact_files(
                         backend=self,
-                        project_uuid=project_uuid,
+                        run_uuid=run_uuid,
                         path=op.location,
                         namespace=path_to_str(op.path)
                     )
+                if error:
+                    errors.append(error)
+            else:
+                raise InternalClientError("Upload operation in neither File or FileSet")
+
+        return errors
+
+    def _execute_artifact_operations_with_400_retry(
+            self,
+            run_uuid: uuid.UUID,
+            artifact_operations: List[Operation]) -> List[NeptuneException]:
+        while True:
+            try:
+                return self._execute_artifact_operations(run_uuid, artifact_operations)
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
@@ -632,7 +647,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
-            return ArtifactAttribute(hash=result.hash, received_metadata=result.received_metadata, size=result.size)
+            return ArtifactAttribute(
+                hash=result.artifactHash,
+                received_metadata=result.receivedMetadata,
+                size=result.size
+            )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -660,10 +679,12 @@ class HostedNeptuneBackend(NeptuneBackend):
             **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
-            dd = self.artifacts_client.api.createNewArtifact(**params).response()
-            print("Raw Answer", dd.__dir__())
-            result = dd.result
-            return ArtifactAttribute(hash=result.artifactHash, received_metadata=result.receivedMetadata, size=result.size)
+            result = self.artifacts_client.api.createNewArtifact(**params).response().result
+            return ArtifactAttribute(
+                hash=result.artifactHash,
+                received_metadata=result.receivedMetadata,
+                size=result.size
+            )
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
 
@@ -681,15 +702,14 @@ class HostedNeptuneBackend(NeptuneBackend):
             **self.DEFAULT_REQUEST_KWARGS
         }
         try:
-            response = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response()
-            result = response.result
-            print(result)
-            return ArtifactAttribute(hash=result.artifactHash, size=result.artifactSize, received_metadata=result.received_metadata)
+            result = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response().result
+            return ArtifactAttribute(
+                hash=result.artifactHash,
+                size=result.artifactSize,
+                received_metadata=result.receivedMetadata
+            )
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
-        except Exception as e:
-            print(e.response.text)
-            print(e)
 
     @with_api_exceptions_handler
     def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactAttribute:
