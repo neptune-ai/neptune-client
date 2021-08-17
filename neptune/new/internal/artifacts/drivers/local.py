@@ -25,6 +25,8 @@ from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileDat
 
 
 class LocalArtifactDriver(ArtifactDriver):
+    DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
     @staticmethod
     def get_type() -> str:
         return ArtifactFileType.LOCAL.value
@@ -37,16 +39,16 @@ class LocalArtifactDriver(ArtifactDriver):
     def _serialize_metadata(cls, metadata: typing.Dict[str, typing.Any]) -> typing.Dict[str, str]:
         return {
             "file_path": metadata['file_path'],
-            "last_modified": datetime.fromtimestamp(int(metadata['last_modified'])),
-            "file_size": int(metadata['file_size']),
+            "last_modified": datetime.fromtimestamp(metadata['last_modified']).strftime(cls.DATETIME_FORMAT),
+            "file_size": str(metadata['file_size']),
         }
 
     @classmethod
     def _deserialize_metadata(cls, metadata: typing.Dict[str, str]) -> typing.Dict[str, typing.Any]:
         return {
             "file_path": metadata['file_path'],
-            "last_modified": metadata['last_modified'].timestamp(),
-            "file_size": str(metadata['file_size']),
+            "last_modified": datetime.strptime(metadata['last_modified'], cls.DATETIME_FORMAT),
+            "file_size": int(metadata['file_size']),
         }
 
     @classmethod
