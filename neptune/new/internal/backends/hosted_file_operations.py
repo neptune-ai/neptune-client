@@ -132,14 +132,18 @@ def get_unique_upload_entries(file_globs: Iterable[str]) -> Set[UploadEntry]:
 
 
 def _attribute_upload_response_handler(result: bytes) -> None:
-    parsed = json.loads(result)
+    try:
+        parsed = json.loads(result)
+    except json.JSONDecodeError:
+        raise InternalClientError("Unexpected response from server: {}".format(result))
+
     if isinstance(parsed, type(None)):
         return
     if isinstance(parsed, dict):
         if "errorDescription" in parsed:
             raise MetadataInconsistency(parsed["errorDescription"])
         else:
-            raise InternalClientError("Unexpected response from server: {}".format(bytes))
+            raise InternalClientError("Unexpected response from server: {}".format(result))
 
 
 def _upload_loop(file_chunk_stream: FileChunkStream, response_handler: Callable[[bytes], None], **kwargs):
