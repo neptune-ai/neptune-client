@@ -32,7 +32,7 @@ class Artifact(Atom):
 
     def __init__(self, value: str):
         self.hash = str(value)
-        assert len(self.hash) == FileHasher.HASH_LENGTH_LENGTH, \
+        assert len(self.hash) == FileHasher.HASH_LENGTH, \
             "Expected sha-256 string. E.g. 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'"
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
