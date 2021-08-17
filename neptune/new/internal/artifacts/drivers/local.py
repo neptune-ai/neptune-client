@@ -58,6 +58,8 @@ class LocalArtifactDriver(ArtifactDriver):
             path = path[len(file_protocol_prefix):]
         source_location = pathlib.Path(path)
 
+        print(source_location)
+
         stored_files: typing.List[ArtifactFileData] = list()
 
         files_to_check = source_location.rglob('*') if source_location.is_dir() else [source_location]
