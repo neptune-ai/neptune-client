@@ -24,6 +24,11 @@ from neptune.new.internal.artifacts.utils import sha1
 
 
 class FileHasher:
+    ENCODING = "UTF-8"
+    HASH_ELEMENT_DIVISOR = b"|"
+    SERVER_INT_BYTES = 4
+    SERVER_BYTE_ORDER = 'big'
+
     local_storage = LocalFileHashStorage()
 
     @classmethod
@@ -48,16 +53,26 @@ class FileHasher:
             return computed_hash
 
     @classmethod
+    def _int_to_bytes(cls, int_value: int):
+        return int_value.to_bytes(cls.SERVER_INT_BYTES, cls.SERVER_BYTE_ORDER)
+
+    @classmethod
     def get_artifact_hash(cls, artifact_files: typing.Iterable[ArtifactFileData]) -> str:
-        artifact_hash = hashlib.sha1()
+        artifact_hash = hashlib.sha256()
 
         for artifact_file in sorted(artifact_files, key=lambda file: file.file_path):
-            artifact_hash.update(artifact_file.file_path.encode())
-            artifact_hash.update(artifact_file.file_hash.encode())
-            artifact_hash.update(artifact_file.type.encode())
+            artifact_hash.update(cls._int_to_bytes(len(artifact_file.file_path)))
+            artifact_hash.update(artifact_file.file_path.encode(cls.ENCODING))
+            artifact_hash.update(artifact_file.file_hash.encode(cls.ENCODING))
+            artifact_hash.update(cls._int_to_bytes(len(artifact_file.type)))
+            artifact_hash.update(artifact_file.type.encode(cls.ENCODING))
 
             for metadata_name, metadata_value in ArtifactMetadataSerializer.serialize(artifact_file.metadata):
-                artifact_hash.update(metadata_name.encode())
-                artifact_hash.update(metadata_value.encode())
+                artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+                artifact_hash.update(cls._int_to_bytes(len(metadata_name)))
+                artifact_hash.update(metadata_name.encode(cls.ENCODING))
+                artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+                artifact_hash.update(cls._int_to_bytes(len(metadata_value)))
+                artifact_hash.update(metadata_value.encode(cls.ENCODING))
 
         return str(artifact_hash.hexdigest())
