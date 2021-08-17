@@ -48,8 +48,8 @@ class ArtifactFileData:
 
     def to_dto(self) -> typing.Dict:
         return {
-            'file_path': self.file_path,
-            'file_hash': self.file_hash,
+            'filePath': self.file_path,
+            'fileHash': self.file_hash,
             'type': self.type,
             'metadata': ArtifactMetadataSerializer.serialize(self.metadata)
         }

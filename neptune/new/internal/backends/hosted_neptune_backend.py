@@ -120,7 +120,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         '_request_options': {
             "connect_timeout": CONNECT_TIMEOUT,
             "timeout": REQUEST_TIMEOUT,
-        }
+        },
     }
 
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
@@ -632,7 +632,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
-            return ArtifactAttribute(result.hash)
+            return ArtifactAttribute(hash=result.hash, received_metadata=result.received_metadata, size=result.size)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -660,8 +660,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             **self.DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = self.artifacts_client.api.createNewArtifact(**params).response().result
-            print(result)
+            dd = self.artifacts_client.api.createNewArtifact(**params).response()
+            print("Raw Answer", dd.__dir__())
+            result = dd.result
             return ArtifactAttribute(hash=result.artifactHash, received_metadata=result.receivedMetadata, size=result.size)
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
@@ -677,16 +678,18 @@ class HostedNeptuneBackend(NeptuneBackend):
                     ArtifactFileData.to_dto(a) for a in files
                 ]
             },
-            **self.DEFAULT_REQUEST_KWARGS,
+            **self.DEFAULT_REQUEST_KWARGS
         }
         try:
-            print("BEFORE RESULT")
             response = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response()
-            print("RESULT", response)
             result = response.result
-            return ArtifactAttribute(hash=result.hash, size=result.size, received_metadata=result.received_metadata)
+            print(result)
+            return ArtifactAttribute(hash=result.artifactHash, size=result.artifactSize, received_metadata=result.received_metadata)
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
+        except Exception as e:
+            print(e.response.text)
+            print(e)
 
     @with_api_exceptions_handler
     def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactAttribute:
