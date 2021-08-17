@@ -114,6 +114,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         '_request_options': {
             "connect_timeout": CONNECT_TIMEOUT,
             "timeout": REQUEST_TIMEOUT,
+            "headers": {"X-Neptune-LegacyClient": "false"}
         }
     }
 

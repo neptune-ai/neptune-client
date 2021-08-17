@@ -161,6 +161,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         kwargs = {
             'experimentCreationParams': api_params,
             'X-Neptune-CliVersion': self.client_lib_version,
+            '_request_options': {"headers": {"X-Neptune-LegacyClient": "true"}}
         }
 
         try:
