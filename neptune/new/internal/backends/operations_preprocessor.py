@@ -18,7 +18,7 @@ from typing import List, TypeVar, Callable
 
 from neptune.new.exceptions import MetadataInconsistency, InternalClientError
 from neptune.new.internal.operation import (
-    AssignArtifact,
+    TrackFilesToNewArtifact,
     AssignBool,
     AssignInt,
     Operation,
@@ -238,7 +238,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
 
-    def visit_assign_artifact(self, op: AssignArtifact) -> None:
+    def visit_assign_artifact(self, op: TrackFilesToNewArtifact) -> None:
         print('Called from OperationsPreprocessor', op.to_dict())
         # self._process_modify_op(_DataType.ARTIFACT, op, self._assign_modifier())
 
