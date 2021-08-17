@@ -54,7 +54,7 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
     AddStrings,
-    AssignBool, AssignDatetime,
+    AssignArtifact, AssignBool, AssignDatetime,
     AssignFloat,
     AssignInt, AssignString,
     ClearFloatLog,
@@ -394,6 +394,11 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, Datetime):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
+
+        def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("assign", Artifact.__name__)
+            return Artifact(op.hash)
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):

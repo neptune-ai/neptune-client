@@ -28,6 +28,7 @@ class FileHasher:
     HASH_ELEMENT_DIVISOR = b"|"
     SERVER_INT_BYTES = 4
     SERVER_BYTE_ORDER = 'big'
+    HASH_LENGTH = 64  # sha-256
 
     local_storage = LocalFileHashStorage()
 
