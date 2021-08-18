@@ -53,6 +53,7 @@ from neptune.new.internal.backends.hosted_file_operations import get_unique_uplo
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
+    AssignArtifact,
     AddStrings,
     AssignBool,
     AssignDatetime,
@@ -395,6 +396,11 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, Datetime):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
+
+        def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("assign", Artifact.__name__)
+            return Artifact(op.hash)
 
         def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Optional[Value]:
             pass
