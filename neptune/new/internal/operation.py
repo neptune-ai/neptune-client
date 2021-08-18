@@ -490,3 +490,14 @@ class TrackFilesToNewArtifact(Operation):
             project_uuid=uuid.UUID(data["project_uuid"]),
             entries=list(map(tuple, data["entries"]))
         )
+
+
+@dataclass
+class ClearArtifact(Operation):
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_clear_artifact(self)
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ClearArtifact':
+        return ClearArtifact(data["path"])

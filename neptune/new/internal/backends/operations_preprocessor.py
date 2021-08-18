@@ -24,6 +24,7 @@ from neptune.new.internal.operation import (
     AssignFloat,
     AssignInt,
     AssignString,
+    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -86,6 +87,7 @@ class _DataType(Enum):
     STRING_SERIES = "String Series"
     IMAGE_SERIES = "Image Series"
     STRING_SET = "String Set"
+    ARTIFACT = "Artifact"
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
@@ -238,7 +240,18 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 self._delete_ops.append(op)
 
     def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> None:
-        pass
+        self._process_modify_op(
+            _DataType.ARTIFACT,
+            op,
+            self._log_modifier(
+                TrackFilesToNewArtifact,
+                ClearArtifact,
+                lambda op1, op2: TrackFilesToNewArtifact(op1.path, op1.project_uuid, op1.entries + op2.entries)
+            )
+        )
+
+    def visit_clear_artifact(self, op: ClearStringSet) -> None:
+        self._process_modify_op(_DataType.ARTIFACT, op, self._clear_modifier())
 
     @staticmethod
     def _assign_modifier():

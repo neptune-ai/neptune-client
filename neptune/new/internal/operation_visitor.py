@@ -23,6 +23,7 @@ from neptune.new.internal.operation import (
     AssignFloat,
     AssignInt,
     AssignString,
+    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -131,4 +132,8 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_clear_artifact(self, op: ClearArtifact) -> Ret:
         pass

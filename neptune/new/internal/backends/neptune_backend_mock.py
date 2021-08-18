@@ -58,7 +58,9 @@ from neptune.new.internal.operation import (
     AssignBool,
     AssignDatetime,
     AssignFloat,
-    AssignInt, AssignString,
+    AssignInt,
+    AssignString,
+    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -412,6 +414,15 @@ class NeptuneBackendMock(NeptuneBackend):
             return Artifact(op.hash)
 
         def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Optional[Value]:
+            pass
+
+        def visit_clear_artifact(self, op: ClearArtifact) -> Optional[Value]:
+            # pylint: disable=unused-argument
+            # if self._current_value is None:
+            #     return TrackFilesToNewArtifact()
+            # if not isinstance(self._current_value, TrackFilesToNewArtifact):
+            #     raise self._create_type_error("clear", TrackFilesToNewArtifact.__name__)
+            # return StringSet(set())
             pass
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
