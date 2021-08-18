@@ -442,17 +442,17 @@ class HostedNeptuneBackend(NeptuneBackend):
                     raise ex
 
     @with_api_exceptions_handler
-    def _execute_artifact_operations(self, upload_operations: List[Operation]) -> List[NeptuneException]:
+    def _execute_artifact_operations(self, artifact_operations: List[Operation]) -> List[NeptuneException]:
         errors = list()
 
-        for op in upload_operations:
+        for op in artifact_operations:
             if isinstance(op, TrackFilesToNewArtifact):
                 error = track_artifact_files(
-                        backend=self,
-                        project_uuid=op.project_uuid,
-                        path=op.location,
-                        namespace=path_to_str(op.path)
-                    )
+                    backend=self,
+                    project_uuid=op.project_uuid,
+                    path=op.location,
+                    namespace=path_to_str(op.path)
+                )
                 if error:
                     errors.append(error)
             else:

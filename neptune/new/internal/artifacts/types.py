@@ -61,8 +61,11 @@ class ArtifactMetadataSerializer:
         return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
 
     @staticmethod
-    def deserialize(metadata: typing.List[typing.Tuple[str, str]]) -> typing.Dict[str, str]:
-        return {k: v for k, v in metadata}
+    def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
+        return {
+            f'{key_value.get("key")}': f'{key_value.get("value")}'
+            for key_value in metadata
+        }
 
 
 class ArtifactDriversMap:

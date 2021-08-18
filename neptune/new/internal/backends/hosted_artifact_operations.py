@@ -19,16 +19,25 @@ import uuid
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactDriver, ArtifactFileData
 from neptune.new.internal.artifacts.file_hasher import FileHasher
+from neptune.new.exceptions import NeptuneException, ArtifactUploadingError
 
 
 _logger = logging.getLogger(__name__)
 
 
-def track_artifact_files(backend: NeptuneBackend, project_uuid: uuid.UUID, path, namespace):
+def track_artifact_files(
+        backend: NeptuneBackend,
+        project_uuid: uuid.UUID,
+        path: str,
+        namespace: str
+) -> typing.Optional[NeptuneException]:
     driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_path(path)
     files: typing.List[ArtifactFileData] = driver.get_tracked_files(path=path, namespace=namespace)
-    artifact_hash = FileHasher.get_artifact_hash(files)
 
+    if not files:
+        return ArtifactUploadingError("Uploading an empty Artifact")
+
+    artifact_hash = FileHasher.get_artifact_hash(files)
     artifact = backend.create_new_artifact(project_uuid, artifact_hash, len(files))
 
     if not artifact.received_metadata:

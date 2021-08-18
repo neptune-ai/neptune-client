@@ -485,4 +485,4 @@ class TrackFilesToNewArtifact(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'TrackFilesToNewArtifact':
-        return TrackFilesToNewArtifact(data["path"], data["project_uuid"], data["value"])
+        return TrackFilesToNewArtifact(data["path"], uuid.UUID(data["project_uuid"]), data["value"])

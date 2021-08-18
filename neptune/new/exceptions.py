@@ -880,3 +880,8 @@ Neptune could not access an object ({location}) from remote storage of a Neptune
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(location=location, **STYLES))
+
+
+class ArtifactUploadingError(NeptuneException):
+    def __init__(self, msg: str):
+        super().__init__("Cannot upload artifact: {}".format(msg))
