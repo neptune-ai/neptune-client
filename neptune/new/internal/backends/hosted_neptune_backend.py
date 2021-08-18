@@ -381,11 +381,12 @@ class HostedNeptuneBackend(NeptuneBackend):
                 upload_operations=upload_operations)
         )
 
-        errors.extend(
-            self._execute_artifact_operations(
-                artifact_operations=artifact_operations
-            )
+        artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
+            artifact_operations=artifact_operations
         )
+
+        errors.extend(artifact_operations_errors)
+        other_operations.extend(assign_artifact_operations)
 
         if other_operations:
             errors.extend(self._execute_operations(run_uuid, other_operations))
@@ -442,23 +443,29 @@ class HostedNeptuneBackend(NeptuneBackend):
                     raise ex
 
     @with_api_exceptions_handler
-    def _execute_artifact_operations(self, artifact_operations: List[Operation]) -> List[NeptuneException]:
+    def _execute_artifact_operations(
+            self,
+            artifact_operations: List[Operation]
+    ) -> Tuple[List[NeptuneException], List[Operation]]:
         errors = list()
+        assign_operations = list()
 
         for op in artifact_operations:
             if isinstance(op, TrackFilesToNewArtifact):
-                error = track_artifact_files(
+                error, assign_operation = track_artifact_files(
                     backend=self,
                     project_uuid=op.project_uuid,
-                    path=op.location,
-                    namespace=path_to_str(op.path)
+                    path=op.path,
+                    entries=op.entries
                 )
                 if error:
                     errors.append(error)
+                if assign_operation:
+                    assign_operations.append(assign_operation)
             else:
                 raise InternalClientError("Unsupported artifact operation")
 
-        return errors
+        return errors, assign_operations
 
     @with_api_exceptions_handler
     def _execute_operations(self,

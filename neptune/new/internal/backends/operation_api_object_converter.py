@@ -159,5 +159,5 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
     def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> dict:
         raise InternalClientError("Specialized endpoint should be used to track artifact files")
 
-    def visit_clear_artifact(self, op: ClearArtifact) -> Ret:
+    def visit_clear_artifact(self, _: ClearArtifact) -> Ret:
         return {}

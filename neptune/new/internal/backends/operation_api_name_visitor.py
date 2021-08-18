@@ -111,5 +111,5 @@ class OperationApiNameVisitor(OperationVisitor[str]):
     def visit_track_files_to_new_artifact(self, _: TrackFilesToNewArtifact) -> Ret:
         raise InternalClientError("Specialized endpoint should be used to track artifact files")
 
-    def visit_clear_artifact(self, op: ClearArtifact) -> Ret:
+    def visit_clear_artifact(self, _: ClearArtifact) -> Ret:
         return "clearArtifact"
