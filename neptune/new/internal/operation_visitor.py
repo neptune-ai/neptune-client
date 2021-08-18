@@ -17,6 +17,7 @@ import abc
 from typing import TypeVar, Generic
 
 from neptune.new.internal.operation import (
+    AssignArtifact,
     AddStrings,
     AssignBool,
     AssignDatetime,
@@ -68,6 +69,10 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_assign_artifact(self, op: AssignArtifact) -> Ret:
         pass
 
     @abc.abstractmethod

@@ -703,7 +703,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             result = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response().result
             return ArtifactAttribute(
                 hash=result.artifactHash,
-                size=result.artifactSize,
+                size=result.size,
                 received_metadata=result.receivedMetadata
             )
         except HTTPNotFound:

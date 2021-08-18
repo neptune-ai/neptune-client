@@ -30,26 +30,26 @@ class FileHasher:
     SERVER_BYTE_ORDER = 'big'
     HASH_LENGTH = 64  # sha-256
 
-    local_storage = LocalFileHashStorage()
-
     @classmethod
     def get_local_file_hash(cls, file_path: typing.Union[str, Path]) -> str:
+        local_storage = LocalFileHashStorage()
+
         absolute = Path(file_path).resolve()
         modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime('%Y%m%d_%H%M%S%f')
 
-        stored_file_hash = FileHasher.local_storage.fetch_one(absolute)
+        stored_file_hash = local_storage.fetch_one(absolute)
 
         if stored_file_hash:
             if stored_file_hash.modification_date >= modification_date:
                 return stored_file_hash.file_hash
             else:
                 computed_hash = sha1(absolute)
-                FileHasher.local_storage.update(absolute, computed_hash, modification_date)
+                local_storage.update(absolute, computed_hash, modification_date)
 
                 return computed_hash
         else:
             computed_hash = sha1(absolute)
-            FileHasher.local_storage.insert(absolute, computed_hash, modification_date)
+            local_storage.insert(absolute, computed_hash, modification_date)
 
             return computed_hash
 

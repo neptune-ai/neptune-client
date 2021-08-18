@@ -18,6 +18,7 @@ from typing import List, TypeVar, Callable
 
 from neptune.new.exceptions import MetadataInconsistency, InternalClientError
 from neptune.new.internal.operation import (
+    AssignArtifact,
     AddStrings,
     AssignBool,
     AssignDatetime,
@@ -159,6 +160,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_upload_file_content(self, op: UploadFileContent) -> None:
         self._process_modify_op(_DataType.FILE, op, self._assign_modifier())
+
+    def visit_assign_artifact(self, op: AssignArtifact) -> None:
+        self._process_modify_op(_DataType.ARTIFACT, op, self._assign_modifier())
 
     def visit_upload_file_set(self, op: UploadFileSet) -> None:
         if op.reset:

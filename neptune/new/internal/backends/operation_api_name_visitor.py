@@ -16,6 +16,7 @@
 
 from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.operation import (
+    AssignArtifact,
     AddStrings,
     AssignBool,
     AssignDatetime,
@@ -107,6 +108,9 @@ class OperationApiNameVisitor(OperationVisitor[str]):
 
     def visit_delete_files(self, _: DeleteFiles) -> Ret:
         return "deleteFiles"
+
+    def visit_assign_artifact(self, _: AssignArtifact) -> Ret:
+        return "assignArtifact"
 
     def visit_track_files_to_new_artifact(self, _: TrackFilesToNewArtifact) -> Ret:
         raise InternalClientError("Specialized endpoint should be used to track artifact files")
