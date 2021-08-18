@@ -492,7 +492,7 @@ class SSLError(NeptuneException):
 
 class NeptuneConnectionLostException(NeptuneException):
     def __init__(self):
-        message = """https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+        message = """
 {h1}
 ----NeptuneConnectionLostException---------------------------------------------------------
 {end}
