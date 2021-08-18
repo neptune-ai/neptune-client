@@ -76,7 +76,7 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
 
     def visit_assign_artifact(self, op: AssignArtifact) -> dict:
         return {
-            'value': op.hash
+            'hash': op.hash
         }
 
     def visit_upload_file(self, _: UploadFile) -> dict:
