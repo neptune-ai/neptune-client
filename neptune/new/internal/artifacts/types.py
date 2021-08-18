@@ -70,7 +70,6 @@ class ArtifactDriversMap:
 
     @classmethod
     def match_path(cls, path: str) -> typing.Type['ArtifactDriver']:
-        print(cls._implementations)
         for artifact_driver in cls._implementations:
             if artifact_driver.matches(path):
                 return artifact_driver

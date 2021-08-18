@@ -16,10 +16,30 @@
 import abc
 from typing import TypeVar, Generic
 
-from neptune.new.internal.operation import TrackFilesToNewArtifact, AssignBool, AssignInt, Operation, AssignFloat, AssignString, \
-    LogFloats, LogStrings, \
-    ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
+from neptune.new.internal.operation import (
+    AddStrings,
+    AssignBool,
+    AssignDatetime,
+    AssignFloat,
+    AssignInt,
+    AssignString,
+    ClearFloatLog,
+    ClearImageLog,
+    ClearStringLog,
+    ClearStringSet,
+    ConfigFloatSeries,
+    DeleteAttribute,
+    DeleteFiles,
+    LogFloats,
+    LogImages,
+    LogStrings,
+    Operation,
+    RemoveStrings,
+    TrackFilesToNewArtifact,
+    UploadFile,
+    UploadFileContent,
+    UploadFileSet,
+)
 
 Ret = TypeVar('Ret')
 
@@ -110,5 +130,5 @@ class OperationVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_assign_artifact(self, op: TrackFilesToNewArtifact) -> Ret:
+    def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Ret:
         pass

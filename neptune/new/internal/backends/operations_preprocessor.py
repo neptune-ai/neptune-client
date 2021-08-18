@@ -18,28 +18,28 @@ from typing import List, TypeVar, Callable
 
 from neptune.new.exceptions import MetadataInconsistency, InternalClientError
 from neptune.new.internal.operation import (
-    TrackFilesToNewArtifact,
-    AssignBool,
-    AssignInt,
-    Operation,
-    AssignFloat,
-    AssignString,
-    UploadFile,
-    LogFloats,
-    LogStrings,
-    LogImages,
-    ClearFloatLog,
-    ClearStringLog,
-    ClearImageLog,
     AddStrings,
-    RemoveStrings,
-    DeleteAttribute,
-    ClearStringSet,
+    AssignBool,
     AssignDatetime,
+    AssignFloat,
+    AssignInt,
+    AssignString,
+    ClearFloatLog,
+    ClearImageLog,
+    ClearStringLog,
+    ClearStringSet,
     ConfigFloatSeries,
-    UploadFileSet,
+    DeleteAttribute,
+    DeleteFiles,
+    LogFloats,
+    LogImages,
+    LogStrings,
+    Operation,
+    RemoveStrings,
+    TrackFilesToNewArtifact,
+    UploadFile,
     UploadFileContent,
-    DeleteFiles
+    UploadFileSet,
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils.paths import path_to_str
@@ -86,7 +86,6 @@ class _DataType(Enum):
     STRING_SERIES = "String Series"
     IMAGE_SERIES = "Image Series"
     STRING_SET = "String Set"
-    ARTIFACT = "Artifact"
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
@@ -238,9 +237,8 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
 
-    def visit_assign_artifact(self, op: TrackFilesToNewArtifact) -> None:
-        print('Called from OperationsPreprocessor', op.to_dict())
-        # self._process_modify_op(_DataType.ARTIFACT, op, self._assign_modifier())
+    def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> None:
+        pass
 
     @staticmethod
     def _assign_modifier():

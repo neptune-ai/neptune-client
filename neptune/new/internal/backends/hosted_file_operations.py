@@ -41,7 +41,6 @@ def upload_file_attribute(swagger_client: SwaggerClient,
                           source: Union[str, bytes],
                           ext: str
                           ) -> Optional[NeptuneException]:
-    print(source, os.path.isfile(source))
     if isinstance(source, str) and not os.path.isfile(source):
         return FileUploadError(source, "Path not found or is a not a file.")
 

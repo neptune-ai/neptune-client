@@ -13,24 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import uuid
 import pathlib
 import typing
 
 from neptune.new.attributes.atoms.atom import Atom
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
-from neptune.new.internal.operation import AssignArtifact
-from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
+from neptune.new.internal.operation import TrackFilesToNewArtifact
 
 
 class Artifact(Atom):
-    def _assign(self, value: typing.Union[ArtifactVal, str], wait: bool = False):
-        # this function should not be publicly available
-        if not isinstance(value, ArtifactVal):
-            value = ArtifactVal(value)
-
-        with self._run.lock():
-            self._enqueue_operation(AssignArtifact(self._path, value.hash), wait)
-
     def fetch_hash(self) -> str:
         val = self._backend.get_artifact_attribute(self._run_uuid, self._path)
         return val.hash
@@ -38,7 +30,8 @@ class Artifact(Atom):
     def fetch_files_list(self) -> typing.List[ArtifactFileData]:
         artifact_hash = self.fetch_hash()
         return self._backend.list_artifact_files(
-            self._run._project_uuid, artifact_hash  # pylint: disable=protected-access
+            self._run._project_uuid,  # pylint: disable=protected-access
+            artifact_hash
         )
 
     def download(self, destination: str = None):
@@ -48,10 +41,12 @@ class Artifact(Atom):
             file_destination.parent.mkdir(parents=True, exist_ok=True)
             driver.download_file(file_destination, file_definition)
 
-    def track_files_to_new(self, source_location: str, wait: bool = False):
-        print('Track files to new', source_location)
+    def track_files_to_new(self, project_id: uuid.UUID, source_location: str, wait: bool = False):
         with self._run.lock():
-            self._enqueue_operation(TrackFilesToNewArtifact(self._path, source_location), wait)
+            self._enqueue_operation(
+                TrackFilesToNewArtifact(self._path, project_id, source_location),
+                wait
+            )
 
     def track_files_to_existing(self, path: str):
         # FIXME: implement in NPT-10545

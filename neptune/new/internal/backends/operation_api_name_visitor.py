@@ -16,28 +16,28 @@
 
 from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.operation import (
-    TrackFilesToNewArtifact,
-    AssignBool,
-    AssignInt,
-    Operation,
-    AssignFloat,
-    AssignString,
-    LogFloats,
-    LogStrings,
-    ClearFloatLog,
-    ClearStringLog,
     AddStrings,
-    RemoveStrings,
-    DeleteAttribute,
-    ClearStringSet,
-    LogImages,
-    ClearImageLog,
-    UploadFile,
+    AssignBool,
     AssignDatetime,
+    AssignFloat,
+    AssignInt,
+    AssignString,
+    ClearFloatLog,
+    ClearImageLog,
+    ClearStringLog,
+    ClearStringSet,
     ConfigFloatSeries,
-    UploadFileSet,
+    DeleteAttribute,
+    DeleteFiles,
+    LogFloats,
+    LogImages,
+    LogStrings,
+    Operation,
+    RemoveStrings,
+    TrackFilesToNewArtifact,
+    UploadFile,
     UploadFileContent,
-    DeleteFiles
+    UploadFileSet,
 )
 from neptune.new.internal.operation_visitor import OperationVisitor, Ret
 
@@ -107,5 +107,5 @@ class OperationApiNameVisitor(OperationVisitor[str]):
     def visit_delete_files(self, _: DeleteFiles) -> Ret:
         return "deleteFiles"
 
-    def visit_assign_artifact(self, _: TrackFilesToNewArtifact) -> Ret:
-        raise InternalClientError("Specialized endpoint should be used to assign artifact")
+    def visit_track_files_to_new_artifact(self, _: TrackFilesToNewArtifact) -> Ret:
+        raise InternalClientError("Specialized endpoint should be used to track artifact files")

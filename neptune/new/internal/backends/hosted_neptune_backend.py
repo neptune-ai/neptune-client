@@ -47,6 +47,7 @@ from neptune.new.exceptions import (
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
+    ArtifactAttribute,
     Attribute,
     AttributeType,
     AttributeWithProperties,
@@ -55,20 +56,19 @@ from neptune.new.internal.backends.api_model import (
     DatetimeAttribute,
     FileAttribute,
     FloatAttribute,
+    FloatPointValue,
     FloatSeriesAttribute,
+    FloatSeriesValues,
+    ImageSeriesValues,
     IntAttribute,
     LeaderboardEntry,
     Project,
-    Workspace,
     StringAttribute,
-    StringSeriesAttribute,
-    StringSetAttribute,
-    StringSeriesValues,
     StringPointValue,
-    FloatSeriesValues,
-    FloatPointValue,
-    ImageSeriesValues,
-    ArtifactAttribute,
+    StringSeriesAttribute,
+    StringSeriesValues,
+    StringSetAttribute,
+    Workspace,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
@@ -92,10 +92,10 @@ from neptune.new.internal.backends.utils import (
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     Operation,
+    TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
-    TrackFilesToNewArtifact
 )
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
@@ -120,7 +120,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         '_request_options': {
             "connect_timeout": CONNECT_TIMEOUT,
             "timeout": REQUEST_TIMEOUT,
-        },
+        }
     }
 
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
@@ -321,7 +321,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             run = self.leaderboard_client.api.createExperiment(**kwargs).response().result
             return ApiRun(uuid.UUID(run.id), run.shortId, run.organizationName, run.projectName, run.trashed)
         except HTTPNotFound:
-            raise ProjectNotFound(project_id=str(project_uuid))
+            raise ProjectNotFound(project_id=project_uuid)
 
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
@@ -359,15 +359,20 @@ class HostedNeptuneBackend(NeptuneBackend):
         errors.extend(operations_preprocessor.get_errors())
 
         upload_operations, artifact_operations, other_operations = [], [], []
-        file_operations = (UploadFile, UploadFileContent, UploadFileSet)
+
         for op in operations_preprocessor.get_operations():
-            if isinstance(op, file_operations):
+            if isinstance(
+                    op,
+                    (UploadFile, UploadFileContent, UploadFileSet)
+            ):
                 upload_operations.append(op)
-            elif isinstance(op, TrackFilesToNewArtifact):
+            elif isinstance(
+                    op,
+                    (TrackFilesToNewArtifact,)
+            ):
                 artifact_operations.append(op)
             else:
                 other_operations.append(op)
-            (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
 
         # Upload operations should be done first since they are idempotent
         errors.extend(
@@ -376,10 +381,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 upload_operations=upload_operations)
         )
 
-        # At first it should create artifacts
         errors.extend(
-            self._execute_artifact_operations_with_400_retry(
-                run_uuid=run_uuid,
+            self._execute_artifact_operations(
                 artifact_operations=artifact_operations
             )
         )
@@ -438,36 +441,24 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
 
-    def _execute_artifact_operations(self,
-                                     run_uuid: uuid.UUID,
-                                     upload_operations: List[Operation]) -> List[NeptuneException]:
+    @with_api_exceptions_handler
+    def _execute_artifact_operations(self, upload_operations: List[Operation]) -> List[NeptuneException]:
         errors = list()
 
         for op in upload_operations:
             if isinstance(op, TrackFilesToNewArtifact):
                 error = track_artifact_files(
                         backend=self,
-                        run_uuid=run_uuid,
+                        project_uuid=op.project_uuid,
                         path=op.location,
                         namespace=path_to_str(op.path)
                     )
                 if error:
                     errors.append(error)
             else:
-                raise InternalClientError("Upload operation in neither File or FileSet")
+                raise InternalClientError("Unsupported artifact operation")
 
         return errors
-
-    def _execute_artifact_operations_with_400_retry(
-            self,
-            run_uuid: uuid.UUID,
-            artifact_operations: List[Operation]) -> List[NeptuneException]:
-        while True:
-            try:
-                return self._execute_artifact_operations(run_uuid, artifact_operations)
-            except ClientHttpError as ex:
-                if "Length of stream does not match given range" not in ex.response:
-                    raise ex
 
     @with_api_exceptions_handler
     def _execute_operations(self,
@@ -708,37 +699,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                 size=result.artifactSize,
                 received_metadata=result.receivedMetadata
             )
-        except HTTPNotFound:
-            raise ArtifactNotFoundException(artifact_hash)
-
-    @with_api_exceptions_handler
-    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactAttribute:
-        params = {
-            'projectIdentifier': project_uuid,
-            'hash': artifact_hash,
-            'size': size,
-            **self.DEFAULT_REQUEST_KWARGS,
-        }
-        try:
-            result = self.artifacts_client.api.createNewArtifact(**params).response().result
-            return ArtifactAttribute(result.hash)
-        except HTTPNotFound:
-            raise ArtifactNotFoundException(artifact_hash)
-
-    @with_api_exceptions_handler
-    def upload_artifact_files_metadata(self, project_uuid: uuid.UUID, artifact_hash: str,
-                                       files: List[ArtifactFileData]) -> ArtifactAttribute:
-        params = {
-            'projectIdentifier': project_uuid,
-            'hash': artifact_hash,
-            'files': [
-                ArtifactFileData.to_dto(a) for a in files
-            ],
-            **self.DEFAULT_REQUEST_KWARGS,
-        }
-        try:
-            result = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response().result
-            return ArtifactAttribute(result.hash)
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
 

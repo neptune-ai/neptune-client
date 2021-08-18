@@ -54,7 +54,6 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
     AddStrings,
-    TrackFilesToNewArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,
@@ -65,14 +64,17 @@ from neptune.new.internal.operation import (
     ClearStringSet,
     ConfigFloatSeries,
     DeleteAttribute,
+    DeleteFiles,
     LogFloats,
     LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
+    TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
-    UploadFileSet, DeleteFiles,
+    UploadFileSet,
+
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils import base64_decode
@@ -394,10 +396,8 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
 
-        def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(self._current_value, Artifact):
-                raise self._create_type_error("assign", Artifact.__name__)
-            return Artifact(op.hash)
+        def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Optional[Value]:
+            pass
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
@@ -518,9 +518,3 @@ class NeptuneBackendMock(NeptuneBackend):
         def _create_type_error(self, op_name, expected):
             return MetadataInconsistency("Cannot perform {} operation on {}. Expected {}, {} found."
                                          .format(op_name, self._path, expected, type(self._current_value)))
-
-        def visit_assign_artifact(self, op: TrackFilesToNewArtifact) -> Optional[Value]:
-            print('Artiact visited')
-            if self._current_value is not None and not isinstance(self._current_value, Artifact):
-                raise self._create_type_error("assign", Artifact.__name__)
-            return Artifact(op.location)

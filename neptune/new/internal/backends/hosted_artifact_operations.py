@@ -24,19 +24,16 @@ from neptune.new.internal.artifacts.file_hasher import FileHasher
 _logger = logging.getLogger(__name__)
 
 
-def track_artifact_files(backend: NeptuneBackend, run_uuid: uuid.UUID, path, namespace):
-    api_run = backend.get_run(run_id=str(run_uuid))
-    project_qualified_name = f'{api_run.workspace}/{api_run.project_name}'
-
-    driver: ArtifactDriver = ArtifactDriversMap.match_path(path)
+def track_artifact_files(backend: NeptuneBackend, project_uuid: uuid.UUID, path, namespace):
+    driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_path(path)
     files: typing.List[ArtifactFileData] = driver.get_tracked_files(path=path, namespace=namespace)
     artifact_hash = FileHasher.get_artifact_hash(files)
 
-    artifact = backend.create_new_artifact(project_qualified_name, artifact_hash, len(files))
+    artifact = backend.create_new_artifact(project_uuid, artifact_hash, len(files))
 
     if not artifact.received_metadata:
         backend.upload_artifact_files_metadata(
-            project_qualified_name,
+            project_uuid,
             artifact_hash,
             files
         )

@@ -446,11 +446,10 @@ class Handler:
             attr = self._run.get_attribute(self._path)
             if not attr:
                 attr = Artifact(self._run, parse_path(self._path))
-                attr.track_files_to_new(path, wait)
+                attr.track_files_to_new(self._run._project_uuid, path, wait)  # pylint: disable=protected-access
                 self._run.set_attribute(self._path, attr)
             else:
                 attr.track_files_to_existing(path)
-        pass
 
     def __delitem__(self, path) -> None:
         self.pop(path)
