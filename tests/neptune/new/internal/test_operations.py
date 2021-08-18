@@ -73,7 +73,7 @@ class TestOperations(unittest.TestCase):
             RemoveStrings(TestOperations._random_path(), {"a\ne", "aeg\t4ger", "agrg"}),
             ClearStringSet(TestOperations._random_path()),
             DeleteAttribute(TestOperations._random_path()),
-            TrackFilesToNewArtifact(TestOperations._random_path(), uuid.uuid4(), "file/path/f.txt"),
+            TrackFilesToNewArtifact(TestOperations._random_path(), uuid.uuid4(), [("file/path/f.txt", None)]),
         ]
 
     @staticmethod

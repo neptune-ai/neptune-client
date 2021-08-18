@@ -50,10 +50,10 @@ class Artifact(Atom):
             file_destination.parent.mkdir(parents=True, exist_ok=True)
             driver.download_file(file_destination, file_definition)
 
-    def track_files_to_new(self, project_id: uuid.UUID, source_location: str, wait: bool = False):
+    def track_files_to_new(self, project_uuid: uuid.UUID, source_location: str, namespace: str = None, wait: bool = False):
         with self._run.lock():
             self._enqueue_operation(
-                TrackFilesToNewArtifact(self._path, project_id, source_location),
+                TrackFilesToNewArtifact(self._path, project_uuid, [(source_location, namespace)]),
                 wait
             )
 
