@@ -17,11 +17,32 @@ from enum import Enum
 from typing import List, TypeVar, Callable
 
 from neptune.new.exceptions import MetadataInconsistency, InternalClientError
-from neptune.new.internal.operation import AssignBool, AssignInt, Operation, AssignFloat, AssignString, UploadFile, \
-    LogFloats, \
-    LogStrings, \
-    LogImages, ClearFloatLog, ClearStringLog, ClearImageLog, AddStrings, RemoveStrings, DeleteAttribute, \
-    ClearStringSet, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
+from neptune.new.internal.operation import (
+    AssignArtifact,
+    AddStrings,
+    AssignBool,
+    AssignDatetime,
+    AssignFloat,
+    AssignInt,
+    AssignString,
+    ClearArtifact,
+    ClearFloatLog,
+    ClearImageLog,
+    ClearStringLog,
+    ClearStringSet,
+    ConfigFloatSeries,
+    DeleteAttribute,
+    DeleteFiles,
+    LogFloats,
+    LogImages,
+    LogStrings,
+    Operation,
+    RemoveStrings,
+    TrackFilesToNewArtifact,
+    UploadFile,
+    UploadFileContent,
+    UploadFileSet,
+)
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils.paths import path_to_str
 
@@ -67,6 +88,7 @@ class _DataType(Enum):
     STRING_SERIES = "String Series"
     IMAGE_SERIES = "Image Series"
     STRING_SET = "String Set"
+    ARTIFACT = "Artifact"
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
@@ -138,6 +160,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_upload_file_content(self, op: UploadFileContent) -> None:
         self._process_modify_op(_DataType.FILE, op, self._assign_modifier())
+
+    def visit_assign_artifact(self, op: AssignArtifact) -> None:
+        self._process_modify_op(_DataType.ARTIFACT, op, self._assign_modifier())
 
     def visit_upload_file_set(self, op: UploadFileSet) -> None:
         if op.reset:
@@ -217,6 +242,20 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # If value has not been set locally yet and no delete operation was performed,
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
+
+    def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> None:
+        self._process_modify_op(
+            _DataType.ARTIFACT,
+            op,
+            self._log_modifier(
+                TrackFilesToNewArtifact,
+                ClearArtifact,
+                lambda op1, op2: TrackFilesToNewArtifact(op1.path, op1.project_uuid, op1.entries + op2.entries)
+            )
+        )
+
+    def visit_clear_artifact(self, op: ClearStringSet) -> None:
+        self._process_modify_op(_DataType.ARTIFACT, op, self._clear_modifier())
 
     @staticmethod
     def _assign_modifier():

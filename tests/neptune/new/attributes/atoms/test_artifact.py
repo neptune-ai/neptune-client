@@ -14,9 +14,11 @@
 # limitations under the License.
 #
 # pylint: disable=protected-access
+import uuid
 import pathlib
 import tempfile
 from unittest.mock import Mock
+from mock import MagicMock, call
 
 from _pytest.monkeypatch import MonkeyPatch
 
@@ -25,6 +27,7 @@ from neptune.new.exceptions import NeptuneUnhandledArtifactTypeException
 from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactDriver, ArtifactDriversMap
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.artifact import Artifact as ArtifactAttr
+from neptune.new.internal.operation import TrackFilesToNewArtifact
 
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -33,7 +36,9 @@ class TestArtifact(TestAttributeBase):
     def setUp(self):
         self.monkeypatch = MonkeyPatch()
 
-        self.exp = self._create_run()
+        self.wait = self._random_wait()
+        self.op_processor = MagicMock()
+        self.exp = self._create_run(processor=self.op_processor)
         self.path = self._random_path()
         self.path_str = path_to_str(self.path)
 
@@ -104,8 +109,23 @@ class TestArtifact(TestAttributeBase):
             self.assertListEqual(contents, [])
 
     def test_track_files_to_new(self):
-        # FIXME: test after implementing
-        ...
+        source_location = str(uuid.uuid4())
+        namespace = str(uuid.uuid4())
+
+        var = Artifact(self.exp, self.path)
+        var.track_files_to_new(
+            project_uuid=self.exp._project_uuid,
+            source_location=source_location,
+            namespace=namespace,
+            wait=self.wait
+        )
+
+        self.op_processor.enqueue_operation.assert_has_calls([
+            call(
+                TrackFilesToNewArtifact(self.path, self.exp._project_uuid, [(source_location, namespace)]),
+                self.wait
+            ),
+        ])
 
     def test_track_files_to_existing(self):
         # FIXME: test after implementing

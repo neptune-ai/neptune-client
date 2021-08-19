@@ -22,6 +22,7 @@ from neptune.new.exceptions import NeptuneMissingProjectNameException
 from neptune.new.internal.backends.api_model import Project
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.utils import verify_type
+from neptune.new.internal.backends.api_model import Project
 from neptune.new.version import version as parsed_version
 
 __version__ = str(parsed_version)

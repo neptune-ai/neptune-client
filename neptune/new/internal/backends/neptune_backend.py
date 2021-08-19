@@ -141,6 +141,15 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
+    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactAttribute:
+        pass
+
+    @abc.abstractmethod
+    def upload_artifact_files_metadata(self, project_uuid: uuid.UUID, artifact_hash: str,
+                                       files: List[ArtifactFileData]) -> ArtifactAttribute:
+        pass
+
+    @abc.abstractmethod
     def get_float_series_attribute(self, run_id: str, path: List[str]) -> FloatSeriesAttribute:
         pass
 

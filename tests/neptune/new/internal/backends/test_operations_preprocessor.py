@@ -16,10 +16,26 @@
 
 # pylint: disable=protected-access
 
+import uuid
+
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
-from neptune.new.internal.operation import AssignFloat, DeleteAttribute, AssignString, LogFloats, LogStrings, \
-    LogImages, ClearFloatLog, ClearImageLog, AddStrings, RemoveStrings, ClearStringSet, ConfigFloatSeries, UploadFileSet
+from neptune.new.internal.operation import (
+    AddStrings,
+    AssignFloat,
+    AssignString,
+    ClearFloatLog,
+    ClearImageLog,
+    ClearStringSet,
+    ConfigFloatSeries,
+    DeleteAttribute,
+    LogFloats,
+    LogImages,
+    LogStrings,
+    RemoveStrings,
+    TrackFilesToNewArtifact,
+    UploadFileSet
+)
 
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -291,4 +307,34 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ])
         self.assertEqual(processor.get_errors(), [
             MetadataInconsistency("Cannot perform UploadFileSet operation on e: Attribute is not a File Set")
+        ])
+
+    def test_artifacts(self):
+        # given
+        processor = OperationsPreprocessor()
+        project_uuid = uuid.uuid4()
+
+        # when
+        processor.process([
+            TrackFilesToNewArtifact(["a"], project_uuid, [('dir1/', None)]),
+            DeleteAttribute(["a"]),
+
+            TrackFilesToNewArtifact(["b"], project_uuid, [('dir1/', None)]),
+            TrackFilesToNewArtifact(["b"], project_uuid, [('dir2/dir3/', 'dir2/')]),
+
+            AssignFloat(["c"], 5),
+            TrackFilesToNewArtifact(["c"], project_uuid, [('dir1/', None)]),
+        ])
+
+        # then
+        self.assertEqual(processor.get_operations(), [
+            TrackFilesToNewArtifact(["a"], project_uuid, [('dir1/', None)]),
+            DeleteAttribute(["a"]),
+
+            TrackFilesToNewArtifact(["b"], project_uuid, [('dir1/', None), ('dir2/dir3/', 'dir2/')]),
+
+            AssignFloat(["c"], 5),
+        ])
+        self.assertEqual(processor.get_errors(), [
+            MetadataInconsistency("Cannot perform TrackFilesToNewArtifact operation on c: Attribute is not a Artifact"),
         ])

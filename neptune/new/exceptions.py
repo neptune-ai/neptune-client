@@ -175,7 +175,7 @@ You can check all of your projects on the Projects page:
 
 class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
     def __init__(self,
-                 project_id: str,
+                 project_id: Union[str, uuid.UUID],
                  available_projects: List[Project] = (),
                  available_workspaces: List[Workspace] = ()):
         message = """
@@ -193,7 +193,7 @@ You may also want to check the following docs pages:
         super().__init__(message=message,
                          available_projects=available_projects,
                          available_workspaces=available_workspaces,
-                         project=project_id)
+                         project=str(project_id))
 
 
 class ProjectNameCollision(ExceptionWithProjectsWorkspacesListing):
@@ -880,3 +880,8 @@ Neptune could not access an object ({location}) from remote storage of a Neptune
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(location=location, **STYLES))
+
+
+class ArtifactUploadingError(NeptuneException):
+    def __init__(self, msg: str):
+        super().__init__("Cannot upload artifact: {}".format(msg))

@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 import abc
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, TypeVar, Generic, Optional, Set
+from typing import List, TypeVar, Generic, Optional, Set, Tuple
 from typing import TYPE_CHECKING
 
 from neptune.new.exceptions import InternalClientError
@@ -466,3 +467,37 @@ class DeleteAttribute(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'DeleteAttribute':
         return DeleteAttribute(data["path"])
+
+
+@dataclass
+class TrackFilesToNewArtifact(Operation):
+    project_uuid: uuid.UUID
+    entries: List[Tuple[str, Optional[str]]]
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_track_files_to_new_artifact(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["entries"] = self.entries
+        ret["project_uuid"] = str(self.project_uuid)
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'TrackFilesToNewArtifact':
+        return TrackFilesToNewArtifact(
+            path=data["path"],
+            project_uuid=uuid.UUID(data["project_uuid"]),
+            entries=list(map(tuple, data["entries"]))
+        )
+
+
+@dataclass
+class ClearArtifact(Operation):
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_clear_artifact(self)
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ClearArtifact':
+        return ClearArtifact(data["path"])
