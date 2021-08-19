@@ -270,8 +270,7 @@ class Handler:
         'download',
         'download_last',
         'fetch_hash',
-        'fetch_files_list',
-        'track_files',
+        'fetch_files_list'
     ]
 
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
@@ -437,7 +436,7 @@ class Handler:
         """
         raise NeptuneException('Should be never called.')
 
-    def track_files(self, path: str) -> None:
+    def track_files(self, path: str, namespace: str = None, wait: bool = True) -> None:
         """Creates an artifact tracking some files.
 
         You may also want to check `track_files docs page`_.
@@ -447,7 +446,13 @@ class Handler:
             attr = self._run.get_attribute(self._path)
             if not attr:
                 attr = Artifact(self._run, parse_path(self._path))
-                attr.track_files_to_new(path)
+                # pylint: disable=protected-access
+                attr.track_files_to_new(
+                    project_uuid=self._run._project_uuid,
+                    source_location=path,
+                    namespace=namespace,
+                    wait=wait
+                )
                 self._run.set_attribute(self._path, attr)
             else:
                 attr.track_files_to_existing(path)

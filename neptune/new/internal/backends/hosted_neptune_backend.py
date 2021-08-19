@@ -47,6 +47,8 @@ from neptune.new.exceptions import (
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
+    ArtifactAttribute,
+    ArtifactModel,
     Attribute,
     AttributeType,
     AttributeWithProperties,
@@ -55,20 +57,19 @@ from neptune.new.internal.backends.api_model import (
     DatetimeAttribute,
     FileAttribute,
     FloatAttribute,
+    FloatPointValue,
     FloatSeriesAttribute,
+    FloatSeriesValues,
+    ImageSeriesValues,
     IntAttribute,
     LeaderboardEntry,
     Project,
-    Workspace,
     StringAttribute,
-    StringSeriesAttribute,
-    StringSetAttribute,
-    StringSeriesValues,
     StringPointValue,
-    FloatSeriesValues,
-    FloatPointValue,
-    ImageSeriesValues,
-    ArtifactAttribute,
+    StringSeriesAttribute,
+    StringSeriesValues,
+    StringSetAttribute,
+    Workspace,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
@@ -77,6 +78,7 @@ from neptune.new.internal.backends.hosted_file_operations import (
     upload_file_attribute,
     upload_file_set_attribute,
 )
+from neptune.new.internal.backends.hosted_artifact_operations import track_artifact_files
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.new.internal.backends.operation_api_object_converter import OperationApiObjectConverter
@@ -91,6 +93,7 @@ from neptune.new.internal.backends.utils import (
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     Operation,
+    TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -356,10 +359,21 @@ class HostedNeptuneBackend(NeptuneBackend):
         operations_preprocessor.process(operations)
         errors.extend(operations_preprocessor.get_errors())
 
-        upload_operations, other_operations = [], []
-        file_operations = (UploadFile, UploadFileContent, UploadFileSet)
+        upload_operations, artifact_operations, other_operations = [], [], []
+
         for op in operations_preprocessor.get_operations():
-            (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
+            if isinstance(
+                    op,
+                    (UploadFile, UploadFileContent, UploadFileSet)
+            ):
+                upload_operations.append(op)
+            elif isinstance(
+                    op,
+                    (TrackFilesToNewArtifact,)
+            ):
+                artifact_operations.append(op)
+            else:
+                other_operations.append(op)
 
         # Upload operations should be done first since they are idempotent
         errors.extend(
@@ -367,6 +381,13 @@ class HostedNeptuneBackend(NeptuneBackend):
                 run_uuid=run_uuid,
                 upload_operations=upload_operations)
         )
+
+        artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
+            artifact_operations=artifact_operations
+        )
+
+        errors.extend(artifact_operations_errors)
+        other_operations.extend(assign_artifact_operations)
 
         if other_operations:
             errors.extend(self._execute_operations(run_uuid, other_operations))
@@ -421,6 +442,33 @@ class HostedNeptuneBackend(NeptuneBackend):
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
+
+    @with_api_exceptions_handler
+    def _execute_artifact_operations(
+            self,
+            artifact_operations: List[Operation]
+    ) -> Tuple[List[Optional[NeptuneException]], List[Optional[Operation]]]:
+        errors = list()
+        assign_operations = list()
+
+        for op in artifact_operations:
+            if isinstance(op, TrackFilesToNewArtifact):
+                try:
+                    assign_operation = track_artifact_files(
+                        backend=self,
+                        project_uuid=op.project_uuid,
+                        path=op.path,
+                        entries=op.entries
+                    )
+
+                    if assign_operation:
+                        assign_operations.append(assign_operation)
+                except NeptuneException as error:
+                    errors.append(error)
+            else:
+                raise InternalClientError("Unsupported artifact operation")
+
+        return errors, assign_operations
 
     @with_api_exceptions_handler
     def _execute_operations(self,
@@ -600,7 +648,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
-            return ArtifactAttribute(result.hash)
+            return ArtifactAttribute(
+                hash=result.artifactHash
+            )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -616,6 +666,47 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [
                 ArtifactFileData.from_dto(a) for a in result.files
             ]
+        except HTTPNotFound:
+            raise ArtifactNotFoundException(artifact_hash)
+
+    @with_api_exceptions_handler
+    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactModel:
+        params = {
+            'projectIdentifier': project_uuid,
+            'hash': artifact_hash,
+            'size': size,
+            **self.DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            result = self.artifacts_client.api.createNewArtifact(**params).response().result
+            return ArtifactModel(
+                hash=result.artifactHash,
+                received_metadata=result.receivedMetadata,
+                size=result.size
+            )
+        except HTTPNotFound:
+            raise ArtifactNotFoundException(artifact_hash)
+
+    @with_api_exceptions_handler
+    def upload_artifact_files_metadata(self, project_uuid: uuid.UUID, artifact_hash: str,
+                                       files: List[ArtifactFileData]) -> ArtifactModel:
+        params = {
+            'projectIdentifier': project_uuid,
+            'hash': artifact_hash,
+            'artifactFilesDTO': {
+                'files': [
+                    ArtifactFileData.to_dto(a) for a in files
+                ]
+            },
+            **self.DEFAULT_REQUEST_KWARGS
+        }
+        try:
+            result = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response().result
+            return ArtifactModel(
+                hash=result.artifactHash,
+                size=result.size,
+                received_metadata=result.receivedMetadata
+            )
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
 

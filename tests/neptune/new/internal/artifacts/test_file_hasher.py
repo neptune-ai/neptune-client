@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import time
 import hashlib
 import unittest
 import tempfile
@@ -95,6 +96,9 @@ class TestFileHasher(unittest.TestCase):
         hashlib.sha1 = Mock(side_effect=hashlib.sha1)
 
         hash1 = FileHasher.get_local_file_hash(f'{self.temp.name}/test')
+
+        # Minimal change in modification time
+        time.sleep(0.1)
 
         with open(f'{self.temp.name}/test', 'wb') as handler:
             handler.write(b'\x01\x02\x03\x04')

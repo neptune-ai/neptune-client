@@ -31,6 +31,7 @@ from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     ArtifactAttribute,
+    ArtifactModel,
     Attribute,
     AttributeType,
     BoolAttribute,
@@ -53,24 +54,31 @@ from neptune.new.internal.backends.hosted_file_operations import get_unique_uplo
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
+    AssignArtifact,
     AddStrings,
-    AssignArtifact, AssignBool, AssignDatetime,
+    AssignBool,
+    AssignDatetime,
     AssignFloat,
-    AssignInt, AssignString,
+    AssignInt,
+    AssignString,
+    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     DeleteAttribute,
+    DeleteFiles,
     LogFloats,
     LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
+    TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
-    UploadFileSet, DeleteFiles,
+    UploadFileSet,
+
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils import base64_decode
@@ -242,9 +250,17 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(run_uuid, path, Artifact)
         return ArtifactAttribute(val.hash)
 
+    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactAttribute:
+        self._artifacts[(project_uuid, artifact_hash)] = []
+        return ArtifactModel(False, artifact_hash, size)
+
+    def upload_artifact_files_metadata(self, project_uuid: uuid.UUID, artifact_hash: str,
+                                       files: List[ArtifactFileData]) -> ArtifactAttribute:
+        self._artifacts[(project_uuid, artifact_hash)] = files
+        return ArtifactModel(True, artifact_hash, len(files))
+
     def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
-        files = self._artifacts[(project_uuid, artifact_hash)]
-        return files
+        return self._artifacts[(project_uuid, artifact_hash)]
 
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
         val = self._get_attribute(run_uuid, path, FloatSeries)
@@ -366,6 +382,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def __init__(self, path: List[str], current_value: Optional[Value]):
             self._path = path
             self._current_value = current_value
+            self._artifact_hash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
         def visit_assign_float(self, op: AssignFloat) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, Float):
@@ -396,6 +413,18 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, Artifact):
                 raise self._create_type_error("assign", Artifact.__name__)
             return Artifact(op.hash)
+
+        def visit_track_files_to_new_artifact(self, _: TrackFilesToNewArtifact) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("save", Artifact.__name__)
+            return Artifact(self._artifact_hash)
+
+        def visit_clear_artifact(self, _: ClearArtifact) -> Optional[Value]:
+            if self._current_value is None:
+                return Artifact()
+            if not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("clear", Artifact.__name__)
+            return Artifact()
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
