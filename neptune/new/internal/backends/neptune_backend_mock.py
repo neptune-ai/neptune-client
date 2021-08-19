@@ -31,6 +31,7 @@ from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     ArtifactAttribute,
+    ArtifactModel,
     Attribute,
     AttributeType,
     BoolAttribute,
@@ -247,16 +248,16 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_artifact_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> ArtifactAttribute:
         val = self._get_attribute(run_uuid, path, Artifact)
-        return ArtifactAttribute(True, val.hash, 1)
+        return ArtifactAttribute(val.hash)
 
     def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactAttribute:
         self._artifacts[(project_uuid, artifact_hash)] = []
-        return ArtifactAttribute(False, artifact_hash, size)
+        return ArtifactModel(False, artifact_hash, size)
 
     def upload_artifact_files_metadata(self, project_uuid: uuid.UUID, artifact_hash: str,
                                        files: List[ArtifactFileData]) -> ArtifactAttribute:
         self._artifacts[(project_uuid, artifact_hash)] = files
-        return ArtifactAttribute(True, artifact_hash, len(files))
+        return ArtifactModel(True, artifact_hash, len(files))
 
     def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
         return self._artifacts[(project_uuid, artifact_hash)]

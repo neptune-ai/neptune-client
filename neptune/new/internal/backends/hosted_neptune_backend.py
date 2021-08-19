@@ -48,6 +48,7 @@ from neptune.new.exceptions import (
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     ArtifactAttribute,
+    ArtifactModel,
     Attribute,
     AttributeType,
     AttributeWithProperties,
@@ -648,9 +649,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
             return ArtifactAttribute(
-                hash=result.artifactHash,
-                received_metadata=result.receivedMetadata,
-                size=result.size
+                hash=result.artifactHash
             )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -671,7 +670,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ArtifactNotFoundException(artifact_hash)
 
     @with_api_exceptions_handler
-    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactAttribute:
+    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactModel:
         params = {
             'projectIdentifier': project_uuid,
             'hash': artifact_hash,
@@ -680,7 +679,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.artifacts_client.api.createNewArtifact(**params).response().result
-            return ArtifactAttribute(
+            return ArtifactModel(
                 hash=result.artifactHash,
                 received_metadata=result.receivedMetadata,
                 size=result.size
@@ -690,7 +689,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def upload_artifact_files_metadata(self, project_uuid: uuid.UUID, artifact_hash: str,
-                                       files: List[ArtifactFileData]) -> ArtifactAttribute:
+                                       files: List[ArtifactFileData]) -> ArtifactModel:
         params = {
             'projectIdentifier': project_uuid,
             'hash': artifact_hash,
@@ -703,7 +702,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response().result
-            return ArtifactAttribute(
+            return ArtifactModel(
                 hash=result.artifactHash,
                 size=result.size,
                 received_metadata=result.receivedMetadata
