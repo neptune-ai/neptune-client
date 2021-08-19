@@ -259,8 +259,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return ArtifactAttribute(True, artifact_hash, len(files))
 
     def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
-        files = self._artifacts[(project_uuid, artifact_hash)]
-        return files
+        return self._artifacts[(project_uuid, artifact_hash)]
 
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
         val = self._get_attribute(run_uuid, path, FloatSeries)
@@ -414,16 +413,16 @@ class NeptuneBackendMock(NeptuneBackend):
             return Artifact(op.hash)
 
         def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Optional[Value]:
-            pass
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("save", Artifact.__name__)
+            return Artifact("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
 
-        def visit_clear_artifact(self, op: ClearArtifact) -> Optional[Value]:
-            # pylint: disable=unused-argument
-            # if self._current_value is None:
-            #     return TrackFilesToNewArtifact()
-            # if not isinstance(self._current_value, TrackFilesToNewArtifact):
-            #     raise self._create_type_error("clear", TrackFilesToNewArtifact.__name__)
-            # return StringSet(set())
-            pass
+        def visit_clear_artifact(self, _: ClearArtifact) -> Optional[Value]:
+            if self._current_value is None:
+                return Artifact()
+            if not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("clear", Artifact.__name__)
+            return Artifact()
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
