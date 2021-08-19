@@ -381,6 +381,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def __init__(self, path: List[str], current_value: Optional[Value]):
             self._path = path
             self._current_value = current_value
+            self._artifact_hash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
         def visit_assign_float(self, op: AssignFloat) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, Float):
@@ -412,10 +413,10 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("assign", Artifact.__name__)
             return Artifact(op.hash)
 
-        def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Optional[Value]:
+        def visit_track_files_to_new_artifact(self, _: TrackFilesToNewArtifact) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, Artifact):
                 raise self._create_type_error("save", Artifact.__name__)
-            return Artifact("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")
+            return Artifact(self._artifact_hash)
 
         def visit_clear_artifact(self, _: ClearArtifact) -> Optional[Value]:
             if self._current_value is None:

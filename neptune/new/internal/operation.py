@@ -17,7 +17,7 @@ import abc
 import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, TypeVar, Generic, Optional, Set, Tuple
+from typing import List, TypeVar, Generic, Optional, Set
 from typing import TYPE_CHECKING
 
 from neptune.new.exceptions import InternalClientError
@@ -472,7 +472,7 @@ class DeleteAttribute(Operation):
 @dataclass
 class TrackFilesToNewArtifact(Operation):
     project_uuid: uuid.UUID
-    entries: List[Tuple[str, Optional[str]]]
+    entries: List[List[str]]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_track_files_to_new_artifact(self)
@@ -488,7 +488,7 @@ class TrackFilesToNewArtifact(Operation):
         return TrackFilesToNewArtifact(
             path=data["path"],
             project_uuid=uuid.UUID(data["project_uuid"]),
-            entries=list(map(tuple, data["entries"]))
+            entries=data["entries"]
         )
 
 
