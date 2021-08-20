@@ -77,7 +77,7 @@ from neptune.new.internal.backends.hosted_file_operations import (
     upload_file_attribute,
     upload_file_set_attribute,
 )
-from neptune.new.internal.backends.hosted_artifact_operations import track_artifact_files
+from neptune.new.internal.backends.hosted_artifact_operations import track_to_new_artifact
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.new.internal.backends.operation_api_object_converter import OperationApiObjectConverter
@@ -453,7 +453,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in artifact_operations:
             if isinstance(op, TrackFilesToNewArtifact):
                 try:
-                    assign_operation = track_artifact_files(
+                    assign_operation = track_to_new_artifact(
                         swagger_client=self.artifacts_client,
                         project_uuid=op.project_uuid,
                         path=op.path,

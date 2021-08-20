@@ -27,7 +27,7 @@ from neptune.new.internal.backends.utils import with_api_exceptions_handler
 from neptune.new.internal.operation import Operation, AssignArtifact
 
 
-def track_artifact_files(
+def track_to_new_artifact(
         swagger_client: SwaggerClient,
         project_uuid: uuid.UUID,
         path: List[str],
@@ -58,6 +58,30 @@ def track_artifact_files(
         )
 
     return AssignArtifact(path=path, hash=artifact_hash)
+
+
+def track_to_existing_artifact(
+        swagger_client: SwaggerClient,
+        project_uuid: uuid.UUID,
+        path: List[str],
+        entries: List[Tuple[str, Optional[str]]],
+        default_request_params: Dict
+) -> Optional[Operation]:
+    files: List[ArtifactFileData] = _extract_file_list(entries)
+
+    if not files:
+        raise ArtifactUploadingError("Uploading an empty Artifact")
+
+    artifact_hash = _compute_artifact_hash(files)
+    artifact = create_artifact_version(
+        swagger_client=swagger_client,
+        project_uuid=project_uuid,
+        artifact_hash=artifact_hash,
+        files=files,
+        default_request_params=default_request_params
+    )
+
+    return AssignArtifact(path=path, hash=artifact.hash)
 
 
 def _compute_artifact_hash(files: List[ArtifactFileData]) -> str:
@@ -121,6 +145,35 @@ def upload_artifact_files_metadata(
     }
     try:
         result = swagger_client.api.uploadArtifactFilesMetadata(**params).response().result
+        return ArtifactModel(
+            hash=result.artifactHash,
+            size=result.size,
+            received_metadata=result.receivedMetadata
+        )
+    except HTTPNotFound:
+        raise ArtifactNotFoundException(artifact_hash)
+
+
+@with_api_exceptions_handler
+def create_artifact_version(
+        swagger_client: SwaggerClient,
+        project_uuid: uuid.UUID,
+        artifact_hash: str,
+        files: List[ArtifactFileData],
+        default_request_params: Dict
+) -> ArtifactModel:
+    params = {
+        'projectIdentifier': project_uuid,
+        'hash': artifact_hash,
+        'artifactFilesDTO': {
+            'files': [
+                ArtifactFileData.to_dto(a) for a in files
+            ]
+        },
+        **default_request_params
+    }
+    try:
+        result = swagger_client.api.createArtifactVersion(**params).response().result
         return ArtifactModel(
             hash=result.artifactHash,
             size=result.size,

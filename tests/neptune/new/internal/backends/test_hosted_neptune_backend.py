@@ -194,7 +194,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                  ext="jpeg")
         ], any_order=True)
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.track_artifact_files')
+    @patch('neptune.new.internal.backends.hosted_neptune_backend.track_to_new_artifact')
     def test_track_artifact_files(self, track_artifact_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
