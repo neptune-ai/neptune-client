@@ -13,4 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .drivers import *
+from .s3 import S3ArtifactDriver
+from .local import LocalArtifactDriver

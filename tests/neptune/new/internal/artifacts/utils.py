@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import hashlib
+import pathlib
 
 CHUNK_SIZE = 4096
 
@@ -27,3 +28,9 @@ def md5(fname):
             hash_md5.update(chunk)
 
     return hash_md5.hexdigest()
+
+
+def append_non_relative_path(base_path: pathlib.Path, path_to_append: str) -> pathlib.Path:
+    # By default when second path starts with '/', it replaces the path we're appending to
+    relative_path = path_to_append[1:] if path_to_append.startswith('/') else path_to_append
+    return base_path / relative_path

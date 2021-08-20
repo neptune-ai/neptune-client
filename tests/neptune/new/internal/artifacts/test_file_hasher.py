@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import time
 import hashlib
 import unittest
 import tempfile
@@ -35,6 +36,7 @@ class TestFileHasher(unittest.TestCase):
         self.temp.cleanup()
 
     def test_artifact_hash(self):
+        # do not change this test case without coordinating with Artifact API's ArtifactHashComputer
         artifacts = [
             ArtifactFileData(
                 file_path='to/file1',
@@ -47,7 +49,7 @@ class TestFileHasher(unittest.TestCase):
                 }
             ),
             ArtifactFileData(
-                file_path='to/file2',
+                file_path='from/file2',
                 file_hash='4347d0f8ba661234a8eadc005e2e1d1b646c9682',
                 type="S3",
                 metadata={
@@ -58,8 +60,14 @@ class TestFileHasher(unittest.TestCase):
             )
         ]
 
-        self.assertEqual("63d995a30adf77a40305ce7c69417866666d7df3", FileHasher.get_artifact_hash(artifacts))
-        self.assertEqual("63d995a30adf77a40305ce7c69417866666d7df3", FileHasher.get_artifact_hash(reversed(artifacts)))
+        self.assertEqual(
+            "638fec8d799c7fa086521ba325441627ba170d53aed2414055e68178f340c0dd",
+            FileHasher.get_artifact_hash(artifacts),
+        )
+        self.assertEqual(
+            "638fec8d799c7fa086521ba325441627ba170d53aed2414055e68178f340c0dd",
+            FileHasher.get_artifact_hash(reversed(artifacts)),
+        )
 
     @patch('pathlib.Path.home')
     def test_local_file_hash(self, home):
@@ -88,6 +96,9 @@ class TestFileHasher(unittest.TestCase):
         hashlib.sha1 = Mock(side_effect=hashlib.sha1)
 
         hash1 = FileHasher.get_local_file_hash(f'{self.temp.name}/test')
+
+        # Minimal change in modification time
+        time.sleep(0.1)
 
         with open(f'{self.temp.name}/test', 'wb') as handler:
             handler.write(b'\x01\x02\x03\x04')

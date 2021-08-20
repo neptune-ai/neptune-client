@@ -17,27 +17,29 @@
 from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.operation import (
     AssignArtifact,
-    AssignBool,
-    AssignInt,
-    Operation,
-    AssignFloat,
-    AssignString,
-    LogFloats,
-    LogStrings,
-    ClearFloatLog,
-    ClearStringLog,
     AddStrings,
-    RemoveStrings,
-    DeleteAttribute,
-    ClearStringSet,
-    LogImages,
-    ClearImageLog,
-    UploadFile,
+    AssignBool,
     AssignDatetime,
+    AssignFloat,
+    AssignInt,
+    AssignString,
+    ClearArtifact,
+    ClearFloatLog,
+    ClearImageLog,
+    ClearStringLog,
+    ClearStringSet,
     ConfigFloatSeries,
-    UploadFileSet,
+    DeleteAttribute,
+    DeleteFiles,
+    LogFloats,
+    LogImages,
+    LogStrings,
+    Operation,
+    RemoveStrings,
+    TrackFilesToNewArtifact,
+    UploadFile,
     UploadFileContent,
-    DeleteFiles
+    UploadFileSet,
 )
 from neptune.new.internal.operation_visitor import OperationVisitor, Ret
 
@@ -70,6 +72,11 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
     def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
         return {
             'valueMilliseconds': int(1000 * op.value.timestamp())
+        }
+
+    def visit_assign_artifact(self, op: AssignArtifact) -> dict:
+        return {
+            'hash': op.hash
         }
 
     def visit_upload_file(self, _: UploadFile) -> dict:
@@ -149,5 +156,8 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
             'filePaths': list(op.file_paths)
         }
 
-    def visit_assign_artifact(self, op: AssignArtifact) -> dict:
-        raise InternalClientError("Specialized endpoint should be used to assign artifact")
+    def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> dict:
+        raise InternalClientError("Specialized endpoint should be used to track artifact files")
+
+    def visit_clear_artifact(self, _: ClearArtifact) -> Ret:
+        return {}

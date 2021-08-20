@@ -46,15 +46,26 @@ class ArtifactFileData:
             ])
         )
 
+    def to_dto(self) -> typing.Dict:
+        return {
+            'filePath': self.file_path,
+            'fileHash': self.file_hash,
+            'type': self.type,
+            'metadata': ArtifactMetadataSerializer.serialize(self.metadata)
+        }
+
 
 class ArtifactMetadataSerializer:
     @staticmethod
-    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Tuple[str, str]]:
-        return [(k, v) for k, v in sorted(metadata.items())]
+    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Dict[str, str]]:
+        return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
 
     @staticmethod
-    def deserialize(metadata: typing.List[typing.Tuple[str, str]]) -> typing.Dict[str, str]:
-        return {k: v for k, v in metadata}
+    def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
+        return {
+            f'{key_value.get("key")}': f'{key_value.get("value")}'
+            for key_value in metadata
+        }
 
 
 class ArtifactDriversMap:
@@ -91,7 +102,7 @@ class ArtifactDriver(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_tracked_files(cls, path: str, name: str = None) -> typing.Iterable[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
         raise NotImplementedError
 
     @classmethod

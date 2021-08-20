@@ -53,26 +53,31 @@ from neptune.new.internal.backends.hosted_file_operations import get_unique_uplo
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
-    AddStrings,
     AssignArtifact,
+    AddStrings,
     AssignBool,
     AssignDatetime,
     AssignFloat,
-    AssignInt, AssignString,
+    AssignInt,
+    AssignString,
+    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     DeleteAttribute,
+    DeleteFiles,
     LogFloats,
     LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
+    TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
-    UploadFileSet, DeleteFiles,
+    UploadFileSet,
+
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils import base64_decode
@@ -245,8 +250,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return ArtifactAttribute(val.hash)
 
     def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
-        files = self._artifacts[(project_uuid, artifact_hash)]
-        return files
+        return self._artifacts[(project_uuid, artifact_hash)]
 
     def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
         val = self._get_attribute(run_uuid, path, FloatSeries)
@@ -368,6 +372,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def __init__(self, path: List[str], current_value: Optional[Value]):
             self._path = path
             self._current_value = current_value
+            self._artifact_hash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
         def visit_assign_float(self, op: AssignFloat) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, Float):
@@ -393,6 +398,23 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, Datetime):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
+
+        def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("assign", Artifact.__name__)
+            return Artifact(op.hash)
+
+        def visit_track_files_to_new_artifact(self, _: TrackFilesToNewArtifact) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("save", Artifact.__name__)
+            return Artifact(self._artifact_hash)
+
+        def visit_clear_artifact(self, _: ClearArtifact) -> Optional[Value]:
+            if self._current_value is None:
+                return Artifact()
+            if not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("clear", Artifact.__name__)
+            return Artifact()
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
@@ -513,9 +535,3 @@ class NeptuneBackendMock(NeptuneBackend):
         def _create_type_error(self, op_name, expected):
             return MetadataInconsistency("Cannot perform {} operation on {}. Expected {}, {} found."
                                          .format(op_name, self._path, expected, type(self._current_value)))
-
-        def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
-            print('Artiact visited')
-            if self._current_value is not None and not isinstance(self._current_value, Artifact):
-                raise self._create_type_error("assign", Artifact.__name__)
-            return Artifact(op.location)

@@ -38,7 +38,7 @@ class TestArtifactDriversMap(unittest.TestCase):
                 return urlparse(path).scheme == 'test'
 
             @classmethod
-            def get_tracked_files(cls, path, name=None):
+            def get_tracked_files(cls, path, namespace=None):
                 return []
 
             @classmethod
@@ -62,7 +62,7 @@ class TestArtifactDriversMap(unittest.TestCase):
                 return urlparse(path).scheme == 'pk'
 
             @classmethod
-            def get_tracked_files(cls, path, name=None):
+            def get_tracked_files(cls, path, namespace=None):
                 return []
 
             @classmethod

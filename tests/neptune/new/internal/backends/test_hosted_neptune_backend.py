@@ -25,7 +25,13 @@ from neptune.new.exceptions import CannotResolveHostname, UnsupportedClientVersi
     MetadataInconsistency
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.operation import UploadFile, AssignString, LogFloats, UploadFileContent
+from neptune.new.internal.operation import (
+    AssignString,
+    LogFloats,
+    TrackFilesToNewArtifact,
+    UploadFile,
+    UploadFileContent
+)
 from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 
@@ -186,6 +192,65 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                  attribute="some/path/3/var",
                  source="/path/to/some_image.jpeg",
                  ext="jpeg")
+        ], any_order=True)
+
+    @patch('neptune.new.internal.backends.hosted_neptune_backend.track_artifact_files')
+    def test_track_artifact_files(self, track_artifact_mock, swagger_client_factory):
+        # given
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(credentials)
+        exp_uuid = uuid.uuid4()
+        project_uuid = uuid.uuid4()
+
+        response_error = MagicMock()
+        response_error.errorDescription = "error1"
+        swagger_client.api.executeOperations().response().result = [response_error]
+        swagger_client.api.executeOperations.reset_mock()
+
+        # when
+        backend.execute_operations(
+            run_uuid=exp_uuid,
+            operations=[
+                TrackFilesToNewArtifact(
+                    path=['sub', 'one'],
+                    project_uuid=project_uuid,
+                    entries=[('/path/to/file', '/path/to')]
+                ),
+                TrackFilesToNewArtifact(
+                    path=['sub', 'two'],
+                    project_uuid=project_uuid,
+                    entries=[('/path/to/file1', None), ('/path/to/file2', None)]
+                ),
+                TrackFilesToNewArtifact(
+                    path=['sub', 'three'],
+                    project_uuid=project_uuid,
+                    entries=[('/path/to/file1', None)]
+                ),
+                TrackFilesToNewArtifact(
+                    path=['sub', 'three'],
+                    project_uuid=project_uuid,
+                    entries=[('/path/to/file2', None)]
+                )
+            ]
+        )
+
+        # then
+        track_artifact_mock.assert_has_calls([
+            call(swagger_client=swagger_client,
+                 project_uuid=project_uuid,
+                 path=["sub", "one"],
+                 entries=[("/path/to/file", '/path/to')],
+                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+            call(swagger_client=swagger_client,
+                 project_uuid=project_uuid,
+                 path=["sub", "two"],
+                 entries=[("/path/to/file1", None), ("/path/to/file2", None)],
+                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+            call(swagger_client=swagger_client,
+                 project_uuid=project_uuid,
+                 path=["sub", "three"],
+                 entries=[("/path/to/file1", None), ("/path/to/file2", None)],
+                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
         ], any_order=True)
 
     @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))

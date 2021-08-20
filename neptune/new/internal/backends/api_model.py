@@ -187,6 +187,13 @@ class ArtifactAttribute:
 
 
 @dataclass
+class ArtifactModel:
+    received_metadata: bool
+    hash: str
+    size: int
+
+
+@dataclass
 class FloatSeriesAttribute:
     last: Optional[float]
 

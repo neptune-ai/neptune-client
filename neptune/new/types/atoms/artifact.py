@@ -14,8 +14,9 @@
 # limitations under the License.
 #
 from dataclasses import dataclass
-from typing import TypeVar, TYPE_CHECKING
+from typing import TypeVar, TYPE_CHECKING, Optional
 
+from neptune.new.internal.artifacts.file_hasher import FileHasher
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -29,8 +30,10 @@ class Artifact(Atom):
 
     hash: str
 
-    def __init__(self, value: str):
+    def __init__(self, value: Optional[str] = None):
         self.hash = str(value)
+        assert len(self.hash) == FileHasher.HASH_LENGTH or value is None, \
+            "Expected sha-256 string. E.g. 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'"
 
     def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
         return visitor.visit_artifact(self)

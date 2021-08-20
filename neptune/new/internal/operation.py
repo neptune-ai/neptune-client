@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 import abc
+import uuid
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, TypeVar, Generic, Optional, Set
+from typing import List, TypeVar, Generic, Optional, Set, Tuple
 from typing import TYPE_CHECKING
 
 from neptune.new.exceptions import InternalClientError
@@ -147,6 +148,24 @@ class AssignDatetime(Operation):
     @staticmethod
     def from_dict(data: dict) -> 'AssignDatetime':
         return AssignDatetime(data["path"], datetime.fromtimestamp(data["value"] / 1000))
+
+
+@dataclass
+class AssignArtifact(Operation):
+
+    hash: str
+
+    def accept(self, visitor: 'AssignArtifact[Ret]') -> Ret:
+        return visitor.visit_assign_artifact(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["hash"] = self.hash
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'AssignArtifact':
+        return AssignArtifact(data["path"], data["hash"])
 
 
 @dataclass
@@ -451,20 +470,34 @@ class DeleteAttribute(Operation):
 
 
 @dataclass
-class AssignArtifact(Operation):
-
-    location: str
+class TrackFilesToNewArtifact(Operation):
+    project_uuid: uuid.UUID
+    entries: List[Tuple[str, Optional[str]]]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
-        print("ACCEPT", type(visitor))
-        return visitor.visit_assign_artifact(self)
+        return visitor.visit_track_files_to_new_artifact(self)
 
     def to_dict(self) -> dict:
-        print("TO DICT")
         ret = super().to_dict()
-        ret["value"] = self.location
+        ret["entries"] = self.entries
+        ret["project_uuid"] = str(self.project_uuid)
         return ret
 
     @staticmethod
-    def from_dict(data: dict) -> 'AssignArtifact':
-        return AssignArtifact(data["path"], data["value"])
+    def from_dict(data: dict) -> 'TrackFilesToNewArtifact':
+        return TrackFilesToNewArtifact(
+            path=data["path"],
+            project_uuid=uuid.UUID(data["project_uuid"]),
+            entries=list(map(tuple, data["entries"]))
+        )
+
+
+@dataclass
+class ClearArtifact(Operation):
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_clear_artifact(self)
+
+    @staticmethod
+    def from_dict(data: dict) -> 'ClearArtifact':
+        return ClearArtifact(data["path"])

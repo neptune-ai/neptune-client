@@ -30,9 +30,9 @@ class TestArtifactMetadataSerializer(unittest.TestCase):
 
         self.assertListEqual(
             [
-                ('file_size', '18'),
-                ('last_modification', '2021-08-09 09:41:53'),
-                ('location', 's3://bucket/path/to/file')
+                {'key': 'file_size', 'value': '18'},
+                {'key': 'last_modification', 'value': '2021-08-09 09:41:53'},
+                {'key': 'location', 'value': 's3://bucket/path/to/file'}
             ],
             serialized
         )

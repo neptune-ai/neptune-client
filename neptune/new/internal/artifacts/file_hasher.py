@@ -24,40 +24,58 @@ from neptune.new.internal.artifacts.utils import sha1
 
 
 class FileHasher:
-    local_storage = LocalFileHashStorage()
+    ENCODING = "UTF-8"
+    HASH_ELEMENT_DIVISOR = b"|"
+    SERVER_INT_BYTES = 4
+    SERVER_BYTE_ORDER = 'big'
+    HASH_LENGTH = 64  # sha-256
 
     @classmethod
     def get_local_file_hash(cls, file_path: typing.Union[str, Path]) -> str:
+        local_storage = LocalFileHashStorage()
+
         absolute = Path(file_path).resolve()
         modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime('%Y%m%d_%H%M%S%f')
 
-        stored_file_hash = FileHasher.local_storage.fetch_one(absolute)
+        stored_file_hash = local_storage.fetch_one(absolute)
 
         if stored_file_hash:
             if stored_file_hash.modification_date >= modification_date:
                 return stored_file_hash.file_hash
             else:
                 computed_hash = sha1(absolute)
-                FileHasher.local_storage.update(absolute, computed_hash, modification_date)
+                local_storage.update(absolute, computed_hash, modification_date)
 
                 return computed_hash
         else:
             computed_hash = sha1(absolute)
-            FileHasher.local_storage.insert(absolute, computed_hash, modification_date)
+            local_storage.insert(absolute, computed_hash, modification_date)
 
             return computed_hash
 
     @classmethod
+    def _int_to_bytes(cls, int_value: int):
+        return int_value.to_bytes(cls.SERVER_INT_BYTES, cls.SERVER_BYTE_ORDER)
+
+    @classmethod
     def get_artifact_hash(cls, artifact_files: typing.Iterable[ArtifactFileData]) -> str:
-        artifact_hash = hashlib.sha1()
+        artifact_hash = hashlib.sha256()
 
         for artifact_file in sorted(artifact_files, key=lambda file: file.file_path):
-            artifact_hash.update(artifact_file.file_path.encode())
-            artifact_hash.update(artifact_file.file_hash.encode())
-            artifact_hash.update(artifact_file.type.encode())
+            artifact_hash.update(cls._int_to_bytes(len(artifact_file.file_path)))
+            artifact_hash.update(artifact_file.file_path.encode(cls.ENCODING))
+            artifact_hash.update(artifact_file.file_hash.encode(cls.ENCODING))
+            artifact_hash.update(cls._int_to_bytes(len(artifact_file.type)))
+            artifact_hash.update(artifact_file.type.encode(cls.ENCODING))
 
-            for metadata_name, metadata_value in ArtifactMetadataSerializer.serialize(artifact_file.metadata):
-                artifact_hash.update(metadata_name.encode())
-                artifact_hash.update(metadata_value.encode())
+            for metadata_key_value in ArtifactMetadataSerializer.serialize(artifact_file.metadata):
+                metadata_name, metadata_value = metadata_key_value.get('key'), metadata_key_value.get('value')
+
+                artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+                artifact_hash.update(cls._int_to_bytes(len(metadata_name)))
+                artifact_hash.update(metadata_name.encode(cls.ENCODING))
+                artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+                artifact_hash.update(cls._int_to_bytes(len(metadata_value)))
+                artifact_hash.update(metadata_value.encode(cls.ENCODING))
 
         return str(artifact_hash.hexdigest())

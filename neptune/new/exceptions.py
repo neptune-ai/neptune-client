@@ -176,7 +176,7 @@ You can check all of your projects on the Projects page:
 
 class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
     def __init__(self,
-                 project_id: str,
+                 project_id: Union[str, uuid.UUID],
                  available_projects: List[Project] = (),
                  available_workspaces: List[Workspace] = ()):
         message = """
@@ -194,7 +194,7 @@ You may also want to check the following docs pages:
         super().__init__(message=message,
                          available_projects=available_projects,
                          available_workspaces=available_workspaces,
-                         project=project_id)
+                         project=str(project_id))
 
 
 class ProjectNameCollision(ExceptionWithProjectsWorkspacesListing):
@@ -843,6 +843,19 @@ A Neptune Artifact you're listing is tracking a file type unhandled by this clie
         super().__init__(message.format(type_str=type_str, **STYLES))
 
 
+class NeptuneLocalStorageAccessException(NeptuneException):
+    def __init__(self, path, expected_description):
+        message = """
+{h1}
+----NeptuneLocalStorageAccessException-------------------------------------
+{end}
+Neptune had problem processing "{path}", it expects it to be {expected_description}.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(path=path, expected_description=expected_description, **STYLES))
+
+
 class NeptuneRemoteStorageCredentialsException(NeptuneException):
     def __init__(self):
         message = """
@@ -867,3 +880,8 @@ Neptune could not access an object ({location}) from remote storage of a Neptune
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(location=location, **STYLES))
+
+
+class ArtifactUploadingError(NeptuneException):
+    def __init__(self, msg: str):
+        super().__init__("Cannot upload artifact: {}".format(msg))

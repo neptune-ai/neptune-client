@@ -16,10 +16,32 @@
 import abc
 from typing import TypeVar, Generic
 
-from neptune.new.internal.operation import AssignArtifact, AssignBool, AssignInt, Operation, AssignFloat, AssignString, \
-    LogFloats, LogStrings, \
-    ClearFloatLog, ClearStringLog, AddStrings, RemoveStrings, DeleteAttribute, ClearStringSet, LogImages, \
-    ClearImageLog, UploadFile, AssignDatetime, ConfigFloatSeries, UploadFileSet, UploadFileContent, DeleteFiles
+from neptune.new.internal.operation import (
+    AssignArtifact,
+    AddStrings,
+    AssignBool,
+    AssignDatetime,
+    AssignFloat,
+    AssignInt,
+    AssignString,
+    ClearArtifact,
+    ClearFloatLog,
+    ClearImageLog,
+    ClearStringLog,
+    ClearStringSet,
+    ConfigFloatSeries,
+    DeleteAttribute,
+    DeleteFiles,
+    LogFloats,
+    LogImages,
+    LogStrings,
+    Operation,
+    RemoveStrings,
+    TrackFilesToNewArtifact,
+    UploadFile,
+    UploadFileContent,
+    UploadFileSet,
+)
 
 Ret = TypeVar('Ret')
 
@@ -47,6 +69,10 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_assign_datetime(self, op: AssignDatetime) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_assign_artifact(self, op: AssignArtifact) -> Ret:
         pass
 
     @abc.abstractmethod
@@ -110,5 +136,9 @@ class OperationVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def visit_assign_artifact(self, op: AssignArtifact) -> Ret:
+    def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_clear_artifact(self, op: ClearArtifact) -> Ret:
         pass
