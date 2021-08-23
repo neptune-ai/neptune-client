@@ -74,6 +74,12 @@ class TestOperations(unittest.TestCase):
             ClearStringSet(TestOperations._random_path()),
             DeleteAttribute(TestOperations._random_path()),
             TrackFilesToNewArtifact(TestOperations._random_path(), uuid.uuid4(), [("file/path/f.txt", None)]),
+            TrackFilesToExistingArtifact(
+                TestOperations._random_path(),
+                uuid.uuid4(),
+                'abcdef',
+                [("file/path/f.txt", None)]
+            ),
             ClearArtifact(TestOperations._random_path())
         ]
 

@@ -155,7 +155,7 @@ class AssignArtifact(Operation):
 
     hash: str
 
-    def accept(self, visitor: 'AssignArtifact[Ret]') -> Ret:
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
         return visitor.visit_assign_artifact(self)
 
     def to_dict(self) -> dict:
@@ -165,7 +165,7 @@ class AssignArtifact(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> 'AssignArtifact':
-        return AssignArtifact(data["path"], data["hash"])
+        return AssignArtifact(data["path"], str(data["hash"]))
 
 
 @dataclass
@@ -488,6 +488,32 @@ class TrackFilesToNewArtifact(Operation):
         return TrackFilesToNewArtifact(
             path=data["path"],
             project_uuid=uuid.UUID(data["project_uuid"]),
+            entries=list(map(tuple, data["entries"]))
+        )
+
+
+@dataclass
+class TrackFilesToExistingArtifact(Operation):
+    project_uuid: uuid.UUID
+    artifact_hash: str
+    entries: List[Tuple[str, Optional[str]]]
+
+    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
+        return visitor.visit_track_files_to_existing_artifact(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["entries"] = self.entries
+        ret["artifact_hash"] = self.artifact_hash
+        ret["project_uuid"] = str(self.project_uuid)
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> 'TrackFilesToExistingArtifact':
+        return TrackFilesToExistingArtifact(
+            path=data["path"],
+            project_uuid=uuid.UUID(data["project_uuid"]),
+            artifact_hash=data["artifact_hash"],
             entries=list(map(tuple, data["entries"]))
         )
 

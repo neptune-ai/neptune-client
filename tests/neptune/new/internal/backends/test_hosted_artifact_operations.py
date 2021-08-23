@@ -21,7 +21,10 @@ from mock import MagicMock, patch
 from neptune.new.exceptions import ArtifactUploadingError
 from neptune.new.internal.backends.api_model import ArtifactModel
 from neptune.new.internal.artifacts.types import ArtifactFileData
-from neptune.new.internal.backends.hosted_artifact_operations import track_artifact_files
+from neptune.new.internal.backends.hosted_artifact_operations import (
+    track_to_new_artifact,
+    track_to_existing_artifact
+)
 
 
 class TestHostedArtifactOperations(unittest.TestCase):
@@ -40,7 +43,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
     @patch('neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash')
     @patch('neptune.new.internal.backends.hosted_artifact_operations._extract_file_list')
     @patch('neptune.new.internal.backends.hosted_artifact_operations.create_new_artifact')
-    def test_track_artifact_files_calls_creation(
+    def test_track_to_new_artifact_calls_creation(
             self,
             create_new_artifact,
             _extract_file_list,
@@ -52,7 +55,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         _extract_file_list.return_value = self.files
 
         # when
-        track_artifact_files(
+        track_to_new_artifact(
             swagger_client=swagger_mock,
             project_uuid=self.project_uuid,
             path=["sub", "one"],
@@ -73,7 +76,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
     @patch('neptune.new.internal.backends.hosted_artifact_operations._extract_file_list')
     @patch('neptune.new.internal.backends.hosted_artifact_operations.create_new_artifact')
     @patch('neptune.new.internal.backends.hosted_artifact_operations.upload_artifact_files_metadata')
-    def test_track_artifact_files_calls_upload(
+    def test_track_to_new_artifact_calls_upload(
             self,
             upload_artifact_files_metadata,
             create_new_artifact,
@@ -91,7 +94,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         )
 
         # when
-        track_artifact_files(
+        track_to_new_artifact(
             swagger_client=swagger_mock,
             project_uuid=self.project_uuid,
             path=["sub", "one"],
@@ -110,7 +113,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
 
     @patch('neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash')
     @patch('neptune.new.internal.backends.hosted_artifact_operations._extract_file_list')
-    def test_track_artifact_files_raises_exception(
+    def test_track_to_new_artifact_raises_exception(
             self,
             _extract_file_list,
             _compute_artifact_hash
@@ -122,10 +125,65 @@ class TestHostedArtifactOperations(unittest.TestCase):
 
         # when
         with self.assertRaises(ArtifactUploadingError):
-            track_artifact_files(
+            track_to_new_artifact(
                 swagger_client=swagger_mock,
                 project_uuid=self.project_uuid,
                 path=["sub", "one"],
+                entries=[("/path/to/file", '/path/to')],
+                default_request_params={}
+            )
+
+    @patch('neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash')
+    @patch('neptune.new.internal.backends.hosted_artifact_operations._extract_file_list')
+    @patch('neptune.new.internal.backends.hosted_artifact_operations.create_artifact_version')
+    def test_track_to_existing_artifact_calls_version(
+            self,
+            create_artifact_version,
+            _extract_file_list,
+            _compute_artifact_hash
+    ):
+        # given
+        swagger_mock = self._get_swagger_mock()
+        _extract_file_list.return_value = self.files
+
+        # when
+        track_to_existing_artifact(
+            swagger_client=swagger_mock,
+            project_uuid=self.project_uuid,
+            path=["sub", "one"],
+            artifact_hash=self.artifact_hash,
+            entries=[("/path/to/file", '/path/to')],
+            default_request_params={}
+        )
+
+        # then
+        create_artifact_version.assert_called_once_with(
+            swagger_client=swagger_mock,
+            project_uuid=self.project_uuid,
+            artifact_hash=self.artifact_hash,
+            files=self.files,
+            default_request_params={}
+        )
+
+    @patch('neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash')
+    @patch('neptune.new.internal.backends.hosted_artifact_operations._extract_file_list')
+    def test_track_to_existing_artifact_raises_exception(
+            self,
+            _extract_file_list,
+            _compute_artifact_hash
+    ):
+        # given
+        swagger_mock = self._get_swagger_mock()
+        _compute_artifact_hash.return_value = self.artifact_hash
+        _extract_file_list.return_value = []
+
+        # when
+        with self.assertRaises(ArtifactUploadingError):
+            track_to_existing_artifact(
+                swagger_client=swagger_mock,
+                project_uuid=self.project_uuid,
+                path=["sub", "one"],
+                artifact_hash='abcdef',
                 entries=[("/path/to/file", '/path/to')],
                 default_request_params={}
             )

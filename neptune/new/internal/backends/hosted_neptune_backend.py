@@ -76,7 +76,10 @@ from neptune.new.internal.backends.hosted_file_operations import (
     upload_file_attribute,
     upload_file_set_attribute,
 )
-from neptune.new.internal.backends.hosted_artifact_operations import track_artifact_files
+from neptune.new.internal.backends.hosted_artifact_operations import (
+    track_to_new_artifact,
+    track_to_existing_artifact
+)
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.new.internal.backends.operation_api_object_converter import OperationApiObjectConverter
@@ -91,6 +94,7 @@ from neptune.new.internal.backends.utils import (
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     Operation,
+    TrackFilesToExistingArtifact,
     TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
@@ -387,7 +391,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 upload_operations.append(op)
             elif isinstance(
                     op,
-                    (TrackFilesToNewArtifact,)
+                    (TrackFilesToNewArtifact, TrackFilesToExistingArtifact,)
             ):
                 artifact_operations.append(op)
             else:
@@ -472,10 +476,25 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in artifact_operations:
             if isinstance(op, TrackFilesToNewArtifact):
                 try:
-                    assign_operation = track_artifact_files(
+                    assign_operation = track_to_new_artifact(
                         swagger_client=self.artifacts_client,
                         project_uuid=op.project_uuid,
                         path=op.path,
+                        entries=op.entries,
+                        default_request_params=self.DEFAULT_REQUEST_KWARGS
+                    )
+
+                    if assign_operation:
+                        assign_operations.append(assign_operation)
+                except NeptuneException as error:
+                    errors.append(error)
+            elif isinstance(op, TrackFilesToExistingArtifact):
+                try:
+                    assign_operation = track_to_existing_artifact(
+                        swagger_client=self.artifacts_client,
+                        project_uuid=op.project_uuid,
+                        path=op.path,
+                        artifact_hash=op.artifact_hash,
                         entries=op.entries,
                         default_request_params=self.DEFAULT_REQUEST_KWARGS
                     )
