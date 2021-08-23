@@ -1,4 +1,9 @@
-## neptune-client 0.10.5 [UNRELEASED]
+## neptune-client 0.10.6 [UNRELEASED]
+
+### Fixes
+- Fixed slashes in file operations url concatenation ([#666](https://github.com/neptune-ai/neptune-client/pull/666))
+
+## neptune-client 0.10.5
 
 ### Fixes
 - Only print info if exception actually occurred when using Run as context manager ([#650](https://github.com/neptune-ai/neptune-client/pull/650))

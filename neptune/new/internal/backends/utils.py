@@ -19,9 +19,10 @@ import os
 import socket
 import sys
 import time
+import pathlib
 from typing import Optional, Dict
 
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlunparse
 
 import click
 import requests
@@ -148,3 +149,20 @@ def update_session_proxies(session: Session, proxies: Optional[Dict[str, str]]):
             session.proxies.update(proxies)
         except (TypeError, ValueError):
             raise ValueError("Wrong proxies format: {}".format(proxies))
+
+
+def build_operation_url(base_api: str, operation_url: str) -> str:
+    if '://' not in base_api:
+        base_api = f'https://{base_api}'
+
+    base_api_url = urlparse(base_api)
+    path = pathlib.Path(base_api_url.path) / operation_url
+
+    return urlunparse((
+        base_api_url.scheme,
+        base_api_url.netloc,
+        str(path),
+        base_api_url.params,
+        base_api_url.query,
+        base_api_url.fragment,
+    ))
