@@ -232,7 +232,7 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         download_raw.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="https://some_url",
+            url="some_url",
             headers={"Accept": "application/zip"},
         )
         store_response_mock.assert_called_once_with(download_raw.return_value, None)
