@@ -95,6 +95,7 @@ from neptune.new.internal.operation import (
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.new.internal.utils.paths import path_to_str
+from neptune.new.internal.backends.utils import build_operation_url
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
@@ -134,20 +135,28 @@ class HostedNeptuneBackend(NeptuneBackend):
             verify_host_resolution(config_api_url)
 
         token_http_client = self._create_http_client(ssl_verify, proxies)
-        token_client = create_swagger_client(config_api_url + self.BACKEND_SWAGGER_PATH,
-                                             token_http_client)
+        token_client = create_swagger_client(
+            build_operation_url(config_api_url, self.BACKEND_SWAGGER_PATH),
+            token_http_client
+        )
 
         self._client_config = self._get_client_config(token_client)
         verify_client_version(self._client_config, neptune_client_version)
 
         if config_api_url != self._client_config.api_url:
-            token_client = create_swagger_client(self._client_config.api_url + self.BACKEND_SWAGGER_PATH,
-                                                 token_http_client)
+            token_client = create_swagger_client(
+                build_operation_url(self._client_config.api_url, self.BACKEND_SWAGGER_PATH),
+                token_http_client
+            )
 
-        self.backend_client = create_swagger_client(self._client_config.api_url + self.BACKEND_SWAGGER_PATH,
-                                                    self._http_client)
-        self.leaderboard_client = create_swagger_client(self._client_config.api_url + self.LEADERBOARD_SWAGGER_PATH,
-                                                        self._http_client)
+        self.backend_client = create_swagger_client(
+            build_operation_url(self._client_config.api_url, self.BACKEND_SWAGGER_PATH),
+            self._http_client
+        )
+        self.leaderboard_client = create_swagger_client(
+            build_operation_url(self._client_config.api_url, self.LEADERBOARD_SWAGGER_PATH),
+            self._http_client
+        )
 
         # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
         self._authenticator = NeptuneAuthenticator(
@@ -169,7 +178,10 @@ class HostedNeptuneBackend(NeptuneBackend):
     def websockets_factory(self, project_uuid: uuid.UUID, run_uuid: uuid.UUID) -> Optional[WebsocketsFactory]:
         base_url = re.sub(r'^http', 'ws', self._client_config.api_url)
         return WebsocketsFactory(
-            url=base_url + f'/api/notifications/v1/runs/{str(project_uuid)}/{str(run_uuid)}/signal',
+            url=build_operation_url(
+                base_url,
+                f'/api/notifications/v1/runs/{str(project_uuid)}/{str(run_uuid)}/signal'
+            ),
             session=self._authenticator.auth.session,
             proxies=self.proxies
         )

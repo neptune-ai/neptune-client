@@ -28,7 +28,7 @@ from requests import Request, Response
 
 from neptune.new.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, \
     NeptuneException, NeptuneStorageLimitException
-from neptune.new.internal.backends.utils import with_api_exceptions_handler
+from neptune.new.internal.backends.utils import build_operation_url, with_api_exceptions_handler
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
 from neptune.internal.storage.storage_utils import scan_unique_upload_entries, split_upload_files, UploadEntry, \
@@ -49,7 +49,10 @@ def upload_file_attribute(swagger_client: SwaggerClient,
         target += "." + ext
 
     try:
-        url = swagger_client.swagger_spec.api_url + swagger_client.api.uploadAttribute.operation.path_name
+        url = build_operation_url(
+            swagger_client.swagger_spec.api_url,
+            swagger_client.api.uploadAttribute.operation.path_name
+        )
         upload_entry = UploadEntry(source if isinstance(source, str) else BytesIO(source), target)
         _upload_loop(file_chunk_stream=FileChunkStream(upload_entry),
                      response_handler=_attribute_upload_response_handler,
@@ -83,8 +86,10 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
 
             if uploading_multiple_entries or creating_a_single_empty_dir or package.is_empty():
                 data = compress_to_tar_gz_in_memory(upload_entries=package.items)
-                url = swagger_client.swagger_spec.api_url \
-                      + swagger_client.api.uploadFileSetAttributeTar.operation.path_name
+                url = build_operation_url(
+                    swagger_client.swagger_spec.api_url,
+                    swagger_client.api.uploadFileSetAttributeTar.operation.path_name
+                )
                 result = upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
                                          url=url,
                                          data=BytesIO(data),
@@ -96,8 +101,10 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                                          })
                 _attribute_upload_response_handler(result)
             else:
-                url = swagger_client.swagger_spec.api_url \
-                      + swagger_client.api.uploadFileSetAttributeChunk.operation.path_name
+                url = build_operation_url(
+                    swagger_client.swagger_spec.api_url,
+                    swagger_client.api.uploadFileSetAttributeChunk.operation.path_name
+                )
                 file_chunk_stream = FileChunkStream(package.items[0])
                 _upload_loop(file_chunk_stream=file_chunk_stream,
                              response_handler=_attribute_upload_response_handler,
@@ -193,9 +200,13 @@ def download_image_series_element(swagger_client: SwaggerClient,
                                   attribute: str,
                                   index: int,
                                   destination: str):
+    url = build_operation_url(
+        swagger_client.swagger_spec.api_url,
+        swagger_client.api.getImageSeriesValue.operation.path_name
+    )
     response = _download_raw_data(
         http_client=swagger_client.swagger_spec.http_client,
-        url=swagger_client.swagger_spec.api_url + swagger_client.api.getImageSeriesValue.operation.path_name,
+        url=url,
         headers={},
         query_params={"experimentId": str(run_uuid), "attribute": attribute, "index": index})
     _store_response_as_file(response, os.path.join(destination, "{}.{}"
@@ -206,9 +217,13 @@ def download_file_attribute(swagger_client: SwaggerClient,
                             run_uuid: uuid.UUID,
                             attribute: str,
                             destination: Optional[str] = None):
+    url = build_operation_url(
+        swagger_client.swagger_spec.api_url,
+        swagger_client.api.downloadAttribute.operation.path_name
+    )
     response = _download_raw_data(
         http_client=swagger_client.swagger_spec.http_client,
-        url=swagger_client.swagger_spec.api_url + swagger_client.api.downloadAttribute.operation.path_name,
+        url=url,
         headers={"Accept": "application/octet-stream"},
         query_params={"experimentId": str(run_uuid), "attribute": attribute})
     _store_response_as_file(response, destination)

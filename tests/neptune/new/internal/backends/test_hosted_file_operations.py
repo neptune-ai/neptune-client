@@ -52,7 +52,7 @@ class TestHostedFileOperations(unittest.TestCase):
             file_chunk_stream=mock.ANY,
             response_handler=_attribute_upload_response_handler,
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/attributes/upload",
+            url="https://ui.neptune.ai/attributes/upload",
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
@@ -80,7 +80,7 @@ class TestHostedFileOperations(unittest.TestCase):
             file_chunk_stream=mock.ANY,
             response_handler=_attribute_upload_response_handler,
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/attributes/upload",
+            url="https://ui.neptune.ai/attributes/upload",
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
@@ -110,7 +110,7 @@ class TestHostedFileOperations(unittest.TestCase):
             file_chunk_stream=mock.ANY,
             response_handler=_attribute_upload_response_handler,
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/uploadFileSetChunk",
+            url="https://ui.neptune.ai/uploadFileSetChunk",
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "some/attribute",
@@ -140,7 +140,7 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         upload_raw_data_mock.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/uploadFileSetTar",
+            url="https://ui.neptune.ai/uploadFileSetTar",
             data=mock.ANY,
             headers={"Content-Type": "application/octet-stream"},
             query_params={
@@ -171,7 +171,7 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         upload_raw_data_mock.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/uploadFileSetTar",
+            url="https://ui.neptune.ai/uploadFileSetTar",
             data=mock.ANY,
             headers={"Content-Type": "application/octet-stream"},
             query_params={
@@ -207,7 +207,7 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         download_raw.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="ui.neptune.ai/attributes/download",
+            url="https://ui.neptune.ai/attributes/download",
             headers={"Accept": "application/octet-stream"},
             query_params={
                 "experimentId": str(exp_uuid),
@@ -232,7 +232,7 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         download_raw.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
-            url="some_url",
+            url="https://some_url",
             headers={"Accept": "application/zip"},
         )
         store_response_mock.assert_called_once_with(download_raw.return_value, None)
