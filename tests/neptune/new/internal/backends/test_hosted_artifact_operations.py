@@ -144,7 +144,6 @@ class TestHostedArtifactOperations(unittest.TestCase):
     ):
         # given
         swagger_mock = self._get_swagger_mock()
-        _compute_artifact_hash.return_value = self.artifact_hash
         _extract_file_list.return_value = self.files
 
         # when
@@ -152,6 +151,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             swagger_client=swagger_mock,
             project_uuid=self.project_uuid,
             path=["sub", "one"],
+            artifact_hash=self.artifact_hash,
             entries=[("/path/to/file", '/path/to')],
             default_request_params={}
         )
@@ -183,6 +183,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 swagger_client=swagger_mock,
                 project_uuid=self.project_uuid,
                 path=["sub", "one"],
+                artifact_hash=self.artifact_hash,
                 entries=[("/path/to/file", '/path/to')],
                 default_request_params={}
             )

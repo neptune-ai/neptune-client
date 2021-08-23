@@ -64,6 +64,7 @@ def track_to_existing_artifact(
         swagger_client: SwaggerClient,
         project_uuid: uuid.UUID,
         path: List[str],
+        artifact_hash: str,
         entries: List[Tuple[str, Optional[str]]],
         default_request_params: Dict
 ) -> Optional[Operation]:
@@ -72,7 +73,6 @@ def track_to_existing_artifact(
     if not files:
         raise ArtifactUploadingError("Uploading an empty Artifact")
 
-    artifact_hash = _compute_artifact_hash(files)
     artifact = create_artifact_version(
         swagger_client=swagger_client,
         project_uuid=project_uuid,

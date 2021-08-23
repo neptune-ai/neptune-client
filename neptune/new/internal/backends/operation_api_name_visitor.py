@@ -36,6 +36,7 @@ from neptune.new.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
+    TrackFilesToExistingArtifact,
     TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
@@ -113,6 +114,9 @@ class OperationApiNameVisitor(OperationVisitor[str]):
         return "assignArtifact"
 
     def visit_track_files_to_new_artifact(self, _: TrackFilesToNewArtifact) -> Ret:
+        raise InternalClientError("Specialized endpoint should be used to track artifact files")
+
+    def visit_track_files_to_existing_artifact(self, _: TrackFilesToExistingArtifact) -> Ret:
         raise InternalClientError("Specialized endpoint should be used to track artifact files")
 
     def visit_clear_artifact(self, _: ClearArtifact) -> Ret:

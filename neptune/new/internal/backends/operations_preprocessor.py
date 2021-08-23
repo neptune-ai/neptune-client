@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from enum import Enum
-from typing import List, TypeVar, Callable
+from typing import List, TypeVar, Callable, Union
 
 from neptune.new.exceptions import MetadataInconsistency, InternalClientError
 from neptune.new.internal.operation import (
@@ -38,6 +38,7 @@ from neptune.new.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
+    TrackFilesToExistingArtifact,
     TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
@@ -243,6 +244,19 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
 
+    def _artifact_log_modifier(self, op1: Operation, op2: Operation) -> Union[Operation, List[Operation]]:
+        if isinstance(op1, TrackFilesToExistingArtifact) and isinstance(op2, TrackFilesToExistingArtifact):
+            return TrackFilesToExistingArtifact(
+                op1.path,
+                op1.project_uuid,
+                op1.artifact_hash,
+                op1.entries + op2.entries
+            )
+        elif isinstance(op1, TrackFilesToNewArtifact) and isinstance(op2, TrackFilesToNewArtifact):
+            return TrackFilesToNewArtifact(op1.path, op1.project_uuid, op1.entries + op2.entries)
+        else:
+            return [op1, op2]
+
     def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> None:
         self._process_modify_op(
             _DataType.ARTIFACT,
@@ -250,7 +264,18 @@ class _OperationsAccumulator(OperationVisitor[None]):
             self._log_modifier(
                 TrackFilesToNewArtifact,
                 ClearArtifact,
-                lambda op1, op2: TrackFilesToNewArtifact(op1.path, op1.project_uuid, op1.entries + op2.entries)
+                self._artifact_log_modifier
+            )
+        )
+
+    def visit_track_files_to_existing_artifact(self, op: TrackFilesToExistingArtifact) -> None:
+        self._process_modify_op(
+            _DataType.ARTIFACT,
+            op,
+            self._log_modifier(
+                TrackFilesToExistingArtifact,
+                ClearArtifact,
+                self._artifact_log_modifier
             )
         )
 
