@@ -236,18 +236,21 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # then
         track_artifact_mock.assert_has_calls([
-            call(backend=backend,
+            call(swagger_client=swagger_client,
                  project_uuid=project_uuid,
                  path=["sub", "one"],
-                 entries=[("/path/to/file", '/path/to')]),
-            call(backend=backend,
+                 entries=[("/path/to/file", '/path/to')],
+                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+            call(swagger_client=swagger_client,
                  project_uuid=project_uuid,
                  path=["sub", "two"],
-                 entries=[("/path/to/file1", None), ("/path/to/file2", None)]),
-            call(backend=backend,
+                 entries=[("/path/to/file1", None), ("/path/to/file2", None)],
+                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+            call(swagger_client=swagger_client,
                  project_uuid=project_uuid,
                  path=["sub", "three"],
-                 entries=[("/path/to/file1", None), ("/path/to/file2", None)]),
+                 entries=[("/path/to/file1", None), ("/path/to/file2", None)],
+                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
         ], any_order=True)
 
     @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
