@@ -183,7 +183,6 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 swagger_client=swagger_mock,
                 project_uuid=self.project_uuid,
                 path=["sub", "one"],
-                artifact_hash=self.artifact_hash,
                 entries=[("/path/to/file", '/path/to')],
                 default_request_params={}
             )
