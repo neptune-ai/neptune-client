@@ -47,7 +47,6 @@ from neptune.new.exceptions import (
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     ArtifactAttribute,
-    ArtifactModel,
     Attribute,
     AttributeType,
     AttributeWithProperties,
@@ -474,10 +473,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             if isinstance(op, TrackFilesToNewArtifact):
                 try:
                     assign_operation = track_artifact_files(
-                        backend=self,
+                        swagger_client=self.artifacts_client,
                         project_uuid=op.project_uuid,
                         path=op.path,
-                        entries=op.entries
+                        entries=op.entries,
+                        default_request_params=self.DEFAULT_REQUEST_KWARGS
                     )
 
                     if assign_operation:
@@ -685,47 +685,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [
                 ArtifactFileData.from_dto(a) for a in result.files
             ]
-        except HTTPNotFound:
-            raise ArtifactNotFoundException(artifact_hash)
-
-    @with_api_exceptions_handler
-    def create_new_artifact(self, project_uuid: uuid.UUID, artifact_hash: str, size: int) -> ArtifactModel:
-        params = {
-            'projectIdentifier': project_uuid,
-            'hash': artifact_hash,
-            'size': size,
-            **self.DEFAULT_REQUEST_KWARGS,
-        }
-        try:
-            result = self.artifacts_client.api.createNewArtifact(**params).response().result
-            return ArtifactModel(
-                hash=result.artifactHash,
-                received_metadata=result.receivedMetadata,
-                size=result.size
-            )
-        except HTTPNotFound:
-            raise ArtifactNotFoundException(artifact_hash)
-
-    @with_api_exceptions_handler
-    def upload_artifact_files_metadata(self, project_uuid: uuid.UUID, artifact_hash: str,
-                                       files: List[ArtifactFileData]) -> ArtifactModel:
-        params = {
-            'projectIdentifier': project_uuid,
-            'hash': artifact_hash,
-            'artifactFilesDTO': {
-                'files': [
-                    ArtifactFileData.to_dto(a) for a in files
-                ]
-            },
-            **self.DEFAULT_REQUEST_KWARGS
-        }
-        try:
-            result = self.artifacts_client.api.uploadArtifactFilesMetadata(**params).response().result
-            return ArtifactModel(
-                hash=result.artifactHash,
-                size=result.size,
-                received_metadata=result.receivedMetadata
-            )
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
 
