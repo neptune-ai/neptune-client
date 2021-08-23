@@ -244,39 +244,43 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
 
-    def _artifact_log_modifier(self, op1: Operation, op2: Operation) -> Union[Operation, List[Operation]]:
-        if isinstance(op1, TrackFilesToExistingArtifact) and isinstance(op2, TrackFilesToExistingArtifact):
-            return TrackFilesToExistingArtifact(
-                op1.path,
-                op1.project_uuid,
-                op1.artifact_hash,
-                op1.entries + op2.entries
-            )
-        elif isinstance(op1, TrackFilesToNewArtifact) and isinstance(op2, TrackFilesToNewArtifact):
-            return TrackFilesToNewArtifact(op1.path, op1.project_uuid, op1.entries + op2.entries)
+    def _artifact_log_modifier(self, ops: List[Operation], new_op: Operation) -> List[Operation]:
+        if len(ops) == 0:
+            return [new_op]
+
+        # At most there should be only 1 operation
+        op_old = ops[0]
+
+        if isinstance(op_old, TrackFilesToExistingArtifact)\
+                and isinstance(new_op, TrackFilesToExistingArtifact):
+            return [TrackFilesToExistingArtifact(
+                op_old.path,
+                op_old.project_uuid,
+                op_old.artifact_hash,
+                op_old.entries + new_op.entries
+            )]
+        elif isinstance(op_old, TrackFilesToNewArtifact)\
+                and isinstance(new_op, (TrackFilesToNewArtifact, TrackFilesToExistingArtifact)):
+            return [
+                TrackFilesToNewArtifact(op_old.path, op_old.project_uuid, op_old.entries + new_op.entries)
+            ]
         else:
-            return [op1, op2]
+            raise InternalClientError(
+                "Preprocessing operations failed: called logging to existing artifact before creation"
+            )
 
     def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> None:
         self._process_modify_op(
             _DataType.ARTIFACT,
             op,
-            self._log_modifier(
-                TrackFilesToNewArtifact,
-                ClearArtifact,
-                self._artifact_log_modifier
-            )
+            self._artifact_log_modifier
         )
 
     def visit_track_files_to_existing_artifact(self, op: TrackFilesToExistingArtifact) -> None:
         self._process_modify_op(
             _DataType.ARTIFACT,
             op,
-            self._log_modifier(
-                TrackFilesToExistingArtifact,
-                ClearArtifact,
-                self._artifact_log_modifier
-            )
+            self._artifact_log_modifier
         )
 
     def visit_clear_artifact(self, op: ClearStringSet) -> None:

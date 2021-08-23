@@ -322,16 +322,20 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
             TrackFilesToNewArtifact(["b"], project_uuid, [('dir1/', None)]),
             TrackFilesToNewArtifact(["b"], project_uuid, [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToNewArtifact(["b"], project_uuid, [('dir4/dir5/', 'dir4/')]),
 
             AssignFloat(["c"], 5),
             TrackFilesToNewArtifact(["c"], project_uuid, [('dir1/', None)]),
 
-            # TrackFilesToNewArtifact(["d"], project_uuid, [('dir1/', None)]),
-            # TrackFilesToExistingArtifact(["d"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/')]),
-            #
-            # TrackFilesToNewArtifact(["e"], project_uuid, [('dir1/', None)]),
-            # TrackFilesToExistingArtifact(["e"], project_uuid, [('dir2/dir3/', 'dir2/')]),
-            # TrackFilesToExistingArtifact(["e"], project_uuid, [('dir4/', None)]),
+            TrackFilesToExistingArtifact(["d"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToExistingArtifact(["d"], project_uuid, 'abcdef', [('dir4/', None)]),
+
+            TrackFilesToNewArtifact(["e"], project_uuid, [('dir1/', None)]),
+            TrackFilesToExistingArtifact(["e"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/')]),
+
+            TrackFilesToNewArtifact(["f"], project_uuid, [('dir1/', None)]),
+            TrackFilesToExistingArtifact(["f"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToExistingArtifact(["f"], project_uuid, 'abcdef', [('dir4/', None)]),
         ])
 
         # then
@@ -339,15 +343,23 @@ class TestOperationsPreprocessor(TestAttributeBase):
             TrackFilesToNewArtifact(["a"], project_uuid, [('dir1/', None)]),
             DeleteAttribute(["a"]),
 
-            TrackFilesToNewArtifact(["b"], project_uuid, [('dir1/', None), ('dir2/dir3/', 'dir2/')]),
+            TrackFilesToNewArtifact(
+                ["b"],
+                project_uuid,
+                [('dir1/', None), ('dir2/dir3/', 'dir2/'), ('dir4/dir5/', 'dir4/')]
+            ),
 
             AssignFloat(["c"], 5),
 
-            # TrackFilesToNewArtifact(["d"], project_uuid, [('dir1/', None)]),
-            # TrackFilesToExistingArtifact(["d"], project_uuid, [('dir2/dir3/', 'dir2/')]),
-            #
-            # TrackFilesToNewArtifact(["e"], project_uuid, [('dir1/', None)]),
-            # TrackFilesToExistingArtifact(["e"], project_uuid, [('dir2/dir3/', 'dir2/'), ('dir4/', None)]),
+            TrackFilesToExistingArtifact(["d"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/'), ('dir4/', None)]),
+
+            TrackFilesToNewArtifact(["e"], project_uuid, [('dir1/', None), ('dir2/dir3/', 'dir2/')]),
+
+            TrackFilesToNewArtifact(
+                ["f"],
+                project_uuid,
+                [('dir1/', None), ('dir2/dir3/', 'dir2/'), ('dir4/', None)]
+            ),
         ])
         self.assertEqual(processor.get_errors(), [
             MetadataInconsistency(
