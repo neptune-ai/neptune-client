@@ -19,7 +19,7 @@ import typing
 
 from neptune.new.attributes.atoms.atom import Atom
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
-from neptune.new.internal.operation import AssignArtifact, TrackFilesToNewArtifact
+from neptune.new.internal.operation import AssignArtifact, TrackFilesToNewArtifact, TrackFilesToExistingArtifact
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 
@@ -63,6 +63,22 @@ class Artifact(Atom):
                 wait
             )
 
-    def track_files_to_existing(self, path: str):
-        # FIXME: implement in NPT-10545
-        raise NotImplementedError
+    def track_files_to_existing(
+            self,
+            project_uuid: uuid.UUID,
+            source_location: str,
+            namespace: str = None,
+            wait: bool = False
+    ):
+        with self._run.lock():
+            artifact_hash = self._backend.get_artifact_attribute(self._run_uuid, self._path).hash
+
+            self._enqueue_operation(
+                TrackFilesToExistingArtifact(
+                    self._path,
+                    project_uuid,
+                    artifact_hash,
+                    [(source_location, namespace)]
+                ),
+                wait
+            )

@@ -37,6 +37,7 @@ from neptune.new.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
+    TrackFilesToExistingArtifact,
     TrackFilesToNewArtifact,
     UploadFile,
     UploadFileContent,
@@ -137,6 +138,10 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_track_files_to_existing_artifact(self, op: TrackFilesToExistingArtifact) -> Ret:
         pass
 
     @abc.abstractmethod

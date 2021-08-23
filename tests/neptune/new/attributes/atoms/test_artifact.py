@@ -27,7 +27,7 @@ from neptune.new.exceptions import NeptuneUnhandledArtifactTypeException
 from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactDriver, ArtifactDriversMap
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.artifact import Artifact as ArtifactAttr
-from neptune.new.internal.operation import TrackFilesToNewArtifact
+from neptune.new.internal.operation import TrackFilesToExistingArtifact, TrackFilesToNewArtifact
 
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -128,5 +128,37 @@ class TestArtifact(TestAttributeBase):
         ])
 
     def test_track_files_to_existing(self):
-        # FIXME: test after implementing
-        ...
+        source_location = str(uuid.uuid4())
+        namespace = str(uuid.uuid4())
+        source_location2 = str(uuid.uuid4())
+        namespace2 = str(uuid.uuid4())
+
+        var = Artifact(self.exp, self.path)
+        var.track_files_to_new(
+            project_uuid=self.exp._project_uuid,
+            source_location=source_location,
+            namespace=namespace,
+            wait=self.wait
+        )
+        var.track_files_to_existing(
+            project_uuid=self.exp._project_uuid,
+            source_location=source_location2,
+            namespace=namespace2,
+            wait=self.wait
+        )
+
+        self.op_processor.enqueue_operation.assert_has_calls([
+            call(
+                TrackFilesToNewArtifact(self.path, self.exp._project_uuid, [(source_location, namespace)]),
+                self.wait
+            ),
+            call(
+                TrackFilesToExistingArtifact(
+                    self.path,
+                    self.exp._project_uuid,
+                    self.artifact_hash,
+                    [(source_location2, namespace2)]
+                ),
+                self.wait
+            )
+        ])
