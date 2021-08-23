@@ -1,4 +1,4 @@
-## neptune-client 0.10.6 [UNRELEASED]
+## neptune-client 0.10.6
 
 ### Fixes
 - Fixed slashes in file operations url concatenation ([#666](https://github.com/neptune-ai/neptune-client/pull/666))
