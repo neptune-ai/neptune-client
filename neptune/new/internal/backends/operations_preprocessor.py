@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from enum import Enum
-from typing import List, TypeVar, Callable, Union
+from typing import List, TypeVar, Callable
 
 from neptune.new.exceptions import MetadataInconsistency, InternalClientError
 from neptune.new.internal.operation import (
@@ -25,7 +25,6 @@ from neptune.new.internal.operation import (
     AssignFloat,
     AssignInt,
     AssignString,
-    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
