@@ -102,7 +102,7 @@ class ArtifactDriver(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         raise NotImplementedError
 
     @classmethod

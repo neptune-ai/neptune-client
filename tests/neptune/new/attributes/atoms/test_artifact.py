@@ -66,7 +66,7 @@ class TestArtifact(TestAttributeBase):
                 return False
 
             @classmethod
-            def get_tracked_files(cls, path, namespace=None):
+            def get_tracked_files(cls, path, destination=None):
                 return []
 
             @classmethod

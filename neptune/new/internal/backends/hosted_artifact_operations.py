@@ -91,10 +91,10 @@ def _compute_artifact_hash(files: List[ArtifactFileData]) -> str:
 def _extract_file_list(entries: List[Tuple[str, Optional[str]]]) -> List[ArtifactFileData]:
     files: List[ArtifactFileData] = list()
 
-    for entry_path, entry_namespace in entries:
+    for entry_path, entry_destination in entries:
         driver: Type[ArtifactDriver] = ArtifactDriversMap.match_path(entry_path)
         files.extend(
-            driver.get_tracked_files(path=entry_path, namespace=entry_namespace)
+            driver.get_tracked_files(path=entry_path, destination=entry_destination)
         )
 
     return files

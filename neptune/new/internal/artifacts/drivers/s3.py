@@ -56,7 +56,7 @@ class S3ArtifactDriver(ArtifactDriver):
         }
 
     @classmethod
-    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         url = urlparse(path)
         bucket_name, prefix = url.netloc, url.path
 
@@ -71,7 +71,7 @@ class S3ArtifactDriver(ArtifactDriver):
                 if prefix == remote_object.key:
                     prefix = str(pathlib.Path(prefix).parent)
 
-                file_path = pathlib.Path(namespace or '') / pathlib.Path(remote_object.key[len(prefix):])
+                file_path = pathlib.Path(destination or '') / pathlib.Path(remote_object.key[len(prefix):])
                 remote_key = remote_object.key.lstrip('/')
 
                 stored_files.append(
