@@ -40,7 +40,6 @@ class LocalArtifactDriver(ArtifactDriver):
         return {
             "file_path": metadata['file_path'],
             "last_modified": datetime.fromtimestamp(metadata['last_modified']).strftime(cls.DATETIME_FORMAT),
-            "file_size": str(metadata['file_size']),
         }
 
     @classmethod
@@ -48,7 +47,6 @@ class LocalArtifactDriver(ArtifactDriver):
         return {
             "file_path": metadata['file_path'],
             "last_modified": datetime.strptime(metadata['last_modified'], cls.DATETIME_FORMAT),
-            "file_size": int(metadata['file_size']),
         }
 
     @classmethod
@@ -77,10 +75,10 @@ class LocalArtifactDriver(ArtifactDriver):
                     file_path=file_path,
                     file_hash=FileHasher.get_local_file_hash(file),
                     type=ArtifactFileType.LOCAL.value,
+                    size=file.stat().st_size,
                     metadata=cls._serialize_metadata({
                         'file_path': f'file://{file.resolve().as_posix()}',
                         'last_modified': file.stat().st_mtime,
-                        'file_size': file.stat().st_size,
                     })
                 )
             )

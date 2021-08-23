@@ -44,7 +44,6 @@ class S3ArtifactDriver(ArtifactDriver):
         return {
             "location": metadata['location'],
             "last_modified": metadata['last_modified'].strftime(cls.DATETIME_FORMAT),
-            "file_size": str(metadata['file_size']),
         }
 
     @classmethod
@@ -52,7 +51,6 @@ class S3ArtifactDriver(ArtifactDriver):
         return {
             "location": metadata['location'],
             "last_modified": datetime.strptime(metadata['last_modified'], cls.DATETIME_FORMAT),
-            "file_size": int(metadata['file_size']),
         }
 
     @classmethod
@@ -79,10 +77,10 @@ class S3ArtifactDriver(ArtifactDriver):
                         file_path=str(file_path).lstrip('/'),
                         file_hash=remote_object.e_tag.strip('"'),
                         type=ArtifactFileType.S3.value,
+                        size=remote_object.size,
                         metadata=cls._serialize_metadata({
                             "location": f's3://{bucket_name}/{remote_key}',
                             "last_modified": remote_object.last_modified,
-                            "file_size": remote_object.size,
                         })
                     )
                 )

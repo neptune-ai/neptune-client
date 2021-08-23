@@ -44,10 +44,19 @@ class TestArtifact(TestAttributeBase):
 
         self.artifact_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         self.artifact_files = [
-            ArtifactFileData("fname.txt",
-                             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "test", {}),
-            ArtifactFileData("subdir/other.mp3",
-                             "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "test", {}),
+            ArtifactFileData(
+                file_path="fname.txt",
+                file_hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                type="test",
+                size=213,
+                metadata={},
+            ),
+            ArtifactFileData(
+                file_path="subdir/other.mp3",
+                file_hash="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+                type="test",
+                metadata={}
+            ),
         ]
 
         self.exp.set_attribute(self.path_str, Artifact(self.exp, self.path))

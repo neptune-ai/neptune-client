@@ -42,9 +42,9 @@ class TestFileHasher(unittest.TestCase):
                 file_path='to/file1',
                 file_hash='c38444d2ccff1a7aab3d323fb6234e1b4f0a81ac',
                 type="S3",
+                size=5234,
                 metadata={
                     'location': "s3://bucket/path/to/file1",
-                    "file_size": "18",
                     "last_modification": "2021-08-09 10:22:53"
                 }
             ),
@@ -54,20 +54,14 @@ class TestFileHasher(unittest.TestCase):
                 type="S3",
                 metadata={
                     'location': "s3://bucket/path/to/file2",
-                    "file_size": "24",
                     "last_modification": "2021-08-09 10:32:12"
                 }
             )
         ]
 
-        self.assertEqual(
-            "638fec8d799c7fa086521ba325441627ba170d53aed2414055e68178f340c0dd",
-            FileHasher.get_artifact_hash(artifacts),
-        )
-        self.assertEqual(
-            "638fec8d799c7fa086521ba325441627ba170d53aed2414055e68178f340c0dd",
-            FileHasher.get_artifact_hash(reversed(artifacts)),
-        )
+        expected_hash = "56e64245b1d4915ff27b306c8077cd4f9ce1b31233c690a93ebc38a1b737a9ea"
+        self.assertEqual(expected_hash, FileHasher.get_artifact_hash(artifacts))
+        self.assertEqual(expected_hash, FileHasher.get_artifact_hash(reversed(artifacts)))
 
     @patch('pathlib.Path.home')
     def test_local_file_hash(self, home):

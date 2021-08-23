@@ -34,6 +34,7 @@ class ArtifactFileData:
     file_hash: str
     type: str
     metadata: typing.Dict[str, str]
+    size: int = None
 
     @classmethod
     def from_dto(cls, artifact_file_dto):
@@ -41,6 +42,7 @@ class ArtifactFileData:
             file_path=artifact_file_dto.filePath,
             file_hash=artifact_file_dto.fileHash,
             type=artifact_file_dto.type,
+            size=artifact_file_dto.size,
             metadata=ArtifactMetadataSerializer.deserialize([
                 (m.key, m.value) for m in artifact_file_dto.metadata
             ])
@@ -51,6 +53,7 @@ class ArtifactFileData:
             'filePath': self.file_path,
             'fileHash': self.file_hash,
             'type': self.type,
+            'size': self.size,
             'metadata': ArtifactMetadataSerializer.serialize(self.metadata)
         }
 
