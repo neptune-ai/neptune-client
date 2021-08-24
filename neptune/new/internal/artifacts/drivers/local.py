@@ -52,7 +52,7 @@ class LocalArtifactDriver(ArtifactDriver):
         }
 
     @classmethod
-    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         file_protocol_prefix = 'file://'
         if path.startswith(file_protocol_prefix):
             path = path[len(file_protocol_prefix):]
@@ -70,7 +70,7 @@ class LocalArtifactDriver(ArtifactDriver):
                 file_path = file.relative_to(source_location).as_posix()
             else:
                 file_path = file.name
-            file_path = file_path if namespace is None else (pathlib.Path(namespace) / file_path).as_posix()
+            file_path = file_path if destination is None else (pathlib.Path(destination) / file_path).as_posix()
 
             stored_files.append(
                 ArtifactFileData(
