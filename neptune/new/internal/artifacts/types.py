@@ -47,6 +47,7 @@ class ArtifactFileData:
     file_hash: str
     type: str
     metadata: typing.Dict[str, str]
+    size: int = None
 
     @classmethod
     def from_dto(cls, artifact_file_dto):
@@ -54,6 +55,7 @@ class ArtifactFileData:
             file_path=artifact_file_dto.filePath,
             file_hash=artifact_file_dto.fileHash,
             type=artifact_file_dto.type,
+            size=artifact_file_dto.size,
             metadata=ArtifactMetadataSerializer.deserialize(
                 list(map(lambda m: {'key': str(m.key), 'value': str(m.value)}, artifact_file_dto.metadata))
             )
@@ -64,6 +66,7 @@ class ArtifactFileData:
             'filePath': self.file_path,
             'fileHash': self.file_hash,
             'type': self.type,
+            'size': self.size,
             'metadata': ArtifactMetadataSerializer.serialize(self.metadata)
         }
 
@@ -102,7 +105,7 @@ class ArtifactDriver(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         raise NotImplementedError
 
     @classmethod

@@ -68,7 +68,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             swagger_client=swagger_mock,
             project_uuid=self.project_uuid,
             artifact_hash=self.artifact_hash,
-            size=1,
+            size=None,
             default_request_params={}
         )
 

@@ -27,6 +27,16 @@ from neptune.new.internal.backends.utils import with_api_exceptions_handler
 from neptune.new.internal.operation import Operation, AssignArtifact
 
 
+def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):
+    artifact_size = 0
+    for artifact_file in artifact_file_list:
+        if artifact_file.size is None:
+            # whole artifact's size is undefined in this case
+            return None
+        artifact_size += artifact_file.size
+    return artifact_size
+
+
 def track_to_new_artifact(
         swagger_client: SwaggerClient,
         project_uuid: uuid.UUID,
@@ -44,7 +54,7 @@ def track_to_new_artifact(
         swagger_client=swagger_client,
         project_uuid=project_uuid,
         artifact_hash=artifact_hash,
-        size=len(files),
+        size=_compute_artifact_size(files),
         default_request_params=default_request_params
     )
 
@@ -91,10 +101,10 @@ def _compute_artifact_hash(files: List[ArtifactFileData]) -> str:
 def _extract_file_list(entries: List[Tuple[str, Optional[str]]]) -> List[ArtifactFileData]:
     files: List[ArtifactFileData] = list()
 
-    for entry_path, entry_namespace in entries:
+    for entry_path, entry_destination in entries:
         driver: Type[ArtifactDriver] = ArtifactDriversMap.match_path(entry_path)
         files.extend(
-            driver.get_tracked_files(path=entry_path, namespace=entry_namespace)
+            driver.get_tracked_files(path=entry_path, destination=entry_destination)
         )
 
     return files

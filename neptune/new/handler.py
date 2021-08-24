@@ -436,7 +436,7 @@ class Handler:
         """
         raise NeptuneException('Should be never called.')
 
-    def track_files(self, path: str, namespace: str = None, wait: bool = True) -> None:
+    def track_files(self, path: str, destination: str = None, wait: bool = True) -> None:
         """Creates an artifact tracking some files.
 
         You may also want to check `track_files docs page`_.
@@ -450,14 +450,14 @@ class Handler:
                 attr.track_files_to_new(
                     project_uuid=self._run._project_uuid,  # pylint: disable=protected-access
                     source_location=path,
-                    namespace=namespace,
+                    destination=destination,
                     wait=wait
                 )
             else:
                 attr.track_files_to_existing(
                     project_uuid=self._run._project_uuid,  # pylint: disable=protected-access
                     source_location=path,
-                    namespace=namespace,
+                    destination=destination,
                     wait=wait
                 )
 

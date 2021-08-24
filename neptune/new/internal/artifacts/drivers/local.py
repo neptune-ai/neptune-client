@@ -40,7 +40,6 @@ class LocalArtifactDriver(ArtifactDriver):
         return {
             "file_path": metadata['file_path'],
             "last_modified": datetime.fromtimestamp(metadata['last_modified']).strftime(cls.DATETIME_FORMAT),
-            "file_size": str(metadata['file_size']),
         }
 
     @classmethod
@@ -48,11 +47,10 @@ class LocalArtifactDriver(ArtifactDriver):
         return {
             "file_path": metadata['file_path'],
             "last_modified": datetime.strptime(metadata['last_modified'], cls.DATETIME_FORMAT),
-            "file_size": int(metadata['file_size']),
         }
 
     @classmethod
-    def get_tracked_files(cls, path: str, namespace: str = None) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         file_protocol_prefix = 'file://'
         if path.startswith(file_protocol_prefix):
             path = path[len(file_protocol_prefix):]
@@ -70,17 +68,17 @@ class LocalArtifactDriver(ArtifactDriver):
                 file_path = file.relative_to(source_location).as_posix()
             else:
                 file_path = file.name
-            file_path = file_path if namespace is None else (pathlib.Path(namespace) / file_path).as_posix()
+            file_path = file_path if destination is None else (pathlib.Path(destination) / file_path).as_posix()
 
             stored_files.append(
                 ArtifactFileData(
                     file_path=file_path,
                     file_hash=FileHasher.get_local_file_hash(file),
                     type=ArtifactFileType.LOCAL.value,
+                    size=file.stat().st_size,
                     metadata=cls._serialize_metadata({
                         'file_path': f'file://{file.resolve().as_posix()}',
                         'last_modified': file.stat().st_mtime,
-                        'file_size': file.stat().st_size,
                     })
                 )
             )

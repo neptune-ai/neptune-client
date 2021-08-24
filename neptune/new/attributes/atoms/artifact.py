@@ -24,13 +24,16 @@ from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 
 class Artifact(Atom):
-    def _assign(self, value: typing.Union[ArtifactVal, str], wait: bool = False):
-        # this function should not be publicly available
+    def assign(self, value: ArtifactVal, wait: bool = False):
+        # this function should be used only with ArtifactVal
         if not isinstance(value, ArtifactVal):
-            value = ArtifactVal(value)
+            raise TypeError("Value of unsupported type {}".format(type(value)))
 
         with self._run.lock():
             self._enqueue_operation(AssignArtifact(self._path, value.hash), wait)
+
+    def fetch(self) -> ArtifactVal:
+        return ArtifactVal(self.fetch_hash())
 
     def fetch_hash(self) -> str:
         val = self._backend.get_artifact_attribute(self._run_uuid, self._path)
@@ -54,12 +57,12 @@ class Artifact(Atom):
             self,
             project_uuid: uuid.UUID,
             source_location: str,
-            namespace: str = None,
+            destination: str = None,
             wait: bool = False
     ):
         with self._run.lock():
             self._enqueue_operation(
-                TrackFilesToNewArtifact(self._path, project_uuid, [(source_location, namespace)]),
+                TrackFilesToNewArtifact(self._path, project_uuid, [(source_location, destination)]),
                 wait
             )
 
@@ -67,7 +70,7 @@ class Artifact(Atom):
             self,
             project_uuid: uuid.UUID,
             source_location: str,
-            namespace: str = None,
+            destination: str = None,
             wait: bool = False
     ):
         with self._run.lock():
@@ -78,7 +81,7 @@ class Artifact(Atom):
                     self._path,
                     project_uuid,
                     artifact_hash,
-                    [(source_location, namespace)]
+                    [(source_location, destination)]
                 ),
                 wait
             )
