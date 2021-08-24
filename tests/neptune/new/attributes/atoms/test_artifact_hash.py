@@ -31,6 +31,17 @@ class TestArtifactHash(TestAttributeBase):
             with self.assertRaises(Exception):
                 Artifact(MagicMock(), MagicMock()).assign(value)
 
+    def test_fetch(self):
+        exp, path = self._create_run(), self._random_path()
+        var = Artifact(exp, path)
+        var._enqueue_operation(
+            AssignArtifact(
+                var._path,
+                ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash
+            ),
+            False)
+        self.assertEqual(ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"), var.fetch())
+
     def test_fetch_hash(self):
         exp, path = self._create_run(), self._random_path()
         var = Artifact(exp, path)
