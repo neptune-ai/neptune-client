@@ -119,46 +119,46 @@ class TestArtifact(TestAttributeBase):
 
     def test_track_files_to_new(self):
         source_location = str(uuid.uuid4())
-        namespace = str(uuid.uuid4())
+        destination = str(uuid.uuid4())
 
         var = Artifact(self.exp, self.path)
         var.track_files_to_new(
             project_uuid=self.exp._project_uuid,
             source_location=source_location,
-            namespace=namespace,
+            destination=destination,
             wait=self.wait
         )
 
         self.op_processor.enqueue_operation.assert_has_calls([
             call(
-                TrackFilesToNewArtifact(self.path, self.exp._project_uuid, [(source_location, namespace)]),
+                TrackFilesToNewArtifact(self.path, self.exp._project_uuid, [(source_location, destination)]),
                 self.wait
             ),
         ])
 
     def test_track_files_to_existing(self):
         source_location = str(uuid.uuid4())
-        namespace = str(uuid.uuid4())
+        destination = str(uuid.uuid4())
         source_location2 = str(uuid.uuid4())
-        namespace2 = str(uuid.uuid4())
+        destination2 = str(uuid.uuid4())
 
         var = Artifact(self.exp, self.path)
         var.track_files_to_new(
             project_uuid=self.exp._project_uuid,
             source_location=source_location,
-            namespace=namespace,
+            destination=destination,
             wait=self.wait
         )
         var.track_files_to_existing(
             project_uuid=self.exp._project_uuid,
             source_location=source_location2,
-            namespace=namespace2,
+            destination=destination2,
             wait=self.wait
         )
 
         self.op_processor.enqueue_operation.assert_has_calls([
             call(
-                TrackFilesToNewArtifact(self.path, self.exp._project_uuid, [(source_location, namespace)]),
+                TrackFilesToNewArtifact(self.path, self.exp._project_uuid, [(source_location, destination)]),
                 self.wait
             ),
             call(
@@ -166,7 +166,7 @@ class TestArtifact(TestAttributeBase):
                     self.path,
                     self.exp._project_uuid,
                     self.artifact_hash,
-                    [(source_location2, namespace2)]
+                    [(source_location2, destination2)]
                 ),
                 self.wait
             )

@@ -54,12 +54,12 @@ class Artifact(Atom):
             self,
             project_uuid: uuid.UUID,
             source_location: str,
-            namespace: str = None,
+            destination: str = None,
             wait: bool = False
     ):
         with self._run.lock():
             self._enqueue_operation(
-                TrackFilesToNewArtifact(self._path, project_uuid, [(source_location, namespace)]),
+                TrackFilesToNewArtifact(self._path, project_uuid, [(source_location, destination)]),
                 wait
             )
 
@@ -67,7 +67,7 @@ class Artifact(Atom):
             self,
             project_uuid: uuid.UUID,
             source_location: str,
-            namespace: str = None,
+            destination: str = None,
             wait: bool = False
     ):
         with self._run.lock():
@@ -78,7 +78,7 @@ class Artifact(Atom):
                     self._path,
                     project_uuid,
                     artifact_hash,
-                    [(source_location, namespace)]
+                    [(source_location, destination)]
                 ),
                 wait
             )
