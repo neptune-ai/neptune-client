@@ -668,7 +668,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
             return ArtifactAttribute(
-                hash=result.artifactHash
+                hash=result.hash
             )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -682,6 +682,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.artifacts_client.api.listArtifactFiles(**params).response().result
+            print(result)
             return [
                 ArtifactFileData.from_dto(a) for a in result.files
             ]

@@ -22,10 +22,23 @@ from dataclasses import dataclass
 
 from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
 
-
 class ArtifactFileType(enum.Enum):
     S3 = "S3"
     LOCAL = "Local"
+
+
+class ArtifactMetadataSerializer:
+    @staticmethod
+    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Dict[str, str]]:
+        return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
+
+    @staticmethod
+    def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
+        print('TEST', metadata)
+        return {
+            f'{key_value.get("key")}': f'{key_value.get("value")}'
+            for key_value in metadata
+        }
 
 
 @dataclass
@@ -41,9 +54,9 @@ class ArtifactFileData:
             file_path=artifact_file_dto.filePath,
             file_hash=artifact_file_dto.fileHash,
             type=artifact_file_dto.type,
-            metadata=ArtifactMetadataSerializer.deserialize([
-                (m.key, m.value) for m in artifact_file_dto.metadata
-            ])
+            metadata=ArtifactMetadataSerializer.deserialize(
+                list(map(lambda m: {'key': str(m.key), 'value': str(m.value)}, artifact_file_dto.metadata))
+            )
         )
 
     def to_dto(self) -> typing.Dict:
@@ -52,19 +65,6 @@ class ArtifactFileData:
             'fileHash': self.file_hash,
             'type': self.type,
             'metadata': ArtifactMetadataSerializer.serialize(self.metadata)
-        }
-
-
-class ArtifactMetadataSerializer:
-    @staticmethod
-    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Dict[str, str]]:
-        return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
-
-    @staticmethod
-    def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
-        return {
-            f'{key_value.get("key")}': f'{key_value.get("value")}'
-            for key_value in metadata
         }
 
 
