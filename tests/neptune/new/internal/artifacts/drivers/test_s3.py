@@ -80,8 +80,9 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         self.assertEqual(ArtifactFileType.S3.value, files[0].type)
         self.assertEqual('2f249230a8e7c2bf6005ccd2679259ec', files[0].file_hash)
         self.assertEqual('file1', files[0].file_path)
+        self.assertEqual(4, files[0].size)
         self.assertEqual(
-            {'location', 'file_size', 'last_modified'},
+            {'location', 'last_modified'},
             files[0].metadata.keys()
         )
         self.assertEqual(
@@ -92,7 +93,6 @@ class TestS3ArtifactDrivers(unittest.TestCase):
             self.update_time.strftime(S3ArtifactDriver.DATETIME_FORMAT),
             files[0].metadata['last_modified']
         )
-        self.assertEqual("4", files[0].metadata['file_size'])
 
     def test_multiple_retrieval(self):
         files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/to/")

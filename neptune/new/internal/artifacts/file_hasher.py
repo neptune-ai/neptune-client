@@ -25,8 +25,10 @@ from neptune.new.internal.artifacts.utils import sha1
 
 class FileHasher:
     ENCODING = "UTF-8"
-    HASH_ELEMENT_DIVISOR = b"|"
+    HASH_ELEMENT_DIVISOR = b"#"
+    META_ELEMENT_DIVISOR = b"|"
     SERVER_INT_BYTES = 4
+    SERVER_LONG_BYTES = 8
     SERVER_BYTE_ORDER = 'big'
     HASH_LENGTH = 64  # sha-256
 
@@ -54,28 +56,33 @@ class FileHasher:
             return computed_hash
 
     @classmethod
-    def _int_to_bytes(cls, int_value: int):
-        return int_value.to_bytes(cls.SERVER_INT_BYTES, cls.SERVER_BYTE_ORDER)
+    def _number_to_bytes(cls, int_value: int, bytes_cnt):
+        return int_value.to_bytes(bytes_cnt, cls.SERVER_BYTE_ORDER)
 
     @classmethod
     def get_artifact_hash(cls, artifact_files: typing.Iterable[ArtifactFileData]) -> str:
         artifact_hash = hashlib.sha256()
 
         for artifact_file in sorted(artifact_files, key=lambda file: file.file_path):
-            artifact_hash.update(cls._int_to_bytes(len(artifact_file.file_path)))
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+            artifact_hash.update(cls._number_to_bytes(len(artifact_file.file_path), cls.SERVER_INT_BYTES))
             artifact_hash.update(artifact_file.file_path.encode(cls.ENCODING))
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
             artifact_hash.update(artifact_file.file_hash.encode(cls.ENCODING))
-            artifact_hash.update(cls._int_to_bytes(len(artifact_file.type)))
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+            if artifact_file.size:
+                artifact_hash.update(cls._number_to_bytes(artifact_file.size, cls.SERVER_LONG_BYTES))
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
+            artifact_hash.update(cls._number_to_bytes(len(artifact_file.type), cls.SERVER_INT_BYTES))
             artifact_hash.update(artifact_file.type.encode(cls.ENCODING))
-
+            artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
             for metadata_key_value in ArtifactMetadataSerializer.serialize(artifact_file.metadata):
                 metadata_name, metadata_value = metadata_key_value.get('key'), metadata_key_value.get('value')
-
-                artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
-                artifact_hash.update(cls._int_to_bytes(len(metadata_name)))
+                artifact_hash.update(cls.META_ELEMENT_DIVISOR)
+                artifact_hash.update(cls._number_to_bytes(len(metadata_name), cls.SERVER_INT_BYTES))
                 artifact_hash.update(metadata_name.encode(cls.ENCODING))
-                artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
-                artifact_hash.update(cls._int_to_bytes(len(metadata_value)))
+                artifact_hash.update(cls.META_ELEMENT_DIVISOR)
+                artifact_hash.update(cls._number_to_bytes(len(metadata_value), cls.SERVER_INT_BYTES))
                 artifact_hash.update(metadata_value.encode(cls.ENCODING))
 
         return str(artifact_hash.hexdigest())
