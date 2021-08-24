@@ -668,7 +668,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
             return ArtifactAttribute(
-                hash=result.artifactHash
+                hash=result.hash
             )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))

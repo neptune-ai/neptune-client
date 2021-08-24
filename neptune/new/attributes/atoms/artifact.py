@@ -24,13 +24,16 @@ from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 
 class Artifact(Atom):
-    def _assign(self, value: typing.Union[ArtifactVal, str], wait: bool = False):
-        # this function should not be publicly available
+    def assign(self, value: ArtifactVal, wait: bool = False):
+        # this function should be used only with ArtifactVal
         if not isinstance(value, ArtifactVal):
-            value = ArtifactVal(value)
+            raise TypeError("Value of unsupported type {}".format(type(value)))
 
         with self._run.lock():
             self._enqueue_operation(AssignArtifact(self._path, value.hash), wait)
+
+    def fetch(self) -> ArtifactVal:
+        return ArtifactVal(self.fetch_hash())
 
     def fetch_hash(self) -> str:
         val = self._backend.get_artifact_attribute(self._run_uuid, self._path)
