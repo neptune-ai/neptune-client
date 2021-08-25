@@ -19,7 +19,6 @@ import os
 import socket
 import sys
 import time
-import pathlib
 from typing import Optional, Dict
 
 from urllib.parse import urlparse, urljoin
