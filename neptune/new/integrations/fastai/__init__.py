@@ -20,6 +20,9 @@ try:
 except ModuleNotFoundError as e:
     if e.name == 'neptune_fastai':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-        raise NeptuneIntegrationNotInstalledException("fastai") from None
+        raise NeptuneIntegrationNotInstalledException(
+            integration_package_name="neptune-fastai",
+            framework_name="fastai"
+        ) from None
     else:
         raise

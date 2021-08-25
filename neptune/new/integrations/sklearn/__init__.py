@@ -20,6 +20,9 @@ try:
 except ModuleNotFoundError as e:
     if e.name == 'neptune_sklearn':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-        raise NeptuneIntegrationNotInstalledException("sklearn") from None
+        raise NeptuneIntegrationNotInstalledException(
+            integration_package_name="neptune-sklearn",
+            framework_name="sklearn"
+        ) from None
     else:
         raise

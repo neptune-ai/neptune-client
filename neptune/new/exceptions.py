@@ -659,16 +659,16 @@ You may also want to check the following docs pages:
 
 
 class NeptuneIntegrationNotInstalledException(NeptuneException):
-    def __init__(self, framework):
+    def __init__(self, integration_package_name, framework_name):
         message = """
 {h1}     
 ----NeptuneIntegrationNotInstalledException-----------------------------------------
 {end}
-Looks like integration neptune-{framework} wasn't installed.
+Looks like integration {integration_package_name} wasn't installed.
 To install run:
-    {bash}pip install neptune-{framework}{end}
+    {bash}pip install {integration_package_name}{end}
 Or:
-    {bash}pip install neptune-client[{framework}]{end}
+    {bash}pip install neptune-client[{framework_name}]{end}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/integrations-and-supported-tools/intro
@@ -676,7 +676,8 @@ You may also want to check the following docs pages:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(
-            framework=framework,
+            integration_package_name=integration_package_name,
+            framework_name=framework_name,
             **STYLES
         ))
 

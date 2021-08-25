@@ -20,6 +20,9 @@ try:
 except ModuleNotFoundError as e:
     if e.name == 'kedro_neptune':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-        raise NeptuneIntegrationNotInstalledException("kedro") from None
+        raise NeptuneIntegrationNotInstalledException(
+            integration_package_name="kedro-neptune",
+            framework_name="kedro"
+        ) from None
     else:
         raise
