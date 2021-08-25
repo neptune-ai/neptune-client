@@ -1,3 +1,8 @@
+## neptune-client 0.10.7 [UNRELEASED]
+
+### Fixes
+- Fixed url building in Windows ([#672](https://github.com/neptune-ai/neptune-client/pull/672))
+
 ## neptune-client 0.10.6
 
 ### Fixes
