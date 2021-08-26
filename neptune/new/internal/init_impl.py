@@ -110,6 +110,7 @@ def init(project: Optional[str] = None,
          monitoring_namespace: Optional[str] = None,
          flush_period: float = 5,
          proxies: Optional[dict] = None,
+         capture_traceback: bool = True,
          **kwargs) -> Run:
     """Starts a new tracked run, and append it to the top of the Runs table view.
 
@@ -157,6 +158,9 @@ def init(project: Optional[str] = None,
         proxies (dict of str, optional): Argument passed to HTTP calls made via the Requests library.
             For more information see
             `their proxies section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
+        capture_traceback (bool, optional):  Whether to send run’s traceback in case of an exception.
+            Defaults to `True`.
+            Tracked metadata will be stored inside `monitoring/traceback`.
 
     Returns:
         ``Run``: object that is used to manage the tracked run and log metadata to it.
@@ -217,6 +221,7 @@ def init(project: Optional[str] = None,
     verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
+    verify_type("capture_traceback", capture_hardware_metrics, bool)
     if tags is not None:
         if isinstance(tags, str):
             tags = [tags]
@@ -321,7 +326,8 @@ def init(project: Optional[str] = None,
         websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
         if websockets_factory:
             background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
-        background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
+        if capture_traceback:
+            background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
         background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs),

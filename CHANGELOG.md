@@ -1,4 +1,9 @@
-## neptune-client 0.10.7 [UNRELEASED]
+## neptune-client 0.10.8 [UNRELEASED]
+
+### Features
+- Added capture_traceback in neptune.init() ([#672](https://github.com/neptune-ai/neptune-client/pull/672))
+
+## neptune-client 0.10.7
 
 ### Fixes
 - Fixed url building in Windows ([#672](https://github.com/neptune-ai/neptune-client/pull/672))
