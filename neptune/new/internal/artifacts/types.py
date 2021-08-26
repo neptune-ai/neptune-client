@@ -34,7 +34,6 @@ class ArtifactMetadataSerializer:
 
     @staticmethod
     def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
-        print('TEST', metadata)
         return {
             f'{key_value.get("key")}': f'{key_value.get("value")}'
             for key_value in metadata

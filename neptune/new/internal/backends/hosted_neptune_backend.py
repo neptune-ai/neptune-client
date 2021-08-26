@@ -682,7 +682,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             result = self.artifacts_client.api.listArtifactFiles(**params).response().result
-            print(result)
             return [
                 ArtifactFileData.from_dto(a) for a in result.files
             ]
