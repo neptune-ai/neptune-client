@@ -1,4 +1,9 @@
-## neptune-client 0.10.7 [UNRELEASED]
+## neptune-client 0.10.8 [UNRELEASED]
+
+### Features
+- Added psutil as a base requirement ([#675](https://github.com/neptune-ai/neptune-client/pull/675))
+
+## neptune-client 0.10.7
 
 ### Fixes
 - Fixed url building in Windows ([#672](https://github.com/neptune-ai/neptune-client/pull/672))
