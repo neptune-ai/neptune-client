@@ -69,7 +69,7 @@ class S3ArtifactDriver(ArtifactDriver):
                 if prefix == remote_object.key:
                     prefix = str(pathlib.Path(prefix).parent)
 
-                remote_key = remote_object.key.lstrip('/')
+                remote_key = remote_object.key
                 destination = pathlib.Path(destination or '')
                 relative_file_path = remote_key[len(prefix.lstrip('.')):].lstrip("/")
 
@@ -82,7 +82,7 @@ class S3ArtifactDriver(ArtifactDriver):
                         type=ArtifactFileType.S3.value,
                         size=remote_object.size,
                         metadata=cls._serialize_metadata({
-                            "location": f's3://{bucket_name}/{remote_key}',
+                            "location": f's3://{bucket_name}/{remote_key.lstrip("/")}',
                             "last_modified": remote_object.last_modified,
                         })
                     )
