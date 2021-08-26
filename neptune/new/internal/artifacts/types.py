@@ -22,6 +22,7 @@ from dataclasses import dataclass
 
 from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
 
+
 class ArtifactFileType(enum.Enum):
     S3 = "S3"
     LOCAL = "Local"
