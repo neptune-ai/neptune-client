@@ -13,7 +13,7 @@ def main():
         setup(
             name='neptune-client',
             python_requires='>=3.6.0',
-            version=versioneer.get_version(),
+            version='0.10.8',
             description='Neptune Client',
             author='neptune.ai',
             author_email='contact@neptune.ai',
