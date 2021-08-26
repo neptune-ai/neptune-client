@@ -1,7 +1,7 @@
 ## neptune-client 0.10.8 [UNRELEASED]
 
 ### Features
-- Added capture_traceback in neptune.init() ([#672](https://github.com/neptune-ai/neptune-client/pull/672))
+- Added capture_traceback in neptune.init() ([#676](https://github.com/neptune-ai/neptune-client/pull/676))
 
 ## neptune-client 0.10.7
 
