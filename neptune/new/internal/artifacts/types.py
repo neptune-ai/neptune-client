@@ -28,6 +28,19 @@ class ArtifactFileType(enum.Enum):
     LOCAL = "Local"
 
 
+class ArtifactMetadataSerializer:
+    @staticmethod
+    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Dict[str, str]]:
+        return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
+
+    @staticmethod
+    def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
+        return {
+            f'{key_value.get("key")}': f'{key_value.get("value")}'
+            for key_value in metadata
+        }
+
+
 @dataclass
 class ArtifactFileData:
     file_path: str
@@ -43,9 +56,12 @@ class ArtifactFileData:
             file_hash=artifact_file_dto.fileHash,
             type=artifact_file_dto.type,
             size=artifact_file_dto.size,
-            metadata=ArtifactMetadataSerializer.deserialize([
-                (m.key, m.value) for m in artifact_file_dto.metadata
-            ])
+            metadata=ArtifactMetadataSerializer.deserialize(
+                [
+                    {'key': str(m.key), 'value': str(m.value)}
+                    for m in artifact_file_dto.metadata
+                ]
+            )
         )
 
     def to_dto(self) -> typing.Dict:
@@ -55,19 +71,6 @@ class ArtifactFileData:
             'type': self.type,
             'size': self.size,
             'metadata': ArtifactMetadataSerializer.serialize(self.metadata)
-        }
-
-
-class ArtifactMetadataSerializer:
-    @staticmethod
-    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Dict[str, str]]:
-        return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
-
-    @staticmethod
-    def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
-        return {
-            f'{key_value.get("key")}': f'{key_value.get("value")}'
-            for key_value in metadata
         }
 
 

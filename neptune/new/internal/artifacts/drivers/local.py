@@ -87,13 +87,15 @@ class LocalArtifactDriver(ArtifactDriver):
 
     @classmethod
     def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
-        file_path_str = file_definition.file_path
-        file_path = pathlib.Path(file_path_str)
-        if not file_path.is_file():
+        absolute_path = pathlib.Path(urlparse(file_definition.metadata.get("file_path")).path)
+
+        if not absolute_path.is_file():
             raise NeptuneLocalStorageAccessException(
-                path=file_path_str,
+                path=absolute_path,
                 expected_description="an existing file"
             )
 
         os.makedirs(str(destination.parent), exist_ok=True)
-        destination.symlink_to(file_path)
+        if destination.exists():
+            os.remove(destination)
+        destination.symlink_to(absolute_path)

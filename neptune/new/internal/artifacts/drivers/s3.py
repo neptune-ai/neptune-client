@@ -56,7 +56,7 @@ class S3ArtifactDriver(ArtifactDriver):
     @classmethod
     def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         url = urlparse(path)
-        bucket_name, prefix = url.netloc, url.path
+        bucket_name, prefix = url.netloc, url.path.lstrip('/')
 
         # pylint: disable=no-member
         remote_storage = boto3.resource('s3').Bucket(bucket_name)
@@ -69,8 +69,11 @@ class S3ArtifactDriver(ArtifactDriver):
                 if prefix == remote_object.key:
                     prefix = str(pathlib.Path(prefix).parent)
 
-                file_path = pathlib.Path(destination or '') / pathlib.Path(remote_object.key[len(prefix):])
-                remote_key = remote_object.key.lstrip('/')
+                remote_key = remote_object.key
+                destination = pathlib.Path(destination or '')
+                relative_file_path = remote_key[len(prefix.lstrip('.')):].lstrip("/")
+
+                file_path = destination / relative_file_path
 
                 stored_files.append(
                     ArtifactFileData(
@@ -79,7 +82,7 @@ class S3ArtifactDriver(ArtifactDriver):
                         type=ArtifactFileType.S3.value,
                         size=remote_object.size,
                         metadata=cls._serialize_metadata({
-                            "location": f's3://{bucket_name}/{remote_key}',
+                            "location": f's3://{bucket_name}/{remote_key.lstrip("/")}',
                             "last_modified": remote_object.last_modified,
                         })
                     )
@@ -96,7 +99,7 @@ class S3ArtifactDriver(ArtifactDriver):
     def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
         location = file_definition.metadata.get('location')
         url = urlparse(location)
-        bucket_name, path = url.netloc, url.path
+        bucket_name, path = url.netloc, url.path.lstrip('/')
 
         remote_storage = boto3.resource('s3')
         try:

@@ -70,7 +70,7 @@ class FileHasher:
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
             artifact_hash.update(artifact_file.file_hash.encode(cls.ENCODING))
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
-            if artifact_file.size:
+            if artifact_file.size is not None:
                 artifact_hash.update(cls._number_to_bytes(artifact_file.size, cls.SERVER_LONG_BYTES))
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
             artifact_hash.update(cls._number_to_bytes(len(artifact_file.type), cls.SERVER_INT_BYTES))
