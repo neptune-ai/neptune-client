@@ -133,7 +133,6 @@ def verify_client_version(client_config: ClientConfig, version: Version):
     # Fix for failing in E2E when installing development version with pip and Github
     if str(version) == '0+unknown':
         return
-    
     version_with_patch_0 = Version(replace_patch_version(str(version)))
     if client_config.min_compatible_version and client_config.min_compatible_version > version:
         raise UnsupportedClientVersion(version, min_version=client_config.min_compatible_version)
