@@ -71,10 +71,12 @@ class TestLocalArtifactDrivers(unittest.TestCase):
     def test_file_download(self):
         path = (self.test_dir / 'data/file1.txt').as_posix()
         artifact_file = ArtifactFileData(
-            file_path=path,
+            file_path='data/file1.txt',
             file_hash='??',
             type='??',
-            metadata={}
+            metadata={
+                "file_path": path
+            }
         )
 
         with tempfile.TemporaryDirectory() as temporary:
@@ -94,7 +96,9 @@ class TestLocalArtifactDrivers(unittest.TestCase):
             file_path=path,
             file_hash='??',
             type='??',
-            metadata={}
+            metadata={
+                'file_path': path
+            }
         )
 
         with self.assertRaises(NeptuneLocalStorageAccessException), tempfile.TemporaryDirectory() as temporary:

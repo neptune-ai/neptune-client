@@ -36,9 +36,9 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         self.s3.create_bucket(Bucket=self.bucket_name)
         self.update_time = datetime.datetime(2021, 5, 23, 3, 55, 26)
         with freezegun.freeze_time(self.update_time):
-            self.s3.put_object(Bucket=self.bucket_name, Key='/path/to/file1', Body=b'\xde\xad\xbe\xef')
-            self.s3.put_object(Bucket=self.bucket_name, Key='/path/to/file2', Body=b'\x20')
-            self.s3.put_object(Bucket=self.bucket_name, Key='/path/file3', Body=b'\x21')
+            self.s3.put_object(Bucket=self.bucket_name, Key='path/to/file1', Body=b'\xde\xad\xbe\xef')
+            self.s3.put_object(Bucket=self.bucket_name, Key='path/to/file2', Body=b'\x20')
+            self.s3.put_object(Bucket=self.bucket_name, Key='path/file3', Body=b'\x21')
 
     def test_match_by_path(self):
         self.assertEqual(
