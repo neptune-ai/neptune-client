@@ -57,7 +57,10 @@ class ArtifactFileData:
             type=artifact_file_dto.type,
             size=artifact_file_dto.size,
             metadata=ArtifactMetadataSerializer.deserialize(
-                list(map(lambda m: {'key': str(m.key), 'value': str(m.value)}, artifact_file_dto.metadata))
+                [
+                    {'key': str(m.key), 'value': str(m.value)}
+                    for m in artifact_file_dto.metadata
+                ]
             )
         )
 
