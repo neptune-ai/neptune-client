@@ -396,8 +396,8 @@ class Run(AbstractContextManager):
             if old_attr:
                 raise MetadataInconsistency("Attribute or namespace {} is already defined".format(path))
             attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
-            attr.assign(value, wait)
             self._structure.set(parsed_path, attr)
+            attr.assign(value, wait)
             return attr
 
     def get_attribute(self, path: str) -> Optional[Attribute]:
@@ -450,8 +450,8 @@ class Run(AbstractContextManager):
         if isinstance(attribute, NamespaceAttr):
             self._pop_namespace(attribute, wait)
         else:
-            self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
             self._structure.pop(parsed_path)
+            self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
 
     def _pop_namespace(self, namespace: NamespaceAttr, wait: bool):
         children = list(namespace)
