@@ -95,8 +95,7 @@ from neptune.new.internal.backends.utils import (
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     Operation,
-    TrackFilesToExistingArtifact,
-    TrackFilesToNewArtifact,
+    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -383,10 +382,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                     (UploadFile, UploadFileContent, UploadFileSet)
             ):
                 upload_operations.append(op)
-            elif isinstance(
-                    op,
-                    (TrackFilesToNewArtifact, TrackFilesToExistingArtifact,)
-            ):
+            elif isinstance(op, TrackFilesToArtifact):
                 artifact_operations.append(op)
             else:
                 other_operations.append(op)
@@ -399,6 +395,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
 
         artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
+            run_uuid=run_uuid,
             artifact_operations=artifact_operations
         )
 
@@ -462,14 +459,20 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def _execute_artifact_operations(
             self,
-            artifact_operations: List[Operation]
+            run_uuid: uuid.UUID,
+            artifact_operations: List[TrackFilesToArtifact]
     ) -> Tuple[List[Optional[NeptuneException]], List[Optional[Operation]]]:
         errors = list()
         assign_operations = list()
 
         for op in artifact_operations:
-            if isinstance(op, TrackFilesToNewArtifact):
-                try:
+            try:
+                artifact_hash = self.get_artifact_attribute(run_uuid, op.path).hash
+            except FetchAttributeNotFoundException:
+                artifact_hash = None
+
+            try:
+                if artifact_hash is None:
                     assign_operation = track_to_new_artifact(
                         swagger_client=self.artifacts_client,
                         project_uuid=op.project_uuid,
@@ -477,28 +480,20 @@ class HostedNeptuneBackend(NeptuneBackend):
                         entries=op.entries,
                         default_request_params=self.DEFAULT_REQUEST_KWARGS
                     )
-
-                    if assign_operation:
-                        assign_operations.append(assign_operation)
-                except NeptuneException as error:
-                    errors.append(error)
-            elif isinstance(op, TrackFilesToExistingArtifact):
-                try:
+                else:
                     assign_operation = track_to_existing_artifact(
                         swagger_client=self.artifacts_client,
                         project_uuid=op.project_uuid,
                         path=op.path,
-                        artifact_hash=op.artifact_hash,
+                        artifact_hash=artifact_hash,
                         entries=op.entries,
                         default_request_params=self.DEFAULT_REQUEST_KWARGS
                     )
 
-                    if assign_operation:
-                        assign_operations.append(assign_operation)
-                except NeptuneException as error:
-                    errors.append(error)
-            else:
-                raise InternalClientError("Unsupported artifact operation")
+                if assign_operation:
+                    assign_operations.append(assign_operation)
+            except NeptuneException as error:
+                errors.append(error)
 
         return errors, assign_operations
 

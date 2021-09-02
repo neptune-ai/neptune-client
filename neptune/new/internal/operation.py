@@ -470,12 +470,12 @@ class DeleteAttribute(Operation):
 
 
 @dataclass
-class TrackFilesToNewArtifact(Operation):
+class TrackFilesToArtifact(Operation):
     project_uuid: uuid.UUID
     entries: List[Tuple[str, Optional[str]]]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
-        return visitor.visit_track_files_to_new_artifact(self)
+        return visitor.visit_track_files_to_artifact(self)
 
     def to_dict(self) -> dict:
         ret = super().to_dict()
@@ -484,36 +484,10 @@ class TrackFilesToNewArtifact(Operation):
         return ret
 
     @staticmethod
-    def from_dict(data: dict) -> 'TrackFilesToNewArtifact':
-        return TrackFilesToNewArtifact(
+    def from_dict(data: dict) -> 'TrackFilesToArtifact':
+        return TrackFilesToArtifact(
             path=data["path"],
             project_uuid=uuid.UUID(data["project_uuid"]),
-            entries=list(map(tuple, data["entries"]))
-        )
-
-
-@dataclass
-class TrackFilesToExistingArtifact(Operation):
-    project_uuid: uuid.UUID
-    artifact_hash: str
-    entries: List[Tuple[str, Optional[str]]]
-
-    def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
-        return visitor.visit_track_files_to_existing_artifact(self)
-
-    def to_dict(self) -> dict:
-        ret = super().to_dict()
-        ret["entries"] = self.entries
-        ret["artifact_hash"] = self.artifact_hash
-        ret["project_uuid"] = str(self.project_uuid)
-        return ret
-
-    @staticmethod
-    def from_dict(data: dict) -> 'TrackFilesToExistingArtifact':
-        return TrackFilesToExistingArtifact(
-            path=data["path"],
-            project_uuid=uuid.UUID(data["project_uuid"]),
-            artifact_hash=data["artifact_hash"],
             entries=list(map(tuple, data["entries"]))
         )
 

@@ -16,20 +16,20 @@
 import socket
 import unittest
 import uuid
-
 from unittest.mock import call
+
+from bravado.exception import HTTPNotFound
 from mock import MagicMock, patch
 from packaging.version import Version
 
-from neptune.new.exceptions import CannotResolveHostname, UnsupportedClientVersion, FileUploadError, \
-    MetadataInconsistency
+from neptune.new.exceptions import CannotResolveHostname, FileUploadError, MetadataInconsistency, \
+    UnsupportedClientVersion
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     AssignString,
     LogFloats,
-    TrackFilesToExistingArtifact,
-    TrackFilesToNewArtifact,
+    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent
 )
@@ -196,7 +196,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         ], any_order=True)
 
     @patch('neptune.new.internal.backends.hosted_neptune_backend.track_to_new_artifact')
-    def test_track_to_new_artifact(self, track_artifact_mock, swagger_client_factory):
+    def test_track_to_new_artifact(self, track_to_new_artifact_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
@@ -205,29 +205,29 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations().response().result = [response_error]
-        swagger_client.api.executeOperations.reset_mock()
+        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
+        swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(response=MagicMock())
 
         # when
         backend.execute_operations(
             run_uuid=exp_uuid,
             operations=[
-                TrackFilesToNewArtifact(
+                TrackFilesToArtifact(
                     path=['sub', 'one'],
                     project_uuid=project_uuid,
                     entries=[('/path/to/file', '/path/to')]
                 ),
-                TrackFilesToNewArtifact(
+                TrackFilesToArtifact(
                     path=['sub', 'two'],
                     project_uuid=project_uuid,
                     entries=[('/path/to/file1', None), ('/path/to/file2', None)]
                 ),
-                TrackFilesToNewArtifact(
+                TrackFilesToArtifact(
                     path=['sub', 'three'],
                     project_uuid=project_uuid,
                     entries=[('/path/to/file1', None)]
                 ),
-                TrackFilesToNewArtifact(
+                TrackFilesToArtifact(
                     path=['sub', 'three'],
                     project_uuid=project_uuid,
                     entries=[('/path/to/file2', None)]
@@ -236,7 +236,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
 
         # then
-        track_artifact_mock.assert_has_calls([
+        track_to_new_artifact_mock.assert_has_calls([
             call(swagger_client=swagger_client,
                  project_uuid=project_uuid,
                  path=["sub", "one"],
@@ -255,7 +255,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         ], any_order=True)
 
     @patch('neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact')
-    def test_track_to_existing_artifact(self, track_artifact_mock, swagger_client_factory):
+    def test_track_to_existing_artifact(self, track_to_existing_artifact_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
@@ -264,58 +264,54 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations().response().result = [response_error]
-        swagger_client.api.executeOperations.reset_mock()
+        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
+        swagger_client.api.getArtifactAttribute.return_value.response.return_value.result.hash = 'dummyHash'
 
         # when
         backend.execute_operations(
             run_uuid=exp_uuid,
             operations=[
-                TrackFilesToExistingArtifact(
+                TrackFilesToArtifact(
                     path=['sub', 'one'],
                     project_uuid=project_uuid,
-                    artifact_hash='abcdef',
                     entries=[('/path/to/file', '/path/to')]
                 ),
-                TrackFilesToExistingArtifact(
+                TrackFilesToArtifact(
                     path=['sub', 'two'],
                     project_uuid=project_uuid,
-                    artifact_hash='abcdef',
                     entries=[('/path/to/file1', None), ('/path/to/file2', None)]
                 ),
-                TrackFilesToExistingArtifact(
+                TrackFilesToArtifact(
                     path=['sub', 'three'],
                     project_uuid=project_uuid,
-                    artifact_hash='abcdef',
                     entries=[('/path/to/file1', None)]
                 ),
-                TrackFilesToExistingArtifact(
+                TrackFilesToArtifact(
                     path=['sub', 'three'],
                     project_uuid=project_uuid,
-                    artifact_hash='abcdef',
                     entries=[('/path/to/file2', None)]
                 )
             ]
         )
 
         # then
-        track_artifact_mock.assert_has_calls([
+        track_to_existing_artifact_mock.assert_has_calls([
             call(swagger_client=swagger_client,
                  project_uuid=project_uuid,
                  path=["sub", "one"],
-                 artifact_hash='abcdef',
+                 artifact_hash='dummyHash',
                  entries=[("/path/to/file", '/path/to')],
                  default_request_params=backend.DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
                  project_uuid=project_uuid,
                  path=["sub", "two"],
-                 artifact_hash='abcdef',
+                 artifact_hash='dummyHash',
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
                  default_request_params=backend.DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
                  project_uuid=project_uuid,
                  path=["sub", "three"],
-                 artifact_hash='abcdef',
+                 artifact_hash='dummyHash',
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
                  default_request_params=backend.DEFAULT_REQUEST_KWARGS),
         ], any_order=True)
