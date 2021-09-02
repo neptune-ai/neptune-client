@@ -16,9 +16,9 @@
 import json
 import logging
 import os
+import threading
 from glob import glob
 from pathlib import Path
-from threading import Event
 from typing import TypeVar, List, Callable, Optional, Tuple
 
 from neptune.new.exceptions import MalformedOperation
@@ -40,6 +40,7 @@ class DiskQueue(StorageQueue[T]):
             dir_path: Path,
             to_dict: Callable[[T], dict],
             from_dict: Callable[[dict], T],
+            lock: threading.RLock,
             max_file_size: int = 64 * 1024**2):
         self._dir_path = dir_path.resolve()
         self._to_dict = to_dict
@@ -60,15 +61,10 @@ class DiskQueue(StorageQueue[T]):
         self._file_size = 0
         self._should_skip_to_ack = True
 
-        self._event_empty = Event()
-        if self.is_empty():
-            self._event_empty.set()
-        else:
-            self._event_empty.clear()
+        self._empty_cond = threading.Condition(lock)
 
     def put(self, obj: T) -> int:
         version = self._last_put_file.read_local() + 1
-        self._event_empty.clear()
         _json = json.dumps(self._serialize(obj, version))
         if self._file_size + len(_json) > self._max_file_size:
             self._writer.flush()
@@ -141,20 +137,26 @@ class DiskQueue(StorageQueue[T]):
         self._last_ack_file.close()
         self._last_put_file.close()
 
-    def wait_for_empty(self, seconds: Optional[float] = None) -> None:
-        self._event_empty.wait(seconds)
+    def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
+        with self._empty_cond:
+            return self._empty_cond.wait_for(self.is_empty, timeout=seconds)
 
     def ack(self, version: int) -> None:
         self._last_ack_file.write(version)
-        if self.is_empty():
-            self._event_empty.set()
 
         log_versions = self._get_all_log_file_versions()
         for i in range(0, len(log_versions) - 1):
             if log_versions[i + 1] <= version:
-                os.remove(self._get_log_file(log_versions[i]))
+                try:
+                    os.remove(self._get_log_file(log_versions[i]))
+                except Exception:
+                    _logger.exception("Cannot remove file")
             else:
                 break
+
+        with self._empty_cond:
+            if self.is_empty():
+                self._empty_cond.notifyAll()
 
     def is_empty(self) -> bool:
         return self.size() == 0

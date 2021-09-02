@@ -16,8 +16,8 @@
 import logging
 import os
 import sys
+import threading
 import uuid
-from threading import Event
 from time import time, monotonic
 from typing import Optional, List
 
@@ -42,6 +42,7 @@ class AsyncOperationProcessor(OperationProcessor):
                  run_uuid: uuid.UUID,
                  queue: StorageQueue[Operation],
                  backend: NeptuneBackend,
+                 lock: threading.RLock,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
         self._run_uuid = run_uuid
@@ -50,10 +51,11 @@ class AsyncOperationProcessor(OperationProcessor):
         self._batch_size = batch_size
         self._last_version = 0
         self._consumed_version = 0
-        self._waiting_for_version = 0
-        self._waiting_event = Event()
         self._consumer = self.ConsumerThread(self, sleep_time, batch_size)
         self._drop_operations = False
+
+        # Caller is responsible for taking this lock
+        self._waiting_cond = threading.Condition(lock=lock)
 
         if sys.version_info >= (3, 7):
             try:
@@ -76,13 +78,9 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def wait(self):
         self.flush()
-        self._waiting_for_version = self._last_version
-        if self._consumed_version >= self._waiting_for_version:
-            self._waiting_for_version = 0
-            return
+        waiting_for_version = self._last_version
         self._consumer.wake_up()
-        self._waiting_event.wait()
-        self._waiting_event.clear()
+        self._waiting_cond.wait_for(lambda: self._consumed_version >= waiting_for_version)
 
     def flush(self):
         self._queue.flush()
@@ -189,12 +187,12 @@ class AsyncOperationProcessor(OperationProcessor):
         def process_batch(self, batch: List[Operation], version: int) -> None:
             # TODO: Handle Metadata errors
             result = self._processor._backend.execute_operations(self._processor._run_uuid, batch)
-            self._processor._queue.ack(version)
-            for error in result:
-                _logger.error("Error occurred during asynchronous operation processing: %s", error)
 
-            self._processor._consumed_version = version
-            if self._processor._waiting_for_version > 0:
-                if self._processor._consumed_version >= self._processor._waiting_for_version:
-                    self._processor._waiting_for_version = 0
-                    self._processor._waiting_event.set()
+            with self._processor._waiting_cond:
+                self._processor._queue.ack(version)
+
+                for error in result:
+                    _logger.error("Error occurred during asynchronous operation processing: %s", error)
+
+                self._processor._consumed_version = version
+                self._processor._waiting_cond.notify_all()
