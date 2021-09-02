@@ -134,6 +134,7 @@ class Run(AbstractContextManager):
             backend: NeptuneBackend,
             op_processor: OperationProcessor,
             background_job: BackgroundJob,
+            lock: threading.RLock,
             workspace: str,
             project_name: str,
             short_id: str,
@@ -144,7 +145,7 @@ class Run(AbstractContextManager):
         self._op_processor = op_processor
         self._bg_job = background_job
         self._structure: RunStructure[Attribute, NamespaceAttr] = RunStructure(NamespaceBuilder(self))
-        self._lock = threading.RLock()
+        self._lock = lock
         self._state = RunState.CREATED
         self._workspace = workspace
         self._project_name = project_name

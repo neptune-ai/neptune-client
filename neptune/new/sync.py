@@ -18,6 +18,7 @@ import logging
 import os
 import sys
 import textwrap
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -112,7 +113,7 @@ def is_run_synced(run_path: Path) -> bool:
 
 
 def is_execution_synced(execution_path: Path) -> bool:
-    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict)
+    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock())
     return disk_queue.is_empty()
 
 
@@ -214,7 +215,7 @@ def sync_run(run_path: Path, qualified_run_name: str) -> None:
 
 
 def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
-    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict)
+    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock())
     while True:
         batch, version = disk_queue.get_batch(1000)
         if not batch:
