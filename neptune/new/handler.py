@@ -439,14 +439,14 @@ class Handler:
 
             if not attr:
                 attr = Artifact(self._run, parse_path(self._path))
-                attr.track_files_to_new(
+                attr.track_files(
                     project_uuid=self._run._project_uuid,  # pylint: disable=protected-access
                     source_location=path,
                     destination=destination,
                     wait=wait
                 )
             else:
-                attr.track_files_to_existing(
+                attr.track_files(
                     project_uuid=self._run._project_uuid,  # pylint: disable=protected-access
                     source_location=path,
                     destination=destination,

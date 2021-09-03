@@ -242,7 +242,8 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
 
-    def _artifact_log_modifier(self, ops: List[TrackFilesToArtifact],
+    @staticmethod
+    def _artifact_log_modifier(ops: List[TrackFilesToArtifact],
                                new_op: TrackFilesToArtifact) -> List[TrackFilesToArtifact]:
         if len(ops) == 0:
             return [new_op]
