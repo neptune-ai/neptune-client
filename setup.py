@@ -4,6 +4,12 @@ from setuptools import find_packages, setup
 
 import versioneer
 
+with open(
+        os.path.join(os.path.abspath(os.path.dirname(__file__)), 'README.md'),
+        encoding='utf-8'
+) as handler:
+    long_description = handler.read()
+
 
 def main():
     root_dir = os.path.dirname(__file__)
@@ -23,12 +29,14 @@ def main():
                 'Source': 'https://github.com/neptune-ai/neptune-client',
                 'Documentation': 'https://docs.neptune.ai/',
             },
-            long_description='Neptune Client',
+            long_description=long_description,
+            long_description_content_type='text/markdown',
             license='Apache License 2.0',
             install_requires=requirements,
             packages=find_packages(),
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
+              "kedro": ["kedro-neptune"],
               "fastai": ["neptune-fastai"],
               "lightgbm": ["neptune-lightgbm"],
               "optuna": ["neptune-optuna"],

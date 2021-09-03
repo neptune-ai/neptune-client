@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
+import logging
+import warnings
 from typing import Optional
 
 from neptune.new.types.atoms import GitRef
@@ -22,12 +23,22 @@ from neptune.new.types.atoms import GitRef
 _logger = logging.getLogger(__name__)
 
 
+def get_git_repo(repo_path):
+    # WARN: GitPython asserts the existence of `git` executable
+    # which consists in failure during the preparation of conda package
+    try:
+        # pylint:disable=import-outside-toplevel
+        import git
+        return git.Repo(repo_path, search_parent_directories=True)
+    except ImportError:
+        warnings.warn("GitPython could not be initialized")
+
+
 def get_git_info(repo_path=None):
     try:
-        # pylint:disable=bad-option-value,import-outside-toplevel
-        import git
+        # pylint:disable=bad-option-value
 
-        repo = git.Repo(repo_path, search_parent_directories=True)
+        repo = get_git_repo(repo_path)
 
         commit = repo.head.commit
 
@@ -55,10 +66,25 @@ def get_git_info(repo_path=None):
         return None
 
 
+def get_git_repo_path(initial_path: str) -> Optional[str]:
+    try:
+        return get_git_repo(initial_path).git_dir
+    except:  # pylint: disable=bare-except
+        pass
+
+
 def discover_git_repo_location() -> Optional[str]:
+    git_path = None
+
     # pylint:disable=bad-option-value,import-outside-toplevel
     import __main__
 
     if hasattr(__main__, '__file__'):
-        return os.path.dirname(os.path.abspath(__main__.__file__))
-    return None
+        git_path = get_git_repo_path(
+            initial_path=os.path.dirname(os.path.abspath(__main__.__file__))
+        )
+
+    if not git_path:
+        git_path = get_git_repo_path(initial_path=os.getcwd())
+
+    return git_path

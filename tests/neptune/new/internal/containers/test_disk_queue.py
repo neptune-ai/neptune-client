@@ -15,6 +15,7 @@
 #
 
 import random
+import threading
 import unittest
 from glob import glob
 from pathlib import Path
@@ -37,7 +38,11 @@ class TestDiskQueue(unittest.TestCase):
 
     def test_put(self):
         with TemporaryDirectory() as dirpath:
-            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer)
+            queue = DiskQueue[TestDiskQueue.Obj](
+                Path(dirpath),
+                self._serializer,
+                self._deserializer,
+                threading.RLock())
             obj = TestDiskQueue.Obj(5, "test")
             queue.put(obj)
             queue.flush()
@@ -46,7 +51,12 @@ class TestDiskQueue(unittest.TestCase):
 
     def test_multiple_files(self):
         with TemporaryDirectory() as dirpath:
-            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=300)
+            queue = DiskQueue[TestDiskQueue.Obj](
+                Path(dirpath),
+                self._serializer,
+                self._deserializer,
+                threading.RLock(),
+                max_file_size=300)
             for i in range(1, 101):
                 obj = TestDiskQueue.Obj(i, str(i))
                 queue.put(obj)
@@ -60,7 +70,12 @@ class TestDiskQueue(unittest.TestCase):
 
     def test_get_batch(self):
         with TemporaryDirectory() as dirpath:
-            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=100)
+            queue = DiskQueue[TestDiskQueue.Obj](
+                Path(dirpath),
+                self._serializer,
+                self._deserializer,
+                threading.RLock(),
+                max_file_size=100)
             for i in range(1, 91):
                 obj = TestDiskQueue.Obj(i, str(i))
                 queue.put(obj)
@@ -73,7 +88,12 @@ class TestDiskQueue(unittest.TestCase):
 
     def test_resuming_queue(self):
         with TemporaryDirectory() as dirpath:
-            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=999)
+            queue = DiskQueue[TestDiskQueue.Obj](
+                Path(dirpath),
+                self._serializer,
+                self._deserializer,
+                threading.RLock(),
+                max_file_size=999)
             for i in range(1, 501):
                 obj = TestDiskQueue.Obj(i, str(i))
                 queue.put(obj)
@@ -90,7 +110,12 @@ class TestDiskQueue(unittest.TestCase):
             self.assertTrue(len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1)
             queue.close()
 
-            queue = DiskQueue[TestDiskQueue.Obj](Path(dirpath), self._serializer, self._deserializer, max_file_size=200)
+            queue = DiskQueue[TestDiskQueue.Obj](
+                Path(dirpath),
+                self._serializer,
+                self._deserializer,
+                threading.RLock(),
+                max_file_size=200)
             for i in range(version_to_ack + 1, 501):
                 self.assertEqual(queue.get(), (TestDiskQueue.Obj(i, str(i)), i))
 

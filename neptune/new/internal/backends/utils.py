@@ -21,7 +21,7 @@ import sys
 import time
 from typing import Optional, Dict
 
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 import click
 import requests
@@ -133,6 +133,7 @@ def verify_client_version(client_config: ClientConfig, version: Version):
     # Fix for failing in E2E when installing development version with pip and Github
     if str(version) == '0+unknown':
         return
+
     version_with_patch_0 = Version(replace_patch_version(str(version)))
     if client_config.min_compatible_version and client_config.min_compatible_version > version:
         raise UnsupportedClientVersion(version, min_version=client_config.min_compatible_version)
@@ -151,3 +152,10 @@ def update_session_proxies(session: Session, proxies: Optional[Dict[str, str]]):
             session.proxies.update(proxies)
         except (TypeError, ValueError):
             raise ValueError("Wrong proxies format: {}".format(proxies))
+
+
+def build_operation_url(base_api: str, operation_url: str) -> str:
+    if '://' not in base_api:
+        base_api = f'https://{base_api}'
+
+    return urljoin(base=base_api, url=operation_url)

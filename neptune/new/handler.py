@@ -144,10 +144,8 @@ class Handler:
             attr = self._run.get_attribute(self._path)
             if not attr:
                 attr = File(self._run, parse_path(self._path))
-                attr.upload(value, wait)
                 self._run.set_attribute(self._path, attr)
-            else:
-                attr.upload(value, wait)
+            attr.upload(value, wait)
 
     def upload_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         if is_collection(value):
@@ -159,10 +157,8 @@ class Handler:
             attr = self._run.get_attribute(self._path)
             if not attr:
                 attr = FileSet(self._run, parse_path(self._path))
-                attr.upload_files(value, wait)
                 self._run.set_attribute(self._path, attr)
-            else:
-                attr.upload_files(value, wait)
+            attr.upload_files(value, wait)
 
     def log(self,
             value,
@@ -221,10 +217,8 @@ class Handler:
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))
 
-                attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
                 self._run.set_attribute(self._path, attr)
-            else:
-                attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
+            attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Adds the provided tag or tags to the run's tags.
@@ -247,10 +241,8 @@ class Handler:
             attr = self._run.get_attribute(self._path)
             if not attr:
                 attr = StringSet(self._run, parse_path(self._path))
-                attr.add(values, wait)
                 self._run.set_attribute(self._path, attr)
-            else:
-                attr.add(values, wait)
+            attr.add(values, wait)
 
     def pop(self, path: str = None, wait: bool = False) -> None:
         if path:

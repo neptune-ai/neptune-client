@@ -134,6 +134,7 @@ class Run(AbstractContextManager):
             backend: NeptuneBackend,
             op_processor: OperationProcessor,
             background_job: BackgroundJob,
+            lock: threading.RLock,
             workspace: str,
             project_name: str,
             short_id: str,
@@ -146,7 +147,7 @@ class Run(AbstractContextManager):
         self._op_processor = op_processor
         self._bg_job = background_job
         self._structure: RunStructure[Attribute, NamespaceAttr] = RunStructure(NamespaceBuilder(self))
-        self._lock = threading.RLock()
+        self._lock = lock
         self._state = RunState.CREATED
         self._workspace = workspace
         self._project_name = project_name
@@ -156,7 +157,8 @@ class Run(AbstractContextManager):
         Run.last_run = self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        traceback.print_exception(exc_type, exc_val, exc_tb)
+        if exc_tb is not None:
+            traceback.print_exception(exc_type, exc_val, exc_tb)
         self.stop()
 
     def __getattr__(self, item):
@@ -397,8 +399,8 @@ class Run(AbstractContextManager):
             if old_attr:
                 raise MetadataInconsistency("Attribute or namespace {} is already defined".format(path))
             attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
-            attr.assign(value, wait)
             self._structure.set(parsed_path, attr)
+            attr.assign(value, wait)
             return attr
 
     def get_attribute(self, path: str) -> Optional[Attribute]:
@@ -451,8 +453,8 @@ class Run(AbstractContextManager):
         if isinstance(attribute, NamespaceAttr):
             self._pop_namespace(attribute, wait)
         else:
-            self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
             self._structure.pop(parsed_path)
+            self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
 
     def _pop_namespace(self, namespace: NamespaceAttr, wait: bool):
         children = list(namespace)

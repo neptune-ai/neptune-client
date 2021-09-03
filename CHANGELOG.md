@@ -1,4 +1,33 @@
-## neptune-client 0.10.2 [UNRELEASED]
+## neptune-client 0.10.7 [UNRELEASED]
+
+### Fixes
+- Fixed url building in Windows ([#672](https://github.com/neptune-ai/neptune-client/pull/672))
+
+## neptune-client 0.10.6
+
+### Fixes
+- Fixed slashes in file operations url concatenation ([#666](https://github.com/neptune-ai/neptune-client/pull/666))
+
+## neptune-client 0.10.5
+
+### Fixes
+- Only print info if exception actually occurred when using Run as context manager ([#650](https://github.com/neptune-ai/neptune-client/pull/650))
+
+## neptune-client 0.10.4
+
+### Features
+- Added long description for PyPI ([#642](https://github.com/neptune-ai/neptune-client/pull/642))
+
+### Fixes
+- Fixed GitPython importing during package preparation ([#647](https://github.com/neptune-ai/neptune-client/pull/647))
+
+## neptune-client 0.10.3
+
+### Features
+- Checking current working directory in addition to entrypoint when looking for git repository ([#633](https://github.com/neptune-ai/neptune-client/pull/633))
+- Added support for Kedro integration ([#641](https://github.com/neptune-ai/neptune-client/pull/641))
+
+## neptune-client 0.10.2
 
 ### Features
 - Added NEPTUNE_MONITORING_NAMEPSACE environment variable ([#623](https://github.com/neptune-ai/neptune-client/pull/623))

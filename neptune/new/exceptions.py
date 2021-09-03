@@ -186,7 +186,7 @@ class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
 We couldn’t find project {fail}"{project}"{end}.
 {available_projects_message}{available_workspaces_message}
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+    - https://docs.neptune.ai/administration/projects
     - https://docs.neptune.ai/getting-started/hello-world#project
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -208,7 +208,7 @@ class ProjectNameCollision(ExceptionWithProjectsWorkspacesListing):
 Cannot resolve project {fail}"{project}"{end}.
 {available_projects_message}
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+    - https://docs.neptune.ai/administration/projects
     - https://docs.neptune.ai/getting-started/hello-world#project
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -251,7 +251,7 @@ and skip the {bold}project{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/administration/workspace-project-and-user-management/projects
+    - https://docs.neptune.ai/administration/projects
     - https://docs.neptune.ai/getting-started/hello-world#project
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
