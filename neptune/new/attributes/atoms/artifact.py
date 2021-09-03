@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import uuid
 import pathlib
 import typing
 
@@ -55,13 +54,14 @@ class Artifact(Atom):
 
     def track_files(
             self,
-            project_uuid: uuid.UUID,
             source_location: str,
             destination: str = None,
             wait: bool = False
     ):
         with self._run.lock():
             self._enqueue_operation(
-                TrackFilesToArtifact(self._path, project_uuid, [(source_location, destination)]),
+                TrackFilesToArtifact(self._path,
+                                     self._run._project_uuid,  # pylint: disable=protected-access
+                                     [(source_location, destination)]),
                 wait
             )

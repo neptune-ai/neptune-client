@@ -125,13 +125,11 @@ class TestArtifact(TestAttributeBase):
 
         var = Artifact(self.exp, self.path)
         var.track_files(
-            project_uuid=self.exp._project_uuid,
             source_location=source_location,
             destination=destination,
             wait=self.wait
         )
         var.track_files(
-            project_uuid=self.exp._project_uuid,
             source_location=source_location2,
             destination=destination2,
             wait=self.wait
