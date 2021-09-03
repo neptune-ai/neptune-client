@@ -34,6 +34,7 @@ from bravado.http_client import HttpClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
 from requests import Session
+from urllib3.exceptions import NewConnectionError
 
 from neptune.new.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, \
@@ -64,7 +65,7 @@ def with_api_exceptions_handler(func):
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
                     HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway,
-                    HTTPTooManyRequests, HTTPServerError) as e:
+                    HTTPTooManyRequests, HTTPServerError, NewConnectionError) as e:
                 time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
@@ -96,7 +97,7 @@ def with_api_exceptions_handler(func):
                     raise ClientHttpError(status_code, e.response.text) from e
                 else:
                     raise
-        raise NeptuneConnectionLostException() from last_exception
+        raise NeptuneConnectionLostException(last_exception) from last_exception
 
     return wrapper
 
