@@ -442,7 +442,7 @@ class Handler:
             self._run.set_attribute(self._path, attr)
 
             attr.track_files(
-                source_location=path,
+                path=path,
                 destination=destination,
                 wait=wait
             )

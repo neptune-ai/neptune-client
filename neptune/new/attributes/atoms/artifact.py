@@ -54,7 +54,7 @@ class Artifact(Atom):
 
     def track_files(
             self,
-            source_location: str,
+            path: str,
             destination: str = None,
             wait: bool = False
     ):
@@ -62,6 +62,6 @@ class Artifact(Atom):
             self._enqueue_operation(
                 TrackFilesToArtifact(self._path,
                                      self._run._project_uuid,  # pylint: disable=protected-access
-                                     [(source_location, destination)]),
+                                     [(path, destination)]),
                 wait
             )
