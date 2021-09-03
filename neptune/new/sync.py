@@ -230,7 +230,8 @@ def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
                 if time.monotonic() - start_time > retries_timeout:
                     raise ex
                 click.echo("Experiencing connection interruptions. "
-                           "Will try to reestablish communication with Neptune.",
+                           "Will try to reestablish communication with Neptune. "
+                           f"Internal exception was: {ex.cause.__class__.__name__}",
                            sys.stderr)
 
         disk_queue.ack(version)
