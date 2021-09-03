@@ -71,6 +71,10 @@ class NeptuneAuth(AuthBase):
             except OAuth2Error:
                 # for some reason oauth session is no longer valid. Retry by creating new fresh session
                 # we can safely ignore this error, as it will be thrown again if it's persistent
+                try:
+                    self.session.close()
+                except Exception:
+                    pass
                 self.session = self.session_factory()
                 self._refresh_session_token()
 

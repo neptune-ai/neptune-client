@@ -45,6 +45,10 @@ from neptune.new.types.atoms import GitRef
 class NeptuneBackend:
 
     @abc.abstractmethod
+    def close(self) -> None:
+        pass
+
+    @abc.abstractmethod
     def get_display_address(self) -> str:
         pass
 
