@@ -39,6 +39,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             ),
         ]
         self.project_uuid = uuid.uuid4()
+        self.parent_identifier = str(uuid.uuid4())
 
     @patch('neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash')
     @patch('neptune.new.internal.backends.hosted_artifact_operations._extract_file_list')
@@ -59,6 +60,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             swagger_client=swagger_mock,
             project_uuid=self.project_uuid,
             path=["sub", "one"],
+            parent_identifier=self.parent_identifier,
             entries=[("/path/to/file", '/path/to')],
             default_request_params={}
         )
@@ -68,6 +70,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             swagger_client=swagger_mock,
             project_uuid=self.project_uuid,
             artifact_hash=self.artifact_hash,
+            parent_identifier=self.parent_identifier,
             size=None,
             default_request_params={}
         )
@@ -98,6 +101,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             swagger_client=swagger_mock,
             project_uuid=self.project_uuid,
             path=["sub", "one"],
+            parent_identifier=self.parent_identifier,
             entries=[("/path/to/file", '/path/to')],
             default_request_params={}
         )
@@ -129,6 +133,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 swagger_client=swagger_mock,
                 project_uuid=self.project_uuid,
                 path=["sub", "one"],
+                parent_identifier=self.parent_identifier,
                 entries=[("/path/to/file", '/path/to')],
                 default_request_params={}
             )
@@ -152,6 +157,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             project_uuid=self.project_uuid,
             path=["sub", "one"],
             artifact_hash=self.artifact_hash,
+            parent_identifier=self.parent_identifier,
             entries=[("/path/to/file", '/path/to')],
             default_request_params={}
         )
@@ -161,6 +167,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
             swagger_client=swagger_mock,
             project_uuid=self.project_uuid,
             artifact_hash=self.artifact_hash,
+            parent_identifier=self.parent_identifier,
             files=self.files,
             default_request_params={}
         )
@@ -184,6 +191,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 project_uuid=self.project_uuid,
                 path=["sub", "one"],
                 artifact_hash='abcdef',
+                parent_identifier=self.parent_identifier,
                 entries=[("/path/to/file", '/path/to')],
                 default_request_params={}
             )
