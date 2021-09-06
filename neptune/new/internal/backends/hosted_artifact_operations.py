@@ -127,7 +127,7 @@ def create_new_artifact(
         'projectIdentifier': project_uuid,
         'hash': artifact_hash,
         'size': size,
-        'parent_identifier': parent_identifier,
+        'parentIdentifier': parent_identifier,
         **default_request_params
     }
     try:
@@ -182,7 +182,7 @@ def create_artifact_version(
     params = {
         'projectIdentifier': project_uuid,
         'hash': artifact_hash,
-        'parent_identifier': parent_identifier,
+        'parentIdentifier': parent_identifier,
         'artifactFilesDTO': {
             'files': [
                 ArtifactFileData.to_dto(a) for a in files
