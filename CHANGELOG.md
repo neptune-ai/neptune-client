@@ -1,3 +1,9 @@
+## neptune-client 0.10.8
+
+### Fixes
+- Fix leaks of descriptors
+- Fix possible deadlock on synchronisation in async mode
+
 ## neptune-client 0.10.7
 
 ### Fixes
