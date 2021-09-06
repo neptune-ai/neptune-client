@@ -33,8 +33,7 @@ from neptune.new.internal.operation import (
     LogImages,
     LogStrings,
     RemoveStrings,
-    TrackFilesToExistingArtifact,
-    TrackFilesToNewArtifact,
+    TrackFilesToArtifact,
     UploadFileSet
 )
 
@@ -317,33 +316,33 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
         # when
         processor.process([
-            TrackFilesToNewArtifact(["a"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["a"], project_uuid, [('dir1/', None)]),
             DeleteAttribute(["a"]),
 
-            TrackFilesToNewArtifact(["b"], project_uuid, [('dir1/', None)]),
-            TrackFilesToNewArtifact(["b"], project_uuid, [('dir2/dir3/', 'dir2/')]),
-            TrackFilesToNewArtifact(["b"], project_uuid, [('dir4/dir5/', 'dir4/')]),
+            TrackFilesToArtifact(["b"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["b"], project_uuid, [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["b"], project_uuid, [('dir4/dir5/', 'dir4/')]),
 
             AssignFloat(["c"], 5),
-            TrackFilesToNewArtifact(["c"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["c"], project_uuid, [('dir1/', None)]),
 
-            TrackFilesToExistingArtifact(["d"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/')]),
-            TrackFilesToExistingArtifact(["d"], project_uuid, 'abcdef', [('dir4/', None)]),
+            TrackFilesToArtifact(["d"], project_uuid, [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["d"], project_uuid, [('dir4/', None)]),
 
-            TrackFilesToNewArtifact(["e"], project_uuid, [('dir1/', None)]),
-            TrackFilesToExistingArtifact(["e"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["e"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["e"], project_uuid, [('dir2/dir3/', 'dir2/')]),
 
-            TrackFilesToNewArtifact(["f"], project_uuid, [('dir1/', None)]),
-            TrackFilesToExistingArtifact(["f"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/')]),
-            TrackFilesToExistingArtifact(["f"], project_uuid, 'abcdef', [('dir4/', None)]),
+            TrackFilesToArtifact(["f"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["f"], project_uuid, [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["f"], project_uuid, [('dir4/', None)]),
         ])
 
         # then
         self.assertEqual(processor.get_operations(), [
-            TrackFilesToNewArtifact(["a"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["a"], project_uuid, [('dir1/', None)]),
             DeleteAttribute(["a"]),
 
-            TrackFilesToNewArtifact(
+            TrackFilesToArtifact(
                 ["b"],
                 project_uuid,
                 [('dir1/', None), ('dir2/dir3/', 'dir2/'), ('dir4/dir5/', 'dir4/')]
@@ -351,11 +350,11 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
             AssignFloat(["c"], 5),
 
-            TrackFilesToExistingArtifact(["d"], project_uuid, 'abcdef', [('dir2/dir3/', 'dir2/'), ('dir4/', None)]),
+            TrackFilesToArtifact(["d"], project_uuid, [('dir2/dir3/', 'dir2/'), ('dir4/', None)]),
 
-            TrackFilesToNewArtifact(["e"], project_uuid, [('dir1/', None), ('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["e"], project_uuid, [('dir1/', None), ('dir2/dir3/', 'dir2/')]),
 
-            TrackFilesToNewArtifact(
+            TrackFilesToArtifact(
                 ["f"],
                 project_uuid,
                 [('dir1/', None), ('dir2/dir3/', 'dir2/'), ('dir4/', None)]
@@ -363,6 +362,6 @@ class TestOperationsPreprocessor(TestAttributeBase):
         ])
         self.assertEqual(processor.get_errors(), [
             MetadataInconsistency(
-                "Cannot perform TrackFilesToNewArtifact operation on c: Attribute is not a Artifact"
+                "Cannot perform TrackFilesToArtifact operation on c: Attribute is not a Artifact"
             ),
         ])

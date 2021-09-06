@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import uuid
 import pathlib
 import typing
 
 from neptune.new.attributes.atoms.atom import Atom
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
-from neptune.new.internal.operation import AssignArtifact, TrackFilesToNewArtifact, TrackFilesToExistingArtifact
+from neptune.new.internal.operation import AssignArtifact, TrackFilesToArtifact
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 
@@ -53,35 +52,16 @@ class Artifact(Atom):
             file_destination.parent.mkdir(parents=True, exist_ok=True)
             driver.download_file(file_destination, file_definition)
 
-    def track_files_to_new(
+    def track_files(
             self,
-            project_uuid: uuid.UUID,
-            source_location: str,
+            path: str,
             destination: str = None,
             wait: bool = False
     ):
         with self._run.lock():
             self._enqueue_operation(
-                TrackFilesToNewArtifact(self._path, project_uuid, [(source_location, destination)]),
-                wait
-            )
-
-    def track_files_to_existing(
-            self,
-            project_uuid: uuid.UUID,
-            source_location: str,
-            destination: str = None,
-            wait: bool = False
-    ):
-        with self._run.lock():
-            artifact_hash = self._backend.get_artifact_attribute(self._run_uuid, self._path).hash
-
-            self._enqueue_operation(
-                TrackFilesToExistingArtifact(
-                    self._path,
-                    project_uuid,
-                    artifact_hash,
-                    [(source_location, destination)]
-                ),
+                TrackFilesToArtifact(self._path,
+                                     self._run._project_uuid,  # pylint: disable=protected-access
+                                     [(path, destination)]),
                 wait
             )

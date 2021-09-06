@@ -27,7 +27,7 @@ from neptune.new.exceptions import NeptuneUnhandledArtifactTypeException
 from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactDriver, ArtifactDriversMap
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.artifact import Artifact as ArtifactAttr
-from neptune.new.internal.operation import TrackFilesToExistingArtifact, TrackFilesToNewArtifact
+from neptune.new.internal.operation import TrackFilesToArtifact
 
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -117,55 +117,33 @@ class TestArtifact(TestAttributeBase):
             contents = list(temporary_path.iterdir())
             self.assertListEqual(contents, [])
 
-    def test_track_files_to_new(self):
-        source_location = str(uuid.uuid4())
-        destination = str(uuid.uuid4())
-
-        var = Artifact(self.exp, self.path)
-        var.track_files_to_new(
-            project_uuid=self.exp._project_uuid,
-            source_location=source_location,
-            destination=destination,
-            wait=self.wait
-        )
-
-        self.op_processor.enqueue_operation.assert_has_calls([
-            call(
-                TrackFilesToNewArtifact(self.path, self.exp._project_uuid, [(source_location, destination)]),
-                self.wait
-            ),
-        ])
-
-    def test_track_files_to_existing(self):
+    def test_track_files_to_artifact(self):
         source_location = str(uuid.uuid4())
         destination = str(uuid.uuid4())
         source_location2 = str(uuid.uuid4())
         destination2 = str(uuid.uuid4())
 
         var = Artifact(self.exp, self.path)
-        var.track_files_to_new(
-            project_uuid=self.exp._project_uuid,
-            source_location=source_location,
+        var.track_files(
+            path=source_location,
             destination=destination,
             wait=self.wait
         )
-        var.track_files_to_existing(
-            project_uuid=self.exp._project_uuid,
-            source_location=source_location2,
+        var.track_files(
+            path=source_location2,
             destination=destination2,
             wait=self.wait
         )
 
         self.op_processor.enqueue_operation.assert_has_calls([
             call(
-                TrackFilesToNewArtifact(self.path, self.exp._project_uuid, [(source_location, destination)]),
+                TrackFilesToArtifact(self.path, self.exp._project_uuid, [(source_location, destination)]),
                 self.wait
             ),
             call(
-                TrackFilesToExistingArtifact(
+                TrackFilesToArtifact(
                     self.path,
                     self.exp._project_uuid,
-                    self.artifact_hash,
                     [(source_location2, destination2)]
                 ),
                 self.wait

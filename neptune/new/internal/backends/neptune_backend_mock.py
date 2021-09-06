@@ -73,8 +73,7 @@ from neptune.new.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
-    TrackFilesToExistingArtifact,
-    TrackFilesToNewArtifact,
+    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -408,12 +407,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 raise self._create_type_error("assign", Artifact.__name__)
             return Artifact(op.hash)
 
-        def visit_track_files_to_new_artifact(self, _: TrackFilesToNewArtifact) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(self._current_value, Artifact):
-                raise self._create_type_error("save", Artifact.__name__)
-            return Artifact(self._artifact_hash)
-
-        def visit_track_files_to_existing_artifact(self, _: TrackFilesToExistingArtifact) -> Optional[Value]:
+        def visit_track_files_to_artifact(self, _: TrackFilesToArtifact) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, Artifact):
                 raise self._create_type_error("save", Artifact.__name__)
             return Artifact(self._artifact_hash)

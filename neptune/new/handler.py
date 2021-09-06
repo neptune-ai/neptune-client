@@ -436,24 +436,16 @@ class Handler:
         """
         with self._run.lock():
             attr = self._run.get_attribute(self._path)
-
             if not attr:
                 attr = Artifact(self._run, parse_path(self._path))
-                attr.track_files_to_new(
-                    project_uuid=self._run._project_uuid,  # pylint: disable=protected-access
-                    source_location=path,
-                    destination=destination,
-                    wait=wait
-                )
-            else:
-                attr.track_files_to_existing(
-                    project_uuid=self._run._project_uuid,  # pylint: disable=protected-access
-                    source_location=path,
-                    destination=destination,
-                    wait=wait
-                )
 
             self._run.set_attribute(self._path, attr)
+
+            attr.track_files(
+                path=path,
+                destination=destination,
+                wait=wait
+            )
 
     def __delitem__(self, path) -> None:
         self.pop(path)

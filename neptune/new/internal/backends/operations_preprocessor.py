@@ -37,8 +37,7 @@ from neptune.new.internal.operation import (
     LogStrings,
     Operation,
     RemoveStrings,
-    TrackFilesToExistingArtifact,
-    TrackFilesToNewArtifact,
+    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -243,39 +242,22 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 # simply perform single delete operation.
                 self._delete_ops.append(op)
 
-    def _artifact_log_modifier(self, ops: List[Operation], new_op: Operation) -> List[Operation]:
+    @staticmethod
+    def _artifact_log_modifier(ops: List[TrackFilesToArtifact],
+                               new_op: TrackFilesToArtifact) -> List[TrackFilesToArtifact]:
         if len(ops) == 0:
             return [new_op]
 
-        # At most there should be only 1 operation
+        # There should be exactly 1 operation, merge it with new_op
+        assert len(ops) == 1
         op_old = ops[0]
+        assert op_old.path == new_op.path
+        assert op_old.project_uuid == new_op.project_uuid
+        return [
+            TrackFilesToArtifact(op_old.path, op_old.project_uuid, op_old.entries + new_op.entries)
+        ]
 
-        if isinstance(op_old, TrackFilesToExistingArtifact)\
-                and isinstance(new_op, TrackFilesToExistingArtifact):
-            return [TrackFilesToExistingArtifact(
-                op_old.path,
-                op_old.project_uuid,
-                op_old.artifact_hash,
-                op_old.entries + new_op.entries
-            )]
-        elif isinstance(op_old, TrackFilesToNewArtifact)\
-                and isinstance(new_op, (TrackFilesToNewArtifact, TrackFilesToExistingArtifact)):
-            return [
-                TrackFilesToNewArtifact(op_old.path, op_old.project_uuid, op_old.entries + new_op.entries)
-            ]
-        else:
-            raise InternalClientError(
-                "Preprocessing operations failed: called logging to existing artifact before creation"
-            )
-
-    def visit_track_files_to_new_artifact(self, op: TrackFilesToNewArtifact) -> None:
-        self._process_modify_op(
-            _DataType.ARTIFACT,
-            op,
-            self._artifact_log_modifier
-        )
-
-    def visit_track_files_to_existing_artifact(self, op: TrackFilesToExistingArtifact) -> None:
+    def visit_track_files_to_artifact(self, op: TrackFilesToArtifact) -> None:
         self._process_modify_op(
             _DataType.ARTIFACT,
             op,
