@@ -41,6 +41,7 @@ def track_to_new_artifact(
         swagger_client: SwaggerClient,
         project_uuid: uuid.UUID,
         path: List[str],
+        parent_identifier: str,
         entries: List[Tuple[str, Optional[str]]],
         default_request_params: Dict
 ) -> Optional[Operation]:
@@ -54,6 +55,7 @@ def track_to_new_artifact(
         swagger_client=swagger_client,
         project_uuid=project_uuid,
         artifact_hash=artifact_hash,
+        parent_identifier=parent_identifier,
         size=_compute_artifact_size(files),
         default_request_params=default_request_params
     )
@@ -75,6 +77,7 @@ def track_to_existing_artifact(
         project_uuid: uuid.UUID,
         path: List[str],
         artifact_hash: str,
+        parent_identifier: str,
         entries: List[Tuple[str, Optional[str]]],
         default_request_params: Dict
 ) -> Optional[Operation]:
@@ -87,6 +90,7 @@ def track_to_existing_artifact(
         swagger_client=swagger_client,
         project_uuid=project_uuid,
         artifact_hash=artifact_hash,
+        parent_identifier=parent_identifier,
         files=files,
         default_request_params=default_request_params
     )
@@ -115,6 +119,7 @@ def create_new_artifact(
         swagger_client: SwaggerClient,
         project_uuid: uuid.UUID,
         artifact_hash: str,
+        parent_identifier: str,
         size: int,
         default_request_params: Dict
 ) -> ArtifactModel:
@@ -122,6 +127,7 @@ def create_new_artifact(
         'projectIdentifier': project_uuid,
         'hash': artifact_hash,
         'size': size,
+        'parent_identifier': parent_identifier,
         **default_request_params
     }
     try:
@@ -169,12 +175,14 @@ def create_artifact_version(
         swagger_client: SwaggerClient,
         project_uuid: uuid.UUID,
         artifact_hash: str,
+        parent_identifier: str,
         files: List[ArtifactFileData],
         default_request_params: Dict
 ) -> ArtifactModel:
     params = {
         'projectIdentifier': project_uuid,
         'hash': artifact_hash,
+        'parent_identifier': parent_identifier,
         'artifactFilesDTO': {
             'files': [
                 ArtifactFileData.to_dto(a) for a in files
