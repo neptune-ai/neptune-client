@@ -317,6 +317,7 @@ class Run(AbstractContextManager):
         with self._lock:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
+        self._backend.close()
         self._state = RunState.STOPPED
 
     def get_structure(self) -> Dict[str, Any]:

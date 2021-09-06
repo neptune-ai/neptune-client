@@ -153,8 +153,7 @@ class AsyncOperationProcessor(OperationProcessor):
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
-        # Do not close queue. According to specification only synchronization thread should be stopped.
-        # self._queue.close()
+        self._queue.close()
 
     class ConsumerThread(Daemon):
         def __init__(self,
