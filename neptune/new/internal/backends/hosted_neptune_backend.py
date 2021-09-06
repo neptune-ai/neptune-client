@@ -483,6 +483,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         swagger_client=self.artifacts_client,
                         project_uuid=op.project_uuid,
                         path=op.path,
+                        parent_identifier=str(run_uuid),
                         entries=op.entries,
                         default_request_params=self.DEFAULT_REQUEST_KWARGS
                     )
@@ -492,6 +493,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         project_uuid=op.project_uuid,
                         path=op.path,
                         artifact_hash=artifact_hash,
+                        parent_identifier=str(run_uuid),
                         entries=op.entries,
                         default_request_params=self.DEFAULT_REQUEST_KWARGS
                     )
