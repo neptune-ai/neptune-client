@@ -21,7 +21,11 @@ from bravado.exception import HTTPNotFound
 
 from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactDriver, ArtifactFileData
 from neptune.new.internal.artifacts.file_hasher import FileHasher
-from neptune.new.exceptions import ArtifactUploadingError, ArtifactNotFoundException
+from neptune.new.exceptions import (
+    ArtifactUploadingError,
+    ArtifactNotFoundException,
+    NeptuneEmptyLocationException
+)
 from neptune.new.internal.backends.api_model import ArtifactModel
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
 from neptune.new.internal.operation import Operation, AssignArtifact
@@ -107,9 +111,12 @@ def _extract_file_list(entries: List[Tuple[str, Optional[str]]]) -> List[Artifac
 
     for entry_path, entry_destination in entries:
         driver: Type[ArtifactDriver] = ArtifactDriversMap.match_path(entry_path)
-        files.extend(
-            driver.get_tracked_files(path=entry_path, destination=entry_destination)
-        )
+        artifact_files = driver.get_tracked_files(path=entry_path, destination=entry_destination)
+
+        if len(artifact_files) == 0:
+            raise NeptuneEmptyLocationException(location=entry_path)
+
+        files.extend(artifact_files)
 
     return files
 

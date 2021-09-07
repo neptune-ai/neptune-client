@@ -885,3 +885,29 @@ Neptune could not access an object ({location}) from remote storage of a Neptune
 class ArtifactUploadingError(NeptuneException):
     def __init__(self, msg: str):
         super().__init__("Cannot upload artifact: {}".format(msg))
+
+
+class NeptuneUnsupportedArtifactFunctionalityException(NeptuneException):
+    def __init__(self, functionality_info: str):
+        message = """
+{h1}
+----NeptuneUnsupportedArtifactFunctionality-------------------------------------
+{end}
+It seems you are using Neptune Artifacts functionality "{functionality_info}" that is currently not supported.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(functionality_info=functionality_info, **STYLES))
+
+
+class NeptuneEmptyLocationException(NeptuneException):
+    def __init__(self, location: str):
+        message = """
+{h1}
+----NeptuneEmptyLocationException----------------------------------------------
+{end}
+Neptune could not find files in the requested location ({location}).
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(location=location, **STYLES))

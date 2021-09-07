@@ -19,7 +19,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from neptune.new.exceptions import NeptuneLocalStorageAccessException
+from neptune.new.exceptions import NeptuneLocalStorageAccessException, NeptuneUnsupportedArtifactFunctionalityException
 from neptune.new.internal.artifacts.drivers.local import LocalArtifactDriver
 from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactFileData, ArtifactFileType
 from tests.neptune.new.internal.artifacts.utils import md5
@@ -191,3 +191,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[3].file_hash)
         self.assertEqual(46, files[3].size)
         self.assertTrue(files[3].metadata['file_path'].endswith(metadata_path_suffix))
+
+    def test_wildcards_not_supported(self):
+        with self.assertRaises(NeptuneUnsupportedArtifactFunctionalityException):
+            LocalArtifactDriver.get_tracked_files((self.test_dir / 'data/*.txt').as_posix())
