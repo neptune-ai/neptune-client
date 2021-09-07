@@ -22,7 +22,6 @@ from urllib.parse import urlparse
 from neptune.new.exceptions import (
     NeptuneLocalStorageAccessException,
     NeptuneUnsupportedArtifactFunctionalityException,
-    NeptuneEmptyLocationException,
 )
 from neptune.new.internal.artifacts.file_hasher import FileHasher
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType

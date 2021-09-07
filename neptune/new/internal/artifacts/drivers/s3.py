@@ -26,7 +26,6 @@ from neptune.new.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,
     NeptuneUnsupportedArtifactFunctionalityException,
-    NeptuneEmptyLocationException
 )
 
 
