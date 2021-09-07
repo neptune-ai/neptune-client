@@ -20,6 +20,8 @@ import unittest
 import matplotlib
 import pytest
 
+from neptune.utils import IS_WINDOWS
+
 matplotlib.use('agg')
 from matplotlib import pyplot
 from PIL import Image
@@ -111,7 +113,7 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
 
-    @pytest.mark.skipif(sys.platform == 'win32', reason="Installing Torch on Windows takes too long")
+    @pytest.mark.skipif(IS_WINDOWS, reason="Installing Torch on Windows takes too long")
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
         # given
