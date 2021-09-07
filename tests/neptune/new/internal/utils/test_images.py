@@ -25,7 +25,6 @@ from uuid import uuid4
 
 import matplotlib
 import pandas
-import pytest
 from matplotlib import pyplot
 from matplotlib.figure import Figure
 
@@ -119,7 +118,7 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(fig), self._encode_figure(fig))
 
-    @pytest.mark.skipif(IS_WINDOWS, reason="Installing Torch on Windows takes too long")
+    @unittest.skipIf(IS_WINDOWS, "Installing Torch on Windows takes too long")
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
         # given

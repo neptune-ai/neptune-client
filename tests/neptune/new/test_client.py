@@ -21,7 +21,6 @@ import unittest
 import uuid
 from datetime import datetime
 
-import pytest
 from mock import Mock, patch
 
 from neptune.new import ANONYMOUS, Run, get_last_run, get_project, init
@@ -123,7 +122,7 @@ class TestClient(unittest.TestCase):
     @patch('neptune.new.internal.utils.os.path.abspath',
            new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
     @patch('neptune.new.internal.utils.os.getcwd', new=lambda: "/home/user/main_dir")
-    @pytest.mark.skipif(IS_WINDOWS, reason="Linux/Mac test")
+    @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
     def test_entrypoint(self):
         exp = init(mode='debug')
         self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
