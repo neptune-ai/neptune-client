@@ -24,7 +24,6 @@ from neptune.internal.abort import DefaultAbortImpl, CustomAbortImpl
 from neptune.internal.channels.channels import ChannelNamespace
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
-from neptune.internal.hardware.system.system_monitor import SystemMonitor
 from neptune.internal.streams.channel_writer import ChannelWriter
 from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErrWithUpload
 from neptune.internal.threads.aborting_thread import AbortingThread
