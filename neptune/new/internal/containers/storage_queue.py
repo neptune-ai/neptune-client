@@ -45,7 +45,7 @@ class StorageQueue(Generic[T]):
         pass
 
     @abc.abstractmethod
-    def wait_for_empty(self, seconds: Optional[float] = None) -> None:
+    def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
         pass
 
     @abc.abstractmethod

@@ -17,6 +17,7 @@
 # pylint: disable=redefined-outer-name
 
 import os
+import threading
 import uuid
 from random import randint
 
@@ -53,7 +54,7 @@ def prepare_runs(path):
     for exp in registered_runs:
         exp_path = path / "async" / str(exp.uuid) / execution_id
         exp_path.mkdir(parents=True)
-        queue = DiskQueue(exp_path, lambda x: x, lambda x: x)
+        queue = DiskQueue(exp_path, lambda x: x, lambda x: x, threading.RLock())
         queue.put('op-0')
         queue.put('op-1')
 
@@ -76,7 +77,7 @@ def prepare_offline_run(path):
     offline_exp_path = path / OFFLINE_DIRECTORY / offline_exp_uuid
     offline_exp_path.mkdir(parents=True)
 
-    queue = DiskQueue(offline_exp_path, lambda x: x, lambda x: x)
+    queue = DiskQueue(offline_exp_path, lambda x: x, lambda x: x, threading.RLock())
     queue.put('op-0')
     queue.put('op-1')
     SyncOffsetFile(path / OFFLINE_DIRECTORY / offline_exp_uuid / "last_put_version").write(2)

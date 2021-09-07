@@ -134,10 +134,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         if proxies is None:
             verify_host_resolution(config_api_url)
 
-        token_http_client = self._create_http_client(ssl_verify, proxies)
+        self._token_http_client = self._create_http_client(ssl_verify, proxies)
         token_client = create_swagger_client(
             build_operation_url(config_api_url, self.BACKEND_SWAGGER_PATH),
-            token_http_client
+            self._token_http_client
         )
 
         self._client_config = self._get_client_config(token_client)
@@ -146,7 +146,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         if config_api_url != self._client_config.api_url:
             token_client = create_swagger_client(
                 build_operation_url(self._client_config.api_url, self.BACKEND_SWAGGER_PATH),
-                token_http_client
+                self._token_http_client
             )
 
         self.backend_client = create_swagger_client(
@@ -171,6 +171,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             system=platform.platform(),
             python_version=platform.python_version())
         self._http_client.session.headers.update({'User-Agent': user_agent})
+
+    def close(self) -> None:
+        self._http_client.session.close()
+        self._token_http_client.session.close()
+        self._authenticator.auth.session.close()
 
     def get_display_address(self) -> str:
         return self._client_config.display_url

@@ -39,4 +39,4 @@ class OfflineOperationProcessor(OperationProcessor):
         pass
 
     def stop(self, seconds: Optional[float] = None):
-        pass
+        self._queue.close()

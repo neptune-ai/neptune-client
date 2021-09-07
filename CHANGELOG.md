@@ -1,7 +1,13 @@
-## neptune-client 0.10.8 [UNRELEASED]
+## neptune-client 0.10.9 [UNRELEASED]
 
 ### Features
 - Added psutil as a base requirement ([#675](https://github.com/neptune-ai/neptune-client/pull/675))
+
+## neptune-client 0.10.8
+
+### Fixes
+- Fix leaks of descriptors
+- Fix possible deadlock on synchronisation in async mode
 
 ## neptune-client 0.10.7
 

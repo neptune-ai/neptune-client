@@ -491,7 +491,8 @@ class SSLError(NeptuneException):
 
 
 class NeptuneConnectionLostException(NeptuneException):
-    def __init__(self):
+    def __init__(self, cause: Exception):
+        self.cause = cause
         message = """
 {h1}
 ----NeptuneConnectionLostException---------------------------------------------------------

@@ -94,6 +94,9 @@ Val = TypeVar('Val', bound=Value)
 
 class NeptuneBackendMock(NeptuneBackend):
 
+    def close(self) -> None:
+        pass
+
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
         self._runs: Dict[uuid.UUID, RunStructure[Value, dict]] = dict()
