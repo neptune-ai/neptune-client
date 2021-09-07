@@ -18,7 +18,6 @@
 import contextlib
 import io
 import os
-import sys
 import unittest
 from typing import Optional
 from unittest import mock

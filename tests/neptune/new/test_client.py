@@ -17,7 +17,6 @@
 # pylint: disable=protected-access
 
 import os
-import sys
 import unittest
 import uuid
 from datetime import datetime
