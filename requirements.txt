@@ -13,4 +13,4 @@ GitPython>=2.0.8
 packaging
 urllib3
 dataclasses>=0.6; python_version<"3.7"
-psutil<6.0.0
+psutil

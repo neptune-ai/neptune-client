@@ -87,10 +87,7 @@ class ExecutionContext(object):
             self._run_monitoring_thread()
 
         if send_hardware_metrics:
-            if SystemMonitor.requirements_installed():
-                self._run_hardware_metrics_reporting_thread()
-            else:
-                _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
+            self._run_hardware_metrics_reporting_thread()
 
     def stop(self):
         if self._ping_thread:
