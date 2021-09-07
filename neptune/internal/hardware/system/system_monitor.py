@@ -23,10 +23,6 @@ except ImportError:
 
 class SystemMonitor(object):
     @staticmethod
-    def requirements_installed():
-        return PSUTIL_INSTALLED
-
-    @staticmethod
     def cpu_count():
         return psutil.cpu_count()
 

@@ -24,7 +24,6 @@ from neptune.internal.abort import DefaultAbortImpl, CustomAbortImpl
 from neptune.internal.channels.channels import ChannelNamespace
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
-from neptune.internal.hardware.system.system_monitor import SystemMonitor
 from neptune.internal.streams.channel_writer import ChannelWriter
 from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErrWithUpload
 from neptune.internal.threads.aborting_thread import AbortingThread
@@ -87,10 +86,7 @@ class ExecutionContext(object):
             self._run_monitoring_thread()
 
         if send_hardware_metrics:
-            if SystemMonitor.requirements_installed():
-                self._run_hardware_metrics_reporting_thread()
-            else:
-                _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
+            self._run_hardware_metrics_reporting_thread()
 
     def stop(self):
         if self._ping_thread:

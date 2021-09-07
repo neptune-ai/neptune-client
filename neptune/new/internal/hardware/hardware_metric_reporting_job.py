@@ -51,15 +51,7 @@ class HardwareMetricReportingJob(BackgroundJob):
         self._gauges_in_resource: Dict[str, int] = dict()
         self._attribute_namespace = attribute_namespace
 
-    @staticmethod
-    def _requirements_installed() -> bool:
-        return SystemMonitor.requirements_installed()
-
     def start(self, run: 'Run'):
-        if not self._requirements_installed():
-            _logger.warning('psutil is not installed. Hardware metrics will not be collected.')
-            return
-
         gauge_mode = GaugeMode.CGROUP if in_docker() else GaugeMode.SYSTEM
         system_resource_info = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(), gpu_monitor=GPUMonitor(), os_environ=os.environ
