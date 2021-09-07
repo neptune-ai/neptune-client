@@ -2,6 +2,7 @@
 
 ### Features
 - Added psutil as a base requirement ([#675](https://github.com/neptune-ai/neptune-client/pull/675))
+- Added capture_traceback in neptune.init() ([#676](https://github.com/neptune-ai/neptune-client/pull/676))
 
 ## neptune-client 0.10.8
 
