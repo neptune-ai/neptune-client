@@ -16,6 +16,7 @@
 
 import logging
 import os
+import threading
 import uuid
 from datetime import datetime
 from enum import Enum
@@ -282,6 +283,8 @@ def init(project: Optional[str] = None,
 
         api_run = backend.create_run(project_obj.uuid, git_ref, custom_run_id, notebook_id, checkpoint_id)
 
+    run_lock = threading.RLock()
+
     if mode == RunMode.ASYNC:
         run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, ASYNC_DIRECTORY, api_run.uuid)
         try:
@@ -292,8 +295,9 @@ def init(project: Optional[str] = None,
         execution_path = execution_path.replace(" ", "_").replace(":", ".")
         operation_processor = AsyncOperationProcessor(
             api_run.uuid,
-            DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict),
+            DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict, run_lock),
             backend,
+            run_lock,
             sleep_time=flush_period)
     elif mode == RunMode.SYNC:
         operation_processor = SyncOperationProcessor(api_run.uuid, backend)
@@ -304,7 +308,8 @@ def init(project: Optional[str] = None,
         run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, OFFLINE_DIRECTORY, api_run.uuid)
         storage_queue = DiskQueue(Path(run_path),
                                   lambda x: x.to_dict(),
-                                  Operation.from_dict)
+                                  Operation.from_dict,
+                                  run_lock)
         operation_processor = OfflineOperationProcessor(storage_queue)
     elif mode == RunMode.READ_ONLY:
         operation_processor = ReadOnlyOperationProcessor(api_run.uuid, backend)
@@ -330,7 +335,7 @@ def init(project: Optional[str] = None,
             background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
         background_jobs.append(PingBackgroundJob())
 
-    _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs),
+    _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs), run_lock,
                api_run.workspace, api_run.project_name, api_run.short_id, monitoring_namespace)
     if mode != RunMode.OFFLINE:
         _run.sync(wait=False)

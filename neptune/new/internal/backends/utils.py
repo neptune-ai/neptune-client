@@ -34,6 +34,7 @@ from bravado.http_client import HttpClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
 from requests import Session
+from urllib3.exceptions import NewConnectionError
 
 from neptune.new.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, \
@@ -64,7 +65,7 @@ def with_api_exceptions_handler(func):
             except (BravadoConnectionError, BravadoTimeoutError,
                     requests.exceptions.ConnectionError, requests.exceptions.Timeout,
                     HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway,
-                    HTTPTooManyRequests, HTTPServerError) as e:
+                    HTTPTooManyRequests, HTTPServerError, NewConnectionError) as e:
                 time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
@@ -96,7 +97,7 @@ def with_api_exceptions_handler(func):
                     raise ClientHttpError(status_code, e.response.text) from e
                 else:
                     raise
-        raise NeptuneConnectionLostException() from last_exception
+        raise NeptuneConnectionLostException(last_exception) from last_exception
 
     return wrapper
 
@@ -130,6 +131,10 @@ def create_swagger_client(url: str, http_client: HttpClient) -> SwaggerClient:
 
 
 def verify_client_version(client_config: ClientConfig, version: Version):
+    # Fix for failing in E2E when installing development version with pip and Github
+    if str(version) == '0+unknown':
+        return
+
     version_with_patch_0 = Version(replace_patch_version(str(version)))
     if client_config.min_compatible_version and client_config.min_compatible_version > version:
         raise UnsupportedClientVersion(version, min_version=client_config.min_compatible_version)
