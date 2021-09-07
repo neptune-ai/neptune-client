@@ -21,7 +21,7 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import MissingFieldException, NeptuneException
+from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.utils import verify_type, is_collection, verify_collection_type, is_float, is_string, \
     is_float_like, is_string_like
 from neptune.new.internal.utils.paths import join_paths, parse_path
@@ -49,12 +49,12 @@ class Handler:
         if attr:
             return getattr(attr, attribute_name)
         else:
-            raise MissingFieldException(self._path)
+            raise AttributeError(f"No such method '{attribute_name}'.")
 
     def __getattribute__(self, attribute_name):
         _docstring_attrs = super().__getattribute__('DOCSTRING_ATTRIBUTES')
         if attribute_name in _docstring_attrs:
-            raise AttributeError()
+            raise AttributeError(f"No such method '{attribute_name}'.")
         return super().__getattribute__(attribute_name)
 
     def assign(self, value, wait: bool = False) -> None:

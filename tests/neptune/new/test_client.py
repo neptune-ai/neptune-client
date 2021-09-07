@@ -27,7 +27,7 @@ from neptune.new import ANONYMOUS, Run, get_last_run, get_project, init
 from neptune.new.attributes.atoms import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
-    MetadataInconsistency, MissingFieldException, NeptuneOfflineModeFetchException, NeptuneUninitializedException,
+    MetadataInconsistency, NeptuneOfflineModeFetchException, NeptuneUninitializedException,
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
@@ -143,19 +143,19 @@ class TestClient(unittest.TestCase):
     @patch("neptune.new.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
         exp = init(mode='debug')
-        with self.assertRaises(MissingFieldException):
+        with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
         exp = init(mode='debug', source_files=[])
-        with self.assertRaises(MissingFieldException):
+        with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
         exp = init(mode='debug', source_files=["../*"])
-        with self.assertRaises(MissingFieldException):
+        with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
         exp = init(mode='debug', source_files=["internal/*"])
-        with self.assertRaises(MissingFieldException):
+        with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
