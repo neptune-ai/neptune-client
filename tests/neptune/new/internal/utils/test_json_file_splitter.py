@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import contextlib
 import unittest
 from tempfile import NamedTemporaryFile
 
@@ -129,8 +129,9 @@ class TestJsonFileSplitter(unittest.TestCase):
             splitter.close()
 
     @staticmethod
+    @contextlib.contextmanager
     def _create_file(content):
-        file = NamedTemporaryFile("w")
-        file.write(content)
-        file.flush()
-        return file
+        with NamedTemporaryFile("w") as file:
+            file.write(content)
+            file.flush()
+            yield file

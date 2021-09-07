@@ -15,6 +15,7 @@
 #
 
 # pylint: disable=protected-access
+import contextlib
 from tempfile import NamedTemporaryFile
 
 import numpy
@@ -148,8 +149,9 @@ class TestFileSeries(TestAttributeBase):
                 attr.assign([saved_file])
 
     @staticmethod
+    @contextlib.contextmanager
     def _create_image_file(content):
-        file = NamedTemporaryFile("wb")
-        file.write(content)
-        file.flush()
-        return file
+        with NamedTemporaryFile("wb") as file:
+            file.write(content)
+            file.flush()
+            yield file
