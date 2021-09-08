@@ -60,7 +60,7 @@ class LocalArtifactDriver(ArtifactDriver):
 
         if '*' in path:
             raise NeptuneUnsupportedArtifactFunctionalityException(
-                f'wildcard characters (*,?) in location URI ({path})'
+                f'Wildcard characters (*,?) in location URI ({path}) are not supported.'
             )
 
         source_location = pathlib.Path(path)

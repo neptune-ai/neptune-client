@@ -49,7 +49,7 @@ def track_to_new_artifact(
         entries: List[Tuple[str, Optional[str]]],
         default_request_params: Dict
 ) -> Optional[Operation]:
-    files: List[ArtifactFileData] = _extract_file_list(entries)
+    files: List[ArtifactFileData] = _extract_file_list(path, entries)
 
     if not files:
         raise ArtifactUploadingError("Uploading an empty Artifact")
@@ -85,7 +85,7 @@ def track_to_existing_artifact(
         entries: List[Tuple[str, Optional[str]]],
         default_request_params: Dict
 ) -> Optional[Operation]:
-    files: List[ArtifactFileData] = _extract_file_list(entries)
+    files: List[ArtifactFileData] = _extract_file_list(path, entries)
 
     if not files:
         raise ArtifactUploadingError("Uploading an empty Artifact")
@@ -106,7 +106,7 @@ def _compute_artifact_hash(files: List[ArtifactFileData]) -> str:
     return FileHasher.get_artifact_hash(files)
 
 
-def _extract_file_list(entries: List[Tuple[str, Optional[str]]]) -> List[ArtifactFileData]:
+def _extract_file_list(path: List[str], entries: List[Tuple[str, Optional[str]]]) -> List[ArtifactFileData]:
     files: List[ArtifactFileData] = list()
 
     for entry_path, entry_destination in entries:
@@ -114,7 +114,7 @@ def _extract_file_list(entries: List[Tuple[str, Optional[str]]]) -> List[Artifac
         artifact_files = driver.get_tracked_files(path=entry_path, destination=entry_destination)
 
         if len(artifact_files) == 0:
-            raise NeptuneEmptyLocationException(location=entry_path)
+            raise NeptuneEmptyLocationException(location=entry_path, namespace='/'.join(path))
 
         files.extend(artifact_files)
 

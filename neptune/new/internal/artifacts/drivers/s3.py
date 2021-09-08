@@ -61,7 +61,7 @@ class S3ArtifactDriver(ArtifactDriver):
 
         if '*' in prefix:
             raise NeptuneUnsupportedArtifactFunctionalityException(
-                f'wildcard characters (*,?) in location URI ({path})'
+                f'Wildcard characters (*,?) in location URI ({path}) are not supported.'
             )
 
         # pylint: disable=no-member
