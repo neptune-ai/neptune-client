@@ -38,6 +38,7 @@ from neptune.new.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.utils import IS_WINDOWS
 
 
 @patch('neptune.new.internal.init_impl.HostedNeptuneBackend', NeptuneBackendMock)
@@ -121,6 +122,7 @@ class TestClient(unittest.TestCase):
     @patch('neptune.new.internal.utils.os.path.abspath',
            new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
     @patch('neptune.new.internal.utils.os.getcwd', new=lambda: "/home/user/main_dir")
+    @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
     def test_entrypoint(self):
         exp = init(mode='debug')
         self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")

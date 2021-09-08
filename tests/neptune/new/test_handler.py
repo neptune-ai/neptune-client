@@ -19,7 +19,7 @@ import unittest
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from io import StringIO, BytesIO
-from tempfile import TemporaryDirectory, NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import PIL
@@ -45,6 +45,7 @@ from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.new.types.sets.string_set import StringSet as StringSetVal
+from tests.neptune.new.helpers import create_file
 
 
 class TestHandler(unittest.TestCase):
@@ -127,9 +128,9 @@ class TestHandler(unittest.TestCase):
         exp['some/num/attr_name'] = FileVal.from_stream(StringIO(data))
         self.assertIsInstance(exp.get_structure()['some']['num']['attr_name'], File)
 
-        with NamedTemporaryFile("w") as temp_file:
-            exp['some/num/attr_name'].download(temp_file.name)
-            with open(temp_file.name, "rt") as file:
+        with create_file() as temp_filename:
+            exp['some/num/attr_name'].download(temp_filename)
+            with open(temp_filename, "rt") as file:
                 self.assertEqual(file.read(), data)
 
     def test_save_download_binary_stream_to_default_destination(self):

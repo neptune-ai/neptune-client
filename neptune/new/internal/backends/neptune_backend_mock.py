@@ -265,7 +265,7 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(run_uuid, path, StringSeries)
         return StringSeriesValues(
             len(val.values),
-            [StringPointValue(timestampMillis=-1, step=idx, value=v) for idx, v in enumerate(val.values)]
+            [StringPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)]
         )
 
     def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
