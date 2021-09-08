@@ -13,3 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import re
+from typing import Optional
+
+from neptune.management.exceptions import MissingWorkspaceName, ConflictingWorkspaceName
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+
+
+def normalize_project_name(name: str, workspace: Optional[str] = None):
+    project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, name)
+    extracted_workspace, extracted_name = project_spec['workspace'], project_spec['project']
+
+    if any((workspace, extracted_workspace)):
+        raise MissingWorkspaceName()
+
+    if workspace and extracted_workspace:
+        if workspace != extracted_workspace:
+            raise ConflictingWorkspaceName()
+
+    return f'{extracted_workspace or workspace}/{extracted_name}'

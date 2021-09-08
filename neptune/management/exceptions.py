@@ -26,3 +26,13 @@ class ManagementOperationFailure(Exception):
             "code": self.code,
             "description": self.details,
         }
+
+
+class MissingWorkspaceName(ManagementOperationFailure):
+    code = -2
+    description = "Missing workspace name"
+
+
+class ConflictingWorkspaceName(ManagementOperationFailure):
+    code = -3
+    description = "Conflicting workspace name"
