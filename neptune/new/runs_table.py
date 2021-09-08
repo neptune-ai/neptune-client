@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import logging
-import uuid
 from datetime import datetime
 from typing import List, Dict, Optional, Union
 
@@ -28,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class RunsTableEntry:
 
-    def __init__(self, backend: HostedNeptuneBackend, _id: uuid.UUID, attributes: List[AttributeWithProperties]):
+    def __init__(self, backend: HostedNeptuneBackend, _id: str, attributes: List[AttributeWithProperties]):
         self._backend = backend
         self._id = _id
         self._attributes = attributes

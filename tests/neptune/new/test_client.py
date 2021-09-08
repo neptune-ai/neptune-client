@@ -57,21 +57,21 @@ class TestClient(unittest.TestCase):
         exp = init(mode='debug')
         exp["some/variable"] = 13
         self.assertEqual(13, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
+        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_offline_mode(self):
         exp = init(mode='offline')
         exp["some/variable"] = 13
         with self.assertRaises(NeptuneOfflineModeFetchException):
             exp["some/variable"].fetch()
-        self.assertIn(str(exp._uuid), os.listdir(".neptune/offline"))
-        self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(exp._uuid)))
+        self.assertIn(str(exp._id), os.listdir(".neptune/offline"))
+        self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(exp._id)))
 
     def test_sync_mode(self):
         exp = init(mode='sync')
         exp["some/variable"] = 13
         self.assertEqual(13, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
+        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_async_mode(self):
         exp = init(mode='async', flush_period=0.5)
@@ -80,9 +80,9 @@ class TestClient(unittest.TestCase):
             exp["some/variable"].fetch()
         exp.wait()
         self.assertEqual(13, exp["some/variable"].fetch())
-        self.assertIn(str(exp._uuid), os.listdir(".neptune/async"))
-        execution_dir = os.listdir(".neptune/async/{}".format(exp._uuid))[0]
-        self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))
+        self.assertIn(str(exp._id), os.listdir(".neptune/async"))
+        execution_dir = os.listdir(".neptune/async/{}".format(exp._id))[0]
+        self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._id, execution_dir)))
 
     @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
            new=lambda _, _id:
@@ -104,7 +104,7 @@ class TestClient(unittest.TestCase):
             )
 
         self.assertEqual(42, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
+        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
            new=lambda _, _id:
@@ -113,7 +113,7 @@ class TestClient(unittest.TestCase):
            new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)])
     def test_resume(self):
         exp = init(flush_period=0.5, run="SAN-94")
-        self.assertEqual(exp._uuid, uuid.UUID('12345678-1234-5678-1234-567812345678'))
+        self.assertEqual(exp._id, uuid.UUID('12345678-1234-5678-1234-567812345678'))
         self.assertIsInstance(exp.get_structure()["test"], String)
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])

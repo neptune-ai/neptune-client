@@ -40,8 +40,8 @@ class TestAttributeBase(unittest.TestCase):
         backend = NeptuneBackendMock()
         exp = backend.create_run(uuid.uuid4())
         if processor is None:
-            processor = SyncOperationProcessor(exp.uuid, backend)
-        _run = Run(exp.uuid, backend, processor, MagicMock(), threading.RLock(), MagicMock(), MagicMock(), MagicMock())
+            processor = SyncOperationProcessor(exp.id, backend)
+        _run = Run(exp.id, backend, processor, MagicMock(), threading.RLock(), MagicMock(), MagicMock(), MagicMock())
         _run.sync()
         _run.start()
         return _run

@@ -64,4 +64,4 @@ def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> 
     backend = HostedNeptuneBackend(Credentials(api_token=api_token))
     project_obj = project_name_lookup(backend, name)
 
-    return Project(project_obj.uuid, backend)
+    return Project(project_obj.id, backend)

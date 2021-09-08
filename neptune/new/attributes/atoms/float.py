@@ -31,5 +31,5 @@ class Float(Atom):
 
     def fetch(self) -> float:
         # pylint: disable=protected-access
-        val = self._backend.get_float_attribute(self._run_uuid, self._path)
+        val = self._backend.get_float_attribute(self._run_id, self._path)
         return val.value

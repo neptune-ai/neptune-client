@@ -35,5 +35,5 @@ class Datetime(Atom):
 
     def fetch(self) -> datetime:
         # pylint: disable=protected-access
-        val = self._backend.get_datetime_attribute(self._run_uuid, self._path)
+        val = self._backend.get_datetime_attribute(self._run_id, self._path)
         return val.value

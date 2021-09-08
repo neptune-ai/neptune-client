@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
@@ -24,22 +23,22 @@ from packaging.version import Version
 
 class Project:
 
-    def __init__(self, _uuid: uuid.UUID, name: str, workspace: str):
-        self.uuid = _uuid
+    def __init__(self, _id: str, name: str, workspace: str):
+        self.id = _id
         self.name = name
         self.workspace = workspace
 
 
 class Workspace:
 
-    def __init__(self, _uuid: uuid.UUID, name: str):
-        self.uuid = _uuid
+    def __init__(self, _id: str, name: str):
+        self.id = _id
         self.name = name
 
 
 @dataclass
 class ApiRun:
-    uuid: uuid.UUID
+    id: str
     short_id: str
     workspace: str
     project_name: str
@@ -113,7 +112,7 @@ class AttributeWithProperties:
 
 @dataclass
 class LeaderboardEntry:
-    id: uuid.UUID
+    id: str
     attributes: List[AttributeWithProperties]
 
 
