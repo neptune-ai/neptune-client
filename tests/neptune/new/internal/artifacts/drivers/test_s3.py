@@ -22,6 +22,7 @@ import boto3
 import freezegun
 from moto import mock_s3
 
+from neptune.new.exceptions import NeptuneUnsupportedArtifactFunctionalityException
 from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactFileData, ArtifactFileType
 from neptune.new.internal.artifacts.drivers.s3 import S3ArtifactDriver
 
@@ -125,3 +126,7 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         self.assertEqual('7215ee9c7d9dc229d2921a40e899ec5f', files[2].file_hash)
         self.assertEqual('my/custom_path/to/file2', files[2].file_path)
         self.assertEqual(f's3://{self.bucket_name}/path/to/file2', files[2].metadata['location'])
+
+    def test_wildcards_not_supported(self):
+        with self.assertRaises(NeptuneUnsupportedArtifactFunctionalityException):
+            S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/*/to/")
