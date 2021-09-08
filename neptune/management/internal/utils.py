@@ -24,11 +24,10 @@ def normalize_project_name(name: str, workspace: Optional[str] = None):
     project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, name)
     extracted_workspace, extracted_name = project_spec['workspace'], project_spec['project']
 
-    if any((workspace, extracted_workspace)):
+    if not workspace and not extracted_workspace:
         raise MissingWorkspaceName()
 
-    if workspace and extracted_workspace:
-        if workspace != extracted_workspace:
-            raise ConflictingWorkspaceName()
+    if workspace and extracted_workspace and workspace != extracted_workspace:
+        raise ConflictingWorkspaceName()
 
     return f'{extracted_workspace or workspace}/{extracted_name}'

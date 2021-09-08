@@ -21,14 +21,9 @@ from neptune.management.exceptions import MissingWorkspaceName, ConflictingWorks
 
 class TestManagementUtils(unittest.TestCase):
     def test_normalize_project_name(self):
-        self.assertEqual(
-            'jackie/sandbox',
-            {
-                normalize_project_name(name='jackie/sandbox'),
-                normalize_project_name(name='sandbox', workspace='jackie'),
-                normalize_project_name(name='jackie/sandbox', workspace='jackie'),
-            }
-        )
+        self.assertEqual('jackie/sandbox', normalize_project_name(name='jackie/sandbox'))
+        self.assertEqual('jackie/sandbox', normalize_project_name(name='sandbox', workspace='jackie'))
+        self.assertEqual('jackie/sandbox', normalize_project_name(name='jackie/sandbox', workspace='jackie'))
 
         with self.assertRaises(MissingWorkspaceName):
             normalize_project_name(name='sandbox')
