@@ -1,4 +1,4 @@
-## neptune-client 0.10.9 [UNRELEASED]
+## neptune-client 0.10.9
 
 ### Features
 - Added psutil as a base requirement ([#675](https://github.com/neptune-ai/neptune-client/pull/675))
