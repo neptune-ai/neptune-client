@@ -4,6 +4,9 @@
 - Added psutil as a base requirement ([#675](https://github.com/neptune-ai/neptune-client/pull/675))
 - Added capture_traceback in neptune.init() ([#676](https://github.com/neptune-ai/neptune-client/pull/676))
 
+### Fixes
+- Fix exception type raised on calling missing method on Handler ([#693](https://github.com/neptune-ai/neptune-client/pull/693))
+
 ## neptune-client 0.10.8
 
 ### Fixes
