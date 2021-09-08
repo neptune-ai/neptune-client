@@ -19,7 +19,10 @@ import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
-from neptune.new.exceptions import NeptuneLocalStorageAccessException
+from neptune.new.exceptions import (
+    NeptuneLocalStorageAccessException,
+    NeptuneUnsupportedArtifactFunctionalityException,
+)
 from neptune.new.internal.artifacts.file_hasher import FileHasher
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
 
@@ -54,6 +57,12 @@ class LocalArtifactDriver(ArtifactDriver):
         file_protocol_prefix = 'file://'
         if path.startswith(file_protocol_prefix):
             path = path[len(file_protocol_prefix):]
+
+        if '*' in path:
+            raise NeptuneUnsupportedArtifactFunctionalityException(
+                f'Wildcard characters (*,?) in location URI ({path}) are not supported.'
+            )
+
         source_location = pathlib.Path(path)
 
         stored_files: typing.List[ArtifactFileData] = list()

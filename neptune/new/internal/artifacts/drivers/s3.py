@@ -25,6 +25,7 @@ from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileDat
 from neptune.new.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,
+    NeptuneUnsupportedArtifactFunctionalityException,
 )
 
 
@@ -57,6 +58,11 @@ class S3ArtifactDriver(ArtifactDriver):
     def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         url = urlparse(path)
         bucket_name, prefix = url.netloc, url.path.lstrip('/')
+
+        if '*' in prefix:
+            raise NeptuneUnsupportedArtifactFunctionalityException(
+                f'Wildcard characters (*,?) in location URI ({path}) are not supported.'
+            )
 
         # pylint: disable=no-member
         remote_storage = boto3.resource('s3').Bucket(bucket_name)
