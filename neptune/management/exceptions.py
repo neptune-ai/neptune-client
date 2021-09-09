@@ -17,12 +17,31 @@ class ManagementOperationFailure(Exception):
     code = -1
     description = "Unknown error"
 
+    def __init__(self, **kwargs):
+        super().__init__()
+        self._properties: dict = kwargs or {}
+
     def __str__(self):
-        return f"{self.__class__.__name__}: {self.description} (code: {self.code})"
+        return f"{self.description.format(**self._properties)} (code: {self.code})"
 
     @property
     def details(self):
         return {
             "code": self.code,
-            "description": self.details,
+            "description": self.description.format(**self._properties),
         }
+
+
+class InvalidProjectName(ManagementOperationFailure):
+    code = 1
+    description = 'Provided project name "{name}" could not be parsed.'
+
+
+class MissingWorkspaceName(ManagementOperationFailure):
+    code = 2
+    description = 'Cannot resolve project "{name}", you have to provide a workspace name.'
+
+
+class ConflictingWorkspaceName(ManagementOperationFailure):
+    code = 3
+    description = 'Project name "{name}" conflicts with provided workspace "{workspace}".'
