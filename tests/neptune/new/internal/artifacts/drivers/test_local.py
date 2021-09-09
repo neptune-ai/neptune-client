@@ -194,6 +194,8 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         self.assertTrue(files[3].metadata['file_path'].endswith(metadata_path_suffix))
 
     def test_expand_user(self):
+        os.environ['HOME'] = str(self.test_dir.resolve())
+
         with open(pathlib.Path('~/tmp_test_expand_user').expanduser(), 'w') as f:
             f.write("File to test ~ resolution")
 
