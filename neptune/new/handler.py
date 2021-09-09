@@ -428,7 +428,7 @@ class Handler:
         """
         raise NeptuneException('Should be never called.')
 
-    def track_files(self, path: str, destination: str = None, wait: bool = True) -> None:
+    def track_files(self, path: str, destination: str = None, wait: bool = False) -> None:
         """Creates an artifact tracking some files.
 
         You may also want to check `track_files docs page`_.
