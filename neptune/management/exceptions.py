@@ -18,6 +18,7 @@ class ManagementOperationFailure(Exception):
     description = "Unknown error"
 
     def __init__(self, **kwargs):
+        super().__init__()
         self._properties: dict = kwargs or {}
 
     def __str__(self):
