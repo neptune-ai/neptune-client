@@ -63,7 +63,7 @@ class LocalArtifactDriver(ArtifactDriver):
                 f'Wildcard characters (*,?) in location URI ({path}) are not supported.'
             )
 
-        source_location = pathlib.Path(path)
+        source_location = pathlib.Path(path).expanduser()
 
         stored_files: typing.List[ArtifactFileData] = list()
 

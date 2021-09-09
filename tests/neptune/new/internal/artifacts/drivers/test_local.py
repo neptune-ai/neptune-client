@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import pathlib
 import shutil
 import tempfile
 import unittest
@@ -191,6 +192,19 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[3].file_hash)
         self.assertEqual(46, files[3].size)
         self.assertTrue(files[3].metadata['file_path'].endswith(metadata_path_suffix))
+
+    def test_expand_user(self):
+        with open(pathlib.Path('~/tmp_test_expand_user').expanduser(), 'w') as f:
+            f.write("File to test ~ resolution")
+
+        files = LocalArtifactDriver.get_tracked_files('~/tmp_test_expand_user')
+
+        self.assertEqual(1, len(files))
+        file = files[0]
+
+        self.assertEqual('tmp_test_expand_user', file.file_path)
+        self.assertEqual('eb596bf2f5fd0461d3d0b432f805b3984786c721', file.file_hash)
+        self.assertEqual(25, file.size)
 
     def test_wildcards_not_supported(self):
         with self.assertRaises(NeptuneUnsupportedArtifactFunctionalityException):
