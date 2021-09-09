@@ -369,7 +369,7 @@ class Handler:
         """
         raise NeptuneException('Should be never called.')
 
-    def download(self, destination: str = None, wait: bool = True) -> None:
+    def download(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
 
         Available for following field types (`Field types docs page`_):
@@ -385,16 +385,13 @@ class Handler:
                 composed from field name and extension (if present).
                 If `destination` is a path to a file, the file will be downloaded under the specified name.
                 Defaults to `None`.
-            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
-                This makes the call synchronous.
-                Defaults to `None`.
 
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
         raise NeptuneException('Should be never called.')
 
-    def download_last(self, destination: str = None, wait: bool = True) -> None:
+    def download_last(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
 
         Args:
