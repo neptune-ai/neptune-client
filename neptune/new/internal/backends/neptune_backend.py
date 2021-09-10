@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import abc
-import uuid
 from typing import Any, List, Tuple, Optional
 
 from neptune.new.exceptions import NeptuneException
@@ -53,7 +52,7 @@ class NeptuneBackend:
         pass
 
     # pylint: disable=unused-argument
-    def websockets_factory(self, project_uuid: uuid.UUID, run_uuid: uuid.UUID) -> Optional[WebsocketsFactory]:
+    def websockets_factory(self, project_id: str, run_id: str) -> Optional[WebsocketsFactory]:
         return None
 
     @abc.abstractmethod
@@ -77,97 +76,97 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def create_run(self,
-                   project_uuid: uuid.UUID,
+                   project_id: str,
                    git_ref: Optional[GitRef] = None,
                    custom_run_id: Optional[str] = None,
-                   notebook_id: Optional[uuid.UUID] = None,
-                   checkpoint_id: Optional[uuid.UUID] = None
+                   notebook_id: Optional[str] = None,
+                   checkpoint_id: Optional[str] = None
                    ) -> ApiRun:
         pass
 
     @abc.abstractmethod
-    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
+    def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         pass
 
-    def ping_run(self, run_uuid: uuid.UUID):
-        pass
-
-    @abc.abstractmethod
-    def execute_operations(self, run_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
+    def ping_run(self, run_id: str):
         pass
 
     @abc.abstractmethod
-    def get_attributes(self, run_uuid: uuid.UUID) -> List[Attribute]:
+    def execute_operations(self, run_id: str, operations: List[Operation]) -> List[NeptuneException]:
         pass
 
     @abc.abstractmethod
-    def download_file(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+    def get_attributes(self, run_id: str) -> List[Attribute]:
         pass
 
     @abc.abstractmethod
-    def download_file_set(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
+    def download_file(self, run_id: str, path: List[str], destination: Optional[str] = None):
         pass
 
     @abc.abstractmethod
-    def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+    def download_file_set(self, run_id: str, path: List[str], destination: Optional[str] = None):
         pass
 
     @abc.abstractmethod
-    def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
+    def get_float_attribute(self, run_id: str, path: List[str]) -> FloatAttribute:
         pass
 
     @abc.abstractmethod
-    def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
+    def get_int_attribute(self, run_id: str, path: List[str]) -> IntAttribute:
         pass
 
     @abc.abstractmethod
-    def get_file_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FileAttribute:
+    def get_bool_attribute(self, run_id: str, path: List[str]) -> BoolAttribute:
         pass
 
     @abc.abstractmethod
-    def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
+    def get_file_attribute(self, run_id: str, path: List[str]) -> FileAttribute:
         pass
 
     @abc.abstractmethod
-    def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+    def get_string_attribute(self, run_id: str, path: List[str]) -> StringAttribute:
         pass
 
     @abc.abstractmethod
-    def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
+    def get_datetime_attribute(self, run_id: str, path: List[str]) -> DatetimeAttribute:
         pass
 
     @abc.abstractmethod
-    def get_string_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
+    def get_float_series_attribute(self, run_id: str, path: List[str]) -> FloatSeriesAttribute:
         pass
 
     @abc.abstractmethod
-    def get_string_set_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
+    def get_string_series_attribute(self, run_id: str, path: List[str]) -> StringSeriesAttribute:
         pass
 
     @abc.abstractmethod
-    def download_file_series_by_index(self, run_uuid: uuid.UUID, path: List[str],
+    def get_string_set_attribute(self, run_id: str, path: List[str]) -> StringSetAttribute:
+        pass
+
+    @abc.abstractmethod
+    def download_file_series_by_index(self, run_id: str, path: List[str],
                                       index: int, destination: str):
         pass
 
     @abc.abstractmethod
-    def get_image_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_image_series_values(self, run_id: str, path: List[str],
                                 offset: int, limit: int) -> ImageSeriesValues:
         pass
 
     @abc.abstractmethod
-    def get_string_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_string_series_values(self, run_id: str, path: List[str],
                                  offset: int, limit: int) -> StringSeriesValues:
         pass
 
     @abc.abstractmethod
-    def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_float_series_values(self, run_id: str, path: List[str],
                                 offset: int, limit: int) -> FloatSeriesValues:
         pass
 
     @abc.abstractmethod
-    def get_run_url(self, run_uuid: uuid, workspace: str, project_name: str, short_id: str) -> str:
+    def get_run_url(self, run_id: str, workspace: str, project_name: str, short_id: str) -> str:
         pass
 
     @abc.abstractmethod
-    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> List[Tuple[str, AttributeType, Any]]:
+    def fetch_atom_attribute_values(self, run_id: str, path: List[str]) -> List[Tuple[str, AttributeType, Any]]:
         pass

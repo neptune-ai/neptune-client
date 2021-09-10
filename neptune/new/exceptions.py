@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import uuid
 from typing import Union, Optional, List
 
 from packaging.version import Version
@@ -268,8 +267,8 @@ class RunNotFound(NeptuneException):
 
 
 class RunUUIDNotFound(NeptuneException):
-    def __init__(self, run_uuid: uuid.UUID):
-        super().__init__("Run with UUID {} not found. Could be deleted.".format(run_uuid))
+    def __init__(self, run_id: str):
+        super().__init__("Run with ID {} not found. Could be deleted.".format(run_id))
 
 
 class InactiveRunException(NeptuneException):

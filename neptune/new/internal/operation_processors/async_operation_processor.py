@@ -17,7 +17,6 @@ import logging
 import os
 import sys
 import threading
-import uuid
 from time import time, monotonic
 from typing import Optional, List
 
@@ -39,13 +38,13 @@ class AsyncOperationProcessor(OperationProcessor):
     STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = 300
 
     def __init__(self,
-                 run_uuid: uuid.UUID,
+                 run_id: str,
                  queue: StorageQueue[Operation],
                  backend: NeptuneBackend,
                  lock: threading.RLock,
                  sleep_time: float = 5,
                  batch_size: int = 1000):
-        self._run_uuid = run_uuid
+        self._run_id = run_id
         self._queue = queue
         self._backend = backend
         self._batch_size = batch_size
@@ -185,7 +184,7 @@ class AsyncOperationProcessor(OperationProcessor):
         )
         def process_batch(self, batch: List[Operation], version: int) -> None:
             # TODO: Handle Metadata errors
-            result = self._processor._backend.execute_operations(self._processor._run_uuid, batch)
+            result = self._processor._backend.execute_operations(self._processor._run_id, batch)
 
             with self._processor._waiting_cond:
                 self._processor._queue.ack(version)

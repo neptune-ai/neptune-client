@@ -51,7 +51,7 @@ class StringSet(Set):
 
     def fetch(self) -> typing.Set[str]:
         # pylint: disable=protected-access
-        val = self._backend.get_string_set_attribute(self._run_uuid, self._path)
+        val = self._backend.get_string_set_attribute(self._run_id, self._path)
         return val.values
 
     @staticmethod

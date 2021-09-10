@@ -134,7 +134,7 @@ class ExecutionContext(object):
 
         websocket_factory = self._backend.websockets_factory(
             # pylint: disable=protected-access
-            project_uuid=self._experiment._project.internal_id,
+            project_id=self._experiment._project.internal_id,
             experiment_id=self._experiment.internal_id
         )
         if not websocket_factory:

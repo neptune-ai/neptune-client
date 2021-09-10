@@ -16,7 +16,6 @@
 import json
 import os
 import time
-import uuid
 from io import BytesIO
 from typing import List, Optional, Dict, Iterable, Callable, Set, Union
 from urllib.parse import urlencode
@@ -36,7 +35,7 @@ from neptune.internal.storage.storage_utils import scan_unique_upload_entries, s
 
 
 def upload_file_attribute(swagger_client: SwaggerClient,
-                          run_uuid: uuid.UUID,
+                          run_id: str,
                           attribute: str,
                           source: Union[str, bytes],
                           ext: str
@@ -59,7 +58,7 @@ def upload_file_attribute(swagger_client: SwaggerClient,
                      http_client=swagger_client.swagger_spec.http_client,
                      url=url,
                      query_params={
-                         "experimentId": str(run_uuid),
+                         "experimentId": run_id,
                          "attribute": attribute,
                          "ext": ext
                      })
@@ -68,7 +67,7 @@ def upload_file_attribute(swagger_client: SwaggerClient,
 
 
 def upload_file_set_attribute(swagger_client: SwaggerClient,
-                              run_uuid: uuid.UUID,
+                              run_id: str,
                               attribute: str,
                               file_globs: Iterable[str],
                               reset: bool,
@@ -95,7 +94,7 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                                          data=BytesIO(data),
                                          headers={"Content-Type": "application/octet-stream"},
                                          query_params={
-                                             "experimentId": str(run_uuid),
+                                             "experimentId": run_id,
                                              "attribute": attribute,
                                              "reset": str(reset)
                                          })
@@ -111,7 +110,7 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                              http_client=swagger_client.swagger_spec.http_client,
                              url=url,
                              query_params={
-                                 "experimentId": str(run_uuid),
+                                 "experimentId": str(run_id),
                                  "attribute": attribute,
                                  "reset": str(reset),
                                  "path": file_chunk_stream.filename
@@ -196,7 +195,7 @@ def upload_raw_data(http_client: RequestsClient,
 
 
 def download_image_series_element(swagger_client: SwaggerClient,
-                                  run_uuid: uuid.UUID,
+                                  run_id: str,
                                   attribute: str,
                                   index: int,
                                   destination: str):
@@ -208,13 +207,13 @@ def download_image_series_element(swagger_client: SwaggerClient,
         http_client=swagger_client.swagger_spec.http_client,
         url=url,
         headers={},
-        query_params={"experimentId": str(run_uuid), "attribute": attribute, "index": index})
+        query_params={"experimentId": run_id, "attribute": attribute, "index": index})
     _store_response_as_file(response, os.path.join(destination, "{}.{}"
                                                    .format(index, response.headers['content-type'].split('/')[-1])))
 
 
 def download_file_attribute(swagger_client: SwaggerClient,
-                            run_uuid: uuid.UUID,
+                            run_id: str,
                             attribute: str,
                             destination: Optional[str] = None):
     url = build_operation_url(
@@ -225,12 +224,12 @@ def download_file_attribute(swagger_client: SwaggerClient,
         http_client=swagger_client.swagger_spec.http_client,
         url=url,
         headers={"Accept": "application/octet-stream"},
-        query_params={"experimentId": str(run_uuid), "attribute": attribute})
+        query_params={"experimentId": run_id, "attribute": attribute})
     _store_response_as_file(response, destination)
 
 
 def download_file_set_attribute(swagger_client: SwaggerClient,
-                                download_id: uuid.UUID,
+                                download_id: str,
                                 destination: Optional[str] = None):
     download_url: Optional[str] = _get_download_url(swagger_client, download_id)
     next_sleep = 0.5
@@ -246,8 +245,8 @@ def download_file_set_attribute(swagger_client: SwaggerClient,
     _store_response_as_file(response, destination)
 
 
-def _get_download_url(swagger_client: SwaggerClient, download_id: uuid.UUID):
-    params = {"id": str(download_id)}
+def _get_download_url(swagger_client: SwaggerClient, download_id: str):
+    params = {"id": download_id}
     download_request = swagger_client.api.getDownloadPrepareRequest(**params).response().result
     return download_request.downloadUrl
 

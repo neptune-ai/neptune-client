@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import uuid
 from typing import Union, Optional, Iterable
 
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
@@ -32,9 +31,9 @@ class Project:
     """
 
     def __init__(self,
-                 _uuid: uuid.UUID,
+                 _id: str,
                  backend: HostedNeptuneBackend):
-        self._uuid = _uuid
+        self._id = _id
         self._backend = backend
 
     # pylint:disable=redefined-builtin
@@ -113,7 +112,7 @@ class Project:
         owner = self._as_list("owner", owner)
         tags = self._as_list("tag", tag)
 
-        leaderboard_entries = self._backend.get_leaderboard(self._uuid, id, state, owner, tags)
+        leaderboard_entries = self._backend.get_leaderboard(self._id, id, state, owner, tags)
 
         return RunsTable(self._backend, leaderboard_entries)
 
