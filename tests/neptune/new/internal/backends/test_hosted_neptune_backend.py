@@ -24,7 +24,13 @@ from packaging.version import Version
 from neptune.new.exceptions import CannotResolveHostname, UnsupportedClientVersion, FileUploadError, \
     MetadataInconsistency
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.new.internal.backends.hosted_client import DEFAULT_REQUEST_KWARGS
+from neptune.new.internal.backends.hosted_client import (
+    DEFAULT_REQUEST_KWARGS,
+    get_client_config,
+    create_http_client_with_auth,
+    create_backend_client,
+    create_leaderboard_client,
+)
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import UploadFile, AssignString, LogFloats, UploadFileContent
 from neptune.new.internal.utils import base64_encode
@@ -43,6 +49,13 @@ credentials = Credentials(API_TOKEN)
 @patch('platform.python_version', new=lambda: '3.9.test')
 class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
     # pylint:disable=protected-access
+
+    def setUp(self) -> None:
+        # Clear all LRU storage
+        get_client_config.cache_clear()
+        create_http_client_with_auth.cache_clear()
+        create_backend_client.cache_clear()
+        create_leaderboard_client.cache_clear()
 
     @patch('neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute')
     def test_execute_operations(self, upload_mock, swagger_client_factory):

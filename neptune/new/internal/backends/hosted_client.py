@@ -15,6 +15,7 @@
 #
 import platform
 from typing import Dict
+from functools import lru_cache
 
 from bravado.client import SwaggerClient
 from bravado.http_client import HttpClient
@@ -71,6 +72,7 @@ def _get_token_client(credentials: Credentials, ssl_verify: bool, proxies: Dict[
     )
 
 
+@lru_cache(maxsize=None, typed=True)
 def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> ClientConfig:
     backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 
@@ -96,6 +98,7 @@ def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[
     )
 
 
+@lru_cache(maxsize=None, typed=True)
 def create_http_client_with_auth(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]):
     token_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 
@@ -115,6 +118,7 @@ def create_http_client_with_auth(credentials: Credentials, ssl_verify: bool, pro
     return http_client
 
 
+@lru_cache(maxsize=None, typed=True)
 def create_backend_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
     return create_swagger_client(
         build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH),
@@ -122,6 +126,7 @@ def create_backend_client(client_config: ClientConfig, http_client: HttpClient) 
     )
 
 
+@lru_cache(maxsize=None, typed=True)
 def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
     return create_swagger_client(
         build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),

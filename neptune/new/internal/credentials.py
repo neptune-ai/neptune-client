@@ -17,6 +17,7 @@
 import base64
 import json
 import os
+from functools import lru_cache
 from typing import Optional, Dict
 
 from neptune.new import envs
@@ -24,8 +25,8 @@ from neptune.new import ANONYMOUS, ANONYMOUS_API_TOKEN
 from neptune.new.exceptions import NeptuneInvalidApiTokenException, NeptuneMissingApiTokenException
 
 
+@lru_cache(maxsize=None, typed=True)
 class Credentials(object):
-
     def __init__(self, api_token: Optional[str] = None):
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
