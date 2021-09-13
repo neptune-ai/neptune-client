@@ -1,3 +1,10 @@
+## neptune-client 0.10.11 [UNRELEASED]
+
+## neptune-client 0.10.10
+
+### Features
+- API for Artifacts ([#703](https://github.com/neptune-ai/neptune-client/pull/703))
+
 ## neptune-client 0.10.9
 
 ### Features
