@@ -45,8 +45,8 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         # `link_to` is new in python 3.8
         # (test_source_data / 'file_to_link.txt').link_to(test_data / 'hardlinked_file.txt')
         os.link(
-            src=(self.test_sources_dir / 'file_to_link.txt').as_posix(),
-            dst=(test_data / 'hardlinked_file.txt').as_posix()
+            src=str(self.test_sources_dir / 'file_to_link.txt'),
+            dst=str(test_data / 'hardlinked_file.txt')
         )
         (test_data / 'symlinked_file.txt').symlink_to(self.test_sources_dir / 'file_to_link.txt')
 
@@ -75,7 +75,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         )
 
     def test_file_download(self):
-        path = (self.test_dir / 'data/file1.txt').as_posix()
+        path = str(self.test_dir / 'data/file1.txt')
         artifact_file = ArtifactFileData(
             file_path='data/file1.txt',
             file_hash='??',
@@ -115,7 +115,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
             )
 
     def test_single_retrieval(self):
-        files = LocalArtifactDriver.get_tracked_files((self.test_dir / 'data/file1.txt').as_posix())
+        files = LocalArtifactDriver.get_tracked_files(str(self.test_dir / 'data/file1.txt'))
 
         self.assertEqual(1, len(files))
         self.assertIsInstance(files[0], ArtifactFileData)
@@ -137,7 +137,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         )
 
     def test_multiple_retrieval(self):
-        files = LocalArtifactDriver.get_tracked_files((self.test_dir / 'data').as_posix())
+        files = LocalArtifactDriver.get_tracked_files(str(self.test_dir / 'data'))
         files = sorted(files, key=lambda file: file.file_path)
 
         self.assertEqual(4, len(files))
@@ -162,10 +162,10 @@ class TestLocalArtifactDrivers(unittest.TestCase):
                          files[2].metadata['file_path'])
 
         self.assertEqual('symlinked_file.txt', files[3].file_path)
-        metadata_path_suffix = 'neptune-client/tests/data/local_artifact_drivers_data/file_to_link.txt'
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[3].file_hash)
         self.assertEqual(46, files[3].size)
-        self.assertTrue(files[3].metadata['file_path'].endswith(metadata_path_suffix))
+        self.assertEqual(f"file://{(self.test_sources_dir.resolve() / 'file_to_link.txt').as_posix()}",
+                         files[3].metadata['file_path'])
 
     def test_multiple_retrieval_prefix(self):
         files = LocalArtifactDriver.get_tracked_files((self.test_dir / 'data').as_posix(), 'my/custom_path')
@@ -193,10 +193,10 @@ class TestLocalArtifactDrivers(unittest.TestCase):
                          files[2].metadata['file_path'])
 
         self.assertEqual('my/custom_path/symlinked_file.txt', files[3].file_path)
-        metadata_path_suffix = 'neptune-client/tests/data/local_artifact_drivers_data/file_to_link.txt'
         self.assertEqual('78f994e9b118aedbb5206ab83f6706e01f1c1bb5', files[3].file_hash)
         self.assertEqual(46, files[3].size)
-        self.assertTrue(files[3].metadata['file_path'].endswith(metadata_path_suffix))
+        self.assertEqual(f"file://{(self.test_sources_dir.resolve() / 'file_to_link.txt').as_posix()}",
+                         files[3].metadata['file_path'])
 
     def test_expand_user(self):
         os.environ['HOME'] = str(self.test_dir.resolve())
@@ -215,4 +215,4 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
     def test_wildcards_not_supported(self):
         with self.assertRaises(NeptuneUnsupportedArtifactFunctionalityException):
-            LocalArtifactDriver.get_tracked_files((self.test_dir / 'data/*.txt').as_posix())
+            LocalArtifactDriver.get_tracked_files(str(self.test_dir / 'data/*.txt'))
