@@ -48,7 +48,7 @@ class Artifact(Atom):
     def download(self, destination: str = None):
         for file_definition in self.fetch_files_list():
             driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_type(file_definition.type)
-            file_destination = pathlib.Path(destination or '.') / file_definition.file_path
+            file_destination = pathlib.Path(destination or '.') / pathlib.Path(file_definition.file_path)
             file_destination.parent.mkdir(parents=True, exist_ok=True)
             driver.download_file(file_destination, file_definition)
 

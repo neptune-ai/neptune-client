@@ -96,7 +96,8 @@ class LocalArtifactDriver(ArtifactDriver):
 
     @classmethod
     def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
-        absolute_path = pathlib.Path(urlparse(file_definition.metadata.get("file_path")).path)
+        parsed_path = urlparse(file_definition.metadata.get("file_path"))
+        absolute_path = pathlib.Path(parsed_path.netloc + parsed_path.path)
 
         if not absolute_path.is_file():
             raise NeptuneLocalStorageAccessException(
