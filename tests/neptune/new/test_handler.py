@@ -37,6 +37,7 @@ from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
 from neptune.new.exceptions import FileNotFound
 from neptune.new.types import File as FileVal
+from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.new.types.atoms.float import Float as FloatVal
 from neptune.new.types.atoms.string import String as StringVal
@@ -376,6 +377,19 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(exp['params/metadata/age'].fetch(), 376)
         self.assertEqual(exp['params/toys'].fetch_last(), "hat")
         self.assertEqual(exp['params/nested/nested/deep_secret'].fetch_last(), 15)
+
+    def test_artifacts(self):
+        exp = init(mode='debug', flush_period=0.5)
+        exp['art1'].track_files('s3://path/to/tracking/file', destination='/some/destination')
+        exp['art2'].track_files('s3://path/to/tracking/file2')
+        self.assertEqual(
+            exp['art1'].fetch(),
+            Artifact(value='e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        )
+        self.assertEqual(
+            exp['art2'].fetch(),
+            Artifact(value='e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        )
 
     def test_fetch_dict(self):
         now = datetime.now()
