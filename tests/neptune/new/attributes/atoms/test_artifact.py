@@ -60,8 +60,8 @@ class TestArtifact(TestAttributeBase):
         ]
 
         self.exp.set_attribute(self.path_str, Artifact(self.exp, self.path))
-        self.exp._backend._runs[self.exp._uuid].set(self.path, ArtifactAttr(self.artifact_hash))
-        self.exp._backend._artifacts[self.exp._project_uuid, self.artifact_hash] = self.artifact_files
+        self.exp._backend._runs[self.exp._id].set(self.path, ArtifactAttr(self.artifact_hash))
+        self.exp._backend._artifacts[self.exp._project_id, self.artifact_hash] = self.artifact_files
 
         self._downloads = set()
 
@@ -137,13 +137,13 @@ class TestArtifact(TestAttributeBase):
 
         self.op_processor.enqueue_operation.assert_has_calls([
             call(
-                TrackFilesToArtifact(self.path, self.exp._project_uuid, [(source_location, destination)]),
+                TrackFilesToArtifact(self.path, self.exp._project_id, [(source_location, destination)]),
                 self.wait
             ),
             call(
                 TrackFilesToArtifact(
                     self.path,
-                    self.exp._project_uuid,
+                    self.exp._project_id,
                     [(source_location2, destination2)]
                 ),
                 self.wait

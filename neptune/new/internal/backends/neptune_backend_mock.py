@@ -110,7 +110,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
         self._runs: Dict[str, RunStructure[Value, dict]] = dict()
-        self._artifacts: Dict[Tuple[uuid.UUID, str], List[ArtifactFileData]] = dict()
+        self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
 
     def get_display_address(self) -> str:
@@ -252,8 +252,8 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(run_id, path, Artifact)
         return ArtifactAttribute(val.hash)
 
-    def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
-        return self._artifacts[(project_uuid, artifact_hash)]
+    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
+        return self._artifacts[(project_id, artifact_hash)]
 
     def get_float_series_attribute(self, run_id: str, path: List[str]) -> FloatSeriesAttribute:
         val = self._get_attribute(run_id, path, FloatSeries)

@@ -401,7 +401,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
 
         artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
-            run_uuid=run_uuid,
+            run_id=run_id,
             artifact_operations=artifact_operations
         )
 
@@ -465,7 +465,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def _execute_artifact_operations(
             self,
-            run_uuid: uuid.UUID,
+            run_id: str,
             artifact_operations: List[TrackFilesToArtifact]
     ) -> Tuple[List[Optional[NeptuneException]], List[Optional[Operation]]]:
         errors = list()
@@ -473,7 +473,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         for op in artifact_operations:
             try:
-                artifact_hash = self.get_artifact_attribute(run_uuid, op.path).hash
+                artifact_hash = self.get_artifact_attribute(run_id, op.path).hash
             except FetchAttributeNotFoundException:
                 artifact_hash = None
 
@@ -481,19 +481,19 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if artifact_hash is None:
                     assign_operation = track_to_new_artifact(
                         swagger_client=self.artifacts_client,
-                        project_uuid=op.project_uuid,
+                        project_id=op.project_id,
                         path=op.path,
-                        parent_identifier=str(run_uuid),
+                        parent_identifier=run_id,
                         entries=op.entries,
                         default_request_params=self.DEFAULT_REQUEST_KWARGS
                     )
                 else:
                     assign_operation = track_to_existing_artifact(
                         swagger_client=self.artifacts_client,
-                        project_uuid=op.project_uuid,
+                        project_id=op.project_id,
                         path=op.path,
                         artifact_hash=artifact_hash,
-                        parent_identifier=str(run_uuid),
+                        parent_identifier=run_id,
                         entries=op.entries,
                         default_request_params=self.DEFAULT_REQUEST_KWARGS
                     )
@@ -675,9 +675,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_artifact_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> ArtifactAttribute:
+    def get_artifact_attribute(self, run_id: str, path: List[str]) -> ArtifactAttribute:
         params = {
-            'experimentId': str(run_uuid),
+            'experimentId': run_id,
             'attribute': path_to_str(path),
             **self.DEFAULT_REQUEST_KWARGS,
         }
@@ -690,9 +690,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def list_artifact_files(self, project_uuid: uuid.UUID, artifact_hash: str) -> List[ArtifactFileData]:
+    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         params = {
-            'projectIdentifier': project_uuid,
+            'projectIdentifier': project_id,
             'hash': artifact_hash,
             **self.DEFAULT_REQUEST_KWARGS,
         }

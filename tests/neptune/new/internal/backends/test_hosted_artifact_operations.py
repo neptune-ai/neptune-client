@@ -38,7 +38,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
                 {}
             ),
         ]
-        self.project_uuid = uuid.uuid4()
+        self.project_id = str(uuid.uuid4())
         self.parent_identifier = str(uuid.uuid4())
 
     @patch('neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash')
@@ -58,7 +58,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         # when
         track_to_new_artifact(
             swagger_client=swagger_mock,
-            project_uuid=self.project_uuid,
+            project_id=self.project_id,
             path=["sub", "one"],
             parent_identifier=self.parent_identifier,
             entries=[("/path/to/file", '/path/to')],
@@ -68,7 +68,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         # then
         create_new_artifact.assert_called_once_with(
             swagger_client=swagger_mock,
-            project_uuid=self.project_uuid,
+            project_id=self.project_id,
             artifact_hash=self.artifact_hash,
             parent_identifier=self.parent_identifier,
             size=None,
@@ -99,7 +99,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         # when
         track_to_new_artifact(
             swagger_client=swagger_mock,
-            project_uuid=self.project_uuid,
+            project_id=self.project_id,
             path=["sub", "one"],
             parent_identifier=self.parent_identifier,
             entries=[("/path/to/file", '/path/to')],
@@ -109,7 +109,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         # then
         upload_artifact_files_metadata.assert_called_once_with(
             swagger_client=swagger_mock,
-            project_uuid=self.project_uuid,
+            project_id=self.project_id,
             artifact_hash=self.artifact_hash,
             files=self.files,
             default_request_params={}
@@ -131,7 +131,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         with self.assertRaises(ArtifactUploadingError):
             track_to_new_artifact(
                 swagger_client=swagger_mock,
-                project_uuid=self.project_uuid,
+                project_id=self.project_id,
                 path=["sub", "one"],
                 parent_identifier=self.parent_identifier,
                 entries=[("/path/to/file", '/path/to')],
@@ -154,7 +154,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         # when
         track_to_existing_artifact(
             swagger_client=swagger_mock,
-            project_uuid=self.project_uuid,
+            project_id=self.project_id,
             path=["sub", "one"],
             artifact_hash=self.artifact_hash,
             parent_identifier=self.parent_identifier,
@@ -165,7 +165,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         # then
         create_artifact_version.assert_called_once_with(
             swagger_client=swagger_mock,
-            project_uuid=self.project_uuid,
+            project_id=self.project_id,
             artifact_hash=self.artifact_hash,
             parent_identifier=self.parent_identifier,
             files=self.files,
@@ -188,7 +188,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
         with self.assertRaises(ArtifactUploadingError):
             track_to_existing_artifact(
                 swagger_client=swagger_mock,
-                project_uuid=self.project_uuid,
+                project_id=self.project_id,
                 path=["sub", "one"],
                 artifact_hash='abcdef',
                 parent_identifier=self.parent_identifier,

@@ -141,7 +141,7 @@ class Run(AbstractContextManager):
             monitoring_namespace: str = "monitoring",
     ):
         self._id = _id
-        self._project_uuid = project_id
+        self._project_id = project_id
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job

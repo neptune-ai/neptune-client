@@ -200,8 +200,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
-        exp_uuid = uuid.uuid4()
-        project_uuid = uuid.uuid4()
+        exp_id = str(uuid.uuid4())
+        project_id = str(uuid.uuid4())
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
@@ -210,26 +210,26 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # when
         backend.execute_operations(
-            run_uuid=exp_uuid,
+            run_id=exp_id,
             operations=[
                 TrackFilesToArtifact(
                     path=['sub', 'one'],
-                    project_uuid=project_uuid,
+                    project_id=project_id,
                     entries=[('/path/to/file', '/path/to')]
                 ),
                 TrackFilesToArtifact(
                     path=['sub', 'two'],
-                    project_uuid=project_uuid,
+                    project_id=project_id,
                     entries=[('/path/to/file1', None), ('/path/to/file2', None)]
                 ),
                 TrackFilesToArtifact(
                     path=['sub', 'three'],
-                    project_uuid=project_uuid,
+                    project_id=project_id,
                     entries=[('/path/to/file1', None)]
                 ),
                 TrackFilesToArtifact(
                     path=['sub', 'three'],
-                    project_uuid=project_uuid,
+                    project_id=project_id,
                     entries=[('/path/to/file2', None)]
                 )
             ]
@@ -238,21 +238,21 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # then
         track_to_new_artifact_mock.assert_has_calls([
             call(swagger_client=swagger_client,
-                 project_uuid=project_uuid,
+                 project_id=project_id,
                  path=["sub", "one"],
-                 parent_identifier=str(exp_uuid),
+                 parent_identifier=str(exp_id),
                  entries=[("/path/to/file", '/path/to')],
                  default_request_params=backend.DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
-                 project_uuid=project_uuid,
+                 project_id=project_id,
                  path=["sub", "two"],
-                 parent_identifier=str(exp_uuid),
+                 parent_identifier=str(exp_id),
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
                  default_request_params=backend.DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
-                 project_uuid=project_uuid,
+                 project_id=project_id,
                  path=["sub", "three"],
-                 parent_identifier=str(exp_uuid),
+                 parent_identifier=str(exp_id),
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
                  default_request_params=backend.DEFAULT_REQUEST_KWARGS),
         ], any_order=True)
@@ -262,8 +262,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
-        exp_uuid = uuid.uuid4()
-        project_uuid = uuid.uuid4()
+        exp_uuid = str(uuid.uuid4())
+        project_id = str(uuid.uuid4())
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
@@ -272,26 +272,26 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # when
         backend.execute_operations(
-            run_uuid=exp_uuid,
+            run_id=exp_uuid,
             operations=[
                 TrackFilesToArtifact(
                     path=['sub', 'one'],
-                    project_uuid=project_uuid,
+                    project_id=project_id,
                     entries=[('/path/to/file', '/path/to')]
                 ),
                 TrackFilesToArtifact(
                     path=['sub', 'two'],
-                    project_uuid=project_uuid,
+                    project_id=project_id,
                     entries=[('/path/to/file1', None), ('/path/to/file2', None)]
                 ),
                 TrackFilesToArtifact(
                     path=['sub', 'three'],
-                    project_uuid=project_uuid,
+                    project_id=project_id,
                     entries=[('/path/to/file1', None)]
                 ),
                 TrackFilesToArtifact(
                     path=['sub', 'three'],
-                    project_uuid=project_uuid,
+                    project_id=project_id,
                     entries=[('/path/to/file2', None)]
                 )
             ]
@@ -300,21 +300,21 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # then
         track_to_existing_artifact_mock.assert_has_calls([
             call(swagger_client=swagger_client,
-                 project_uuid=project_uuid,
+                 project_id=project_id,
                  path=["sub", "one"],
                  artifact_hash='dummyHash',
                  parent_identifier=str(exp_uuid),
                  entries=[("/path/to/file", '/path/to')],
                  default_request_params=backend.DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
-                 project_uuid=project_uuid,
+                 project_id=project_id,
                  path=["sub", "two"],
                  artifact_hash='dummyHash',
                  parent_identifier=str(exp_uuid),
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
                  default_request_params=backend.DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
-                 project_uuid=project_uuid,
+                 project_id=project_id,
                  path=["sub", "three"],
                  artifact_hash='dummyHash',
                  parent_identifier=str(exp_uuid),

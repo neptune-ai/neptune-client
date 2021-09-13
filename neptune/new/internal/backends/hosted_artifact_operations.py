@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import uuid
 from typing import Type, List, Optional, Dict, Tuple
 
 from bravado.client import SwaggerClient
@@ -43,7 +42,7 @@ def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):
 
 def track_to_new_artifact(
         swagger_client: SwaggerClient,
-        project_uuid: uuid.UUID,
+        project_id: str,
         path: List[str],
         parent_identifier: str,
         entries: List[Tuple[str, Optional[str]]],
@@ -57,7 +56,7 @@ def track_to_new_artifact(
     artifact_hash = _compute_artifact_hash(files)
     artifact = create_new_artifact(
         swagger_client=swagger_client,
-        project_uuid=project_uuid,
+        project_id=project_id,
         artifact_hash=artifact_hash,
         parent_identifier=parent_identifier,
         size=_compute_artifact_size(files),
@@ -67,7 +66,7 @@ def track_to_new_artifact(
     if not artifact.received_metadata:
         upload_artifact_files_metadata(
             swagger_client=swagger_client,
-            project_uuid=project_uuid,
+            project_id=project_id,
             artifact_hash=artifact_hash,
             files=files,
             default_request_params=default_request_params
@@ -78,7 +77,7 @@ def track_to_new_artifact(
 
 def track_to_existing_artifact(
         swagger_client: SwaggerClient,
-        project_uuid: uuid.UUID,
+        project_id: str,
         path: List[str],
         artifact_hash: str,
         parent_identifier: str,
@@ -92,7 +91,7 @@ def track_to_existing_artifact(
 
     artifact = create_artifact_version(
         swagger_client=swagger_client,
-        project_uuid=project_uuid,
+        project_id=project_id,
         artifact_hash=artifact_hash,
         parent_identifier=parent_identifier,
         files=files,
@@ -124,14 +123,14 @@ def _extract_file_list(path: List[str], entries: List[Tuple[str, Optional[str]]]
 @with_api_exceptions_handler
 def create_new_artifact(
         swagger_client: SwaggerClient,
-        project_uuid: uuid.UUID,
+        project_id: str,
         artifact_hash: str,
         parent_identifier: str,
         size: int,
         default_request_params: Dict
 ) -> ArtifactModel:
     params = {
-        'projectIdentifier': project_uuid,
+        'projectIdentifier': project_id,
         'hash': artifact_hash,
         'size': size,
         'parentIdentifier': parent_identifier,
@@ -151,13 +150,13 @@ def create_new_artifact(
 @with_api_exceptions_handler
 def upload_artifact_files_metadata(
         swagger_client: SwaggerClient,
-        project_uuid: uuid.UUID,
+        project_id: str,
         artifact_hash: str,
         files: List[ArtifactFileData],
         default_request_params: Dict
 ) -> ArtifactModel:
     params = {
-        'projectIdentifier': project_uuid,
+        'projectIdentifier': project_id,
         'hash': artifact_hash,
         'artifactFilesDTO': {
             'files': [
@@ -180,14 +179,14 @@ def upload_artifact_files_metadata(
 @with_api_exceptions_handler
 def create_artifact_version(
         swagger_client: SwaggerClient,
-        project_uuid: uuid.UUID,
+        project_id: str,
         artifact_hash: str,
         parent_identifier: str,
         files: List[ArtifactFileData],
         default_request_params: Dict
 ) -> ArtifactModel:
     params = {
-        'projectIdentifier': project_uuid,
+        'projectIdentifier': project_id,
         'hash': artifact_hash,
         'parentIdentifier': parent_identifier,
         'artifactFilesDTO': {

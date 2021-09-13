@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import json
+import uuid
 import unittest
 from neptune.new.internal.operation import *
 
@@ -72,7 +73,7 @@ class TestOperations(unittest.TestCase):
             RemoveStrings(TestOperations._random_path(), {"a\ne", "aeg\t4ger", "agrg"}),
             ClearStringSet(TestOperations._random_path()),
             DeleteAttribute(TestOperations._random_path()),
-            TrackFilesToArtifact(TestOperations._random_path(), uuid.uuid4(), [("file/path/f.txt", None)]),
+            TrackFilesToArtifact(TestOperations._random_path(), str(uuid.uuid4()), [("file/path/f.txt", None)]),
             ClearArtifact(TestOperations._random_path())
         ]
 

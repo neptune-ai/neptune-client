@@ -312,51 +312,51 @@ class TestOperationsPreprocessor(TestAttributeBase):
     def test_artifacts(self):
         # given
         processor = OperationsPreprocessor()
-        project_uuid = uuid.uuid4()
+        project_id = str(uuid.uuid4())
 
         # when
         processor.process([
-            TrackFilesToArtifact(["a"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["a"], project_id, [('dir1/', None)]),
             DeleteAttribute(["a"]),
 
-            TrackFilesToArtifact(["b"], project_uuid, [('dir1/', None)]),
-            TrackFilesToArtifact(["b"], project_uuid, [('dir2/dir3/', 'dir2/')]),
-            TrackFilesToArtifact(["b"], project_uuid, [('dir4/dir5/', 'dir4/')]),
+            TrackFilesToArtifact(["b"], project_id, [('dir1/', None)]),
+            TrackFilesToArtifact(["b"], project_id, [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["b"], project_id, [('dir4/dir5/', 'dir4/')]),
 
             AssignFloat(["c"], 5),
-            TrackFilesToArtifact(["c"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["c"], project_id, [('dir1/', None)]),
 
-            TrackFilesToArtifact(["d"], project_uuid, [('dir2/dir3/', 'dir2/')]),
-            TrackFilesToArtifact(["d"], project_uuid, [('dir4/', None)]),
+            TrackFilesToArtifact(["d"], project_id, [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["d"], project_id, [('dir4/', None)]),
 
-            TrackFilesToArtifact(["e"], project_uuid, [('dir1/', None)]),
-            TrackFilesToArtifact(["e"], project_uuid, [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["e"], project_id, [('dir1/', None)]),
+            TrackFilesToArtifact(["e"], project_id, [('dir2/dir3/', 'dir2/')]),
 
-            TrackFilesToArtifact(["f"], project_uuid, [('dir1/', None)]),
-            TrackFilesToArtifact(["f"], project_uuid, [('dir2/dir3/', 'dir2/')]),
-            TrackFilesToArtifact(["f"], project_uuid, [('dir4/', None)]),
+            TrackFilesToArtifact(["f"], project_id, [('dir1/', None)]),
+            TrackFilesToArtifact(["f"], project_id, [('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["f"], project_id, [('dir4/', None)]),
         ])
 
         # then
         self.assertEqual(processor.get_operations(), [
-            TrackFilesToArtifact(["a"], project_uuid, [('dir1/', None)]),
+            TrackFilesToArtifact(["a"], project_id, [('dir1/', None)]),
             DeleteAttribute(["a"]),
 
             TrackFilesToArtifact(
                 ["b"],
-                project_uuid,
+                project_id,
                 [('dir1/', None), ('dir2/dir3/', 'dir2/'), ('dir4/dir5/', 'dir4/')]
             ),
 
             AssignFloat(["c"], 5),
 
-            TrackFilesToArtifact(["d"], project_uuid, [('dir2/dir3/', 'dir2/'), ('dir4/', None)]),
+            TrackFilesToArtifact(["d"], project_id, [('dir2/dir3/', 'dir2/'), ('dir4/', None)]),
 
-            TrackFilesToArtifact(["e"], project_uuid, [('dir1/', None), ('dir2/dir3/', 'dir2/')]),
+            TrackFilesToArtifact(["e"], project_id, [('dir1/', None), ('dir2/dir3/', 'dir2/')]),
 
             TrackFilesToArtifact(
                 ["f"],
-                project_uuid,
+                project_id,
                 [('dir1/', None), ('dir2/dir3/', 'dir2/'), ('dir4/', None)]
             ),
         ])

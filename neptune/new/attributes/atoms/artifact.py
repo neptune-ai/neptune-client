@@ -35,13 +35,13 @@ class Artifact(Atom):
         return ArtifactVal(self.fetch_hash())
 
     def fetch_hash(self) -> str:
-        val = self._backend.get_artifact_attribute(self._run_uuid, self._path)
+        val = self._backend.get_artifact_attribute(self._run_id, self._path)
         return val.hash
 
     def fetch_files_list(self) -> typing.List[ArtifactFileData]:
         artifact_hash = self.fetch_hash()
         return self._backend.list_artifact_files(
-            self._run._project_uuid,  # pylint: disable=protected-access
+            self._run._project_id,  # pylint: disable=protected-access
             artifact_hash
         )
 
@@ -61,7 +61,7 @@ class Artifact(Atom):
         with self._run.lock():
             self._enqueue_operation(
                 TrackFilesToArtifact(self._path,
-                                     self._run._project_uuid,  # pylint: disable=protected-access
+                                     self._run._project_id,  # pylint: disable=protected-access
                                      [(path, destination)]),
                 wait
             )

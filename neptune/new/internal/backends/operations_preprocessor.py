@@ -252,9 +252,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
         assert len(ops) == 1
         op_old = ops[0]
         assert op_old.path == new_op.path
-        assert op_old.project_uuid == new_op.project_uuid
+        assert op_old.project_id == new_op.project_id
         return [
-            TrackFilesToArtifact(op_old.path, op_old.project_uuid, op_old.entries + new_op.entries)
+            TrackFilesToArtifact(op_old.path, op_old.project_id, op_old.entries + new_op.entries)
         ]
 
     def visit_track_files_to_artifact(self, op: TrackFilesToArtifact) -> None:

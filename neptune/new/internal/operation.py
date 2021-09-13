@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import abc
-import uuid
 from dataclasses import dataclass
 from datetime import datetime
 from typing import List, TypeVar, Generic, Optional, Set, Tuple
@@ -471,7 +470,7 @@ class DeleteAttribute(Operation):
 
 @dataclass
 class TrackFilesToArtifact(Operation):
-    project_uuid: uuid.UUID
+    project_id: str
     entries: List[Tuple[str, Optional[str]]]
 
     def accept(self, visitor: 'OperationVisitor[Ret]') -> Ret:
@@ -480,14 +479,14 @@ class TrackFilesToArtifact(Operation):
     def to_dict(self) -> dict:
         ret = super().to_dict()
         ret["entries"] = self.entries
-        ret["project_uuid"] = str(self.project_uuid)
+        ret["project_id"] = self.project_id
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> 'TrackFilesToArtifact':
         return TrackFilesToArtifact(
             path=data["path"],
-            project_uuid=uuid.UUID(data["project_uuid"]),
+            project_id=data["project_id"],
             entries=list(map(tuple, data["entries"]))
         )
 
