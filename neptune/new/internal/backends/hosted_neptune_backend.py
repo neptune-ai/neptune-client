@@ -27,6 +27,7 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.exceptions import (
     ClientHttpError,
@@ -41,9 +42,11 @@ from neptune.new.exceptions import (
     ProjectNameCollision,
     NeptuneStorageLimitException,
     UnsupportedClientVersion,
+    ArtifactNotFoundException,
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
+    ArtifactAttribute,
     Attribute,
     AttributeType,
     AttributeWithProperties,
@@ -52,19 +55,19 @@ from neptune.new.internal.backends.api_model import (
     DatetimeAttribute,
     FileAttribute,
     FloatAttribute,
+    FloatPointValue,
     FloatSeriesAttribute,
+    FloatSeriesValues,
+    ImageSeriesValues,
     IntAttribute,
     LeaderboardEntry,
     Project,
-    Workspace,
     StringAttribute,
-    StringSeriesAttribute,
-    StringSetAttribute,
-    StringSeriesValues,
     StringPointValue,
-    FloatSeriesValues,
-    FloatPointValue,
-    ImageSeriesValues,
+    StringSeriesAttribute,
+    StringSeriesValues,
+    StringSetAttribute,
+    Workspace,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
@@ -72,6 +75,10 @@ from neptune.new.internal.backends.hosted_file_operations import (
     download_image_series_element,
     upload_file_attribute,
     upload_file_set_attribute,
+)
+from neptune.new.internal.backends.hosted_artifact_operations import (
+    track_to_new_artifact,
+    track_to_existing_artifact
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
@@ -87,6 +94,7 @@ from neptune.new.internal.backends.utils import (
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     Operation,
+    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
@@ -106,6 +114,7 @@ _logger = logging.getLogger(__name__)
 class HostedNeptuneBackend(NeptuneBackend):
     BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
     LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
+    ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
 
     CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
     REQUEST_TIMEOUT = None
@@ -154,6 +163,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
         self.leaderboard_client = create_swagger_client(
             build_operation_url(self._client_config.api_url, self.LEADERBOARD_SWAGGER_PATH),
+            self._http_client
+        )
+        self.artifacts_client = create_swagger_client(
+            build_operation_url(self._client_config.api_url, self.ARTIFACTS_SWAGGER_PATH),
             self._http_client
         )
 
@@ -367,10 +380,18 @@ class HostedNeptuneBackend(NeptuneBackend):
         operations_preprocessor.process(operations)
         errors.extend(operations_preprocessor.get_errors())
 
-        upload_operations, other_operations = [], []
-        file_operations = (UploadFile, UploadFileContent, UploadFileSet)
+        upload_operations, artifact_operations, other_operations = [], [], []
+
         for op in operations_preprocessor.get_operations():
-            (upload_operations if isinstance(op, file_operations) else other_operations).append(op)
+            if isinstance(
+                    op,
+                    (UploadFile, UploadFileContent, UploadFileSet)
+            ):
+                upload_operations.append(op)
+            elif isinstance(op, TrackFilesToArtifact):
+                artifact_operations.append(op)
+            else:
+                other_operations.append(op)
 
         # Upload operations should be done first since they are idempotent
         errors.extend(
@@ -378,6 +399,14 @@ class HostedNeptuneBackend(NeptuneBackend):
                 run_id=run_id,
                 upload_operations=upload_operations)
         )
+
+        artifact_operations_errors, assign_artifact_operations = self._execute_artifact_operations(
+            run_id=run_id,
+            artifact_operations=artifact_operations
+        )
+
+        errors.extend(artifact_operations_errors)
+        other_operations.extend(assign_artifact_operations)
 
         if other_operations:
             errors.extend(self._execute_operations(run_id, other_operations))
@@ -432,6 +461,49 @@ class HostedNeptuneBackend(NeptuneBackend):
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
+
+    @with_api_exceptions_handler
+    def _execute_artifact_operations(
+            self,
+            run_id: str,
+            artifact_operations: List[TrackFilesToArtifact]
+    ) -> Tuple[List[Optional[NeptuneException]], List[Optional[Operation]]]:
+        errors = list()
+        assign_operations = list()
+
+        for op in artifact_operations:
+            try:
+                artifact_hash = self.get_artifact_attribute(run_id, op.path).hash
+            except FetchAttributeNotFoundException:
+                artifact_hash = None
+
+            try:
+                if artifact_hash is None:
+                    assign_operation = track_to_new_artifact(
+                        swagger_client=self.artifacts_client,
+                        project_id=op.project_id,
+                        path=op.path,
+                        parent_identifier=run_id,
+                        entries=op.entries,
+                        default_request_params=self.DEFAULT_REQUEST_KWARGS
+                    )
+                else:
+                    assign_operation = track_to_existing_artifact(
+                        swagger_client=self.artifacts_client,
+                        project_id=op.project_id,
+                        path=op.path,
+                        artifact_hash=artifact_hash,
+                        parent_identifier=run_id,
+                        entries=op.entries,
+                        default_request_params=self.DEFAULT_REQUEST_KWARGS
+                    )
+
+                if assign_operation:
+                    assign_operations.append(assign_operation)
+            except NeptuneException as error:
+                errors.append(error)
+
+        return errors, assign_operations
 
     @with_api_exceptions_handler
     def _execute_operations(self,
@@ -601,6 +673,36 @@ class HostedNeptuneBackend(NeptuneBackend):
             return DatetimeAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
+    def get_artifact_attribute(self, run_id: str, path: List[str]) -> ArtifactAttribute:
+        params = {
+            'experimentId': run_id,
+            'attribute': path_to_str(path),
+            **self.DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
+            return ArtifactAttribute(
+                hash=result.hash
+            )
+        except HTTPNotFound:
+            raise FetchAttributeNotFoundException(path_to_str(path))
+
+    @with_api_exceptions_handler
+    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
+        params = {
+            'projectIdentifier': project_id,
+            'hash': artifact_hash,
+            **self.DEFAULT_REQUEST_KWARGS,
+        }
+        try:
+            result = self.artifacts_client.api.listArtifactFiles(**params).response().result
+            return [
+                ArtifactFileData.from_dto(a) for a in result.files
+            ]
+        except HTTPNotFound:
+            raise ArtifactNotFoundException(artifact_hash)
 
     @with_api_exceptions_handler
     def get_float_series_attribute(self, run_id: str, path: List[str]) -> FloatSeriesAttribute:

@@ -335,7 +335,7 @@ def init(project: Optional[str] = None,
         background_jobs.append(PingBackgroundJob())
 
     _run = Run(api_run.id, backend, operation_processor, BackgroundJobList(background_jobs), run_lock,
-               api_run.workspace, api_run.project_name, api_run.short_id, monitoring_namespace)
+               api_run.workspace, api_run.project_name, api_run.short_id, project_obj.id, monitoring_namespace)
     if mode != RunMode.OFFLINE:
         _run.sync(wait=False)
 

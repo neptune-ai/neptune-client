@@ -50,6 +50,7 @@ class NewClientFeatures(ClientFeatures):
         with self.with_check_if_file_appears('files.zip'):
             self.exp[SOURCE_CODE_FILES_ATTRIBUTE_PATH].download()
 
+
     def modify_tags(self):
         self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].add('tag1')
         self.exp[SYSTEM_TAGS_ATTRIBUTE_PATH].add(['tag2_to_remove', 'tag3'])

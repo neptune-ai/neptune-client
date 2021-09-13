@@ -16,6 +16,7 @@
 import json
 import unittest
 import uuid
+
 from neptune.new.internal.operation import *
 
 
@@ -43,6 +44,8 @@ class TestOperations(unittest.TestCase):
             AssignBool(TestOperations._random_path(), False),
             AssignString(TestOperations._random_path(), "a\rsdf\thr"),
             AssignDatetime(TestOperations._random_path(), now.replace(microsecond=1000*int(now.microsecond/1000))),
+            AssignArtifact(TestOperations._random_path(),
+                           "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
             UploadFile(TestOperations._random_path(), "f.txt", "file/path/f.txt"),
             UploadFileContent(TestOperations._random_path(), "stream.txt", "some base64"),
             UploadFileSet(TestOperations._random_path(), ["file/path/*.txt", "another/file/path/*.txt"], True),
@@ -70,7 +73,9 @@ class TestOperations(unittest.TestCase):
             AddStrings(TestOperations._random_path(), {"asef", "asrge4"}),
             RemoveStrings(TestOperations._random_path(), {"a\ne", "aeg\t4ger", "agrg"}),
             ClearStringSet(TestOperations._random_path()),
-            DeleteAttribute(TestOperations._random_path())
+            DeleteAttribute(TestOperations._random_path()),
+            TrackFilesToArtifact(TestOperations._random_path(), str(uuid.uuid4()), [("file/path/f.txt", None)]),
+            ClearArtifact(TestOperations._random_path())
         ]
 
     @staticmethod

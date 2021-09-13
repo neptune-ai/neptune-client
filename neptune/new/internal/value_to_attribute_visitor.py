@@ -15,6 +15,7 @@
 #
 from typing import List, TYPE_CHECKING
 
+from neptune.new.attributes.atoms.artifact import Artifact as ArtifactAttr
 from neptune.new.attributes.atoms.datetime import Datetime as DatetimeAttr
 from neptune.new.attributes.atoms.file import File as FileAttr
 from neptune.new.attributes.file_set import FileSet as FileSetAttr
@@ -31,6 +32,7 @@ from neptune.new.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.new.exceptions import OperationNotSupported
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
+from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.file import File
 from neptune.new.types.atoms.float import Float
@@ -67,6 +69,9 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
     def visit_datetime(self, _: Datetime) -> Attribute:
         return DatetimeAttr(self._run, self._path)
+
+    def visit_artifact(self, _: Artifact) -> Attribute:
+        return ArtifactAttr(self._run, self._path)
 
     def visit_file(self, _: File) -> Attribute:
         return FileAttr(self._run, self._path)
