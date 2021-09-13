@@ -20,16 +20,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from neptune.utils import IS_WINDOWS
-
 from neptune.new.exceptions import NeptuneLocalStorageAccessException, NeptuneUnsupportedArtifactFunctionalityException
 from neptune.new.internal.artifacts.drivers.local import LocalArtifactDriver
 from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactFileData, ArtifactFileType
 from tests.neptune.new.internal.artifacts.utils import md5
 
 
-# TODO Fix me for Windows
-@unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
 class TestLocalArtifactDrivers(unittest.TestCase):
     test_dir = None
 
