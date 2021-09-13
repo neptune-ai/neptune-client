@@ -73,10 +73,10 @@ class S3ArtifactDriver(ArtifactDriver):
             for remote_object in remote_storage.objects.filter(Prefix=prefix):
                 # If prefix is path to file get only directories
                 if prefix == remote_object.key:
-                    prefix = str(pathlib.Path(prefix).parent)
+                    prefix = str(pathlib.PurePosixPath(prefix).parent)
 
                 remote_key = remote_object.key
-                destination = pathlib.Path(destination or '')
+                destination = pathlib.PurePosixPath(destination or '')
                 relative_file_path = remote_key[len(prefix.lstrip('.')):].lstrip("/")
 
                 file_path = destination / relative_file_path
