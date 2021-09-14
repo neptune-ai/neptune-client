@@ -18,18 +18,29 @@ import os
 from typing import Optional, List, Dict
 
 import urllib3
+from bravado.exception import HTTPNotFound, HTTPBadRequest, HTTPForbidden, HTTPInternalServerError
 
-from neptune.new.internal.credentials import Credentials
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE, API_TOKEN_ENV_NAME
-from neptune.management.internal.utils import normalize_project_name
+from neptune.new.internal.utils import verify_type
+from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.backends.hosted_client import (
     create_backend_client,
     create_http_client_with_auth,
-    get_client_config,
     DEFAULT_REQUEST_KWARGS,
+    get_client_config,
 )
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.new.internal.backends.utils import with_api_exceptions_handler
+from neptune.management.internal.utils import normalize_project_name
 from neptune.management.internal.types import *
+from neptune.management.exceptions import (
+    AccessRevokedOnDeletion,
+    AccessRevokedOnMemberRemoval,
+    ProjectAlreadyExists,
+    ProjectNotFound,
+    UserNotExistsOrWithoutAccess,
+    WorkspaceNotFound,
+)
 
 
 def _get_token(api_token: Optional[str] = None):
@@ -49,12 +60,12 @@ def _get_backend_client(api_token: Optional[str] = None):
     client_config = get_client_config(
         credentials=credentials,
         ssl_verify=_ssl_verify(),
-        proxies={'dupa': 'dupa'}
+        proxies={}
     )
     http_client = create_http_client_with_auth(
         credentials=credentials,
         ssl_verify=_ssl_verify(),
-        proxies={'dupa': 'dupa'}
+        proxies={}
     )
     return create_backend_client(
         client_config=client_config,
@@ -62,62 +73,95 @@ def _get_backend_client(api_token: Optional[str] = None):
     )
 
 
+@with_api_exceptions_handler
 def get_project_list(api_token: Optional[str] = None) -> List[str]:
+    verify_type('api_token', api_token, (str, type(None)))
+
     backend_client = _get_backend_client(api_token=api_token)
 
-    response = backend_client.api.listProjects(
-        userRelation='viewerOrHigher',
-        sortBy=['lastViewed'],
-        **DEFAULT_REQUEST_KWARGS,
-    ).response()
+    params = {
+        'userRelation': 'viewerOrHigher',
+        'sortBy': ['lastViewed'],
+        **DEFAULT_REQUEST_KWARGS
+    }
 
-    return list(map(lambda p: f"{p.organizationName}/{p.name}", response.result.entries))
+    projects = backend_client.api.listProjects(**params).response().result.entries
+
+    return list(map(lambda p: f"{p.organizationName}/{p.name}", projects))
 
 
+@with_api_exceptions_handler
 def create_project(
         name: str,
         key: str,
         workspace: Optional[str] = None,
-        visibility: Optional[ProjectVisibility] = None,
+        visibility: ProjectVisibility = ProjectVisibility.PRIVATE,
         description: Optional[str] = None,
         api_token: Optional[str] = None
 ) -> str:
+    verify_type('name', name, str)
+    verify_type('key', key, str)
+    verify_type('workspace', workspace, (str, type(None)))
+    verify_type('visibility', visibility, ProjectVisibility)
+    verify_type('description', description, (str, type(None)))
+    verify_type('api_token', api_token, (str, type(None)))
+
     backend_client = _get_backend_client(api_token=api_token)
     project_identifier = normalize_project_name(name=name, workspace=workspace)
 
     project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, project_identifier)
     workspace, name = project_spec['workspace'], project_spec['project']
 
-    response = backend_client.api.listOrganizations(
-        **DEFAULT_REQUEST_KWARGS
-    ).response().result
+    try:
+        workspaces = backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS).response().result
+        workspace_name_to_id = {f'{f.name}': f.id for f in workspaces}
+    except HTTPNotFound:
+        raise WorkspaceNotFound(workspace=workspace)
 
-    mapper = {
-        f'{f.name}': f.id for f in response
-    }
+    if workspace not in workspace_name_to_id:
+        raise WorkspaceNotFound(workspace=workspace)
 
-    response = backend_client.api.createProject(
-        projectToCreate={
+    params = {
+        'projectToCreate': {
             'name': name,
             'description': description,
             'projectKey': key,
-            'organizationId': mapper[workspace],
+            'organizationId': workspace_name_to_id[workspace],
             'visibility': visibility.value
         },
-        **DEFAULT_REQUEST_KWARGS,
-    ).response()
+        **DEFAULT_REQUEST_KWARGS
+    }
+
+    try:
+        response = backend_client.api.createProject(**params).response()
+        return f'{response.result.organizationName}/{response.result.name}'
+    except HTTPBadRequest as e:
+        raise ProjectAlreadyExists(name=project_identifier) from e
 
 
-def delete_project(name, workspace=None, api_token=None):
+@with_api_exceptions_handler
+def delete_project(name: str, workspace: Optional[str] = None, api_token: Optional[str] = None):
+    verify_type('name', name, str)
+    verify_type('workspace', workspace, (str, type(None)))
+    verify_type('api_token', api_token, (str, type(None)))
+
     backend_client = _get_backend_client(api_token=api_token)
     project_identifier = normalize_project_name(name=name, workspace=workspace)
 
-    response = backend_client.api.deleteProject(
-        projectIdentifier=project_identifier,
-        **DEFAULT_REQUEST_KWARGS,
-    ).response()
+    params = {
+        'projectIdentifier': project_identifier,
+        **DEFAULT_REQUEST_KWARGS
+    }
+
+    try:
+        backend_client.api.deleteProject(**params).response()
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_identifier) from e
+    except HTTPForbidden as e:
+        raise AccessRevokedOnDeletion(name=project_identifier) from e
 
 
+@with_api_exceptions_handler
 def add_project_member(
         name: str,
         username: str,
@@ -125,48 +169,100 @@ def add_project_member(
         workspace: Optional[str] = None,
         api_token: Optional[str] = None
 ):
+    verify_type('name', name, str)
+    verify_type('username', username, str)
+    verify_type('role', role, MemberRole)
+    verify_type('workspace', workspace, (str, type(None)))
+    verify_type('api_token', api_token, (str, type(None)))
+
     backend_client = _get_backend_client(api_token=api_token)
     project_identifier = normalize_project_name(name=name, workspace=workspace)
 
-    response = backend_client.api.addProjectMember(
-        projectIdentifier=project_identifier,
-        member={
+    params = {
+        'projectIdentifier': project_identifier,
+        'member': {
             'userId': username,
             'role': role.value
         },
-        **DEFAULT_REQUEST_KWARGS,
-    ).response()
-
-
-def get_project_member_list(name, workspace=None, api_token=None) -> Dict[str, str]:
-    backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
-
-    response = backend_client.api.listProjectMembers(
-        projectIdentifier=project_identifier,
-        **DEFAULT_REQUEST_KWARGS,
-    ).response()
-
-
-def remove_project_member(name, username, workspace=None, api_token=None):
-    backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
-
-    response = backend_client.api.deleteProjectMember(
-        projectIdentifier=project_identifier,
-        userId=username,
-        **DEFAULT_REQUEST_KWARGS,
-    ).response()
-
-
-def get_workspace_member_list(name, api_token=None) -> Dict[str, str]:
-    backend_client = _get_backend_client(api_token=api_token)
-
-    response = backend_client.api.listOrganizationMembers(
-        organizationIdentifier=name,
-        **DEFAULT_REQUEST_KWARGS,
-    ).response().result
-
-    return {
-        f'{m.registeredMemberInfo.username}': m.role for m in response
+        **DEFAULT_REQUEST_KWARGS
     }
+
+    try:
+        backend_client.api.addProjectMember(**params).response()
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_identifier) from e
+
+
+@with_api_exceptions_handler
+def get_project_member_list(
+        name: str,
+        workspace: Optional[str] = None,
+        api_token: Optional[str] = None
+) -> Dict[str, str]:
+    verify_type('name', name, str)
+    verify_type('workspace', workspace, (str, type(None)))
+    verify_type('api_token', api_token, (str, type(None)))
+
+    backend_client = _get_backend_client(api_token=api_token)
+    project_identifier = normalize_project_name(name=name, workspace=workspace)
+
+    params = {
+        'projectIdentifier': project_identifier,
+        **DEFAULT_REQUEST_KWARGS
+    }
+
+    try:
+        result = backend_client.api.listProjectMembers(**params).response().result
+        return {f'{m.registeredMemberInfo.username}': m.role for m in result}
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_identifier) from e
+
+
+@with_api_exceptions_handler
+def remove_project_member(
+        name: str,
+        username: str,
+        workspace: Optional[str] = None,
+        api_token: Optional[str] = None
+):
+    verify_type('name', name, str)
+    verify_type('username', username, str)
+    verify_type('workspace', workspace, (str, type(None)))
+    verify_type('api_token', api_token, (str, type(None)))
+
+    backend_client = _get_backend_client(api_token=api_token)
+    project_identifier = normalize_project_name(name=name, workspace=workspace)
+
+    params = {
+        'projectIdentifier': project_identifier,
+        'userId': username,
+        **DEFAULT_REQUEST_KWARGS
+    }
+
+    try:
+        backend_client.api.deleteProjectMember(**params).response()
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_identifier) from e
+    except HTTPInternalServerError as e:
+        raise UserNotExistsOrWithoutAccess(user=username, project=project_identifier) from e
+    except HTTPForbidden as e:
+        raise AccessRevokedOnMemberRemoval(user=username, project=project_identifier) from e
+
+
+@with_api_exceptions_handler
+def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
+    verify_type('name', name, str)
+    verify_type('api_token', api_token, (str, type(None)))
+
+    backend_client = _get_backend_client(api_token=api_token)
+
+    params = {
+        'organizationIdentifier': name,
+        **DEFAULT_REQUEST_KWARGS
+    }
+
+    try:
+        result = backend_client.api.listOrganizationMembers(**params).response().result
+        return {f'{m.registeredMemberInfo.username}': m.role for m in result}
+    except HTTPNotFound as e:
+        raise WorkspaceNotFound(workspace=name) from e

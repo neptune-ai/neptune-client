@@ -72,7 +72,7 @@ def _get_token_client(credentials: Credentials, ssl_verify: bool, proxies: Dict[
     )
 
 
-# @lru_cache(maxsize=None, typed=True)
+@lru_cache(maxsize=None, typed=True)
 def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> ClientConfig:
     backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 
@@ -98,7 +98,7 @@ def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[
     )
 
 
-# @lru_cache(maxsize=None)
+@lru_cache(maxsize=None, typed=True)
 def create_http_client_with_auth(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]):
     token_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 

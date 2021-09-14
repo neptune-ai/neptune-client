@@ -45,3 +45,33 @@ class MissingWorkspaceName(ManagementOperationFailure):
 class ConflictingWorkspaceName(ManagementOperationFailure):
     code = 3
     description = 'Project name "{name}" conflicts with provided workspace "{workspace}".'
+
+
+class ProjectNotFound(ManagementOperationFailure):
+    code = 4
+    description = 'Project "{name}" could not be found.'
+
+
+class WorkspaceNotFound(ManagementOperationFailure):
+    code = 5
+    description = 'Workspace "{workspace}" could not be found.'
+
+
+class ProjectAlreadyExists(ManagementOperationFailure):
+    code = 6
+    description = 'Project "{name}" already exists.'
+
+
+class AccessRevokedOnDeletion(ManagementOperationFailure):
+    code = 7
+    description = 'Not enough permissions to delete project "{name}".'
+
+
+class AccessRevokedOnMemberRemoval(ManagementOperationFailure):
+    code = 8
+    description = 'Not enough permissions to remove user "{user}" from project "{project}".'
+
+
+class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
+    code = 9
+    description = 'User "{user}" not exists or has no access to project "{project}".'
