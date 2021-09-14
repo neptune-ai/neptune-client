@@ -1,5 +1,8 @@
 ## neptune-client 0.10.11 [UNRELEASED]
 
+### Fixes
+- Boto3 non-strict requirement ([#708](https://github.com/neptune-ai/neptune-client/pull/708))
+
 ## neptune-client 0.10.10
 
 ### Features
