@@ -39,7 +39,7 @@ from tests.neptune.new.backend_test_mixin import BackendTestMixin
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
 
-credentials = Credentials(API_TOKEN)
+credentials = Credentials.from_token(API_TOKEN)
 
 
 @patch('neptune.new.internal.backends.hosted_client.RequestsClient', new=MagicMock())

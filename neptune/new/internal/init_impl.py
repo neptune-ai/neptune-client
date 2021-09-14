@@ -246,11 +246,11 @@ def init(project: Optional[str] = None,
     if mode == RunMode.ASYNC:
         # TODO Initialize backend in async thread
         backend = HostedNeptuneBackend(
-            credentials=Credentials(api_token=api_token),
+            credentials=Credentials.from_token(api_token=api_token),
             proxies=proxies)
     elif mode == RunMode.SYNC:
         backend = HostedNeptuneBackend(
-            credentials=Credentials(api_token=api_token),
+            credentials=Credentials.from_token(api_token=api_token),
             proxies=proxies)
     elif mode == RunMode.DEBUG:
         backend = NeptuneBackendMock()
@@ -258,7 +258,7 @@ def init(project: Optional[str] = None,
         backend = OfflineNeptuneBackend()
     elif mode == RunMode.READ_ONLY:
         backend = HostedNeptuneBackend(
-            credentials=Credentials(api_token=api_token),
+            credentials=Credentials.from_token(api_token=api_token),
             proxies=proxies)
     else:
         raise ValueError(f'mode should be one of {[m for m in RunMode]}')
