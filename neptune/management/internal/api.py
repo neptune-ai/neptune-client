@@ -17,11 +17,10 @@ import re
 import os
 from typing import Optional, List, Dict
 
-import urllib3
 from bravado.exception import HTTPNotFound, HTTPBadRequest, HTTPForbidden, HTTPInternalServerError
 
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE, API_TOKEN_ENV_NAME
+from neptune.new.envs import API_TOKEN_ENV_NAME
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.backends.hosted_client import (
@@ -30,7 +29,7 @@ from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     get_client_config,
 )
-from neptune.new.internal.backends.utils import with_api_exceptions_handler
+from neptune.new.internal.backends.utils import with_api_exceptions_handler, ssl_verify
 from neptune.management.internal.utils import normalize_project_name
 from neptune.management.internal.types import *
 from neptune.management.exceptions import (
@@ -47,24 +46,16 @@ def _get_token(api_token: Optional[str] = None):
     return api_token or os.getenv(API_TOKEN_ENV_NAME)
 
 
-def _ssl_verify():
-    if os.getenv(NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE):
-        urllib3.disable_warnings()
-        return False
-
-    return True
-
-
 def _get_backend_client(api_token: Optional[str] = None):
     credentials = Credentials.from_token(api_token=_get_token(api_token=api_token))
     client_config = get_client_config(
         credentials=credentials,
-        ssl_verify=_ssl_verify(),
+        ssl_verify=ssl_verify(),
         proxies={}
     )
     http_client, _ = create_http_client_with_auth(
         credentials=credentials,
-        ssl_verify=_ssl_verify(),
+        ssl_verify=ssl_verify(),
         proxies={}
     )
     return create_backend_client(

@@ -14,15 +14,12 @@
 # limitations under the License.
 #
 import logging
-import os
 import re
 from typing import List, Optional, Dict, Iterable, Tuple, Any
 
 import click
-import urllib3
 from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
 
-from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.exceptions import (
@@ -97,7 +94,7 @@ from neptune.new.internal.operation import (
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.new.internal.utils.paths import path_to_str
-from neptune.new.internal.backends.utils import build_operation_url
+from neptune.new.internal.backends.utils import build_operation_url, ssl_verify
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
@@ -110,14 +107,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.credentials = credentials
         self.proxies = proxies
 
-        ssl_verify = True
-        if os.getenv(NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE):
-            urllib3.disable_warnings()
-            ssl_verify = False
-
         self._http_client, self._client_config = create_http_client_with_auth(
             credentials=credentials,
-            ssl_verify=ssl_verify,
+            ssl_verify=ssl_verify(),
             proxies=proxies
         )
 
