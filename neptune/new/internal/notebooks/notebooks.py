@@ -15,7 +15,6 @@
 #
 import logging
 import threading
-import uuid
 
 from neptune.new.internal.notebooks.comm import send_checkpoint_created
 from neptune.new.internal.utils import is_ipython
@@ -27,7 +26,7 @@ _checkpoints_lock = threading.Lock()
 _checkpoints = dict()
 
 
-def create_checkpoint(backend: NeptuneBackend, notebook_id: uuid.UUID, notebook_path: str):
+def create_checkpoint(backend: NeptuneBackend, notebook_id: str, notebook_path: str):
     if is_ipython():
         # pylint:disable=bad-option-value,import-outside-toplevel,import-error
         import IPython

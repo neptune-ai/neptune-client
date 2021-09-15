@@ -19,7 +19,7 @@ import unittest
 from dataclasses import dataclass
 from datetime import datetime, timedelta
 from io import StringIO, BytesIO
-from tempfile import TemporaryDirectory, NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import PIL
@@ -35,8 +35,9 @@ from neptune.new.attributes.atoms.float import Float
 from neptune.new.attributes.atoms.string import String
 from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
-from neptune.new.exceptions import FileNotFound, MissingFieldException
+from neptune.new.exceptions import FileNotFound
 from neptune.new.types import File as FileVal
+from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.new.types.atoms.float import Float as FloatVal
 from neptune.new.types.atoms.string import String as StringVal
@@ -45,6 +46,7 @@ from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.new.types.sets.string_set import StringSet as StringSetVal
+from tests.neptune.new.helpers import create_file
 
 
 class TestHandler(unittest.TestCase):
@@ -127,9 +129,9 @@ class TestHandler(unittest.TestCase):
         exp['some/num/attr_name'] = FileVal.from_stream(StringIO(data))
         self.assertIsInstance(exp.get_structure()['some']['num']['attr_name'], File)
 
-        with NamedTemporaryFile("w") as temp_file:
-            exp['some/num/attr_name'].download(temp_file.name)
-            with open(temp_file.name, "rt") as file:
+        with create_file() as temp_filename:
+            exp['some/num/attr_name'].download(temp_filename)
+            with open(temp_filename, "rt") as file:
                 self.assertEqual(file.read(), data)
 
     def test_save_download_binary_stream_to_default_destination(self):
@@ -317,11 +319,7 @@ class TestHandler(unittest.TestCase):
 
     def test_attribute_error(self):
         exp = init(mode="debug", flush_period=0.5)
-        with self.assertRaises(MissingFieldException):
-            exp['var'].something()
         with self.assertRaises(AttributeError):
-            exp['var'].something()
-        with self.assertRaises(KeyError):
             exp['var'].something()
 
     def test_float_like_types(self):
@@ -379,6 +377,19 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(exp['params/metadata/age'].fetch(), 376)
         self.assertEqual(exp['params/toys'].fetch_last(), "hat")
         self.assertEqual(exp['params/nested/nested/deep_secret'].fetch_last(), 15)
+
+    def test_artifacts(self):
+        exp = init(mode='debug', flush_period=0.5)
+        exp['art1'].track_files('s3://path/to/tracking/file', destination='/some/destination')
+        exp['art2'].track_files('s3://path/to/tracking/file2')
+        self.assertEqual(
+            exp['art1'].fetch(),
+            Artifact(value='e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        )
+        self.assertEqual(
+            exp['art2'].fetch(),
+            Artifact(value='e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855')
+        )
 
     def test_fetch_dict(self):
         now = datetime.now()

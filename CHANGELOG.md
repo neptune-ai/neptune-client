@@ -1,8 +1,21 @@
-## neptune-client 0.10.9 [UNRELEASED]
+## neptune-client 0.10.11 [UNRELEASED]
+
+### Fixes
+- Boto3 non-strict requirement ([#708](https://github.com/neptune-ai/neptune-client/pull/708))
+
+## neptune-client 0.10.10
+
+### Features
+- API for Artifacts ([#703](https://github.com/neptune-ai/neptune-client/pull/703))
+
+## neptune-client 0.10.9
 
 ### Features
 - Added psutil as a base requirement ([#675](https://github.com/neptune-ai/neptune-client/pull/675))
 - Added capture_traceback in neptune.init() ([#676](https://github.com/neptune-ai/neptune-client/pull/676))
+
+### Fixes
+- Fix exception type raised on calling missing method on Handler ([#693](https://github.com/neptune-ai/neptune-client/pull/693))
 
 ## neptune-client 0.10.8
 

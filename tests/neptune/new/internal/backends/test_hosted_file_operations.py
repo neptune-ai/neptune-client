@@ -34,7 +34,7 @@ class TestHostedFileOperations(unittest.TestCase):
     @patch('neptune.new.internal.backends.hosted_file_operations._upload_loop')
     def test_upload_file_attribute(self, upload_loop_mock):
         # given
-        exp_uuid = uuid.uuid4()
+        exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_loop_mock.return_value = b'null'
 
@@ -42,7 +42,7 @@ class TestHostedFileOperations(unittest.TestCase):
         with NamedTemporaryFile("w") as f:
             upload_file_attribute(
                 swagger_client=swagger_mock,
-                run_uuid=exp_uuid,
+                run_id=exp_uuid,
                 attribute="target/path.txt",
                 source=f.name,
                 ext="txt")
@@ -63,14 +63,14 @@ class TestHostedFileOperations(unittest.TestCase):
     @patch('neptune.new.internal.backends.hosted_file_operations._upload_loop')
     def test_upload_file_attribute_from_stream(self, upload_loop_mock):
         # given
-        exp_uuid = uuid.uuid4()
+        exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_loop_mock.return_value = b'null'
 
         # when
         upload_file_attribute(
             swagger_client=swagger_mock,
-            run_uuid=exp_uuid,
+            run_id=exp_uuid,
             attribute="target/path.txt",
             source=b"Some content of test stream",
             ext="txt")
@@ -100,7 +100,7 @@ class TestHostedFileOperations(unittest.TestCase):
         with NamedTemporaryFile("w") as temp_file:
             upload_file_set_attribute(
                 swagger_client=swagger_mock,
-                run_uuid=exp_uuid,
+                run_id=exp_uuid,
                 attribute="some/attribute",
                 file_globs=[temp_file.name],
                 reset=True)
@@ -123,7 +123,7 @@ class TestHostedFileOperations(unittest.TestCase):
     @patch('neptune.new.internal.utils.glob', new=lambda path, recursive=False: [path.replace('*', 'file.txt')])
     def test_upload_multiple_files_in_file_set_attribute(self, upload_raw_data_mock):
         # given
-        exp_uuid = uuid.uuid4()
+        exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_raw_data_mock.return_value = b'null'
 
@@ -132,7 +132,7 @@ class TestHostedFileOperations(unittest.TestCase):
             with NamedTemporaryFile("w") as temp_file_2:
                 upload_file_set_attribute(
                     swagger_client=swagger_mock,
-                    run_uuid=exp_uuid,
+                    run_id=exp_uuid,
                     attribute="some/attribute",
                     file_globs=[temp_file_1.name, temp_file_2.name],
                     reset=True)
@@ -153,7 +153,7 @@ class TestHostedFileOperations(unittest.TestCase):
     @patch('neptune.new.internal.backends.hosted_file_operations.upload_raw_data')
     def test_missing_files_or_directory(self, upload_raw_data_mock):
         # given
-        exp_uuid = uuid.uuid4()
+        exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_raw_data_mock.return_value = b'null'
 
@@ -163,7 +163,7 @@ class TestHostedFileOperations(unittest.TestCase):
                 with TemporaryDirectory() as temp_dir:
                     upload_file_set_attribute(
                         swagger_client=swagger_mock,
-                        run_uuid=exp_uuid,
+                        run_id=exp_uuid,
                         attribute="some/attribute",
                         file_globs=[temp_file_1.name, temp_file_2.name, os.path.abspath("missing_file"), temp_dir],
                         reset=True)
@@ -196,11 +196,11 @@ class TestHostedFileOperations(unittest.TestCase):
     def test_download_file_attribute(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
-        exp_uuid = uuid.uuid4()
+        exp_uuid = str(uuid.uuid4())
 
         # when
         download_file_attribute(swagger_client=swagger_mock,
-                                run_uuid=exp_uuid,
+                                run_id=exp_uuid,
                                 attribute="some/attribute",
                                 destination=None)
 
@@ -222,7 +222,7 @@ class TestHostedFileOperations(unittest.TestCase):
     def test_download_file_set_attribute(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
-        download_id = uuid.uuid4()
+        download_id = str(uuid.uuid4())
 
         # when
         download_file_set_attribute(swagger_client=swagger_mock,

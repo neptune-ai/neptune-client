@@ -65,7 +65,7 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     # pylint: disable=unused-argument
-    def websockets_factory(self, project_uuid, experiment_id):
+    def websockets_factory(self, project_id, experiment_id):
         return None
 
     @abstractmethod

@@ -17,7 +17,6 @@ import logging
 import os
 import re
 import time
-import uuid
 from collections import namedtuple
 from http.client import NOT_FOUND
 from io import StringIO
@@ -511,7 +510,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         destination_dir = assure_directory_exists(destination_dir)
 
         download_request = self._get_file_set_download_request(
-            uuid.UUID(experiment.internal_id),
+            experiment.internal_id,
             path)
         alpha_hosted_file_operations.download_file_set_attribute(
             swagger_client=self.leaderboard_swagger_client,
@@ -519,9 +518,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             destination=destination_dir)
 
     @with_api_exceptions_handler
-    def _get_file_set_download_request(self, run_uuid: uuid.UUID, path: str):
+    def _get_file_set_download_request(self, run_id: str, path: str):
         params = {
-            'experimentId': str(run_uuid),
+            'experimentId': run_id,
             'attribute': path,
         }
         return self.leaderboard_swagger_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
@@ -566,26 +565,26 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
     def _execute_upload_operation(self,
                                   experiment: Experiment,
                                   upload_operation: alpha_operation.Operation):
-        experiment_uuid = uuid.UUID(experiment.internal_id)
+        experiment_id = experiment.internal_id
         try:
             if isinstance(upload_operation, alpha_operation.UploadFile):
                 alpha_hosted_file_operations.upload_file_attribute(
                     swagger_client=self.leaderboard_swagger_client,
-                    run_uuid=experiment_uuid,
+                    run_id=experiment_id,
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     source=upload_operation.file_path,
                     ext=upload_operation.ext)
             elif isinstance(upload_operation, alpha_operation.UploadFileContent):
                 alpha_hosted_file_operations.upload_file_attribute(
                     swagger_client=self.leaderboard_swagger_client,
-                    run_uuid=experiment_uuid,
+                    run_id=experiment_id,
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     source=base64_decode(upload_operation.file_content),
                     ext=upload_operation.ext)
             elif isinstance(upload_operation, alpha_operation.UploadFileSet):
                 alpha_hosted_file_operations.upload_file_set_attribute(
                     swagger_client=self.leaderboard_swagger_client,
-                    run_uuid=experiment_uuid,
+                    run_id=experiment_id,
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     file_globs=upload_operation.file_globs,
                     reset=upload_operation.reset)
@@ -609,7 +608,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
 
     @with_api_exceptions_handler
     def _execute_operations(self, experiment: Experiment, operations: List[alpha_operation.Operation]):
-        experiment_uuid = uuid.UUID(experiment.internal_id)
+        experiment_id = experiment.internal_id
         file_operations = (
             alpha_operation.UploadFile,
             alpha_operation.UploadFileContent,
@@ -620,7 +619,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                                    " not by `_execute_operations` function call.")
 
         kwargs = {
-            'experimentId': str(experiment_uuid),
+            'experimentId': experiment_id,
             'operations': [
                 {
                     'path': alpha_path_utils.path_to_str(op.path),
@@ -786,11 +785,11 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
 
-    def websockets_factory(self, project_uuid, experiment_id):
+    def websockets_factory(self, project_id, experiment_id):
         base_url = re.sub(r'^http', 'ws', self.api_address) + '/api/notifications/v1'
         return ReconnectingWebsocketFactory(
             backend=self,
-            url=base_url + f'/runs/{project_uuid}/{experiment_id}/signal'
+            url=base_url + f'/runs/{project_id}/{experiment_id}/signal'
         )
 
     @staticmethod

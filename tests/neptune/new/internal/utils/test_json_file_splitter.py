@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import unittest
-from tempfile import NamedTemporaryFile
 
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
+from tests.neptune.new.helpers import create_file
 
 
 class TestJsonFileSplitter(unittest.TestCase):
@@ -34,8 +33,8 @@ class TestJsonFileSplitter(unittest.TestCase):
 {}
 """.lstrip()
 
-        with self._create_file(content) as file:
-            splitter = JsonFileSplitter(file.name)
+        with create_file(content) as filename:
+            splitter = JsonFileSplitter(filename)
             self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
             self.assertEqual(splitter.get(), {"a": 13})
             self.assertEqual(splitter.get(), {})
@@ -64,13 +63,13 @@ class TestJsonFileSplitter(unittest.TestCase):
             }
             {}"""
 
-        with self._create_file(content1) as file:
-            splitter = JsonFileSplitter(file.name)
+        with create_file(content1) as filename, open(filename, 'a') as fp:
+            splitter = JsonFileSplitter(filename)
             self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
             self.assertEqual(splitter.get(), {"a": 13})
             self.assertEqual(splitter.get(), None)
-            file.write(content2)
-            file.flush()
+            fp.write(content2)
+            fp.flush()
             self.assertEqual(splitter.get(), {"q": 555, "r": "something"})
             self.assertEqual(splitter.get(), {"a": {"b": [1, 2, 3]}})
             self.assertEqual(splitter.get(), {})
@@ -95,12 +94,12 @@ class TestJsonFileSplitter(unittest.TestCase):
                 }
             }"""
 
-        with self._create_file(content1) as file:
-            splitter = JsonFileSplitter(file.name)
+        with create_file(content1) as filename, open(filename, 'a') as fp:
+            splitter = JsonFileSplitter(filename)
             self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
             self.assertEqual(splitter.get(), None)
-            file.write(content2)
-            file.flush()
+            fp.write(content2)
+            fp.flush()
             self.assertEqual(splitter.get(), {"a": 155, "r": "something"})
             self.assertEqual(splitter.get(), {"a": {"b": [1, 2, 3]}})
             self.assertEqual(splitter.get(), None)
@@ -119,18 +118,11 @@ class TestJsonFileSplitter(unittest.TestCase):
 {}
 """.lstrip() % ("x" * JsonFileSplitter.BUFFER_SIZE * 2, "y" * JsonFileSplitter.BUFFER_SIZE * 2)
 
-        with self._create_file(content) as file:
-            splitter = JsonFileSplitter(file.name)
+        with create_file(content) as filename:
+            splitter = JsonFileSplitter(filename)
             self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
             self.assertEqual(splitter.get(), {"a": "x" * JsonFileSplitter.BUFFER_SIZE * 2,
                                               "b": "y" * JsonFileSplitter.BUFFER_SIZE * 2})
             self.assertEqual(splitter.get(), {})
             self.assertEqual(splitter.get(), None)
             splitter.close()
-
-    @staticmethod
-    def _create_file(content):
-        file = NamedTemporaryFile("w")
-        file.write(content)
-        file.flush()
-        return file

@@ -27,7 +27,7 @@ from neptune.new import ANONYMOUS, Run, get_last_run, get_project, init
 from neptune.new.attributes.atoms import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
-    MetadataInconsistency, MissingFieldException, NeptuneOfflineModeFetchException, NeptuneUninitializedException,
+    MetadataInconsistency, NeptuneOfflineModeFetchException, NeptuneUninitializedException,
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
@@ -38,6 +38,7 @@ from neptune.new.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.utils import IS_WINDOWS
 
 
 @patch('neptune.new.internal.init_impl.HostedNeptuneBackend', NeptuneBackendMock)
@@ -56,21 +57,21 @@ class TestClient(unittest.TestCase):
         exp = init(mode='debug')
         exp["some/variable"] = 13
         self.assertEqual(13, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
+        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_offline_mode(self):
         exp = init(mode='offline')
         exp["some/variable"] = 13
         with self.assertRaises(NeptuneOfflineModeFetchException):
             exp["some/variable"].fetch()
-        self.assertIn(str(exp._uuid), os.listdir(".neptune/offline"))
-        self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(exp._uuid)))
+        self.assertIn(str(exp._id), os.listdir(".neptune/offline"))
+        self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(exp._id)))
 
     def test_sync_mode(self):
         exp = init(mode='sync')
         exp["some/variable"] = 13
         self.assertEqual(13, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
+        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_async_mode(self):
         exp = init(mode='async', flush_period=0.5)
@@ -79,9 +80,9 @@ class TestClient(unittest.TestCase):
             exp["some/variable"].fetch()
         exp.wait()
         self.assertEqual(13, exp["some/variable"].fetch())
-        self.assertIn(str(exp._uuid), os.listdir(".neptune/async"))
-        execution_dir = os.listdir(".neptune/async/{}".format(exp._uuid))[0]
-        self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._uuid, execution_dir)))
+        self.assertIn(str(exp._id), os.listdir(".neptune/async"))
+        execution_dir = os.listdir(".neptune/async/{}".format(exp._id))[0]
+        self.assertIn("data-1.log", os.listdir(".neptune/async/{}/{}".format(exp._id, execution_dir)))
 
     @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
            new=lambda _, _id:
@@ -103,7 +104,7 @@ class TestClient(unittest.TestCase):
             )
 
         self.assertEqual(42, exp["some/variable"].fetch())
-        self.assertNotIn(str(exp._uuid), os.listdir(".neptune"))
+        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
            new=lambda _, _id:
@@ -112,7 +113,7 @@ class TestClient(unittest.TestCase):
            new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)])
     def test_resume(self):
         exp = init(flush_period=0.5, run="SAN-94")
-        self.assertEqual(exp._uuid, uuid.UUID('12345678-1234-5678-1234-567812345678'))
+        self.assertEqual(exp._id, uuid.UUID('12345678-1234-5678-1234-567812345678'))
         self.assertIsInstance(exp.get_structure()["test"], String)
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
@@ -121,6 +122,7 @@ class TestClient(unittest.TestCase):
     @patch('neptune.new.internal.utils.os.path.abspath',
            new=lambda path: os.path.normpath("/home/user/main_dir/" + path))
     @patch('neptune.new.internal.utils.os.getcwd', new=lambda: "/home/user/main_dir")
+    @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
     def test_entrypoint(self):
         exp = init(mode='debug')
         self.assertEqual(exp["source_code/entrypoint"].fetch(), "main.py")
@@ -141,19 +143,19 @@ class TestClient(unittest.TestCase):
     @patch("neptune.new.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
         exp = init(mode='debug')
-        with self.assertRaises(MissingFieldException):
+        with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
         exp = init(mode='debug', source_files=[])
-        with self.assertRaises(MissingFieldException):
+        with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
         exp = init(mode='debug', source_files=["../*"])
-        with self.assertRaises(MissingFieldException):
+        with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
         exp = init(mode='debug', source_files=["internal/*"])
-        with self.assertRaises(MissingFieldException):
+        with self.assertRaises(AttributeError):
             exp["source_code/entrypoint"].get()
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])

@@ -41,7 +41,7 @@ from neptune.new.sync import (
 
 
 def a_run():
-    return ApiRun(uuid.uuid4(), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj', False)
+    return ApiRun(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj', False)
 
 
 def prepare_runs(path):
@@ -52,21 +52,21 @@ def prepare_runs(path):
     execution_id = "exec-0"
 
     for exp in registered_runs:
-        exp_path = path / "async" / str(exp.uuid) / execution_id
+        exp_path = path / "async" / str(exp.id) / execution_id
         exp_path.mkdir(parents=True)
         queue = DiskQueue(exp_path, lambda x: x, lambda x: x, threading.RLock())
         queue.put('op-0')
         queue.put('op-1')
 
-    SyncOffsetFile(path / "async" / str(unsync_exp.uuid) / execution_id / "last_ack_version").write(1)
-    SyncOffsetFile(path / "async" / str(unsync_exp.uuid) / execution_id / "last_put_version").write(2)
+    SyncOffsetFile(path / "async" / str(unsync_exp.id) / execution_id / "last_ack_version").write(1)
+    SyncOffsetFile(path / "async" / str(unsync_exp.id) / execution_id / "last_put_version").write(2)
 
-    SyncOffsetFile(path / "async" / str(sync_exp.uuid) / execution_id / "last_ack_version").write(2)
-    SyncOffsetFile(path / "async" / str(sync_exp.uuid) / execution_id / "last_put_version").write(2)
+    SyncOffsetFile(path / "async" / str(sync_exp.id) / execution_id / "last_ack_version").write(2)
+    SyncOffsetFile(path / "async" / str(sync_exp.id) / execution_id / "last_put_version").write(2)
 
     def get_run_impl(run_id):
         for run in registered_runs:
-            if run_id in (str(run.uuid), get_qualified_name(run)):
+            if run_id in (str(run.id), get_qualified_name(run)):
                 return run
 
     return unsync_exp, sync_exp, get_run_impl
@@ -128,7 +128,7 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
     mocker.patch.object(neptune.new.sync, 'backend')
     mocker.patch.object(neptune.new.sync.backend, 'execute_operations')
     mocker.patch.object(neptune.new.sync.backend, 'get_project',
-                        lambda _: Project(uuid.uuid4(), 'project', 'workspace'))
+                        lambda _: Project(str(uuid.uuid4()), 'project', 'workspace'))
     mocker.patch.object(neptune.new.sync, 'register_offline_run', lambda _: registered_offline_run)
     mocker.patch.object(Operation, 'from_dict', lambda x: x)
 
@@ -147,8 +147,8 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
     # and
     # pylint: disable=no-member
     neptune.new.sync.backend.execute_operations.has_calls([
-        mocker.call(unsync_exp.uuid, ['op-1']),
-        mocker.call(registered_offline_run.uuid, ['op-1'])
+        mocker.call(unsync_exp.id, ['op-1']),
+        mocker.call(registered_offline_run.id, ['op-1'])
     ], any_order=True)
 
 
@@ -159,7 +159,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
     registered_offline_exp = a_run()
 
     def get_run_impl_(run_id: str):
-        if run_id in (str(registered_offline_exp.uuid), get_qualified_name(registered_offline_exp)):
+        if run_id in (str(registered_offline_exp.id), get_qualified_name(registered_offline_exp)):
             return registered_offline_exp
         else:
             return get_run_impl(run_id)
@@ -169,7 +169,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
     mocker.patch.object(neptune.new.sync, 'backend')
     mocker.patch.object(neptune.new.sync.backend, 'execute_operations')
     mocker.patch.object(neptune.new.sync.backend, 'get_project',
-                        lambda _: Project(uuid.uuid4(), 'project', 'workspace'))
+                        lambda _: Project(str(uuid.uuid4()), 'project', 'workspace'))
     mocker.patch.object(neptune.new.sync, 'register_offline_run', lambda _: registered_offline_exp)
     mocker.patch.object(Operation, 'from_dict', lambda x: x)
 
@@ -189,7 +189,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
     # and
     # pylint: disable=no-member
     neptune.new.sync.backend.execute_operations \
-        .assert_called_with(registered_offline_exp.uuid, ['op-0', 'op-1'])
+        .assert_called_with(registered_offline_exp.id, ['op-0', 'op-1'])
 
 
 def test_get_project_no_name_set(mocker):

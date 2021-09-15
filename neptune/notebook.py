@@ -25,7 +25,7 @@ class Notebook(object):
         Args:
             backend (:class:`~neptune.ApiClient`): A ApiClient object
             project (:class:`~neptune.projects.Project`): Project object
-            _id (:obj:`str`): Notebook uuid
+            _id (:obj:`str`): Notebook id
             owner (:obj:`str`): Creator of the notebook is the Notebook owner
 
         Examples:
