@@ -88,6 +88,7 @@ from neptune.new.internal.backends.hosted_client import (
     create_http_client_with_auth,
     create_backend_client,
     create_leaderboard_client,
+    create_artifacts_client,
     get_client_config,
 )
 from neptune.new.internal.credentials import Credentials
@@ -134,6 +135,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         self.backend_client = create_backend_client(self._client_config, self._http_client)
         self.leaderboard_client = create_leaderboard_client(self._client_config, self._http_client)
+        self.artifacts_client = create_artifacts_client(self._client_config, self._http_client)
 
     def close(self) -> None:
         self._http_client.session.close()
@@ -434,7 +436,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         path=op.path,
                         parent_identifier=run_id,
                         entries=op.entries,
-                        default_request_params=self.DEFAULT_REQUEST_KWARGS
+                        default_request_params=DEFAULT_REQUEST_KWARGS
                     )
                 else:
                     assign_operation = track_to_existing_artifact(
@@ -444,7 +446,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         artifact_hash=artifact_hash,
                         parent_identifier=run_id,
                         entries=op.entries,
-                        default_request_params=self.DEFAULT_REQUEST_KWARGS
+                        default_request_params=DEFAULT_REQUEST_KWARGS
                     )
 
                 if assign_operation:
@@ -628,7 +630,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
@@ -643,7 +645,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'projectIdentifier': project_id,
             'hash': artifact_hash,
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.artifacts_client.api.listArtifactFiles(**params).response().result

@@ -37,6 +37,7 @@ from neptune.oauth import NeptuneAuthenticator
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
 LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
+ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
 
 CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
 REQUEST_TIMEOUT = None
@@ -151,5 +152,13 @@ def create_backend_client(client_config: ClientConfig, http_client: HttpClient) 
 def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
     return create_swagger_client(
         build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
+        http_client
+    )
+
+
+@cache
+def create_artifacts_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
+    return create_swagger_client(
+        build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH),
         http_client
     )
