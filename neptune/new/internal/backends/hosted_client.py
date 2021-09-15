@@ -128,7 +128,7 @@ def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[
 
 
 @cache
-def create_http_client_with_auth(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> HttpClient:
+def create_http_client_with_auth(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
     http_client = create_http_client(ssl_verify=ssl_verify, proxies=proxies)
     http_client.authenticator = NeptuneAuthenticator(
         credentials.api_token,
