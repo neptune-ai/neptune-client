@@ -56,13 +56,13 @@ def _ssl_verify():
 
 
 def _get_backend_client(api_token: Optional[str] = None):
-    credentials = Credentials(api_token=_get_token(api_token=api_token))
+    credentials = Credentials.from_token(api_token=_get_token(api_token=api_token))
     client_config = get_client_config(
         credentials=credentials,
         ssl_verify=_ssl_verify(),
         proxies={}
     )
-    http_client = create_http_client_with_auth(
+    http_client, _ = create_http_client_with_auth(
         credentials=credentials,
         ssl_verify=_ssl_verify(),
         proxies={}
