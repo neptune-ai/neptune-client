@@ -17,6 +17,7 @@ import re
 import os
 from typing import Optional, List, Dict
 
+from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound, HTTPBadRequest, HTTPForbidden, HTTPInternalServerError
 
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -42,11 +43,11 @@ from neptune.management.exceptions import (
 )
 
 
-def _get_token(api_token: Optional[str] = None):
+def _get_token(api_token: Optional[str] = None) -> str:
     return api_token or os.getenv(API_TOKEN_ENV_NAME)
 
 
-def _get_backend_client(api_token: Optional[str] = None):
+def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClient:
     credentials = Credentials.from_token(api_token=_get_token(api_token=api_token))
     client_config = get_client_config(
         credentials=credentials,
