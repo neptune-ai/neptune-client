@@ -13,15 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Optional, TYPE_CHECKING, Union, Iterable
+from typing import Optional, TYPE_CHECKING, Union, Iterable, List
 
 from neptune.new.attributes import File
+from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import MissingFieldException, NeptuneException
+from neptune.new.exceptions import NeptuneException
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import verify_type, is_collection, verify_collection_type, is_float, is_string, \
     is_float_like, is_string_like
 from neptune.new.internal.utils.paths import join_paths, parse_path
@@ -49,12 +51,12 @@ class Handler:
         if attr:
             return getattr(attr, attribute_name)
         else:
-            raise MissingFieldException(self._path)
+            raise AttributeError(f"No such method '{attribute_name}'.")
 
     def __getattribute__(self, attribute_name):
         _docstring_attrs = super().__getattribute__('DOCSTRING_ATTRIBUTES')
         if attribute_name in _docstring_attrs:
-            raise AttributeError()
+            raise AttributeError(f"No such method '{attribute_name}'.")
         return super().__getattribute__(attribute_name)
 
     def assign(self, value, wait: bool = False) -> None:
@@ -259,6 +261,8 @@ class Handler:
         'delete_files',
         'download',
         'download_last',
+        'fetch_hash',
+        'fetch_files_list'
     ]
 
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
@@ -365,13 +369,14 @@ class Handler:
         """
         raise NeptuneException('Should be never called.')
 
-    def download(self, destination: str = None, wait: bool = True) -> None:
+    def download(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
 
         Available for following field types (`Field types docs page`_):
             * `File`
             * `FileSeries`
             * `FileSet`
+            * `Artifact`
 
         Args:
             destination (str, optional): Path to where the file(s) should be downloaded.
@@ -380,16 +385,13 @@ class Handler:
                 composed from field name and extension (if present).
                 If `destination` is a path to a file, the file will be downloaded under the specified name.
                 Defaults to `None`.
-            wait (bool, optional): If `True` the client will wait to send all tracked metadata to the server.
-                This makes the call synchronous.
-                Defaults to `None`.
 
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
         raise NeptuneException('Should be never called.')
 
-    def download_last(self, destination: str = None, wait: bool = True) -> None:
+    def download_last(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
 
         Args:
@@ -406,6 +408,41 @@ class Handler:
            https://docs.neptune.ai/api-reference/field-types#download_last
         """
         raise NeptuneException('Should be never called.')
+
+    def fetch_hash(self) -> str:
+        """Fetches the hash of an artifact.
+
+        You may also want to check `fetch_hash docs page`_.
+           https://docs.neptune.ai/api-reference/field-types#fetch_hash
+        """
+        raise NeptuneException('Should be never called.')
+
+    def fetch_files_list(self) -> List[ArtifactFileData]:
+        """Fetches the list of files in an artifact and their metadata.
+
+        You may also want to check `fetch_files_list docs page`_.
+           https://docs.neptune.ai/api-reference/field-types#fetch_files_list
+        """
+        raise NeptuneException('Should be never called.')
+
+    def track_files(self, path: str, destination: str = None, wait: bool = False) -> None:
+        """Creates an artifact tracking some files.
+
+        You may also want to check `track_files docs page`_.
+           https://docs.neptune.ai/api-reference/field-types#track_files
+        """
+        with self._run.lock():
+            attr = self._run.get_attribute(self._path)
+            if not attr:
+                attr = Artifact(self._run, parse_path(self._path))
+
+            self._run.set_attribute(self._path, attr)
+
+            attr.track_files(
+                path=path,
+                destination=destination,
+                wait=wait
+            )
 
     def __delitem__(self, path) -> None:
         self.pop(path)

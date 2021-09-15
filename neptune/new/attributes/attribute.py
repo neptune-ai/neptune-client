@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import uuid
 from typing import List, TYPE_CHECKING
 
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -44,6 +43,6 @@ class Attribute:
         return self._run._backend
 
     @property
-    def _run_uuid(self) -> uuid.UUID:
+    def _run_id(self) -> str:
         # pylint: disable=protected-access
-        return self._run._uuid
+        return self._run._id

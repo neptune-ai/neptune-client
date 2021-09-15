@@ -122,23 +122,21 @@ def get_offline_runs_ids(base_path: Path) -> List[str]:
     if not (base_path / OFFLINE_DIRECTORY).is_dir():
         return []
     for run_path in (base_path / OFFLINE_DIRECTORY).iterdir():
-        if is_valid_uuid(run_path.name):
-            result.append(run_path.name)
+        result.append(run_path.name)
     return result
 
 
 def partition_runs(base_path: Path) -> Tuple[List[ApiRun], List[ApiRun], int]:
-    synced_runs_uuids = []
-    unsynced_runs_uuids = []
+    synced_runs_ids = []
+    unsynced_runs_ids = []
     for run_path in (base_path / ASYNC_DIRECTORY).iterdir():
-        if is_valid_uuid(run_path.name):
-            run_uuid = run_path.name
-            if is_run_synced(run_path):
-                synced_runs_uuids.append(run_uuid)
-            else:
-                unsynced_runs_uuids.append(run_uuid)
-    synced_runs = [run for run in map(get_run, synced_runs_uuids)]
-    unsynced_runs = [run for run in map(get_run, unsynced_runs_uuids)]
+        run_id = run_path.name
+        if is_run_synced(run_path):
+            synced_runs_ids.append(run_id)
+        else:
+            unsynced_runs_ids.append(run_id)
+    synced_runs = [run for run in map(get_run, synced_runs_ids)]
+    unsynced_runs = [run for run in map(get_run, unsynced_runs_ids)]
     not_found = len([exp for exp in synced_runs + unsynced_runs if not exp or exp.trashed])
     synced_runs = [exp for exp in synced_runs if exp and not exp.trashed]
     unsynced_runs = [exp for exp in unsynced_runs if exp and not exp.trashed]
@@ -207,14 +205,14 @@ def synchronization_status(base_path: Path) -> None:
 
 
 def sync_run(run_path: Path, qualified_run_name: str) -> None:
-    run_uuid = uuid.UUID(run_path.name)
+    run_id = run_path.name
     click.echo('Synchronising {}'.format(qualified_run_name))
     for execution_path in run_path.iterdir():
-        sync_execution(execution_path, run_uuid)
+        sync_execution(execution_path, run_id)
     click.echo('Synchronization of run {} completed.'.format(qualified_run_name))
 
 
-def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
+def sync_execution(execution_path: Path, run_id: str) -> None:
     disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock())
     while True:
         batch, version = disk_queue.get_batch(1000)
@@ -224,7 +222,7 @@ def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
         start_time = time.monotonic()
         while True:
             try:
-                backend.execute_operations(run_uuid, batch)
+                backend.execute_operations(run_id, batch)
                 break
             except NeptuneConnectionLostException as ex:
                 if time.monotonic() - start_time > retries_timeout:
@@ -239,9 +237,9 @@ def sync_execution(execution_path: Path, run_uuid: uuid.UUID) -> None:
 
 def sync_all_registered_runs(base_path: Path) -> None:
     for run_path in (base_path / ASYNC_DIRECTORY).iterdir():
-        if is_valid_uuid(run_path.name) and not is_run_synced(run_path):
-            run_uuid = run_path.name
-            run = get_run(run_uuid)
+        if not is_run_synced(run_path):
+            run_id = run_path.name
+            run = get_run(run_id)
             if run:
                 sync_run(run_path, get_qualified_name(run))
 
@@ -250,7 +248,7 @@ def sync_selected_registered_runs(base_path: Path, qualified_runs_names: Sequenc
     for name in qualified_runs_names:
         run = get_run(name)
         if run:
-            run_path = base_path / ASYNC_DIRECTORY / str(run.uuid)
+            run_path = base_path / ASYNC_DIRECTORY / str(run.id)
             if run_path.exists():
                 sync_run(run_path, name)
             else:
@@ -260,7 +258,7 @@ def sync_selected_registered_runs(base_path: Path, qualified_runs_names: Sequenc
 
 def register_offline_run(project: Project) -> Optional[ApiRun]:
     try:
-        return backend.create_run(project.uuid)
+        return backend.create_run(project.id)
     except Exception as e:
         click.echo('Exception occurred while trying to create a run '
                    'on the Neptune server. Please try again later',
@@ -269,24 +267,24 @@ def register_offline_run(project: Project) -> Optional[ApiRun]:
         return None
 
 
-def move_offline_run(base_path: Path, offline_uuid: str, server_uuid: str) -> None:
-    (base_path / ASYNC_DIRECTORY / server_uuid).mkdir(parents=True)
-    (base_path / OFFLINE_DIRECTORY / offline_uuid).rename(base_path / ASYNC_DIRECTORY / server_uuid / "exec-0-offline")
+def move_offline_run(base_path: Path, offline_id: str, server_id: str) -> None:
+    (base_path / ASYNC_DIRECTORY / server_id).mkdir(parents=True)
+    (base_path / OFFLINE_DIRECTORY / offline_id).rename(base_path / ASYNC_DIRECTORY / server_id / "exec-0-offline")
 
 
 def register_offline_runs(base_path: Path, project: Project,
                           offline_runs_ids: Iterable[str]) -> List[ApiRun]:
     result = []
-    for run_uuid in offline_runs_ids:
-        if (base_path / OFFLINE_DIRECTORY / run_uuid).is_dir():
+    for run_id in offline_runs_ids:
+        if (base_path / OFFLINE_DIRECTORY / run_id).is_dir():
             run = register_offline_run(project)
             if run:
-                move_offline_run(base_path, offline_uuid=run_uuid, server_uuid=str(run.uuid))
+                move_offline_run(base_path, offline_id=run_id, server_id=run.id)
                 click.echo('Offline run {} registered as {}'
-                           .format(run_uuid, get_qualified_name(run)))
+                           .format(run_id, get_qualified_name(run)))
                 result.append(run)
         else:
-            click.echo('Offline run with UUID {} not found on disk.'.format(run_uuid), err=True)
+            click.echo('Offline run with UUID {} not found on disk.'.format(run_id), err=True)
     return result
 
 
@@ -365,7 +363,7 @@ def status(path: Path) -> None:
 
     # pylint: disable=global-statement
     global backend
-    backend = HostedNeptuneBackend(Credentials())
+    backend = HostedNeptuneBackend(Credentials.from_token())
 
     synchronization_status(path)
 
@@ -411,7 +409,7 @@ def sync(path: Path, runs_names: List[str], project_name: Optional[str]):
 
     # pylint: disable=global-statement
     global backend
-    backend = HostedNeptuneBackend(Credentials())
+    backend = HostedNeptuneBackend(Credentials.from_token())
 
     if runs_names:
         sync_selected_runs(path, project_name, runs_names)

@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import logging
-import uuid
 from typing import Optional
 
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -26,8 +25,8 @@ _logger = logging.getLogger(__name__)
 
 class ReadOnlyOperationProcessor(OperationProcessor):
 
-    def __init__(self, run_uuid: uuid.UUID, backend: NeptuneBackend):
-        self._run_uuid = run_uuid
+    def __init__(self, run_id: str, backend: NeptuneBackend):
+        self._run_id = run_id
         self._backend = backend
         self._warning_emitted = False
 

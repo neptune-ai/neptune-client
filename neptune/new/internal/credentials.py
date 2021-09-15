@@ -17,45 +17,44 @@
 import base64
 import json
 import os
-from functools import lru_cache
 from typing import Optional, Dict
+
+from dataclasses import dataclass
 
 from neptune.new import envs
 from neptune.new import ANONYMOUS, ANONYMOUS_API_TOKEN
 from neptune.new.exceptions import NeptuneInvalidApiTokenException, NeptuneMissingApiTokenException
 
 
-@lru_cache(maxsize=None, typed=True)
-class Credentials(object):
-    def __init__(self, api_token: Optional[str] = None):
+@dataclass(frozen=True)
+class Credentials:
+    api_token: str
+    token_origin_address: str
+    api_url_opt: str
+
+    @classmethod
+    def from_token(cls, api_token: Optional[str] = None) -> 'Credentials':
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
 
         if api_token == ANONYMOUS:
             api_token = ANONYMOUS_API_TOKEN
 
-        self._api_token = api_token
-        if self.api_token is None:
+        if api_token is None:
             raise NeptuneMissingApiTokenException()
 
-        token_dict = self._api_token_to_dict(self.api_token)
+        token_dict = Credentials._api_token_to_dict(api_token)
         # TODO: Consider renaming 'api_address' (breaking backward compatibility)
         if 'api_address' not in token_dict:
             raise NeptuneInvalidApiTokenException()
-        self._token_origin_address = token_dict['api_address']
-        self._api_url = token_dict['api_url'] if 'api_url' in token_dict else None
+        token_origin_address = token_dict['api_address']
+        api_url = token_dict['api_url'] if 'api_url' in token_dict else None
 
-    @property
-    def api_token(self) -> str:
-        return self._api_token
-
-    @property
-    def token_origin_address(self) -> str:
-        return self._token_origin_address
-
-    @property
-    def api_url_opt(self) -> Optional[str]:
-        return self._api_url
+        return Credentials(
+            api_token=api_token,
+            token_origin_address=token_origin_address,
+            api_url_opt=api_url
+        )
 
     @staticmethod
     def _api_token_to_dict(api_token: str) -> Dict[str, str]:

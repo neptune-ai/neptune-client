@@ -14,12 +14,13 @@
 # limitations under the License.
 #
 
-import uuid
 from typing import List
 
 from neptune.new.exceptions import NeptuneOfflineModeFetchException
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     Attribute,
+    ArtifactAttribute,
     BoolAttribute,
     FileAttribute,
     FloatAttribute,
@@ -38,48 +39,54 @@ from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMoc
 
 class OfflineNeptuneBackend(NeptuneBackendMock):
 
-    def get_attributes(self, run_uuid: uuid.UUID) -> List[Attribute]:
+    def get_attributes(self, run_id: str) -> List[Attribute]:
         raise NeptuneOfflineModeFetchException
 
-    def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(self, run_id: str, path: List[str]) -> FloatAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
+    def get_int_attribute(self, run_id: str, path: List[str]) -> IntAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
+    def get_bool_attribute(self, run_id: str, path: List[str]) -> BoolAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_file_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FileAttribute:
+    def get_file_attribute(self, run_id: str, path: List[str]) -> FileAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
+    def get_string_attribute(self, run_id: str, path: List[str]) -> StringAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
+    def get_datetime_attribute(self, run_id: str, path: List[str]) -> DatetimeAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
+    def get_artifact_attribute(self, run_id: str, path: List[str]) -> ArtifactAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_string_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
+    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         raise NeptuneOfflineModeFetchException
 
-    def get_string_set_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
+    def get_float_series_attribute(self, run_id: str, path: List[str]) -> FloatSeriesAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_string_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_string_series_attribute(self, run_id: str, path: List[str]) -> StringSeriesAttribute:
+        raise NeptuneOfflineModeFetchException
+
+    def get_string_set_attribute(self, run_id: str, path: List[str]) -> StringSetAttribute:
+        raise NeptuneOfflineModeFetchException
+
+    def get_string_series_values(self, run_id: str, path: List[str],
                                  offset: int, limit: int) -> StringSeriesValues:
         raise NeptuneOfflineModeFetchException
 
-    def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_float_series_values(self, run_id: str, path: List[str],
                                 offset: int, limit: int) -> FloatSeriesValues:
         raise NeptuneOfflineModeFetchException
 
-    def get_image_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_image_series_values(self, run_id: str, path: List[str],
                                 offset: int, limit: int) -> ImageSeriesValues:
         raise NeptuneOfflineModeFetchException
 
-    def download_file_series_by_index(self, run_uuid: uuid.UUID, path: List[str],
+    def download_file_series_by_index(self, run_id: str, path: List[str],
                                       index: int, destination: str):
         raise NeptuneOfflineModeFetchException

@@ -18,7 +18,6 @@
 import contextlib
 import io
 import os
-import sys
 import unittest
 from typing import Optional
 from unittest import mock
@@ -38,6 +37,7 @@ from PIL import Image
 import numpy
 
 from neptune.new.internal.utils.images import get_image_content, get_html_content
+from neptune.utils import IS_WINDOWS
 
 matplotlib.use('agg')
 
@@ -118,8 +118,7 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(fig), self._encode_figure(fig))
 
-    @unittest.skipIf(sys.version_info < (3, 6),
-                     reason="Installing Torch on Windows takes too long and 3.5 is not supported")
+    @unittest.skipIf(IS_WINDOWS, "Installing Torch on Windows takes too long")
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
         # given
@@ -130,7 +129,6 @@ class TestImage(unittest.TestCase):
         # expect
         self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
-    @unittest.skipIf(sys.version_info < (3, 6), reason="Tensorflow isn't built for older Pythons")
     def test_get_image_content_from_tensorflow_tensor(self):
         import tensorflow as tf  # pylint: disable=C0415
         # given

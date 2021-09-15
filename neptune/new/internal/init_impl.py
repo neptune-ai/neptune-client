@@ -17,7 +17,6 @@
 import logging
 import os
 import threading
-import uuid
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
@@ -246,11 +245,11 @@ def init(project: Optional[str] = None,
     if mode == RunMode.ASYNC:
         # TODO Initialize backend in async thread
         backend = HostedNeptuneBackend(
-            credentials=Credentials(api_token=api_token),
+            credentials=Credentials.from_token(api_token=api_token),
             proxies=proxies)
     elif mode == RunMode.SYNC:
         backend = HostedNeptuneBackend(
-            credentials=Credentials(api_token=api_token),
+            credentials=Credentials.from_token(api_token=api_token),
             proxies=proxies)
     elif mode == RunMode.DEBUG:
         backend = NeptuneBackendMock()
@@ -258,7 +257,7 @@ def init(project: Optional[str] = None,
         backend = OfflineNeptuneBackend()
     elif mode == RunMode.READ_ONLY:
         backend = HostedNeptuneBackend(
-            credentials=Credentials(api_token=api_token),
+            credentials=Credentials.from_token(api_token=api_token),
             proxies=proxies)
     else:
         raise ValueError(f'mode should be one of {[m for m in RunMode]}')
@@ -281,12 +280,12 @@ def init(project: Optional[str] = None,
 
         notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
 
-        api_run = backend.create_run(project_obj.uuid, git_ref, custom_run_id, notebook_id, checkpoint_id)
+        api_run = backend.create_run(project_obj.id, git_ref, custom_run_id, notebook_id, checkpoint_id)
 
     run_lock = threading.RLock()
 
     if mode == RunMode.ASYNC:
-        run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, ASYNC_DIRECTORY, api_run.uuid)
+        run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, ASYNC_DIRECTORY, api_run.id)
         try:
             execution_id = len(os.listdir(run_path))
         except FileNotFoundError:
@@ -294,25 +293,25 @@ def init(project: Optional[str] = None,
         execution_path = "{}/exec-{}-{}".format(run_path, execution_id, datetime.now())
         execution_path = execution_path.replace(" ", "_").replace(":", ".")
         operation_processor = AsyncOperationProcessor(
-            api_run.uuid,
+            api_run.id,
             DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict, run_lock),
             backend,
             run_lock,
             sleep_time=flush_period)
     elif mode == RunMode.SYNC:
-        operation_processor = SyncOperationProcessor(api_run.uuid, backend)
+        operation_processor = SyncOperationProcessor(api_run.id, backend)
     elif mode == RunMode.DEBUG:
-        operation_processor = SyncOperationProcessor(api_run.uuid, backend)
+        operation_processor = SyncOperationProcessor(api_run.id, backend)
     elif mode == RunMode.OFFLINE:
         # Run was returned by mocked backend and has some random UUID.
-        run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, OFFLINE_DIRECTORY, api_run.uuid)
+        run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, OFFLINE_DIRECTORY, api_run.id)
         storage_queue = DiskQueue(Path(run_path),
                                   lambda x: x.to_dict(),
                                   Operation.from_dict,
                                   run_lock)
         operation_processor = OfflineOperationProcessor(storage_queue)
     elif mode == RunMode.READ_ONLY:
-        operation_processor = ReadOnlyOperationProcessor(api_run.uuid, backend)
+        operation_processor = ReadOnlyOperationProcessor(api_run.id, backend)
     else:
         raise ValueError(f'mode should be one of {[m for m in RunMode]}')
 
@@ -328,15 +327,15 @@ def init(project: Optional[str] = None,
             background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
         if capture_hardware_metrics:
             background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
-        websockets_factory = backend.websockets_factory(project_obj.uuid, api_run.uuid)
+        websockets_factory = backend.websockets_factory(project_obj.id, api_run.id)
         if websockets_factory:
             background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
         if capture_traceback:
             background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
         background_jobs.append(PingBackgroundJob())
 
-    _run = Run(api_run.uuid, backend, operation_processor, BackgroundJobList(background_jobs), run_lock,
-               api_run.workspace, api_run.project_name, api_run.short_id, monitoring_namespace)
+    _run = Run(api_run.id, backend, operation_processor, BackgroundJobList(background_jobs), run_lock,
+               api_run.workspace, api_run.project_name, api_run.short_id, project_obj.id, monitoring_namespace)
     if mode != RunMode.OFFLINE:
         _run.sync(wait=False)
 
@@ -378,13 +377,10 @@ def init(project: Optional[str] = None,
     return _run
 
 
-def _create_notebook_checkpoint(backend: NeptuneBackend) -> (uuid.UUID, uuid.UUID):
+def _create_notebook_checkpoint(backend: NeptuneBackend) -> (str, str):
     notebook_id = None
     if os.getenv(NEPTUNE_NOTEBOOK_ID, None) is not None:
-        try:
-            notebook_id = uuid.UUID(os.environ[NEPTUNE_NOTEBOOK_ID])
-        except ValueError:
-            _logger.warning("Invalid notebook ID, must be an UUID")
+        notebook_id = os.environ[NEPTUNE_NOTEBOOK_ID]
 
     notebook_path = None
     if os.getenv(NEPTUNE_NOTEBOOK_PATH, None) is not None:

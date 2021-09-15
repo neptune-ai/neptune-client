@@ -27,8 +27,10 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneException,
 )
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ApiRun,
+    ArtifactAttribute,
     Attribute,
     AttributeType,
     BoolAttribute,
@@ -51,24 +53,31 @@ from neptune.new.internal.backends.hosted_file_operations import get_unique_uplo
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.run_structure import RunStructure
 from neptune.new.internal.operation import (
+    AssignArtifact,
     AddStrings,
-    AssignBool, AssignDatetime,
+    AssignBool,
+    AssignDatetime,
     AssignFloat,
-    AssignInt, AssignString,
+    AssignInt,
+    AssignString,
+    ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
     DeleteAttribute,
+    DeleteFiles,
     LogFloats,
     LogImages,
     LogStrings,
     Operation,
     RemoveStrings,
+    TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
-    UploadFileSet, DeleteFiles,
+    UploadFileSet,
+
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
 from neptune.new.internal.utils import base64_decode
@@ -76,6 +85,7 @@ from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
+from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.file import File
 from neptune.new.types.atoms.float import Float
@@ -99,65 +109,66 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
-        self._runs: Dict[uuid.UUID, RunStructure[Value, dict]] = dict()
+        self._runs: Dict[str, RunStructure[Value, dict]] = dict()
+        self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
 
     def get_display_address(self) -> str:
         return "OFFLINE"
 
     def get_project(self, project_id: str) -> Project:
-        return Project(uuid.uuid4(), "project-placeholder", "offline")
+        return Project(str(uuid.uuid4()), "project-placeholder", "offline")
 
     def get_available_projects(self,
                                workspace_id: Optional[str] = None,
                                search_term: Optional[str] = None
                                ) -> List[Project]:
-        return [Project(uuid.uuid4(), "project-placeholder", "offline")]
+        return [Project(str(uuid.uuid4()), "project-placeholder", "offline")]
 
     def get_available_workspaces(self) -> List[Workspace]:
-        return [Workspace(uuid.uuid4(), "offline")]
+        return [Workspace(str(uuid.uuid4()), "offline")]
 
     def create_run(self,
-                   project_uuid: uuid.UUID,
+                   project_id: str,
                    git_ref: Optional[GitRef] = None,
                    custom_run_id: Optional[str] = None,
-                   notebook_id: Optional[uuid.UUID] = None,
-                   checkpoint_id: Optional[uuid.UUID] = None
+                   notebook_id: Optional[str] = None,
+                   checkpoint_id: Optional[str] = None
                    ) -> ApiRun:
         short_id = "OFFLINE-{}".format(len(self._runs) + 1)
-        new_run_uuid = uuid.uuid4()
-        self._runs[new_run_uuid] = RunStructure[Value, dict]()
-        self._runs[new_run_uuid].set(["sys", "id"], String(short_id))
-        self._runs[new_run_uuid].set(["sys", "state"], String("running"))
-        self._runs[new_run_uuid].set(["sys", "owner"], String("offline_user"))
-        self._runs[new_run_uuid].set(["sys", "size"], Float(0))
-        self._runs[new_run_uuid].set(["sys", "tags"], StringSet(set()))
-        self._runs[new_run_uuid].set(["sys", "creation_time"], Datetime(datetime.now()))
-        self._runs[new_run_uuid].set(["sys", "modification_time"], Datetime(datetime.now()))
-        self._runs[new_run_uuid].set(["sys", "failed"], Boolean(False))
+        new_run_id = str(uuid.uuid4())
+        self._runs[new_run_id] = RunStructure[Value, dict]()
+        self._runs[new_run_id].set(["sys", "id"], String(short_id))
+        self._runs[new_run_id].set(["sys", "state"], String("running"))
+        self._runs[new_run_id].set(["sys", "owner"], String("offline_user"))
+        self._runs[new_run_id].set(["sys", "size"], Float(0))
+        self._runs[new_run_id].set(["sys", "tags"], StringSet(set()))
+        self._runs[new_run_id].set(["sys", "creation_time"], Datetime(datetime.now()))
+        self._runs[new_run_id].set(["sys", "modification_time"], Datetime(datetime.now()))
+        self._runs[new_run_id].set(["sys", "failed"], Boolean(False))
         if git_ref:
-            self._runs[new_run_uuid].set(["source_code", "git"], git_ref)
-        return ApiRun(new_run_uuid, short_id, 'workspace', 'sandbox', False)
+            self._runs[new_run_id].set(["source_code", "git"], git_ref)
+        return ApiRun(new_run_id, short_id, 'workspace', 'sandbox', False)
 
-    def create_checkpoint(self, notebook_id: uuid.UUID, jupyter_path: str) -> Optional[uuid.UUID]:
+    def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None
 
     def get_run(self, run_id: str) -> ApiRun:
         raise RunNotFound(run_id)
 
-    def execute_operations(self, run_uuid: uuid.UUID, operations: List[Operation]) -> List[NeptuneException]:
+    def execute_operations(self, run_id: str, operations: List[Operation]) -> List[NeptuneException]:
         result = []
         for op in operations:
             try:
-                self._execute_operation(run_uuid, op)
+                self._execute_operation(run_id, op)
             except NeptuneException as e:
                 result.append(e)
         return result
 
-    def _execute_operation(self, run_uuid: uuid.UUID, op: Operation) -> None:
-        if run_uuid not in self._runs:
-            raise RunUUIDNotFound(run_uuid)
-        run = self._runs[run_uuid]
+    def _execute_operation(self, run_id: str, op: Operation) -> None:
+        if run_id not in self._runs:
+            raise RunUUIDNotFound(run_id)
+        run = self._runs[run_id]
         val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):
@@ -171,10 +182,10 @@ class NeptuneBackendMock(NeptuneBackend):
         else:
             run.pop(op.path)
 
-    def get_attributes(self, run_uuid: uuid.UUID) -> List[Attribute]:
-        if run_uuid not in self._runs:
-            raise RunUUIDNotFound(run_uuid)
-        run = self._runs[run_uuid]
+    def get_attributes(self, run_id: str) -> List[Attribute]:
+        if run_id not in self._runs:
+            raise RunUUIDNotFound(run_id)
+        run = self._runs[run_id]
         return list(self._generate_attributes(None, run.get_structure()))
 
     def _generate_attributes(self, base_path: Optional[str], values: dict):
@@ -185,8 +196,8 @@ class NeptuneBackendMock(NeptuneBackend):
             else:
                 yield Attribute(new_path, value_or_dict.accept(self._attribute_type_converter_value_visitor))
 
-    def download_file(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
-        value: File = self._runs[run_uuid].get(path)
+    def download_file(self, run_id: str, path: List[str], destination: Optional[str] = None):
+        value: File = self._runs[run_id].get(path)
         target_path = os.path.abspath(destination or (path[-1] + ("." + value.extension if value.extension else "")))
         if value.content is not None:
             with open(target_path, 'wb') as target_file:
@@ -194,8 +205,8 @@ class NeptuneBackendMock(NeptuneBackend):
         elif value.path != target_path:
             copyfile(value.path, target_path)
 
-    def download_file_set(self, run_uuid: uuid.UUID, path: List[str], destination: Optional[str] = None):
-        source_file_set_value: FileSet = self._runs[run_uuid].get(path)
+    def download_file_set(self, run_id: str, path: List[str], destination: Optional[str] = None):
+        source_file_set_value: FileSet = self._runs[run_id].get(path)
 
         if destination is None:
             target_file = path[-1] + ".zip"
@@ -210,49 +221,56 @@ class NeptuneBackendMock(NeptuneBackend):
             for upload_entry in upload_entries:
                 zipObj.write(upload_entry.source_path, upload_entry.target_path)
 
-    def get_float_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatAttribute:
-        val = self._get_attribute(run_uuid, path, Float)
+    def get_float_attribute(self, run_id: str, path: List[str]) -> FloatAttribute:
+        val = self._get_attribute(run_id, path, Float)
         return FloatAttribute(val.value)
 
-    def get_int_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> IntAttribute:
-        val = self._get_attribute(run_uuid, path, Integer)
+    def get_int_attribute(self, run_id: str, path: List[str]) -> IntAttribute:
+        val = self._get_attribute(run_id, path, Integer)
         return IntAttribute(val.value)
 
-    def get_bool_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> BoolAttribute:
-        val = self._get_attribute(run_uuid, path, Boolean)
+    def get_bool_attribute(self, run_id: str, path: List[str]) -> BoolAttribute:
+        val = self._get_attribute(run_id, path, Boolean)
         return BoolAttribute(val.value)
 
-    def get_file_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FileAttribute:
-        val = self._get_attribute(run_uuid, path, File)
+    def get_file_attribute(self, run_id: str, path: List[str]) -> FileAttribute:
+        val = self._get_attribute(run_id, path, File)
         return FileAttribute(
             name=os.path.basename(val.path) if val.path else "",
             ext=val.extension or "",
             size=0)
 
-    def get_string_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringAttribute:
-        val = self._get_attribute(run_uuid, path, String)
+    def get_string_attribute(self, run_id: str, path: List[str]) -> StringAttribute:
+        val = self._get_attribute(run_id, path, String)
         return StringAttribute(val.value)
 
-    def get_datetime_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> DatetimeAttribute:
-        val = self._get_attribute(run_uuid, path, Datetime)
+    def get_datetime_attribute(self, run_id: str, path: List[str]) -> DatetimeAttribute:
+        val = self._get_attribute(run_id, path, Datetime)
         return DatetimeAttribute(val.value)
 
-    def get_float_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> FloatSeriesAttribute:
-        val = self._get_attribute(run_uuid, path, FloatSeries)
+    def get_artifact_attribute(self, run_id: str, path: List[str]) -> ArtifactAttribute:
+        val = self._get_attribute(run_id, path, Artifact)
+        return ArtifactAttribute(val.hash)
+
+    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
+        return self._artifacts[(project_id, artifact_hash)]
+
+    def get_float_series_attribute(self, run_id: str, path: List[str]) -> FloatSeriesAttribute:
+        val = self._get_attribute(run_id, path, FloatSeries)
         return FloatSeriesAttribute(val.values[-1] if val.values else None)
 
-    def get_string_series_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSeriesAttribute:
-        val = self._get_attribute(run_uuid, path, StringSeries)
+    def get_string_series_attribute(self, run_id: str, path: List[str]) -> StringSeriesAttribute:
+        val = self._get_attribute(run_id, path, StringSeries)
         return StringSeriesAttribute(val.values[-1] if val.values else None)
 
-    def get_string_set_attribute(self, run_uuid: uuid.UUID, path: List[str]) -> StringSetAttribute:
-        val = self._get_attribute(run_uuid, path, StringSet)
+    def get_string_set_attribute(self, run_id: str, path: List[str]) -> StringSetAttribute:
+        val = self._get_attribute(run_id, path, StringSet)
         return StringSetAttribute(set(val.values))
 
-    def _get_attribute(self, run_uuid: uuid.UUID, path: List[str], expected_type: Type[Val]) -> Val:
-        if run_uuid not in self._runs:
-            raise RunUUIDNotFound(run_uuid)
-        value: Optional[Value] = self._runs[run_uuid].get(path)
+    def _get_attribute(self, run_id: str, path: List[str], expected_type: Type[Val]) -> Val:
+        if run_id not in self._runs:
+            raise RunUUIDNotFound(run_id)
+        value: Optional[Value] = self._runs[run_id].get(path)
         str_path = path_to_str(path)
         if value is None:
             raise MetadataInconsistency("Attribute {} not found".format(str_path))
@@ -260,28 +278,28 @@ class NeptuneBackendMock(NeptuneBackend):
             return value
         raise MetadataInconsistency("Attribute {} is not {}".format(str_path, type.__name__))
 
-    def get_string_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_string_series_values(self, run_id: str, path: List[str],
                                  offset: int, limit: int) -> StringSeriesValues:
-        val = self._get_attribute(run_uuid, path, StringSeries)
+        val = self._get_attribute(run_id, path, StringSeries)
         return StringSeriesValues(
             len(val.values),
-            [StringPointValue(timestampMillis=-1, step=idx, value=v) for idx, v in enumerate(val.values)]
+            [StringPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)]
         )
 
-    def get_float_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_float_series_values(self, run_id: str, path: List[str],
                                 offset: int, limit: int) -> FloatSeriesValues:
         return FloatSeriesValues(0, [])
 
-    def get_image_series_values(self, run_uuid: uuid.UUID, path: List[str],
+    def get_image_series_values(self, run_id: str, path: List[str],
                                 offset: int, limit: int) -> ImageSeriesValues:
         return ImageSeriesValues(0)
 
-    def download_file_series_by_index(self, run_uuid: uuid.UUID, path: List[str],
+    def download_file_series_by_index(self, run_id: str, path: List[str],
                                       index: int, destination: str):
         pass
 
-    def get_run_url(self, run_uuid: uuid, workspace: str, project_name: str, short_id: str) -> str:
-        return f"offline/{run_uuid}"
+    def get_run_url(self, run_id: str, workspace: str, project_name: str, short_id: str) -> str:
+        return f"offline/{run_id}"
 
     def _get_attribute_values(self, value_dict, path_prefix: List[str]):
         assert isinstance(value_dict, dict)
@@ -296,8 +314,8 @@ class NeptuneBackendMock(NeptuneBackend):
                 else:
                     return attr_path, attr_type, NoValue
 
-    def fetch_atom_attribute_values(self, run_uuid: uuid.UUID, path: List[str]) -> List[Tuple[str, AttributeType, Any]]:
-        values = self._get_attribute_values(self._runs[run_uuid].get(path), path)
+    def fetch_atom_attribute_values(self, run_id: str, path: List[str]) -> List[Tuple[str, AttributeType, Any]]:
+        values = self._get_attribute_values(self._runs[run_id].get(path), path)
         namespace_prefix = path_to_str(path)
         if namespace_prefix:
             # don't want to catch "ns/attribute/other" while looking for "ns/attr"
@@ -346,6 +364,9 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_git_ref(self, _: GitRef) -> AttributeType:
             return AttributeType.GIT_REF
 
+        def visit_artifact(self, _: Artifact) -> AttributeType:
+            return AttributeType.ARTIFACT
+
         def visit_namespace(self, _: Namespace) -> AttributeType:
             raise NotImplementedError
 
@@ -354,6 +375,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def __init__(self, path: List[str], current_value: Optional[Value]):
             self._path = path
             self._current_value = current_value
+            self._artifact_hash = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
 
         def visit_assign_float(self, op: AssignFloat) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, Float):
@@ -379,6 +401,23 @@ class NeptuneBackendMock(NeptuneBackend):
             if self._current_value is not None and not isinstance(self._current_value, Datetime):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
+
+        def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("assign", Artifact.__name__)
+            return Artifact(op.hash)
+
+        def visit_track_files_to_artifact(self, _: TrackFilesToArtifact) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("save", Artifact.__name__)
+            return Artifact(self._artifact_hash)
+
+        def visit_clear_artifact(self, _: ClearArtifact) -> Optional[Value]:
+            if self._current_value is None:
+                return Artifact()
+            if not isinstance(self._current_value, Artifact):
+                raise self._create_type_error("clear", Artifact.__name__)
+            return Artifact()
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):

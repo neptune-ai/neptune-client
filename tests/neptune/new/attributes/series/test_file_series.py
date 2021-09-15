@@ -15,21 +15,15 @@
 #
 
 # pylint: disable=protected-access
-from tempfile import NamedTemporaryFile
-
 import numpy
 from mock import patch, MagicMock, call
 from neptune.new.exceptions import OperationNotSupported
-
 from neptune.new.internal.utils import base64_encode
-
 from neptune.new.internal.operation import ImageValue, LogImages, ClearImageLog
-
 from neptune.new.types import File
-
 from neptune.new.attributes.series.file_series import FileSeries
-
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
+from tests.neptune.new.helpers import create_file
 
 
 @patch("time.time", new=TestAttributeBase._now)
@@ -99,8 +93,8 @@ class TestFileSeries(TestAttributeBase):
         attr = FileSeries(exp, path)
 
         file = File.as_image(numpy.random.rand(10, 10) * 255)
-        with self._create_image_file(file.content) as tmp_file:
-            saved_file = File(tmp_file.name)
+        with create_file(file.content, binary_mode=True) as tmp_filename:
+            saved_file = File(tmp_filename)
 
             # when
             attr.log(saved_file, step=3, timestamp=self._now(), wait=wait, description="something")
@@ -121,8 +115,8 @@ class TestFileSeries(TestAttributeBase):
         attr = FileSeries(exp, path)
 
         file = File.from_content("some text")
-        with self._create_image_file(file.content) as tmp_file:
-            saved_file = File(tmp_file.name)
+        with create_file(file.content, binary_mode=True) as tmp_filename:
+            saved_file = File(tmp_filename)
 
             # when
             with self.assertRaises(OperationNotSupported):
@@ -138,18 +132,11 @@ class TestFileSeries(TestAttributeBase):
         attr = FileSeries(exp, path)
 
         file = File.from_content("some text")
-        with self._create_image_file(file.content) as tmp_file:
-            saved_file = File(tmp_file.name)
+        with create_file(file.content, binary_mode=True) as tmp_filename:
+            saved_file = File(tmp_filename)
 
             # when
             with self.assertRaises(OperationNotSupported):
                 attr.assign([file])
             with self.assertRaises(OperationNotSupported):
                 attr.assign([saved_file])
-
-    @staticmethod
-    def _create_image_file(content):
-        file = NamedTemporaryFile("wb")
-        file.write(content)
-        file.flush()
-        return file

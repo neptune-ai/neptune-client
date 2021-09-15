@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 import platform
-from typing import Dict
-from functools import lru_cache
+from typing import Dict, Tuple
 
 from bravado.client import SwaggerClient
 from bravado.http_client import HttpClient
@@ -23,10 +22,13 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.new.internal.backends.utils import (
+    with_api_exceptions_handler,
     build_operation_url,
     update_session_proxies,
     verify_host_resolution,
-    create_swagger_client
+    create_swagger_client,
+    verify_client_version,
+    cache,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.credentials import Credentials
@@ -37,6 +39,7 @@ from neptune.oauth import NeptuneAuthenticator
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
 LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
+ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
 
 CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
 REQUEST_TIMEOUT = None
@@ -56,23 +59,36 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
 
     update_session_proxies(http_client.session, proxies)
 
+    user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
+        lib_version=neptune_client_version,
+        system=platform.platform(),
+        python_version=platform.python_version())
+    http_client.session.headers.update({'User-Agent': user_agent})
+
     return http_client
 
 
-def _get_token_client(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]):
-    token_http_client = create_http_client(ssl_verify, proxies)
-
+@cache
+def _get_token_client(
+        credentials: Credentials,
+        ssl_verify: bool,
+        proxies: Dict[str, str],
+        endpoint_url: str = None
+) -> SwaggerClient:
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
-    if proxies is None:
+    if proxies is None and endpoint_url is None:
         verify_host_resolution(config_api_url)
 
+    token_http_client = create_http_client(ssl_verify, proxies)
+
     return create_swagger_client(
-        build_operation_url(config_api_url, BACKEND_SWAGGER_PATH),
+        build_operation_url(endpoint_url or config_api_url, BACKEND_SWAGGER_PATH),
         token_http_client
     )
 
 
-@lru_cache(maxsize=None, typed=True)
+@cache
+@with_api_exceptions_handler
 def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> ClientConfig:
     backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 
@@ -98,27 +114,44 @@ def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[
     )
 
 
-@lru_cache(maxsize=None, typed=True)
-def create_http_client_with_auth(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]):
-    token_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
+@cache
+def create_http_client_with_auth(
+        credentials: Credentials,
+        ssl_verify: bool,
+        proxies: Dict[str, str]
+) -> Tuple[RequestsClient, ClientConfig]:
+    client_config = get_client_config(
+        credentials=credentials,
+        ssl_verify=ssl_verify,
+        proxies=proxies
+    )
+    verify_client_version(client_config, neptune_client_version)
+
+    config_api_url = credentials.api_url_opt or credentials.token_origin_address
+    if proxies is None:
+        verify_host_resolution(config_api_url)
+
+    endpoint_url = None
+    if config_api_url != client_config.api_url:
+        endpoint_url = build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH)
 
     http_client = create_http_client(ssl_verify=ssl_verify, proxies=proxies)
     http_client.authenticator = NeptuneAuthenticator(
         credentials.api_token,
-        token_client,
+        _get_token_client(
+            credentials=credentials,
+            ssl_verify=ssl_verify,
+            proxies=proxies,
+            endpoint_url=endpoint_url
+        ),
         ssl_verify,
         proxies
     )
-    user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
-        lib_version=neptune_client_version,
-        system=platform.platform(),
-        python_version=platform.python_version())
-    http_client.session.headers.update({'User-Agent': user_agent})
 
-    return http_client
+    return http_client, client_config
 
 
-@lru_cache(maxsize=None, typed=True)
+@cache
 def create_backend_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
     return create_swagger_client(
         build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH),
@@ -126,9 +159,17 @@ def create_backend_client(client_config: ClientConfig, http_client: HttpClient) 
     )
 
 
-@lru_cache(maxsize=None, typed=True)
+@cache
 def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
     return create_swagger_client(
         build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
+        http_client
+    )
+
+
+@cache
+def create_artifacts_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
+    return create_swagger_client(
+        build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH),
         http_client
     )

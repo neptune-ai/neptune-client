@@ -48,7 +48,7 @@ class Experiment(object):
         backend (:obj:`neptune.ApiClient`): A ApiClient object
         project (:obj:`neptune.Project`): The project this experiment belongs to
         _id (:obj:`str`): Experiment id
-        internal_id (:obj:`str`): internal UUID
+        internal_id (:obj:`str`): internal ID
 
     Example:
         Assuming that `project` is an instance of :class:`~neptune.projects.Project`.
