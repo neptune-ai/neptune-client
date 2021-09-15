@@ -152,7 +152,7 @@ class HostedNeptuneLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
 
-    def websockets_factory(self, project_uuid, experiment_id):
+    def websockets_factory(self, project_id, experiment_id):
         base_url = re.sub(r'^http', 'ws', self.api_address) + '/api/notifications/v1'
         return ReconnectingWebsocketFactory(
             backend=self,

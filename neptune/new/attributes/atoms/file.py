@@ -45,9 +45,9 @@ class File(Atom):
 
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file(self._run_uuid, self._path, destination)
+        self._backend.download_file(self._run_id, self._path, destination)
 
     def fetch_extension(self):
         # pylint: disable=protected-access
-        val = self._backend.get_file_attribute(self._run_uuid, self._path)
+        val = self._backend.get_file_attribute(self._run_id, self._path)
         return val.ext

@@ -38,10 +38,10 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AssignFloat(["x"], 5)])
+        backend.execute_operations(exp.id, [AssignFloat(["x"], 5)])
 
         # when
-        ret = backend.get_float_attribute(exp.uuid, ["x"])
+        ret = backend.get_float_attribute(exp.id, ["x"])
 
         # then
         self.assertEqual(FloatAttribute(5), ret)
@@ -50,10 +50,10 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AssignString(["x"], "abcx")])
+        backend.execute_operations(exp.id, [AssignString(["x"], "abcx")])
 
         # when
-        ret = backend.get_string_attribute(exp.uuid, ["x"])
+        ret = backend.get_string_attribute(exp.id, ["x"])
 
         # then
         self.assertEqual(StringAttribute("abcx"), ret)
@@ -64,10 +64,10 @@ class TestNeptuneBackendMock(unittest.TestCase):
         exp = backend.create_run(self.project_uuid)
         now = datetime.datetime.now()
         now = now.replace(microsecond=1000*int(now.microsecond/1000))
-        backend.execute_operations(exp.uuid, [AssignDatetime(["x"], now)])
+        backend.execute_operations(exp.id, [AssignDatetime(["x"], now)])
 
         # when
-        ret = backend.get_datetime_attribute(exp.uuid, ["x"])
+        ret = backend.get_datetime_attribute(exp.id, ["x"])
 
         # then
         self.assertEqual(DatetimeAttribute(now), ret)
@@ -76,13 +76,13 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [LogFloats(["x"], [LogFloats.ValueType(5, None, time()),
-                                                                LogFloats.ValueType(3, None, time())])])
-        backend.execute_operations(exp.uuid, [LogFloats(["x"], [LogFloats.ValueType(2, None, time()),
-                                                                LogFloats.ValueType(9, None, time())])])
+        backend.execute_operations(exp.id, [LogFloats(["x"], [LogFloats.ValueType(5, None, time()),
+                                                              LogFloats.ValueType(3, None, time())])])
+        backend.execute_operations(exp.id, [LogFloats(["x"], [LogFloats.ValueType(2, None, time()),
+                                                              LogFloats.ValueType(9, None, time())])])
 
         # when
-        ret = backend.get_float_series_attribute(exp.uuid, ["x"])
+        ret = backend.get_float_series_attribute(exp.id, ["x"])
 
         # then
         self.assertEqual(FloatSeriesAttribute(9), ret)
@@ -91,13 +91,13 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [LogStrings(["x"], [LogStrings.ValueType("adf", None, time()),
-                                                                 LogStrings.ValueType("sdg", None, time())])])
-        backend.execute_operations(exp.uuid, [LogStrings(["x"], [LogStrings.ValueType("dfh", None, time()),
-                                                                 LogStrings.ValueType("qwe", None, time())])])
+        backend.execute_operations(exp.id, [LogStrings(["x"], [LogStrings.ValueType("adf", None, time()),
+                                                               LogStrings.ValueType("sdg", None, time())])])
+        backend.execute_operations(exp.id, [LogStrings(["x"], [LogStrings.ValueType("dfh", None, time()),
+                                                               LogStrings.ValueType("qwe", None, time())])])
 
         # when
-        ret = backend.get_string_series_attribute(exp.uuid, ["x"])
+        ret = backend.get_string_series_attribute(exp.id, ["x"])
 
         # then
         self.assertEqual(StringSeriesAttribute("qwe"), ret)
@@ -106,10 +106,10 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AddStrings(["x"], {"abcx", "qwe"})])
+        backend.execute_operations(exp.id, [AddStrings(["x"], {"abcx", "qwe"})])
 
         # when
-        ret = backend.get_string_set_attribute(exp.uuid, ["x"])
+        ret = backend.get_string_set_attribute(exp.id, ["x"])
 
         # then
         self.assertEqual(StringSetAttribute({"abcx", "qwe"}), ret)
@@ -118,58 +118,58 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
+        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_float_series_attribute(exp.uuid, ["x"])
+            backend.get_float_series_attribute(exp.id, ["x"])
 
     def test_get_string_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AssignFloat(["x"], 5)])
+        backend.execute_operations(exp.id, [AssignFloat(["x"], 5)])
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_string_attribute(exp.uuid, ["x"])
+            backend.get_string_attribute(exp.id, ["x"])
 
     def test_get_datetime_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
+        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_datetime_attribute(exp.uuid, ["x"])
+            backend.get_datetime_attribute(exp.id, ["x"])
 
     def test_get_float_series_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
+        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_float_series_attribute(exp.uuid, ["x"])
+            backend.get_float_series_attribute(exp.id, ["x"])
 
     def test_get_string_series_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
+        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_string_series_attribute(exp.uuid, ["x"])
+            backend.get_string_series_attribute(exp.id, ["x"])
 
     def test_get_string_set_attribute_wrong_type(self):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.uuid, [AssignString(["x"], "abc")])
+        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_string_set_attribute(exp.uuid, ["x"])
+            backend.get_string_set_attribute(exp.id, ["x"])

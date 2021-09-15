@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from .atoms.artifact import Artifact
 from .atoms.float import Float
 from .atoms.string import String
 from .atoms.datetime import Datetime

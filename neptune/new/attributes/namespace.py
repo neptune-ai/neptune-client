@@ -75,7 +75,7 @@ class Namespace(Attribute, MutableMapping):
         return result
 
     def fetch(self) -> dict:
-        attributes = self._backend.fetch_atom_attribute_values(self._run_uuid, self._path)
+        attributes = self._backend.fetch_atom_attribute_values(self._run_id, self._path)
         run_struct = RunStructure()
         prefix_len = len(self._path)
         for attr_name, attr_type, attr_value in attributes:

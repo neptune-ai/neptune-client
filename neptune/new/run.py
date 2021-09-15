@@ -17,7 +17,6 @@ import atexit
 import threading
 import time
 import traceback
-import uuid
 from contextlib import AbstractContextManager
 from datetime import datetime
 from enum import Enum
@@ -130,7 +129,7 @@ class Run(AbstractContextManager):
 
     def __init__(
             self,
-            _uuid: uuid.UUID,
+            _id: str,
             backend: NeptuneBackend,
             op_processor: OperationProcessor,
             background_job: BackgroundJob,
@@ -138,9 +137,11 @@ class Run(AbstractContextManager):
             workspace: str,
             project_name: str,
             short_id: str,
+            project_id: str,
             monitoring_namespace: str = "monitoring",
     ):
-        self._uuid = _uuid
+        self._id = _id
+        self._project_id = project_id
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
@@ -239,7 +240,7 @@ class Run(AbstractContextManager):
         return self._get_root_handler().fetch()
 
     def ping(self):
-        self._backend.ping_run(self._uuid)
+        self._backend.ping_run(self._id)
 
     def start(self):
         atexit.register(self._shutdown_hook)
@@ -348,7 +349,7 @@ class Run(AbstractContextManager):
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser
         """
-        return self._backend.get_run_url(self._uuid, self._workspace, self._project_name, self._short_id)
+        return self._backend.get_run_url(self._id, self._workspace, self._project_name, self._short_id)
 
     def _print_structure_impl(self, struct: dict, indent: int) -> None:
         for key in sorted(struct.keys()):
@@ -512,7 +513,7 @@ class Run(AbstractContextManager):
         with self._lock:
             if wait:
                 self._op_processor.wait()
-            attributes = self._backend.get_attributes(self._uuid)
+            attributes = self._backend.get_attributes(self._id)
             self._structure.clear()
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)
