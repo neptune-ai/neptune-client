@@ -19,7 +19,7 @@ import os
 import socket
 import sys
 import time
-from functools import lru_cache
+from functools import lru_cache, wraps
 from typing import Optional, Dict
 
 from urllib.parse import urlparse, urljoin
@@ -162,3 +162,24 @@ def build_operation_url(base_api: str, operation_url: str) -> str:
         base_api = f'https://{base_api}'
 
     return urljoin(base=base_api, url=operation_url)
+
+
+# https://stackoverflow.com/a/44776960
+def cache(func):
+    """
+    Transform mutable dictionary into immutable before call to lru_cache
+    """
+    class HDict(dict):
+        def __hash__(self):
+            return hash(frozenset(self.items()))
+
+    func = lru_cache(maxsize=None, typed=True)(func)
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        args = tuple([HDict(arg) if isinstance(arg, dict) else arg for arg in args])
+        kwargs = {k: HDict(v) if isinstance(v, dict) else v for k, v in kwargs.items()}
+        return func(*args, **kwargs)
+
+    wrapper.cache_clear = func.cache_clear
+    return wrapper

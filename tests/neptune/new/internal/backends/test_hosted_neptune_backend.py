@@ -32,6 +32,7 @@ from neptune.new.internal.backends.hosted_client import (
     create_http_client_with_auth,
     create_backend_client,
     create_leaderboard_client,
+    create_artifacts_client,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
@@ -41,6 +42,7 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileContent
 )
+from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 
@@ -60,11 +62,13 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
     def setUp(self) -> None:
         # Clear all LRU storage
+        verify_host_resolution.cache_clear()
         _get_token_client.cache_clear()
         get_client_config.cache_clear()
         create_http_client_with_auth.cache_clear()
         create_backend_client.cache_clear()
         create_leaderboard_client.cache_clear()
+        create_artifacts_client.cache_clear()
 
     @patch('neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute')
     def test_execute_operations(self, upload_mock, swagger_client_factory):
@@ -338,7 +342,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                  default_request_params=DEFAULT_REQUEST_KWARGS),
         ], any_order=True)
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.13')
@@ -346,7 +350,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.14')
@@ -357,7 +361,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         self.assertTrue("Please install neptune-client>=0.5.14" in str(ex.exception))
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.12')
@@ -365,7 +369,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.4.999')

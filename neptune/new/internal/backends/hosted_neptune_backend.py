@@ -20,9 +20,7 @@ from typing import List, Optional, Dict, Iterable, Tuple, Any
 
 import click
 import urllib3
-from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
-from packaging import version
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -39,7 +37,6 @@ from neptune.new.exceptions import (
     ProjectNotFound,
     ProjectNameCollision,
     NeptuneStorageLimitException,
-    UnsupportedClientVersion,
     ArtifactNotFoundException,
 )
 from neptune.new.internal.backends.api_model import (
@@ -49,7 +46,6 @@ from neptune.new.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
     BoolAttribute,
-    ClientConfig,
     DatetimeAttribute,
     FileAttribute,
     FloatAttribute,
@@ -82,14 +78,13 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.new.internal.backends.operation_api_object_converter import OperationApiObjectConverter
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
-from neptune.new.internal.backends.utils import verify_client_version, with_api_exceptions_handler
+from neptune.new.internal.backends.utils import with_api_exceptions_handler
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_http_client_with_auth,
     create_backend_client,
     create_leaderboard_client,
     create_artifacts_client,
-    get_client_config,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
@@ -120,18 +115,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             urllib3.disable_warnings()
             ssl_verify = False
 
-        self._http_client = create_http_client_with_auth(
+        self._http_client, self._client_config = create_http_client_with_auth(
             credentials=credentials,
             ssl_verify=ssl_verify,
             proxies=proxies
         )
-        self._client_config = get_client_config(
-            credentials=credentials,
-            ssl_verify=ssl_verify,
-            proxies=proxies
-        )
-
-        verify_client_version(self._client_config, neptune_client_version)
 
         self.backend_client = create_backend_client(self._client_config, self._http_client)
         self.leaderboard_client = create_leaderboard_client(self._client_config, self._http_client)
@@ -773,29 +761,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             return self.leaderboard_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
-
-    @with_api_exceptions_handler
-    def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:
-        config = backend_client.api.getClientConfig(
-            X_Neptune_Api_Token=self.credentials.api_token,
-            alpha="true",
-            **DEFAULT_REQUEST_KWARGS,
-        ).response().result
-
-        if hasattr(config, "pyLibVersions"):
-            min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
-            min_compatible = getattr(config.pyLibVersions, "minCompatibleVersion", None)
-            max_compatible = getattr(config.pyLibVersions, "maxCompatibleVersion", None)
-        else:
-            raise UnsupportedClientVersion(neptune_client_version, max_version="0.4.111")
-
-        return ClientConfig(
-            api_url=config.apiUrl,
-            display_url=config.applicationUrl,
-            min_recommended_version=version.parse(min_recommended) if min_recommended else None,
-            min_compatible_version=version.parse(min_compatible) if min_compatible else None,
-            max_compatible_version=version.parse(max_compatible) if max_compatible else None
-        )
 
     @with_api_exceptions_handler
     def get_leaderboard(self, project_id: str,
