@@ -26,6 +26,7 @@ from neptune.new.exceptions import CannotResolveHostname, UnsupportedClientVersi
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
+    _get_token_client,  # pylint:disable=protected-access
     get_client_config,
     create_http_client_with_auth,
     create_backend_client,
@@ -52,6 +53,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
     def setUp(self) -> None:
         # Clear all LRU storage
+        _get_token_client.cache_clear()
         get_client_config.cache_clear()
         create_http_client_with_auth.cache_clear()
         create_backend_client.cache_clear()

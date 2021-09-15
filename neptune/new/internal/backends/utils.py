@@ -19,6 +19,7 @@ import os
 import socket
 import sys
 import time
+from functools import lru_cache
 from typing import Optional, Dict
 
 from urllib.parse import urlparse, urljoin
@@ -102,6 +103,7 @@ def with_api_exceptions_handler(func):
     return wrapper
 
 
+@lru_cache(maxsize=None, typed=True)
 def verify_host_resolution(url: str) -> None:
     host = urlparse(url).netloc.split(':')[0]
     try:
