@@ -18,12 +18,17 @@ import typing
 
 from neptune.new.attributes.atoms.atom import Atom
 from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
+from neptune.new.internal.backends.utils import OptionalFeatures
 from neptune.new.internal.operation import AssignArtifact, TrackFilesToArtifact
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 
 class Artifact(Atom):
+    def _check_feature(self):
+        self._run._backend.verify_feature_available(OptionalFeatures.ARTIFACTS)  # pylint: disable=protected-access
+
     def assign(self, value: ArtifactVal, wait: bool = False):
+        self._check_feature()
         # this function should be used only with ArtifactVal
         if not isinstance(value, ArtifactVal):
             raise TypeError("Value of unsupported type {}".format(type(value)))
@@ -32,13 +37,16 @@ class Artifact(Atom):
             self._enqueue_operation(AssignArtifact(self._path, value.hash), wait)
 
     def fetch(self) -> ArtifactVal:
+        self._check_feature()
         return ArtifactVal(self.fetch_hash())
 
     def fetch_hash(self) -> str:
+        self._check_feature()
         val = self._backend.get_artifact_attribute(self._run_id, self._path)
         return val.hash
 
     def fetch_files_list(self) -> typing.List[ArtifactFileData]:
+        self._check_feature()
         artifact_hash = self.fetch_hash()
         return self._backend.list_artifact_files(
             self._run._project_id,  # pylint: disable=protected-access
@@ -46,6 +54,7 @@ class Artifact(Atom):
         )
 
     def download(self, destination: str = None):
+        self._check_feature()
         for file_definition in self.fetch_files_list():
             driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_type(file_definition.type)
             file_destination = pathlib.Path(destination or '.') / pathlib.Path(file_definition.file_path)
@@ -58,6 +67,7 @@ class Artifact(Atom):
             destination: str = None,
             wait: bool = False
     ):
+        self._check_feature()
         with self._run.lock():
             self._enqueue_operation(
                 TrackFilesToArtifact(self._path,

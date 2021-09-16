@@ -52,6 +52,13 @@ class NeptuneBackend:
     def get_display_address(self) -> str:
         pass
 
+    def verify_feature_available(self, _: str) -> None:
+        """
+        this method makes sense only for backends interacting with server;
+        it makes sure that a feature is supported in the backend version client interacts with
+        """
+        return
+
     # pylint: disable=unused-argument
     def websockets_factory(self, project_id: str, run_id: str) -> Optional[WebsocketsFactory]:
         return None
