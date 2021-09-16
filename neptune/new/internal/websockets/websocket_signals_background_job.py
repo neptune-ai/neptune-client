@@ -59,6 +59,8 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         if not self._started or threading.get_ident() == self._thread.ident:
             return
         self._thread.join(seconds)
+        # Just in case. There is possible race condition when connection can be reestablished after being shutdown.
+        self._thread.shutdown_ws_client()
 
     class _ListenerThread(Daemon):
 
