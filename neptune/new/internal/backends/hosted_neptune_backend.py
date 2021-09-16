@@ -44,7 +44,8 @@ from neptune.new.exceptions import (
     NeptuneStorageLimitException,
     UnsupportedClientVersion,
     ArtifactNotFoundException,
-    NeptuneFeaturesNotAvailableWarning, NeptuneFeaturesNotAvailableException,
+    NeptuneFeaturesNotAvailableWarning,
+    NeptuneFeaturesNotAvailableException,
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
@@ -194,7 +195,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         self._http_client.session.headers.update({'User-Agent': user_agent})
 
         if self.missing_features:
-            warnings.warn(NeptuneFeaturesNotAvailableWarning(self.missing_features).message)
+            warnings.warn(NeptuneFeaturesNotAvailableWarning(self.missing_features))
 
     def close(self) -> None:
         self._http_client.session.close()

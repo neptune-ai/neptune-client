@@ -915,7 +915,7 @@ Neptune could not find files in the requested location ({location}) during creat
         super().__init__(message.format(location=location, namespace=namespace, **STYLES))
 
 
-class NeptuneFeaturesNotAvailableWarning:
+class NeptuneFeaturesNotAvailableWarning(Warning):
     def __init__(self, features: List[str]):
         message = """
 Following features are not yet supported by the Neptune instance you are using:
@@ -928,6 +928,7 @@ or the Neptune support directly (support@neptune.ai) about the upcoming updates.
 """
         features_desc = "\n".join(f"    - {f}" for f in features)
         self.message = message.format(features_desc=features_desc, **STYLES)
+        super().__init__(message)
 
 
 class NeptuneFeaturesNotAvailableException(NeptuneException):
