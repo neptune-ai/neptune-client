@@ -79,4 +79,4 @@ class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
 
 class BadRequestException(ManagementOperationFailure):
     code = 400
-    description = 'Your request has encounter following validation errors: {validation_errors}'
+    description = 'Your request has encountered following validation errors: {validation_errors}'
