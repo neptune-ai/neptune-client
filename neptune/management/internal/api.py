@@ -29,7 +29,7 @@ from neptune.new.internal.backends.hosted_client import (
     create_http_client_with_auth,
     DEFAULT_REQUEST_KWARGS,
 )
-from neptune.new.internal.backends.utils import with_api_exceptions_handler, ssl_verify
+from neptune.new.internal.backends.utils import with_api_exceptions_handler, ssl_verify, parse_validation_errors
 from neptune.management.internal.utils import normalize_project_name
 from neptune.management.internal.types import *
 from neptune.management.exceptions import (
@@ -122,7 +122,10 @@ def create_project(
         response = backend_client.api.createProject(**params).response()
         return normalize_project_name(name=response.result.name, workspace=response.result.organizationName)
     except HTTPBadRequest as e:
-        raise ProjectAlreadyExists(name=project_identifier) from e
+        validation_errors = parse_validation_errors(error=e)
+        if 'ERR_NOT_UNIQUE' in validation_errors:
+            raise ProjectAlreadyExists(name=project_identifier) from e
+        raise e
 
 
 @with_api_exceptions_handler
@@ -229,6 +232,7 @@ def remove_project_member(
         backend_client.api.deleteProjectMember(**params).response()
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
+    # TODO: Update when backend will return proper error messages
     except HTTPInternalServerError as e:
         raise UserNotExistsOrWithoutAccess(user=username, project=project_identifier) from e
     except HTTPForbidden as e:

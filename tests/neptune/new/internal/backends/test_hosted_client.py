@@ -256,7 +256,17 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client.api.listOrganizations.return_value.response = BravadoResponseMock(
             result=organizations,
         )
-        swagger_client.api.createProject.side_effect = HTTPBadRequest(response=MagicMock())
+        swagger_client.api.createProject.side_effect = HTTPBadRequest(
+            response=MagicMock(),
+            swagger_result=MagicMock(
+                code=None,
+                errorType={'name': 'validationError'},
+                message=None,
+                title='Validation Errors',
+                type=None,
+                validationErrors=[{'path': ['name'], 'errors': [{'errorCode': {'name': 'ERR_NOT_UNIQUE'}}]}]
+            )
+        )
 
         # then:
         with self.assertRaises(ProjectAlreadyExists):

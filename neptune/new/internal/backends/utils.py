@@ -31,7 +31,7 @@ from urllib3.exceptions import NewConnectionError
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
     HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
-    HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError, HTTPTooManyRequests
+    HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError, HTTPTooManyRequests, HTTPError
 from bravado.http_client import HttpClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
@@ -191,3 +191,11 @@ def ssl_verify():
         return False
 
     return True
+
+
+def parse_validation_errors(error: HTTPError):
+    return {
+        f"{error_description.get('errorCode').get('name')}": error_description.get('errorCode').get('context', '')
+        for validation_error in error.swagger_result.validationErrors
+        for error_description in validation_error.get('errors')
+    }
