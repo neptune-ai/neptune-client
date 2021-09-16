@@ -21,23 +21,23 @@ import sys
 import time
 from functools import lru_cache, wraps
 from typing import Optional, Dict
-
 from urllib.parse import urlparse, urljoin
+
 
 import click
 import requests
-
+import urllib3
+from urllib3.exceptions import NewConnectionError
 from bravado.client import SwaggerClient
 from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
     HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
-    HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError, HTTPTooManyRequests
+    HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError, HTTPTooManyRequests, HTTPError
 from bravado.http_client import HttpClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
 from requests import Session
-from urllib3.exceptions import NewConnectionError
 
-from neptune.new.envs import NEPTUNE_RETRIES_TIMEOUT_ENV
+from neptune.new.envs import NEPTUNE_RETRIES_TIMEOUT_ENV, NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, \
     Unauthorized, Forbidden, CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
 from neptune.new.internal.backends.api_model import ClientConfig
@@ -183,3 +183,19 @@ def cache(func):
 
     wrapper.cache_clear = func.cache_clear
     return wrapper
+
+
+def ssl_verify():
+    if os.getenv(NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE):
+        urllib3.disable_warnings()
+        return False
+
+    return True
+
+
+def parse_validation_errors(error: HTTPError) -> Dict[str, str]:
+    return {
+        f"{error_description.get('errorCode').get('name')}": error_description.get('context', '')
+        for validation_error in error.swagger_result.validationErrors
+        for error_description in validation_error.get('errors')
+    }
