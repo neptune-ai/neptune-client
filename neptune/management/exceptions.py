@@ -75,3 +75,8 @@ class AccessRevokedOnMemberRemoval(ManagementOperationFailure):
 class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
     code = 9
     description = 'User "{user}" not exists or has no access to project "{project}".'
+
+
+class BadRequestException(ManagementOperationFailure):
+    code = 400
+    description = 'Your request has encounter following validation errors: {validation_errors}'

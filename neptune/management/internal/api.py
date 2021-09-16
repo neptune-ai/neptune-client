@@ -39,6 +39,7 @@ from neptune.management.exceptions import (
     ProjectNotFound,
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
+    BadRequestException,
 )
 
 
@@ -125,7 +126,7 @@ def create_project(
         validation_errors = parse_validation_errors(error=e)
         if 'ERR_NOT_UNIQUE' in validation_errors:
             raise ProjectAlreadyExists(name=project_identifier) from e
-        raise e
+        raise BadRequestException(validation_errors=validation_errors)
 
 
 @with_api_exceptions_handler
