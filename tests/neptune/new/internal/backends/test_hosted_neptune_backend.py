@@ -381,8 +381,10 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         self.assertTrue("Please install neptune-client==0.4.0" in str(ex.exception))
 
     @patch('socket.gethostbyname')
-    def test_cannot_resolve_host(self, gethostname_mock, _):
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
+    def test_cannot_resolve_host(self, gethostname_mock, swagger_client_factory):
         # given
+        self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.13')
         gethostname_mock.side_effect = socket.gaierror
 
         # expect
