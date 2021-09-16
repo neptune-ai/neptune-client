@@ -28,7 +28,6 @@ from neptune.new.internal.backends.hosted_client import (
     create_backend_client,
     create_http_client_with_auth,
     DEFAULT_REQUEST_KWARGS,
-    get_client_config,
 )
 from neptune.new.internal.backends.utils import with_api_exceptions_handler, ssl_verify
 from neptune.management.internal.utils import normalize_project_name
@@ -49,12 +48,7 @@ def _get_token(api_token: Optional[str] = None) -> str:
 
 def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClient:
     credentials = Credentials.from_token(api_token=_get_token(api_token=api_token))
-    client_config = get_client_config(
-        credentials=credentials,
-        ssl_verify=ssl_verify(),
-        proxies={}
-    )
-    http_client, _ = create_http_client_with_auth(
+    http_client, client_config = create_http_client_with_auth(
         credentials=credentials,
         ssl_verify=ssl_verify(),
         proxies={}
@@ -79,7 +73,7 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
 
     projects = backend_client.api.listProjects(**params).response().result.entries
 
-    return list(map(lambda p: f"{p.organizationName}/{p.name}", projects))
+    return [normalize_project_name(name=project.name, workspace=project.organizationName) for project in projects]
 
 
 @with_api_exceptions_handler
@@ -126,7 +120,7 @@ def create_project(
 
     try:
         response = backend_client.api.createProject(**params).response()
-        return f'{response.result.organizationName}/{response.result.name}'
+        return normalize_project_name(name=response.result.name, workspace=response.result.organizationName)
     except HTTPBadRequest as e:
         raise ProjectAlreadyExists(name=project_identifier) from e
 
