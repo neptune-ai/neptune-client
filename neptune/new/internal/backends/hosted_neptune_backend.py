@@ -125,9 +125,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.leaderboard_client = create_leaderboard_client(self._client_config, self._http_client)
         self.artifacts_client = create_artifacts_client(self._client_config, self._http_client)
 
-    def close(self) -> None:
-        self._http_client.session.close()
-
     def get_display_address(self) -> str:
         return self._client_config.display_url
 
@@ -141,6 +138,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             session=self._http_client.authenticator.auth.session,
             proxies=self.proxies
         )
+
+    def close(self) -> None:
+        pass
 
     @with_api_exceptions_handler
     def get_project(self, project_id: str) -> Project:
