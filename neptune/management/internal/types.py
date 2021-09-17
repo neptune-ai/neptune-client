@@ -13,3 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from enum import Enum
+
+
+class ProjectVisibility(Enum):
+    PRIVATE = 'priv'
+    PUBLIC = 'pub'
+
+
+class MemberRole(Enum):
+    VIEWER = 'viewer'
+    MEMBER = 'member'
+    MANAGER = 'manager'

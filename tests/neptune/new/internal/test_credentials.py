@@ -32,7 +32,7 @@ class TestCredentials(unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = API_TOKEN
 
         # when
-        credentials = Credentials()
+        credentials = Credentials.from_token()
 
         # then
         self.assertEqual(API_TOKEN, credentials.api_token)
@@ -42,7 +42,7 @@ class TestCredentials(unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = "INVALID_TOKEN"
 
         # when
-        credentials = Credentials(API_TOKEN)
+        credentials = Credentials.from_token(API_TOKEN)
 
         # then
         self.assertEqual(API_TOKEN, credentials.api_token)
@@ -50,7 +50,7 @@ class TestCredentials(unittest.TestCase):
     def test_raise_invalid_token(self):
         # expect
         with self.assertRaises(NeptuneInvalidApiTokenException):
-            Credentials("INVALID_TOKEN")
+            Credentials.from_token("INVALID_TOKEN")
 
     def test_raise_invalid_token_from_env(self):
         # given
@@ -58,4 +58,4 @@ class TestCredentials(unittest.TestCase):
 
         # expect
         with self.assertRaises(NeptuneInvalidApiTokenException):
-            Credentials()
+            Credentials.from_token()
