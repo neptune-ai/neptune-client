@@ -76,6 +76,9 @@ def _get_token_client(
         endpoint_url: str = None
 ) -> SwaggerClient:
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
+    if proxies is None:
+        verify_host_resolution(config_api_url)
+
     token_http_client = create_http_client(ssl_verify, proxies)
 
     return create_swagger_client(
@@ -124,8 +127,6 @@ def create_http_client_with_auth(
     )
 
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
-    if proxies is None:
-        verify_host_resolution(config_api_url)
 
     verify_client_version(client_config, neptune_client_version)
 
