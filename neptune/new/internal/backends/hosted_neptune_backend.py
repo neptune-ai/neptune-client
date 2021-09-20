@@ -194,9 +194,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             python_version=platform.python_version())
         self._http_client.session.headers.update({'User-Agent': user_agent})
 
-        if self.missing_features:
-            warnings.warn(NeptuneFeaturesNotAvailableWarning(self.missing_features))
-
     def close(self) -> None:
         self._http_client.session.close()
         self._token_http_client.session.close()
