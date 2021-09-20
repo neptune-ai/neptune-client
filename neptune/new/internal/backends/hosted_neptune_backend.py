@@ -25,6 +25,7 @@ from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from packaging import version
+from simplejson import JSONDecodeError
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -43,6 +44,7 @@ from neptune.new.exceptions import (
     NeptuneStorageLimitException,
     UnsupportedClientVersion,
     ArtifactNotFoundException,
+    NeptuneFeaturesNotAvailableException,
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
@@ -90,6 +92,8 @@ from neptune.new.internal.backends.utils import (
     verify_client_version,
     verify_host_resolution,
     with_api_exceptions_handler,
+    OptionalFeatures,
+    MissingApiClient,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
@@ -130,6 +134,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
         self.credentials = credentials
         self.proxies = proxies
+        self.missing_features = []
 
         ssl_verify = True
         if os.getenv(NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE):
@@ -165,10 +170,15 @@ class HostedNeptuneBackend(NeptuneBackend):
             build_operation_url(self._client_config.api_url, self.LEADERBOARD_SWAGGER_PATH),
             self._http_client
         )
-        self.artifacts_client = create_swagger_client(
-            build_operation_url(self._client_config.api_url, self.ARTIFACTS_SWAGGER_PATH),
-            self._http_client
-        )
+        try:
+            self.artifacts_client = create_swagger_client(
+                build_operation_url(self._client_config.api_url, self.ARTIFACTS_SWAGGER_PATH),
+                self._http_client
+            )
+        except JSONDecodeError:
+            # thanks for nice error handling, bravado
+            self.artifacts_client = MissingApiClient(self)
+            self.missing_features.append(OptionalFeatures.ARTIFACTS)
 
         # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
         self._authenticator = NeptuneAuthenticator(
@@ -188,6 +198,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         self._http_client.session.close()
         self._token_http_client.session.close()
         self._authenticator.auth.session.close()
+
+    def verify_feature_available(self, feature_name: str):
+        if feature_name in self.missing_features:
+            raise NeptuneFeaturesNotAvailableException(self.missing_features)
 
     def get_display_address(self) -> str:
         return self._client_config.display_url
@@ -392,6 +406,9 @@ class HostedNeptuneBackend(NeptuneBackend):
                 artifact_operations.append(op)
             else:
                 other_operations.append(op)
+
+        if artifact_operations:
+            self.verify_feature_available(OptionalFeatures.ARTIFACTS)
 
         # Upload operations should be done first since they are idempotent
         errors.extend(
