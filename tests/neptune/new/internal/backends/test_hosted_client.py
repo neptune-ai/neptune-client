@@ -17,7 +17,7 @@ import uuid
 import unittest
 
 from mock import patch, MagicMock, Mock
-from bravado.exception import HTTPNotFound, HTTPForbidden, HTTPBadRequest, HTTPInternalServerError
+from bravado.exception import HTTPNotFound, HTTPForbidden, HTTPConflict, HTTPBadRequest, HTTPUnprocessableEntity
 from bravado.testing.response_mocks import BravadoResponseMock
 
 from neptune.management import (
@@ -36,6 +36,7 @@ from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     ProjectAlreadyExists,
     UserNotExistsOrWithoutAccess,
+    UserAlreadyHasAccess,
     AccessRevokedOnMemberRemoval,
 )
 from neptune.new.internal.backends.utils import verify_host_resolution
@@ -332,6 +333,16 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         with self.assertRaises(ProjectNotFound):
             add_project_member(name='org/proj', username='tester', role=MemberRole.VIEWER, api_token=API_TOKEN)
 
+    def test_add_project_member_member_without_access(self, swagger_client_factory):
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+
+        # when:
+        swagger_client.api.addProjectMember.side_effect = HTTPConflict(response=MagicMock())
+
+        # then:
+        with self.assertRaises(UserAlreadyHasAccess):
+            add_project_member(name='org/proj', username='tester', role=MemberRole.VIEWER, api_token=API_TOKEN)
+
     def test_remove_project_member_project_not_found(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
@@ -346,7 +357,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.deleteProjectMember.side_effect = HTTPInternalServerError(response=MagicMock())
+        swagger_client.api.deleteProjectMember.side_effect = HTTPUnprocessableEntity(response=MagicMock())
 
         # then:
         with self.assertRaises(UserNotExistsOrWithoutAccess):
