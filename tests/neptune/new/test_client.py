@@ -15,7 +15,6 @@
 #
 
 # pylint: disable=protected-access
-import contextlib
 import os
 import unittest
 import uuid
@@ -39,17 +38,6 @@ from neptune.new.internal.backends.api_model import (
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.utils import IS_WINDOWS
-
-
-@contextlib.contextmanager
-def run_with_cleanup(*args, **kwargs):
-    run = None
-    try:
-        run = init(*args, **kwargs)
-        yield run
-    finally:
-        if run is not None:
-            run.stop()
 
 
 @patch('neptune.new.internal.init_impl.HostedNeptuneBackend', NeptuneBackendMock)
@@ -85,7 +73,7 @@ class TestClient(unittest.TestCase):
         self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     def test_async_mode(self):
-        with run_with_cleanup(mode='async', flush_period=0.5) as exp:
+        with init(mode='async', flush_period=0.5) as exp:
             exp["some/variable"] = 13
             with self.assertRaises(MetadataInconsistency):
                 exp["some/variable"].fetch()
@@ -123,7 +111,7 @@ class TestClient(unittest.TestCase):
     @patch("neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
            new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)])
     def test_resume(self):
-        with run_with_cleanup(flush_period=0.5, run="SAN-94") as exp:
+        with init(flush_period=0.5, run="SAN-94") as exp:
             self.assertEqual(exp._id, uuid.UUID('12345678-1234-5678-1234-567812345678'))
             self.assertIsInstance(exp.get_structure()["test"], String)
 
@@ -298,7 +286,7 @@ class TestClient(unittest.TestCase):
 
     def test_last_exp_is_the_latest_initialized(self):
         # given two initialized runs
-        with run_with_cleanup() as exp1, run_with_cleanup() as exp2:
+        with init() as exp1, init() as exp2:
             # expect: `neptune.latest_run` to be the latest initialized one
             self.assertIsNot(exp1, get_last_run())
             self.assertIs(exp2, get_last_run())
