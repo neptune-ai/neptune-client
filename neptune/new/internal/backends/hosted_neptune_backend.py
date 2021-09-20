@@ -17,7 +17,6 @@ import logging
 import os
 import platform
 import re
-import warnings
 from typing import List, Optional, Dict, Iterable, Tuple, Any
 
 import click
@@ -44,7 +43,6 @@ from neptune.new.exceptions import (
     NeptuneStorageLimitException,
     UnsupportedClientVersion,
     ArtifactNotFoundException,
-    NeptuneFeaturesNotAvailableWarning,
     NeptuneFeaturesNotAvailableException,
 )
 from neptune.new.internal.backends.api_model import (
