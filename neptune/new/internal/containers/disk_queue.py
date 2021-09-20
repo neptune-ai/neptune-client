@@ -147,10 +147,14 @@ class DiskQueue(StorageQueue[T]):
         log_versions = self._get_all_log_file_versions()
         for i in range(0, len(log_versions) - 1):
             if log_versions[i + 1] <= version:
+                filename = self._get_log_file(log_versions[i])
                 try:
-                    os.remove(self._get_log_file(log_versions[i]))
+                    os.remove(filename)
+                except FileNotFoundError:
+                    # not really a problem
+                    pass
                 except Exception:
-                    _logger.exception("Cannot remove file")
+                    _logger.exception("Cannot remove queue file %s", filename)
             else:
                 break
 
