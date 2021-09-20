@@ -176,4 +176,4 @@ class MissingApiClient(SwaggerClient):
         self._backend = backend
 
     def __getattr__(self, item):
-        raise NeptuneFeaturesNotAvailableException(functionalities=self._backend.missing_features)
+        raise NeptuneFeaturesNotAvailableException(features=self._backend.missing_features)
