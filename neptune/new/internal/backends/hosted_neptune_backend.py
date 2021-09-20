@@ -25,6 +25,7 @@ from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from packaging import version
+from simplejson import JSONDecodeError
 
 from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -174,7 +175,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 build_operation_url(self._client_config.api_url, self.ARTIFACTS_SWAGGER_PATH),
                 self._http_client
             )
-        except Exception:
+        except JSONDecodeError:
+            # thanks for nice error handling, bravado
             self.artifacts_client = MissingApiClient(self)
             self.missing_features.append(OptionalFeatures.ARTIFACTS)
 
