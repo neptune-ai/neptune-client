@@ -122,7 +122,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.leaderboard_client = create_leaderboard_client(self._client_config, self._http_client)
 
         try:
-            create_artifacts_client(self._client_config, self._http_client)
+            self.artifacts_client = create_artifacts_client(self._client_config, self._http_client)
         except JSONDecodeError:
             # thanks for nice error handling, bravado
             self.artifacts_client = MissingApiClient(self)
