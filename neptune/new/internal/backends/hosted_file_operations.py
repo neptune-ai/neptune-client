@@ -21,12 +21,12 @@ from typing import List, Optional, Dict, Iterable, Callable, Set, Union
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
-from bravado.exception import HTTPUnprocessableEntity
+from bravado.exception import HTTPUnprocessableEntity, HTTPPaymentRequired
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
 from neptune.new.exceptions import FileUploadError, MetadataInconsistency, InternalClientError, \
-    NeptuneException, NeptuneStorageLimitException
+    NeptuneException, NeptuneLimitExceedException
 from neptune.new.internal.backends.utils import build_operation_url, with_api_exceptions_handler
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream, FileChunk
@@ -188,8 +188,8 @@ def upload_raw_data(http_client: RequestsClient,
     request = http_client.authenticator.apply(Request(method='POST', url=url, data=data, headers=headers))
 
     response = session.send(session.prepare_request(request))
-    if response.status_code == HTTPUnprocessableEntity.status_code:
-        raise NeptuneStorageLimitException()
+    if response.status_code in (HTTPUnprocessableEntity.status_code, HTTPPaymentRequired.status_code):
+        raise NeptuneLimitExceedException(reason=response.json().get("message", "Maximum storage limit reached"))
     response.raise_for_status()
     return response.content
 

@@ -22,7 +22,7 @@ from typing import List, Optional, Dict, Iterable, Tuple, Any
 import click
 import urllib3
 from bravado.client import SwaggerClient
-from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
+from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity, HTTPPaymentRequired
 from bravado.requests_client import RequestsClient
 from packaging import version
 from simplejson import JSONDecodeError
@@ -41,7 +41,7 @@ from neptune.new.exceptions import (
     NeptuneLegacyProjectException,
     ProjectNotFound,
     ProjectNameCollision,
-    NeptuneStorageLimitException,
+    NeptuneLimitExceedException,
     UnsupportedClientVersion,
     ArtifactNotFoundException,
     NeptuneFeaturesNotAvailableException,
@@ -540,8 +540,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
             raise RunUUIDNotFound(run_id=run_id) from e
-        except HTTPUnprocessableEntity:
-            raise NeptuneStorageLimitException()
+        except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
+            raise NeptuneLimitExceedException(
+                reason=e.response.json().get("message", "Maximum storage limit reached")
+            ) from e
 
     @with_api_exceptions_handler
     def get_attributes(self, run_id: str) -> List[Attribute]:

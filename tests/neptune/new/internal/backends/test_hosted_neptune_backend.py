@@ -18,12 +18,17 @@ import unittest
 import uuid
 from unittest.mock import call
 
-from bravado.exception import HTTPNotFound
+from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 from mock import MagicMock, patch
 from packaging.version import Version
 
-from neptune.new.exceptions import CannotResolveHostname, FileUploadError, MetadataInconsistency, \
-    UnsupportedClientVersion
+from neptune.new.exceptions import (
+    CannotResolveHostname,
+    FileUploadError,
+    MetadataInconsistency,
+    UnsupportedClientVersion,
+    NeptuneLimitExceedException
+)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
@@ -368,3 +373,47 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         with self.assertRaises(CannotResolveHostname):
             HostedNeptuneBackend(credentials)
+
+    def test_limit_exceed(self, swagger_client_factory):
+        # given
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(credentials)
+        exp_uuid = str(uuid.uuid4())
+
+        # when:
+        error = MagicMock()
+        error.json.return_value = {
+            "message": "Maximum storage limit reached"
+        }
+        swagger_client.api.executeOperations.side_effect = HTTPPaymentRequired(response=error)
+
+        # then:
+        with self.assertRaises(NeptuneLimitExceedException):
+            backend.execute_operations(
+                run_id=exp_uuid,
+                operations=[
+                    LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
+                ]
+            )
+
+    def test_limit_exceed_legacy(self, swagger_client_factory):
+        # given
+        swagger_client = self._get_swagger_client_mock(swagger_client_factory)
+        backend = HostedNeptuneBackend(credentials)
+        exp_uuid = str(uuid.uuid4())
+
+        # when:
+        error = MagicMock()
+        error.json.return_value = {
+            "message": "Monitoring hours not left"
+        }
+        swagger_client.api.executeOperations.side_effect = HTTPUnprocessableEntity(response=error)
+
+        # then:
+        with self.assertRaises(NeptuneLimitExceedException):
+            backend.execute_operations(
+                run_id=exp_uuid,
+                operations=[
+                    LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
+                ]
+            )
