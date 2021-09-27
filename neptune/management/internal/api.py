@@ -18,7 +18,7 @@ import os
 from typing import Optional, List, Dict
 
 from bravado.client import SwaggerClient
-from bravado.exception import HTTPNotFound, HTTPBadRequest, HTTPForbidden, HTTPInternalServerError
+from bravado.exception import HTTPNotFound, HTTPBadRequest, HTTPConflict, HTTPForbidden, HTTPUnprocessableEntity
 
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.envs import API_TOKEN_ENV_NAME
@@ -39,6 +39,7 @@ from neptune.management.exceptions import (
     ProjectNotFound,
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
+    UserAlreadyHasAccess,
     BadRequestException,
 )
 
@@ -181,6 +182,8 @@ def add_project_member(
         backend_client.api.addProjectMember(**params).response()
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
+    except HTTPConflict as e:
+        raise UserAlreadyHasAccess(user=username, project=project_identifier) from e
 
 
 @with_api_exceptions_handler
@@ -233,8 +236,7 @@ def remove_project_member(
         backend_client.api.deleteProjectMember(**params).response()
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
-    # TODO: Update when backend will return proper error messages
-    except HTTPInternalServerError as e:
+    except HTTPUnprocessableEntity as e:
         raise UserNotExistsOrWithoutAccess(user=username, project=project_identifier) from e
     except HTTPForbidden as e:
         raise AccessRevokedOnMemberRemoval(user=username, project=project_identifier) from e

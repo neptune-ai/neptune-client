@@ -77,6 +77,11 @@ class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
     description = 'User "{user}" not exists or has no access to project "{project}".'
 
 
+class UserAlreadyHasAccess(ManagementOperationFailure):
+    code = 7
+    description = 'User "{user}" already has access to project "{project}".'
+
+
 class BadRequestException(ManagementOperationFailure):
     code = 400
     description = 'Your request has encountered following validation errors: {validation_errors}'
