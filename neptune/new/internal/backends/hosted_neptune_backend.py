@@ -14,20 +14,13 @@
 # limitations under the License.
 #
 import logging
-import os
-import platform
 import re
 from typing import List, Optional, Dict, Iterable, Tuple, Any
 
 import click
-import urllib3
-from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
-from bravado.requests_client import RequestsClient
-from packaging import version
 from simplejson import JSONDecodeError
 
-from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.exceptions import (
@@ -42,7 +35,6 @@ from neptune.new.exceptions import (
     ProjectNotFound,
     ProjectNameCollision,
     NeptuneStorageLimitException,
-    UnsupportedClientVersion,
     ArtifactNotFoundException,
     NeptuneFeaturesNotAvailableException,
 )
@@ -53,7 +45,6 @@ from neptune.new.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
     BoolAttribute,
-    ClientConfig,
     DatetimeAttribute,
     FileAttribute,
     FloatAttribute,
@@ -87,13 +78,16 @@ from neptune.new.internal.backends.operation_api_name_visitor import OperationAp
 from neptune.new.internal.backends.operation_api_object_converter import OperationApiObjectConverter
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.new.internal.backends.utils import (
-    create_swagger_client,
-    update_session_proxies,
-    verify_client_version,
-    verify_host_resolution,
     with_api_exceptions_handler,
-    OptionalFeatures,
     MissingApiClient,
+    OptionalFeatures,
+)
+from neptune.new.internal.backends.hosted_client import (
+    DEFAULT_REQUEST_KWARGS,
+    create_http_client_with_auth,
+    create_backend_client,
+    create_leaderboard_client,
+    create_artifacts_client,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
@@ -106,98 +100,35 @@ from neptune.new.internal.operation import (
 from neptune.new.internal.utils import verify_type, base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import map_attribute_result_to_value
 from neptune.new.internal.utils.paths import path_to_str
-from neptune.new.internal.backends.utils import build_operation_url
+from neptune.new.internal.backends.utils import build_operation_url, ssl_verify
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
-from neptune.oauth import NeptuneAuthenticator
 
 _logger = logging.getLogger(__name__)
 
 
 class HostedNeptuneBackend(NeptuneBackend):
-    BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
-    LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"
-    ARTIFACTS_SWAGGER_PATH = "/api/artifacts/swagger.json"
-
-    CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
-    REQUEST_TIMEOUT = None
-
-    DEFAULT_REQUEST_KWARGS = {
-        '_request_options': {
-            "connect_timeout": CONNECT_TIMEOUT,
-            "timeout": REQUEST_TIMEOUT,
-            "headers": {"X-Neptune-LegacyClient": "false"}
-        }
-    }
-
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
         self.credentials = credentials
         self.proxies = proxies
         self.missing_features = []
 
-        ssl_verify = True
-        if os.getenv(NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE):
-            urllib3.disable_warnings()
-            ssl_verify = False
-
-        self._http_client = self._create_http_client(ssl_verify, proxies)
-
-        config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
-        if proxies is None:
-            verify_host_resolution(config_api_url)
-
-        self._token_http_client = self._create_http_client(ssl_verify, proxies)
-        token_client = create_swagger_client(
-            build_operation_url(config_api_url, self.BACKEND_SWAGGER_PATH),
-            self._token_http_client
+        self._http_client, self._client_config = create_http_client_with_auth(
+            credentials=credentials,
+            ssl_verify=ssl_verify(),
+            proxies=proxies
         )
 
-        self._client_config = self._get_client_config(token_client)
-        verify_client_version(self._client_config, neptune_client_version)
+        self.backend_client = create_backend_client(self._client_config, self._http_client)
+        self.leaderboard_client = create_leaderboard_client(self._client_config, self._http_client)
 
-        if config_api_url != self._client_config.api_url:
-            token_client = create_swagger_client(
-                build_operation_url(self._client_config.api_url, self.BACKEND_SWAGGER_PATH),
-                self._token_http_client
-            )
-
-        self.backend_client = create_swagger_client(
-            build_operation_url(self._client_config.api_url, self.BACKEND_SWAGGER_PATH),
-            self._http_client
-        )
-        self.leaderboard_client = create_swagger_client(
-            build_operation_url(self._client_config.api_url, self.LEADERBOARD_SWAGGER_PATH),
-            self._http_client
-        )
         try:
-            self.artifacts_client = create_swagger_client(
-                build_operation_url(self._client_config.api_url, self.ARTIFACTS_SWAGGER_PATH),
-                self._http_client
-            )
+            self.artifacts_client = create_artifacts_client(self._client_config, self._http_client)
         except JSONDecodeError:
             # thanks for nice error handling, bravado
             self.artifacts_client = MissingApiClient(self)
             self.missing_features.append(OptionalFeatures.ARTIFACTS)
-
-        # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
-        self._authenticator = NeptuneAuthenticator(
-            self.credentials.api_token,
-            token_client,
-            ssl_verify,
-            proxies)
-        self._http_client.authenticator = self._authenticator
-
-        user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
-            lib_version=neptune_client_version,
-            system=platform.platform(),
-            python_version=platform.python_version())
-        self._http_client.session.headers.update({'User-Agent': user_agent})
-
-    def close(self) -> None:
-        self._http_client.session.close()
-        self._token_http_client.session.close()
-        self._authenticator.auth.session.close()
 
     def verify_feature_available(self, feature_name: str):
         if feature_name in self.missing_features:
@@ -213,9 +144,12 @@ class HostedNeptuneBackend(NeptuneBackend):
                 base_url,
                 f'/api/notifications/v1/runs/{project_id}/{run_id}/signal'
             ),
-            session=self._authenticator.auth.session,
+            session=self._http_client.authenticator.auth.session,
             proxies=self.proxies
         )
+
+    def close(self) -> None:
+        pass
 
     @with_api_exceptions_handler
     def get_project(self, project_id: str) -> Project:
@@ -246,7 +180,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
             response = self.backend_client.api.getProject(
                 projectIdentifier=project_id,
-                **self.DEFAULT_REQUEST_KWARGS,
+                **DEFAULT_REQUEST_KWARGS,
             ).response()
             warning = response.metadata.headers.get('X-Server-Warning')
             if warning:
@@ -274,7 +208,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 sortBy=['lastViewed'],
                 sortDirection=['descending'],
                 userRelation='memberOrHigher',
-                **self.DEFAULT_REQUEST_KWARGS,
+                **DEFAULT_REQUEST_KWARGS,
             ).response()
             warning = response.metadata.headers.get('X-Server-Warning')
             if warning:
@@ -290,7 +224,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_available_workspaces(self) -> List[Workspace]:
         try:
             response = self.backend_client.api.listOrganizations(
-                **self.DEFAULT_REQUEST_KWARGS,
+                **DEFAULT_REQUEST_KWARGS,
             ).response()
             warning = response.metadata.headers.get('X-Server-Warning')
             if warning:
@@ -307,7 +241,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             run = self.leaderboard_client.api.getExperiment(
                 experimentId=run_id,
-                **self.DEFAULT_REQUEST_KWARGS,
+                **DEFAULT_REQUEST_KWARGS,
             ).response().result
             return ApiRun(run.id, run.shortId, run.organizationName, run.projectName, run.trashed)
         except HTTPNotFound:
@@ -350,7 +284,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         kwargs = {
             'experimentCreationParams': params,
             'X-Neptune-CliVersion': str(neptune_client_version),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
 
         try:
@@ -367,7 +301,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 checkpoint={
                     "path": jupyter_path
                 },
-                **self.DEFAULT_REQUEST_KWARGS,
+                **DEFAULT_REQUEST_KWARGS,
             ).response().result.id
         except HTTPNotFound:
             return None
@@ -502,7 +436,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         path=op.path,
                         parent_identifier=run_id,
                         entries=op.entries,
-                        default_request_params=self.DEFAULT_REQUEST_KWARGS
+                        default_request_params=DEFAULT_REQUEST_KWARGS
                     )
                 else:
                     assign_operation = track_to_existing_artifact(
@@ -512,7 +446,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         artifact_hash=artifact_hash,
                         parent_identifier=run_id,
                         entries=op.entries,
-                        default_request_params=self.DEFAULT_REQUEST_KWARGS
+                        default_request_params=DEFAULT_REQUEST_KWARGS
                     )
 
                 if assign_operation:
@@ -532,7 +466,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 'path': path_to_str(op.path),
                 OperationApiNameVisitor().visit(op): OperationApiObjectConverter().convert(op)
             } for op in operations],
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
 
         try:
@@ -550,7 +484,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         params = {
             'experimentId': run_id,
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             run = self.leaderboard_client.api.getExperimentAttributes(**params).response().result
@@ -618,7 +552,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getFloatAttribute(**params).response().result
@@ -631,7 +565,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getIntAttribute(**params).response().result
@@ -644,7 +578,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getBoolAttribute(**params).response().result
@@ -657,7 +591,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getFileAttribute(**params).response().result
@@ -670,7 +604,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getStringAttribute(**params).response().result
@@ -683,7 +617,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getDatetimeAttribute(**params).response().result
@@ -696,7 +630,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getArtifactAttribute(**params).response().result
@@ -711,7 +645,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'projectIdentifier': project_id,
             'hash': artifact_hash,
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.artifacts_client.api.listArtifactFiles(**params).response().result
@@ -726,7 +660,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getFloatSeriesAttribute(**params).response().result
@@ -739,7 +673,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getStringSeriesAttribute(**params).response().result
@@ -752,7 +686,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getStringSetAttribute(**params).response().result
@@ -768,7 +702,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             'attribute': path_to_str(path),
             'limit': limit,
             'offset': offset,
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getImageSeriesValues(**params).response().result
@@ -784,7 +718,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             'attribute': path_to_str(path),
             'limit': limit,
             'offset': offset,
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getStringSeriesValues(**params).response().result
@@ -801,7 +735,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             'attribute': path_to_str(path),
             'limit': limit,
             'offset': offset,
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = self.leaderboard_client.api.getFloatSeriesValues(**params).response().result
@@ -833,35 +767,12 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             'experimentId': run_id,
             'attribute': path_to_str(path),
-            **self.DEFAULT_REQUEST_KWARGS,
+            **DEFAULT_REQUEST_KWARGS,
         }
         try:
             return self.leaderboard_client.api.prepareForDownloadFileSetAttributeZip(**params).response().result
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
-
-    @with_api_exceptions_handler
-    def _get_client_config(self, backend_client: SwaggerClient) -> ClientConfig:
-        config = backend_client.api.getClientConfig(
-            X_Neptune_Api_Token=self.credentials.api_token,
-            alpha="true",
-            **self.DEFAULT_REQUEST_KWARGS,
-        ).response().result
-
-        if hasattr(config, "pyLibVersions"):
-            min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
-            min_compatible = getattr(config.pyLibVersions, "minCompatibleVersion", None)
-            max_compatible = getattr(config.pyLibVersions, "maxCompatibleVersion", None)
-        else:
-            raise UnsupportedClientVersion(neptune_client_version, max_version="0.4.111")
-
-        return ClientConfig(
-            api_url=config.apiUrl,
-            display_url=config.applicationUrl,
-            min_recommended_version=version.parse(min_recommended) if min_recommended else None,
-            min_compatible_version=version.parse(min_compatible) if min_compatible else None,
-            max_compatible_version=version.parse(max_compatible) if max_compatible else None
-        )
 
     @with_api_exceptions_handler
     def get_leaderboard(self, project_id: str,
@@ -877,7 +788,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 shortId=_id, state=state, owner=owner, tags=tags, tagsMode='and',
                 sortBy=['shortId'], sortFieldType=['string'], sortDirection=['ascending'],
                 limit=limit, offset=offset,
-                **self.DEFAULT_REQUEST_KWARGS,
+                **DEFAULT_REQUEST_KWARGS,
             ).response().result.entries
 
         def to_leaderboard_entry(entry) -> LeaderboardEntry:
@@ -901,13 +812,6 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_run_url(self, run_id: str, workspace: str, project_name: str, short_id: str) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/e/{short_id}"
-
-    @staticmethod
-    def _create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
-        http_client = RequestsClient(ssl_verify=ssl_verify)
-        http_client.session.verify = ssl_verify
-        update_session_proxies(http_client.session, proxies)
-        return http_client
 
     @staticmethod
     def _get_all_items(get_portion, step):
