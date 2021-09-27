@@ -77,15 +77,17 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import OperationApiNameVisitor
 from neptune.new.internal.backends.operation_api_object_converter import OperationApiObjectConverter
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
-from neptune.new.internal.backends.utils import with_api_exceptions_handler
+from neptune.new.internal.backends.utils import (
+    with_api_exceptions_handler,
+    MissingApiClient,
+    OptionalFeatures,
+)
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_http_client_with_auth,
     create_backend_client,
     create_leaderboard_client,
     create_artifacts_client,
-    OptionalFeatures,
-    MissingApiClient,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
