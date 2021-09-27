@@ -440,6 +440,27 @@ class TestHandler(unittest.TestCase):
             'string': 'Some text',
         })
 
+    def test_representation(self):
+        exp = init(mode='debug', flush_period=0.5)
+        exp['params/int'] = 1
+        exp['params/float'] = 3.14
+        exp['params/bool'] = True
+        exp['params/datetime'] = datetime.now()
+        exp['params/sub-namespace/int'] = 42
+        exp['params/sub-namespace/string'] = 'Some text'
+
+        self.assertEqual('<Namespace field at "params">', repr(exp['params']))
+        self.assertEqual('<Integer field at "params/int">', repr(exp['params/int']))
+        self.assertEqual('<Float field at "params/float">', repr(exp['params/float']))
+        self.assertEqual('<Boolean field at "params/bool">', repr(exp['params/bool']))
+        self.assertEqual('<Datetime field at "params/datetime">', repr(exp['params/datetime']))
+        self.assertEqual('<Unassigned field at "params/unassigned">', repr(exp['params/unassigned']))
+
+        sub_namespace = exp['params/sub-namespace']
+        self.assertEqual('<Integer field at "params/sub-namespace/int">', repr(sub_namespace['int']))
+        self.assertEqual('<String field at "params/sub-namespace/string">', repr(sub_namespace['string']))
+        self.assertEqual('<Unassigned field at "params/sub-namespace/unassigned">', repr(sub_namespace['unassigned']))
+
     @dataclass
     class FloatLike:
 

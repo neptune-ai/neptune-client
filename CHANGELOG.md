@@ -1,3 +1,8 @@
+## neptune-client 0.11.1 [UNRELEASED]
+
+### Features
+- Human-readable objects representation via `__repr__` ([#717](https://github.com/neptune-ai/neptune-client/pull/717))
+
 ## neptune-client 0.11.0
 
 ### Fixes
