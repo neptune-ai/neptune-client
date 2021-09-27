@@ -20,7 +20,7 @@ import socket
 import sys
 import time
 from functools import lru_cache, wraps
-from typing import Optional, Dict
+from typing import Optional, Dict, TYPE_CHECKING
 from urllib.parse import urlparse, urljoin
 
 
@@ -39,11 +39,19 @@ from requests import Session
 
 from neptune.new.envs import NEPTUNE_RETRIES_TIMEOUT_ENV, NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
 from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, \
-    Unauthorized, Forbidden, CannotResolveHostname, UnsupportedClientVersion, ClientHttpError
+    Unauthorized, Forbidden, CannotResolveHostname, UnsupportedClientVersion, ClientHttpError, \
+    NeptuneFeaturesNotAvailableException
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.utils import replace_patch_version
 
 _logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+
+
+class OptionalFeatures:
+    ARTIFACTS = "artifacts"
 
 
 MAX_RETRY_TIME = 30
@@ -162,6 +170,15 @@ def build_operation_url(base_api: str, operation_url: str) -> str:
         base_api = f'https://{base_api}'
 
     return urljoin(base=base_api, url=operation_url)
+
+
+class MissingApiClient(SwaggerClient):
+    """ catch-all class to gracefully handle calls to unavailable API """
+    def __init__(self, backend: 'HostedNeptuneBackend'):  # pylint: disable=super-init-not-called
+        self._backend = backend
+
+    def __getattr__(self, item):
+        raise NeptuneFeaturesNotAvailableException(features=self._backend.missing_features)
 
 
 # https://stackoverflow.com/a/44776960

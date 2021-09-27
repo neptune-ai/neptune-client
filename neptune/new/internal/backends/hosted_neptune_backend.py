@@ -19,6 +19,7 @@ from typing import List, Optional, Dict, Iterable, Tuple, Any
 
 import click
 from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
+from simplejson import JSONDecodeError
 
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -35,6 +36,7 @@ from neptune.new.exceptions import (
     ProjectNameCollision,
     NeptuneStorageLimitException,
     ArtifactNotFoundException,
+    NeptuneFeaturesNotAvailableException,
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
@@ -82,6 +84,8 @@ from neptune.new.internal.backends.hosted_client import (
     create_backend_client,
     create_leaderboard_client,
     create_artifacts_client,
+    OptionalFeatures,
+    MissingApiClient,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
@@ -106,6 +110,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def __init__(self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None):
         self.credentials = credentials
         self.proxies = proxies
+        self.missing_features = []
 
         self._http_client, self._client_config = create_http_client_with_auth(
             credentials=credentials,
@@ -115,7 +120,17 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         self.backend_client = create_backend_client(self._client_config, self._http_client)
         self.leaderboard_client = create_leaderboard_client(self._client_config, self._http_client)
-        self.artifacts_client = create_artifacts_client(self._client_config, self._http_client)
+
+        try:
+            create_artifacts_client(self._client_config, self._http_client)
+        except JSONDecodeError:
+            # thanks for nice error handling, bravado
+            self.artifacts_client = MissingApiClient(self)
+            self.missing_features.append(OptionalFeatures.ARTIFACTS)
+
+    def verify_feature_available(self, feature_name: str):
+        if feature_name in self.missing_features:
+            raise NeptuneFeaturesNotAvailableException(self.missing_features)
 
     def get_display_address(self) -> str:
         return self._client_config.display_url
@@ -323,6 +338,9 @@ class HostedNeptuneBackend(NeptuneBackend):
                 artifact_operations.append(op)
             else:
                 other_operations.append(op)
+
+        if artifact_operations:
+            self.verify_feature_available(OptionalFeatures.ARTIFACTS)
 
         # Upload operations should be done first since they are idempotent
         errors.extend(

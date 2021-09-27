@@ -1,7 +1,8 @@
-## neptune-client 0.10.11 [UNRELEASED]
+## neptune-client 0.11.0
 
 ### Fixes
 - Boto3 non-strict requirement ([#708](https://github.com/neptune-ai/neptune-client/pull/708))
+- Gracefully handle backends not supporting Artifacts ([#709](https://github.com/neptune-ai/neptune-client/pull/709))
 
 ## neptune-client 0.10.10
 
