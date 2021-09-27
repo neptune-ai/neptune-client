@@ -1,4 +1,4 @@
-## neptune-client 0.12.0
+## neptune-client 0.12.0 [UNRELEASED]
 
 ### Features
 - Added project management API ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
