@@ -363,7 +363,7 @@ def status(path: Path) -> None:
 
     # pylint: disable=global-statement
     global backend
-    backend = HostedNeptuneBackend(Credentials())
+    backend = HostedNeptuneBackend(Credentials.from_token())
 
     synchronization_status(path)
 
@@ -409,7 +409,7 @@ def sync(path: Path, runs_names: List[str], project_name: Optional[str]):
 
     # pylint: disable=global-statement
     global backend
-    backend = HostedNeptuneBackend(Credentials())
+    backend = HostedNeptuneBackend(Credentials.from_token())
 
     if runs_names:
         sync_selected_runs(path, project_name, runs_names)

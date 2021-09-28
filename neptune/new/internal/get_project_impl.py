@@ -61,7 +61,7 @@ def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> 
     verify_type("name", name, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
 
-    backend = HostedNeptuneBackend(Credentials(api_token=api_token))
+    backend = HostedNeptuneBackend(Credentials.from_token(api_token=api_token))
     project_obj = project_name_lookup(backend, name)
 
     return Project(project_obj.id, backend)

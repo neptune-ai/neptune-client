@@ -43,7 +43,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
     @mock.patch('bravado.client.SwaggerClient.from_url')
     @mock.patch('neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator',
                 new=MagicMock)
-    @mock.patch('neptune.new.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock)
+    @mock.patch('neptune.new.internal.backends.hosted_client.NeptuneAuthenticator', new=MagicMock)
     def setUp(self, swagger_client_factory) -> None:
         # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)

@@ -30,6 +30,15 @@ from neptune.new.exceptions import (
     NeptuneLimitExceedException
 )
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.backends.hosted_client import (
+    DEFAULT_REQUEST_KWARGS,
+    _get_token_client,  # pylint:disable=protected-access
+    get_client_config,
+    create_http_client_with_auth,
+    create_backend_client,
+    create_leaderboard_client,
+    create_artifacts_client,
+)
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     AssignString,
@@ -38,22 +47,33 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileContent
 )
+from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 
 API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
             'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
 
-credentials = Credentials(API_TOKEN)
+credentials = Credentials.from_token(API_TOKEN)
 
 
-@patch('neptune.new.internal.backends.hosted_neptune_backend.RequestsClient', new=MagicMock())
-@patch('neptune.new.internal.backends.hosted_neptune_backend.NeptuneAuthenticator', new=MagicMock())
+@patch('neptune.new.internal.backends.hosted_client.RequestsClient', new=MagicMock())
+@patch('neptune.new.internal.backends.hosted_client.NeptuneAuthenticator', new=MagicMock())
 @patch('bravado.client.SwaggerClient.from_url')
 @patch('platform.platform', new=lambda: 'testPlatform')
 @patch('platform.python_version', new=lambda: '3.9.test')
 class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
     # pylint:disable=protected-access
+
+    def setUp(self) -> None:
+        # Clear all LRU storage
+        verify_host_resolution.cache_clear()
+        _get_token_client.cache_clear()
+        get_client_config.cache_clear()
+        create_http_client_with_auth.cache_clear()
+        create_backend_client.cache_clear()
+        create_leaderboard_client.cache_clear()
+        create_artifacts_client.cache_clear()
 
     @patch('neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute')
     def test_execute_operations(self, upload_mock, swagger_client_factory):
@@ -118,7 +138,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         'value': "some text"
                     }
                 }],
-                **backend.DEFAULT_REQUEST_KWARGS,
+                **DEFAULT_REQUEST_KWARGS,
             }
         )
 
@@ -247,19 +267,19 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                  path=["sub", "one"],
                  parent_identifier=str(exp_id),
                  entries=[("/path/to/file", '/path/to')],
-                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+                 default_request_params=DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
                  project_id=project_id,
                  path=["sub", "two"],
                  parent_identifier=str(exp_id),
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+                 default_request_params=DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
                  project_id=project_id,
                  path=["sub", "three"],
                  parent_identifier=str(exp_id),
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+                 default_request_params=DEFAULT_REQUEST_KWARGS),
         ], any_order=True)
 
     @patch('neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact')
@@ -310,24 +330,24 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                  artifact_hash='dummyHash',
                  parent_identifier=str(exp_id),
                  entries=[("/path/to/file", '/path/to')],
-                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+                 default_request_params=DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
                  project_id=project_id,
                  path=["sub", "two"],
                  artifact_hash='dummyHash',
                  parent_identifier=str(exp_id),
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+                 default_request_params=DEFAULT_REQUEST_KWARGS),
             call(swagger_client=swagger_client,
                  project_id=project_id,
                  path=["sub", "three"],
                  artifact_hash='dummyHash',
                  parent_identifier=str(exp_id),
                  entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                 default_request_params=backend.DEFAULT_REQUEST_KWARGS),
+                 default_request_params=DEFAULT_REQUEST_KWARGS),
         ], any_order=True)
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.13')
@@ -335,7 +355,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible='0.5.14')
@@ -346,7 +366,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         self.assertTrue("Please install neptune-client>=0.5.14" in str(ex.exception))
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.5.12')
@@ -354,7 +374,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # expect
         HostedNeptuneBackend(credentials)
 
-    @patch('neptune.new.internal.backends.hosted_neptune_backend.neptune_client_version', Version('0.5.13'))
+    @patch('neptune.new.internal.backends.hosted_client.neptune_client_version', Version('0.5.13'))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible='0.4.999')

@@ -1,3 +1,9 @@
+## neptune-client 0.12.0 [UNRELEASED]
+
+### Features
+- Added project management API ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
+- Performance improvements when creating several runs ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
+
 ## neptune-client 0.11.0
 
 ### Fixes
