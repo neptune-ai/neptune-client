@@ -701,6 +701,26 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**STYLES, reason=reason))
 
 
+class NeptuneStorageLimitException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneStorageLimitException---------------------------------------------------------------------------------------
+{end}
+You exceeded storage limit for workspace. It's not possible to upload new data, but you can still fetch and delete data.
+If you are using asynchronous (default) connection mode Neptune automatically switched to an offline mode
+and your data is being stored safely on the disk. You can upload it later using Neptune Command Line Interface:
+    {bash}neptune sync -p project_name{end}
+What should I do?
+    - Go to your projects and remove runs or model metadata you don't need
+    - ... or update your subscription plan here: https://app.neptune.ai/-/subscription
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/advanced-user-guides/connection-modes
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(**STYLES))
+
+
 class FetchAttributeNotFoundException(MetadataInconsistency):
     def __init__(self, attribute_path: str):
         message = """
