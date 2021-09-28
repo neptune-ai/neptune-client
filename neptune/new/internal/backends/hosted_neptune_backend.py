@@ -18,11 +18,7 @@ import re
 from typing import List, Optional, Dict, Iterable, Tuple, Any
 
 import click
-import urllib3
-from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity, HTTPPaymentRequired
-from bravado.requests_client import RequestsClient
-from packaging import version
 from simplejson import JSONDecodeError
 
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -479,8 +475,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound as e:
             raise RunUUIDNotFound(run_id=run_id) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
+            print(e.response.json())
             raise NeptuneLimitExceedException(
-                reason=e.response.json().get("message", "Maximum storage limit reached")
+                reason=e.response.json().get("title", "Unknown reason")
             ) from e
 
     @with_api_exceptions_handler

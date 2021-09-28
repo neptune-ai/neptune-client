@@ -189,7 +189,7 @@ def upload_raw_data(http_client: RequestsClient,
 
     response = session.send(session.prepare_request(request))
     if response.status_code in (HTTPUnprocessableEntity.status_code, HTTPPaymentRequired.status_code):
-        raise NeptuneLimitExceedException(reason=response.json().get("message", "Maximum storage limit reached"))
+        raise NeptuneLimitExceedException(reason=response.json().get("title", "Unknown reason"))
     response.raise_for_status()
     return response.content
 
