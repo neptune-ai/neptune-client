@@ -1,6 +1,7 @@
 ## neptune-client 0.12.0 [UNRELEASED]
 
 ### Features
+- Human-readable objects representation via `__repr__` ([#717](https://github.com/neptune-ai/neptune-client/pull/717))
 - Added project management API ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
 - Performance improvements when creating several runs ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
 
