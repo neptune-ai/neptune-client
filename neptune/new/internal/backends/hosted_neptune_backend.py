@@ -475,7 +475,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound as e:
             raise RunUUIDNotFound(run_id=run_id) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
-            print(e.response.json())
             raise NeptuneLimitExceedException(
                 reason=e.response.json().get("title", "Unknown reason")
             ) from e

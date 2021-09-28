@@ -403,7 +403,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # when:
         error = MagicMock()
         error.json.return_value = {
-            "message": "Maximum storage limit reached"
+            "title": "Maximum storage limit reached"
         }
         swagger_client.api.executeOperations.side_effect = HTTPPaymentRequired(response=error)
 
@@ -425,7 +425,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # when:
         error = MagicMock()
         error.json.return_value = {
-            "message": "Monitoring hours not left"
+            "title": "Monitoring hours not left"
         }
         swagger_client.api.executeOperations.side_effect = HTTPUnprocessableEntity(response=error)
 
