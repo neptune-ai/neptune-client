@@ -2,7 +2,8 @@
 
 ### Features
 - Human-readable objects representation via `__repr__` ([#717](https://github.com/neptune-ai/neptune-client/pull/717))
-- Added project management API ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
+- Added project management API ([#695](https://github.com/neptune-ai/neptune-client/pull/695),
+  [#720](https://github.com/neptune-ai/neptune-client/pull/720))
 - Performance improvements when creating several runs ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
 
 ### Fixes
