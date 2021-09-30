@@ -40,7 +40,8 @@ from neptune.management.exceptions import (
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
     UserAlreadyHasAccess,
-    BadRequestException, ProjectsLimitReached,
+    BadRequestException,
+    ProjectsLimitReached,
 )
 
 
