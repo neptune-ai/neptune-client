@@ -129,7 +129,6 @@ def create_project(
             raise ProjectAlreadyExists(name=project_identifier) from e
         raise BadRequestException(validation_errors=validation_errors)
     except HTTPUnprocessableEntity as e:
-        # TODO: better error identification
         raise ProjectsLimitReached() from e
 
 
