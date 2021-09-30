@@ -5,6 +5,9 @@
 - Added project management API ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
 - Performance improvements when creating several runs ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
 
+### Fixes
+- Temporarily pin `jsonschema<4` (4.0.0 is incompatible with `bravado`; [#719](https://github.com/neptune-ai/neptune-client/pull/719))
+
 ## neptune-client 0.11.0
 
 ### Fixes
