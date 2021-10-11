@@ -1,3 +1,8 @@
+## neptune-client 0.12.1
+
+### Fixes
+- Support Artifacts in fetch_runs_table() [#728](https://github.com/neptune-ai/neptune-client/pull/728))
+
 ## neptune-client 0.12.0
 
 ### Features
