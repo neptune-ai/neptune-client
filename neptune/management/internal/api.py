@@ -310,7 +310,7 @@ def get_project_member_list(
         workspace: Optional[str] = None,
         api_token: Optional[str] = None
 ) -> Dict[str, str]:
-    """Get a list of members for a workspace.
+    """Get a list of members for a project.
 
     Args:
         name(str): The name of the project in Neptune in the format 'WORKSPACE/PROJECT'.
@@ -435,13 +435,13 @@ def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -
     .. _management API reference:
        https://docs.neptune.ai//api-reference/management
     """
-    verify_type('name', name, str)
+    verify_type('workspace', workspace, str)
     verify_type('api_token', api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
 
     params = {
-        'organizationIdentifier': name,
+        'organizationIdentifier': workspace,
         **DEFAULT_REQUEST_KWARGS
     }
 
@@ -449,4 +449,4 @@ def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -
         result = backend_client.api.listOrganizationMembers(**params).response().result
         return {f'{m.registeredMemberInfo.username}': m.role for m in result}
     except HTTPNotFound as e:
-        raise WorkspaceNotFound(workspace=name) from e
+        raise WorkspaceNotFound(workspace=workspace) from e
