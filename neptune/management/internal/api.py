@@ -441,7 +441,7 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
     backend_client = _get_backend_client(api_token=api_token)
 
     params = {
-        'organizationIdentifier': workspace,
+        'organizationIdentifier': name,
         **DEFAULT_REQUEST_KWARGS
     }
 
