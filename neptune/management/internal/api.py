@@ -253,8 +253,8 @@ def add_project_member(
         role(`management.MemberRole`): level of permissions the user should have in a project.
             Can be set to:
              - `management.MemberRole.VIEWER`: can only view project content and members
-             - `management.MemberRole.MEMBER`: can view and edit project content and only view members
-             - `management.MemberRole.MANAGER`: can view and edit project content and members
+             - `management.MemberRole.CONTRIBUTOR`: can view and edit project content and only view members
+             - `management.MemberRole.OWNER`: can view and edit project content and members
             For more information, see `user roles in a project docs`_.
         workspace(str, optional): Name of your Neptune workspace.
             If you specify it, change the format of the name argument to 'PROJECT' instead of 'WORKSPACE/PROJECT'.
@@ -269,7 +269,7 @@ def add_project_member(
         >>> from neptune import management
         >>> management.add_project_member(name='awesome-team/amazing-project',
         ...                               username='johny',
-        ...                               role=management.MemberRole.MEMBER)
+        ...                               role=management.MemberRole.CONTRIBUTOR)
 
     You may also want to check `management API reference`_.
 
@@ -412,11 +412,11 @@ def remove_project_member(
 
 
 @with_api_exceptions_handler
-def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -> Dict[str, str]:
+def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Get a list of members of a workspace.
 
     Args:
-        workspace(str, optional): Name of your Neptune workspace.
+        name(str, optional): Name of your Neptune workspace.
         api_token(str, optional): User’s API token. Defaults to `None`.
             If `None`, the value of `NEPTUNE_API_TOKEN` environment variable will be taken.
             .. note::
@@ -424,7 +424,7 @@ def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -
                 API token in plain text in your source code.
 
     Returns:
-        ``Dict[str, str]``: Dictionary with usernames as keys and MemberRoles ('owner', 'member', 'viewer') as values.
+        ``Dict[str, str]``: Dictionary with usernames as keys and MemberRoles ('owner', 'contributor', 'viewer') as values.
 
     Examples:
         >>> from neptune import management
@@ -435,7 +435,7 @@ def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -
     .. _management API reference:
        https://docs.neptune.ai//api-reference/management
     """
-    verify_type('workspace', workspace, str)
+    verify_type('name', name, str)
     verify_type('api_token', api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
@@ -449,4 +449,4 @@ def get_workspace_member_list(workspace: str, api_token: Optional[str] = None) -
         result = backend_client.api.listOrganizationMembers(**params).response().result
         return {f'{m.registeredMemberInfo.username}': m.role for m in result}
     except HTTPNotFound as e:
-        raise WorkspaceNotFound(workspace=workspace) from e
+        raise WorkspaceNotFound(workspace=name) from e
