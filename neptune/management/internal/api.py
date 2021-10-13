@@ -424,7 +424,8 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
                 API token in plain text in your source code.
 
     Returns:
-        ``Dict[str, str]``: Dictionary with usernames as keys and MemberRoles ('owner', 'contributor', 'viewer') as values.
+        ``Dict[str, str]``: Dictionary with usernames as keys and MemberRoles as values.
+        For example, {'johny':'owner', 'kate':'contributor', 'mark':'viewer'}.
 
     Examples:
         >>> from neptune import management
