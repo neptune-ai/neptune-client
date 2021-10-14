@@ -1,8 +1,18 @@
-## neptune-client 0.12.0 [UNRELEASED]
+## neptune-client 0.12.1
+
+### Fixes
+- Support Artifacts in fetch_runs_table() [#728](https://github.com/neptune-ai/neptune-client/pull/728))
+
+## neptune-client 0.12.0
 
 ### Features
-- Added project management API ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
+- Human-readable objects representation via `__repr__` ([#717](https://github.com/neptune-ai/neptune-client/pull/717))
+- Added project management API ([#695](https://github.com/neptune-ai/neptune-client/pull/695),
+  [#720](https://github.com/neptune-ai/neptune-client/pull/720))
 - Performance improvements when creating several runs ([#695](https://github.com/neptune-ai/neptune-client/pull/695))
+
+### Fixes
+- Temporarily pin `jsonschema<4` (4.0.0 is incompatible with `bravado`; [#719](https://github.com/neptune-ai/neptune-client/pull/719))
 
 ## neptune-client 0.11.0
 

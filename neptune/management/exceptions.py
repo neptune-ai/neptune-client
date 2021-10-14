@@ -13,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+REGISTERED_CODES = dict()
+
+
 class ManagementOperationFailure(Exception):
     code = -1
     description = "Unknown error"
@@ -23,6 +27,11 @@ class ManagementOperationFailure(Exception):
 
     def __str__(self):
         return f"{self.description.format(**self._properties)} (code: {self.code})"
+
+    def __init_subclass__(cls):
+        previous = REGISTERED_CODES.get(cls.code)
+        assert previous is None, f"{cls} cannot have code {cls.code} already used by {previous}"
+        REGISTERED_CODES[cls.code] = cls
 
     @property
     def details(self):
@@ -78,8 +87,13 @@ class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
 
 
 class UserAlreadyHasAccess(ManagementOperationFailure):
-    code = 7
+    code = 10
     description = 'User "{user}" already has access to project "{project}".'
+
+
+class ProjectsLimitReached(ManagementOperationFailure):
+    code = 11
+    description = 'Project number limit reached.'
 
 
 class BadRequestException(ManagementOperationFailure):

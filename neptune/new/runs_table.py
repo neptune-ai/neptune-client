@@ -66,6 +66,8 @@ class RunsTableEntry:
                     return attr.properties.commit.commitId
                 if _type == AttributeType.NOTEBOOK_REF:
                     return attr.properties.notebookName
+                if _type == AttributeType.ARTIFACT:
+                    return attr.properties.hash
                 logger.error(
                     "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
                     _type
@@ -150,6 +152,8 @@ class RunsTable:
                 return _properties.commit.commitId
             if _type == AttributeType.NOTEBOOK_REF:
                 return _properties.notebookName
+            if _type == AttributeType.ARTIFACT:
+                return _properties.hash
             logger.error(
                 "Attribute type %s not supported in this version, yielding None. Recommended client upgrade.",
                 _type

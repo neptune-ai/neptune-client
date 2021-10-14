@@ -40,6 +40,11 @@ class Handler:
         self._run = run
         self._path = path
 
+    def __repr__(self):
+        attr = self._run.get_attribute(self._path)
+        formal_type = type(attr).__name__ if attr else 'Unassigned'
+        return f'<{formal_type} field at "{self._path}">'
+
     def __getitem__(self, path: str) -> 'Handler':
         return Handler(self._run, join_paths(self._path, path))
 
