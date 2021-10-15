@@ -1,3 +1,8 @@
+## WIP neptune-client 0.12.2
+
+### Fixes
+- Added docstrings to project management api and renamed MemberRoles [#732](https://github.com/neptune-ai/neptune-client/pull/732))
+
 ## neptune-client 0.12.1
 
 ### Fixes
