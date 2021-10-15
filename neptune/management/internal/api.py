@@ -83,7 +83,7 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     You may also want to check `management API reference`_.
 
     .. _management API reference:
-       https://docs.neptune.ai//api-reference/management
+       https://docs.neptune.ai/api-reference/management
     """
     verify_type('api_token', api_token, (str, type(None)))
 
@@ -137,14 +137,14 @@ def create_project(
 
     Examples:
         >>> from neptune import management
-        >>> management.create_project(name='awesome-team/amazing-project',
-        ...                           key='AMA',
+        >>> management.create_project(name="awesome-team/amazing-project",
+        ...                           key="AMA",
         ...                           visibility=management.ProjectVisibility.PUBLIC)
 
     You may also want to check `management API reference`_.
 
     .. _management API reference:
-       https://docs.neptune.ai//api-reference/management
+       https://docs.neptune.ai/api-reference/management
     """
     verify_type('name', name, str)
     verify_type('key', key, str)
@@ -209,12 +209,12 @@ def delete_project(name: str, workspace: Optional[str] = None, api_token: Option
 
     Examples:
         >>> from neptune import management
-        >>> management.delete_project(name='awesome-team/amazing-project')
+        >>> management.delete_project(name="awesome-team/amazing-project")
 
     You may also want to check `management API reference`_.
 
     .. _management API reference:
-       https://docs.neptune.ai//api-reference/management
+       https://docs.neptune.ai/api-reference/management
     """
     verify_type('name', name, str)
     verify_type('workspace', workspace, (str, type(None)))
@@ -244,7 +244,7 @@ def add_project_member(
         workspace: Optional[str] = None,
         api_token: Optional[str] = None
 ):
-    """Adds username to a project.
+    """Adds member to the Neptune project.
 
     Args:
         name(str): The name of the project in Neptune in the format 'WORKSPACE/PROJECT'.
@@ -267,14 +267,14 @@ def add_project_member(
 
     Examples:
         >>> from neptune import management
-        >>> management.add_project_member(name='awesome-team/amazing-project',
-        ...                               username='johny',
+        >>> management.add_project_member(name="awesome-team/amazing-project",
+        ...                               username="johny",
         ...                               role=management.MemberRole.CONTRIBUTOR)
 
     You may also want to check `management API reference`_.
 
     .. _management API reference:
-       https://docs.neptune.ai//api-reference/management
+       https://docs.neptune.ai/api-reference/management
     .. _user roles in a project docs:
        https://docs.neptune.ai/administration/user-management#roles-in-a-project
     """
@@ -329,12 +329,12 @@ def get_project_member_list(
 
     Examples:
         >>> from neptune import management
-        >>> management.get_project_member_list(name='awesome-team/amazing-project')
+        >>> management.get_project_member_list(name="awesome-team/amazing-project")
 
     You may also want to check `management API reference`_.
 
     .. _management API reference:
-       https://docs.neptune.ai//api-reference/management
+       https://docs.neptune.ai/api-reference/management
     """
     verify_type('name', name, str)
     verify_type('workspace', workspace, (str, type(None)))
@@ -362,7 +362,7 @@ def remove_project_member(
         workspace: Optional[str] = None,
         api_token: Optional[str] = None
 ):
-    """Removes a project member for a Neptune project.
+    """Removes member from the Neptune project.
 
     Args:
         name(str): The name of the project in Neptune in the format 'WORKSPACE/PROJECT'.
@@ -379,13 +379,13 @@ def remove_project_member(
 
     Examples:
         >>> from neptune import management
-        >>> management.remove_project_member(name='awesome-team/amazing-project',
-        ...                                  username='johny')
+        >>> management.remove_project_member(name="awesome-team/amazing-project",
+        ...                                  username="johny")
 
     You may also want to check `management API reference`_.
 
     .. _management API reference:
-       https://docs.neptune.ai//api-reference/management
+       https://docs.neptune.ai/api-reference/management
     """
     verify_type('name', name, str)
     verify_type('username', username, str)
@@ -429,12 +429,12 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
 
     Examples:
         >>> from neptune import management
-        >>> management.get_workspace_member_list(name='awesome-team')
+        >>> management.get_workspace_member_list(name="awesome-team")
 
     You may also want to check `management API reference`_.
 
     .. _management API reference:
-       https://docs.neptune.ai//api-reference/management
+       https://docs.neptune.ai/api-reference/management
     """
     verify_type('name', name, str)
     verify_type('api_token', api_token, (str, type(None)))
