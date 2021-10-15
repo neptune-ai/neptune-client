@@ -687,7 +687,9 @@ class NeptuneLimitExceedException(NeptuneException):
 {h1}
 ----NeptuneLimitExceedException---------------------------------------------------------------------------------------
 {end}
-{reason}. It's not possible to upload new data, but you can still fetch and delete data.
+{reason}
+
+It's not possible to upload new data, but you can still fetch and delete data.
 If you are using asynchronous (default) connection mode Neptune automatically switched to an offline mode
 and your data is being stored safely on the disk. You can upload it later using Neptune Command Line Interface:
     {bash}neptune sync -p project_name{end}
