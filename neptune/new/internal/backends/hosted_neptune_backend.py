@@ -18,7 +18,7 @@ import re
 from typing import List, Optional, Dict, Iterable, Tuple, Any
 
 import click
-from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity
+from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity, HTTPPaymentRequired
 from simplejson import JSONDecodeError
 
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -34,7 +34,7 @@ from neptune.new.exceptions import (
     NeptuneLegacyProjectException,
     ProjectNotFound,
     ProjectNameCollision,
-    NeptuneStorageLimitException,
+    NeptuneLimitExceedException,
     ArtifactNotFoundException,
     NeptuneFeaturesNotAvailableException,
 )
@@ -474,8 +474,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
             raise RunUUIDNotFound(run_id=run_id) from e
-        except HTTPUnprocessableEntity:
-            raise NeptuneStorageLimitException()
+        except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
+            raise NeptuneLimitExceedException(
+                reason=e.response.json().get("title", "Unknown reason")
+            ) from e
 
     @with_api_exceptions_handler
     def get_attributes(self, run_id: str) -> List[Attribute]:
