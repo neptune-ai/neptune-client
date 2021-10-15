@@ -23,5 +23,5 @@ class ProjectVisibility(Enum):
 
 class MemberRole(Enum):
     VIEWER = 'viewer'
-    MEMBER = 'member'
-    MANAGER = 'manager'
+    CONTRIBUTOR = 'contributor'
+    OWNER = 'owner'
