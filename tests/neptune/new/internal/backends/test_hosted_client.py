@@ -127,7 +127,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
                 )
             ),
             Mock(
-                role='admin',
+                role='owner',
                 registeredMemberInfo=Mock(
                     username='tester2'
                 )
@@ -180,9 +180,15 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
                 )
             ),
             Mock(
-                role='admin',
+                role='manager',
                 registeredMemberInfo=Mock(
                     username='tester2'
+                )
+            ),
+            Mock(
+                role='viewer',
+                registeredMemberInfo=Mock(
+                    username='tester3'
                 )
             )
         ]
@@ -194,7 +200,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         returned_members = get_project_member_list(name='org/proj', api_token=API_TOKEN)
 
         # then:
-        self.assertEqual({'tester1': 'member', 'tester2': 'admin'}, returned_members)
+        self.assertEqual({'tester1': 'contributor', 'tester2': 'owner', 'tester3': 'viewer'}, returned_members)
 
     def test_project_members_empty(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)

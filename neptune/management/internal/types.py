@@ -20,15 +20,17 @@ class ProjectVisibility:
 
 class ProjectMemberRole:
     VIEWER = 'viewer'
-    MEMBER = 'member'
-    MANAGER = 'manager'
     OWNER = 'owner'
     CONTRIBUTOR = 'contributor'
 
-    __DEPRECATED_ATTRIBUTES__ = {
-        MEMBER: CONTRIBUTOR,
-        MANAGER: OWNER
-    }
+    # Deprecated
+    MEMBER = CONTRIBUTOR
+    MANAGER = OWNER
 
 
 MemberRole = ProjectMemberRole
+
+
+class WorkspaceMemberRole:
+    ADMIN = 'admin'
+    MEMBER = 'member'

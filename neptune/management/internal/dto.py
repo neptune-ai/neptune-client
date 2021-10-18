@@ -17,6 +17,22 @@ from enum import Enum
 
 from neptune.new.internal.utils import verify_type
 
+from neptune.management.internal.types import ProjectVisibility, ProjectMemberRole, WorkspaceMemberRole
+
+
+class ProjectVisibilityDTO(Enum):
+    PRIVATE = 'priv'
+    PUBLIC = 'pub'
+
+    @staticmethod
+    def from_str(visibility: str) -> str:
+        verify_type('visibility', visibility, str)
+
+        return {
+            ProjectVisibility.PRIVATE: ProjectVisibilityDTO.PRIVATE,
+            ProjectVisibility.PUBLIC: ProjectVisibilityDTO.PUBLIC
+        }.get(visibility).value
+
 
 class ProjectMemberRoleDTO(Enum):
     VIEWER = 'viewer'
@@ -24,11 +40,33 @@ class ProjectMemberRoleDTO(Enum):
     MANAGER = 'manager'
 
     @staticmethod
-    def from_str(role: str):
+    def from_str(role: str) -> str:
         verify_type('role', role, str)
 
         return {
-            'viewer': ProjectMemberRoleDTO.VIEWER,
-            'contributor': ProjectMemberRoleDTO.MEMBER,
-            'owner': ProjectMemberRoleDTO.MANAGER
+            ProjectMemberRole.VIEWER: ProjectMemberRoleDTO.VIEWER,
+            ProjectMemberRole.CONTRIBUTOR: ProjectMemberRoleDTO.MEMBER,
+            ProjectMemberRole.OWNER: ProjectMemberRoleDTO.MANAGER
+        }.get(role).value
+
+    @staticmethod
+    def to_domain(role: str) -> str:
+        verify_type('role', role, str)
+
+        return {
+            ProjectMemberRoleDTO.VIEWER.value: ProjectMemberRole.VIEWER,
+            ProjectMemberRoleDTO.MANAGER.value: ProjectMemberRole.OWNER,
+            ProjectMemberRoleDTO.MEMBER.value: ProjectMemberRole.CONTRIBUTOR
+        }.get(role)
+
+
+class WorkspaceMemberRoleDTO(Enum):
+    OWNER = 'owner'
+    MEMBER = 'member'
+
+    @staticmethod
+    def to_domain(role: str) -> str:
+        return {
+            WorkspaceMemberRoleDTO.OWNER.value: WorkspaceMemberRole.ADMIN,
+            WorkspaceMemberRoleDTO.MEMBER.value: WorkspaceMemberRole.MEMBER
         }.get(role)

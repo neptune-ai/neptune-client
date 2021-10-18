@@ -15,7 +15,6 @@
 #
 import re
 import os
-import warnings
 from typing import Optional, List, Dict
 
 from bravado.client import SwaggerClient
@@ -44,7 +43,7 @@ from neptune.management.exceptions import (
     BadRequestException,
     ProjectsLimitReached,
 )
-from neptune.management.internal.dto import ProjectMemberRoleDTO
+from neptune.management.internal.dto import ProjectVisibilityDTO, ProjectMemberRoleDTO, WorkspaceMemberRoleDTO
 
 
 def _get_token(api_token: Optional[str] = None) -> str:
@@ -118,7 +117,7 @@ def create_project(
             'description': description,
             'projectKey': key,
             'organizationId': workspace_name_to_id[workspace],
-            'visibility': visibility
+            'visibility': ProjectVisibilityDTO.from_str(visibility)
         },
         **DEFAULT_REQUEST_KWARGS
     }
@@ -171,16 +170,6 @@ def add_project_member(
     verify_type('workspace', workspace, (str, type(None)))
     verify_type('api_token', api_token, (str, type(None)))
 
-    __DEPRECATED_ROLES__ = {
-        ProjectMemberRole.MEMBER: ProjectMemberRole.CONTRIBUTOR,
-        ProjectMemberRole.MANAGER: ProjectMemberRole.OWNER
-    }
-    if role in __DEPRECATED_ROLES__:
-        warnings.warn(
-            f"The role '{role}' was renamed to '{__DEPRECATED_ROLES__.get(role)}'",
-            DeprecationWarning)
-    role = __DEPRECATED_ROLES__.get(role, role)
-
     backend_client = _get_backend_client(api_token=api_token)
     project_identifier = normalize_project_name(name=name, workspace=workspace)
 
@@ -188,7 +177,7 @@ def add_project_member(
         'projectIdentifier': project_identifier,
         'member': {
             'userId': username,
-            'role': ProjectMemberRoleDTO.from_str(role).value
+            'role': ProjectMemberRoleDTO.from_str(role)
         },
         **DEFAULT_REQUEST_KWARGS
     }
@@ -221,7 +210,7 @@ def get_project_member_list(
 
     try:
         result = backend_client.api.listProjectMembers(**params).response().result
-        return {f'{m.registeredMemberInfo.username}': m.role for m in result}
+        return {f'{m.registeredMemberInfo.username}': ProjectMemberRoleDTO.to_domain(m.role) for m in result}
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
 
@@ -271,6 +260,6 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
 
     try:
         result = backend_client.api.listOrganizationMembers(**params).response().result
-        return {f'{m.registeredMemberInfo.username}': m.role for m in result}
+        return {f'{m.registeredMemberInfo.username}': WorkspaceMemberRoleDTO.to_domain(m.role) for m in result}
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=name) from e
