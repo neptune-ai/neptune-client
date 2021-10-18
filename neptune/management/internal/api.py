@@ -132,7 +132,7 @@ def create_project(
         >>> from neptune import management
         >>> management.create_project(name="awesome-team/amazing-project",
         ...                           key="AMA",
-        ...                           visibility='pub')
+        ...                           visibility="pub")
     You may also want to check `management API reference`_.
     .. _management API reference:
        https://docs.neptune.ai/api-reference/management
@@ -254,7 +254,7 @@ def add_project_member(
         >>> from neptune import management
         >>> management.add_project_member(name="awesome-team/amazing-project",
         ...                               username="johny",
-        ...                               role='contributor')
+        ...                               role="contributor")
     You may also want to check `management API reference`_.
     .. _management API reference:
        https://docs.neptune.ai/api-reference/management
