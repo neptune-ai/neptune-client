@@ -15,6 +15,7 @@
 #
 import re
 import os
+import warnings
 from typing import Optional, List, Dict
 
 from bravado.client import SwaggerClient
@@ -43,6 +44,7 @@ from neptune.management.exceptions import (
     BadRequestException,
     ProjectsLimitReached,
 )
+from neptune.management.internal.dto import ProjectMemberRoleDTO
 
 
 def _get_token(api_token: Optional[str] = None) -> str:
@@ -84,14 +86,14 @@ def create_project(
         name: str,
         key: str,
         workspace: Optional[str] = None,
-        visibility: ProjectVisibility = ProjectVisibility.PRIVATE,
+        visibility: str = ProjectVisibility.PRIVATE,
         description: Optional[str] = None,
         api_token: Optional[str] = None
 ) -> str:
     verify_type('name', name, str)
     verify_type('key', key, str)
     verify_type('workspace', workspace, (str, type(None)))
-    verify_type('visibility', visibility, ProjectVisibility)
+    verify_type('visibility', visibility, str)
     verify_type('description', description, (str, type(None)))
     verify_type('api_token', api_token, (str, type(None)))
 
@@ -116,7 +118,7 @@ def create_project(
             'description': description,
             'projectKey': key,
             'organizationId': workspace_name_to_id[workspace],
-            'visibility': visibility.value
+            'visibility': visibility
         },
         **DEFAULT_REQUEST_KWARGS
     }
@@ -159,15 +161,25 @@ def delete_project(name: str, workspace: Optional[str] = None, api_token: Option
 def add_project_member(
         name: str,
         username: str,
-        role: MemberRole,
+        role: str,
         workspace: Optional[str] = None,
         api_token: Optional[str] = None
 ):
     verify_type('name', name, str)
     verify_type('username', username, str)
-    verify_type('role', role, MemberRole)
+    verify_type('role', role, str)
     verify_type('workspace', workspace, (str, type(None)))
     verify_type('api_token', api_token, (str, type(None)))
+
+    __DEPRECATED_ROLES__ = {
+        ProjectMemberRole.MEMBER: ProjectMemberRole.CONTRIBUTOR,
+        ProjectMemberRole.MANAGER: ProjectMemberRole.OWNER
+    }
+    if role in __DEPRECATED_ROLES__:
+        warnings.warn(
+            f"The role '{role}' was renamed to '{__DEPRECATED_ROLES__.get(role)}'",
+            DeprecationWarning)
+    role = __DEPRECATED_ROLES__.get(role, role)
 
     backend_client = _get_backend_client(api_token=api_token)
     project_identifier = normalize_project_name(name=name, workspace=workspace)
@@ -176,7 +188,7 @@ def add_project_member(
         'projectIdentifier': project_identifier,
         'member': {
             'userId': username,
-            'role': role.value
+            'role': ProjectMemberRoleDTO.from_str(role).value
         },
         **DEFAULT_REQUEST_KWARGS
     }

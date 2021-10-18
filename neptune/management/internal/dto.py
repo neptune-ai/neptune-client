@@ -13,22 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-class ProjectVisibility:
-    PRIVATE = 'priv'
-    PUBLIC = 'pub'
+from enum import Enum
+
+from neptune.new.internal.utils import verify_type
 
 
-class ProjectMemberRole:
+class ProjectMemberRoleDTO(Enum):
     VIEWER = 'viewer'
     MEMBER = 'member'
     MANAGER = 'manager'
-    OWNER = 'owner'
-    CONTRIBUTOR = 'contributor'
 
-    __DEPRECATED_ATTRIBUTES__ = {
-        MEMBER: CONTRIBUTOR,
-        MANAGER: OWNER
-    }
+    @staticmethod
+    def from_str(role: str):
+        verify_type('role', role, str)
 
-
-MemberRole = ProjectMemberRole
+        return {
+            'viewer': ProjectMemberRoleDTO.VIEWER,
+            'contributor': ProjectMemberRoleDTO.MEMBER,
+            'owner': ProjectMemberRoleDTO.MANAGER
+        }.get(role)
