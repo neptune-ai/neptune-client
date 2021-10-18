@@ -27,6 +27,16 @@ class ProjectMemberRoleDTO(Enum):
     def from_str(role: str):
         verify_type('role', role, str)
 
+        __DEPRECATED_ROLES__ = {
+            ProjectMemberRole.MEMBER: ProjectMemberRole.CONTRIBUTOR,
+            ProjectMemberRole.MANAGER: ProjectMemberRole.OWNER
+        }
+        if role in __DEPRECATED_ROLES__:
+            warnings.warn(
+                f"The role '{role}' was renamed to '{__DEPRECATED_ROLES__.get(role)}'",
+                DeprecationWarning)
+        role = __DEPRECATED_ROLES__.get(role, role)
+
         return {
             'viewer': ProjectMemberRoleDTO.VIEWER,
             'contributor': ProjectMemberRoleDTO.MEMBER,
