@@ -166,7 +166,7 @@ class Run(AbstractContextManager):
             raise NeptunePossibleLegacyUsageException()
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
 
-    def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 100) -> List[str]:
+    def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
         parsed_path = parse_path(path_prefix or "")
         return list(itertools.islice(self._structure.iterate_subpaths(parsed_path), limit))
 
