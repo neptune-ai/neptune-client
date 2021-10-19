@@ -25,8 +25,8 @@ class ProjectVisibilityDTO(Enum):
     PRIVATE = 'priv'
     PUBLIC = 'pub'
 
-    @staticmethod
-    def from_str(visibility: str) -> 'ProjectVisibilityDTO':
+    @classmethod
+    def from_str(cls, visibility: str) -> 'ProjectVisibilityDTO':
         verify_type('visibility', visibility, str)
 
         try:
@@ -35,7 +35,7 @@ class ProjectVisibilityDTO(Enum):
                 ProjectVisibility.PUBLIC: ProjectVisibilityDTO.PUBLIC
             }[visibility]
         except KeyError as e:
-            raise UnsupportedValue(enum=ProjectVisibilityDTO.__name__, value=visibility) from e
+            raise UnsupportedValue(enum=cls.__name__, value=visibility) from e
 
 
 class ProjectMemberRoleDTO(Enum):
@@ -43,8 +43,8 @@ class ProjectMemberRoleDTO(Enum):
     MEMBER = 'member'
     MANAGER = 'manager'
 
-    @staticmethod
-    def from_str(role: str) -> 'ProjectMemberRoleDTO':
+    @classmethod
+    def from_str(cls, role: str) -> 'ProjectMemberRoleDTO':
         verify_type('role', role, str)
 
         try:
@@ -54,7 +54,7 @@ class ProjectMemberRoleDTO(Enum):
                 ProjectMemberRole.OWNER: ProjectMemberRoleDTO.MANAGER
             }[role]
         except KeyError as e:
-            raise UnsupportedValue(enum=ProjectMemberRoleDTO.__name__, value=role) from e
+            raise UnsupportedValue(enum=cls.__name__, value=role) from e
 
     @staticmethod
     def to_domain(role: str) -> str:
