@@ -45,6 +45,10 @@ class Handler:
         formal_type = type(attr).__name__ if attr else 'Unassigned'
         return f'<{formal_type} field at "{self._path}">'
 
+    def _ipython_key_completions_(self):
+        # pylint: disable=protected-access
+        return self._run._get_subpath_suggestions(path_prefix=self._path)
+
     def __getitem__(self, path: str) -> 'Handler':
         return Handler(self._run, join_paths(self._path, path))
 

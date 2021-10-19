@@ -14,9 +14,12 @@
 # limitations under the License.
 #
 import unittest
+import uuid
 
 from neptune.new.exceptions import MetadataInconsistency
+from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.run_structure import RunStructure
+from neptune.new.types.value import Value
 
 
 class TestRunStructure(unittest.TestCase):
@@ -83,3 +86,59 @@ class TestRunStructure(unittest.TestCase):
         exp.set(["some", "path", "val1"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.pop(["some", "path"])
+
+
+class TestIterateSubpaths(unittest.TestCase):
+    # pylint: disable=protected-access
+    project_uuid = str(uuid.uuid4())
+
+    def setUp(self):
+        self.backend = NeptuneBackendMock()
+        exp = self.backend.create_run(self.project_uuid)
+        self.structure = self.backend._runs[exp.id]
+        self.structure.set(["attributes", "float"], Value())
+        self.structure.set(["attributes", "node", "one"], Value())
+        self.structure.set(["attributes", "node", "two"], Value())
+        self.structure.set(["attributes", "node", "three"], Value())
+        self.structure.set(["attributes", "int"], Value())
+        self.structure.set(["attributes", "string"], Value())
+
+    def test_iterate_empty_run(self):
+        empty_structure = RunStructure[Value, dict]()
+
+        self.assertListEqual(list(empty_structure.iterate_subpaths([])), [])
+        self.assertListEqual(list(empty_structure.iterate_subpaths(["test"])), [])
+
+    def test_iterate_empty_prefix(self):
+        prefix = []
+        expected_subpaths = [
+            "sys/id", "sys/state", "sys/owner", "sys/size", "sys/tags", "sys/creation_time",
+            "sys/modification_time", "sys/failed",
+            "attributes/float", "attributes/int", "attributes/string",
+            "attributes/node/one", "attributes/node/two", "attributes/node/three",
+        ]
+
+        print(list(self.structure.iterate_subpaths(prefix)))
+
+        self.assertListEqual(list(self.structure.iterate_subpaths(prefix)), expected_subpaths)
+
+    def test_iterate_prefix(self):
+        prefix = ["sys"]
+        expected_subpaths = [
+            "sys/id", "sys/state", "sys/owner", "sys/size", "sys/tags", "sys/creation_time",
+            "sys/modification_time", "sys/failed",
+        ]
+
+        self.assertListEqual(list(self.structure.iterate_subpaths(prefix)), expected_subpaths)
+
+    def test_iterate_long_prefix(self):
+        prefix = ["attributes", "node"]
+        expected_subpaths = ["attributes/node/one", "attributes/node/two", "attributes/node/three"]
+
+        self.assertListEqual(list(self.structure.iterate_subpaths(prefix)), expected_subpaths)
+
+    def test_iterate_nonexistent_prefix(self):
+        prefix = ["argh"]
+        expected_subpaths = []
+
+        self.assertListEqual(list(self.structure.iterate_subpaths(prefix)), expected_subpaths)
