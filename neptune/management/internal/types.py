@@ -13,15 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from enum import Enum
-
-
-class ProjectVisibility(Enum):
+class ProjectVisibility:
     PRIVATE = 'priv'
     PUBLIC = 'pub'
 
 
-class MemberRole(Enum):
+class ProjectMemberRole:
     VIEWER = 'viewer'
+    OWNER = 'owner'
+    CONTRIBUTOR = 'contributor'
+
+    # Deprecated
+    MEMBER = CONTRIBUTOR
+    MANAGER = OWNER
+
+
+MemberRole = ProjectMemberRole
+
+
+class WorkspaceMemberRole:
+    ADMIN = 'admin'
     MEMBER = 'member'
-    MANAGER = 'manager'

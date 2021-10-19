@@ -96,6 +96,11 @@ class ProjectsLimitReached(ManagementOperationFailure):
     description = 'Project number limit reached.'
 
 
+class UnsupportedValue(ManagementOperationFailure):
+    code = 12
+    description = '{enum} cannot have value {value}'
+
+
 class BadRequestException(ManagementOperationFailure):
     code = 400
     description = 'Your request has encountered following validation errors: {validation_errors}'
