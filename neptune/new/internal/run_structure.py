@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from collections import deque
 from typing import Optional, List, TypeVar, Generic, Callable, Union
 
 from neptune.new.exceptions import MetadataInconsistency
@@ -38,6 +39,22 @@ class RunStructure(Generic[T, Node]):
 
     def get_structure(self) -> Node:
         return self._structure
+
+    def _iterate_node(self, node, path_prefix: List[str]):
+        """ this iterates in BFS order in order to more meaningful suggestions before cutoff """
+        nodes_queue = deque([(node, path_prefix)])
+        while nodes_queue:
+            node, prefix = nodes_queue.popleft()
+            for key, value in node.items():
+                if not isinstance(value, self._node_type):
+                    yield prefix + [key]
+                else:
+                    nodes_queue.append((value, prefix + [key]))
+
+    def iterate_subpaths(self, path_prefix: List[str]):
+        root = self.get(path_prefix)
+        for path in self._iterate_node(root or {}, path_prefix):
+            yield path_to_str(path)
 
     def get(self, path: List[str]) -> Union[T, Node, None]:
         ref = self._structure

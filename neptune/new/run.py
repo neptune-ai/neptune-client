@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import atexit
+import itertools
 import threading
 import time
 import traceback
@@ -164,6 +165,13 @@ class Run(AbstractContextManager):
         if item in LEGACY_METHODS:
             raise NeptunePossibleLegacyUsageException()
         raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+
+    def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
+        parsed_path = parse_path(path_prefix or "")
+        return list(itertools.islice(self._structure.iterate_subpaths(parsed_path), limit))
+
+    def _ipython_key_completions_(self):
+        return self._get_subpath_suggestions()
 
     @assure_run_not_stopped
     def __getitem__(self, path: str) -> 'Handler':

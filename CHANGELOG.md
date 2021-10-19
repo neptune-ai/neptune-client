@@ -1,7 +1,12 @@
+## neptune-client 0.13.0 [UNRELEASED]
+
+### Features
+- Provide names of existing run attributes to IPython's suggestion mechanism ([#740](https://github.com/neptune-ai/neptune-client/pull/740))
+
 ## neptune-client 0.12.1
 
 ### Fixes
-- Support Artifacts in fetch_runs_table() [#728](https://github.com/neptune-ai/neptune-client/pull/728))
+- Support Artifacts in fetch_runs_table() ([#728](https://github.com/neptune-ai/neptune-client/pull/728))
 
 ## neptune-client 0.12.0
 
