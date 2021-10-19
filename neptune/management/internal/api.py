@@ -117,7 +117,7 @@ def create_project(
             'description': description,
             'projectKey': key,
             'organizationId': workspace_name_to_id[workspace],
-            'visibility': ProjectVisibilityDTO.from_str(visibility)
+            'visibility': ProjectVisibilityDTO.from_str(visibility).value
         },
         **DEFAULT_REQUEST_KWARGS
     }
@@ -177,7 +177,7 @@ def add_project_member(
         'projectIdentifier': project_identifier,
         'member': {
             'userId': username,
-            'role': ProjectMemberRoleDTO.from_str(role)
+            'role': ProjectMemberRoleDTO.from_str(role).value
         },
         **DEFAULT_REQUEST_KWARGS
     }

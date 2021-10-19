@@ -17,6 +17,7 @@ from enum import Enum
 
 from neptune.new.internal.utils import verify_type
 
+from neptune.management.exceptions import UnsupportedValue
 from neptune.management.internal.types import ProjectVisibility, ProjectMemberRole, WorkspaceMemberRole
 
 
@@ -25,13 +26,16 @@ class ProjectVisibilityDTO(Enum):
     PUBLIC = 'pub'
 
     @staticmethod
-    def from_str(visibility: str) -> str:
+    def from_str(visibility: str) -> 'ProjectVisibilityDTO':
         verify_type('visibility', visibility, str)
 
-        return {
-            ProjectVisibility.PRIVATE: ProjectVisibilityDTO.PRIVATE,
-            ProjectVisibility.PUBLIC: ProjectVisibilityDTO.PUBLIC
-        }.get(visibility).value
+        try:
+            return {
+                ProjectVisibility.PRIVATE: ProjectVisibilityDTO.PRIVATE,
+                ProjectVisibility.PUBLIC: ProjectVisibilityDTO.PUBLIC
+            }[visibility]
+        except KeyError as e:
+            raise UnsupportedValue(enum=ProjectVisibilityDTO.__name__, value=visibility) from e
 
 
 class ProjectMemberRoleDTO(Enum):
@@ -40,14 +44,17 @@ class ProjectMemberRoleDTO(Enum):
     MANAGER = 'manager'
 
     @staticmethod
-    def from_str(role: str) -> str:
+    def from_str(role: str) -> 'ProjectMemberRoleDTO':
         verify_type('role', role, str)
 
-        return {
-            ProjectMemberRole.VIEWER: ProjectMemberRoleDTO.VIEWER,
-            ProjectMemberRole.CONTRIBUTOR: ProjectMemberRoleDTO.MEMBER,
-            ProjectMemberRole.OWNER: ProjectMemberRoleDTO.MANAGER
-        }.get(role).value
+        try:
+            return {
+                ProjectMemberRole.VIEWER: ProjectMemberRoleDTO.VIEWER,
+                ProjectMemberRole.CONTRIBUTOR: ProjectMemberRoleDTO.MEMBER,
+                ProjectMemberRole.OWNER: ProjectMemberRoleDTO.MANAGER
+            }[role]
+        except KeyError as e:
+            raise UnsupportedValue(enum=ProjectMemberRoleDTO.__name__, value=role) from e
 
     @staticmethod
     def to_domain(role: str) -> str:
