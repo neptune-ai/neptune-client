@@ -1,7 +1,11 @@
-## neptune-client 0.13.0 [UNRELEASED]
+## neptune-client 0.13.0
 
 ### Features
 - Provide names of existing run attributes to IPython's suggestion mechanism ([#740](https://github.com/neptune-ai/neptune-client/pull/740))
+- Add docstrings for project management API ([#738](https://github.com/neptune-ai/neptune-client/pull/738))
+
+### Fixes
+- Update MemberRoles to match values in the UI ([#738](https://github.com/neptune-ai/neptune-client/pull/738))
 
 ## neptune-client 0.12.1
 
