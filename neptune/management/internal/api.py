@@ -306,7 +306,8 @@ def get_project_member_list(
                 It is strongly recommended to use `NEPTUNE_API_TOKEN` environment variable rather than placing your
                 API token in plain text in your source code.
     Returns:
-        ``Dict[str, str]``: Dictionary with usernames as keys and MemberRoles ('owner', 'member', 'viewer') as values.
+        ``Dict[str, str]``: Dictionary with usernames as keys and ProjectMemberRoles
+        ('owner', 'contributor', 'viewer') as values.
     Examples:
         >>> from neptune import management
         >>> management.get_project_member_list(name="awesome-team/amazing-project")
@@ -396,8 +397,7 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
                 It is strongly recommended to use `NEPTUNE_API_TOKEN` environment variable rather than placing your
                 API token in plain text in your source code.
     Returns:
-        ``Dict[str, str]``: Dictionary with usernames as keys and MemberRoles as values.
-        For example, {'johny':'owner', 'kate':'contributor', 'mark':'viewer'}.
+        ``Dict[str, str]``: Dictionary with usernames as keys and `WorkspaceMemberRole` ('member', 'admin') as values.
     Examples:
         >>> from neptune import management
         >>> management.get_workspace_member_list(name="awesome-team")
