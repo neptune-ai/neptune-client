@@ -17,7 +17,7 @@ import json
 import os
 import time
 from io import BytesIO
-from typing import List, Optional, Dict, Iterable, Callable, Set, Union
+from typing import List, Optional, Dict, Iterable, Callable, Set, Union, AnyStr
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
@@ -57,7 +57,7 @@ def upload_file_attribute(swagger_client: SwaggerClient,
                      response_handler=_attribute_upload_response_handler,
                      http_client=swagger_client.swagger_spec.http_client,
                      url=url,
-                     query_params={
+                     query_params_gen=lambda _: {
                          "experimentId": run_id,
                          "attribute": attribute,
                          "ext": ext
@@ -91,7 +91,7 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                 )
                 result = upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
                                          url=url,
-                                         data=BytesIO(data),
+                                         data=data,
                                          headers={"Content-Type": "application/octet-stream"},
                                          query_params={
                                              "experimentId": run_id,
@@ -109,10 +109,10 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                              response_handler=_attribute_upload_response_handler,
                              http_client=swagger_client.swagger_spec.http_client,
                              url=url,
-                             query_params={
+                             query_params_gen=lambda iteration: {
                                  "experimentId": str(run_id),
                                  "attribute": attribute,
-                                 "reset": str(reset),
+                                 "reset": str(iteration == 0 and reset),
                                  "path": file_chunk_stream.filename
                              })
 
@@ -152,9 +152,14 @@ def _attribute_upload_response_handler(result: bytes) -> None:
             raise InternalClientError("Unexpected response from server: {}".format(result))
 
 
-def _upload_loop(file_chunk_stream: FileChunkStream, response_handler: Callable[[bytes], None], **kwargs):
+def _upload_loop(file_chunk_stream: FileChunkStream,
+                 response_handler: Callable[[bytes], None],
+                 query_params_gen: Callable[[int], any],
+                 **kwargs):
+    iteration = 0
     for chunk in file_chunk_stream.generate():
-        result = _upload_loop_chunk(chunk, file_chunk_stream, **kwargs)
+        result = _upload_loop_chunk(chunk, file_chunk_stream, query_params=query_params_gen(iteration), **kwargs)
+        iteration += 1
         response_handler(result)
 
     file_chunk_stream.close()
@@ -178,7 +183,7 @@ def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, **k
 @with_api_exceptions_handler
 def upload_raw_data(http_client: RequestsClient,
                     url: str,
-                    data,
+                    data: AnyStr,
                     path_params: Optional[Dict[str, str]] = None,
                     query_params: Optional[Dict[str, str]] = None,
                     headers: Optional[Dict[str, str]] = None):
