@@ -103,7 +103,7 @@ class TestHostedFileOperations(unittest.TestCase):
             response_handler=_attribute_upload_response_handler,
             http_client=swagger_mock.swagger_spec.http_client,
             url="https://ui.neptune.ai/uploadFileSetChunk",
-            query_params=mock.ANY)
+            query_params_gen=mock.ANY)
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch('neptune.new.internal.backends.hosted_file_operations.upload_raw_data')
