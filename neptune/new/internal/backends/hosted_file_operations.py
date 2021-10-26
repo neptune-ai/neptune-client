@@ -105,16 +105,20 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                     swagger_client.api.uploadFileSetAttributeChunk.operation.path_name
                 )
                 file_chunk_stream = FileChunkStream(package.items[0])
+
+                def query_params_gen(stream):
+                    return lambda iteration: {
+                                 "experimentId": str(run_id),
+                                 "attribute": attribute,
+                                 "reset": str(reset),
+                                 "path": stream.filename
+                             }
+
                 _upload_loop(file_chunk_stream=file_chunk_stream,
                              response_handler=_attribute_upload_response_handler,
                              http_client=swagger_client.swagger_spec.http_client,
                              url=url,
-                             query_params_gen=lambda iteration: {
-                                 "experimentId": str(run_id),
-                                 "attribute": attribute,
-                                 "reset": str(iteration == 0 and reset),
-                                 "path": file_chunk_stream.filename
-                             })
+                             query_params_gen=query_params_gen(file_chunk_stream))
 
             reset = False
     except MetadataInconsistency as e:
@@ -188,6 +192,8 @@ def upload_raw_data(http_client: RequestsClient,
                     query_params: Optional[Dict[str, str]] = None,
                     headers: Optional[Dict[str, str]] = None):
     url = _generate_url(url=url, path_params=path_params, query_params=query_params)
+    print(url)
+    print(headers)
 
     session = http_client.session
     request = http_client.authenticator.apply(Request(method='POST', url=url, data=data, headers=headers))
