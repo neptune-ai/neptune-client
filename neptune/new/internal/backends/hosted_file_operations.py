@@ -192,8 +192,6 @@ def upload_raw_data(http_client: RequestsClient,
                     query_params: Optional[Dict[str, str]] = None,
                     headers: Optional[Dict[str, str]] = None):
     url = _generate_url(url=url, path_params=path_params, query_params=query_params)
-    print(url)
-    print(headers)
 
     session = http_client.session
     request = http_client.authenticator.apply(Request(method='POST', url=url, data=data, headers=headers))

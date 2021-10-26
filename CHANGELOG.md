@@ -1,3 +1,8 @@
+## neptune-client 0.13.1 [UNRELEASED]
+
+### Fixes
+- Fix issue with file upload retry buffer causing 400 bad requests ([#743](https://github.com/neptune-ai/neptune-client/pull/743))
+
 ## neptune-client 0.13.0
 
 ### Features
