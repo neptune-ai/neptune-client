@@ -179,7 +179,7 @@ def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, que
     }
     if file_chunk_stream.permissions is not None:
         headers["X-File-Permissions"] = file_chunk_stream.permissions
-    return upload_raw_data(data=chunk.get_data(), headers=headers, **kwargs)
+    return upload_raw_data(data=chunk.get_data(), headers=headers, query_params=query_params, **kwargs)
 
 
 @with_api_exceptions_handler
