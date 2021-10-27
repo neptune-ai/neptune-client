@@ -156,8 +156,7 @@ def _upload_loop(file_chunk_stream: FileChunkStream,
                  response_handler: Callable[[bytes], None],
                  query_params: dict,
                  **kwargs):
-    iteration = 0
-    for chunk in file_chunk_stream.generate():
+    for iteration, chunk in enumerate(file_chunk_stream.generate()):
         if 'reset' in query_params and iteration != 0:
             query_params['reset'] = str(False)
         result = _upload_loop_chunk(chunk, file_chunk_stream, query_params=query_params, **kwargs)
