@@ -19,7 +19,7 @@ import uuid
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import mock
-from mock import MagicMock, patch
+from mock import MagicMock, patch, call
 
 from neptune.new.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
     download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, \
@@ -88,35 +88,55 @@ class TestHostedFileOperations(unittest.TestCase):
             })
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.new.internal.backends.hosted_file_operations._upload_loop')
+    @patch('neptune.new.internal.backends.hosted_file_operations._upload_loop_chunk')
     @patch('neptune.new.internal.utils.glob', new=lambda path, recursive=False: [path.replace('*', 'file.txt')])
-    def test_upload_single_file_in_file_set_attribute(self, upload_loop_mock):
+    def test_upload_single_file_in_file_set_attribute(self, upload_loop_chunk_mock):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
-        upload_loop_mock.return_value = b'null'
+        upload_loop_chunk_mock.return_value = b'null'
+        chunk_size = 1024 * 1024
 
         # when
         with NamedTemporaryFile("w") as temp_file:
+            with open(temp_file.name, 'wb') as handler:
+                handler.write(os.urandom(2 * chunk_size))
+
             upload_file_set_attribute(
                 swagger_client=swagger_mock,
-                run_id=exp_uuid,
+                run_id=str(exp_uuid),
                 attribute="some/attribute",
                 file_globs=[temp_file.name],
                 reset=True)
 
         # then
-        upload_loop_mock.assert_called_once_with(
-            file_chunk_stream=mock.ANY,
-            response_handler=_attribute_upload_response_handler,
-            http_client=swagger_mock.swagger_spec.http_client,
-            url="https://ui.neptune.ai/uploadFileSetChunk",
-            query_params={
-                "experimentId": str(exp_uuid),
-                "attribute": "some/attribute",
-                "reset": "True",
-                "path": os.path.basename(temp_file.name)
-            })
+        upload_loop_chunk_mock.assert_has_calls([
+            call(
+                mock.ANY,
+                mock.ANY,
+                http_client=swagger_mock.swagger_spec.http_client,
+                query_params={
+                    "experimentId": str(exp_uuid),
+                    "attribute": "some/attribute",
+                    "reset": "True",
+                    "path": os.path.basename(temp_file.name)
+                },
+                url='https://ui.neptune.ai/uploadFileSetChunk'
+            ),
+            call(
+                mock.ANY,
+                mock.ANY,
+                http_client=swagger_mock.swagger_spec.http_client,
+                query_params={
+                    "experimentId": str(exp_uuid),
+                    "attribute": "some/attribute",
+                    "reset": "False",
+                    "path": os.path.basename(temp_file.name)
+                },
+                url='https://ui.neptune.ai/uploadFileSetChunk'
+            )
+        ])
+
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     @patch('neptune.new.internal.backends.hosted_file_operations.upload_raw_data')

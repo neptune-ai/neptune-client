@@ -17,7 +17,7 @@ import json
 import os
 import time
 from io import BytesIO
-from typing import List, Optional, Dict, Iterable, Callable, Set, Union
+from typing import List, Optional, Dict, Iterable, Callable, Set, Union, AnyStr
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
@@ -91,7 +91,7 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                 )
                 result = upload_raw_data(http_client=swagger_client.swagger_spec.http_client,
                                          url=url,
-                                         data=BytesIO(data),
+                                         data=data,
                                          headers={"Content-Type": "application/octet-stream"},
                                          query_params={
                                              "experimentId": run_id,
@@ -152,15 +152,20 @@ def _attribute_upload_response_handler(result: bytes) -> None:
             raise InternalClientError("Unexpected response from server: {}".format(result))
 
 
-def _upload_loop(file_chunk_stream: FileChunkStream, response_handler: Callable[[bytes], None], **kwargs):
-    for chunk in file_chunk_stream.generate():
-        result = _upload_loop_chunk(chunk, file_chunk_stream, **kwargs)
+def _upload_loop(file_chunk_stream: FileChunkStream,
+                 response_handler: Callable[[bytes], None],
+                 query_params: dict,
+                 **kwargs):
+    for iteration, chunk in enumerate(file_chunk_stream.generate()):
+        if 'reset' in query_params and iteration != 0:
+            query_params['reset'] = str(False)
+        result = _upload_loop_chunk(chunk, file_chunk_stream, query_params=query_params.copy(), **kwargs)
         response_handler(result)
 
     file_chunk_stream.close()
 
 
-def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, **kwargs):
+def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, query_params: dict, **kwargs):
     if file_chunk_stream.length is not None:
         binary_range = "bytes=%d-%d/%d" % (chunk.start, chunk.end - 1, file_chunk_stream.length)
     else:
@@ -172,13 +177,13 @@ def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, **k
     }
     if file_chunk_stream.permissions is not None:
         headers["X-File-Permissions"] = file_chunk_stream.permissions
-    return upload_raw_data(data=chunk.get_data(), headers=headers, **kwargs)
+    return upload_raw_data(data=chunk.get_data(), headers=headers, query_params=query_params, **kwargs)
 
 
 @with_api_exceptions_handler
 def upload_raw_data(http_client: RequestsClient,
                     url: str,
-                    data,
+                    data: AnyStr,
                     path_params: Optional[Dict[str, str]] = None,
                     query_params: Optional[Dict[str, str]] = None,
                     headers: Optional[Dict[str, str]] = None):

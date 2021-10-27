@@ -18,6 +18,7 @@ import io
 import os
 import stat
 import tarfile
+from typing import AnyStr
 
 from future.builtins import object
 
@@ -25,13 +26,13 @@ from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 
 
 class FileChunk(object):
-    def __init__(self, data, start, end):
+    def __init__(self, data: AnyStr, start, end):
         self.data = data
         self.start = start
         self.end = end
 
-    def get_data(self):
-        return io.BytesIO(self.data)
+    def get_data(self) -> AnyStr:
+        return self.data
 
     def __eq__(self, other):
         return self.__dict__ == other.__dict__
@@ -84,7 +85,7 @@ class FileChunkStream(object):
         self.fobj.close()
 
 
-def compress_to_tar_gz_in_memory(upload_entries):
+def compress_to_tar_gz_in_memory(upload_entries) -> bytes:
     f = io.BytesIO(b'')
 
     with tarfile.TarFile.open(fileobj=f, mode='w|gz', dereference=True) as archive:
