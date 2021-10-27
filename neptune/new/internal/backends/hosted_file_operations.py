@@ -160,7 +160,6 @@ def _upload_loop(file_chunk_stream: FileChunkStream,
         if 'reset' in query_params and iteration != 0:
             query_params['reset'] = str(False)
         result = _upload_loop_chunk(chunk, file_chunk_stream, query_params=query_params, **kwargs)
-        iteration += 1
         response_handler(result)
 
     file_chunk_stream.close()
