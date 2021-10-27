@@ -57,7 +57,7 @@ def upload_file_attribute(swagger_client: SwaggerClient,
                      response_handler=_attribute_upload_response_handler,
                      http_client=swagger_client.swagger_spec.http_client,
                      url=url,
-                     query_params_gen=lambda _: {
+                     query_params={
                          "experimentId": run_id,
                          "attribute": attribute,
                          "ext": ext
@@ -105,20 +105,16 @@ def upload_file_set_attribute(swagger_client: SwaggerClient,
                     swagger_client.api.uploadFileSetAttributeChunk.operation.path_name
                 )
                 file_chunk_stream = FileChunkStream(package.items[0])
-
-                def query_params_gen(stream):
-                    return lambda iteration: {
-                                 "experimentId": str(run_id),
-                                 "attribute": attribute,
-                                 "reset": str(reset),
-                                 "path": stream.filename
-                             }
-
                 _upload_loop(file_chunk_stream=file_chunk_stream,
                              response_handler=_attribute_upload_response_handler,
                              http_client=swagger_client.swagger_spec.http_client,
                              url=url,
-                             query_params_gen=query_params_gen(file_chunk_stream))
+                             query_params={
+                                 "experimentId": str(run_id),
+                                 "attribute": attribute,
+                                 "reset": str(reset),
+                                 "path": file_chunk_stream.filename
+                             })
 
             reset = False
     except MetadataInconsistency as e:
@@ -158,18 +154,20 @@ def _attribute_upload_response_handler(result: bytes) -> None:
 
 def _upload_loop(file_chunk_stream: FileChunkStream,
                  response_handler: Callable[[bytes], None],
-                 query_params_gen: Callable[[int], any],
+                 query_params: dict,
                  **kwargs):
     iteration = 0
     for chunk in file_chunk_stream.generate():
-        result = _upload_loop_chunk(chunk, file_chunk_stream, query_params=query_params_gen(iteration), **kwargs)
+        if 'reset' in query_params and iteration != 0:
+            query_params['reset'] = str(False)
+        result = _upload_loop_chunk(chunk, file_chunk_stream, query_params=query_params, **kwargs)
         iteration += 1
         response_handler(result)
 
     file_chunk_stream.close()
 
 
-def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, **kwargs):
+def _upload_loop_chunk(chunk: FileChunk, file_chunk_stream: FileChunkStream, query_params, **kwargs):
     if file_chunk_stream.length is not None:
         binary_range = "bytes=%d-%d/%d" % (chunk.start, chunk.end - 1, file_chunk_stream.length)
     else:
