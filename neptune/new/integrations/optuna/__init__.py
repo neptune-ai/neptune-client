@@ -20,6 +20,9 @@ try:
 except ModuleNotFoundError as e:
     if e.name == 'neptune_optuna':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-        raise NeptuneIntegrationNotInstalledException("optuna") from None
+        raise NeptuneIntegrationNotInstalledException(
+            integration_package_name="neptune-optuna",
+            framework_name="optuna"
+        ) from None
     else:
         raise

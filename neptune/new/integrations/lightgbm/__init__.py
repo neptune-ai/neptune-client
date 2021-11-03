@@ -20,6 +20,9 @@ try:
 except ModuleNotFoundError as e:
     if e.name == 'neptune_lightgbm':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-        raise NeptuneIntegrationNotInstalledException("lightgbm") from None
+        raise NeptuneIntegrationNotInstalledException(
+            integration_package_name="neptune-lightgbm",
+            framework_name="lightgbm"
+        ) from None
     else:
         raise

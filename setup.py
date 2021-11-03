@@ -40,7 +40,7 @@ def main():
               "fastai": ["neptune-fastai"],
               "lightgbm": ["neptune-lightgbm"],
               "optuna": ["neptune-optuna"],
-              "pytorch-lightning": ["neptune-pytorch-lightning"],
+              "pytorch-lightning": ["pytorch-lightning"],
               "sacred": ["neptune-sacred"],
               "sklearn": ["neptune-sklearn"],
               "tensorflow-keras": ["neptune-tensorflow-keras"],

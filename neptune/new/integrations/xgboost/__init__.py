@@ -20,6 +20,9 @@ try:
 except ModuleNotFoundError as e:
     if e.name == 'neptune_xgboost':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-        raise NeptuneIntegrationNotInstalledException("xgboost") from None
+        raise NeptuneIntegrationNotInstalledException(
+            integration_package_name="neptune-xgboost",
+            framework_name="xgboost"
+        ) from None
     else:
         raise

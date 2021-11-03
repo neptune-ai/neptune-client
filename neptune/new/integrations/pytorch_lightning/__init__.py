@@ -16,10 +16,13 @@
 
 try:
     # pylint: disable=import-error
-    from neptune_pytorch_lightning.impl import *
+    from pytorch_lightning.loggers import NeptuneLogger
 except ModuleNotFoundError as e:
-    if e.name == 'neptune_pytorch_lightning':
+    if e.name == 'pytorch_lightning':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-        raise NeptuneIntegrationNotInstalledException("pytorch-lightning") from None
+        raise NeptuneIntegrationNotInstalledException(
+            integration_package_name="pytorch-lightning",
+            framework_name="pytorch-lightning"
+        ) from None
     else:
         raise

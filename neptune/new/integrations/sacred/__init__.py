@@ -20,6 +20,9 @@ try:
 except ModuleNotFoundError as e:
     if e.name == 'neptune_sacred':
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
-        raise NeptuneIntegrationNotInstalledException("sacred") from None
+        raise NeptuneIntegrationNotInstalledException(
+            integration_package_name="neptune-sacred",
+            framework_name="sacred"
+        ) from None
     else:
         raise
