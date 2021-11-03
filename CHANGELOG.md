@@ -1,4 +1,7 @@
-## neptune-client 0.13.1 [UNRELEASED]
+## neptune-client 0.13.1
+
+### Features
+- PyTorchLightning integration is imported directly from `pytorch-lightnig` repo ([#673](https://github.com/neptune-ai/neptune-client/pull/673))
 
 ### Fixes
 - Fix issue with file upload retry buffer causing 400 bad requests ([#743](https://github.com/neptune-ai/neptune-client/pull/743))
