@@ -40,7 +40,7 @@ from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMoc
 from neptune.utils import IS_WINDOWS
 
 
-@patch('neptune.new.internal.init_impl.HostedNeptuneBackend', NeptuneBackendMock)
+@patch('neptune.new.internal.backends.factory.HostedNeptuneBackend', NeptuneBackendMock)
 class TestClient(unittest.TestCase):
 
     @classmethod
