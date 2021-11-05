@@ -21,7 +21,8 @@ from time import time
 from neptune.new.exceptions import MetadataInconsistency
 
 from neptune.new.internal.backends.api_model import DatetimeAttribute, FloatAttribute, StringAttribute, \
-    FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute
+    FloatSeriesAttribute, StringSeriesAttribute, StringSetAttribute, StringSeriesValues, FloatSeriesValues, \
+    StringPointValue, FloatPointValue
 
 from neptune.new.internal.operation import AssignFloat, AssignString, AssignDatetime, LogFloats, LogStrings, \
     AddStrings
@@ -113,6 +114,46 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # then
         self.assertEqual(StringSetAttribute({"abcx", "qwe"}), ret)
+
+    def test_get_string_series_values(self):
+        # given
+        backend = NeptuneBackendMock()
+        exp = backend.create_run(self.project_uuid)
+        backend.execute_operations(exp.id, [LogStrings(["x"], [LogStrings.ValueType("adf", None, time()),
+                                                               LogStrings.ValueType("sdg", None, time())])])
+        backend.execute_operations(exp.id, [LogStrings(["x"], [LogStrings.ValueType("dfh", None, time()),
+                                                               LogStrings.ValueType("qwe", None, time())])])
+
+        # when
+        ret = backend.get_string_series_values(exp.id, ["x"], limit=100, offset=0)
+
+        # then
+        self.assertEqual(StringSeriesValues(4, [
+            StringPointValue(timestampMillis=42342, step=0, value='adf'),
+            StringPointValue(timestampMillis=42342, step=1, value='sdg'),
+            StringPointValue(timestampMillis=42342, step=2, value='dfh'),
+            StringPointValue(timestampMillis=42342, step=3, value='qwe')]),
+         ret)
+
+    def test_get_float_series_values(self):
+        # given
+        backend = NeptuneBackendMock()
+        exp = backend.create_run(self.project_uuid)
+        backend.execute_operations(exp.id, [LogFloats(["x"], [LogFloats.ValueType(5, None, time()),
+                                                              LogFloats.ValueType(3, None, time())])])
+        backend.execute_operations(exp.id, [LogFloats(["x"], [LogFloats.ValueType(2, None, time()),
+                                                              LogFloats.ValueType(9, None, time())])])
+
+        # when
+        ret = backend.get_float_series_values(exp.id, ["x"], limit=100, offset=0)
+
+        # then
+        self.assertEqual(FloatSeriesValues(4, [
+            FloatPointValue(timestampMillis=42342, step=0, value=5),
+            FloatPointValue(timestampMillis=42342, step=1, value=3),
+            FloatPointValue(timestampMillis=42342, step=2, value=2),
+            FloatPointValue(timestampMillis=42342, step=3, value=9)]),
+         ret)
 
     def test_get_float_attribute_wrong_type(self):
         # given
