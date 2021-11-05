@@ -1,3 +1,8 @@
+## neptune-client 0.13.2 [UNRELEASED]
+
+### Fixes
+- Fixed fetching numeric values in debug mode ([#744](https://github.com/neptune-ai/neptune-client/pull/744))
+
 ## neptune-client 0.13.1
 
 ### Features
