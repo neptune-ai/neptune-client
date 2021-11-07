@@ -48,6 +48,7 @@ from neptune.new.internal.backends.api_model import (
     FloatSeriesValues,
     ImageSeriesValues,
     StringPointValue,
+    FloatPointValue,
 )
 from neptune.new.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -288,7 +289,11 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_float_series_values(self, run_id: str, path: List[str],
                                 offset: int, limit: int) -> FloatSeriesValues:
-        return FloatSeriesValues(0, [])
+        val = self._get_attribute(run_id, path, FloatSeries)
+        return FloatSeriesValues(
+            len(val.values),
+            [FloatPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)]
+        )
 
     def get_image_series_values(self, run_id: str, path: List[str],
                                 offset: int, limit: int) -> ImageSeriesValues:
