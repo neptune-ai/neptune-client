@@ -41,7 +41,7 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
         verify_type("min", min, (float, int))
         verify_type("max", max, (float, int))
         verify_type("unit", unit, str)
-        with self._run.lock():
+        with self._container.lock():
             self._enqueue_operation(ConfigFloatSeries(self._path, min, max, unit), wait)
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
@@ -64,8 +64,8 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     def fetch_last(self) -> float:
         # pylint: disable=protected-access
-        val = self._backend.get_float_series_attribute(self._run_id, self._path)
+        val = self._backend.get_float_series_attribute(self._container_id, self._path)
         return val.last
 
     def _fetch_values_from_backend(self, offset, limit) -> FloatSeriesValues:
-        return self._backend.get_float_series_values(self._run_id, self._path, offset, limit)
+        return self._backend.get_float_series_values(self._container_id, self._path, offset, limit)

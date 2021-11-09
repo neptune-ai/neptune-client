@@ -17,18 +17,18 @@ from collections.abc import MutableMapping
 from typing import Any, Dict, TYPE_CHECKING, Iterator, List, Mapping, Union
 
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.internal.run_structure import RunStructure
+from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.internal.utils.generic_attribute_mapper import atomic_attribute_types_map, NoValue
 from neptune.new.internal.utils.paths import parse_path, path_to_str
 from neptune.new.types.namespace import Namespace as NamespaceVal
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.attribute_container import AttributeContainer
 
 
 class Namespace(Attribute, MutableMapping):
-    def __init__(self, run: 'Run', path: List[str]):
-        Attribute.__init__(self, run, path)
+    def __init__(self, container: 'AttributeContainer', path: List[str]):
+        Attribute.__init__(self, container, path)
         self._attributes = {}
         self._str_path = path_to_str(path)
 
@@ -61,7 +61,7 @@ class Namespace(Attribute, MutableMapping):
             value = NamespaceVal(value)
 
         for k, v in value.value.items():
-            self._run[f"{self._str_path}/{k}"].assign(v, wait)
+            self._container[f"{self._str_path}/{k}"].assign(v, wait)
 
     def _collect_atom_values(self, attribute_dict) -> dict:
         result = {}
@@ -75,8 +75,8 @@ class Namespace(Attribute, MutableMapping):
         return result
 
     def fetch(self) -> dict:
-        attributes = self._backend.fetch_atom_attribute_values(self._run_id, self._path)
-        run_struct = RunStructure()
+        attributes = self._backend.fetch_atom_attribute_values(self._container_id, self._path)
+        run_struct = ContainerStructure()
         prefix_len = len(self._path)
         for attr_name, attr_type, attr_value in attributes:
             run_struct.set(parse_path(attr_name)[prefix_len:], (attr_type, attr_value))
@@ -84,8 +84,8 @@ class Namespace(Attribute, MutableMapping):
 
 
 class NamespaceBuilder:
-    def __init__(self, run: 'Run'):
-        self._run = run
+    def __init__(self, container: 'AttributeContainer'):
+        self._run = container
 
     def __call__(self, path: List[str]) -> Namespace:
         return Namespace(self._run, path)

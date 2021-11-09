@@ -49,14 +49,14 @@ class FileSet(Attribute):
             paths = [paths]
         else:
             verify_collection_type("paths", paths, str)
-        with self._run.lock():
+        with self._container.lock():
             self._enqueue_operation(DeleteFiles(self._path, set(paths)), wait)
 
     def _enqueue_upload_operation(self, globs: Iterable[str], reset: bool, wait: bool):
-        with self._run.lock():
+        with self._container.lock():
             abs_file_globs = list(os.path.abspath(file_glob) for file_glob in globs)
             self._enqueue_operation(UploadFileSet(self._path, abs_file_globs, reset=reset), wait)
 
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file_set(self._run_id, self._path, destination)
+        self._backend.download_file_set(self._container_id, self._path, destination)

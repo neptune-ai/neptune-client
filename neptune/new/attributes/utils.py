@@ -23,7 +23,7 @@ from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.backends.api_model import AttributeType
 
 if TYPE_CHECKING:
-    from neptune.new import Run
+    from neptune.new.attribute_container import AttributeContainer
     from neptune.new.attributes.attribute import Attribute
 
 _attribute_type_to_attr_class_map = {
@@ -45,7 +45,9 @@ _attribute_type_to_attr_class_map = {
 }
 
 
-def create_attribute_from_type(attribute_type: AttributeType, run: 'Run', path: List[str]) -> 'Attribute':
+def create_attribute_from_type(
+        attribute_type: AttributeType, run: 'AttributeContainer', path: List[str],
+) -> 'Attribute':
     try:
         return _attribute_type_to_attr_class_map[attribute_type](run, path)
     except KeyError:

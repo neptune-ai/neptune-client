@@ -52,7 +52,7 @@ from neptune.new.internal.backends.api_model import (
 )
 from neptune.new.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.run_structure import RunStructure
+from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.internal.operation import (
     AssignArtifact,
     AddStrings,
@@ -110,7 +110,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
-        self._runs: Dict[str, RunStructure[Value, dict]] = dict()
+        self._runs: Dict[str, ContainerStructure[Value, dict]] = dict()
         self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
 
@@ -138,7 +138,7 @@ class NeptuneBackendMock(NeptuneBackend):
                    ) -> ApiRun:
         short_id = "OFFLINE-{}".format(len(self._runs) + 1)
         new_run_id = str(uuid.uuid4())
-        self._runs[new_run_id] = RunStructure[Value, dict]()
+        self._runs[new_run_id] = ContainerStructure[Value, dict]()
         self._runs[new_run_id].set(["sys", "id"], String(short_id))
         self._runs[new_run_id].set(["sys", "state"], String("running"))
         self._runs[new_run_id].set(["sys", "owner"], String("offline_user"))

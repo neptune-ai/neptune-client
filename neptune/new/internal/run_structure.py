@@ -28,7 +28,7 @@ def _default_node_factory(path):
     return {}
 
 
-class RunStructure(Generic[T, Node]):
+class ContainerStructure(Generic[T, Node]):
     def __init__(self, node_factory: Optional[Callable[[List[str]], Node]] = None):
         if node_factory is None:
             node_factory = _default_node_factory

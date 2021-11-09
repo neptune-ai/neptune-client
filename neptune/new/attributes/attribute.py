@@ -20,14 +20,14 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.attribute_container import AttributeContainer
 
 
 class Attribute:
 
-    def __init__(self, run: 'Run', path: List[str]):
+    def __init__(self, container: 'AttributeContainer', path: List[str]):
         super().__init__()
-        self._run = run
+        self._container = container
         self._path = path
 
     def __getattr__(self, attr):
@@ -35,14 +35,14 @@ class Attribute:
 
     def _enqueue_operation(self, operation: Operation, wait: bool):
         # pylint: disable=protected-access
-        self._run._op_processor.enqueue_operation(operation, wait)
+        self._container._op_processor.enqueue_operation(operation, wait)
 
     @property
     def _backend(self) -> NeptuneBackend:
         # pylint: disable=protected-access
-        return self._run._backend
+        return self._container._backend
 
     @property
-    def _run_id(self) -> str:
+    def _container_id(self) -> str:
         # pylint: disable=protected-access
-        return self._run._id
+        return self._container._id

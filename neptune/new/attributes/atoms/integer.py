@@ -26,10 +26,10 @@ class Integer(Atom):
         if not isinstance(value, IntegerVal):
             value = IntegerVal(value)
 
-        with self._run.lock():
+        with self._container.lock():
             self._enqueue_operation(AssignInt(self._path, value.value), wait)
 
     def fetch(self) -> float:
         # pylint: disable=protected-access
-        val = self._backend.get_int_attribute(self._run_id, self._path)
+        val = self._backend.get_int_attribute(self._container_id, self._path)
         return val.value
