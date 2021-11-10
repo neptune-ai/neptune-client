@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2021, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,19 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from enum import Enum
 
-"""Constants used by Neptune"""
 
-ANONYMOUS = 'ANONYMOUS'
-
-ANONYMOUS_API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLm5lcHR1bmUuYWkiLCJhcGlfdXJsIjoiaHR0cHM6Ly9hcHAubmVwdHVuZS' \
-                      '5haSIsImFwaV9rZXkiOiJiNzA2YmM4Zi03NmY5LTRjMmUtOTM5ZC00YmEwMzZmOTMyZTQifQo='
-
-NEPTUNE_DATA_DIRECTORY = '.neptune'
-# backwards compat
-NEPTUNE_RUNS_DIRECTORY = NEPTUNE_DATA_DIRECTORY
-
-OFFLINE_DIRECTORY = 'offline'
-ASYNC_DIRECTORY = 'async'
-
-OFFLINE_NAME_PREFIX = 'offline/'
+class ContainerState(Enum):
+    CREATED = 'created'
+    STARTED = 'started'
+    STOPPING = 'stopping'
+    STOPPED = 'stopped'

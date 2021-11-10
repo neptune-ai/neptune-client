@@ -30,10 +30,10 @@ class Datetime(Atom):
             value = value.value
         else:
             value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
-        with self._run.lock():
+        with self._container.lock():
             self._enqueue_operation(AssignDatetime(self._path, value), wait)
 
     def fetch(self) -> datetime:
         # pylint: disable=protected-access
-        val = self._backend.get_datetime_attribute(self._run_id, self._path)
+        val = self._backend.get_datetime_attribute(self._container_id, self._path)
         return val.value

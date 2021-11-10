@@ -25,7 +25,7 @@ from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 class Artifact(Atom):
     def _check_feature(self):
-        self._run._backend.verify_feature_available(OptionalFeatures.ARTIFACTS)  # pylint: disable=protected-access
+        self._container._backend.verify_feature_available(OptionalFeatures.ARTIFACTS)  # pylint: disable=protected-access
 
     def assign(self, value: ArtifactVal, wait: bool = False):
         self._check_feature()
@@ -33,7 +33,7 @@ class Artifact(Atom):
         if not isinstance(value, ArtifactVal):
             raise TypeError("Value of unsupported type {}".format(type(value)))
 
-        with self._run.lock():
+        with self._container.lock():
             self._enqueue_operation(AssignArtifact(self._path, value.hash), wait)
 
     def fetch(self) -> ArtifactVal:
@@ -42,14 +42,14 @@ class Artifact(Atom):
 
     def fetch_hash(self) -> str:
         self._check_feature()
-        val = self._backend.get_artifact_attribute(self._run_id, self._path)
+        val = self._backend.get_artifact_attribute(self._container_id, self._path)
         return val.hash
 
     def fetch_files_list(self) -> typing.List[ArtifactFileData]:
         self._check_feature()
         artifact_hash = self.fetch_hash()
         return self._backend.list_artifact_files(
-            self._run._project_id,  # pylint: disable=protected-access
+            self._container._project_id,  # pylint: disable=protected-access
             artifact_hash
         )
 
@@ -68,10 +68,10 @@ class Artifact(Atom):
             wait: bool = False
     ):
         self._check_feature()
-        with self._run.lock():
+        with self._container.lock():
             self._enqueue_operation(
                 TrackFilesToArtifact(self._path,
-                                     self._run._project_id,  # pylint: disable=protected-access
+                                     self._container._project_id,  # pylint: disable=protected-access
                                      [(path, destination)]),
                 wait
             )

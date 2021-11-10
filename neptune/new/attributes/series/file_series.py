@@ -70,15 +70,15 @@ class FileSeries(Series[Val, Data]):
 
     def download(self, destination: Optional[str]):
         target_dir = self._get_destination(destination)
-        item_count = self._backend.get_image_series_values(self._run_id, self._path, 0, 1).totalItemCount
+        item_count = self._backend.get_image_series_values(self._container_id, self._path, 0, 1).totalItemCount
         for i in range(0, item_count):
-            self._backend.download_file_series_by_index(self._run_id, self._path, i, target_dir)
+            self._backend.download_file_series_by_index(self._container_id, self._path, i, target_dir)
 
     def download_last(self, destination: Optional[str]):
         target_dir = self._get_destination(destination)
-        item_count = self._backend.get_image_series_values(self._run_id, self._path, 0, 1).totalItemCount
+        item_count = self._backend.get_image_series_values(self._container_id, self._path, 0, 1).totalItemCount
         if item_count > 0:
-            self._backend.download_file_series_by_index(self._run_id, self._path, item_count - 1, target_dir)
+            self._backend.download_file_series_by_index(self._container_id, self._path, item_count - 1, target_dir)
         else:
             raise ValueError("Unable to download last file - series is empty")
 

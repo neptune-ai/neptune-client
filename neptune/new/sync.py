@@ -28,7 +28,7 @@ import click
 
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
-    NEPTUNE_RUNS_DIRECTORY,
+    NEPTUNE_DATA_DIRECTORY,
     OFFLINE_DIRECTORY,
     OFFLINE_NAME_PREFIX,
 )
@@ -328,12 +328,12 @@ def sync_all_runs(base_path: Path, project_name: Optional[str]) -> None:
 def get_neptune_path(ctx, param, path: str) -> Path:
     # check if path exists and contains a '.neptune' folder
     path = Path(path)
-    if (path / NEPTUNE_RUNS_DIRECTORY).is_dir():
-        return path / NEPTUNE_RUNS_DIRECTORY
-    elif path.name == NEPTUNE_RUNS_DIRECTORY and path.is_dir():
+    if (path / NEPTUNE_DATA_DIRECTORY).is_dir():
+        return path / NEPTUNE_DATA_DIRECTORY
+    elif path.name == NEPTUNE_DATA_DIRECTORY and path.is_dir():
         return path
     else:
-        raise click.BadParameter("Path {} does not contain a '{}' folder.".format(path, NEPTUNE_RUNS_DIRECTORY))
+        raise click.BadParameter("Path {} does not contain a '{}' folder.".format(path, NEPTUNE_DATA_DIRECTORY))
 
 
 path_option = click.option('--path', type=click.Path(exists=True, file_okay=False, resolve_path=True),

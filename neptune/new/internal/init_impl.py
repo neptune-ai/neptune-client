@@ -17,39 +17,23 @@
 import logging
 import os
 import threading
-from datetime import datetime
-from enum import Enum
-from pathlib import Path
 from platform import node as get_hostname
 from typing import List, Optional, Union
 
 import click
 
 from neptune.new.attributes import constants as attr_consts
-from neptune.new.constants import (
-    ASYNC_DIRECTORY,
-    NEPTUNE_RUNS_DIRECTORY,
-    OFFLINE_DIRECTORY,
-)
 from neptune.new.envs import (CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH,
                               MONITORING_NAMESPACE)
 from neptune.new.exceptions import (NeedExistingRunForReadOnlyMode, NeptuneRunResumeAndCustomIdCollision,
                                     NeptunePossibleLegacyUsageException)
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.backends.offline_neptune_backend import OfflineNeptuneBackend
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
-from neptune.new.internal.containers.disk_queue import DiskQueue
-from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.new.internal.notebooks.notebooks import create_checkpoint
-from neptune.new.internal.operation import Operation
-from neptune.new.internal.operation_processors.async_operation_processor import AsyncOperationProcessor
-from neptune.new.internal.operation_processors.offline_operation_processor import OfflineOperationProcessor
-from neptune.new.internal.operation_processors.read_only_operation_processor import ReadOnlyOperationProcessor
-from neptune.new.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
+from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.streams.std_capture_background_job import (
     StderrCaptureBackgroundJob,
     StdoutCaptureBackgroundJob,
@@ -63,6 +47,7 @@ from neptune.new.internal.utils.traceback_job import TracebackJob
 from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.new.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 from neptune.new.run import Run
+from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.version import version as parsed_version
 
@@ -72,17 +57,6 @@ _logger = logging.getLogger(__name__)
 
 
 LEGACY_KWARGS = ('project_qualified_name', 'backend')
-
-
-class RunMode(str, Enum):
-    OFFLINE = "offline"
-    DEBUG = "debug"
-    ASYNC = "async"
-    SYNC = "sync"
-    READ_ONLY = "read-only"
-
-    def __repr__(self):
-        return f'"{self.value}"'
 
 
 def _check_for_extra_kwargs(caller_name, kwargs: dict):
@@ -98,7 +72,7 @@ def init(project: Optional[str] = None,
          api_token: Optional[str] = None,
          run: Optional[str] = None,
          custom_run_id: Optional[str] = None,
-         mode: str = RunMode.ASYNC,
+         mode: str = Mode.ASYNC.value,
          name: Optional[str] = None,
          description: Optional[str] = None,
          tags: Optional[Union[List[str], str]] = None,
@@ -242,27 +216,9 @@ def init(project: Optional[str] = None,
     if run and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
 
-    if mode == RunMode.ASYNC:
-        # TODO Initialize backend in async thread
-        backend = HostedNeptuneBackend(
-            credentials=Credentials.from_token(api_token=api_token),
-            proxies=proxies)
-    elif mode == RunMode.SYNC:
-        backend = HostedNeptuneBackend(
-            credentials=Credentials.from_token(api_token=api_token),
-            proxies=proxies)
-    elif mode == RunMode.DEBUG:
-        backend = NeptuneBackendMock()
-    elif mode == RunMode.OFFLINE:
-        backend = OfflineNeptuneBackend()
-    elif mode == RunMode.READ_ONLY:
-        backend = HostedNeptuneBackend(
-            credentials=Credentials.from_token(api_token=api_token),
-            proxies=proxies)
-    else:
-        raise ValueError(f'mode should be one of {[m for m in RunMode]}')
+    backend = get_backend(mode, api_token=api_token, proxies=proxies)
 
-    if mode == RunMode.OFFLINE or mode == RunMode.DEBUG:
+    if mode == Mode.OFFLINE or mode == Mode.DEBUG:
         project = 'offline/project-placeholder'
 
     project_obj = project_name_lookup(backend, project)
@@ -271,7 +227,7 @@ def init(project: Optional[str] = None,
     if run:
         api_run = backend.get_run(project + '/' + run)
     else:
-        if mode == RunMode.READ_ONLY:
+        if mode == Mode.READ_ONLY:
             raise NeedExistingRunForReadOnlyMode()
         git_ref = get_git_info(discover_git_repo_location())
         if custom_run_id and len(custom_run_id) > 32:
@@ -284,43 +240,16 @@ def init(project: Optional[str] = None,
 
     run_lock = threading.RLock()
 
-    if mode == RunMode.ASYNC:
-        run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, ASYNC_DIRECTORY, api_run.id)
-        try:
-            execution_id = len(os.listdir(run_path))
-        except FileNotFoundError:
-            execution_id = 0
-        execution_path = "{}/exec-{}-{}".format(run_path, execution_id, datetime.now())
-        execution_path = execution_path.replace(" ", "_").replace(":", ".")
-        operation_processor = AsyncOperationProcessor(
-            api_run.id,
-            DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict, run_lock),
-            backend,
-            run_lock,
-            sleep_time=flush_period)
-    elif mode == RunMode.SYNC:
-        operation_processor = SyncOperationProcessor(api_run.id, backend)
-    elif mode == RunMode.DEBUG:
-        operation_processor = SyncOperationProcessor(api_run.id, backend)
-    elif mode == RunMode.OFFLINE:
-        # Run was returned by mocked backend and has some random UUID.
-        run_path = "{}/{}/{}".format(NEPTUNE_RUNS_DIRECTORY, OFFLINE_DIRECTORY, api_run.id)
-        storage_queue = DiskQueue(Path(run_path),
-                                  lambda x: x.to_dict(),
-                                  Operation.from_dict,
-                                  run_lock)
-        operation_processor = OfflineOperationProcessor(storage_queue)
-    elif mode == RunMode.READ_ONLY:
-        operation_processor = ReadOnlyOperationProcessor(api_run.id, backend)
-    else:
-        raise ValueError(f'mode should be one of {[m for m in RunMode]}')
+    operation_processor = get_operation_processor(
+        mode, parent_id=api_run.id, backend=backend, lock=run_lock, flush_period=flush_period
+    )
 
     stdout_path = "{}/stdout".format(monitoring_namespace)
     stderr_path = "{}/stderr".format(monitoring_namespace)
     traceback_path = "{}/traceback".format(monitoring_namespace)
 
     background_jobs = []
-    if mode != RunMode.READ_ONLY:
+    if mode != Mode.READ_ONLY:
         if capture_stdout:
             background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
         if capture_stderr:
@@ -336,10 +265,10 @@ def init(project: Optional[str] = None,
 
     _run = Run(api_run.id, backend, operation_processor, BackgroundJobList(background_jobs), run_lock,
                api_run.workspace, api_run.project_name, api_run.short_id, project_obj.id, monitoring_namespace)
-    if mode != RunMode.OFFLINE:
+    if mode != Mode.OFFLINE:
         _run.sync(wait=False)
 
-    if mode != RunMode.READ_ONLY:
+    if mode != Mode.READ_ONLY:
         if name is not None:
             _run[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
         if description is not None:
@@ -362,7 +291,7 @@ def init(project: Optional[str] = None,
 
     _run.start()
 
-    if mode != RunMode.DEBUG:
+    if mode != Mode.DEBUG:
         click.echo(_run.get_run_url())
 
         if in_interactive() or in_notebook():

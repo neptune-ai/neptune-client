@@ -18,18 +18,18 @@ import uuid
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.run_structure import RunStructure
+from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.types.value import Value
 
 
 class TestRunStructure(unittest.TestCase):
 
     def test_get_none(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         self.assertEqual(exp.get(["some", "path", "val"]), None)
 
     def test_get_nested_variable_fails(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         exp.set(["some", "path", "val"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.get(["some", "path", "val", "nested"])
@@ -37,17 +37,17 @@ class TestRunStructure(unittest.TestCase):
             exp.get(["some", "path", "val", "nested", "nested"])
 
     def test_get_ns(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         exp.set(["some", "path", "val"], 3)
         self.assertEqual(exp.get(["some", "path"]), {"val": 3})
 
     def test_set(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         exp.set(["some", "path", "val"], 3)
         self.assertEqual(exp.get(["some", "path", "val"]), 3)
 
     def test_set_nested_variable_fails(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         exp.set(["some", "path", "val"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.set(["some", "path", "val", "nested"], 3)
@@ -55,13 +55,13 @@ class TestRunStructure(unittest.TestCase):
             exp.set(["some", "path", "val", "nested", "nested"], 3)
 
     def test_set_ns_collision(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         exp.set(["some", "path", "val"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.set(["some", "path"], 5)
 
     def test_pop(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         exp.set(["some", "path", "val1"], 3)
         exp.set(["some", "path", "val2"], 5)
         exp.pop(["some", "path", "val2"])
@@ -70,19 +70,19 @@ class TestRunStructure(unittest.TestCase):
         self.assertTrue("some" in exp.get_structure() and "path" in exp.get_structure()["some"])
 
     def test_pop_whole_ns(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         exp.set(["some", "path", "val"], 3)
         exp.pop(["some", "path", "val"])
         self.assertEqual(exp.get(["some", "path", "val"]), None)
         self.assertFalse("some" in exp.get_structure())
 
     def test_pop_not_found(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         with self.assertRaises(MetadataInconsistency):
             exp.pop(["some", "path"])
 
     def test_pop_ns_fail(self):
-        exp = RunStructure[int, dict]()
+        exp = ContainerStructure[int, dict]()
         exp.set(["some", "path", "val1"], 3)
         with self.assertRaises(MetadataInconsistency):
             exp.pop(["some", "path"])
@@ -104,7 +104,7 @@ class TestIterateSubpaths(unittest.TestCase):
         self.structure.set(["attributes", "string"], Value())
 
     def test_iterate_empty_run(self):
-        empty_structure = RunStructure[Value, dict]()
+        empty_structure = ContainerStructure[Value, dict]()
 
         self.assertListEqual(list(empty_structure.iterate_subpaths([])), [])
         self.assertListEqual(list(empty_structure.iterate_subpaths(["test"])), [])

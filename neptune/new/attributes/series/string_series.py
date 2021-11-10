@@ -36,8 +36,8 @@ MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
 class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
-    def __init__(self, run: 'Run', path: List[str]):
-        super().__init__(run, path)
+    def __init__(self, container: 'Run', path: List[str]):
+        super().__init__(container, path)
         self._value_truncation_occurred = False
 
     def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
@@ -66,8 +66,8 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
     def fetch_last(self) -> str:
         # pylint: disable=protected-access
-        val = self._backend.get_string_series_attribute(self._run_id, self._path)
+        val = self._backend.get_string_series_attribute(self._container_id, self._path)
         return val.last
 
     def _fetch_values_from_backend(self, offset, limit) -> StringSeriesValues:
-        return self._backend.get_string_series_values(self._run_id, self._path, offset, limit)
+        return self._backend.get_string_series_values(self._container_id, self._path, offset, limit)
