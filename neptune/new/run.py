@@ -101,9 +101,6 @@ class Run(AttributeContainer):
 
         Run.last_run = self
 
-    def ping(self):
-        self._backend.ping_run(self._id)
-
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser
         """
