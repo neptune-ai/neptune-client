@@ -23,7 +23,6 @@ from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 
 
 class Datetime(Atom):
-
     def assign(self, value: Union[DatetimeVal, datetime], wait: bool = False):
         verify_type("value", value, (DatetimeVal, datetime))
         if isinstance(value, DatetimeVal):

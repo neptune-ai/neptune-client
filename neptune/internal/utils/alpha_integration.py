@@ -25,7 +25,7 @@ from neptune.internal.channels.channels import ChannelType, ChannelValueType
 # Alpha equivalent of old api's `KeyValueProperty` used in `Experiment.properties`
 from neptune.new.internal.operation import ImageValue
 
-AlphaKeyValueProperty = namedtuple('AlphaKeyValueProperty', ['key', 'value'])
+AlphaKeyValueProperty = namedtuple("AlphaKeyValueProperty", ["key", "value"])
 
 
 class AlphaAttributeWrapper(abc.ABC):
@@ -49,7 +49,7 @@ class AlphaAttributeWrapper(abc.ABC):
     @property
     def _properties(self):
         """Returns proper attribute property according to type"""
-        return getattr(self._attribute, f'{self._attribute.type}Properties')
+        return getattr(self._attribute, f"{self._attribute.type}Properties")
 
 
 class AlphaPropertyDTO(AlphaAttributeWrapper):
@@ -66,12 +66,14 @@ class AlphaPropertyDTO(AlphaAttributeWrapper):
     def is_valid_attribute(cls, attribute):
         """Checks if attribute can be used as property"""
         has_valid_type = super().is_valid_attribute(attribute)
-        is_in_properties_space = attribute.name.startswith(alpha_consts.PROPERTIES_ATTRIBUTE_SPACE)
+        is_in_properties_space = attribute.name.startswith(
+            alpha_consts.PROPERTIES_ATTRIBUTE_SPACE
+        )
         return has_valid_type and is_in_properties_space
 
     @property
     def key(self):
-        return self._properties.attributeName.split('/', 1)[-1]
+        return self._properties.attributeName.split("/", 1)[-1]
 
     @property
     def value(self):
@@ -94,12 +96,14 @@ class AlphaParameterDTO(AlphaAttributeWrapper):
     def is_valid_attribute(cls, attribute):
         """Checks if attribute can be used as property"""
         has_valid_type = super().is_valid_attribute(attribute)
-        is_in_parameters_space = attribute.name.startswith(alpha_consts.PARAMETERS_ATTRIBUTE_SPACE)
+        is_in_parameters_space = attribute.name.startswith(
+            alpha_consts.PARAMETERS_ATTRIBUTE_SPACE
+        )
         return has_valid_type and is_in_parameters_space
 
     @property
     def name(self):
-        return self._properties.attributeName.split('/', 1)[-1]
+        return self._properties.attributeName.split("/", 1)[-1]
 
     @property
     def value(self):
@@ -107,7 +111,11 @@ class AlphaParameterDTO(AlphaAttributeWrapper):
 
     @property
     def parameterType(self):
-        return "double" if self._properties.attributeType == AlphaAttributeType.FLOAT.value else "string"
+        return (
+            "double"
+            if self._properties.attributeType == AlphaAttributeType.FLOAT.value
+            else "string"
+        )
 
 
 class AlphaChannelDTO(AlphaAttributeWrapper):
@@ -128,7 +136,7 @@ class AlphaChannelDTO(AlphaAttributeWrapper):
 
     @property
     def name(self):
-        return self._properties.attributeName.split('/', 1)[-1]
+        return self._properties.attributeName.split("/", 1)[-1]
 
     @property
     def channelType(self):
@@ -205,26 +213,34 @@ def channel_type_to_operation(channel_type: ChannelType) -> alpha_operation.Oper
         ChannelType.NUMERIC: alpha_operation.LogFloats,
         ChannelType.IMAGE: alpha_operation.LogImages,
     }
-    return _map_using_dict(channel_type, 'channel type', _channel_type_to_operation)
+    return _map_using_dict(channel_type, "channel type", _channel_type_to_operation)
 
 
-def channel_type_to_clear_operation(channel_type: ChannelType) -> alpha_operation.Operation:
+def channel_type_to_clear_operation(
+    channel_type: ChannelType,
+) -> alpha_operation.Operation:
     _channel_type_to_operation = {
         ChannelType.TEXT: alpha_operation.ClearStringLog,
         ChannelType.NUMERIC: alpha_operation.ClearFloatLog,
         ChannelType.IMAGE: alpha_operation.ClearImageLog,
     }
-    return _map_using_dict(channel_type, 'channel type', _channel_type_to_operation)
+    return _map_using_dict(channel_type, "channel type", _channel_type_to_operation)
 
 
-def channel_value_type_to_operation(channel_value_type: ChannelValueType) -> alpha_operation.Operation:
+def channel_value_type_to_operation(
+    channel_value_type: ChannelValueType,
+) -> alpha_operation.Operation:
     _channel_value_type_to_operation = {
         ChannelValueType.TEXT_VALUE: alpha_operation.LogStrings,
         ChannelValueType.NUMERIC_VALUE: alpha_operation.LogFloats,
         ChannelValueType.IMAGE_VALUE: alpha_operation.LogImages,
     }
-    return _map_using_dict(channel_value_type, 'channel value type', _channel_value_type_to_operation)
+    return _map_using_dict(
+        channel_value_type, "channel value type", _channel_value_type_to_operation
+    )
 
 
 def deprecated_img_to_alpha_image(img: dict) -> ImageValue:
-    return ImageValue(data=img['data'], name=img['name'], description=img['description'])
+    return ImageValue(
+        data=img["data"], name=img["name"], description=img["description"]
+    )

@@ -23,7 +23,10 @@ from dataclasses import dataclass
 
 from neptune.new import envs
 from neptune.new import ANONYMOUS, ANONYMOUS_API_TOKEN
-from neptune.new.exceptions import NeptuneInvalidApiTokenException, NeptuneMissingApiTokenException
+from neptune.new.exceptions import (
+    NeptuneInvalidApiTokenException,
+    NeptuneMissingApiTokenException,
+)
 
 
 @dataclass(frozen=True)
@@ -33,7 +36,7 @@ class Credentials:
     api_url_opt: str
 
     @classmethod
-    def from_token(cls, api_token: Optional[str] = None) -> 'Credentials':
+    def from_token(cls, api_token: Optional[str] = None) -> "Credentials":
         if api_token is None:
             api_token = os.getenv(envs.API_TOKEN_ENV_NAME)
 
@@ -45,15 +48,15 @@ class Credentials:
 
         token_dict = Credentials._api_token_to_dict(api_token)
         # TODO: Consider renaming 'api_address' (breaking backward compatibility)
-        if 'api_address' not in token_dict:
+        if "api_address" not in token_dict:
             raise NeptuneInvalidApiTokenException()
-        token_origin_address = token_dict['api_address']
-        api_url = token_dict['api_url'] if 'api_url' in token_dict else None
+        token_origin_address = token_dict["api_address"]
+        api_url = token_dict["api_url"] if "api_url" in token_dict else None
 
         return Credentials(
             api_token=api_token,
             token_origin_address=token_origin_address,
-            api_url_opt=api_url
+            api_url_opt=api_url,
         )
 
     @staticmethod

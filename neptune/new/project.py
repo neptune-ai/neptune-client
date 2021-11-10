@@ -30,19 +30,18 @@ class Project:
        https://docs.neptune.ai/api-reference/project
     """
 
-    def __init__(self,
-                 _id: str,
-                 backend: HostedNeptuneBackend):
+    def __init__(self, _id: str, backend: HostedNeptuneBackend):
         self._id = _id
         self._backend = backend
 
     # pylint:disable=redefined-builtin
-    def fetch_runs_table(self,
-                         id: Optional[Union[str, Iterable[str]]] = None,
-                         state: Optional[Union[str, Iterable[str]]] = None,
-                         owner: Optional[Union[str, Iterable[str]]] = None,
-                         tag: Optional[Union[str, Iterable[str]]] = None
-                         ) -> RunsTable:
+    def fetch_runs_table(
+        self,
+        id: Optional[Union[str, Iterable[str]]] = None,
+        state: Optional[Union[str, Iterable[str]]] = None,
+        owner: Optional[Union[str, Iterable[str]]] = None,
+        tag: Optional[Union[str, Iterable[str]]] = None,
+    ) -> RunsTable:
         """Retrieve runs matching the specified criteria.
 
         All parameters are optional, each of them specifies a single criterion.
@@ -112,12 +111,16 @@ class Project:
         owner = self._as_list("owner", owner)
         tags = self._as_list("tag", tag)
 
-        leaderboard_entries = self._backend.get_leaderboard(self._id, id, state, owner, tags)
+        leaderboard_entries = self._backend.get_leaderboard(
+            self._id, id, state, owner, tags
+        )
 
         return RunsTable(self._backend, leaderboard_entries)
 
     @staticmethod
-    def _as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Optional[Iterable[str]]:
+    def _as_list(
+        name: str, value: Optional[Union[str, Iterable[str]]]
+    ) -> Optional[Iterable[str]]:
         verify_type(name, value, (type(None), str, Iterable))
         if value is None:
             return None

@@ -21,7 +21,11 @@ from urllib.parse import urlparse
 import boto3
 from botocore.exceptions import NoCredentialsError
 
-from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriver,
+    ArtifactFileData,
+    ArtifactFileType,
+)
 from neptune.new.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,
@@ -38,34 +42,42 @@ class S3ArtifactDriver(ArtifactDriver):
 
     @classmethod
     def matches(cls, path: str) -> bool:
-        return urlparse(path).scheme == 's3'
+        return urlparse(path).scheme == "s3"
 
     @classmethod
-    def _serialize_metadata(cls, metadata: typing.Dict[str, typing.Any]) -> typing.Dict[str, str]:
+    def _serialize_metadata(
+        cls, metadata: typing.Dict[str, typing.Any]
+    ) -> typing.Dict[str, str]:
         return {
-            "location": metadata['location'],
-            "last_modified": metadata['last_modified'].strftime(cls.DATETIME_FORMAT),
+            "location": metadata["location"],
+            "last_modified": metadata["last_modified"].strftime(cls.DATETIME_FORMAT),
         }
 
     @classmethod
-    def _deserialize_metadata(cls, metadata: typing.Dict[str, str]) -> typing.Dict[str, typing.Any]:
+    def _deserialize_metadata(
+        cls, metadata: typing.Dict[str, str]
+    ) -> typing.Dict[str, typing.Any]:
         return {
-            "location": metadata['location'],
-            "last_modified": datetime.strptime(metadata['last_modified'], cls.DATETIME_FORMAT),
+            "location": metadata["location"],
+            "last_modified": datetime.strptime(
+                metadata["last_modified"], cls.DATETIME_FORMAT
+            ),
         }
 
     @classmethod
-    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(
+        cls, path: str, destination: str = None
+    ) -> typing.List[ArtifactFileData]:
         url = urlparse(path)
-        bucket_name, prefix = url.netloc, url.path.lstrip('/')
+        bucket_name, prefix = url.netloc, url.path.lstrip("/")
 
-        if '*' in prefix:
+        if "*" in prefix:
             raise NeptuneUnsupportedArtifactFunctionalityException(
-                f'Wildcard characters (*,?) in location URI ({path}) are not supported.'
+                f"Wildcard characters (*,?) in location URI ({path}) are not supported."
             )
 
         # pylint: disable=no-member
-        remote_storage = boto3.resource('s3').Bucket(bucket_name)
+        remote_storage = boto3.resource("s3").Bucket(bucket_name)
 
         stored_files: typing.List[ArtifactFileData] = list()
 
@@ -76,44 +88,52 @@ class S3ArtifactDriver(ArtifactDriver):
                     prefix = str(pathlib.PurePosixPath(prefix).parent)
 
                 remote_key = remote_object.key
-                destination = pathlib.PurePosixPath(destination or '')
-                relative_file_path = remote_key[len(prefix.lstrip('.')):].lstrip("/")
+                destination = pathlib.PurePosixPath(destination or "")
+                relative_file_path = remote_key[len(prefix.lstrip(".")) :].lstrip("/")
 
                 file_path = destination / relative_file_path
 
                 stored_files.append(
                     ArtifactFileData(
-                        file_path=str(file_path).lstrip('/'),
+                        file_path=str(file_path).lstrip("/"),
                         file_hash=remote_object.e_tag.strip('"'),
                         type=ArtifactFileType.S3.value,
                         size=remote_object.size,
-                        metadata=cls._serialize_metadata({
-                            "location": f's3://{bucket_name}/{remote_key.lstrip("/")}',
-                            "last_modified": remote_object.last_modified,
-                        })
+                        metadata=cls._serialize_metadata(
+                            {
+                                "location": f's3://{bucket_name}/{remote_key.lstrip("/")}',
+                                "last_modified": remote_object.last_modified,
+                            }
+                        ),
                     )
                 )
         except NoCredentialsError:
             raise NeptuneRemoteStorageCredentialsException()
-        except (remote_storage.meta.client.exceptions.NoSuchBucket,
-                remote_storage.meta.client.exceptions.NoSuchKey):
+        except (
+            remote_storage.meta.client.exceptions.NoSuchBucket,
+            remote_storage.meta.client.exceptions.NoSuchKey,
+        ):
             raise NeptuneRemoteStorageAccessException(location=path)
 
         return stored_files
 
     @classmethod
-    def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
-        location = file_definition.metadata.get('location')
+    def download_file(
+        cls, destination: pathlib.Path, file_definition: ArtifactFileData
+    ):
+        location = file_definition.metadata.get("location")
         url = urlparse(location)
-        bucket_name, path = url.netloc, url.path.lstrip('/')
+        bucket_name, path = url.netloc, url.path.lstrip("/")
 
-        remote_storage = boto3.resource('s3')
+        remote_storage = boto3.resource("s3")
         try:
             # pylint: disable=no-member
             bucket = remote_storage.Bucket(bucket_name)
             bucket.download_file(path, str(destination))
         except NoCredentialsError:
             raise NeptuneRemoteStorageCredentialsException()
-        except (remote_storage.meta.client.exceptions.NoSuchBucket,
-                remote_storage.meta.client.exceptions.NoSuchKey):
+        except (
+            remote_storage.meta.client.exceptions.NoSuchBucket,
+            remote_storage.meta.client.exceptions.NoSuchKey,
+        ):
             raise NeptuneRemoteStorageAccessException(location=location)

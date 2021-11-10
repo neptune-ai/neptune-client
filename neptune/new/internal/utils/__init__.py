@@ -23,13 +23,13 @@ from typing import Union, TypeVar, Iterable, List, Set, Optional, Mapping
 from neptune.new.internal.utils import limits
 
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 _logger = logging.getLogger(__name__)
 
 
 def replace_patch_version(version: str):
-    return version[:version.index(".", version.index(".") + 1)] + ".0"
+    return version[: version.index(".", version.index(".") + 1)] + ".0"
 
 
 def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
@@ -43,14 +43,18 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
         raise TypeError("Incorrect type of {}".format(var_name)) from e
 
     if not isinstance(var, expected_type):
-        raise TypeError("{} must be a {} (was {})".format(var_name, type_name, type(var)))
+        raise TypeError(
+            "{} must be a {} (was {})".format(var_name, type_name, type(var))
+        )
 
-    if isinstance(var, IOBase) and not hasattr(var, 'read'):
-        raise TypeError("{} is a stream, which does not implement read method".format(var_name))
+    if isinstance(var, IOBase) and not hasattr(var, "read"):
+        raise TypeError(
+            "{} is a stream, which does not implement read method".format(var_name)
+        )
 
 
 def is_stream(var):
-    return isinstance(var, IOBase) and hasattr(var, 'read')
+    return isinstance(var, IOBase) and hasattr(var, "read")
 
 
 def is_bool(var):
@@ -90,13 +94,15 @@ def is_string_like(var):
 
 
 def get_type_name(_type: Union[type, tuple]):
-    return _type.__name__ if hasattr(_type, '__name__') else str(_type)
+    return _type.__name__ if hasattr(_type, "__name__") else str(_type)
 
 
 def verify_collection_type(var_name: str, var, expected_type: Union[type, tuple]):
     verify_type(var_name, var, (list, set, tuple))
     for value in var:
-        verify_type("elements of collection '{}'".format(var_name), value, expected_type)
+        verify_type(
+            "elements of collection '{}'".format(var_name), value, expected_type
+        )
 
 
 def is_collection(var) -> bool:
@@ -104,11 +110,11 @@ def is_collection(var) -> bool:
 
 
 def base64_encode(data: bytes) -> str:
-    return base64.b64encode(data).decode('utf-8')
+    return base64.b64encode(data).decode("utf-8")
 
 
 def base64_decode(data: str) -> bytes:
-    return base64.b64decode(data.encode('utf-8'))
+    return base64.b64decode(data.encode("utf-8"))
 
 
 def get_absolute_paths(file_globs: Iterable[str]) -> List[str]:
@@ -130,14 +136,16 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
         return None
 
 
-def get_stream_content(stream: IOBase, seek: Optional[int] = None) -> (Optional[str], str):
+def get_stream_content(
+    stream: IOBase, seek: Optional[int] = None
+) -> (Optional[str], str):
     if seek is not None and stream.seekable():
         stream.seek(seek)
 
     content = stream.read(limits.STREAM_SIZE_LIMIT_BYTES + 1)
     default_ext = "txt" if isinstance(content, str) else "bin"
     if isinstance(content, str):
-        content = content.encode('utf-8')
+        content = content.encode("utf-8")
 
     if limits.stream_size_exceeds_limit(len(content)):
         return None, default_ext
@@ -153,7 +161,7 @@ def get_stream_content(stream: IOBase, seek: Optional[int] = None) -> (Optional[
                 content = BytesIO(content)
                 content.seek(0, 2)
             if isinstance(chunk, str):
-                chunk = chunk.encode('utf-8')
+                chunk = chunk.encode("utf-8")
             if limits.stream_size_exceeds_limit(content.tell() + len(chunk)):
                 return None, default_ext
             content.write(chunk)
@@ -167,6 +175,7 @@ def is_ipython() -> bool:
     try:
         # pylint:disable=bad-option-value,import-outside-toplevel
         import IPython
+
         ipython = IPython.core.getipython.get_ipython()
         return ipython is not None
     except ImportError:

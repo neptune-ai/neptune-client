@@ -16,7 +16,13 @@
 
 
 class SystemResourceInfo(object):
-    def __init__(self, cpu_core_count, memory_amount_bytes, gpu_card_indices, gpu_memory_amount_bytes):
+    def __init__(
+        self,
+        cpu_core_count,
+        memory_amount_bytes,
+        gpu_card_indices,
+        gpu_memory_amount_bytes,
+    ):
         self.__cpu_core_count = cpu_core_count
         self.__memory_amount_bytes = memory_amount_bytes
         self.__gpu_card_indices = gpu_card_indices

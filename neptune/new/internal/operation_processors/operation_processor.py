@@ -20,7 +20,6 @@ from neptune.new.internal.operation import Operation
 
 
 class OperationProcessor:
-
     @abc.abstractmethod
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         pass

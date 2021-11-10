@@ -21,8 +21,8 @@ from tests.neptune.random_utils import a_string
 
 def a_request():
     request = MagicMock()
-    request.method = 'post'
-    request.url = 'http://{}.com'.format(a_string())
+    request.method = "post"
+    request.url = "http://{}.com".format(a_string())
     request.headers = {a_string(): a_string()}
     request.body = a_string()
     return request

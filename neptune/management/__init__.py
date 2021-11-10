@@ -23,10 +23,7 @@ from .internal.api import (
     get_workspace_member_list,
 )
 
-from .internal.types import (
-    MemberRole,
-    ProjectVisibility
-)
+from .internal.types import MemberRole, ProjectVisibility
 
 __all__ = [
     "get_project_list",

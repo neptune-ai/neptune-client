@@ -18,7 +18,9 @@ import threading
 from neptune.new.attribute_container import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
-from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.new.internal.operation_processors.operation_processor import (
+    OperationProcessor,
+)
 from neptune.new.internal.state import ContainerState
 
 RunState = ContainerState  # backwards compatibility
@@ -69,29 +71,40 @@ class Run(AttributeContainer):
     last_run = None  # "static" instance of recently created Run
 
     LEGACY_METHODS = (
-        'create_experiment',
-        'send_metric', 'log_metric',
-        'send_text', 'log_text',
-        'send_image', 'log_image',
-        'send_artifact', 'log_artifact', 'delete_artifacts',
-        'download_artifact', 'download_sources', 'download_artifacts',
-        'reset_log', 'get_parameters',
-        'get_properties', 'set_property', 'remove_property',
-        'get_hardware_utilization', 'get_numeric_channels_values',
+        "create_experiment",
+        "send_metric",
+        "log_metric",
+        "send_text",
+        "log_text",
+        "send_image",
+        "log_image",
+        "send_artifact",
+        "log_artifact",
+        "delete_artifacts",
+        "download_artifact",
+        "download_sources",
+        "download_artifacts",
+        "reset_log",
+        "get_parameters",
+        "get_properties",
+        "set_property",
+        "remove_property",
+        "get_hardware_utilization",
+        "get_numeric_channels_values",
     )
 
     def __init__(
-            self,
-            _id: str,
-            backend: NeptuneBackend,
-            op_processor: OperationProcessor,
-            background_job: BackgroundJob,
-            lock: threading.RLock,
-            workspace: str,
-            project_name: str,
-            short_id: str,
-            project_id: str,
-            monitoring_namespace: str = "monitoring",
+        self,
+        _id: str,
+        backend: NeptuneBackend,
+        op_processor: OperationProcessor,
+        background_job: BackgroundJob,
+        lock: threading.RLock,
+        workspace: str,
+        project_name: str,
+        short_id: str,
+        project_id: str,
+        monitoring_namespace: str = "monitoring",
     ):
         super().__init__(_id, backend, op_processor, background_job, lock, project_id)
         self._workspace = workspace
@@ -102,6 +115,7 @@ class Run(AttributeContainer):
         Run.last_run = self
 
     def get_run_url(self) -> str:
-        """Returns the URL the run can be accessed with in the browser
-        """
-        return self._backend.get_run_url(self._id, self._workspace, self._project_name, self._short_id)
+        """Returns the URL the run can be accessed with in the browser"""
+        return self._backend.get_run_url(
+            self._id, self._workspace, self._project_name, self._short_id
+        )

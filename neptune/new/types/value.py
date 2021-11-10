@@ -19,11 +19,10 @@ from typing import TypeVar, TYPE_CHECKING
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class Value:
-
     @abc.abstractmethod
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         pass

@@ -19,8 +19,13 @@ import unittest
 
 from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
 from neptune.internal.hardware.metrics.metrics_factory import MetricsFactory
-from neptune.internal.hardware.metrics.reports.metric_report import MetricReport, MetricValue
-from neptune.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
+from neptune.internal.hardware.metrics.reports.metric_report import (
+    MetricReport,
+    MetricValue,
+)
+from neptune.internal.hardware.metrics.reports.metric_reporter_factory import (
+    MetricReporterFactory,
+)
 from neptune.internal.hardware.resources.system_resource_info import SystemResourceInfo
 from tests.neptune.internal.hardware.gauges.gauges_fixture import GaugesFixture
 
@@ -36,13 +41,17 @@ class TestMetricReporterIntegration(unittest.TestCase):
                 cpu_core_count=4,
                 memory_amount_bytes=64 * BYTES_IN_ONE_GB,
                 gpu_card_indices=[0, 2],
-                gpu_memory_amount_bytes=32 * BYTES_IN_ONE_GB
-            )
+                gpu_memory_amount_bytes=32 * BYTES_IN_ONE_GB,
+            ),
         ).create_metrics_container()
 
         self.reference_timestamp = time.time()
-        metric_reporter_factory = MetricReporterFactory(reference_timestamp=self.reference_timestamp)
-        self.metric_reporter = metric_reporter_factory.create(self.metrics_container.metrics())
+        metric_reporter_factory = MetricReporterFactory(
+            reference_timestamp=self.reference_timestamp
+        )
+        self.metric_reporter = metric_reporter_factory.create(
+            self.metrics_container.metrics()
+        )
 
     def test_report_metrics(self):
         # given
@@ -56,21 +65,25 @@ class TestMetricReporterIntegration(unittest.TestCase):
         expected_reports = [
             MetricReport(
                 metric=self.metrics_container.cpu_usage_metric,
-                values=[MetricValue(
-                    timestamp=measurement_timestamp,
-                    running_time=expected_time,
-                    gauge_name=u'cpu',
-                    value=self.fixture.cpu_gauge_value
-                )]
+                values=[
+                    MetricValue(
+                        timestamp=measurement_timestamp,
+                        running_time=expected_time,
+                        gauge_name=u"cpu",
+                        value=self.fixture.cpu_gauge_value,
+                    )
+                ],
             ),
             MetricReport(
                 metric=self.metrics_container.memory_metric,
-                values=[MetricValue(
-                    timestamp=measurement_timestamp,
-                    running_time=expected_time,
-                    gauge_name=u'ram',
-                    value=self.fixture.memory_gauge_value
-                )]
+                values=[
+                    MetricValue(
+                        timestamp=measurement_timestamp,
+                        running_time=expected_time,
+                        gauge_name=u"ram",
+                        value=self.fixture.memory_gauge_value,
+                    )
+                ],
             ),
             MetricReport(
                 metric=self.metrics_container.gpu_usage_metric,
@@ -78,16 +91,16 @@ class TestMetricReporterIntegration(unittest.TestCase):
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u'0',
-                        value=self.fixture.gpu0_usage_gauge_value
+                        gauge_name=u"0",
+                        value=self.fixture.gpu0_usage_gauge_value,
                     ),
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u'2',
-                        value=self.fixture.gpu1_usage_gauge_value
-                    )
-                ]
+                        gauge_name=u"2",
+                        value=self.fixture.gpu1_usage_gauge_value,
+                    ),
+                ],
             ),
             MetricReport(
                 metric=self.metrics_container.gpu_memory_metric,
@@ -95,20 +108,20 @@ class TestMetricReporterIntegration(unittest.TestCase):
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u'0',
-                        value=self.fixture.gpu0_memory_gauge_value
+                        gauge_name=u"0",
+                        value=self.fixture.gpu0_memory_gauge_value,
                     ),
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u'2',
-                        value=self.fixture.gpu1_memory_gauge_value
-                    )
-                ]
-            )
+                        gauge_name=u"2",
+                        value=self.fixture.gpu1_memory_gauge_value,
+                    ),
+                ],
+            ),
         ]
         self.assertListEqual(expected_reports, metric_reports)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

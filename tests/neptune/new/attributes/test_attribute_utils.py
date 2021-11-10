@@ -25,5 +25,11 @@ class TestAttributeUtils(unittest.TestCase):
     def test_attribute_type_to_atom(self):
         # Expect all AttributeTypes are reflected in `attribute_type_to_atom`...
         # ... and this reflection is class based on `Attribute`
-        self.assertTrue(all(isinstance(create_attribute_from_type(attr_type, MagicMock(), ""), Attribute)
-                            for attr_type in AttributeType))
+        self.assertTrue(
+            all(
+                isinstance(
+                    create_attribute_from_type(attr_type, MagicMock(), ""), Attribute
+                )
+                for attr_type in AttributeType
+            )
+        )

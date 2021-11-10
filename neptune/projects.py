@@ -76,9 +76,15 @@ class Project(object):
 
         """
         project_members = self._backend.get_project_members(self.internal_id)
-        return [member.registeredMemberInfo.username for member in project_members if member.registeredMemberInfo]
+        return [
+            member.registeredMemberInfo.username
+            for member in project_members
+            if member.registeredMemberInfo
+        ]
 
-    def get_experiments(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
+    def get_experiments(
+        self, id=None, state=None, owner=None, tag=None, min_running_time=None
+    ):
         """Retrieve list of experiments matching the specified criteria.
 
         All parameters are optional, each of them specifies a single criterion.
@@ -122,13 +128,17 @@ class Project(object):
                 #  Experiment(SAL-1960),
                 #  Experiment(SAL-2025)]
         """
-        leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
+        leaderboard_entries = self._fetch_leaderboard(
+            id, state, owner, tag, min_running_time
+        )
         return [
             Experiment(self._backend, self, entry.id, entry.internal_id)
             for entry in leaderboard_entries
         ]
 
-    def get_leaderboard(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
+    def get_leaderboard(
+        self, id=None, state=None, owner=None, tag=None, min_running_time=None
+    ):
         """Fetch Neptune experiments view as pandas ``DataFrame``.
 
         **returned DataFrame**
@@ -177,15 +187,17 @@ class Project(object):
                 project.get_leaderboard(state=['aborted'], owner=['neyo'], min_running_time=100000)
         """
 
-        leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
+        leaderboard_entries = self._fetch_leaderboard(
+            id, state, owner, tag, min_running_time
+        )
 
         def make_row(entry):
             channels = dict(
-                ('channel_{}'.format(ch.name), ch.trimmed_y) for ch in entry.channels
+                ("channel_{}".format(ch.name), ch.trimmed_y) for ch in entry.channels
             )
 
-            parameters = map_keys('parameter_{}'.format, entry.parameters)
-            properties = map_keys('property_{}'.format, entry.properties)
+            parameters = map_keys("parameter_{}".format, entry.parameters)
+            properties = map_keys("property_{}".format, entry.properties)
 
             r = {}
             r.update(entry.system_properties)
@@ -196,28 +208,30 @@ class Project(object):
 
         rows = ((n, make_row(e)) for (n, e) in enumerate(leaderboard_entries))
 
-        df = pd.DataFrame.from_dict(data=dict(rows), orient='index')
-        df = df.reindex(self._sort_leaderboard_columns(df.columns), axis='columns')
+        df = pd.DataFrame.from_dict(data=dict(rows), orient="index")
+        df = df.reindex(self._sort_leaderboard_columns(df.columns), axis="columns")
         return df
 
-    def create_experiment(self,
-                          name=None,
-                          description=None,
-                          params=None,
-                          properties=None,
-                          tags=None,
-                          upload_source_files=None,
-                          abort_callback=None,
-                          logger=None,
-                          upload_stdout=True,
-                          upload_stderr=True,
-                          send_hardware_metrics=True,
-                          run_monitoring_thread=True,
-                          handle_uncaught_exceptions=True,
-                          git_info=None,
-                          hostname=None,
-                          notebook_id=None,
-                          notebook_path=None):
+    def create_experiment(
+        self,
+        name=None,
+        description=None,
+        params=None,
+        properties=None,
+        tags=None,
+        upload_source_files=None,
+        abort_callback=None,
+        logger=None,
+        upload_stdout=True,
+        upload_stderr=True,
+        send_hardware_metrics=True,
+        run_monitoring_thread=True,
+        handle_uncaught_exceptions=True,
+        git_info=None,
+        hostname=None,
+        notebook_id=None,
+        notebook_path=None,
+    ):
         """Create and start Neptune experiment.
 
         Create experiment, set its status to `running` and append it to the top of the experiments view.
@@ -408,18 +422,27 @@ class Project(object):
         if isinstance(upload_source_files, six.string_types):
             upload_source_files = [upload_source_files]
 
-        entrypoint, source_target_pairs = get_source_code_to_upload(upload_source_files=upload_source_files)
+        entrypoint, source_target_pairs = get_source_code_to_upload(
+            upload_source_files=upload_source_files
+        )
 
-        if notebook_path is None and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
+        if (
+            notebook_path is None
+            and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None
+        ):
             notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
 
-        abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
+        abortable = (
+            abort_callback is not None or DefaultAbortImpl.requirements_installed()
+        )
 
         checkpoint_id = None
         if notebook_id is not None and notebook_path is not None:
-            checkpoint = create_checkpoint(backend=self._backend,
-                                           notebook_id=notebook_id,
-                                           notebook_path=notebook_path)
+            checkpoint = create_checkpoint(
+                backend=self._backend,
+                notebook_id=notebook_id,
+                notebook_path=notebook_path,
+            )
             if checkpoint is not None:
                 checkpoint_id = checkpoint.id
 
@@ -436,7 +459,7 @@ class Project(object):
             hostname=hostname,
             entrypoint=entrypoint,
             notebook_id=notebook_id,
-            checkpoint_id=checkpoint_id
+            checkpoint_id=checkpoint_id,
         )
 
         self._backend.upload_source_code(experiment, source_target_pairs)
@@ -449,7 +472,7 @@ class Project(object):
             upload_stderr=upload_stderr,
             send_hardware_metrics=send_hardware_metrics,
             run_monitoring_thread=run_monitoring_thread,
-            handle_uncaught_exceptions=handle_uncaught_exceptions
+            handle_uncaught_exceptions=handle_uncaught_exceptions,
         )
 
         self._push_new_experiment(experiment)
@@ -463,7 +486,7 @@ class Project(object):
             base_url=self._backend.display_address,
             namespace=self.namespace,
             project=self.name,
-            exp_id=experiment.id
+            exp_id=experiment.id,
         )
 
     def create_notebook(self):
@@ -504,12 +527,11 @@ class Project(object):
 
     @property
     def full_id(self):
-        """Project qualified name as :obj:`str`, for example `john/sandbox`.
-        """
-        return '{}/{}'.format(self.namespace, self.name)
+        """Project qualified name as :obj:`str`, for example `john/sandbox`."""
+        return "{}/{}".format(self.namespace, self.name)
 
     def __str__(self):
-        return 'Project({})'.format(self.full_id)
+        return "Project({})".format(self.full_id)
 
     def __repr__(self):
         return str(self)
@@ -522,26 +544,26 @@ class Project(object):
 
     def _fetch_leaderboard(self, id, state, owner, tag, min_running_time):
         return self._backend.get_leaderboard_entries(
-            project=self, ids=as_list(id), states=as_list(state),
-            owners=as_list(owner), tags=as_list(tag),
-            min_running_time=min_running_time)
+            project=self,
+            ids=as_list(id),
+            states=as_list(state),
+            owners=as_list(owner),
+            tags=as_list(tag),
+            min_running_time=min_running_time,
+        )
 
     @staticmethod
     def _sort_leaderboard_columns(column_names):
-        user_defined_weights = {
-            'channel': 1,
-            'parameter': 2,
-            'property': 3
-        }
+        user_defined_weights = {"channel": 1, "parameter": 2, "property": 3}
 
         system_properties_weights = {
-            'id': 0,
-            'name': 1,
-            'created': 2,
-            'finished': 3,
-            'owner': 4,
-            'worker_type': 5,
-            'environment': 6,
+            "id": 0,
+            "name": 1,
+            "created": 2,
+            "finished": 3,
+            "owner": 4,
+            "worker_type": 5,
+            "environment": 6,
         }
 
         def key(c):
@@ -552,7 +574,7 @@ class Project(object):
             Within each group columns are sorted alphabetically, except for system properties,
             where order is custom.
             """
-            parts = c.split('_', 1)
+            parts = c.split("_", 1)
             if parts[0] in user_defined_weights.keys():
                 name = parts[1]
                 weight = user_defined_weights.get(parts[0], 99)
@@ -581,7 +603,9 @@ class Project(object):
     def _remove_stopped_experiment(self, experiment):
         with self.__lock:
             if self._experiments_stack:
-                self._experiments_stack = [exp for exp in self._experiments_stack if exp != experiment]
+                self._experiments_stack = [
+                    exp for exp in self._experiments_stack if exp != experiment
+                ]
 
     def _shutdown_hook(self):
         if self._experiments_stack:

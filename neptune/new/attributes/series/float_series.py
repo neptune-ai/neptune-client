@@ -23,7 +23,12 @@ from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 
 from neptune.new.internal.utils import verify_type
 
-from neptune.new.internal.operation import ClearFloatLog, LogFloats, Operation, ConfigFloatSeries
+from neptune.new.internal.operation import (
+    ClearFloatLog,
+    LogFloats,
+    Operation,
+    ConfigFloatSeries,
+)
 from neptune.new.attributes.series.series import Series
 
 Val = FloatSeriesVal
@@ -33,19 +38,25 @@ Data = Union[float, int]
 class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     # pylint: disable=redefined-builtin
-    def configure(self,
-                  min: Optional[Union[float, int]] = None,
-                  max: Optional[Union[float, int]] = None,
-                  unit: Optional[str] = None,
-                  wait: bool = False) -> None:
+    def configure(
+        self,
+        min: Optional[Union[float, int]] = None,
+        max: Optional[Union[float, int]] = None,
+        unit: Optional[str] = None,
+        wait: bool = False,
+    ) -> None:
         verify_type("min", min, (float, int))
         verify_type("max", max, (float, int))
         verify_type("unit", unit, str)
         with self._container.lock():
             self._enqueue_operation(ConfigFloatSeries(self._path, min, max, unit), wait)
 
-    def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
-        values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
+    def _get_log_operation_from_value(
+        self, value: Val, step: Optional[float], timestamp: float
+    ) -> Operation:
+        values = [
+            LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values
+        ]
         return LogFloats(self._path, values)
 
     def _get_clear_operation(self) -> Operation:
@@ -56,7 +67,12 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
         if kwargs:
-            click.echo("Warning: unexpected arguments ({kwargs}) in FloatSeries".format(kwargs=kwargs), err=True)
+            click.echo(
+                "Warning: unexpected arguments ({kwargs}) in FloatSeries".format(
+                    kwargs=kwargs
+                ),
+                err=True,
+            )
         return FloatSeriesVal(values)
 
     def _is_value_type(self, value) -> bool:
@@ -68,4 +84,6 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
         return val.last
 
     def _fetch_values_from_backend(self, offset, limit) -> FloatSeriesValues:
-        return self._backend.get_float_series_values(self._container_id, self._path, offset, limit)
+        return self._backend.get_float_series_values(
+            self._container_id, self._path, offset, limit
+        )

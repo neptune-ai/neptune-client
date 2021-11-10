@@ -28,13 +28,12 @@ _logger = logging.getLogger(__name__)
 
 
 class PingBackgroundJob(BackgroundJob):
-
     def __init__(self, period: float = 10):
         self._period = period
         self._thread = None
         self._started = False
 
-    def start(self, run: 'Run'):
+    def start(self, run: "Run"):
         self._thread = self.ReportingThread(self._period, run)
         self._thread.start()
         self._started = True
@@ -50,11 +49,7 @@ class PingBackgroundJob(BackgroundJob):
         self._thread.join(seconds)
 
     class ReportingThread(Daemon):
-
-        def __init__(
-                self,
-                period: float,
-                run: 'Run'):
+        def __init__(self, period: float, run: "Run"):
             super().__init__(sleep_time=period)
             self._run = run
 

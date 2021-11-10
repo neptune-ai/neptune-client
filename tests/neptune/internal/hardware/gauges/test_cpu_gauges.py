@@ -16,7 +16,10 @@
 import time
 import unittest
 
-from neptune.internal.hardware.gauges.cpu import CGroupCpuUsageGauge, SystemCpuUsageGauge
+from neptune.internal.hardware.gauges.cpu import (
+    CGroupCpuUsageGauge,
+    SystemCpuUsageGauge,
+)
 from neptune.utils import IS_WINDOWS, IS_MACOS
 
 
@@ -63,5 +66,5 @@ class TestCpuGauges(unittest.TestCase):
         self.assertEqual(float, type(cpu_usage))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

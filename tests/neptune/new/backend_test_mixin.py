@@ -18,25 +18,27 @@ from mock import MagicMock
 
 
 class BackendTestMixin:
-
     @staticmethod
     def _get_swagger_client_mock(
-            swagger_client_factory,
-            min_recommended=None,
-            min_compatible=None,
-            max_compatible=None):
-        py_lib_versions = type('py_lib_versions', (object,), {})()
+        swagger_client_factory,
+        min_recommended=None,
+        min_compatible=None,
+        max_compatible=None,
+    ):
+        py_lib_versions = type("py_lib_versions", (object,), {})()
         setattr(py_lib_versions, "minRecommendedVersion", min_recommended)
         setattr(py_lib_versions, "minCompatibleVersion", min_compatible)
         setattr(py_lib_versions, "maxCompatibleVersion", max_compatible)
 
-        client_config = type('client_config_response_result', (object,), {})()
+        client_config = type("client_config_response_result", (object,), {})()
         setattr(client_config, "pyLibVersions", py_lib_versions)
         setattr(client_config, "apiUrl", "ui.neptune.ai")
         setattr(client_config, "applicationUrl", "ui.neptune.ai")
 
         swagger_client = MagicMock()
-        swagger_client.api.getClientConfig.return_value.response.return_value.result = client_config
+        swagger_client.api.getClientConfig.return_value.response.return_value.result = (
+            client_config
+        )
         swagger_client_factory.return_value = swagger_client
 
         return swagger_client

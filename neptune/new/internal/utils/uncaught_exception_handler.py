@@ -29,7 +29,6 @@ _logger = logging.getLogger(__name__)
 
 
 class UncaughtExceptionHandler:
-
     def __init__(self):
         self._previous_uncaught_exception_handler = None
         self._handlers = dict()
@@ -38,14 +37,19 @@ class UncaughtExceptionHandler:
     def activate(self):
         with self._lock:
             this = self
+
             def exception_handler(exc_type, exc_val, exc_tb):
                 header_lines = [
                     f"An uncaught exception occurred while run was active on worker {get_hostname()}.",
                     "Marking run as failed",
-                    "Traceback:"
+                    "Traceback:",
                 ]
 
-                traceback_lines = header_lines + traceback.format_tb(exc_tb) + str(exc_val).split("\n")
+                traceback_lines = (
+                    header_lines
+                    + traceback.format_tb(exc_tb)
+                    + str(exc_val).split("\n")
+                )
                 for _, handler in self._handlers.items():
                     handler(traceback_lines)
 

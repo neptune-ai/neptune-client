@@ -24,40 +24,39 @@ from neptune.internal.storage.storage_utils import UploadEntry
 
 
 class TestFileChunkStream(unittest.TestCase):
-
-    @patch('os.path.exists', new=lambda _: True)
-    @patch('stat.S_ISDIR', new=lambda _: False)
-    @patch('os.lstat')
+    @patch("os.path.exists", new=lambda _: True)
+    @patch("stat.S_ISDIR", new=lambda _: False)
+    @patch("os.lstat")
     def test_permissions_to_unix_string_for_file(self, lstat):
         # given
         lstat.return_value.st_mode = 0o731
 
         # when
-        permissions_string = FileChunkStream.permissions_to_unix_string('/some/path')
+        permissions_string = FileChunkStream.permissions_to_unix_string("/some/path")
 
         # then
-        self.assertEqual('-rwx-wx--x', permissions_string)
+        self.assertEqual("-rwx-wx--x", permissions_string)
 
-    @patch('os.path.exists', new=lambda _: True)
-    @patch('stat.S_ISDIR', new=lambda _: True)
-    @patch('os.lstat')
+    @patch("os.path.exists", new=lambda _: True)
+    @patch("stat.S_ISDIR", new=lambda _: True)
+    @patch("os.lstat")
     def test_permissions_to_unix_string_for_directory(self, lstat):
         # given
         lstat.return_value.st_mode = 0o642
 
         # when
-        permissions_string = FileChunkStream.permissions_to_unix_string('/some/path')
+        permissions_string = FileChunkStream.permissions_to_unix_string("/some/path")
 
         # then
-        self.assertEqual('drw-r---w-', permissions_string)
+        self.assertEqual("drw-r---w-", permissions_string)
 
-    @patch('os.path.exists', new=lambda _: False)
+    @patch("os.path.exists", new=lambda _: False)
     def test_permissions_to_unix_string_for_nonexistent_file(self):
         # when
-        permissions_string = FileChunkStream.permissions_to_unix_string('/some/path')
+        permissions_string = FileChunkStream.permissions_to_unix_string("/some/path")
 
         # then
-        self.assertEqual('-' * 10, permissions_string)
+        self.assertEqual("-" * 10, permissions_string)
 
     def test_generate_chunks_from_stream(self):
         # given
@@ -71,12 +70,15 @@ class TestFileChunkStream(unittest.TestCase):
 
         # then
         self.assertEqual(stream.length, None)
-        self.assertEqual(chunks, [
-            FileChunk(b"ABCDEFGHIJ", 0, 10),
-            FileChunk(b"KLMNOPRSTU", 10, 20),
-            FileChunk(b"WXYZ", 20, 24)
-        ])
+        self.assertEqual(
+            chunks,
+            [
+                FileChunk(b"ABCDEFGHIJ", 0, 10),
+                FileChunk(b"KLMNOPRSTU", 10, 20),
+                FileChunk(b"WXYZ", 20, 24),
+            ],
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

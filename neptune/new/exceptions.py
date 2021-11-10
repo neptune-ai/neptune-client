@@ -27,7 +27,6 @@ from neptune.exceptions import STYLES
 
 
 class NeptuneException(Exception):
-
     def __eq__(self, other):
         if type(other) is type(self):
             return super().__eq__(other) and str(self).__eq__(str(other))
@@ -64,10 +63,7 @@ There are two possible reasons:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        self._msg = message.format(
-            field_path=field_path,
-            **STYLES
-        )
+        self._msg = message.format(field_path=field_path, **STYLES)
         super().__init__(self._msg)
 
     def __str__(self):
@@ -107,10 +103,7 @@ Please contact Neptune support.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            msg=msg,
-            **STYLES
-        ))
+        super().__init__(message.format(msg=msg, **STYLES))
 
 
 class ClientHttpError(NeptuneException):
@@ -130,19 +123,17 @@ Verify the correctness of your call or contact Neptune support.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            status=status,
-            response=response,
-            **STYLES
-        ))
+        super().__init__(message.format(status=status, response=response, **STYLES))
 
 
 class ExceptionWithProjectsWorkspacesListing(NeptuneException):
-    def __init__(self,
-                 message: str,
-                 available_projects: List[Project] = (),
-                 available_workspaces: List[Workspace] = (),
-                 **kwargs):
+    def __init__(
+        self,
+        message: str,
+        available_projects: List[Project] = (),
+        available_workspaces: List[Workspace] = (),
+        **kwargs,
+    ):
         available_projects_message = """
 Did you mean any of these?
 {projects}
@@ -153,31 +144,45 @@ You can check all of your projects on the Projects page:
 {workspaces_urls}
 """
 
-        projects_formated_list = '\n'.join(
-            map(lambda project: f'    - {project.workspace}/{project.name}', available_projects)
+        projects_formated_list = "\n".join(
+            map(
+                lambda project: f"    - {project.workspace}/{project.name}",
+                available_projects,
+            )
         )
 
-        workspaces_formated_list = '\n'.join(
-            map(lambda workspace: f'    - https://app.neptune.ai/{workspace.name}/-/projects', available_workspaces)
+        workspaces_formated_list = "\n".join(
+            map(
+                lambda workspace: f"    - https://app.neptune.ai/{workspace.name}/-/projects",
+                available_workspaces,
+            )
         )
 
-        super().__init__(message.format(
-            available_projects_message=available_projects_message.format(
-                projects=projects_formated_list
-            ) if available_projects else '',
-            available_workspaces_message=available_workspaces_message.format(
-                workspaces_urls=workspaces_formated_list
-            ) if available_workspaces else '',
-            **STYLES,
-            **kwargs
-        ))
+        super().__init__(
+            message.format(
+                available_projects_message=available_projects_message.format(
+                    projects=projects_formated_list
+                )
+                if available_projects
+                else "",
+                available_workspaces_message=available_workspaces_message.format(
+                    workspaces_urls=workspaces_formated_list
+                )
+                if available_workspaces
+                else "",
+                **STYLES,
+                **kwargs,
+            )
+        )
 
 
 class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
-    def __init__(self,
-                 project_id: str,
-                 available_projects: List[Project] = (),
-                 available_workspaces: List[Workspace] = ()):
+    def __init__(
+        self,
+        project_id: str,
+        available_projects: List[Project] = (),
+        available_workspaces: List[Workspace] = (),
+    ):
         message = """
 {h1}
 ----NeptuneProjectNotFoundException------------------------------------
@@ -190,16 +195,16 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message=message,
-                         available_projects=available_projects,
-                         available_workspaces=available_workspaces,
-                         project=project_id)
+        super().__init__(
+            message=message,
+            available_projects=available_projects,
+            available_workspaces=available_workspaces,
+            project=project_id,
+        )
 
 
 class ProjectNameCollision(ExceptionWithProjectsWorkspacesListing):
-    def __init__(self,
-                 project_id: str,
-                 available_projects: List[Project] = ()):
+    def __init__(self, project_id: str, available_projects: List[Project] = ()):
         message = """
 {h1}
 ----NeptuneProjectNameCollisionException------------------------------------
@@ -212,15 +217,17 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message=message,
-                         available_projects=available_projects,
-                         project=project_id)
+        super().__init__(
+            message=message, available_projects=available_projects, project=project_id
+        )
 
 
 class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing):
-    def __init__(self,
-                 available_projects: List[Project] = (),
-                 available_workspaces: List[Workspace] = ()):
+    def __init__(
+        self,
+        available_projects: List[Project] = (),
+        available_workspaces: List[Workspace] = (),
+    ):
         message = """
 {h1}
 ----NeptuneMissingProjectNameException----------------------------------------
@@ -228,7 +235,7 @@ class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing)
 Neptune client couldn't find your project name.
 {available_projects_message}{available_workspaces_message}
 There are two options two add it:
-    - specify it in your code 
+    - specify it in your code
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
@@ -236,7 +243,7 @@ Pass it to {bold}neptune.init(){end} via {bold}project{end} argument:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
-or export or set an environment variable depending on your operating system: 
+or export or set an environment variable depending on your operating system:
 
     {correct}Linux/Unix{end}
     In your terminal run:
@@ -246,7 +253,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
        {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
 
-and skip the {bold}project{end} argument of {bold}neptune.init(){end}: 
+and skip the {bold}project{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(){end}
 
 You may also want to check the following docs pages:
@@ -255,14 +262,15 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message=message,
-                         available_projects=available_projects,
-                         available_workspaces=available_workspaces,
-                         env_project=envs.PROJECT_ENV_NAME)
+        super().__init__(
+            message=message,
+            available_projects=available_projects,
+            available_workspaces=available_workspaces,
+            env_project=envs.PROJECT_ENV_NAME,
+        )
 
 
 class RunNotFound(NeptuneException):
-
     def __init__(self, run_id: str) -> None:
         super().__init__("Run {} not found.".format(run_id))
 
@@ -282,7 +290,7 @@ It seems you are trying to log (or fetch) metadata to a run that was stopped ({s
 What should I do?
     - Resume the run to continue logging to it:
     https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
-    - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only, 
+    - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only,
     you can resume a run in read-only mode:
     https://docs.neptune.ai/you-should-know/connection-modes#read-only
 You may also want to check the following docs pages:
@@ -291,10 +299,7 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/you-should-know/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            short_id=short_id,
-            **STYLES
-        ))
+        super().__init__(message.format(short_id=short_id, **STYLES))
 
 
 class NeptuneMissingApiTokenException(NeptuneException):
@@ -309,7 +314,7 @@ You can get it here:
     - https://app.neptune.ai/get_my_api_token
 
 There are two options to add it:
-    - specify it in your code 
+    - specify it in your code
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
@@ -317,7 +322,7 @@ Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
-or export or set an environment variable depending on your operating system: 
+or export or set an environment variable depending on your operating system:
 
     {correct}Linux/Unix{end}
     In your terminal run:
@@ -327,7 +332,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
         {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
 
-and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}: 
+and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
@@ -335,10 +340,9 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            env_api_token=envs.API_TOKEN_ENV_NAME,
-            **STYLES
-        ))
+        super().__init__(
+            message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
+        )
 
 
 class NeptuneInvalidApiTokenException(NeptuneException):
@@ -354,7 +358,7 @@ You can get it or check if it is correct here:
     - https://app.neptune.ai/get_my_api_token
 
 There are two options to add it:
-    - specify it in your code 
+    - specify it in your code
     - set as an environment variable in your operating system.
 
 {h2}CODE{end}
@@ -362,7 +366,7 @@ Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
-or export or set an environment variable depending on your operating system: 
+or export or set an environment variable depending on your operating system:
 
     {correct}Linux/Unix{end}
     In your terminal run:
@@ -372,7 +376,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
         {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
 
-and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}: 
+and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
@@ -380,10 +384,9 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            env_api_token=envs.API_TOKEN_ENV_NAME,
-            **STYLES
-        ))
+        super().__init__(
+            message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
+        )
 
 
 class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
@@ -428,20 +431,22 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            custom_id_env=CUSTOM_RUN_ID_ENV_NAME,
-            **STYLES
-        ))
+        super().__init__(message.format(custom_id_env=CUSTOM_RUN_ID_ENV_NAME, **STYLES))
 
 
 class UnsupportedClientVersion(NeptuneException):
     def __init__(
-            self,
-            version: Union[Version, str],
-            min_version: Optional[Union[Version, str]] = None,
-            max_version: Optional[Union[Version, str]] = None):
+        self,
+        version: Union[Version, str],
+        min_version: Optional[Union[Version, str]] = None,
+        max_version: Optional[Union[Version, str]] = None,
+    ):
         current_version = str(version)
-        required_version = "==" + replace_patch_version(str(max_version)) if max_version else ">=" + str(min_version)
+        required_version = (
+            "==" + replace_patch_version(str(max_version))
+            if max_version
+            else ">=" + str(min_version)
+        )
         message = """
 {h1}
 ----UnsupportedClientVersion-------------------------------------------------------------
@@ -452,11 +457,13 @@ Please install neptune-client{required_version}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            current_version=current_version,
-            required_version=required_version,
-            **STYLES
-        ))
+        super().__init__(
+            message.format(
+                current_version=current_version,
+                required_version=required_version,
+                **STYLES,
+            )
+        )
 
 
 class CannotResolveHostname(NeptuneException):
@@ -477,17 +484,15 @@ What should I do?
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            host=host,
-            **STYLES
-        ))
+        super().__init__(message.format(host=host, **STYLES))
 
 
 class SSLError(NeptuneException):
     def __init__(self):
         super().__init__(
-            'SSL certificate validation failed. Set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE '
-            'environment variable to accept self-signed certificates.')
+            "SSL certificate validation failed. Set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE "
+            "environment variable to accept self-signed certificates."
+        )
 
 
 class NeptuneConnectionLostException(NeptuneException):
@@ -506,15 +511,15 @@ What should I do?
     - Check if your computer is connected to the internet.
     - If your connection is unstable you can consider working using the offline mode:
         {python}run = neptune.init(mode="offline"){end}
-        
+
 You can read in detail how it works and how to upload your data on the following doc pages:
     - https://docs.neptune.ai/you-should-know/connection-modes#offline
     - https://docs.neptune.ai/you-should-know/connection-modes#uploading-offline-data
-    
+
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/you-should-know/connection-modes#connectivity-issues
     - https://docs.neptune.ai/you-should-know/connection-modes
-    
+
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(**STYLES))
@@ -535,10 +540,7 @@ Please try again later or contact Neptune support.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            response=response,
-            **STYLES
-        ))
+        super().__init__(message.format(response=response, **STYLES))
 
 
 class Unauthorized(NeptuneApiException):
@@ -548,16 +550,16 @@ class Unauthorized(NeptuneApiException):
 ----Unauthorized-----------------------------------------------------------------------
 {end}
 You have no permission to access given resource.
-    
+
     - Verify your API token is correct.
       See: https://app.neptune.ai/get_my_api_token
-      
+
     - Verify if your the provided project name is correct.
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
       It has two parts:
           - {correct}WORKSPACE{end}: which can be your username or your organization name
           - {correct}PROJECT_NAME{end}: which is the actual project name you chose
-          
+
    - Ask your organization administrator to grant you necessary privileges to the project
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -572,16 +574,16 @@ class Forbidden(NeptuneApiException):
 ----Forbidden-----------------------------------------------------------------------
 {end}
 You have no permission to access given resource.
-    
+
     - Verify your API token is correct.
       See: https://app.neptune.ai/get_my_api_token
-      
+
     - Verify if your the provided project name is correct.
       The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
       It has two parts:
           - {correct}WORKSPACE{end}: which can be your username or your organization name
           - {correct}PROJECT_NAME{end}: which is the actual project name you chose
-          
+
    - Ask your organization administrator to grant you necessary privileges to the project
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -596,14 +598,14 @@ class NeptuneOfflineModeFetchException(NeptuneException):
 ----NeptuneOfflineModeFetchException---------------------------------------------------
 {end}
 It seems you are trying to fetch data from the server, while working in an offline mode.
-You need to work in non-offline connection mode to fetch data from the server. 
+You need to work in non-offline connection mode to fetch data from the server.
 
 You can set connection mode when creating a new run:
     {python}run = neptune.init(mode="async"){end}
-    
+
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/you-should-know/connection-modes
-    
+
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(**STYLES))
@@ -611,7 +613,7 @@ You may also want to check the following docs pages:
 
 class OperationNotSupported(NeptuneException):
     def __init__(self, message: str):
-        super().__init__(f'Operation not supported: {message}')
+        super().__init__(f"Operation not supported: {message}")
 
 
 class NeptuneLegacyProjectException(NeptuneException):
@@ -623,23 +625,20 @@ class NeptuneLegacyProjectException(NeptuneException):
 Your project "{project}" has not been migrated to the new structure yet.
 Unfortunately neptune.new Python API is incompatible with projects using old structure,
 please use legacy neptune Python API.
-Don't worry - we are working hard on migrating all the projects and you will be able to use the neptune.new API soon. 
+Don't worry - we are working hard on migrating all the projects and you will be able to use the neptune.new API soon.
 
 You can find documentation for legacy neptune Python API here:
     - https://docs-legacy.neptune.ai/index.html
-    
+
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            project=project,
-            **STYLES
-        ))
+        super().__init__(message.format(project=project, **STYLES))
 
 
 class NeptuneUninitializedException(NeptuneException):
     def __init__(self):
         message = """
-{h1}     
+{h1}
 ----NeptuneUninitializedException----------------------------------------------------
 {end}
 You must initialize neptune-client before you access `get_last_run`.
@@ -661,7 +660,7 @@ You may also want to check the following docs pages:
 class NeptuneIntegrationNotInstalledException(NeptuneException):
     def __init__(self, integration_package_name, framework_name):
         message = """
-{h1}     
+{h1}
 ----NeptuneIntegrationNotInstalledException-----------------------------------------
 {end}
 Looks like integration {integration_package_name} wasn't installed.
@@ -672,14 +671,16 @@ Or:
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/integrations-and-supported-tools/intro
-    
+
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(
-            integration_package_name=integration_package_name,
-            framework_name=framework_name,
-            **STYLES
-        ))
+        super().__init__(
+            message.format(
+                integration_package_name=integration_package_name,
+                framework_name=framework_name,
+                **STYLES,
+            )
+        )
 
 
 class NeptuneLimitExceedException(NeptuneException):
@@ -738,7 +739,7 @@ it yet before it's fetched. Before fetching the data you can force
 wait for all the requests sent by invoking:
 
     {python}run.wait(){end}
-    
+
 Remember that each use of {python}wait{end} introduces a delay in code execution.
 
 You may also want to check the following docs pages:
@@ -746,10 +747,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """
-        super().__init__(message.format(
-            attribute_path=attribute_path,
-            **STYLES
-        ))
+        super().__init__(message.format(attribute_path=attribute_path, **STYLES))
 
 
 class ArtifactNotFoundException(MetadataInconsistency):
@@ -774,10 +772,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
 """
-        super().__init__(message.format(
-            artifact_hash=artifact_hash,
-            **STYLES
-        ))
+        super().__init__(message.format(artifact_hash=artifact_hash, **STYLES))
 
 
 class PlotlyIncompatibilityException(Exception):
@@ -787,8 +782,9 @@ class PlotlyIncompatibilityException(Exception):
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
             "See https://stackoverflow.com/q/63120058 for details. "
             "Downgrade matplotlib to version 3.2 or use as_image to log static chart.".format(
-                matplotlib_version,
-                plotly_version))
+                matplotlib_version, plotly_version
+            )
+        )
 
 
 class NeptunePossibleLegacyUsageException(NeptuneException):
@@ -876,7 +872,11 @@ Neptune had problem processing "{path}", it expects it to be {expected_descripti
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(path=path, expected_description=expected_description, **STYLES))
+        super().__init__(
+            message.format(
+                path=path, expected_description=expected_description, **STYLES
+            )
+        )
 
 
 class NeptuneRemoteStorageCredentialsException(NeptuneException):
@@ -922,7 +922,9 @@ It seems you are using Neptune Artifacts functionality that is currently not sup
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(functionality_info=functionality_info, **STYLES))
+        super().__init__(
+            message.format(functionality_info=functionality_info, **STYLES)
+        )
 
 
 class NeptuneEmptyLocationException(NeptuneException):
@@ -935,7 +937,9 @@ Neptune could not find files in the requested location ({location}) during creat
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(location=location, namespace=namespace, **STYLES))
+        super().__init__(
+            message.format(location=location, namespace=namespace, **STYLES)
+        )
 
 
 class NeptuneFeaturesNotAvailableException(NeptuneException):

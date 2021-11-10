@@ -23,7 +23,7 @@ from neptune.new.run import RunState
 from neptune.new.version import version as neptune_client_version
 
 
-INTEGRATION_VERSION_KEY = 'source_code/integrations/neptune-python-logger'
+INTEGRATION_VERSION_KEY = "source_code/integrations/neptune-python-logger"
 
 
 class NeptuneHandler(logging.Handler):
@@ -53,6 +53,7 @@ class NeptuneHandler(logging.Handler):
         ...
         >>> logger.debug("Data preparation done")
     """
+
     def __init__(self, *, run: Run, level=logging.NOTSET, path: str = None):
         verify_type("run", run, Run)
         verify_type("level", level, int)
@@ -71,7 +72,8 @@ class NeptuneHandler(logging.Handler):
         if not hasattr(self._thread_local, "inside_write"):
             self._thread_local.inside_write = False
 
-        if self._run._state == RunState.STARTED and not self._thread_local.inside_write:  # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        if self._run._state == RunState.STARTED and not self._thread_local.inside_write:
             try:
                 self._thread_local.inside_write = True
                 message = self.format(record)

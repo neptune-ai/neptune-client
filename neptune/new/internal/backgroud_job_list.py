@@ -23,11 +23,10 @@ if TYPE_CHECKING:
 
 
 class BackgroundJobList(BackgroundJob):
-
     def __init__(self, jobs: List[BackgroundJob]):
         self._jobs = jobs
 
-    def start(self, run: 'Run'):
+    def start(self, run: "Run"):
         for job in self._jobs:
             job.start(run)
 

@@ -17,8 +17,18 @@ import os
 from io import IOBase
 from typing import TypeVar, TYPE_CHECKING, Optional, Union
 
-from neptune.new.internal.utils.images import get_image_content, get_html_content, get_pickle_content, is_pil_image, \
-    is_matplotlib_figure, is_plotly_figure, is_altair_chart, is_bokeh_figure, is_numpy_array, is_pandas_dataframe
+from neptune.new.internal.utils.images import (
+    get_image_content,
+    get_html_content,
+    get_pickle_content,
+    is_pil_image,
+    is_matplotlib_figure,
+    is_plotly_figure,
+    is_altair_chart,
+    is_bokeh_figure,
+    is_numpy_array,
+    is_pandas_dataframe,
+)
 
 
 from neptune.new.internal.utils import verify_type, get_stream_content
@@ -27,15 +37,16 @@ from neptune.new.types.atoms.atom import Atom
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class File(Atom):
-
-    def __init__(self,
-                 path: Optional[str] = None,
-                 content: Optional[bytes] = None,
-                 extension: Optional[str] = None):
+    def __init__(
+        self,
+        path: Optional[str] = None,
+        content: Optional[bytes] = None,
+        extension: Optional[str] = None,
+    ):
         verify_type("path", path, (str, type(None)))
         verify_type("content", content, (bytes, type(None)))
         verify_type("extension", extension, (str, type(None)))
@@ -57,7 +68,7 @@ class File(Atom):
         else:
             self.extension = extension or ""
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_file(self)
 
     def __str__(self):
@@ -67,7 +78,9 @@ class File(Atom):
             return "File(content=...)"
 
     @staticmethod
-    def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> 'File':
+    def from_content(
+        content: Union[str, bytes], extension: Optional[str] = None
+    ) -> "File":
         """Factory method for creating File value objects directly from binary and text content.
 
         In the case of text content, UTF-8 encoding will be used.
@@ -95,7 +108,9 @@ class File(Atom):
         return File(content=content, extension=extension or ext)
 
     @staticmethod
-    def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> 'File':
+    def from_stream(
+        stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None
+    ) -> "File":
         """Factory method for creating File value objects directly from binary and text streams.
 
         In the case of text stream, UTF-8 encoding will be used.
@@ -124,7 +139,7 @@ class File(Atom):
         return File(content=content, extension=extension or stream_default_ext)
 
     @staticmethod
-    def as_image(image) -> 'File':
+    def as_image(image) -> "File":
         """Static method for converting image objects or image-like objects to an image File value object.
 
         This way you can upload `Matplotlib` figures, `PIL` images, `NumPy` arrays, as static images.
@@ -161,10 +176,12 @@ class File(Atom):
            https://docs.neptune.ai/api-reference/field-types#as_image
         """
         content_bytes = get_image_content(image)
-        return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
+        return File.from_content(
+            content_bytes if content_bytes is not None else b"", extension="png"
+        )
 
     @staticmethod
-    def as_html(chart) -> 'File':
+    def as_html(chart) -> "File":
         """Converts an object to an HTML File value object.
 
         This way you can upload `Altair`, `Bokeh`, `Plotly`, `Matplotlib` interactive charts
@@ -202,10 +219,12 @@ class File(Atom):
            https://docs.neptune.ai/api-reference/field-types#as_html
         """
         content = get_html_content(chart)
-        return File.from_content(content if content is not None else "", extension="html")
+        return File.from_content(
+            content if content is not None else "", extension="html"
+        )
 
     @staticmethod
-    def as_pickle(obj) -> 'File':
+    def as_pickle(obj) -> "File":
         """Pickles a Python object and stores it in `File` value object.
 
         This way you can upload any Python object for future use.
@@ -233,31 +252,45 @@ class File(Atom):
            https://docs.neptune.ai/api-reference/field-types#as_pickle
         """
         content = get_pickle_content(obj)
-        return File.from_content(content if content is not None else b"", extension="pkl")
+        return File.from_content(
+            content if content is not None else b"", extension="pkl"
+        )
 
     @staticmethod
-    def create_from(value) -> 'File':
+    def create_from(value) -> "File":
         if isinstance(value, str):
             return File(path=value)
         elif is_pil_image(value) or is_matplotlib_figure(value):
             return File.as_image(value)
-        elif is_plotly_figure(value) or is_altair_chart(value) or is_bokeh_figure(value):
+        elif (
+            is_plotly_figure(value) or is_altair_chart(value) or is_bokeh_figure(value)
+        ):
             return File.as_html(value)
         elif is_numpy_array(value):
-            raise TypeError("Value of type {} is not supported. Please use File.as_image().".format(type(value)))
+            raise TypeError(
+                "Value of type {} is not supported. Please use File.as_image().".format(
+                    type(value)
+                )
+            )
         elif is_pandas_dataframe(value):
-            raise TypeError("Value of type {} is not supported. Please use File.as_html().".format(type(value)))
+            raise TypeError(
+                "Value of type {} is not supported. Please use File.as_html().".format(
+                    type(value)
+                )
+            )
         elif isinstance(value, File):
             return value
         raise TypeError("Value of type {} is not supported.".format(type(value)))
 
     @staticmethod
     def is_convertable(value):
-        return is_pil_image(value) \
-               or is_matplotlib_figure(value) \
-               or is_plotly_figure(value) \
-               or is_altair_chart(value) \
-               or is_bokeh_figure(value) \
-               or is_numpy_array(value) \
-               or is_pandas_dataframe(value) \
-               or isinstance(value, File)
+        return (
+            is_pil_image(value)
+            or is_matplotlib_figure(value)
+            or is_plotly_figure(value)
+            or is_altair_chart(value)
+            or is_bokeh_figure(value)
+            or is_numpy_array(value)
+            or is_pandas_dataframe(value)
+            or isinstance(value, File)
+        )

@@ -15,7 +15,10 @@
 #
 import logging
 from functools import wraps
-from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
+from http.client import (
+    NOT_FOUND,
+    UNPROCESSABLE_ENTITY,
+)  # pylint:disable=no-name-in-module
 
 from requests.exceptions import HTTPError
 
@@ -34,10 +37,10 @@ def extract_response_field(response, field_name):
         if isinstance(response_json, dict):
             return response_json.get(field_name)
         else:
-            _logger.debug('HTTP response is not a dict: %s', str(response_json))
+            _logger.debug("HTTP response is not a dict: %s", str(response_json))
             return None
     except ValueError as e:
-        _logger.debug('Failed to parse HTTP response: %s', e)
+        _logger.debug("Failed to parse HTTP response: %s", e)
         return None
 
 
@@ -49,19 +52,27 @@ def handle_quota_limits(f):
 
     @wraps(f)
     def handler(*args, **kwargs):
-        experiment = kwargs.get('experiment')
+        experiment = kwargs.get("experiment")
         if experiment is None:
-            raise NeptuneException('This function must be called with experiment passed by name,'
-                                   ' like this fun(..., experiment=<experiment>, ...)')
+            raise NeptuneException(
+                "This function must be called with experiment passed by name,"
+                " like this fun(..., experiment=<experiment>, ...)"
+            )
         try:
             return f(*args, **kwargs)
         except HTTPError as e:
             if e.response.status_code == NOT_FOUND:
                 # pylint: disable=protected-access
                 raise ExperimentNotFound(
-                    experiment_short_id=experiment.id, project_qualified_name=experiment._project.full_id)
-            if (e.response.status_code == UNPROCESSABLE_ENTITY and
-                    extract_response_field(e.response, 'title').startswith('Storage limit reached in organization: ')):
+                    experiment_short_id=experiment.id,
+                    project_qualified_name=experiment._project.full_id,
+                )
+            if (
+                e.response.status_code == UNPROCESSABLE_ENTITY
+                and extract_response_field(e.response, "title").startswith(
+                    "Storage limit reached in organization: "
+                )
+            ):
                 raise StorageLimitReached()
             raise
 

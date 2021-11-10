@@ -39,15 +39,14 @@ class FileChunk(object):
 
 
 class FileChunkStream(object):
-
     def __init__(self, upload_entry):
         self.filename = upload_entry.target_path
         if upload_entry.is_stream():
             self.fobj = upload_entry.source_path
             self.length = None
-            self.permissions = '----------'
+            self.permissions = "----------"
         else:
-            self.fobj = io.open(upload_entry.source_path, 'rb')
+            self.fobj = io.open(upload_entry.source_path, "rb")
             self.length = os.path.getsize(upload_entry.source_path)
             self.permissions = self.permissions_to_unix_string(upload_entry.source_path)
 
@@ -56,10 +55,19 @@ class FileChunkStream(object):
         st = 0
         if os.path.exists(path):
             st = os.lstat(path).st_mode
-        is_dir = 'd' if stat.S_ISDIR(st) else '-'
-        dic = {'7': 'rwx', '6': 'rw-', '5': 'r-x', '4': 'r--', '3': '-wx', '2': '-w-', '1': '--x', '0': '---'}
+        is_dir = "d" if stat.S_ISDIR(st) else "-"
+        dic = {
+            "7": "rwx",
+            "6": "rw-",
+            "5": "r-x",
+            "4": "r--",
+            "3": "-wx",
+            "2": "-w-",
+            "1": "--x",
+            "0": "---",
+        }
         perm = ("%03o" % st)[-3:]
-        return is_dir + ''.join(dic.get(x, x) for x in perm)
+        return is_dir + "".join(dic.get(x, x) for x in perm)
 
     def __eq__(self, fs):
         if isinstance(self, fs.__class__):
@@ -72,13 +80,13 @@ class FileChunkStream(object):
             chunk = self.fobj.read(chunk_size)
             if chunk:
                 if isinstance(chunk, str):
-                    chunk = chunk.encode('utf-8')
+                    chunk = chunk.encode("utf-8")
                 new_offset = last_offset + len(chunk)
                 yield FileChunk(chunk, last_offset, new_offset)
                 last_offset = new_offset
             else:
                 if last_offset == 0:
-                    yield FileChunk(b'', 0, 0)
+                    yield FileChunk(b"", 0, 0)
                 break
 
     def close(self):
@@ -86,11 +94,13 @@ class FileChunkStream(object):
 
 
 def compress_to_tar_gz_in_memory(upload_entries) -> bytes:
-    f = io.BytesIO(b'')
+    f = io.BytesIO(b"")
 
-    with tarfile.TarFile.open(fileobj=f, mode='w|gz', dereference=True) as archive:
+    with tarfile.TarFile.open(fileobj=f, mode="w|gz", dereference=True) as archive:
         for entry in upload_entries:
-            archive.add(name=entry.source_path, arcname=entry.target_path, recursive=True)
+            archive.add(
+                name=entry.source_path, arcname=entry.target_path, recursive=True
+            )
 
     f.seek(0)
     data = f.read()

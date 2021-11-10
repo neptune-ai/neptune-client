@@ -24,43 +24,45 @@ from neptune.utils import get_git_info
 
 
 class TestGitInfo(unittest.TestCase):
-
     def test_getting_some_git_info_from_current_repository(self):
         # when
-        git_info = get_git_info('.')
+        git_info = get_git_info(".")
 
         # then
         self.assertNotEqual(git_info, None)
 
-    @mock.patch('git.Repo', return_value=mock.MagicMock())
+    @mock.patch("git.Repo", return_value=mock.MagicMock())
     def test_getting_git_info(self, repo_mock):
         # given
         now = datetime.datetime.now()
         repo = repo_mock.return_value
         repo.is_dirty.return_value = True
-        repo.head.commit.hexsha = 'sha'
-        repo.head.commit.message = 'message'
-        repo.head.commit.author.name = 'author_name'
-        repo.head.commit.author.email = 'author@email'
+        repo.head.commit.hexsha = "sha"
+        repo.head.commit.message = "message"
+        repo.head.commit.author.name = "author_name"
+        repo.head.commit.author.email = "author@email"
         repo.head.commit.committed_datetime = now
         repo.active_branch.name = "master"
         repo.remotes = []
 
         # when
-        git_info = get_git_info('.')
+        git_info = get_git_info(".")
 
         # then
-        self.assertEqual(git_info, GitInfo(
-            commit_id='sha',
-            message='message',
-            author_name='author_name',
-            author_email='author@email',
-            commit_date=now,
-            repository_dirty=True,
-            active_branch="master",
-            remote_urls=[]
-        ))
+        self.assertEqual(
+            git_info,
+            GitInfo(
+                commit_id="sha",
+                message="message",
+                author_name="author_name",
+                author_email="author@email",
+                commit_date=now,
+                repository_dirty=True,
+                active_branch="master",
+                remote_urls=[],
+            ),
+        )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

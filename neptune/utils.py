@@ -30,40 +30,54 @@ import numpy as np
 import pandas as pd
 import requests
 from bravado.exception import (
-    BravadoConnectionError, BravadoTimeoutError, HTTPBadGateway, HTTPBadRequest,
-    HTTPForbidden, HTTPGatewayTimeout, HTTPInternalServerError, HTTPRequestTimeout,
-    HTTPServerError, HTTPServiceUnavailable, HTTPUnauthorized
+    BravadoConnectionError,
+    BravadoTimeoutError,
+    HTTPBadGateway,
+    HTTPBadRequest,
+    HTTPForbidden,
+    HTTPGatewayTimeout,
+    HTTPInternalServerError,
+    HTTPRequestTimeout,
+    HTTPServerError,
+    HTTPServiceUnavailable,
+    HTTPUnauthorized,
 )
 
 from neptune import envs
-from neptune.api_exceptions import ConnectionLost, Forbidden, SSLError, ServerError, Unauthorized
+from neptune.api_exceptions import (
+    ConnectionLost,
+    Forbidden,
+    SSLError,
+    ServerError,
+    Unauthorized,
+)
 from neptune.exceptions import (
-    FileNotFound, InvalidNotebookPath, NeptuneIncorrectProjectQualifiedNameException,
+    FileNotFound,
+    InvalidNotebookPath,
+    NeptuneIncorrectProjectQualifiedNameException,
     NeptuneMissingProjectQualifiedNameException,
-    NotADirectory, NotAFile, ProjectMigratedToNewStructure
+    NotADirectory,
+    NotAFile,
+    ProjectMigratedToNewStructure,
 )
 from neptune.git_info import GitInfo
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 _logger = logging.getLogger(__name__)
 
-IS_WINDOWS = sys.platform == 'win32'
-IS_MACOS = sys.platform == 'darwin'
+IS_WINDOWS = sys.platform == "win32"
+IS_MACOS = sys.platform == "darwin"
 
-MIGRATION_IN_PROGRESS = 'PROJECT_MIGRATION_IN_PROGRESS'
-MIGRATION_FINISHED = 'NEW_PROJECT_VERSION'
+MIGRATION_IN_PROGRESS = "PROJECT_MIGRATION_IN_PROGRESS"
+MIGRATION_FINISHED = "NEW_PROJECT_VERSION"
 
 
 def map_values(f_value, dictionary):
-    return dict(
-        (k, f_value(v)) for k, v in dictionary.items()
-    )
+    return dict((k, f_value(v)) for k, v in dictionary.items())
 
 
 def map_keys(f_key, dictionary):
-    return dict(
-        (f_key(k), v) for k, v in dictionary.items()
-    )
+    return dict((f_key(k), v) for k, v in dictionary.items())
 
 
 def as_list(value):
@@ -99,16 +113,17 @@ def assure_directory_exists(destination_dir):
 
 def align_channels_on_x(dataframe):
     channel_dfs, common_x = _split_df_by_stems(dataframe)
-    return merge_dataframes([common_x] + channel_dfs, on='x', how='outer')
+    return merge_dataframes([common_x] + channel_dfs, on="x", how="outer")
 
 
 def get_channel_name_stems(columns):
     return list(set([col[2:] for col in columns]))
 
 
-def merge_dataframes(dataframes, on, how='outer'):
-    merged_df = functools.reduce(lambda left, right: \
-                                     pd.merge(left, right, on=on, how=how), dataframes)
+def merge_dataframes(dataframes, on, how="outer"):
+    merged_df = functools.reduce(
+        lambda left, right: pd.merge(left, right, on=on, how=how), dataframes
+    )
     return merged_df
 
 
@@ -134,8 +149,10 @@ def file_contains(filename, text):
 
 
 def in_docker():
-    cgroup_file = '/proc/self/cgroup'
-    return os.path.exists('./dockerenv') or (os.path.exists(cgroup_file) and file_contains(cgroup_file, text='docker'))
+    cgroup_file = "/proc/self/cgroup"
+    return os.path.exists("./dockerenv") or (
+        os.path.exists(cgroup_file) and file_contains(cgroup_file, text="docker")
+    )
 
 
 def is_notebook():
@@ -150,12 +167,12 @@ def is_notebook():
 def _split_df_by_stems(df):
     channel_dfs, x_vals = [], []
     for stem in get_channel_name_stems(df.columns):
-        channel_df = df[['x_{}'.format(stem), 'y_{}'.format(stem)]]
-        channel_df.columns = ['x', stem]
+        channel_df = df[["x_{}".format(stem), "y_{}".format(stem)]]
+        channel_df.columns = ["x", stem]
         channel_df = channel_df.dropna()
         channel_dfs.append(channel_df)
-        x_vals.extend(channel_df['x'].tolist())
-    common_x = pd.DataFrame({'x': np.unique(x_vals)}, dtype=float)
+        x_vals.extend(channel_df["x"].tolist())
+    common_x = pd.DataFrame({"x": np.unique(x_vals)}, dtype=float)
     return channel_dfs, common_x
 
 
@@ -163,7 +180,7 @@ def discover_git_repo_location():
     # pylint:disable=bad-option-value,import-outside-toplevel
     import __main__
 
-    if hasattr(__main__, '__file__'):
+    if hasattr(__main__, "__file__"):
         return os.path.dirname(os.path.abspath(__main__.__file__))
     return None
 
@@ -214,7 +231,9 @@ def get_git_info(repo_path=None):
         try:
             active_branch = repo.active_branch.name
         except TypeError as e:
-            if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
+            if str(e.args[0]).startswith(
+                "HEAD is a detached symbolic reference as it points to"
+            ):
                 active_branch = "Detached HEAD"
 
         remote_urls = [remote.url for remote in repo.remotes]
@@ -227,7 +246,7 @@ def get_git_info(repo_path=None):
             commit_date=commit.committed_datetime,
             repository_dirty=repo.is_dirty(untracked_files=True),
             active_branch=active_branch,
-            remote_urls=remote_urls
+            remote_urls=remote_urls,
         )
     except:  # pylint: disable=bare-except
         return None
@@ -248,16 +267,21 @@ def print_migration_in_progress_message():
     # pylint: disable=global-statement
     global migration_reported
     migration_reported = True
-    click.echo(click.style("""
+    click.echo(
+        click.style(
+            """
 NOTICE: Attention needed
-Your Neptune project is currently being migrated to the new structure. 
-The execution of the script is paused until migration is finished. 
+Your Neptune project is currently being migrated to the new structure.
+The execution of the script is paused until migration is finished.
 It will automatically resume once it's finished.
 Depending on the number of runs (experiments) in the project
 the migration process can take from few minutes to up to few hours.
 If you think this operation takes too long please contact Neptune support:
     - https://neptune.ai/?chat-with-us
-""", fg='yellow'))
+""",
+            fg="yellow",
+        )
+    )
 
 
 def with_api_exceptions_handler(func):
@@ -286,15 +310,24 @@ def with_api_exceptions_handler(func):
                 else:
                     if retry >= 6:
                         _logger.warning(
-                            'Experiencing connection interruptions. Reestablishing communication with Neptune.')
+                            "Experiencing connection interruptions. Reestablishing communication with Neptune."
+                        )
                     time.sleep(2 ** retry)
                     retry += 1
                     continue
-            except (BravadoConnectionError, BravadoTimeoutError,
-                    requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPGatewayTimeout, HTTPBadGateway):
+            except (
+                BravadoConnectionError,
+                BravadoTimeoutError,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+                HTTPRequestTimeout,
+                HTTPGatewayTimeout,
+                HTTPBadGateway,
+            ):
                 if retry >= 6:
-                    _logger.warning('Experiencing connection interruptions. Reestablishing communication with Neptune.')
+                    _logger.warning(
+                        "Experiencing connection interruptions. Reestablishing communication with Neptune."
+                    )
                 time.sleep(2 ** retry)
                 retry += 1
                 continue
@@ -308,21 +341,29 @@ def with_api_exceptions_handler(func):
                 if e.response is None:
                     raise
                 status_code = e.response.status_code
-                if status_code == HTTPBadRequest.status_code and parse_error_type(e) == MIGRATION_FINISHED:
+                if (
+                    status_code == HTTPBadRequest.status_code
+                    and parse_error_type(e) == MIGRATION_FINISHED
+                ):
                     raise ProjectMigratedToNewStructure()
-                elif status_code == HTTPServiceUnavailable.status_code and parse_error_type(e) == MIGRATION_IN_PROGRESS:
+                elif (
+                    status_code == HTTPServiceUnavailable.status_code
+                    and parse_error_type(e) == MIGRATION_IN_PROGRESS
+                ):
                     retry = min(retry + 1, 8)
                     if not migration_reported:
                         print_migration_in_progress_message()
                     time.sleep(2 ** retry)
                     continue
                 elif status_code in (
-                        HTTPBadGateway.status_code,
-                        HTTPServiceUnavailable.status_code,
-                        HTTPGatewayTimeout.status_code):
+                    HTTPBadGateway.status_code,
+                    HTTPServiceUnavailable.status_code,
+                    HTTPGatewayTimeout.status_code,
+                ):
                     if retry >= 6:
                         _logger.warning(
-                            'Experiencing connection interruptions. Reestablishing communication with Neptune.')
+                            "Experiencing connection interruptions. Reestablishing communication with Neptune."
+                        )
                     time.sleep(2 ** retry)
                     retry += 1
                     continue
@@ -341,7 +382,9 @@ def with_api_exceptions_handler(func):
 
 def glob(pathname):
     # pylint: disable=unexpected-keyword-arg
-    if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
+    if sys.version_info.major < 3 or (
+        sys.version_info.major == 3 and sys.version_info.minor < 5
+    ):
         return globlib.glob(pathname)
     else:
         return globlib.glob(pathname, recursive=True)
@@ -351,6 +394,7 @@ def is_ipython():
     try:
         # pylint:disable=bad-option-value,import-outside-toplevel
         import IPython
+
         ipython = IPython.core.getipython.get_ipython()
         return ipython is not None
     except ImportError:
@@ -369,7 +413,6 @@ def assure_project_qualified_name(project_qualified_name):
 
 
 class NoopObject(object):
-
     def __getattr__(self, name):
         return self
 

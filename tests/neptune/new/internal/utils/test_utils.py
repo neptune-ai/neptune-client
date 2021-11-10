@@ -20,7 +20,6 @@ from neptune.new.internal.utils import verify_type, verify_collection_type
 
 
 class TestUtils(unittest.TestCase):
-
     def test_verify_type(self):
         verify_type("arg", "string", str)
 
@@ -44,4 +43,4 @@ class TestUtils(unittest.TestCase):
 
     def test_verify_collection_type_failed_element(self):
         with self.assertRaises(TypeError):
-            verify_collection_type("arg", ["string", 3, "a", 4., 1], (int, str))
+            verify_collection_type("arg", ["string", 3, "a", 4.0, 1], (int, str))

@@ -21,15 +21,14 @@ from neptune.new.types.atoms.atom import Atom
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class Datetime(Atom):
-
     def __init__(self, value: datetime):
-        self.value = value.replace(microsecond=1000*int(value.microsecond/1000))
+        self.value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_datetime(self)
 
     def __str__(self):

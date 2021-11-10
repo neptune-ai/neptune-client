@@ -16,8 +16,14 @@
 
 
 class ClientConfig(object):
-
-    def __init__(self, api_url, display_url, min_recommended_version, min_compatible_version, max_compatible_version):
+    def __init__(
+        self,
+        api_url,
+        display_url,
+        min_recommended_version,
+        min_compatible_version,
+        max_compatible_version,
+    ):
         self._api_url = api_url
         self._display_url = display_url
         self._min_recommended_version = min_recommended_version

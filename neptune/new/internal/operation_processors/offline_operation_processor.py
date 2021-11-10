@@ -17,11 +17,12 @@ from typing import Optional
 
 from neptune.new.internal.containers.storage_queue import StorageQueue
 from neptune.new.internal.operation import Operation
-from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.new.internal.operation_processors.operation_processor import (
+    OperationProcessor,
+)
 
 
 class OfflineOperationProcessor(OperationProcessor):
-
     def __init__(self, queue: StorageQueue[Operation]):
         self._queue = queue
 

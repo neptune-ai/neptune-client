@@ -21,12 +21,13 @@ from neptune.new.envs import API_TOKEN_ENV_NAME
 from neptune.new.exceptions import NeptuneInvalidApiTokenException
 from neptune.new.internal.credentials import Credentials
 
-API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ' \
-            'hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0='
+API_TOKEN = (
+    "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ"
+    "hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0="
+)
 
 
 class TestCredentials(unittest.TestCase):
-
     def test_should_take_default_credentials_from_env(self):
         # given
         os.environ[API_TOKEN_ENV_NAME] = API_TOKEN

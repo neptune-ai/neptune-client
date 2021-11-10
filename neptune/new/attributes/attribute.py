@@ -24,8 +24,7 @@ if TYPE_CHECKING:
 
 
 class Attribute:
-
-    def __init__(self, container: 'AttributeContainer', path: List[str]):
+    def __init__(self, container: "AttributeContainer", path: List[str]):
         super().__init__()
         self._container = container
         self._path = path

@@ -29,6 +29,7 @@ def get_git_repo(repo_path):
     try:
         # pylint:disable=import-outside-toplevel
         import git
+
         return git.Repo(repo_path, search_parent_directories=True)
     except ImportError:
         warnings.warn("GitPython could not be initialized")
@@ -47,7 +48,9 @@ def get_git_info(repo_path=None):
         try:
             active_branch = repo.active_branch.name
         except TypeError as e:
-            if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
+            if str(e.args[0]).startswith(
+                "HEAD is a detached symbolic reference as it points to"
+            ):
                 active_branch = "Detached HEAD"
 
         remote_urls = [remote.url for remote in repo.remotes]
@@ -60,7 +63,7 @@ def get_git_info(repo_path=None):
             commit_date=commit.committed_datetime,
             dirty=repo.is_dirty(untracked_files=True),
             branch=active_branch,
-            remotes=remote_urls
+            remotes=remote_urls,
         )
     except:  # pylint: disable=bare-except
         return None
@@ -79,7 +82,7 @@ def discover_git_repo_location() -> Optional[str]:
     # pylint:disable=bad-option-value,import-outside-toplevel
     import __main__
 
-    if hasattr(__main__, '__file__'):
+    if hasattr(__main__, "__file__"):
         git_path = get_git_repo_path(
             initial_path=os.path.dirname(os.path.abspath(__main__.__file__))
         )

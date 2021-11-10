@@ -35,7 +35,8 @@ from neptune.new.constants import (
 from neptune.new.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     CannotSynchronizeOfflineRunsWithoutProject,
-    NeptuneConnectionLostException, NeptuneException,
+    NeptuneConnectionLostException,
+    NeptuneException,
     ProjectNotFound,
     RunNotFound,
 )
@@ -63,21 +64,30 @@ def get_run(run_id: str) -> Optional[ApiRun]:
     except RunNotFound:
         return None
     except NeptuneException as e:
-        click.echo('Exception while fetching run {}. Skipping run.'.format(run_id), err=True)
+        click.echo(
+            "Exception while fetching run {}. Skipping run.".format(run_id), err=True
+        )
         logging.exception(e)
         return None
 
 
 project_name_missing_message = (
-    'Project name not provided. Could not synchronize offline runs. '
-    'To synchronize offline run, specify the project name with the --project flag '
-    'or by setting the {} environment variable.'.format(PROJECT_ENV_NAME))
+    "Project name not provided. Could not synchronize offline runs. "
+    "To synchronize offline run, specify the project name with the --project flag "
+    "or by setting the {} environment variable.".format(PROJECT_ENV_NAME)
+)
 
 
 def project_not_found_message(project_name: str) -> str:
-    return ('Project {} not found. Could not synchronize offline runs. '.format(project_name) +
-            'Please ensure you specified the correct project name with the --project flag ' +
-            'or with the {} environment variable, or contact Neptune for support.'.format(PROJECT_ENV_NAME))
+    return (
+        "Project {} not found. Could not synchronize offline runs. ".format(
+            project_name
+        )
+        + "Please ensure you specified the correct project name with the --project flag "
+        + "or with the {} environment variable, or contact Neptune for support.".format(
+            PROJECT_ENV_NAME
+        )
+    )
 
 
 def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
@@ -88,7 +98,9 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
     try:
         return backend.get_project(project_name)
     except ProjectNotFound:
-        click.echo(textwrap.fill(project_not_found_message(project_name)), file=sys.stderr)
+        click.echo(
+            textwrap.fill(project_not_found_message(project_name)), file=sys.stderr
+        )
         return None
 
 
@@ -108,12 +120,17 @@ def is_valid_uuid(val: Any) -> bool:
 # Listing runs to be synchronized
 #######################################################################################################################
 
+
 def is_run_synced(run_path: Path) -> bool:
-    return all(is_execution_synced(execution_path) for execution_path in run_path.iterdir())
+    return all(
+        is_execution_synced(execution_path) for execution_path in run_path.iterdir()
+    )
 
 
 def is_execution_synced(execution_path: Path) -> bool:
-    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock())
+    disk_queue = DiskQueue(
+        execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock()
+    )
     return disk_queue.is_empty()
 
 
@@ -137,64 +154,74 @@ def partition_runs(base_path: Path) -> Tuple[List[ApiRun], List[ApiRun], int]:
             unsynced_runs_ids.append(run_id)
     synced_runs = [run for run in map(get_run, synced_runs_ids)]
     unsynced_runs = [run for run in map(get_run, unsynced_runs_ids)]
-    not_found = len([exp for exp in synced_runs + unsynced_runs if not exp or exp.trashed])
+    not_found = len(
+        [exp for exp in synced_runs + unsynced_runs if not exp or exp.trashed]
+    )
     synced_runs = [exp for exp in synced_runs if exp and not exp.trashed]
     unsynced_runs = [exp for exp in unsynced_runs if exp and not exp.trashed]
 
     return synced_runs, unsynced_runs, not_found
 
 
-offline_run_explainer = '''
+offline_run_explainer = """
 Runs which execute offline are not created on the server and they are not assigned to projects;
 instead, they are identified by UUIDs like the ones above.
 When synchronizing offline runs, please specify the workspace and project using the "--project"
 flag. Alternatively, you can set the environment variable
 {} to the target workspace/project. See the examples below.
-'''.format(PROJECT_ENV_NAME)
+""".format(
+    PROJECT_ENV_NAME
+)
 
 
-def list_runs(base_path: Path, synced_runs: Sequence[ApiRun],
-              unsynced_runs: Sequence[ApiRun], offline_runs_ids: Sequence[str]) \
-        -> None:
+def list_runs(
+    base_path: Path,
+    synced_runs: Sequence[ApiRun],
+    unsynced_runs: Sequence[ApiRun],
+    offline_runs_ids: Sequence[str],
+) -> None:
     if not synced_runs and not unsynced_runs and not offline_runs_ids:
-        click.echo('There are no Neptune runs in {}'.format(base_path))
+        click.echo("There are no Neptune runs in {}".format(base_path))
         sys.exit(1)
 
     if unsynced_runs:
-        click.echo('Unsynchronized runs:')
+        click.echo("Unsynchronized runs:")
         for run in unsynced_runs:
-            click.echo('- {}'.format(get_qualified_name(run)))
+            click.echo("- {}".format(get_qualified_name(run)))
 
     if synced_runs:
-        click.echo('Synchronized runs:')
+        click.echo("Synchronized runs:")
         for run in synced_runs:
-            click.echo('- {}'.format(get_qualified_name(run)))
+            click.echo("- {}".format(get_qualified_name(run)))
 
     if offline_runs_ids:
-        click.echo('Unsynchronized offline runs:')
+        click.echo("Unsynchronized offline runs:")
         for run_id in offline_runs_ids:
-            click.echo('- {}{}'.format(OFFLINE_NAME_PREFIX, run_id))
+            click.echo("- {}{}".format(OFFLINE_NAME_PREFIX, run_id))
         click.echo()
         click.echo(textwrap.fill(offline_run_explainer, width=90))
 
     if not unsynced_runs:
         click.echo()
-        click.echo('There are no unsynchronized runs in {}'.format(base_path))
+        click.echo("There are no unsynchronized runs in {}".format(base_path))
 
     if not synced_runs:
         click.echo()
-        click.echo('There are no synchronized runs in {}'.format(base_path))
+        click.echo("There are no synchronized runs in {}".format(base_path))
 
     click.echo()
-    click.echo('Please run with the `neptune sync --help` to see example commands.')
+    click.echo("Please run with the `neptune sync --help` to see example commands.")
 
 
 def synchronization_status(base_path: Path) -> None:
     synced_runs, unsynced_runs, not_found = partition_runs(base_path)
     if not_found > 0:
         click.echo(
-            "WARNING: {} runs was skipped because they are in trash or do not exist anymore.".format(not_found),
-            sys.stderr)
+            "WARNING: {} runs was skipped because they are in trash or do not exist anymore.".format(
+                not_found
+            ),
+            sys.stderr,
+        )
     offline_runs_ids = get_offline_runs_ids(base_path)
     list_runs(base_path, synced_runs, unsynced_runs, offline_runs_ids)
 
@@ -206,14 +233,16 @@ def synchronization_status(base_path: Path) -> None:
 
 def sync_run(run_path: Path, qualified_run_name: str) -> None:
     run_id = run_path.name
-    click.echo('Synchronising {}'.format(qualified_run_name))
+    click.echo("Synchronising {}".format(qualified_run_name))
     for execution_path in run_path.iterdir():
         sync_execution(execution_path, run_id)
-    click.echo('Synchronization of run {} completed.'.format(qualified_run_name))
+    click.echo("Synchronization of run {} completed.".format(qualified_run_name))
 
 
 def sync_execution(execution_path: Path, run_id: str) -> None:
-    disk_queue = DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock())
+    disk_queue = DiskQueue(
+        execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock()
+    )
     while True:
         batch, version = disk_queue.get_batch(1000)
         if not batch:
@@ -227,10 +256,12 @@ def sync_execution(execution_path: Path, run_id: str) -> None:
             except NeptuneConnectionLostException as ex:
                 if time.monotonic() - start_time > retries_timeout:
                     raise ex
-                click.echo("Experiencing connection interruptions. "
-                           "Will try to reestablish communication with Neptune. "
-                           f"Internal exception was: {ex.cause.__class__.__name__}",
-                           sys.stderr)
+                click.echo(
+                    "Experiencing connection interruptions. "
+                    "Will try to reestablish communication with Neptune. "
+                    f"Internal exception was: {ex.cause.__class__.__name__}",
+                    sys.stderr,
+                )
 
         disk_queue.ack(version)
 
@@ -244,7 +275,9 @@ def sync_all_registered_runs(base_path: Path) -> None:
                 sync_run(run_path, get_qualified_name(run))
 
 
-def sync_selected_registered_runs(base_path: Path, qualified_runs_names: Sequence[str]) -> None:
+def sync_selected_registered_runs(
+    base_path: Path, qualified_runs_names: Sequence[str]
+) -> None:
     for name in qualified_runs_names:
         run = get_run(name)
         if run:
@@ -252,47 +285,65 @@ def sync_selected_registered_runs(base_path: Path, qualified_runs_names: Sequenc
             if run_path.exists():
                 sync_run(run_path, name)
             else:
-                click.echo("Warning: Run '{}' does not exist in location {}".format(name, base_path),
-                           file=sys.stderr)
+                click.echo(
+                    "Warning: Run '{}' does not exist in location {}".format(
+                        name, base_path
+                    ),
+                    file=sys.stderr,
+                )
 
 
 def register_offline_run(project: Project) -> Optional[ApiRun]:
     try:
         return backend.create_run(project.id)
     except Exception as e:
-        click.echo('Exception occurred while trying to create a run '
-                   'on the Neptune server. Please try again later',
-                   file=sys.stderr)
+        click.echo(
+            "Exception occurred while trying to create a run "
+            "on the Neptune server. Please try again later",
+            file=sys.stderr,
+        )
         logging.exception(e)
         return None
 
 
 def move_offline_run(base_path: Path, offline_id: str, server_id: str) -> None:
     (base_path / ASYNC_DIRECTORY / server_id).mkdir(parents=True)
-    (base_path / OFFLINE_DIRECTORY / offline_id).rename(base_path / ASYNC_DIRECTORY / server_id / "exec-0-offline")
+    (base_path / OFFLINE_DIRECTORY / offline_id).rename(
+        base_path / ASYNC_DIRECTORY / server_id / "exec-0-offline"
+    )
 
 
-def register_offline_runs(base_path: Path, project: Project,
-                          offline_runs_ids: Iterable[str]) -> List[ApiRun]:
+def register_offline_runs(
+    base_path: Path, project: Project, offline_runs_ids: Iterable[str]
+) -> List[ApiRun]:
     result = []
     for run_id in offline_runs_ids:
         if (base_path / OFFLINE_DIRECTORY / run_id).is_dir():
             run = register_offline_run(project)
             if run:
                 move_offline_run(base_path, offline_id=run_id, server_id=run.id)
-                click.echo('Offline run {} registered as {}'
-                           .format(run_id, get_qualified_name(run)))
+                click.echo(
+                    "Offline run {} registered as {}".format(
+                        run_id, get_qualified_name(run)
+                    )
+                )
                 result.append(run)
         else:
-            click.echo('Offline run with UUID {} not found on disk.'.format(run_id), err=True)
+            click.echo(
+                "Offline run with UUID {} not found on disk.".format(run_id), err=True
+            )
     return result
 
 
 def is_offline_run_name(name: str) -> bool:
-    return name.startswith(OFFLINE_NAME_PREFIX) and is_valid_uuid(name[len(OFFLINE_NAME_PREFIX):])
+    return name.startswith(OFFLINE_NAME_PREFIX) and is_valid_uuid(
+        name[len(OFFLINE_NAME_PREFIX) :]
+    )
 
 
-def sync_offline_runs(base_path: Path, project_name: Optional[str], offline_run_ids: Sequence[str]):
+def sync_offline_runs(
+    base_path: Path, project_name: Optional[str], offline_run_ids: Sequence[str]
+):
     if offline_run_ids:
         project = get_project(project_name)
         if not project:
@@ -302,13 +353,17 @@ def sync_offline_runs(base_path: Path, project_name: Optional[str], offline_run_
         sync_selected_registered_runs(base_path, offline_runs_names)
 
 
-def sync_selected_runs(base_path: Path, project_name: Optional[str],
-                       runs_names: Sequence[str]) -> None:
+def sync_selected_runs(
+    base_path: Path, project_name: Optional[str], runs_names: Sequence[str]
+) -> None:
     other_runs_names = [name for name in runs_names if not is_offline_run_name(name)]
     sync_selected_registered_runs(base_path, other_runs_names)
 
-    offline_runs_ids = [name[len(OFFLINE_NAME_PREFIX):] for name in runs_names
-                        if is_offline_run_name(name)]
+    offline_runs_ids = [
+        name[len(OFFLINE_NAME_PREFIX) :]
+        for name in runs_names
+        if is_offline_run_name(name)
+    ]
     sync_offline_runs(base_path, project_name, offline_runs_ids)
 
 
@@ -333,12 +388,21 @@ def get_neptune_path(ctx, param, path: str) -> Path:
     elif path.name == NEPTUNE_DATA_DIRECTORY and path.is_dir():
         return path
     else:
-        raise click.BadParameter("Path {} does not contain a '{}' folder.".format(path, NEPTUNE_DATA_DIRECTORY))
+        raise click.BadParameter(
+            "Path {} does not contain a '{}' folder.".format(
+                path, NEPTUNE_DATA_DIRECTORY
+            )
+        )
 
 
-path_option = click.option('--path', type=click.Path(exists=True, file_okay=False, resolve_path=True),
-                           default=Path.cwd(), callback=get_neptune_path, metavar='<location>',
-                           help="path to a directory containing a '.neptune' folder with stored runs")
+path_option = click.option(
+    "--path",
+    type=click.Path(exists=True, file_okay=False, resolve_path=True),
+    default=Path.cwd(),
+    callback=get_neptune_path,
+    metavar="<location>",
+    help="path to a directory containing a '.neptune' folder with stored runs",
+)
 
 
 @click.command()
@@ -370,10 +434,21 @@ def status(path: Path) -> None:
 
 @click.command()
 @path_option
-@click.option('--run', 'runs_names', multiple=True, metavar='<run-name>',
-              help="run name (workspace/project/short-id or UUID for offline runs) to synchronize.")
-@click.option('-p', '--project', 'project_name', multiple=False, metavar='project-name',
-              help="project name (workspace/project) where offline runs will be sent")
+@click.option(
+    "--run",
+    "runs_names",
+    multiple=True,
+    metavar="<run-name>",
+    help="run name (workspace/project/short-id or UUID for offline runs) to synchronize.",
+)
+@click.option(
+    "-p",
+    "--project",
+    "project_name",
+    multiple=False,
+    metavar="project-name",
+    help="project name (workspace/project) where offline runs will be sent",
+)
 def sync(path: Path, runs_names: List[str], project_name: Optional[str]):
     """Synchronizes runs with unsent data with the server.
 

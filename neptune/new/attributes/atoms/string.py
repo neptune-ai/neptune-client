@@ -22,7 +22,6 @@ from neptune.new.attributes.atoms.atom import Atom
 
 
 class String(Atom):
-
     def assign(self, value: Union[StringVal, str], wait: bool = False):
         if not isinstance(value, StringVal):
             value = StringVal(value)

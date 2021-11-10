@@ -22,7 +22,7 @@ from neptune.new.types.atoms.atom import Atom
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 @dataclass
@@ -32,10 +32,11 @@ class Artifact(Atom):
 
     def __init__(self, value: Optional[str] = None):
         self.hash = str(value)
-        assert len(self.hash) == FileHasher.HASH_LENGTH or value is None, \
-            "Expected sha-256 string. E.g. 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'"
+        assert (
+            len(self.hash) == FileHasher.HASH_LENGTH or value is None
+        ), "Expected sha-256 string. E.g. 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'"
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_artifact(self)
 
     def __str__(self):

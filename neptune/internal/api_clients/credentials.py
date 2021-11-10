@@ -74,8 +74,8 @@ class Credentials(object):
             raise NeptuneMissingApiTokenException()
 
         token_dict = self._api_token_to_dict(self.api_token)
-        self._token_origin_address = token_dict['api_address']
-        self._api_url = token_dict['api_url'] if 'api_url' in token_dict else None
+        self._token_origin_address = token_dict["api_address"]
+        self._api_url = token_dict["api_url"] if "api_url" in token_dict else None
 
     @property
     def api_token(self):

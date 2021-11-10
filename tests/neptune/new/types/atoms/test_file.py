@@ -28,7 +28,6 @@ from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFile(TestAttributeBase):
-
     def test_create_from_path(self):
         file = File("some/path.ext")
         self.assertEqual("some/path.ext", file.path)
@@ -133,6 +132,7 @@ class TestFile(TestAttributeBase):
     def test_as_html(self):
         # given
         from bokeh.plotting import figure
+
         # given
         p = figure(plot_width=400, plot_height=400)
         p.circle(size=20, color="navy", alpha=0.5)
@@ -142,7 +142,11 @@ class TestFile(TestAttributeBase):
 
         # then
         self.assertEqual(file.extension, "html")
-        self.assertTrue(file.content.startswith('\n\n\n\n<!DOCTYPE html>\n<html lang="en">'.encode("utf-8")))
+        self.assertTrue(
+            file.content.startswith(
+                '\n\n\n\n<!DOCTYPE html>\n<html lang="en">'.encode("utf-8")
+            )
+        )
 
     def test_as_pickle(self):
         # given

@@ -41,7 +41,9 @@ from neptune.new.sync import (
 
 
 def a_run():
-    return ApiRun(str(uuid.uuid4()), 'EXP-{}'.format(randint(42, 12342)), 'org', 'proj', False)
+    return ApiRun(
+        str(uuid.uuid4()), "EXP-{}".format(randint(42, 12342)), "org", "proj", False
+    )
 
 
 def prepare_runs(path):
@@ -55,14 +57,22 @@ def prepare_runs(path):
         exp_path = path / "async" / str(exp.id) / execution_id
         exp_path.mkdir(parents=True)
         queue = DiskQueue(exp_path, lambda x: x, lambda x: x, threading.RLock())
-        queue.put('op-0')
-        queue.put('op-1')
+        queue.put("op-0")
+        queue.put("op-1")
 
-    SyncOffsetFile(path / "async" / str(unsync_exp.id) / execution_id / "last_ack_version").write(1)
-    SyncOffsetFile(path / "async" / str(unsync_exp.id) / execution_id / "last_put_version").write(2)
+    SyncOffsetFile(
+        path / "async" / str(unsync_exp.id) / execution_id / "last_ack_version"
+    ).write(1)
+    SyncOffsetFile(
+        path / "async" / str(unsync_exp.id) / execution_id / "last_put_version"
+    ).write(2)
 
-    SyncOffsetFile(path / "async" / str(sync_exp.id) / execution_id / "last_ack_version").write(2)
-    SyncOffsetFile(path / "async" / str(sync_exp.id) / execution_id / "last_put_version").write(2)
+    SyncOffsetFile(
+        path / "async" / str(sync_exp.id) / execution_id / "last_ack_version"
+    ).write(2)
+    SyncOffsetFile(
+        path / "async" / str(sync_exp.id) / execution_id / "last_put_version"
+    ).write(2)
 
     def get_run_impl(run_id):
         for run in registered_runs:
@@ -78,9 +88,11 @@ def prepare_offline_run(path):
     offline_exp_path.mkdir(parents=True)
 
     queue = DiskQueue(offline_exp_path, lambda x: x, lambda x: x, threading.RLock())
-    queue.put('op-0')
-    queue.put('op-1')
-    SyncOffsetFile(path / OFFLINE_DIRECTORY / offline_exp_uuid / "last_put_version").write(2)
+    queue.put("op-0")
+    queue.put("op-1")
+    SyncOffsetFile(
+        path / OFFLINE_DIRECTORY / offline_exp_uuid / "last_put_version"
+    ).write(2)
 
     return offline_exp_uuid
 
@@ -91,18 +103,26 @@ def test_list_runs(tmp_path, mocker, capsys):
     offline_exp_uuid = prepare_offline_run(tmp_path)
 
     # and
-    mocker.patch.object(neptune.new.sync, 'get_run', get_run_impl)
-    mocker.patch.object(Operation, 'from_dict')
+    mocker.patch.object(neptune.new.sync, "get_run", get_run_impl)
+    mocker.patch.object(Operation, "from_dict")
 
     # when
     synchronization_status(tmp_path)
 
     # then
     captured = capsys.readouterr()
-    assert captured.err == ''
-    assert 'Synchronized runs:\n- {}'.format(get_qualified_name(sync_exp)) in captured.out
-    assert 'Unsynchronized runs:\n- {}'.format(get_qualified_name(unsync_exp)) in captured.out
-    assert 'Unsynchronized offline runs:\n- offline/{}'.format(offline_exp_uuid) in captured.out
+    assert captured.err == ""
+    assert (
+        "Synchronized runs:\n- {}".format(get_qualified_name(sync_exp)) in captured.out
+    )
+    assert (
+        "Unsynchronized runs:\n- {}".format(get_qualified_name(unsync_exp))
+        in captured.out
+    )
+    assert (
+        "Unsynchronized offline runs:\n- offline/{}".format(offline_exp_uuid)
+        in captured.out
+    )
 
 
 def test_list_runs_when_no_run(tmp_path, capsys):
@@ -113,8 +133,8 @@ def test_list_runs_when_no_run(tmp_path, capsys):
 
     # then
     captured = capsys.readouterr()
-    assert captured.err == ''
-    assert 'There are no Neptune runs' in captured.out
+    assert captured.err == ""
+    assert "There are no Neptune runs" in captured.out
 
 
 def test_sync_all_runs(tmp_path, mocker, capsys):
@@ -124,32 +144,46 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
     registered_offline_run = a_run()
 
     # and
-    mocker.patch.object(neptune.new.sync, 'get_run', get_run_impl)
-    mocker.patch.object(neptune.new.sync, 'backend')
-    mocker.patch.object(neptune.new.sync.backend, 'execute_operations')
-    mocker.patch.object(neptune.new.sync.backend, 'get_project',
-                        lambda _: Project(str(uuid.uuid4()), 'project', 'workspace'))
-    mocker.patch.object(neptune.new.sync, 'register_offline_run', lambda _: registered_offline_run)
-    mocker.patch.object(Operation, 'from_dict', lambda x: x)
+    mocker.patch.object(neptune.new.sync, "get_run", get_run_impl)
+    mocker.patch.object(neptune.new.sync, "backend")
+    mocker.patch.object(neptune.new.sync.backend, "execute_operations")
+    mocker.patch.object(
+        neptune.new.sync.backend,
+        "get_project",
+        lambda _: Project(str(uuid.uuid4()), "project", "workspace"),
+    )
+    mocker.patch.object(
+        neptune.new.sync, "register_offline_run", lambda _: registered_offline_run
+    )
+    mocker.patch.object(Operation, "from_dict", lambda x: x)
 
     # when
-    sync_all_runs(tmp_path, 'foo')
+    sync_all_runs(tmp_path, "foo")
 
     # then
     captured = capsys.readouterr()
-    assert captured.err == ''
-    assert ('Offline run {} registered as {}'
-            .format(offline_exp_uuid, get_qualified_name(registered_offline_run))) in captured.out
-    assert 'Synchronising {}'.format(get_qualified_name(unsync_exp)) in captured.out
-    assert 'Synchronization of run {} completed.'.format(get_qualified_name(unsync_exp)) in captured.out
-    assert 'Synchronising {}'.format(get_qualified_name(sync_exp)) not in captured.out
+    assert captured.err == ""
+    assert (
+        "Offline run {} registered as {}".format(
+            offline_exp_uuid, get_qualified_name(registered_offline_run)
+        )
+    ) in captured.out
+    assert "Synchronising {}".format(get_qualified_name(unsync_exp)) in captured.out
+    assert (
+        "Synchronization of run {} completed.".format(get_qualified_name(unsync_exp))
+        in captured.out
+    )
+    assert "Synchronising {}".format(get_qualified_name(sync_exp)) not in captured.out
 
     # and
     # pylint: disable=no-member
-    neptune.new.sync.backend.execute_operations.has_calls([
-        mocker.call(unsync_exp.id, ['op-1']),
-        mocker.call(registered_offline_run.id, ['op-1'])
-    ], any_order=True)
+    neptune.new.sync.backend.execute_operations.has_calls(
+        [
+            mocker.call(unsync_exp.id, ["op-1"]),
+            mocker.call(registered_offline_run.id, ["op-1"]),
+        ],
+        any_order=True,
+    )
 
 
 def test_sync_selected_runs(tmp_path, mocker, capsys):
@@ -159,42 +193,65 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
     registered_offline_exp = a_run()
 
     def get_run_impl_(run_id: str):
-        if run_id in (str(registered_offline_exp.id), get_qualified_name(registered_offline_exp)):
+        if run_id in (
+            str(registered_offline_exp.id),
+            get_qualified_name(registered_offline_exp),
+        ):
             return registered_offline_exp
         else:
             return get_run_impl(run_id)
 
     # and
-    mocker.patch.object(neptune.new.sync, 'get_run', get_run_impl_)
-    mocker.patch.object(neptune.new.sync, 'backend')
-    mocker.patch.object(neptune.new.sync.backend, 'execute_operations')
-    mocker.patch.object(neptune.new.sync.backend, 'get_project',
-                        lambda _: Project(str(uuid.uuid4()), 'project', 'workspace'))
-    mocker.patch.object(neptune.new.sync, 'register_offline_run', lambda _: registered_offline_exp)
-    mocker.patch.object(Operation, 'from_dict', lambda x: x)
+    mocker.patch.object(neptune.new.sync, "get_run", get_run_impl_)
+    mocker.patch.object(neptune.new.sync, "backend")
+    mocker.patch.object(neptune.new.sync.backend, "execute_operations")
+    mocker.patch.object(
+        neptune.new.sync.backend,
+        "get_project",
+        lambda _: Project(str(uuid.uuid4()), "project", "workspace"),
+    )
+    mocker.patch.object(
+        neptune.new.sync, "register_offline_run", lambda _: registered_offline_exp
+    )
+    mocker.patch.object(Operation, "from_dict", lambda x: x)
 
     # when
-    sync_selected_runs(tmp_path, 'some-name', [get_qualified_name(sync_exp), 'offline/' + offline_exp_uuid])
+    sync_selected_runs(
+        tmp_path,
+        "some-name",
+        [get_qualified_name(sync_exp), "offline/" + offline_exp_uuid],
+    )
 
     # then
     captured = capsys.readouterr()
-    assert captured.err == ''
-    assert 'Synchronising {}'.format(get_qualified_name(sync_exp)) in captured.out
-    assert 'Synchronization of run {} completed.'.format(get_qualified_name(sync_exp)) in captured.out
-    assert 'Synchronising {}'.format(get_qualified_name(registered_offline_exp)) in captured.out
-    assert 'Synchronization of run {} completed.'.format(get_qualified_name(registered_offline_exp)) \
-           in captured.out
-    assert 'Synchronising {}'.format(get_qualified_name(unsync_exp)) not in captured.out
+    assert captured.err == ""
+    assert "Synchronising {}".format(get_qualified_name(sync_exp)) in captured.out
+    assert (
+        "Synchronization of run {} completed.".format(get_qualified_name(sync_exp))
+        in captured.out
+    )
+    assert (
+        "Synchronising {}".format(get_qualified_name(registered_offline_exp))
+        in captured.out
+    )
+    assert (
+        "Synchronization of run {} completed.".format(
+            get_qualified_name(registered_offline_exp)
+        )
+        in captured.out
+    )
+    assert "Synchronising {}".format(get_qualified_name(unsync_exp)) not in captured.out
 
     # and
     # pylint: disable=no-member
-    neptune.new.sync.backend.execute_operations \
-        .assert_called_with(registered_offline_exp.id, ['op-0', 'op-1'])
+    neptune.new.sync.backend.execute_operations.assert_called_with(
+        registered_offline_exp.id, ["op-0", "op-1"]
+    )
 
 
 def test_get_project_no_name_set(mocker):
     # given
-    mocker.patch.object(os, 'getenv')
+    mocker.patch.object(os, "getenv")
     os.getenv.return_value = None
 
     # expect
@@ -203,22 +260,22 @@ def test_get_project_no_name_set(mocker):
 
 def test_get_project_project_not_found(mocker):
     # given
-    mocker.patch.object(neptune.new.sync, 'backend')
-    mocker.patch.object(neptune.new.sync.backend, 'get_project')
-    neptune.new.sync.backend.get_project.side_effect = ProjectNotFound('foo')
+    mocker.patch.object(neptune.new.sync, "backend")
+    mocker.patch.object(neptune.new.sync.backend, "get_project")
+    neptune.new.sync.backend.get_project.side_effect = ProjectNotFound("foo")
 
     # expect
-    assert get_project('foo') is None
+    assert get_project("foo") is None
 
 
 def test_sync_non_existent_run(tmp_path, mocker, capsys):
     # given
-    mocker.patch.object(neptune.new.sync, 'get_project')
-    mocker.patch.object(neptune.new.sync, 'get_run')
+    mocker.patch.object(neptune.new.sync, "get_project")
+    mocker.patch.object(neptune.new.sync, "get_run")
     neptune.new.sync.get_run.return_value = a_run()
 
     # when
-    sync_selected_runs(tmp_path, 'foo', ['bar'])
+    sync_selected_runs(tmp_path, "foo", ["bar"])
 
     # then
     captured = capsys.readouterr()

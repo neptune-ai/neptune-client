@@ -26,20 +26,28 @@ from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestDatetime(TestAttributeBase):
-
     def test_assign(self):
         now = datetime.now()
         value_and_expected = [
-            (now, now.replace(microsecond=1000*int(now.microsecond/1000))),
-            (DatetimeVal(now), now.replace(microsecond=1000*int(now.microsecond/1000)))
+            (now, now.replace(microsecond=1000 * int(now.microsecond / 1000))),
+            (
+                DatetimeVal(now),
+                now.replace(microsecond=1000 * int(now.microsecond / 1000)),
+            ),
         ]
 
         for value, expected in value_and_expected:
             processor = MagicMock()
-            exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
+            exp, path, wait = (
+                self._create_run(processor),
+                self._random_path(),
+                self._random_wait(),
+            )
             var = Datetime(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignDatetime(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(
+                AssignDatetime(path, expected), wait
+            )
 
     def test_assign_type_error(self):
         values = [55, None]
@@ -51,6 +59,6 @@ class TestDatetime(TestAttributeBase):
         exp, path = self._create_run(), self._random_path()
         var = Datetime(exp, path)
         now = datetime.now()
-        now = now.replace(microsecond=int(now.microsecond/1000)*1000)
+        now = now.replace(microsecond=int(now.microsecond / 1000) * 1000)
         var.assign(now)
         self.assertEqual(now, var.fetch())

@@ -23,15 +23,24 @@ from typing import List, Optional, Union
 import click
 
 from neptune.new.attributes import constants as attr_consts
-from neptune.new.envs import (CUSTOM_RUN_ID_ENV_NAME, NEPTUNE_NOTEBOOK_ID, NEPTUNE_NOTEBOOK_PATH,
-                              MONITORING_NAMESPACE)
-from neptune.new.exceptions import (NeedExistingRunForReadOnlyMode, NeptuneRunResumeAndCustomIdCollision,
-                                    NeptunePossibleLegacyUsageException)
+from neptune.new.envs import (
+    CUSTOM_RUN_ID_ENV_NAME,
+    NEPTUNE_NOTEBOOK_ID,
+    NEPTUNE_NOTEBOOK_PATH,
+    MONITORING_NAMESPACE,
+)
+from neptune.new.exceptions import (
+    NeedExistingRunForReadOnlyMode,
+    NeptuneRunResumeAndCustomIdCollision,
+    NeptunePossibleLegacyUsageException,
+)
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
-from neptune.new.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
+from neptune.new.internal.hardware.hardware_metric_reporting_job import (
+    HardwareMetricReportingJob,
+)
 from neptune.new.internal.notebooks.notebooks import create_checkpoint
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.streams.std_capture_background_job import (
@@ -44,8 +53,12 @@ from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
 from neptune.new.internal.utils.source_code import upload_source_code
 from neptune.new.internal.utils.traceback_job import TracebackJob
-from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
-from neptune.new.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
+from neptune.new.internal.utils.uncaught_exception_handler import (
+    instance as uncaught_exception_handler,
+)
+from neptune.new.internal.websockets.websocket_signals_background_job import (
+    WebsocketSignalsBackgroundJob,
+)
 from neptune.new.run import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
@@ -56,7 +69,7 @@ __version__ = str(parsed_version)
 _logger = logging.getLogger(__name__)
 
 
-LEGACY_KWARGS = ('project_qualified_name', 'backend')
+LEGACY_KWARGS = ("project_qualified_name", "backend")
 
 
 def _check_for_extra_kwargs(caller_name, kwargs: dict):
@@ -65,27 +78,31 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
             raise NeptunePossibleLegacyUsageException()
     if kwargs:
         first_key = next(iter(kwargs.keys()))
-        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
+        raise TypeError(
+            f"{caller_name}() got an unexpected keyword argument '{first_key}'"
+        )
 
 
-def init(project: Optional[str] = None,
-         api_token: Optional[str] = None,
-         run: Optional[str] = None,
-         custom_run_id: Optional[str] = None,
-         mode: str = Mode.ASYNC.value,
-         name: Optional[str] = None,
-         description: Optional[str] = None,
-         tags: Optional[Union[List[str], str]] = None,
-         source_files: Optional[Union[List[str], str]] = None,
-         capture_stdout: bool = True,
-         capture_stderr: bool = True,
-         capture_hardware_metrics: bool = True,
-         fail_on_exception: bool = True,
-         monitoring_namespace: Optional[str] = None,
-         flush_period: float = 5,
-         proxies: Optional[dict] = None,
-         capture_traceback: bool = True,
-         **kwargs) -> Run:
+def init(
+    project: Optional[str] = None,
+    api_token: Optional[str] = None,
+    run: Optional[str] = None,
+    custom_run_id: Optional[str] = None,
+    mode: str = Mode.ASYNC.value,
+    name: Optional[str] = None,
+    description: Optional[str] = None,
+    tags: Optional[Union[List[str], str]] = None,
+    source_files: Optional[Union[List[str], str]] = None,
+    capture_stdout: bool = True,
+    capture_stderr: bool = True,
+    capture_hardware_metrics: bool = True,
+    fail_on_exception: bool = True,
+    monitoring_namespace: Optional[str] = None,
+    flush_period: float = 5,
+    proxies: Optional[dict] = None,
+    capture_traceback: bool = True,
+    **kwargs,
+) -> Run:
     """Starts a new tracked run, and append it to the top of the Runs table view.
 
     Args:
@@ -211,7 +228,9 @@ def init(project: Optional[str] = None,
     description = "" if run is None and description is None else description
     hostname = get_hostname() if run is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
-    monitoring_namespace = monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or 'monitoring'
+    monitoring_namespace = (
+        monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or "monitoring"
+    )
 
     if run and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
@@ -219,29 +238,37 @@ def init(project: Optional[str] = None,
     backend = get_backend(mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
-        project = 'offline/project-placeholder'
+        project = "offline/project-placeholder"
 
     project_obj = project_name_lookup(backend, project)
-    project = f'{project_obj.workspace}/{project_obj.name}'
+    project = f"{project_obj.workspace}/{project_obj.name}"
 
     if run:
-        api_run = backend.get_run(project + '/' + run)
+        api_run = backend.get_run(project + "/" + run)
     else:
         if mode == Mode.READ_ONLY:
             raise NeedExistingRunForReadOnlyMode()
         git_ref = get_git_info(discover_git_repo_location())
         if custom_run_id and len(custom_run_id) > 32:
-            _logger.warning('Given custom_run_id exceeds 32 characters and it will be ignored.')
+            _logger.warning(
+                "Given custom_run_id exceeds 32 characters and it will be ignored."
+            )
             custom_run_id = None
 
         notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
 
-        api_run = backend.create_run(project_obj.id, git_ref, custom_run_id, notebook_id, checkpoint_id)
+        api_run = backend.create_run(
+            project_obj.id, git_ref, custom_run_id, notebook_id, checkpoint_id
+        )
 
     run_lock = threading.RLock()
 
     operation_processor = get_operation_processor(
-        mode, parent_id=api_run.id, backend=backend, lock=run_lock, flush_period=flush_period
+        mode,
+        parent_id=api_run.id,
+        backend=backend,
+        lock=run_lock,
+        flush_period=flush_period,
     )
 
     stdout_path = "{}/stdout".format(monitoring_namespace)
@@ -251,11 +278,17 @@ def init(project: Optional[str] = None,
     background_jobs = []
     if mode != Mode.READ_ONLY:
         if capture_stdout:
-            background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
+            background_jobs.append(
+                StdoutCaptureBackgroundJob(attribute_name=stdout_path)
+            )
         if capture_stderr:
-            background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
+            background_jobs.append(
+                StderrCaptureBackgroundJob(attribute_name=stderr_path)
+            )
         if capture_hardware_metrics:
-            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=monitoring_namespace))
+            background_jobs.append(
+                HardwareMetricReportingJob(attribute_namespace=monitoring_namespace)
+            )
         websockets_factory = backend.websockets_factory(project_obj.id, api_run.id)
         if websockets_factory:
             background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
@@ -263,8 +296,18 @@ def init(project: Optional[str] = None,
             background_jobs.append(TracebackJob(traceback_path, fail_on_exception))
         background_jobs.append(PingBackgroundJob())
 
-    _run = Run(api_run.id, backend, operation_processor, BackgroundJobList(background_jobs), run_lock,
-               api_run.workspace, api_run.project_name, api_run.short_id, project_obj.id, monitoring_namespace)
+    _run = Run(
+        api_run.id,
+        backend,
+        operation_processor,
+        BackgroundJobList(background_jobs),
+        run_lock,
+        api_run.workspace,
+        api_run.project_name,
+        api_run.short_id,
+        project_obj.id,
+        monitoring_namespace,
+    )
     if mode != Mode.OFFLINE:
         _run.sync(wait=False)
 
@@ -299,7 +342,8 @@ def init(project: Optional[str] = None,
                 "Remember to stop your run once you’ve finished logging your metadata"
                 " (https://docs.neptune.ai/api-reference/run#stop)."
                 " It will be stopped automatically only when the notebook"
-                " kernel/interactive console is terminated.")
+                " kernel/interactive console is terminated."
+            )
 
     uncaught_exception_handler.activate()
 
@@ -317,7 +361,7 @@ def _create_notebook_checkpoint(backend: NeptuneBackend) -> (str, str):
 
     checkpoint_id = None
     if notebook_id is not None and notebook_path is not None:
-        checkpoint_id = create_checkpoint(backend=backend,
-                                          notebook_id=notebook_id,
-                                          notebook_path=notebook_path)
+        checkpoint_id = create_checkpoint(
+            backend=backend, notebook_id=notebook_id, notebook_path=notebook_path
+        )
     return notebook_id, checkpoint_id

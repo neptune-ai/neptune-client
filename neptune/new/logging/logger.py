@@ -18,7 +18,6 @@ from neptune.new.run import Run
 
 
 class Logger(object):
-
     def __init__(self, run: Run, attribute_name: str):
         self._run = run
         self._attribute_name = attribute_name

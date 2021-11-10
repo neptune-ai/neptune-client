@@ -36,8 +36,13 @@ from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
 
-uuid_format = SwaggerFormat(format='uuid', to_python=lambda x: x,
-                            to_wire=lambda x: x, validate=lambda x: None, description='')
+uuid_format = SwaggerFormat(
+    format="uuid",
+    to_python=lambda x: x,
+    to_wire=lambda x: x,
+    validate=lambda x: None,
+    description="",
+)
 
 
 class HostedNeptuneMixin:
@@ -51,9 +56,10 @@ class HostedNeptuneMixin:
                 validate_swagger_spec=False,
                 validate_requests=False,
                 validate_responses=False,
-                formats=[uuid_format]
+                formats=[uuid_format],
             ),
-            http_client=http_client)
+            http_client=http_client,
+        )
 
     @staticmethod
     def _get_client_config_args(api_token):
@@ -62,28 +68,39 @@ class HostedNeptuneMixin:
     @with_api_exceptions_handler
     def _create_client_config(self, api_token, backend_client):
         client_config_args = self._get_client_config_args(api_token)
-        config = backend_client.api.getClientConfig(**client_config_args).response().result
+        config = (
+            backend_client.api.getClientConfig(**client_config_args).response().result
+        )
 
         if hasattr(config, "pyLibVersions"):
-            min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
+            min_recommended = getattr(
+                config.pyLibVersions, "minRecommendedVersion", None
+            )
             min_compatible = getattr(config.pyLibVersions, "minCompatibleVersion", None)
             max_compatible = getattr(config.pyLibVersions, "maxCompatibleVersion", None)
         else:
             click.echo(
                 "ERROR: This client version is not supported by your Neptune instance. Please contant Neptune support.",
-                sys.stderr)
+                sys.stderr,
+            )
             raise UnsupportedClientVersion(self.client_lib_version, None, "0.4.111")
 
         return ClientConfig(
             api_url=config.apiUrl,
             display_url=config.applicationUrl,
-            min_recommended_version=version.parse(min_recommended) if min_recommended else None,
-            min_compatible_version=version.parse(min_compatible) if min_compatible else None,
-            max_compatible_version=version.parse(max_compatible) if max_compatible else None
+            min_recommended_version=version.parse(min_recommended)
+            if min_recommended
+            else None,
+            min_compatible_version=version.parse(min_compatible)
+            if min_compatible
+            else None,
+            max_compatible_version=version.parse(max_compatible)
+            if max_compatible
+            else None,
         )
 
     def _verify_host_resolution(self, api_url, app_url):
-        host = urllib.parse.urlparse(api_url).netloc.split(':')[0]
+        host = urllib.parse.urlparse(api_url).netloc.split(":")[0]
         try:
             socket.gethostbyname(host)
         except socket.gaierror:

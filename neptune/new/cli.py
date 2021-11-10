@@ -30,5 +30,5 @@ main.add_command(status)
 
 
 # TODO once the new client is released, this file should be registered as a command line entry point
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

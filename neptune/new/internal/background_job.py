@@ -23,9 +23,8 @@ if TYPE_CHECKING:
 
 
 class BackgroundJob:
-
     @abc.abstractmethod
-    def start(self, run: 'Run'):
+    def start(self, run: "Run"):
         pass
 
     @abc.abstractmethod

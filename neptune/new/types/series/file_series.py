@@ -27,11 +27,10 @@ from neptune.new.types.series.series import Series
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class FileSeries(Series):
-
     def __init__(self, values, **kwargs):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
@@ -40,9 +39,14 @@ class FileSeries(Series):
         self.name = kwargs.pop("name", None)
         self.description = kwargs.pop("description", None)
         if kwargs:
-            click.echo("Warning: unexpected arguments ({kwargs}) in FileSeries".format(kwargs=kwargs), err=True)
+            click.echo(
+                "Warning: unexpected arguments ({kwargs}) in FileSeries".format(
+                    kwargs=kwargs
+                ),
+                err=True,
+            )
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_image_series(self)
 
     @property

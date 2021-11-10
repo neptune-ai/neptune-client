@@ -35,14 +35,20 @@ def send_checkpoint_created(notebook_id, notebook_path, checkpoint_id) -> None:
         `ImportError`: If ipykernel is not available.
     """
     neptune_comm = _get_comm()
-    neptune_comm.send(data=dict(
-        message_type=MessageType.CHECKPOINT_CREATED,
-        data=dict(checkpoint_id=str(checkpoint_id),
-                  notebook_id=str(notebook_id),
-                  notebook_path=str(notebook_path))))
+    neptune_comm.send(
+        data=dict(
+            message_type=MessageType.CHECKPOINT_CREATED,
+            data=dict(
+                checkpoint_id=str(checkpoint_id),
+                notebook_id=str(notebook_id),
+                notebook_path=str(notebook_path),
+            ),
+        )
+    )
 
 
 def _get_comm():
     # pylint: disable=import-error
     from ipykernel.comm import Comm
-    return Comm(target_name='neptune_comm')
+
+    return Comm(target_name="neptune_comm")

@@ -20,7 +20,10 @@ import typing
 import pathlib
 from dataclasses import dataclass
 
-from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
+from neptune.new.exceptions import (
+    NeptuneUnhandledArtifactSchemeException,
+    NeptuneUnhandledArtifactTypeException,
+)
 
 
 class ArtifactFileType(enum.Enum):
@@ -30,11 +33,15 @@ class ArtifactFileType(enum.Enum):
 
 class ArtifactMetadataSerializer:
     @staticmethod
-    def serialize(metadata: typing.Dict[str, str]) -> typing.List[typing.Dict[str, str]]:
+    def serialize(
+        metadata: typing.Dict[str, str]
+    ) -> typing.List[typing.Dict[str, str]]:
         return [{"key": k, "value": v} for k, v in sorted(metadata.items())]
 
     @staticmethod
-    def deserialize(metadata: typing.List[typing.Dict[str, str]]) -> typing.Dict[str, str]:
+    def deserialize(
+        metadata: typing.List[typing.Dict[str, str]]
+    ) -> typing.Dict[str, str]:
         return {
             f'{key_value.get("key")}': f'{key_value.get("value")}'
             for key_value in metadata
@@ -58,27 +65,27 @@ class ArtifactFileData:
             size=artifact_file_dto.size,
             metadata=ArtifactMetadataSerializer.deserialize(
                 [
-                    {'key': str(m.key), 'value': str(m.value)}
+                    {"key": str(m.key), "value": str(m.value)}
                     for m in artifact_file_dto.metadata
                 ]
-            )
+            ),
         )
 
     def to_dto(self) -> typing.Dict:
         return {
-            'filePath': self.file_path,
-            'fileHash': self.file_hash,
-            'type': self.type,
-            'size': self.size,
-            'metadata': ArtifactMetadataSerializer.serialize(self.metadata)
+            "filePath": self.file_path,
+            "fileHash": self.file_hash,
+            "type": self.type,
+            "size": self.size,
+            "metadata": ArtifactMetadataSerializer.serialize(self.metadata),
         }
 
 
 class ArtifactDriversMap:
-    _implementations: typing.List[typing.Type['ArtifactDriver']] = []
+    _implementations: typing.List[typing.Type["ArtifactDriver"]] = []
 
     @classmethod
-    def match_path(cls, path: str) -> typing.Type['ArtifactDriver']:
+    def match_path(cls, path: str) -> typing.Type["ArtifactDriver"]:
         for artifact_driver in cls._implementations:
             if artifact_driver.matches(path):
                 return artifact_driver
@@ -86,7 +93,7 @@ class ArtifactDriversMap:
         raise NeptuneUnhandledArtifactSchemeException(path)
 
     @classmethod
-    def match_type(cls, type_str: str) -> typing.Type['ArtifactDriver']:
+    def match_type(cls, type_str: str) -> typing.Type["ArtifactDriver"]:
         for artifact_driver in cls._implementations:
             if artifact_driver.get_type() == type_str:
                 return artifact_driver
@@ -108,9 +115,13 @@ class ArtifactDriver(abc.ABC):
         raise NotImplementedError
 
     @classmethod
-    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(
+        cls, path: str, destination: str = None
+    ) -> typing.List[ArtifactFileData]:
         raise NotImplementedError
 
     @classmethod
-    def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
+    def download_file(
+        cls, destination: pathlib.Path, file_definition: ArtifactFileData
+    ):
         raise NotImplementedError

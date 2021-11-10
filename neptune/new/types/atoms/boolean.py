@@ -21,7 +21,7 @@ from neptune.new.types.atoms.atom import Atom
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 @dataclass
@@ -32,7 +32,7 @@ class Boolean(Atom):
     def __init__(self, value):
         self.value = bool(value)
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_boolean(self)
 
     def __str__(self):

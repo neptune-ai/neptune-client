@@ -21,4 +21,6 @@ class MetricReporterFactory(object):
         self.__reference_timestamp = reference_timestamp
 
     def create(self, metrics):
-        return MetricReporter(metrics=metrics, reference_timestamp=self.__reference_timestamp)
+        return MetricReporter(
+            metrics=metrics, reference_timestamp=self.__reference_timestamp
+        )

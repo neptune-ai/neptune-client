@@ -29,20 +29,34 @@ import click
 from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.namespace import NamespaceBuilder, Namespace as NamespaceAttr
+from neptune.new.attributes.namespace import (
+    NamespaceBuilder,
+    Namespace as NamespaceAttr,
+)
 from neptune.new.exceptions import (
-    MetadataInconsistency, InactiveRunException, NeptunePossibleLegacyUsageException,
+    MetadataInconsistency,
+    InactiveRunException,
+    NeptunePossibleLegacyUsageException,
 )
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.operation import DeleteAttribute
-from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.new.internal.operation_processors.operation_processor import (
+    OperationProcessor,
+)
 from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.internal.state import ContainerState
 from neptune.new.internal.utils import (
-    is_bool, is_float, is_float_like, is_int, is_string, is_string_like, verify_type, is_dict_like,
+    is_bool,
+    is_float,
+    is_float_like,
+    is_int,
+    is_string,
+    is_string_like,
+    verify_type,
+    is_dict_like,
 )
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
@@ -71,20 +85,22 @@ class AttributeContainer(AbstractContextManager):
     LEGACY_METHODS = set()
 
     def __init__(
-            self,
-            _id: str,
-            backend: NeptuneBackend,
-            op_processor: OperationProcessor,
-            background_job: BackgroundJob,
-            lock: threading.RLock,
-            project_id: str,
+        self,
+        _id: str,
+        backend: NeptuneBackend,
+        op_processor: OperationProcessor,
+        background_job: BackgroundJob,
+        lock: threading.RLock,
+        project_id: str,
     ):
         self._id = _id
         self._project_id = project_id
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
-        self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
+        self._structure: ContainerStructure[
+            Attribute, NamespaceAttr
+        ] = ContainerStructure(NamespaceBuilder(self))
         self._lock = lock
         self._state = ContainerState.CREATED
 
@@ -96,17 +112,23 @@ class AttributeContainer(AbstractContextManager):
     def __getattr__(self, item):
         if item in self.LEGACY_METHODS:
             raise NeptunePossibleLegacyUsageException()
-        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
+        raise AttributeError(
+            f"'{self.__class__.__name__}' object has no attribute '{item}'"
+        )
 
-    def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
+    def _get_subpath_suggestions(
+        self, path_prefix: str = None, limit: int = 1000
+    ) -> List[str]:
         parsed_path = parse_path(path_prefix or "")
-        return list(itertools.islice(self._structure.iterate_subpaths(parsed_path), limit))
+        return list(
+            itertools.islice(self._structure.iterate_subpaths(parsed_path), limit)
+        )
 
     def _ipython_key_completions_(self):
         return self._get_subpath_suggestions()
 
     @ensure_not_stopped
-    def __getitem__(self, path: str) -> 'Handler':
+    def __getitem__(self, path: str) -> "Handler":
         return Handler(self, path)
 
     @ensure_not_stopped
@@ -290,23 +312,28 @@ class AttributeContainer(AbstractContextManager):
         for key in sorted(struct.keys()):
             click.echo("    " * indent, nl=False)
             if isinstance(struct[key], dict):
-                click.echo("{blue}'{key}'{end}:".format(
-                    blue=UNIX_STYLES['blue'],
-                    key=key,
-                    end=UNIX_STYLES['end']))
+                click.echo(
+                    "{blue}'{key}'{end}:".format(
+                        blue=UNIX_STYLES["blue"], key=key, end=UNIX_STYLES["end"]
+                    )
+                )
                 self._print_structure_impl(struct[key], indent=indent + 1)
             else:
-                click.echo("{blue}'{key}'{end}: {type}".format(
-                    blue=UNIX_STYLES['blue'],
-                    key=key,
-                    end=UNIX_STYLES['end'],
-                    type=type(struct[key]).__name__))
+                click.echo(
+                    "{blue}'{key}'{end}: {type}".format(
+                        blue=UNIX_STYLES["blue"],
+                        key=key,
+                        end=UNIX_STYLES["end"],
+                        type=type(struct[key]).__name__,
+                    )
+                )
 
-    def define(self,
-               path: str,
-               value: Union[Value, int, float, str, datetime],
-               wait: bool = False
-               ) -> Attribute:
+    def define(
+        self,
+        path: str,
+        value: Union[Value, int, float, str, datetime],
+        wait: bool = False,
+    ) -> Attribute:
         if isinstance(value, Value):
             pass
         elif is_bool(value):
@@ -332,7 +359,9 @@ class AttributeContainer(AbstractContextManager):
         with self._lock:
             old_attr = self._structure.get(parsed_path)
             if old_attr:
-                raise MetadataInconsistency("Attribute or namespace {} is already defined".format(path))
+                raise MetadataInconsistency(
+                    "Attribute or namespace {} is already defined".format(path)
+                )
             attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
             self._structure.set(parsed_path, attr)
             attr.assign(value, wait)
@@ -394,7 +423,7 @@ class AttributeContainer(AbstractContextManager):
     def _pop_namespace(self, namespace: NamespaceAttr, wait: bool):
         children = list(namespace)
         for key in children:
-            sub_attr_path = namespace._path + [key] # pylint: disable=protected-access
+            sub_attr_path = namespace._path + [key]  # pylint: disable=protected-access
             self._pop_impl(sub_attr_path, wait)
 
     def lock(self) -> threading.RLock:

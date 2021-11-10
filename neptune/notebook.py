@@ -22,19 +22,20 @@ from neptune.utils import validate_notebook_path
 class Notebook(object):
     """It contains all the information about a Neptune Notebook
 
-        Args:
-            backend (:class:`~neptune.ApiClient`): A ApiClient object
-            project (:class:`~neptune.projects.Project`): Project object
-            _id (:obj:`str`): Notebook id
-            owner (:obj:`str`): Creator of the notebook is the Notebook owner
+    Args:
+        backend (:class:`~neptune.ApiClient`): A ApiClient object
+        project (:class:`~neptune.projects.Project`): Project object
+        _id (:obj:`str`): Notebook id
+        owner (:obj:`str`): Creator of the notebook is the Notebook owner
 
-        Examples:
-            .. code:: python3
+    Examples:
+        .. code:: python3
 
-                # Create a notebook in Neptune.
-                notebook = project.create_notebook('data_exploration.ipynb')
+            # Create a notebook in Neptune.
+            notebook = project.create_notebook('data_exploration.ipynb')
 
     """
+
     def __init__(self, backend, project, _id, owner):
         self._backend = backend
         self._project = project
@@ -70,7 +71,9 @@ class Notebook(object):
         validate_notebook_path(file_path)
 
         with open(file_path) as f:
-            return self._backend.create_checkpoint(self.id, os.path.abspath(file_path), f)
+            return self._backend.create_checkpoint(
+                self.id, os.path.abspath(file_path), f
+            )
 
     def get_path(self):
         """Returns the path used to upload the current checkpoint of this notebook

@@ -21,9 +21,13 @@ import uuid
 from typing import Optional
 
 from mock import MagicMock
-from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.new.internal.operation_processors.operation_processor import (
+    OperationProcessor,
+)
 
-from neptune.new.internal.operation_processors.sync_operation_processor import SyncOperationProcessor
+from neptune.new.internal.operation_processors.sync_operation_processor import (
+    SyncOperationProcessor,
+)
 
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
@@ -34,7 +38,6 @@ _now = time.time()
 
 
 class TestAttributeBase(unittest.TestCase):
-
     @staticmethod
     def _create_run(processor: Optional[OperationProcessor] = None):
         backend = NeptuneBackendMock()
@@ -42,8 +45,15 @@ class TestAttributeBase(unittest.TestCase):
         if processor is None:
             processor = SyncOperationProcessor(exp.id, backend)
         _run = Run(
-            exp.id, backend, processor, MagicMock(), threading.RLock(),
-            MagicMock(), MagicMock(), MagicMock(), MagicMock()
+            exp.id,
+            backend,
+            processor,
+            MagicMock(),
+            threading.RLock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
+            MagicMock(),
         )
         _run.sync()
         _run.start()

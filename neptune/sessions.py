@@ -106,9 +106,11 @@ class Session(object):
         self._backend = backend
 
         if self._backend is None:
-            _logger.warning('WARNING: Instantiating Session without specifying a backend is deprecated '
-                            'and will be removed in future versions. For current behaviour '
-                            'use `neptune.init(...)` or `Session.with_default_backend(...)')
+            _logger.warning(
+                "WARNING: Instantiating Session without specifying a backend is deprecated "
+                "and will be removed in future versions. For current behaviour "
+                "use `neptune.init(...)` or `Session.with_default_backend(...)"
+            )
 
             self._backend = HostedNeptuneBackendApiClient(api_token, proxies)
 
@@ -135,9 +137,9 @@ class Session(object):
                 session = Session.with_default_backend()
 
         """
-        return cls(backend=HostedNeptuneBackendApiClient(api_token=api_token,
-                                                         proxies=proxies)
-                   )
+        return cls(
+            backend=HostedNeptuneBackendApiClient(api_token=api_token, proxies=proxies)
+        )
 
     def get_project(self, project_qualified_name):
         """Get a project with given ``project_qualified_name``.
@@ -222,6 +224,10 @@ class Session(object):
                 #              ])
         """
 
-        projects = [Project(self._backend.create_leaderboard_backend(p), p.id, namespace, p.name)
-                    for p in self._backend.get_projects(namespace)]
+        projects = [
+            Project(
+                self._backend.create_leaderboard_backend(p), p.id, namespace, p.name
+            )
+            for p in self._backend.get_projects(namespace)
+        ]
         return OrderedDict((p.full_id, p) for p in projects)

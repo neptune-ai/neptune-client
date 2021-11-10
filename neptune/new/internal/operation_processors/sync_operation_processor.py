@@ -17,11 +17,12 @@ from typing import Optional
 
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
-from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.new.internal.operation_processors.operation_processor import (
+    OperationProcessor,
+)
 
 
 class SyncOperationProcessor(OperationProcessor):
-
     def __init__(self, run_id: str, backend: NeptuneBackend):
         self._run_id = run_id
         self._backend = backend

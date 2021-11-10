@@ -20,11 +20,14 @@ from neptune.internal.streams.channel_writer import ChannelWriter
 
 
 class StdStreamWithUpload(object):
-
     def __init__(self, experiment, channel_name, stream):
         # pylint:disable=protected-access
-        self._channel = experiment._get_channel(channel_name, 'text', ChannelNamespace.SYSTEM)
-        self._channel_writer = ChannelWriter(experiment, channel_name, ChannelNamespace.SYSTEM)
+        self._channel = experiment._get_channel(
+            channel_name, "text", ChannelNamespace.SYSTEM
+        )
+        self._channel_writer = ChannelWriter(
+            experiment, channel_name, ChannelNamespace.SYSTEM
+        )
         self._stream = stream
 
     def write(self, data):
@@ -36,7 +39,7 @@ class StdStreamWithUpload(object):
             pass
 
     def isatty(self):
-        return hasattr(self._stream, 'isatty') and self._stream.isatty()
+        return hasattr(self._stream, "isatty") and self._stream.isatty()
 
     def flush(self):
         self._stream.flush()
@@ -46,9 +49,8 @@ class StdStreamWithUpload(object):
 
 
 class StdOutWithUpload(StdStreamWithUpload):
-
     def __init__(self, experiment):
-        super(StdOutWithUpload, self).__init__(experiment, 'stdout', sys.__stdout__)
+        super(StdOutWithUpload, self).__init__(experiment, "stdout", sys.__stdout__)
         sys.stdout = self
 
     def close(self):
@@ -56,9 +58,8 @@ class StdOutWithUpload(StdStreamWithUpload):
 
 
 class StdErrWithUpload(StdStreamWithUpload):
-
     def __init__(self, experiment):
-        super(StdErrWithUpload, self).__init__(experiment, 'stderr', sys.__stderr__)
+        super(StdErrWithUpload, self).__init__(experiment, "stderr", sys.__stderr__)
         sys.stderr = self
 
     def close(self):

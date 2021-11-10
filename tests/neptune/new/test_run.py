@@ -26,7 +26,6 @@ from neptune.new.types.series import FloatSeries, StringSeries
 
 
 class TestRun(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
@@ -35,19 +34,23 @@ class TestRun(unittest.TestCase):
     def test_define(self):
         exp = init(mode="debug", flush_period=0.5)
         exp.define("some/path/value", Float(5), wait=True)
-        self.assertEqual(exp.get_structure()['some']['path']['value'].fetch(), 5)
+        self.assertEqual(exp.get_structure()["some"]["path"]["value"].fetch(), 5)
 
     def test_define_string(self):
         exp = init(mode="debug", flush_period=0.5)
         exp.define("some/path/value", String("Some string"), wait=True)
-        self.assertEqual(exp.get_structure()['some']['path']['value'].fetch(), "Some string")
+        self.assertEqual(
+            exp.get_structure()["some"]["path"]["value"].fetch(), "Some string"
+        )
 
     def test_define_few_variables(self):
         exp = init(mode="debug", flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"), wait=True)
-        self.assertEqual(exp.get_structure()['some']['path']['num'].fetch(), 3)
-        self.assertEqual(exp.get_structure()['some']['path']['text'].fetch(), "Some text")
+        self.assertEqual(exp.get_structure()["some"]["path"]["num"].fetch(), 3)
+        self.assertEqual(
+            exp.get_structure()["some"]["path"]["text"].fetch(), "Some text"
+        )
 
     def test_define_conflict(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -60,8 +63,8 @@ class TestRun(unittest.TestCase):
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"))
         exp.pop("some/path/text")
-        self.assertTrue('num' in exp.get_structure()['some']['path'])
-        self.assertTrue('text' not in exp.get_structure()['some']['path'])
+        self.assertTrue("num" in exp.get_structure()["some"]["path"])
+        self.assertTrue("text" not in exp.get_structure()["some"]["path"])
 
     def test_pop_namespace(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -69,68 +72,65 @@ class TestRun(unittest.TestCase):
         exp.define("some/path/text", String("Some text"))
         exp.define("some/otherpath", Float(4))
         exp.pop("some/path")
-        self.assertTrue('path' not in exp.get_structure()['some'])
+        self.assertTrue("path" not in exp.get_structure()["some"])
 
     def test_run_as_handler(self):
         exp = init(mode="debug", flush_period=0.5)
         exp.define("some/path/num", Float(3))
         exp.define("some/path/text", String("Some text"))
-        handler = exp['some/path']
+        handler = exp["some/path"]
         exp.wait()
-        self.assertEqual(handler['num'].fetch(), 3)
-        self.assertEqual(handler['text'].fetch(), "Some text")
+        self.assertEqual(handler["num"].fetch(), 3)
+        self.assertEqual(handler["text"].fetch(), "Some text")
 
     def test_assign_dict(self):
         exp = init(mode="debug", flush_period=0.5)
         now = datetime.now()
-        exp.assign({
-            "x": 5,
-            "metadata": {
-                "name": "Trol",
-                "age": 376
-            },
-            "toys": StringSeries(["cudgel", "hat"]),
-            "nested": {
-                "nested": {
-                    "deep_secret": FloatSeries([13, 15])
-                }
-            },
-            "simple_types": {
-                "int": 42,
-                "str": "imagine",
-                "float": 3.14,
-                "datetime": now,
-                "list": list(range(10)),
+        exp.assign(
+            {
+                "x": 5,
+                "metadata": {"name": "Trol", "age": 376},
+                "toys": StringSeries(["cudgel", "hat"]),
+                "nested": {"nested": {"deep_secret": FloatSeries([13, 15])}},
+                "simple_types": {
+                    "int": 42,
+                    "str": "imagine",
+                    "float": 3.14,
+                    "datetime": now,
+                    "list": list(range(10)),
+                },
             }
-        })
-        self.assertEqual(exp['x'].fetch(), 5)
-        self.assertEqual(exp['metadata/name'].fetch(), "Trol")
-        self.assertEqual(exp['metadata/age'].fetch(), 376)
-        self.assertEqual(exp['toys'].fetch_last(), "hat")
-        self.assertEqual(exp['nested/nested/deep_secret'].fetch_last(), 15)
-        self.assertEqual(exp['simple_types/int'].fetch(), 42)
-        self.assertEqual(exp['simple_types/str'].fetch(), 'imagine')
-        self.assertEqual(exp['simple_types/float'].fetch(), 3.14)
-        self.assertEqual(exp['simple_types/datetime'].fetch(),
-                         now.replace(microsecond=1000 * int(now.microsecond / 1000)))
-        self.assertEqual(exp['simple_types/list'].fetch(), str(list(range(10))))
+        )
+        self.assertEqual(exp["x"].fetch(), 5)
+        self.assertEqual(exp["metadata/name"].fetch(), "Trol")
+        self.assertEqual(exp["metadata/age"].fetch(), 376)
+        self.assertEqual(exp["toys"].fetch_last(), "hat")
+        self.assertEqual(exp["nested/nested/deep_secret"].fetch_last(), 15)
+        self.assertEqual(exp["simple_types/int"].fetch(), 42)
+        self.assertEqual(exp["simple_types/str"].fetch(), "imagine")
+        self.assertEqual(exp["simple_types/float"].fetch(), 3.14)
+        self.assertEqual(
+            exp["simple_types/datetime"].fetch(),
+            now.replace(microsecond=1000 * int(now.microsecond / 1000)),
+        )
+        self.assertEqual(exp["simple_types/list"].fetch(), str(list(range(10))))
 
     def test_assign_false(self):
         # https://github.com/neptune-ai/neptune-client/issues/555
         exp = init(mode="debug")
-        exp["params"] = {'predictor.cheat': False}
+        exp["params"] = {"predictor.cheat": False}
 
         self.assertFalse(exp["params/predictor.cheat"].fetch())
 
     def test_access_blocked_after_stop(self):
         exp = init(mode="debug")
-        exp['attr1'] = 1
+        exp["attr1"] = 1
 
         exp.stop()
 
         with self.assertRaises(InactiveRunException):
-            exp['attr1'].fetch()
+            exp["attr1"].fetch()
         with self.assertRaises(InactiveRunException):
-            exp['attr2'] = 2
+            exp["attr2"] = 2
         with self.assertRaises(InactiveRunException):
-            exp['series'].log(1)
+            exp["series"].log(1)

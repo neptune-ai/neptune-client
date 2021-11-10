@@ -24,8 +24,15 @@ from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
-from neptune.new.internal.utils import verify_type, is_collection, verify_collection_type, is_float, is_string, \
-    is_float_like, is_string_like
+from neptune.new.internal.utils import (
+    verify_type,
+    is_collection,
+    verify_collection_type,
+    is_float,
+    is_string,
+    is_float_like,
+    is_string_like,
+)
 from neptune.new.internal.utils.paths import join_paths, parse_path
 from neptune.new.types.atoms.file import File as FileVal
 
@@ -34,22 +41,21 @@ if TYPE_CHECKING:
 
 
 class Handler:
-
-    def __init__(self, run: 'Run', path: str):
+    def __init__(self, run: "Run", path: str):
         super().__init__()
         self._run = run
         self._path = path
 
     def __repr__(self):
         attr = self._run.get_attribute(self._path)
-        formal_type = type(attr).__name__ if attr else 'Unassigned'
+        formal_type = type(attr).__name__ if attr else "Unassigned"
         return f'<{formal_type} field at "{self._path}">'
 
     def _ipython_key_completions_(self):
         # pylint: disable=protected-access
         return self._run._get_subpath_suggestions(path_prefix=self._path)
 
-    def __getitem__(self, path: str) -> 'Handler':
+    def __getitem__(self, path: str) -> "Handler":
         return Handler(self._run, join_paths(self._path, path))
 
     def __setitem__(self, key: str, value) -> None:
@@ -63,7 +69,7 @@ class Handler:
             raise AttributeError(f"No such method '{attribute_name}'.")
 
     def __getattribute__(self, attribute_name):
-        _docstring_attrs = super().__getattribute__('DOCSTRING_ATTRIBUTES')
+        _docstring_attrs = super().__getattribute__("DOCSTRING_ATTRIBUTES")
         if attribute_name in _docstring_attrs:
             raise AttributeError(f"No such method '{attribute_name}'.")
         return super().__getattribute__(attribute_name)
@@ -156,7 +162,9 @@ class Handler:
                 self._run.set_attribute(self._path, attr)
             attr.upload(value, wait)
 
-    def upload_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def upload_files(
+        self, value: Union[str, Iterable[str]], wait: bool = False
+    ) -> None:
         if is_collection(value):
             verify_collection_type("value", value, str)
         else:
@@ -169,12 +177,14 @@ class Handler:
                 self._run.set_attribute(self._path, attr)
             attr.upload_files(value, wait)
 
-    def log(self,
-            value,
-            step: Optional[float] = None,
-            timestamp: Optional[float] = None,
-            wait: bool = False,
-            **kwargs) -> None:
+    def log(
+        self,
+        value,
+        step: Optional[float] = None,
+        timestamp: Optional[float] = None,
+        wait: bool = False,
+        **kwargs,
+    ) -> None:
         """Logs the provided value or a collection of values.
 
         Available for following field types (`Field types docs page`_):
@@ -209,7 +219,9 @@ class Handler:
                     if value:
                         first_value = next(iter(value))
                     else:
-                        raise ValueError("Cannot deduce value type: `value` cannot be empty")
+                        raise ValueError(
+                            "Cannot deduce value type: `value` cannot be empty"
+                        )
                 else:
                     first_value = value
 
@@ -224,7 +236,9 @@ class Handler:
                 elif is_string_like(first_value):
                     attr = StringSeries(self._run, parse_path(self._path))
                 else:
-                    raise TypeError("Value of unsupported type {}".format(type(first_value)))
+                    raise TypeError(
+                        "Value of unsupported type {}".format(type(first_value))
+                    )
 
                 self._run.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
@@ -262,16 +276,16 @@ class Handler:
 
     # Following attributes are implemented only for docstring hints and autocomplete
     DOCSTRING_ATTRIBUTES = [
-        'remove',
-        'clear',
-        'fetch',
-        'fetch_last',
-        'fetch_values',
-        'delete_files',
-        'download',
-        'download_last',
-        'fetch_hash',
-        'fetch_files_list'
+        "remove",
+        "clear",
+        "fetch",
+        "fetch_last",
+        "fetch_values",
+        "delete_files",
+        "download",
+        "download_last",
+        "fetch_hash",
+        "fetch_files_list",
     ]
 
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
@@ -288,7 +302,7 @@ class Handler:
         .. _remove docs page:
            https://docs.neptune.ai/api-reference/field-types#remove
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
     def clear(self, wait: bool = False):
         """Removes all tags from the `StringSet`.
@@ -303,7 +317,7 @@ class Handler:
         .. _clear docs page:
            https://docs.neptune.ai/api-reference/field-types#clear
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
     def fetch(self):
         """Fetches fields value or in case of a namespace fetches values of all non-File Atom fields as a dictionary.
@@ -323,7 +337,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
     def fetch_last(self):
         """Fetches last value stored in the series from Neptune servers.
@@ -338,7 +352,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
     def fetch_values(self, include_timestamp: Optional[bool] = True):
         """Fetches all values stored in the series from Neptune servers.
@@ -357,9 +371,11 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
-    def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
+    def delete_files(
+        self, paths: Union[str, Iterable[str]], wait: bool = False
+    ) -> None:
         """Delete the file or files specified by paths from the `FileSet` stored on the Neptune servers.
 
         Args:
@@ -376,7 +392,7 @@ class Handler:
         .. _delete_files docs page:
             https://docs.neptune.ai/api-reference/field-types#delete_files
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
     def download(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
@@ -398,7 +414,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
     def download_last(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
@@ -416,7 +432,7 @@ class Handler:
         .. _download_last docs page:
            https://docs.neptune.ai/api-reference/field-types#download_last
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
     def fetch_hash(self) -> str:
         """Fetches the hash of an artifact.
@@ -424,7 +440,7 @@ class Handler:
         You may also want to check `fetch_hash docs page`_.
            https://docs.neptune.ai/api-reference/field-types#fetch_hash
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
     def fetch_files_list(self) -> List[ArtifactFileData]:
         """Fetches the list of files in an artifact and their metadata.
@@ -432,9 +448,11 @@ class Handler:
         You may also want to check `fetch_files_list docs page`_.
            https://docs.neptune.ai/api-reference/field-types#fetch_files_list
         """
-        raise NeptuneException('Should be never called.')
+        raise NeptuneException("Should be never called.")
 
-    def track_files(self, path: str, destination: str = None, wait: bool = False) -> None:
+    def track_files(
+        self, path: str, destination: str = None, wait: bool = False
+    ) -> None:
         """Creates an artifact tracking some files.
 
         You may also want to check `track_files docs page`_.
@@ -447,11 +465,7 @@ class Handler:
 
             self._run.set_attribute(self._path, attr)
 
-            attr.track_files(
-                path=path,
-                destination=destination,
-                wait=wait
-            )
+            attr.track_files(path=path, destination=destination, wait=wait)
 
     def __delitem__(self, path) -> None:
         self.pop(path)

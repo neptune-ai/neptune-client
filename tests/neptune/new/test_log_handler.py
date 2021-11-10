@@ -23,7 +23,6 @@ from neptune.new.integrations.python_logger import NeptuneHandler
 
 
 class TestLogHandler(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
@@ -46,7 +45,7 @@ class TestLogHandler(unittest.TestCase):
 
         self._log_messages(logger)
 
-        log_entries = list(exp['monitoring']['python_logger'].fetch_values().value)
+        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
         self.assertListEqual(log_entries, ["error message", "test message"])
 
     def test_custom_monitoring_namespace(self):
@@ -57,7 +56,7 @@ class TestLogHandler(unittest.TestCase):
 
         self._log_messages(logger)
 
-        log_entries = list(exp['watching']['python_logger'].fetch_values().value)
+        log_entries = list(exp["watching"]["python_logger"].fetch_values().value)
         self.assertListEqual(log_entries, ["error message", "test message"])
 
     def test_custom_target_attribute(self):
@@ -68,9 +67,9 @@ class TestLogHandler(unittest.TestCase):
 
         self._log_messages(logger)
 
-        log_entries = list(exp['logging']['my']['logger'].fetch_values().value)
+        log_entries = list(exp["logging"]["my"]["logger"].fetch_values().value)
         self.assertListEqual(log_entries, ["error message", "test message"])
-        self.assertNotIn('python_logger', exp.get_structure()['monitoring'])
+        self.assertNotIn("python_logger", exp.get_structure()["monitoring"])
 
     def test_custom_level(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -80,7 +79,7 @@ class TestLogHandler(unittest.TestCase):
 
         self._log_messages(logger)
 
-        log_entries = list(exp['monitoring']['python_logger'].fetch_values().value)
+        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
         self.assertListEqual(log_entries, ["error message"])
 
     def test_formatter_works(self):
@@ -92,8 +91,10 @@ class TestLogHandler(unittest.TestCase):
 
         self._log_messages(logger)
 
-        log_entries = list(exp['monitoring']['python_logger'].fetch_values().value)
-        self.assertListEqual(log_entries, ["ERROR|root: error message", "WARNING|root: test message"])
+        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+        self.assertListEqual(
+            log_entries, ["ERROR|root: error message", "WARNING|root: test message"]
+        )
 
     def test_log_level_works(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -104,8 +105,10 @@ class TestLogHandler(unittest.TestCase):
 
         self._log_messages(logger)
 
-        log_entries = list(exp['monitoring']['python_logger'].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message", "debug message", "test message"])
+        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+        self.assertListEqual(
+            log_entries, ["error message", "debug message", "test message"]
+        )
 
         self._log_messages(logger)
 
@@ -118,12 +121,14 @@ class TestLogHandler(unittest.TestCase):
 
         self._log_messages(logger)
 
-        log_entries = list(exp['monitoring']['python_logger'].fetch_values().value)
+        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
         self.assertListEqual(log_entries, ["error message", "test message"])
 
         handler.setLevel(logging.ERROR)
 
         self._log_messages(logger)
 
-        log_entries = list(exp['monitoring']['python_logger'].fetch_values().value)
-        self.assertListEqual(log_entries, ["error message", "test message", "error message"])
+        log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
+        self.assertListEqual(
+            log_entries, ["error message", "test message", "error message"]
+        )

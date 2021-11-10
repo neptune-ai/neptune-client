@@ -18,12 +18,16 @@ from typing import Type, List, Optional, Dict, Tuple
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
 
-from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactDriver, ArtifactFileData
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriversMap,
+    ArtifactDriver,
+    ArtifactFileData,
+)
 from neptune.new.internal.artifacts.file_hasher import FileHasher
 from neptune.new.exceptions import (
     ArtifactUploadingError,
     ArtifactNotFoundException,
-    NeptuneEmptyLocationException
+    NeptuneEmptyLocationException,
 )
 from neptune.new.internal.backends.api_model import ArtifactModel
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
@@ -41,12 +45,12 @@ def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):
 
 
 def track_to_new_artifact(
-        swagger_client: SwaggerClient,
-        project_id: str,
-        path: List[str],
-        parent_identifier: str,
-        entries: List[Tuple[str, Optional[str]]],
-        default_request_params: Dict
+    swagger_client: SwaggerClient,
+    project_id: str,
+    path: List[str],
+    parent_identifier: str,
+    entries: List[Tuple[str, Optional[str]]],
+    default_request_params: Dict,
 ) -> Optional[Operation]:
     files: List[ArtifactFileData] = _extract_file_list(path, entries)
 
@@ -60,7 +64,7 @@ def track_to_new_artifact(
         artifact_hash=artifact_hash,
         parent_identifier=parent_identifier,
         size=_compute_artifact_size(files),
-        default_request_params=default_request_params
+        default_request_params=default_request_params,
     )
 
     if not artifact.received_metadata:
@@ -69,20 +73,20 @@ def track_to_new_artifact(
             project_id=project_id,
             artifact_hash=artifact_hash,
             files=files,
-            default_request_params=default_request_params
+            default_request_params=default_request_params,
         )
 
     return AssignArtifact(path=path, hash=artifact_hash)
 
 
 def track_to_existing_artifact(
-        swagger_client: SwaggerClient,
-        project_id: str,
-        path: List[str],
-        artifact_hash: str,
-        parent_identifier: str,
-        entries: List[Tuple[str, Optional[str]]],
-        default_request_params: Dict
+    swagger_client: SwaggerClient,
+    project_id: str,
+    path: List[str],
+    artifact_hash: str,
+    parent_identifier: str,
+    entries: List[Tuple[str, Optional[str]]],
+    default_request_params: Dict,
 ) -> Optional[Operation]:
     files: List[ArtifactFileData] = _extract_file_list(path, entries)
 
@@ -95,7 +99,7 @@ def track_to_existing_artifact(
         artifact_hash=artifact_hash,
         parent_identifier=parent_identifier,
         files=files,
-        default_request_params=default_request_params
+        default_request_params=default_request_params,
     )
 
     return AssignArtifact(path=path, hash=artifact.hash)
@@ -105,15 +109,21 @@ def _compute_artifact_hash(files: List[ArtifactFileData]) -> str:
     return FileHasher.get_artifact_hash(files)
 
 
-def _extract_file_list(path: List[str], entries: List[Tuple[str, Optional[str]]]) -> List[ArtifactFileData]:
+def _extract_file_list(
+    path: List[str], entries: List[Tuple[str, Optional[str]]]
+) -> List[ArtifactFileData]:
     files: List[ArtifactFileData] = list()
 
     for entry_path, entry_destination in entries:
         driver: Type[ArtifactDriver] = ArtifactDriversMap.match_path(entry_path)
-        artifact_files = driver.get_tracked_files(path=entry_path, destination=entry_destination)
+        artifact_files = driver.get_tracked_files(
+            path=entry_path, destination=entry_destination
+        )
 
         if len(artifact_files) == 0:
-            raise NeptuneEmptyLocationException(location=entry_path, namespace='/'.join(path))
+            raise NeptuneEmptyLocationException(
+                location=entry_path, namespace="/".join(path)
+            )
 
         files.extend(artifact_files)
 
@@ -122,26 +132,26 @@ def _extract_file_list(path: List[str], entries: List[Tuple[str, Optional[str]]]
 
 @with_api_exceptions_handler
 def create_new_artifact(
-        swagger_client: SwaggerClient,
-        project_id: str,
-        artifact_hash: str,
-        parent_identifier: str,
-        size: int,
-        default_request_params: Dict
+    swagger_client: SwaggerClient,
+    project_id: str,
+    artifact_hash: str,
+    parent_identifier: str,
+    size: int,
+    default_request_params: Dict,
 ) -> ArtifactModel:
     params = {
-        'projectIdentifier': project_id,
-        'hash': artifact_hash,
-        'size': size,
-        'parentIdentifier': parent_identifier,
-        **default_request_params
+        "projectIdentifier": project_id,
+        "hash": artifact_hash,
+        "size": size,
+        "parentIdentifier": parent_identifier,
+        **default_request_params,
     }
     try:
         result = swagger_client.api.createNewArtifact(**params).response().result
         return ArtifactModel(
             hash=result.artifactHash,
             received_metadata=result.receivedMetadata,
-            size=result.size
+            size=result.size,
         )
     except HTTPNotFound:
         raise ArtifactNotFoundException(artifact_hash)
@@ -149,28 +159,26 @@ def create_new_artifact(
 
 @with_api_exceptions_handler
 def upload_artifact_files_metadata(
-        swagger_client: SwaggerClient,
-        project_id: str,
-        artifact_hash: str,
-        files: List[ArtifactFileData],
-        default_request_params: Dict
+    swagger_client: SwaggerClient,
+    project_id: str,
+    artifact_hash: str,
+    files: List[ArtifactFileData],
+    default_request_params: Dict,
 ) -> ArtifactModel:
     params = {
-        'projectIdentifier': project_id,
-        'hash': artifact_hash,
-        'artifactFilesDTO': {
-            'files': [
-                ArtifactFileData.to_dto(a) for a in files
-            ]
-        },
-        **default_request_params
+        "projectIdentifier": project_id,
+        "hash": artifact_hash,
+        "artifactFilesDTO": {"files": [ArtifactFileData.to_dto(a) for a in files]},
+        **default_request_params,
     }
     try:
-        result = swagger_client.api.uploadArtifactFilesMetadata(**params).response().result
+        result = (
+            swagger_client.api.uploadArtifactFilesMetadata(**params).response().result
+        )
         return ArtifactModel(
             hash=result.artifactHash,
             size=result.size,
-            received_metadata=result.receivedMetadata
+            received_metadata=result.receivedMetadata,
         )
     except HTTPNotFound:
         raise ArtifactNotFoundException(artifact_hash)
@@ -178,30 +186,26 @@ def upload_artifact_files_metadata(
 
 @with_api_exceptions_handler
 def create_artifact_version(
-        swagger_client: SwaggerClient,
-        project_id: str,
-        artifact_hash: str,
-        parent_identifier: str,
-        files: List[ArtifactFileData],
-        default_request_params: Dict
+    swagger_client: SwaggerClient,
+    project_id: str,
+    artifact_hash: str,
+    parent_identifier: str,
+    files: List[ArtifactFileData],
+    default_request_params: Dict,
 ) -> ArtifactModel:
     params = {
-        'projectIdentifier': project_id,
-        'hash': artifact_hash,
-        'parentIdentifier': parent_identifier,
-        'artifactFilesDTO': {
-            'files': [
-                ArtifactFileData.to_dto(a) for a in files
-            ]
-        },
-        **default_request_params
+        "projectIdentifier": project_id,
+        "hash": artifact_hash,
+        "parentIdentifier": parent_identifier,
+        "artifactFilesDTO": {"files": [ArtifactFileData.to_dto(a) for a in files]},
+        **default_request_params,
     }
     try:
         result = swagger_client.api.createArtifactVersion(**params).response().result
         return ArtifactModel(
             hash=result.artifactHash,
             size=result.size,
-            received_metadata=result.receivedMetadata
+            received_metadata=result.receivedMetadata,
         )
     except HTTPNotFound:
         raise ArtifactNotFoundException(artifact_hash)

@@ -20,7 +20,6 @@ from neptune.utils import NoopObject
 
 
 class TestHostedNeptuneObject(unittest.TestCase):
-
     def test_builtin_fields_not_overriden(self):
         # given
         objectUnderTest = NoopObject()
@@ -43,8 +42,8 @@ class TestHostedNeptuneObject(unittest.TestCase):
         some_value = 42
 
         # then
-        self.assertEqual(objectUnderTest['foo'], objectUnderTest)
-        self.assertEqual(objectUnderTest['bar'](some_value), objectUnderTest)
+        self.assertEqual(objectUnderTest["foo"], objectUnderTest)
+        self.assertEqual(objectUnderTest["bar"](some_value), objectUnderTest)
 
     def test_noop_object_callable(self):
         # given

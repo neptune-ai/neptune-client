@@ -30,8 +30,7 @@ main.add_command(status)
 
 plugins = {
     entry_point.name: entry_point
-    for entry_point
-    in pkg_resources.iter_entry_points('neptune.plugins')
+    for entry_point in pkg_resources.iter_entry_points("neptune.plugins")
 }
 
 for name, entry_point in plugins.items():

@@ -24,21 +24,26 @@ from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFloat(TestAttributeBase):
-
     def test_assign(self):
         value_and_expected = [
             (13, 13),
             (15.3, 15.3),
             (FloatVal(17), 17),
-            (FloatVal(17.5), 17.5)
+            (FloatVal(17.5), 17.5),
         ]
 
         for value, expected in value_and_expected:
             processor = MagicMock()
-            exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
+            exp, path, wait = (
+                self._create_run(processor),
+                self._random_path(),
+                self._random_wait(),
+            )
             var = Float(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignFloat(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(
+                AssignFloat(path, expected), wait
+            )
 
     def test_assign_type_error(self):
         values = ["string", None]

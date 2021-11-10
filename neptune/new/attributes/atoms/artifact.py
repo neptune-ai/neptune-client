@@ -17,7 +17,11 @@ import pathlib
 import typing
 
 from neptune.new.attributes.atoms.atom import Atom
-from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriver,
+    ArtifactDriversMap,
+    ArtifactFileData,
+)
 from neptune.new.internal.backends.utils import OptionalFeatures
 from neptune.new.internal.operation import AssignArtifact, TrackFilesToArtifact
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
@@ -25,7 +29,8 @@ from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 class Artifact(Atom):
     def _check_feature(self):
-        self._container._backend.verify_feature_available(OptionalFeatures.ARTIFACTS)  # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        self._container._backend.verify_feature_available(OptionalFeatures.ARTIFACTS)
 
     def assign(self, value: ArtifactVal, wait: bool = False):
         self._check_feature()
@@ -50,28 +55,29 @@ class Artifact(Atom):
         artifact_hash = self.fetch_hash()
         return self._backend.list_artifact_files(
             self._container._project_id,  # pylint: disable=protected-access
-            artifact_hash
+            artifact_hash,
         )
 
     def download(self, destination: str = None):
         self._check_feature()
         for file_definition in self.fetch_files_list():
-            driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_type(file_definition.type)
-            file_destination = pathlib.Path(destination or '.') / pathlib.Path(file_definition.file_path)
+            driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_type(
+                file_definition.type
+            )
+            file_destination = pathlib.Path(destination or ".") / pathlib.Path(
+                file_definition.file_path
+            )
             file_destination.parent.mkdir(parents=True, exist_ok=True)
             driver.download_file(file_destination, file_definition)
 
-    def track_files(
-            self,
-            path: str,
-            destination: str = None,
-            wait: bool = False
-    ):
+    def track_files(self, path: str, destination: str = None, wait: bool = False):
         self._check_feature()
         with self._container.lock():
             self._enqueue_operation(
-                TrackFilesToArtifact(self._path,
-                                     self._container._project_id,  # pylint: disable=protected-access
-                                     [(path, destination)]),
-                wait
+                TrackFilesToArtifact(
+                    self._path,
+                    self._container._project_id,  # pylint: disable=protected-access
+                    [(path, destination)],
+                ),
+                wait,
             )

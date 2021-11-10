@@ -23,7 +23,6 @@ from neptune.new.types.value import Value
 
 
 class TestRunStructure(unittest.TestCase):
-
     def test_get_none(self):
         exp = ContainerStructure[int, dict]()
         self.assertEqual(exp.get(["some", "path", "val"]), None)
@@ -67,7 +66,9 @@ class TestRunStructure(unittest.TestCase):
         exp.pop(["some", "path", "val2"])
         self.assertEqual(exp.get(["some", "path", "val1"]), 3)
         self.assertEqual(exp.get(["some", "path", "val2"]), None)
-        self.assertTrue("some" in exp.get_structure() and "path" in exp.get_structure()["some"])
+        self.assertTrue(
+            "some" in exp.get_structure() and "path" in exp.get_structure()["some"]
+        )
 
     def test_pop_whole_ns(self):
         exp = ContainerStructure[int, dict]()
@@ -112,33 +113,61 @@ class TestIterateSubpaths(unittest.TestCase):
     def test_iterate_empty_prefix(self):
         prefix = []
         expected_subpaths = [
-            "sys/id", "sys/state", "sys/owner", "sys/size", "sys/tags", "sys/creation_time",
-            "sys/modification_time", "sys/failed",
-            "attributes/float", "attributes/int", "attributes/string",
-            "attributes/node/one", "attributes/node/two", "attributes/node/three",
+            "sys/id",
+            "sys/state",
+            "sys/owner",
+            "sys/size",
+            "sys/tags",
+            "sys/creation_time",
+            "sys/modification_time",
+            "sys/failed",
+            "attributes/float",
+            "attributes/int",
+            "attributes/string",
+            "attributes/node/one",
+            "attributes/node/two",
+            "attributes/node/three",
         ]
 
         print(list(self.structure.iterate_subpaths(prefix)))
 
-        self.assertListEqual(list(self.structure.iterate_subpaths(prefix)), expected_subpaths)
+        self.assertListEqual(
+            list(self.structure.iterate_subpaths(prefix)), expected_subpaths
+        )
 
     def test_iterate_prefix(self):
         prefix = ["sys"]
         expected_subpaths = [
-            "sys/id", "sys/state", "sys/owner", "sys/size", "sys/tags", "sys/creation_time",
-            "sys/modification_time", "sys/failed",
+            "sys/id",
+            "sys/state",
+            "sys/owner",
+            "sys/size",
+            "sys/tags",
+            "sys/creation_time",
+            "sys/modification_time",
+            "sys/failed",
         ]
 
-        self.assertListEqual(list(self.structure.iterate_subpaths(prefix)), expected_subpaths)
+        self.assertListEqual(
+            list(self.structure.iterate_subpaths(prefix)), expected_subpaths
+        )
 
     def test_iterate_long_prefix(self):
         prefix = ["attributes", "node"]
-        expected_subpaths = ["attributes/node/one", "attributes/node/two", "attributes/node/three"]
+        expected_subpaths = [
+            "attributes/node/one",
+            "attributes/node/two",
+            "attributes/node/three",
+        ]
 
-        self.assertListEqual(list(self.structure.iterate_subpaths(prefix)), expected_subpaths)
+        self.assertListEqual(
+            list(self.structure.iterate_subpaths(prefix)), expected_subpaths
+        )
 
     def test_iterate_nonexistent_prefix(self):
         prefix = ["argh"]
         expected_subpaths = []
 
-        self.assertListEqual(list(self.structure.iterate_subpaths(prefix)), expected_subpaths)
+        self.assertListEqual(
+            list(self.structure.iterate_subpaths(prefix)), expected_subpaths
+        )

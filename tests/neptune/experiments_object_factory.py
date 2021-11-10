@@ -25,8 +25,8 @@ def a_channel():
     return Munch(
         id=a_uuid_string(),
         name=a_string(),
-        channelType='text',
+        channelType="text",
         lastX=x,
         x=x,
-        y=a_string()
+        y=a_string(),
     )

@@ -18,13 +18,14 @@ from typing import Optional
 
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
-from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.new.internal.operation_processors.operation_processor import (
+    OperationProcessor,
+)
 
 _logger = logging.getLogger(__name__)
 
 
 class ReadOnlyOperationProcessor(OperationProcessor):
-
     def __init__(self, run_id: str, backend: NeptuneBackend):
         self._run_id = run_id
         self._backend = backend
@@ -33,7 +34,9 @@ class ReadOnlyOperationProcessor(OperationProcessor):
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         if not self._warning_emitted:
             self._warning_emitted = True
-            _logger.warning("Client in read-only mode, nothing will be saved to server.")
+            _logger.warning(
+                "Client in read-only mode, nothing will be saved to server."
+            )
 
     def wait(self):
         pass

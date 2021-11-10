@@ -17,7 +17,10 @@ import unittest
 
 import psutil
 
-from neptune.internal.hardware.gauges.memory import CGroupMemoryUsageGauge, SystemMemoryUsageGauge
+from neptune.internal.hardware.gauges.memory import (
+    CGroupMemoryUsageGauge,
+    SystemMemoryUsageGauge,
+)
 from neptune.utils import IS_WINDOWS, IS_MACOS
 
 
@@ -51,5 +54,5 @@ class TestMemoryGauges(unittest.TestCase):
         self.assertEqual(float, type(memory_gb))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

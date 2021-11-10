@@ -17,8 +17,15 @@ import unittest
 import pathlib
 from urllib.parse import urlparse
 
-from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactDriver, ArtifactFileData
-from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriversMap,
+    ArtifactDriver,
+    ArtifactFileData,
+)
+from neptune.new.exceptions import (
+    NeptuneUnhandledArtifactSchemeException,
+    NeptuneUnhandledArtifactTypeException,
+)
 
 
 class TestArtifactDriversMap(unittest.TestCase):
@@ -35,14 +42,16 @@ class TestArtifactDriversMap(unittest.TestCase):
 
             @classmethod
             def matches(cls, path: str) -> bool:
-                return urlparse(path).scheme == 'test'
+                return urlparse(path).scheme == "test"
 
             @classmethod
             def get_tracked_files(cls, path, destination=None):
                 return []
 
             @classmethod
-            def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
+            def download_file(
+                cls, destination: pathlib.Path, file_definition: ArtifactFileData
+            ):
                 pass
 
         self.test_driver_instance = TestArtifactDriver
@@ -59,20 +68,22 @@ class TestArtifactDriversMap(unittest.TestCase):
 
             @classmethod
             def matches(cls, path: str) -> bool:
-                return urlparse(path).scheme == 'pk'
+                return urlparse(path).scheme == "pk"
 
             @classmethod
             def get_tracked_files(cls, path, destination=None):
                 return []
 
             @classmethod
-            def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
+            def download_file(
+                cls, destination: pathlib.Path, file_definition: ArtifactFileData
+            ):
                 pass
 
         self.assertIn(
             PkArtifactDriver,
             ArtifactDriversMap._implementations,
-            "PkArtifactDriver not registered with subclass logic"
+            "PkArtifactDriver not registered with subclass logic",
         )
 
     def test_match_by_path(self):

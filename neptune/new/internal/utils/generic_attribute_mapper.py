@@ -45,7 +45,7 @@ value_set_attribute_types_map = {
 
 # TODO: nicer mapping?
 _unmapped_attribute_types_map = {
-    AttributeType.FILE_SET.value: "fileSetProperties",   # TODO: return size?
+    AttributeType.FILE_SET.value: "fileSetProperties",  # TODO: return size?
     AttributeType.FILE.value: "fileProperties",  # TODO: name? size?
     AttributeType.IMAGE_SERIES.value: "imageSeriesProperties",  # TODO: return last step?
     AttributeType.GIT_REF.value: "gitRefProperties",  # TODO: commit? branch?
@@ -54,9 +54,9 @@ _unmapped_attribute_types_map = {
 
 def map_attribute_result_to_value(attribute):
     for attribute_map, value_key in [
-            (atomic_attribute_types_map, VALUE),
-            (value_series_attribute_types_map, LAST_VALUE),
-            (value_set_attribute_types_map, VALUES),
+        (atomic_attribute_types_map, VALUE),
+        (value_series_attribute_types_map, LAST_VALUE),
+        (value_set_attribute_types_map, VALUES),
     ]:
         source_property = attribute_map.get(attribute.type)
         if source_property is not None:

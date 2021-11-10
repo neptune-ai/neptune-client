@@ -20,13 +20,17 @@ import matplotlib
 
 from neptune.utils import IS_WINDOWS
 
-matplotlib.use('agg')
+matplotlib.use("agg")
 from matplotlib import pyplot
 from PIL import Image
 from uuid import uuid4
 import numpy
 
-from neptune.internal.utils.image import get_image_content, _get_pil_image_data, _get_figure_as_image
+from neptune.internal.utils.image import (
+    get_image_content,
+    _get_pil_image_data,
+    _get_figure_as_image,
+)
 
 
 class TestImage(unittest.TestCase):
@@ -45,7 +49,9 @@ class TestImage(unittest.TestCase):
         expected_image.save(filename)
 
         # expect
-        self.assertEqual(get_image_content(filename), _get_pil_image_data(expected_image))
+        self.assertEqual(
+            get_image_content(filename), _get_pil_image_data(expected_image)
+        )
 
     def test_get_image_content_from_pil_image(self):
         # given
@@ -54,7 +60,9 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(get_image_content(expected_image), _get_pil_image_data(expected_image))
+        self.assertEqual(
+            get_image_content(expected_image), _get_pil_image_data(expected_image)
+        )
 
     def test_get_image_content_from_2d_grayscale_array(self):
         # given
@@ -63,24 +71,20 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
+        self.assertEqual(
+            get_image_content(image_array), _get_pil_image_data(expected_image)
+        )
 
     def test_get_image_content_from_3d_grayscale_array(self):
         # given
-        image_array = numpy.array([
-            [[1], [2]],
-            [[3], [4]],
-            [[5], [6]]
-        ])
-        expected_array = numpy.array([
-            [1, 2],
-            [3, 4],
-            [5, 6]
-        ]) * 255
+        image_array = numpy.array([[[1], [2]], [[3], [4]], [[5], [6]]])
+        expected_array = numpy.array([[1, 2], [3, 4], [5, 6]]) * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
+        self.assertEqual(
+            get_image_content(image_array), _get_pil_image_data(expected_image)
+        )
 
     def test_get_image_content_from_rgb_array(self):
         # given
@@ -89,7 +93,9 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
+        self.assertEqual(
+            get_image_content(image_array), _get_pil_image_data(expected_image)
+        )
 
     def test_get_image_content_from_rgba_array(self):
         # given
@@ -98,15 +104,19 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
+        self.assertEqual(
+            get_image_content(image_array), _get_pil_image_data(expected_image)
+        )
 
     def test_get_image_content_from_figure(self):
         # given
         pyplot.plot([1, 2, 3, 4])
-        pyplot.ylabel('some interesting numbers')
+        pyplot.ylabel("some interesting numbers")
         figure = pyplot.gcf()
         figure.canvas.draw()
-        expected_image = Image.frombytes('RGB', figure.canvas.get_width_height(), figure.canvas.tostring_rgb())
+        expected_image = Image.frombytes(
+            "RGB", figure.canvas.get_width_height(), figure.canvas.tostring_rgb()
+        )
 
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
@@ -114,20 +124,26 @@ class TestImage(unittest.TestCase):
     @unittest.skipIf(IS_WINDOWS, "Installing Torch on Windows takes too long")
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
+
         # given
         image_tensor = torch.rand(200, 300, 3)
         expected_array = image_tensor.numpy() * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
+        self.assertEqual(
+            get_image_content(image_tensor), _get_pil_image_data(expected_image)
+        )
 
     def test_get_image_content_from_tensorflow_tensor(self):
         import tensorflow as tf  # pylint: disable=C0415
+
         # given
         image_tensor = tf.random.uniform(shape=[200, 300, 3])
         expected_array = image_tensor.numpy() * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
+        self.assertEqual(
+            get_image_content(image_tensor), _get_pil_image_data(expected_image)
+        )

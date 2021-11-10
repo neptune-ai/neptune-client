@@ -17,43 +17,49 @@ import platform
 
 from neptune import envs
 
-UNIX_STYLES = {'h1': '\033[95m',
-               'h2': '\033[94m',
-               'blue': '\033[94m',
-               'python': '\033[96m',
-               'bash': '\033[95m',
-               'warning': '\033[93m',
-               'correct': '\033[92m',
-               'fail': '\033[91m',
-               'bold': '\033[1m',
-               'underline': '\033[4m',
-               'end': '\033[0m'}
+UNIX_STYLES = {
+    "h1": "\033[95m",
+    "h2": "\033[94m",
+    "blue": "\033[94m",
+    "python": "\033[96m",
+    "bash": "\033[95m",
+    "warning": "\033[93m",
+    "correct": "\033[92m",
+    "fail": "\033[91m",
+    "bold": "\033[1m",
+    "underline": "\033[4m",
+    "end": "\033[0m",
+}
 
-WINDOWS_STYLES = {'h1': '',
-                  'h2': '',
-                  'python': '',
-                  'bash': '',
-                  'warning': '',
-                  'correct': '',
-                  'fail': '',
-                  'bold': '',
-                  'underline': '',
-                  'end': ''}
+WINDOWS_STYLES = {
+    "h1": "",
+    "h2": "",
+    "python": "",
+    "bash": "",
+    "warning": "",
+    "correct": "",
+    "fail": "",
+    "bold": "",
+    "underline": "",
+    "end": "",
+}
 
-EMPTY_STYLES = {'h1': '',
-                'h2': '',
-                'python': '',
-                'bash': '',
-                'warning': '',
-                'correct': '',
-                'fail': '',
-                'bold': '',
-                'underline': '',
-                'end': ''}
+EMPTY_STYLES = {
+    "h1": "",
+    "h2": "",
+    "python": "",
+    "bash": "",
+    "warning": "",
+    "correct": "",
+    "fail": "",
+    "bold": "",
+    "underline": "",
+    "end": "",
+}
 
-if platform.system() in ['Linux', 'Darwin']:
+if platform.system() in ["Linux", "Darwin"]:
     STYLES = UNIX_STYLES
-elif platform.system() == 'Windows':
+elif platform.system() == "Windows":
     STYLES = WINDOWS_STYLES
 else:
     STYLES = EMPTY_STYLES
@@ -66,22 +72,24 @@ class NeptuneException(Exception):
 class NeptuneUninitializedException(NeptuneException):
     def __init__(self):
         message = """
-{h1}     
+{h1}
 ----NeptuneUninitializedException---------------------------------------------------------------------------------------
 {end}
 You must initialize neptune-client before you create an experiment.
 
 Looks like you forgot to add:
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
-    
+
 before you ran:
     {python}neptune.create_experiment(){end}
-    
+
 You may also want to check the following docs pages:
     - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
-    
+
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
-""".format(**STYLES)
+""".format(
+            **STYLES
+        )
         super(NeptuneUninitializedException, self).__init__(message)
 
 
@@ -103,18 +111,19 @@ class NotADirectory(NeptuneException):
 class InvalidNotebookPath(NeptuneException):
     def __init__(self, path):
         super(InvalidNotebookPath, self).__init__(
-            "File {} is not a valid notebook. Should end with .ipynb.".format(path))
+            "File {} is not a valid notebook. Should end with .ipynb.".format(path)
+        )
 
 
 class NoChannelValue(NeptuneException):
     def __init__(self):
-        super(NoChannelValue, self).__init__('No channel value provided.')
+        super(NoChannelValue, self).__init__("No channel value provided.")
 
 
 class NeptuneLibraryNotInstalledException(NeptuneException):
     def __init__(self, library):
         message = """
-{h1}     
+{h1}
 ----NeptuneLibraryNotInstalledException---------------------------------------------------------------------------------
 {end}
 Looks like library {library} wasn't installed.
@@ -124,39 +133,42 @@ To install run:
 
 You may also want to check the following docs pages:
     - https://docs-legacy.neptune.ai/getting-started/installation/index.html
-    
+
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        super(NeptuneLibraryNotInstalledException, self).__init__(message.format(
-            library=library,
-            **STYLES
-        ))
+        super(NeptuneLibraryNotInstalledException, self).__init__(
+            message.format(library=library, **STYLES)
+        )
 
 
 class InvalidChannelValue(NeptuneException):
     def __init__(self, expected_type, actual_type):
         super(InvalidChannelValue, self).__init__(
-            'Invalid channel value type. Expected: {expected}, actual: {actual}.'.format(
-                expected=expected_type, actual=actual_type))
+            "Invalid channel value type. Expected: {expected}, actual: {actual}.".format(
+                expected=expected_type, actual=actual_type
+            )
+        )
 
 
 class NeptuneNoExperimentContextException(NeptuneException):
     def __init__(self):
         message = """
-{h1}  
+{h1}
 ----NeptuneNoExperimentContextException---------------------------------------------------------------------------------
 {end}
 Neptune couldn't find an active experiment.
 
 Looks like you forgot to run:
     {python}neptune.create_experiment(){end}
-    
+
 You may also want to check the following docs pages:
     - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        super(NeptuneNoExperimentContextException, self).__init__(message.format(**STYLES))
+        super(NeptuneNoExperimentContextException, self).__init__(
+            message.format(**STYLES)
+        )
 
 
 class NeptuneMissingApiTokenException(NeptuneException):
@@ -171,7 +183,7 @@ Learn how to get it in this docs page:
 https://docs-legacy.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
 
 There are two options to add it:
-    - specify it in your code 
+    - specify it in your code
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
@@ -179,29 +191,28 @@ Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
-or export or set an environment variable depending on your operating system: 
+or export or set an environment variable depending on your operating system:
 
     {correct}Linux/Unix{end}
     In your terminal run:
         {bash}export {env_api_token}=YOUR_API_TOKEN{end}
-        
+
     {correct}Windows{end}
     In your CMD run:
         {bash}set {env_api_token}=YOUR_API_TOKEN{end}
-        
-and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}: 
+
+and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME'){end}
-    
+
 You may also want to check the following docs pages:
     - https://docs-legacy.neptune.ai/security-and-privacy/api-tokens/how-to-find-and-set-neptune-api-token.html
     - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        super(NeptuneMissingApiTokenException, self).__init__(message.format(
-            env_api_token=envs.API_TOKEN_ENV_NAME,
-            **STYLES
-        ))
+        super(NeptuneMissingApiTokenException, self).__init__(
+            message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
+        )
 
 
 class NeptuneMissingProjectQualifiedNameException(NeptuneException):
@@ -213,7 +224,7 @@ class NeptuneMissingProjectQualifiedNameException(NeptuneException):
 Neptune client couldn't find your project name.
 
 There are two options two add it:
-    - specify it in your code 
+    - specify it in your code
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
@@ -221,7 +232,7 @@ Pass it to {bold}neptune.init(){end} via {bold}project_qualified_name{end} argum
     {python}neptune.init(project_qualified_name='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
-or export or set an environment variable depending on your operating system: 
+or export or set an environment variable depending on your operating system:
 
     {correct}Linux/Unix{end}
     In your terminal run:
@@ -231,19 +242,18 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
        {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
 
-and skip the {bold}project_qualified_name{end} argument of {bold}neptune.init(){end}: 
+and skip the {bold}project_qualified_name{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(api_token='YOUR_API_TOKEN'){end}
 
 You may also want to check the following docs pages:
     - https://docs-legacy.neptune.ai/workspace-project-and-user-management/index.html
     - https://docs-legacy.neptune.ai/getting-started/quick-starts/log_first_experiment.html
-    
+
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        super(NeptuneMissingProjectQualifiedNameException, self).__init__(message.format(
-            env_project=envs.PROJECT_ENV_NAME,
-            **STYLES
-        ))
+        super(NeptuneMissingProjectQualifiedNameException, self).__init__(
+            message.format(env_project=envs.PROJECT_ENV_NAME, **STYLES)
+        )
 
 
 class NeptuneIncorrectProjectQualifiedNameException(NeptuneException):
@@ -257,12 +267,12 @@ Project qualified name {fail}"{project_qualified_name}"{end} you specified was i
 The correct project qualified name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
 It has two parts:
     - {correct}WORKSPACE{end}: which can be your username or your organization name
-    - {correct}PROJECT_NAME{end}: which is the actual project name you chose 
+    - {correct}PROJECT_NAME{end}: which is the actual project name you chose
 
 For example, a project {correct}neptune-ai/credit-default-prediction{end} parts are:
     - {correct}neptune-ai{end}: {underline}WORKSPACE{end} our company organization name
     - {correct}credit-default-prediction{end}: {underline}PROJECT_NAME{end} a project name
-    
+
 The URL to this project looks like this: https://app.neptune.ai/neptune-ai/credit-default-prediction
 
 You may also want to check the following docs pages:
@@ -271,25 +281,28 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(message.format(
-            project_qualified_name=project_qualified_name,
-            **STYLES
-        ))
+        super(NeptuneIncorrectProjectQualifiedNameException, self).__init__(
+            message.format(project_qualified_name=project_qualified_name, **STYLES)
+        )
 
 
 class InvalidNeptuneBackend(NeptuneException):
     def __init__(self, provided_backend_name):
         super(InvalidNeptuneBackend, self).__init__(
             'Unknown {} "{}". '
-            'Use this environment variable to modify neptune-client behaviour at runtime, '
-            'e.g. using {}=offline allows you to run your code without logging anything to Neptune'
-            ''.format(envs.BACKEND, provided_backend_name, envs.BACKEND))
+            "Use this environment variable to modify neptune-client behaviour at runtime, "
+            "e.g. using {}=offline allows you to run your code without logging anything to Neptune"
+            "".format(envs.BACKEND, provided_backend_name, envs.BACKEND)
+        )
 
 
 class DeprecatedApiToken(NeptuneException):
     def __init__(self, app_url):
         super(DeprecatedApiToken, self).__init__(
-            "Your API token is deprecated. Please visit {} to get a new one.".format(app_url))
+            "Your API token is deprecated. Please visit {} to get a new one.".format(
+                app_url
+            )
+        )
 
 
 class CannotResolveHostname(NeptuneException):
@@ -307,10 +320,7 @@ What should I do?
       See https://docs-legacy.neptune.ai/api-reference/neptune/index.html#neptune.init
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
 """
-        super(CannotResolveHostname, self).__init__(message.format(
-            host=host,
-            **STYLES
-        ))
+        super(CannotResolveHostname, self).__init__(message.format(host=host, **STYLES))
 
 
 class UnsupportedClientVersion(NeptuneException):
@@ -318,8 +328,9 @@ class UnsupportedClientVersion(NeptuneException):
         super(UnsupportedClientVersion, self).__init__(
             "This client version ({}) is not supported. Please install neptune-client{}".format(
                 version,
-                "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion)
-            ))
+                "==" + str(maxVersion) if maxVersion else ">=" + str(minVersion),
+            )
+        )
 
 
 class UnsupportedInAlphaException(NeptuneException):

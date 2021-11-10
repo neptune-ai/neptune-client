@@ -26,7 +26,7 @@ from neptune.new.internal.containers.storage_queue import StorageQueue
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 _logger = logging.getLogger(__name__)
 
@@ -36,12 +36,13 @@ class DiskQueue(StorageQueue[T]):
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
 
     def __init__(
-            self,
-            dir_path: Path,
-            to_dict: Callable[[T], dict],
-            from_dict: Callable[[dict], T],
-            lock: threading.RLock,
-            max_file_size: int = 64 * 1024**2):
+        self,
+        dir_path: Path,
+        to_dict: Callable[[T], dict],
+        from_dict: Callable[[dict], T],
+        lock: threading.RLock,
+        max_file_size: int = 64 * 1024 ** 2,
+    ):
         self._dir_path = dir_path.resolve()
         self._to_dict = to_dict
         self._from_dict = from_dict
@@ -55,7 +56,10 @@ class DiskQueue(StorageQueue[T]):
         self._last_ack_file = SyncOffsetFile(dir_path / "last_ack_version", default=0)
         self._last_put_file = SyncOffsetFile(dir_path / "last_put_version", default=0)
 
-        self._read_file_version, self._write_file_version = self._get_first_and_last_log_file_version()
+        (
+            self._read_file_version,
+            self._write_file_version,
+        ) = self._get_first_and_last_log_file_version()
         self._writer = open(self._get_log_file(self._write_file_version), "a")
         self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
         self._file_size = 0
@@ -94,8 +98,11 @@ class DiskQueue(StorageQueue[T]):
             if ver > ack_version:
                 self._should_skip_to_ack = False
                 if ver > ack_version + 1:
-                    _logger.warning("Possible data loss. Last acknowledged operation version: %d, next: %d",
-                                    ack_version, ver)
+                    _logger.warning(
+                        "Possible data loss. Last acknowledged operation version: %d, next: %d",
+                        ack_version,
+                        ver,
+                    )
                 return obj, ver
 
     def _get(self) -> Tuple[Optional[T], int]:
@@ -104,7 +111,9 @@ class DiskQueue(StorageQueue[T]):
             if self._read_file_version >= self._write_file_version:
                 return None, -1
             self._reader.close()
-            self._read_file_version = self._next_log_file_version(self._read_file_version)
+            self._read_file_version = self._next_log_file_version(
+                self._read_file_version
+            )
             self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
             # It is safe. Max recursion level is 2.
             return self._get()
@@ -175,7 +184,9 @@ class DiskQueue(StorageQueue[T]):
         log_files = glob("{}/data-*.log".format(self._dir_path))
         if not log_files:
             return 1, 1
-        return sorted([int(file[len(str(self._dir_path)) + 6:-4]) for file in log_files])
+        return sorted(
+            [int(file[len(str(self._dir_path)) + 6 : -4]) for file in log_files]
+        )
 
     def _get_first_and_last_log_file_version(self) -> (int, int):
         log_versions = self._get_all_log_file_versions()
@@ -189,10 +200,7 @@ class DiskQueue(StorageQueue[T]):
         raise ValueError("Missing log file with version > {}".format(version))
 
     def _serialize(self, obj: T, version: int) -> dict:
-        return {
-            "obj": self._to_dict(obj),
-            "version": version
-        }
+        return {"obj": self._to_dict(obj), "version": version}
 
     def _deserialize(self, data: dict) -> Tuple[T, int]:
         return self._from_dict(data["obj"]), data["version"]

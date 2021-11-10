@@ -21,7 +21,7 @@ import hashlib
 def sha1(fname: typing.Union[str, pathlib.Path], block_size: int = 2 ** 16) -> str:
     sha1sum = hashlib.sha1()
 
-    with open(fname, 'rb') as source:
+    with open(fname, "rb") as source:
         block = source.read(block_size)
 
         while len(block) != 0:

@@ -32,11 +32,10 @@ from neptune.new.types.series.string_series import StringSeries
 from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value import Value
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class ValueVisitor(Generic[Ret]):
-
     def visit(self, value: Value) -> Ret:
         return value.accept(self)
 

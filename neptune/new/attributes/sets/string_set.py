@@ -17,7 +17,11 @@
 from typing import Iterable, Union
 import typing
 
-from neptune.new.internal.utils import verify_type, verify_collection_type, is_collection
+from neptune.new.internal.utils import (
+    verify_type,
+    verify_collection_type,
+    is_collection,
+)
 
 from neptune.new.internal.operation import AddStrings, RemoveStrings, ClearStringSet
 from neptune.new.types.sets.string_set import StringSet as StringSetVal
@@ -25,7 +29,6 @@ from neptune.new.attributes.sets.set import Set
 
 
 class StringSet(Set):
-
     def assign(self, value: StringSetVal, wait: bool = False):
         verify_type("value", value, StringSetVal)
         with self._container.lock():

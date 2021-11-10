@@ -49,14 +49,15 @@ T = TypeVar("T")
 
 
 class OperationsPreprocessor:
-
     def __init__(self):
         self._accumulators = dict()
 
     def process(self, operations: List[Operation]):
         for op in operations:
             path_str = path_to_str(op.path)
-            self._accumulators.setdefault(path_str, _OperationsAccumulator(op.path)).visit(op)
+            self._accumulators.setdefault(
+                path_str, _OperationsAccumulator(op.path)
+            ).visit(op)
         result = []
         for acc in self._accumulators.values():
             result.extend(acc.get_operations())
@@ -91,7 +92,6 @@ class _DataType(Enum):
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
-
     def __init__(self, path: List[str]):
         self._path = path
         self._type = None
@@ -106,20 +106,26 @@ class _OperationsAccumulator(OperationVisitor[None]):
     def get_errors(self) -> List[MetadataInconsistency]:
         return self._errors
 
-    def _process_modify_op(self,
-                           expected_type: _DataType,
-                           op: Operation,
-                           modifier: Callable[[List[Operation], Operation], List[Operation]]) -> None:
+    def _process_modify_op(
+        self,
+        expected_type: _DataType,
+        op: Operation,
+        modifier: Callable[[List[Operation], Operation], List[Operation]],
+    ) -> None:
 
         if self._type and self._type != expected_type:
             # This case should never happen since inconsistencies on data types are verified on user api.
             # So such operations should not appear in the queue without delete operation between them.
             # Still we want to support this case to avoid some unclear dependencies and assumptions.
-            self._errors.append(MetadataInconsistency(
-                "Cannot perform {} operation on {}: Attribute is not a {}".format(
-                    op.__class__.__name__,
-                    path_to_str(self._path),
-                    expected_type.value)))
+            self._errors.append(
+                MetadataInconsistency(
+                    "Cannot perform {} operation on {}: Attribute is not a {}".format(
+                        op.__class__.__name__,
+                        path_to_str(self._path),
+                        expected_type.value,
+                    )
+                )
+            )
         else:
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
@@ -130,11 +136,15 @@ class _OperationsAccumulator(OperationVisitor[None]):
             # This case should never happen since inconsistencies on data types are verified on user api.
             # So such operations should not appear in the queue without delete operation between them.
             # Still we want to support this case to avoid some unclear dependencies and assumptions.
-            self._errors.append(MetadataInconsistency(
-                "Cannot perform {} operation on {}: Attribute is not a {}".format(
-                    op.__class__.__name__,
-                    path_to_str(self._path),
-                    expected_type.value)))
+            self._errors.append(
+                MetadataInconsistency(
+                    "Cannot perform {} operation on {}: Attribute is not a {}".format(
+                        op.__class__.__name__,
+                        path_to_str(self._path),
+                        expected_type.value,
+                    )
+                )
+            )
         else:
             self._type = expected_type
             self._config_ops = [op]
@@ -173,25 +183,34 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._process_modify_op(
             _DataType.FLOAT_SERIES,
             op,
-            self._log_modifier(LogFloats,
-                               ClearFloatLog,
-                               lambda op1, op2: LogFloats(op1.path, op1.values + op2.values)))
+            self._log_modifier(
+                LogFloats,
+                ClearFloatLog,
+                lambda op1, op2: LogFloats(op1.path, op1.values + op2.values),
+            ),
+        )
 
     def visit_log_strings(self, op: LogStrings) -> None:
         self._process_modify_op(
             _DataType.STRING_SERIES,
             op,
-            self._log_modifier(LogStrings,
-                               ClearStringLog,
-                               lambda op1, op2: LogStrings(op1.path, op1.values + op2.values)))
+            self._log_modifier(
+                LogStrings,
+                ClearStringLog,
+                lambda op1, op2: LogStrings(op1.path, op1.values + op2.values),
+            ),
+        )
 
     def visit_log_images(self, op: LogImages) -> None:
         self._process_modify_op(
             _DataType.IMAGE_SERIES,
             op,
-            self._log_modifier(LogImages,
-                               ClearImageLog,
-                               lambda op1, op2: LogImages(op1.path, op1.values + op2.values)))
+            self._log_modifier(
+                LogImages,
+                ClearImageLog,
+                lambda op1, op2: LogImages(op1.path, op1.values + op2.values),
+            ),
+        )
 
     def visit_clear_float_log(self, op: ClearFloatLog) -> None:
         self._process_modify_op(_DataType.FLOAT_SERIES, op, self._clear_modifier())
@@ -243,8 +262,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 self._delete_ops.append(op)
 
     @staticmethod
-    def _artifact_log_modifier(ops: List[TrackFilesToArtifact],
-                               new_op: TrackFilesToArtifact) -> List[TrackFilesToArtifact]:
+    def _artifact_log_modifier(
+        ops: List[TrackFilesToArtifact], new_op: TrackFilesToArtifact
+    ) -> List[TrackFilesToArtifact]:
         if len(ops) == 0:
             return [new_op]
 
@@ -254,15 +274,13 @@ class _OperationsAccumulator(OperationVisitor[None]):
         assert op_old.path == new_op.path
         assert op_old.project_id == new_op.project_id
         return [
-            TrackFilesToArtifact(op_old.path, op_old.project_id, op_old.entries + new_op.entries)
+            TrackFilesToArtifact(
+                op_old.path, op_old.project_id, op_old.entries + new_op.entries
+            )
         ]
 
     def visit_track_files_to_artifact(self, op: TrackFilesToArtifact) -> None:
-        self._process_modify_op(
-            _DataType.ARTIFACT,
-            op,
-            self._artifact_log_modifier
-        )
+        self._process_modify_op(_DataType.ARTIFACT, op, self._artifact_log_modifier)
 
     def visit_clear_artifact(self, op: ClearStringSet) -> None:
         self._process_modify_op(_DataType.ARTIFACT, op, self._clear_modifier())
@@ -276,9 +294,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
         return lambda ops, new_op: [new_op]
 
     @staticmethod
-    def _log_modifier(log_op_class: type,
-                      clear_op_class: type,
-                      log_combine: Callable[[T, T], T]):
+    def _log_modifier(
+        log_op_class: type, clear_op_class: type, log_combine: Callable[[T, T], T]
+    ):
         def modifier(ops, new_op):
             if len(ops) == 0:
                 return [new_op]
@@ -289,7 +307,10 @@ class _OperationsAccumulator(OperationVisitor[None]):
             elif len(ops) == 2:
                 return [ops[0], log_combine(ops[1], new_op)]
             else:
-                raise InternalClientError("Preprocessing operations failed: len(ops) == {}".format(len(ops)))
+                raise InternalClientError(
+                    "Preprocessing operations failed: len(ops) == {}".format(len(ops))
+                )
+
         return modifier
 
     @staticmethod

@@ -30,7 +30,9 @@ class ManagementOperationFailure(Exception):
 
     def __init_subclass__(cls):
         previous = REGISTERED_CODES.get(cls.code)
-        assert previous is None, f"{cls} cannot have code {cls.code} already used by {previous}"
+        assert (
+            previous is None
+        ), f"{cls} cannot have code {cls.code} already used by {previous}"
         REGISTERED_CODES[cls.code] = cls
 
     @property
@@ -48,12 +50,16 @@ class InvalidProjectName(ManagementOperationFailure):
 
 class MissingWorkspaceName(ManagementOperationFailure):
     code = 2
-    description = 'Cannot resolve project "{name}", you have to provide a workspace name.'
+    description = (
+        'Cannot resolve project "{name}", you have to provide a workspace name.'
+    )
 
 
 class ConflictingWorkspaceName(ManagementOperationFailure):
     code = 3
-    description = 'Project name "{name}" conflicts with provided workspace "{workspace}".'
+    description = (
+        'Project name "{name}" conflicts with provided workspace "{workspace}".'
+    )
 
 
 class ProjectNotFound(ManagementOperationFailure):
@@ -78,7 +84,9 @@ class AccessRevokedOnDeletion(ManagementOperationFailure):
 
 class AccessRevokedOnMemberRemoval(ManagementOperationFailure):
     code = 8
-    description = 'Not enough permissions to remove user "{user}" from project "{project}".'
+    description = (
+        'Not enough permissions to remove user "{user}" from project "{project}".'
+    )
 
 
 class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
@@ -93,14 +101,16 @@ class UserAlreadyHasAccess(ManagementOperationFailure):
 
 class ProjectsLimitReached(ManagementOperationFailure):
     code = 11
-    description = 'Project number limit reached.'
+    description = "Project number limit reached."
 
 
 class UnsupportedValue(ManagementOperationFailure):
     code = 12
-    description = '{enum} cannot have value {value}'
+    description = "{enum} cannot have value {value}"
 
 
 class BadRequestException(ManagementOperationFailure):
     code = 400
-    description = 'Your request has encountered following validation errors: {validation_errors}'
+    description = (
+        "Your request has encountered following validation errors: {validation_errors}"
+    )
