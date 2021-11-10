@@ -19,7 +19,7 @@ from neptune.new.attribute_container import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.new.types.state import ContainerState
+from neptune.new.internal.state import ContainerState
 
 RunState = ContainerState  # backwards compatibility
 

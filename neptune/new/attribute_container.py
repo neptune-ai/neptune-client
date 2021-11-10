@@ -40,6 +40,7 @@ from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.run_structure import ContainerStructure
+from neptune.new.internal.state import ContainerState
 from neptune.new.internal.utils import (
     is_bool, is_float, is_float_like, is_int, is_string, is_string_like, verify_type, is_dict_like,
 )
@@ -50,7 +51,6 @@ from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.namespace import Namespace
-from neptune.new.types.state import ContainerState
 from neptune.new.types.value import Value
 
 
