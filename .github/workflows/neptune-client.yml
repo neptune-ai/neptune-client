@@ -19,7 +19,7 @@ jobs:
           pip install -r test_requirements.txt
       - name: Run pre-commit
         run: |
-          - pre-commit run --all-files
+          pre-commit run --all-files
       - name: Lint
         run: |
           python -m pylint -j 0 -f parseable neptune tests
