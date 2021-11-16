@@ -209,14 +209,11 @@ def _upload_loop(
 def _upload_loop_chunk(
     chunk: FileChunk, file_chunk_stream: FileChunkStream, query_params: dict, **kwargs
 ):
-    if file_chunk_stream.length is not None:
-        binary_range = "bytes=%d-%d/%d" % (
-            chunk.start,
-            chunk.end - 1,
-            file_chunk_stream.length,
-        )
-    else:
-        binary_range = "bytes=%d-%d" % (chunk.start, chunk.end - 1)
+    binary_range = "bytes=%d-%d/%d" % (
+        chunk.start,
+        chunk.end - 1,
+        file_chunk_stream.length,
+    )
     headers = {
         "Content-Filename": file_chunk_stream.filename,
         "X-Range": binary_range,

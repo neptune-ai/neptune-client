@@ -200,7 +200,7 @@ def verify_client_version(client_config: ClientConfig, version: Version):
         and client_config.min_recommended_version > version
     ):
         click.echo(
-            "WARNING: There is a new version of neptune-client {} (installed: {}).".format(
+            "WARNING: We recommend an upgrade to a new version of neptune-client - {} (installed - {}).".format(
                 client_config.min_recommended_version, version
             ),
             sys.stderr,

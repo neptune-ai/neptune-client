@@ -18,11 +18,12 @@ import io
 import os
 import stat
 import tarfile
-from typing import AnyStr
+from typing import AnyStr, Union, BinaryIO, Any, Generator
 
 from future.builtins import object
 
-from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
+from neptune.internal.hardware.constants import BYTES_IN_FIVE_MB
+from neptune.internal.storage.storage_utils import UploadEntry
 
 
 class FileChunk(object):
@@ -39,11 +40,15 @@ class FileChunk(object):
 
 
 class FileChunkStream(object):
-    def __init__(self, upload_entry):
+    fobj: Union[BinaryIO, io.BytesIO]
+    filename: str
+    length: int
+
+    def __init__(self, upload_entry: UploadEntry):
         self.filename = upload_entry.target_path
         if upload_entry.is_stream():
             self.fobj = upload_entry.source_path
-            self.length = None
+            self.length = self.fobj.getbuffer().nbytes
             self.permissions = "----------"
         else:
             self.fobj = io.open(upload_entry.source_path, "rb")
@@ -74,7 +79,7 @@ class FileChunkStream(object):
             return self.__dict__ == fs.__dict__
         return False
 
-    def generate(self, chunk_size=BYTES_IN_ONE_MB):
+    def generate(self, chunk_size=BYTES_IN_FIVE_MB) -> Generator[FileChunk, Any, None]:
         last_offset = 0
         while True:
             chunk = self.fobj.read(chunk_size)

@@ -16,13 +16,12 @@
 
 import unittest
 
-from mock import patch, MagicMock
+from mock import patch
 
 from neptune.internal.storage.storage_utils import (
     UploadEntry,
     UploadPackage,
     split_upload_files,
-    upload_to_storage,
 )
 
 
@@ -64,46 +63,3 @@ class TestUploadStorageUtils(unittest.TestCase):
             [upload_entry], max_package_size=self.MAX_PACKAGE_SIZE
         ):
             self.assertFalse(package.is_empty())
-
-    @patch("io.open", new=MagicMock)
-    @patch("os.path.getsize", new=lambda path: 101 * 1024 * 1024)
-    @patch("neptune.internal.storage.storage_utils._logger.warning")
-    def test_upload_large_sources_should_generate_warning(self, warning):
-        # GIVEN
-        entry = UploadEntry("/tmp/mocked/file", "some_file")
-
-        # WHEN
-        upload_to_storage(
-            upload_entries=[entry],
-            upload_api_fun=MagicMock(),
-            upload_tar_api_fun=MagicMock(),
-            warn_limit=100 * 1024 * 1024,
-        )
-
-        # THEN
-        warning.assert_any_call(
-            "You are sending %dMB of source code to Neptune. "
-            "It is pretty uncommon - please make sure it's what you wanted.",
-            101,
-        )
-        warning.assert_any_call(
-            "%d MB (100%%) of source code was sent to Neptune.", 101
-        )
-
-    @patch("io.open", new=MagicMock)
-    @patch("os.path.getsize", new=lambda path: 99 * 1024 * 1024)
-    @patch("neptune.internal.storage.storage_utils._logger.warning")
-    def test_upload_small_sources_should_not_generate_warning(self, warning):
-        # GIVEN
-        entry = UploadEntry("/tmp/mocked/file", "some_file")
-
-        # WHEN
-        upload_to_storage(
-            upload_entries=[entry],
-            upload_api_fun=MagicMock(),
-            upload_tar_api_fun=MagicMock(),
-            warn_limit=100 * 1024 * 1024,
-        )
-
-        # THEN
-        warning.assert_not_called()

@@ -15,4 +15,5 @@
 #
 
 BYTES_IN_ONE_MB = 2 ** 20
+BYTES_IN_FIVE_MB = 5 * 2 ** 20
 BYTES_IN_ONE_GB = 2 ** 30
