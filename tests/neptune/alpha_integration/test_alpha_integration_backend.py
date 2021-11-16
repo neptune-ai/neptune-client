@@ -23,13 +23,23 @@ from freezegun import freeze_time
 from mock import MagicMock
 
 from neptune.internal.api_clients import HostedNeptuneBackendApiClient
-from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import \
-    HostedAlphaLeaderboardApiClient
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNamespace, ChannelValue, ChannelType
-from tests.neptune.new.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
+from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import (
+    HostedAlphaLeaderboardApiClient,
+)
+from neptune.internal.channels.channels import (
+    ChannelIdWithValues,
+    ChannelNamespace,
+    ChannelValue,
+    ChannelType,
+)
+from tests.neptune.new.backend_test_mixin import (
+    BackendTestMixin as AlphaBackendTestMixin,
+)
 
-API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL2FscG' \
-            'hhLnN0YWdlLm5lcHR1bmUuYWkiLCJhcGlfa2V5IjoiZDg5MGQ3Y2ItZGEzNi00MjRkLWJhNTQtZmVjZDJmYTdhOTQzIn0='
+API_TOKEN = (
+    "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL2FscG"
+    "hhLnN0YWdlLm5lcHR1bmUuYWkiLCJhcGlfa2V5IjoiZDg5MGQ3Y2ItZGEzNi00MjRkLWJhNTQtZmVjZDJmYTdhOTQzIn0="
+)
 """base64 decoded `API_TOKEN`
 {
   "api_address": "https://alpha.stage.neptune.ai",
@@ -40,25 +50,32 @@ API_TOKEN = 'eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImF
 
 
 class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixin):
-    @mock.patch('bravado.client.SwaggerClient.from_url')
-    @mock.patch('neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator',
-                new=MagicMock)
-    @mock.patch('neptune.new.internal.backends.hosted_client.NeptuneAuthenticator', new=MagicMock)
+    @mock.patch("bravado.client.SwaggerClient.from_url")
+    @mock.patch(
+        "neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator",
+        new=MagicMock,
+    )
+    @mock.patch(
+        "neptune.new.internal.backends.hosted_client.NeptuneAuthenticator",
+        new=MagicMock,
+    )
     def setUp(self, swagger_client_factory) -> None:
         # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)
         self.backend = HostedNeptuneBackendApiClient(API_TOKEN)
         self.leaderboard = HostedAlphaLeaderboardApiClient(self.backend)
-        self.exp_mock = MagicMock(
-            internal_id='00000000-0000-0000-0000-000000000000'
-        )
+        self.exp_mock = MagicMock(internal_id="00000000-0000-0000-0000-000000000000")
 
     @freeze_time()
     def _test_send_channel_values(
-            self, channel_y_elements: List[tuple], expected_operation: str, channel_type: ChannelType):
+        self,
+        channel_y_elements: List[tuple],
+        expected_operation: str,
+        channel_type: ChannelType,
+    ):
         # given prepared `ChannelIdWithValues`
-        channel_id = 'channel_id'
-        channel_name = 'channel_name'
+        channel_id = "channel_id"
+        channel_name = "channel_name"
         now_ms = int(time.time() * 1000)
         channel_with_values = ChannelIdWithValues(
             channel_id=channel_id,
@@ -68,7 +85,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
             channel_values=[
                 ChannelValue(x=None, y={channel_y_key: channel_y_value}, ts=None)
                 for channel_y_key, channel_y_value in channel_y_elements
-            ]
+            ],
         )
 
         # invoke send_channels_values
@@ -76,37 +93,53 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
 
         # expect `executeOperations` was called once with properly prepared kwargs
         expected_call_args = {
-            'experimentId': '00000000-0000-0000-0000-000000000000',
-            'operations': [{
-                'path': f'logs/{channel_name}',
-                expected_operation: {
-                    'entries': [
-                        {'value': channel_y_value, 'step': None, 'timestampMilliseconds': now_ms}
-                        for _, channel_y_value in channel_y_elements
-                    ]
+            "experimentId": "00000000-0000-0000-0000-000000000000",
+            "operations": [
+                {
+                    "path": f"logs/{channel_name}",
+                    expected_operation: {
+                        "entries": [
+                            {
+                                "value": channel_y_value,
+                                "step": None,
+                                "timestampMilliseconds": now_ms,
+                            }
+                            for _, channel_y_value in channel_y_elements
+                        ]
+                    },
                 }
-            }]
+            ],
         }
         # pylint:disable=protected-access
-        execute_operations = self.leaderboard.leaderboard_swagger_client.api.executeOperations
+        execute_operations = (
+            self.leaderboard.leaderboard_swagger_client.api.executeOperations
+        )
         self.assertEqual(len(execute_operations.call_args_list), 1)
-        self.assertDictEqual(execute_operations.call_args_list[0][1], expected_call_args)
+        self.assertDictEqual(
+            execute_operations.call_args_list[0][1], expected_call_args
+        )
 
     def test_send_channels_text_values(self):
         channel_y_elements = [
-            ('text_value', 'Line of text'),
-            ('text_value', 'Another line of text'),
+            ("text_value", "Line of text"),
+            ("text_value", "Another line of text"),
         ]
         self._test_send_channel_values(
-            channel_y_elements, expected_operation='logStrings', channel_type=ChannelType.TEXT)
+            channel_y_elements,
+            expected_operation="logStrings",
+            channel_type=ChannelType.TEXT,
+        )
 
     def test_send_channels_numeric_values(self):
         channel_y_elements = [
-            ('numeric_value', 42),
-            ('numeric_value', 0.07),
+            ("numeric_value", 42),
+            ("numeric_value", 0.07),
         ]
         self._test_send_channel_values(
-            channel_y_elements, expected_operation='logFloats', channel_type=ChannelType.NUMERIC)
+            channel_y_elements,
+            expected_operation="logFloats",
+            channel_type=ChannelType.NUMERIC,
+        )
 
     def test_send_channels_image_values(self):
         """TODO: implement in NPT-9207"""

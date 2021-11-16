@@ -24,7 +24,11 @@ import click
 from websocket import WebSocketConnectionClosedException
 
 from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
-from neptune.new.attributes.constants import SIGNAL_TYPE_ABORT, SIGNAL_TYPE_STOP, SYSTEM_FAILED_ATTRIBUTE_PATH
+from neptune.new.attributes.constants import (
+    SIGNAL_TYPE_ABORT,
+    SIGNAL_TYPE_STOP,
+    SYSTEM_FAILED_ATTRIBUTE_PATH,
+)
 
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
@@ -38,13 +42,12 @@ _logger = logging.getLogger(__name__)
 
 
 class WebsocketSignalsBackgroundJob(BackgroundJob):
-
     def __init__(self, ws_factory: WebsocketsFactory):
         self._ws_factory = ws_factory
-        self._thread: 'Optional[WebsocketSignalsBackgroundJob._ListenerThread]' = None
+        self._thread: "Optional[WebsocketSignalsBackgroundJob._ListenerThread]" = None
         self._started = False
 
-    def start(self, run: 'Run'):
+    def start(self, run: "Run"):
         self._thread = self._ListenerThread(run, self._ws_factory.create())
         self._thread.start()
         self._started = True
@@ -63,8 +66,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         self._thread.shutdown_ws_client()
 
     class _ListenerThread(Daemon):
-
-        def __init__(self, run: 'Run', ws_client: ReconnectingWebsocket):
+        def __init__(self, run: "Run", ws_client: ReconnectingWebsocket):
             super().__init__(sleep_time=0)
             self._run = run
             self._ws_client = ws_client
@@ -88,19 +90,27 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                     click.echo("Malformed websocket signal: missing type", err=True)
                     return
                 if not isinstance(msg_type, str):
-                    click.echo(f"Malformed websocket signal: type is {type(msg_type)}, should be str", err=True)
+                    click.echo(
+                        f"Malformed websocket signal: type is {type(msg_type)}, should be str",
+                        err=True,
+                    )
                     return
                 if msg_type.lower() == SIGNAL_TYPE_STOP:
                     self._handle_stop(msg_body)
                 elif msg_type.lower() == SIGNAL_TYPE_ABORT:
                     self._handle_abort(msg_body)
             except JSONDecodeError as ex:
-                click.echo(f"Malformed websocket signal: {ex}, message: {msg}", err=True)
+                click.echo(
+                    f"Malformed websocket signal: {ex}, message: {msg}", err=True
+                )
 
         def _handle_stop(self, msg_body):
             msg_body = msg_body or dict()
             if not isinstance(msg_body, dict):
-                click.echo(f"Malformed websocket signal: body is {type(msg_body)}, should be dict", err=True)
+                click.echo(
+                    f"Malformed websocket signal: body is {type(msg_body)}, should be dict",
+                    err=True,
+                )
                 return
             run_id = self._run["sys/id"].fetch()
             click.echo(f"Run {run_id} received stop signal. Exiting", err=True)
@@ -111,7 +121,10 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         def _handle_abort(self, msg_body):
             msg_body = msg_body or dict()
             if not isinstance(msg_body, dict):
-                click.echo(f"Malformed websocket signal: body is {type(msg_body)}, should be dict", err=True)
+                click.echo(
+                    f"Malformed websocket signal: body is {type(msg_body)}, should be dict",
+                    err=True,
+                )
                 return
             run_id = self._run["sys/id"].fetch()
             click.echo(f"Run {run_id} received abort signal. Exiting", err=True)
@@ -125,4 +138,4 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
 
         @staticmethod
         def _is_heartbeat(message: str):
-            return message.strip() == ''
+            return message.strip() == ""

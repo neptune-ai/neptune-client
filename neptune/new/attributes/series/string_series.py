@@ -35,20 +35,25 @@ MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
 
 class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
-
-    def __init__(self, container: 'Run', path: List[str]):
+    def __init__(self, container: "Run", path: List[str]):
         super().__init__(container, path)
         self._value_truncation_occurred = False
 
-    def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
+    def _get_log_operation_from_value(
+        self, value: Val, step: Optional[float], timestamp: float
+    ) -> Operation:
         values = [v[:MAX_STRING_SERIES_VALUE_LENGTH] for v in value.values]
-        if not self._value_truncation_occurred \
-                and any([len(v) > MAX_STRING_SERIES_VALUE_LENGTH for v in value.values]):
+        if not self._value_truncation_occurred and any(
+            [len(v) > MAX_STRING_SERIES_VALUE_LENGTH for v in value.values]
+        ):
             # the first truncation
             self._value_truncation_occurred = True
-            click.echo(f"Warning: string series '{ path_to_str(self._path)}' value was "
-                       f"longer than {MAX_STRING_SERIES_VALUE_LENGTH} characters and was truncated. "
-                       f"This warning is printed only once per series.", err=True)
+            click.echo(
+                f"Warning: string series '{ path_to_str(self._path)}' value was "
+                f"longer than {MAX_STRING_SERIES_VALUE_LENGTH} characters and was truncated. "
+                f"This warning is printed only once per series.",
+                err=True,
+            )
 
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in values]
         return LogStrings(self._path, values)
@@ -58,7 +63,12 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
         if kwargs:
-            click.echo("Warning: unexpected arguments ({kwargs}) in StringSeries".format(kwargs=kwargs), err=True)
+            click.echo(
+                "Warning: unexpected arguments ({kwargs}) in StringSeries".format(
+                    kwargs=kwargs
+                ),
+                err=True,
+            )
         return StringSeriesVal(values)
 
     def _is_value_type(self, value) -> bool:
@@ -70,4 +80,6 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
         return val.last
 
     def _fetch_values_from_backend(self, offset, limit) -> StringSeriesValues:
-        return self._backend.get_string_series_values(self._container_id, self._path, offset, limit)
+        return self._backend.get_string_series_values(
+            self._container_id, self._path, offset, limit
+        )

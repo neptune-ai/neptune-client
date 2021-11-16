@@ -21,7 +21,6 @@ from neptune.new.attributes.atoms.atom import Atom
 
 
 class Boolean(Atom):
-
     def assign(self, value: Union[BooleanVal, bool], wait: bool = False):
         if not isinstance(value, BooleanVal):
             value = BooleanVal(value)

@@ -19,8 +19,8 @@ from typing import Optional, List, TypeVar, Generic, Callable, Union
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.utils.paths import path_to_str
 
-T = TypeVar('T')
-Node = TypeVar('Node')
+T = TypeVar("T")
+Node = TypeVar("Node")
 
 
 # pylint: disable=unused-argument
@@ -41,7 +41,7 @@ class ContainerStructure(Generic[T, Node]):
         return self._structure
 
     def _iterate_node(self, node, path_prefix: List[str]):
-        """ this iterates in BFS order in order to more meaningful suggestions before cutoff """
+        """this iterates in BFS order in order to more meaningful suggestions before cutoff"""
         nodes_queue = deque([(node, path_prefix)])
         while nodes_queue:
             node, prefix = nodes_queue.popleft()
@@ -61,8 +61,12 @@ class ContainerStructure(Generic[T, Node]):
 
         for index, part in enumerate(path):
             if not isinstance(ref, self._node_type):
-                raise MetadataInconsistency("Cannot access path '{}': '{}' is already defined as an attribute, "
-                                            "not a namespace".format(path_to_str(path), path_to_str(path[:index])))
+                raise MetadataInconsistency(
+                    "Cannot access path '{}': '{}' is already defined as an attribute, "
+                    "not a namespace".format(
+                        path_to_str(path), path_to_str(path[:index])
+                    )
+                )
             if part not in ref:
                 return None
             ref = ref[part]
@@ -75,17 +79,21 @@ class ContainerStructure(Generic[T, Node]):
 
         for idx, part in enumerate(location):
             if part not in ref:
-                ref[part] = self._node_factory(location[:idx + 1])
+                ref[part] = self._node_factory(location[: idx + 1])
             ref = ref[part]
             if not isinstance(ref, self._node_type):
-                raise MetadataInconsistency("Cannot access path '{}': '{}' is already defined as an attribute, "
-                                            "not a namespace".format(path_to_str(path), part))
+                raise MetadataInconsistency(
+                    "Cannot access path '{}': '{}' is already defined as an attribute, "
+                    "not a namespace".format(path_to_str(path), part)
+                )
 
         if attribute_name in ref and isinstance(ref[attribute_name], self._node_type):
             if isinstance(attr, self._node_type):
                 # in-between nodes are auto-created, so ignore it's OK unless we want to change the type
                 return
-            raise MetadataInconsistency("Cannot set attribute '{}'. It's a namespace".format(path_to_str(path)))
+            raise MetadataInconsistency(
+                "Cannot set attribute '{}'. It's a namespace".format(path_to_str(path))
+            )
 
         ref[attribute_name] = attr
 
@@ -98,12 +106,17 @@ class ContainerStructure(Generic[T, Node]):
 
         head, tail = sub_path[0], sub_path[1:]
         if head not in ref:
-            raise MetadataInconsistency("Cannot delete {}. Attribute not found.".format(path_to_str(attr_path)))
+            raise MetadataInconsistency(
+                "Cannot delete {}. Attribute not found.".format(path_to_str(attr_path))
+            )
 
         if not tail:
             if isinstance(ref[head], self._node_type):
                 raise MetadataInconsistency(
-                    "Cannot delete {}. It's a namespace, not an attribute.".format(path_to_str(attr_path)))
+                    "Cannot delete {}. It's a namespace, not an attribute.".format(
+                        path_to_str(attr_path)
+                    )
+                )
             del ref[head]
         else:
             self._pop_impl(ref[head], tail, attr_path)

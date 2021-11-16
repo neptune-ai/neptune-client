@@ -28,15 +28,14 @@ from tests.neptune.new.helpers import create_file
 
 @patch("time.time", new=TestAttributeBase._now)
 class TestFileSeries(TestAttributeBase):
-
     def test_assign_type_error(self):
-        values = [[5.], ["text"], 55, "string", None]
+        values = [[5.0], ["text"], 55, "string", None]
         for value in values:
             with self.assertRaises(Exception):
                 FileSeries(MagicMock(), MagicMock()).assign(value)
 
     def test_log_type_error(self):
-        values = [[5.], [[]], 55, None]
+        values = [[5.0], [[]], 55, None]
         for value in values:
             with self.assertRaises(TypeError):
                 FileSeries(MagicMock(), MagicMock()).log(value)
@@ -52,14 +51,28 @@ class TestFileSeries(TestAttributeBase):
         file = File.as_image(numpy.random.rand(10, 10) * 255)
 
         # when
-        attr.log(file, step=3, timestamp=self._now(), wait=wait, name="nazwa", description="opis")
+        attr.log(
+            file,
+            step=3,
+            timestamp=self._now(),
+            wait=wait,
+            name="nazwa",
+            description="opis",
+        )
 
         # then
         op_processor.enqueue_operation.assert_called_once_with(
-            LogImages(path, [LogImages.ValueType(
-                ImageValue(base64_encode(file.content), "nazwa", "opis"),
-                3,
-                self._now())]), wait
+            LogImages(
+                path,
+                [
+                    LogImages.ValueType(
+                        ImageValue(base64_encode(file.content), "nazwa", "opis"),
+                        3,
+                        self._now(),
+                    )
+                ],
+            ),
+            wait,
         )
 
     def test_assign_content(self):
@@ -76,13 +89,24 @@ class TestFileSeries(TestAttributeBase):
         attr.assign([file], wait=wait)
 
         # then
-        op_processor.enqueue_operation.assert_has_calls([
-            call(ClearImageLog(path), False),
-            call(LogImages(path, [LogImages.ValueType(
-                ImageValue(base64_encode(file.content), None, None),
-                None,
-                self._now())]), wait),
-        ])
+        op_processor.enqueue_operation.assert_has_calls(
+            [
+                call(ClearImageLog(path), False),
+                call(
+                    LogImages(
+                        path,
+                        [
+                            LogImages.ValueType(
+                                ImageValue(base64_encode(file.content), None, None),
+                                None,
+                                self._now(),
+                            )
+                        ],
+                    ),
+                    wait,
+                ),
+            ]
+        )
 
     def test_log_path(self):
         # given
@@ -97,14 +121,27 @@ class TestFileSeries(TestAttributeBase):
             saved_file = File(tmp_filename)
 
             # when
-            attr.log(saved_file, step=3, timestamp=self._now(), wait=wait, description="something")
+            attr.log(
+                saved_file,
+                step=3,
+                timestamp=self._now(),
+                wait=wait,
+                description="something",
+            )
 
             # then
             op_processor.enqueue_operation.assert_called_once_with(
-                LogImages(path, [LogImages.ValueType(
-                    ImageValue(base64_encode(file.content), None, "something"),
-                    3,
-                    self._now())]), wait
+                LogImages(
+                    path,
+                    [
+                        LogImages.ValueType(
+                            ImageValue(base64_encode(file.content), None, "something"),
+                            3,
+                            self._now(),
+                        )
+                    ],
+                ),
+                wait,
             )
 
     def test_log_raise_not_image(self):

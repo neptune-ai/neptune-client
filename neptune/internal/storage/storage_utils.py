@@ -20,7 +20,10 @@ from pprint import pformat
 from abc import ABCMeta, abstractmethod
 import six
 
-from neptune.internal.storage.datastream import compress_to_tar_gz_in_memory, FileChunkStream
+from neptune.internal.storage.datastream import (
+    compress_to_tar_gz_in_memory,
+    FileChunkStream,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -61,7 +64,7 @@ class UploadEntry(object):
         return self.to_str()
 
     def is_stream(self):
-        return hasattr(self.source_path, 'read')
+        return hasattr(self.source_path, "read")
 
 
 class UploadPackage(object):
@@ -110,7 +113,6 @@ class UploadPackage(object):
 
 @six.add_metaclass(ABCMeta)
 class ProgressIndicator(object):
-
     @abstractmethod
     def progress(self, steps):
         pass
@@ -126,22 +128,28 @@ class LoggingProgressIndicator(ProgressIndicator):
         self.total = total
         self.last_warning = time.time()
         self.frequency = frequency
-        _logger.warning('You are sending %dMB of source code to Neptune. '
-                        'It is pretty uncommon - please make sure it\'s what you wanted.',
-                        self.total / (1024 * 1024))
+        _logger.warning(
+            "You are sending %dMB of source code to Neptune. "
+            "It is pretty uncommon - please make sure it's what you wanted.",
+            self.total / (1024 * 1024),
+        )
 
     def progress(self, steps):
         self.current += steps
         if time.time() - self.last_warning > self.frequency:
-            _logger.warning('%d MB / %d MB (%d%%) of source code was sent to Neptune.',
-                            self.current / (1024 * 1024),
-                            self.total / (1024 * 1024),
-                            100 * self.current / self.total)
+            _logger.warning(
+                "%d MB / %d MB (%d%%) of source code was sent to Neptune.",
+                self.current / (1024 * 1024),
+                self.total / (1024 * 1024),
+                100 * self.current / self.total,
+            )
             self.last_warning = time.time()
 
     def complete(self):
-        _logger.warning('%d MB (100%%) of source code was sent to Neptune.',
-                        self.total / (1024 * 1024))
+        _logger.warning(
+            "%d MB (100%%) of source code was sent to Neptune.",
+            self.total / (1024 * 1024),
+        )
 
 
 class SilentProgressIndicator(ProgressIndicator):
@@ -168,9 +176,16 @@ def scan_unique_upload_entries(upload_entries):
         else:
             for root, _, files in os.walk(entry.source_path):
                 path_relative_to_entry_source = os.path.relpath(root, entry.source_path)
-                target_root = os.path.normpath(os.path.join(entry.target_path, path_relative_to_entry_source))
+                target_root = os.path.normpath(
+                    os.path.join(entry.target_path, path_relative_to_entry_source)
+                )
                 for filename in files:
-                    walked_entries.add(UploadEntry(os.path.join(root, filename), os.path.join(target_root, filename)))
+                    walked_entries.add(
+                        UploadEntry(
+                            os.path.join(root, filename),
+                            os.path.join(target_root, filename),
+                        )
+                    )
 
     return walked_entries
 
@@ -188,8 +203,10 @@ def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_fil
             current_package.reset()
         else:
             size = os.path.getsize(entry.source_path)
-            if (size + current_package.size > max_package_size or current_package.len > max_files) \
-                    and not current_package.is_empty():
+            if (
+                size + current_package.size > max_package_size
+                or current_package.len > max_files
+            ) and not current_package.is_empty():
                 yield current_package
                 current_package.reset()
             current_package.update(entry, size)
@@ -198,10 +215,12 @@ def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_fil
 
 
 def normalize_file_name(name):
-    return name.replace(os.sep, '/')
+    return name.replace(os.sep, "/")
 
 
-def upload_to_storage(upload_entries, upload_api_fun, upload_tar_api_fun, warn_limit=None, **kwargs):
+def upload_to_storage(
+    upload_entries, upload_api_fun, upload_tar_api_fun, warn_limit=None, **kwargs
+):
     unique_upload_entries = scan_unique_upload_entries(upload_entries)
     progress_indicator = SilentProgressIndicator()
 
@@ -218,8 +237,11 @@ def upload_to_storage(upload_entries, upload_api_fun, upload_tar_api_fun, warn_l
             continue
 
         uploading_multiple_entries = package.len > 1
-        creating_a_single_empty_dir = package.len == 1 and not package.items[0].is_stream() \
-                                      and os.path.isdir(package.items[0].source_path)
+        creating_a_single_empty_dir = (
+            package.len == 1
+            and not package.items[0].is_stream()
+            and os.path.isdir(package.items[0].source_path)
+        )
 
         if uploading_multiple_entries or creating_a_single_empty_dir:
             data = compress_to_tar_gz_in_memory(upload_entries=package.items)
@@ -227,6 +249,12 @@ def upload_to_storage(upload_entries, upload_api_fun, upload_tar_api_fun, warn_l
             progress_indicator.progress(package.size)
         else:
             file_chunk_stream = FileChunkStream(package.items[0])
-            upload_api_fun(**dict(kwargs, data=file_chunk_stream, progress_indicator=progress_indicator))
+            upload_api_fun(
+                **dict(
+                    kwargs,
+                    data=file_chunk_stream,
+                    progress_indicator=progress_indicator,
+                )
+            )
 
     progress_indicator.complete()

@@ -35,55 +35,57 @@ class MetricsFactory(object):
             cpu_usage_metric=cpu_usage_metric,
             memory_metric=memory_metric,
             gpu_usage_metric=gpu_usage_metric,
-            gpu_memory_metric=gpu_memory_metric
+            gpu_memory_metric=gpu_memory_metric,
         )
 
     def __create_cpu_usage_metric(self):
         return Metric(
-            name=u'CPU - usage',
-            description=u'average of all cores',
+            name=u"CPU - usage",
+            description=u"average of all cores",
             resource_type=MetricResourceType.CPU,
-            unit=u'%',
+            unit=u"%",
             min_value=0.0,
             max_value=100.0,
-            gauges=[self.__gauge_factory.create_cpu_usage_gauge()]
+            gauges=[self.__gauge_factory.create_cpu_usage_gauge()],
         )
 
     def __create_memory_metric(self):
         return Metric(
-            name=u'RAM',
-            description=u'',
+            name=u"RAM",
+            description=u"",
             resource_type=MetricResourceType.RAM,
-            unit=u'GB',
+            unit=u"GB",
             min_value=0.0,
-            max_value=self.__system_resource_info.memory_amount_bytes / float(BYTES_IN_ONE_GB),
-            gauges=[self.__gauge_factory.create_memory_usage_gauge()]
+            max_value=self.__system_resource_info.memory_amount_bytes
+            / float(BYTES_IN_ONE_GB),
+            gauges=[self.__gauge_factory.create_memory_usage_gauge()],
         )
 
     def __create_gpu_usage_metric(self):
         return Metric(
-            name=u'GPU - usage',
-            description=u'{} cards'.format(self.__system_resource_info.gpu_card_count),
+            name=u"GPU - usage",
+            description=u"{} cards".format(self.__system_resource_info.gpu_card_count),
             resource_type=MetricResourceType.GPU,
-            unit=u'%',
+            unit=u"%",
             min_value=0.0,
             max_value=100.0,
             gauges=[
                 self.__gauge_factory.create_gpu_usage_gauge(card_index=card_index)
                 for card_index in self.__system_resource_info.gpu_card_indices
-            ]
+            ],
         )
 
     def __create_gpu_memory_metric(self):
         return Metric(
-            name=u'GPU - memory',
-            description=u'{} cards'.format(self.__system_resource_info.gpu_card_count),
+            name=u"GPU - memory",
+            description=u"{} cards".format(self.__system_resource_info.gpu_card_count),
             resource_type=MetricResourceType.GPU_RAM,
-            unit=u'GB',
+            unit=u"GB",
             min_value=0.0,
-            max_value=self.__system_resource_info.gpu_memory_amount_bytes / float(BYTES_IN_ONE_GB),
+            max_value=self.__system_resource_info.gpu_memory_amount_bytes
+            / float(BYTES_IN_ONE_GB),
             gauges=[
                 self.__gauge_factory.create_gpu_memory_gauge(card_index=card_index)
                 for card_index in self.__system_resource_info.gpu_card_indices
-            ]
+            ],
         )

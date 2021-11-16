@@ -26,14 +26,19 @@ from neptune.new.attributes.atoms.atom import Atom
 
 
 class File(Atom):
-
     def assign(self, value: FileVal, wait: bool = False) -> None:
         verify_type("value", value, FileVal)
 
         if value.path is not None:
-            operation = UploadFile(self._path, ext=value.extension, file_path=os.path.abspath(value.path))
+            operation = UploadFile(
+                self._path, ext=value.extension, file_path=os.path.abspath(value.path)
+            )
         elif value.content is not None:
-            operation = UploadFileContent(self._path, ext=value.extension, file_content=base64_encode(value.content))
+            operation = UploadFileContent(
+                self._path,
+                ext=value.extension,
+                file_content=base64_encode(value.content),
+            )
         else:
             raise ValueError("File path and content are None")
 

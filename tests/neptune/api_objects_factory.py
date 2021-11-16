@@ -30,12 +30,12 @@ def a_project():
 def an_invited_project_member():
     invitation_info = MagicMock()
     invitation_info.id = a_uuid_string()
-    invitation_info.email = a_string() + '@example.com'
+    invitation_info.email = a_string() + "@example.com"
 
     project_member = MagicMock()
     project_member.invitationInfo = invitation_info
     project_member.registeredMemberInfo = None
-    project_member.role = 'member'
+    project_member.role = "member"
 
     return project_member
 
@@ -45,8 +45,8 @@ def a_registered_project_member(username=None):
         username = a_string()
 
     registered_member_info = MagicMock()
-    registered_member_info.avatarSource = 'default'
-    registered_member_info.avatarUrl = ''
+    registered_member_info.avatarSource = "default"
+    registered_member_info.avatarUrl = ""
     registered_member_info.firstName = a_string()
     registered_member_info.lastName = a_string()
     registered_member_info.username = username
@@ -54,13 +54,23 @@ def a_registered_project_member(username=None):
     project_member = MagicMock()
     project_member.invitationInfo = None
     project_member.registeredMemberInfo = registered_member_info
-    project_member.role = 'manager'
+    project_member.role = "manager"
 
     return project_member
 
 
-def an_experiment_states(creating=None, waiting=None, initializing=None, running=None, cleaning=None, aborted=None,
-                         crashed=None, failed=None, succeeded=None, not_responding=None):
+def an_experiment_states(
+    creating=None,
+    waiting=None,
+    initializing=None,
+    running=None,
+    cleaning=None,
+    aborted=None,
+    crashed=None,
+    failed=None,
+    succeeded=None,
+    not_responding=None,
+):
     def random_state_count():
         return randint(1, 100)
 
@@ -89,7 +99,7 @@ def a_parameter():
     p = MagicMock()
     p.id = a_uuid_string()
     p.name = a_string()
-    p.parameterType = 'double'
+    p.parameterType = "double"
     p.value = str(uniform(-100, 100))
     return p
 
@@ -98,7 +108,7 @@ def a_channel_value():
     cv = MagicMock()
     cv.channelId = a_uuid_string()
     cv.channelName = a_string()
-    cv.channelType = 'numeric'
+    cv.channelType = "numeric"
     cv.x = uniform(1, 100)
     cv.y = str(uniform(1, 100))
     return cv
@@ -106,11 +116,11 @@ def a_channel_value():
 
 def an_experiment_leaderboard_entry_dto():
     entry = MagicMock()
-    entry.entryType = 'experiment'
+    entry.entryType = "experiment"
     entry.id = a_uuid_string()
     entry.shortId = a_string()
     entry.projectId = a_uuid_string()
-    entry.state = 'succeeded'
+    entry.state = "succeeded"
     entry.experimentStates = an_experiment_states(succeeded=1)
     entry.responding = True
     entry.name = a_string()

@@ -33,4 +33,4 @@ class WebsocketMessageProcessor(object):
 
     @staticmethod
     def _is_heartbeat(message):
-        return message.strip() == ''
+        return message.strip() == ""

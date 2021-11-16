@@ -20,15 +20,19 @@ class Message(object):
     def __init__(self):
         pass
 
-    MESSAGE_TYPE = 'messageType'
-    MESSAGE_NEW_TYPE = 'type'
-    MESSAGE_BODY = 'messageBody'
-    MESSAGE_NEW_BODY = 'body'
+    MESSAGE_TYPE = "messageType"
+    MESSAGE_NEW_TYPE = "type"
+    MESSAGE_BODY = "messageBody"
+    MESSAGE_NEW_BODY = "body"
 
     @classmethod
     def from_json(cls, json_value):
-        message_type = json_value.get(Message.MESSAGE_TYPE) or json_value.get(Message.MESSAGE_NEW_TYPE)
-        message_body = json_value.get(Message.MESSAGE_BODY) or json_value.get(Message.MESSAGE_NEW_BODY)
+        message_type = json_value.get(Message.MESSAGE_TYPE) or json_value.get(
+            Message.MESSAGE_NEW_TYPE
+        )
+        message_body = json_value.get(Message.MESSAGE_BODY) or json_value.get(
+            Message.MESSAGE_NEW_BODY
+        )
 
         if message_type == SIGNAL_TYPE_STOP:
             message_type = MessageType.STOP
@@ -36,7 +40,9 @@ class Message(object):
             message_type = MessageType.ABORT
 
         if message_type in MessageClassRegistry.MESSAGE_CLASSES:
-            return MessageClassRegistry.MESSAGE_CLASSES[message_type].from_json(message_body)
+            return MessageClassRegistry.MESSAGE_CLASSES[message_type].from_json(
+                message_body
+            )
         else:
             raise ValueError(u"Unknown message type '{}'!".format(message_type))
 
@@ -75,9 +81,9 @@ class StopMessage(Message):
 
 
 class ActionInvocationMessage(Message):
-    _ACTION_ID_JSON_KEY = 'actionId'
-    _ACTION_INVOCATION_ID_JSON_KEY = 'actionInvocationId'
-    _ARGUMENT_JSON_KEY = 'argument'
+    _ACTION_ID_JSON_KEY = "actionId"
+    _ACTION_INVOCATION_ID_JSON_KEY = "actionInvocationId"
+    _ARGUMENT_JSON_KEY = "argument"
 
     def __init__(self, action_id, action_invocation_id, argument):
         super(ActionInvocationMessage, self).__init__()
@@ -94,22 +100,23 @@ class ActionInvocationMessage(Message):
         field_names = [
             cls._ACTION_ID_JSON_KEY,
             cls._ACTION_INVOCATION_ID_JSON_KEY,
-            cls._ARGUMENT_JSON_KEY]
+            cls._ARGUMENT_JSON_KEY,
+        ]
         return ActionInvocationMessage(*[json_value[field] for field in field_names])
 
     def body_to_json(self):
         return {
             self._ACTION_ID_JSON_KEY: self.action_id,
             self._ACTION_INVOCATION_ID_JSON_KEY: self.action_invocation_id,
-            self._ARGUMENT_JSON_KEY: self.argument
+            self._ARGUMENT_JSON_KEY: self.argument,
         }
 
 
 class MessageType(object):
-    NEW_CHANNEL_VALUES = 'NewChannelValues'
-    ABORT = 'Abort'
-    STOP = 'Stop'
-    ACTION_INVOCATION = 'InvokeAction'
+    NEW_CHANNEL_VALUES = "NewChannelValues"
+    ABORT = "Abort"
+    STOP = "Stop"
+    ACTION_INVOCATION = "InvokeAction"
 
 
 class MessageClassRegistry(object):

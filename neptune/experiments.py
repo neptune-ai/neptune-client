@@ -22,8 +22,16 @@ import six
 from pandas.errors import EmptyDataError
 
 from neptune.api_exceptions import ChannelDoesNotExist, ExperimentAlreadyFinished
-from neptune.exceptions import InvalidChannelValue, NoChannelValue, NeptuneIncorrectImportException
-from neptune.internal.channels.channels import ChannelNamespace, ChannelType, ChannelValue
+from neptune.exceptions import (
+    InvalidChannelValue,
+    NoChannelValue,
+    NeptuneIncorrectImportException,
+)
+from neptune.internal.channels.channels import (
+    ChannelNamespace,
+    ChannelType,
+    ChannelValue,
+)
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.utils.image import get_image_content
@@ -146,13 +154,7 @@ class Experiment(object):
 
     @property
     def limits(self):
-        return {
-            'channels': {
-                'numeric': 1000,
-                'text': 100,
-                'image': 100
-            }
-        }
+        return {"channels": {"numeric": 1000, "text": 100, "image": 100}}
 
     def get_system_properties(self):
         """Retrieve experiment properties.
@@ -172,19 +174,19 @@ class Experiment(object):
         """
         experiment = self._backend.get_experiment(self._internal_id)
         return {
-            'id': experiment.shortId,
-            'name': experiment.name,
-            'created': experiment.timeOfCreation,
-            'finished': experiment.timeOfCompletion,
-            'running_time': experiment.runningTime,
-            'owner': experiment.owner,
-            'storage_size': experiment.storageSize,
-            'channels_size': experiment.channelsSize,
-            'size': experiment.storageSize + experiment.channelsSize,
-            'tags': experiment.tags,
-            'notes': experiment.description,
-            'description': experiment.description,
-            'hostname': experiment.hostname
+            "id": experiment.shortId,
+            "name": experiment.name,
+            "created": experiment.timeOfCreation,
+            "finished": experiment.timeOfCompletion,
+            "running_time": experiment.runningTime,
+            "owner": experiment.owner,
+            "storage_size": experiment.storageSize,
+            "channels_size": experiment.channelsSize,
+            "size": experiment.storageSize + experiment.channelsSize,
+            "tags": experiment.tags,
+            "notes": experiment.description,
+            "description": experiment.description,
+            "hostname": experiment.hostname,
         }
 
     def get_tags(self):
@@ -228,9 +230,9 @@ class Experiment(object):
             tags_list = tag
         else:
             tags_list = [tag] + list(tags)
-        self._backend.update_tags(experiment=self,
-                                  tags_to_add=tags_list,
-                                  tags_to_delete=[])
+        self._backend.update_tags(
+            experiment=self, tags_to_add=tags_list, tags_to_delete=[]
+        )
 
     def append_tags(self, tag, *tags):
         """Append tag(s) to the current experiment.
@@ -256,13 +258,10 @@ class Experiment(object):
         Note:
             Removing a tag that is not assigned to this experiment is silently ignored.
         """
-        self._backend.update_tags(experiment=self,
-                                  tags_to_add=[],
-                                  tags_to_delete=[tag])
+        self._backend.update_tags(experiment=self, tags_to_add=[], tags_to_delete=[tag])
 
     def get_channels(self):
-        """Alias for :meth:`~neptune.experiments.Experiment.get_logs`
-        """
+        """Alias for :meth:`~neptune.experiments.Experiment.get_logs`"""
         return self.get_logs()
 
     def get_logs(self):
@@ -278,10 +277,18 @@ class Experiment(object):
 
                 exp_logs = experiment.get_logs()
         """
-        def get_channel_value(ch):
-            return float(ch.y) if ch.y is not None and ch.channelType == "numeric" else ch.y
 
-        return {key: get_channel_value(ch) for key, ch in self._backend.get_channels(self).items()}
+        def get_channel_value(ch):
+            return (
+                float(ch.y)
+                if ch.y is not None and ch.channelType == "numeric"
+                else ch.y
+            )
+
+        return {
+            key: get_channel_value(ch)
+            for key, ch in self._backend.get_channels(self).items()
+        }
 
     def _get_system_channels(self):
         return self._backend.get_system_channels(self)
@@ -350,23 +357,29 @@ class Experiment(object):
         x, y = self._get_valid_x_y(x, y)
 
         if not is_float(y):
-            raise InvalidChannelValue(expected_type='float', actual_type=type(y).__name__)
+            raise InvalidChannelValue(
+                expected_type="float", actual_type=type(y).__name__
+            )
 
         if is_nan_or_inf(y):
             _logger.warning(
-                'Invalid metric value: %s for channel %s. '
-                'Metrics with nan or +/-inf values will not be sent to server',
+                "Invalid metric value: %s for channel %s. "
+                "Metrics with nan or +/-inf values will not be sent to server",
                 y,
-                log_name)
+                log_name,
+            )
         elif x is not None and is_nan_or_inf(x):
             _logger.warning(
-                'Invalid metric x-coordinate: %s for channel %s. '
-                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
+                "Invalid metric x-coordinate: %s for channel %s. "
+                "Metrics with nan or +/-inf x-coordinates will not be sent to server",
                 x,
-                log_name)
+                log_name,
+            )
         else:
             value = ChannelValue(x, dict(numeric_value=y), timestamp)
-            self._channels_values_sender.send(log_name, ChannelType.NUMERIC.value, value)
+            self._channels_values_sender.send(
+                log_name, ChannelType.NUMERIC.value, value
+            )
 
     def send_text(self, channel_name, x, y=None, timestamp=None):
         """Log text data in Neptune.
@@ -420,26 +433,31 @@ class Experiment(object):
             x = None
 
         if not isinstance(y, six.string_types):
-            raise InvalidChannelValue(expected_type='str', actual_type=type(y).__name__)
+            raise InvalidChannelValue(expected_type="str", actual_type=type(y).__name__)
 
         if x is not None and is_nan_or_inf(x):
             _logger.warning(
-                'Invalid metric x-coordinate: %s for channel %s. '
-                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
+                "Invalid metric x-coordinate: %s for channel %s. "
+                "Metrics with nan or +/-inf x-coordinates will not be sent to server",
                 x,
-                log_name)
+                log_name,
+            )
         else:
             value = ChannelValue(x, dict(text_value=y), timestamp)
             self._channels_values_sender.send(log_name, ChannelType.TEXT.value, value)
 
-    def send_image(self, channel_name, x, y=None, name=None, description=None, timestamp=None):
+    def send_image(
+        self, channel_name, x, y=None, name=None, description=None, timestamp=None
+    ):
         """Log image data in Neptune.
 
         Alias for :meth:`~neptune.experiments.Experiment.log_image`
         """
         return self.log_image(channel_name, x, y, name, description, timestamp)
 
-    def log_image(self, log_name, x, y=None, image_name=None, description=None, timestamp=None):
+    def log_image(
+        self, log_name, x, y=None, image_name=None, description=None, timestamp=None
+    ):
         """Log image data in Neptune
 
         | If a log with provided ``log_name`` does not exist, it is created automatically.
@@ -554,25 +572,25 @@ class Experiment(object):
 
         image_content = get_image_content(y)
         if len(image_content) > self.IMAGE_SIZE_LIMIT_MB * 1024 * 1024:
-            _logger.warning('Your image is larger than %dMB. Neptune supports logging images smaller than %dMB. '
-                            'Resize or increase compression of this image',
-                            self.IMAGE_SIZE_LIMIT_MB,
-                            self.IMAGE_SIZE_LIMIT_MB)
+            _logger.warning(
+                "Your image is larger than %dMB. Neptune supports logging images smaller than %dMB. "
+                "Resize or increase compression of this image",
+                self.IMAGE_SIZE_LIMIT_MB,
+                self.IMAGE_SIZE_LIMIT_MB,
+            )
             image_content = None
 
-        input_image = dict(
-            name=image_name,
-            description=description
-        )
+        input_image = dict(name=image_name, description=description)
         if image_content:
-            input_image['data'] = base64.b64encode(image_content).decode('utf-8')
+            input_image["data"] = base64.b64encode(image_content).decode("utf-8")
 
         if x is not None and is_nan_or_inf(x):
             _logger.warning(
-                'Invalid metric x-coordinate: %s for channel %s. '
-                'Metrics with nan or +/-inf x-coordinates will not be sent to server',
+                "Invalid metric x-coordinate: %s for channel %s. "
+                "Metrics with nan or +/-inf x-coordinates will not be sent to server",
                 x,
-                log_name)
+                log_name,
+            )
         else:
             value = ChannelValue(x, dict(image_value=input_image), timestamp)
             self._channels_values_sender.send(log_name, ChannelType.IMAGE.value, value)
@@ -780,7 +798,10 @@ class Experiment(object):
                 exp_params = experiment.get_parameters()
         """
         experiment = self._backend.get_experiment(self.internal_id)
-        return dict((p.name, self._convert_parameter_value(p.value, p.parameterType)) for p in experiment.parameters)
+        return dict(
+            (p.name, self._convert_parameter_value(p.value, p.parameterType))
+            for p in experiment.parameters
+        )
 
     def get_properties(self):
         """Retrieve User-defined properties for this experiment.
@@ -919,27 +940,33 @@ class Experiment(object):
             channel_id = channels_by_name[channel_name].id
             try:
                 channels_data[channel_name] = pd.read_csv(
-                    self._backend.get_channel_points_csv(self, channel_id, channel_name),
+                    self._backend.get_channel_points_csv(
+                        self, channel_id, channel_name
+                    ),
                     header=None,
-                    names=['x_{}'.format(channel_name), 'y_{}'.format(channel_name)],
-                    dtype=float
+                    names=["x_{}".format(channel_name), "y_{}".format(channel_name)],
+                    dtype=float,
                 )
             except EmptyDataError:
                 channels_data[channel_name] = pd.DataFrame(
-                    columns=['x_{}'.format(channel_name), 'y_{}'.format(channel_name)],
-                    dtype=float
+                    columns=["x_{}".format(channel_name), "y_{}".format(channel_name)],
+                    dtype=float,
                 )
 
-        return align_channels_on_x(pd.concat(channels_data.values(), axis=1, sort=False))
+        return align_channels_on_x(
+            pd.concat(channels_data.values(), axis=1, sort=False)
+        )
 
-    def _start(self,
-               abort_callback=None,
-               logger=None,
-               upload_stdout=True,
-               upload_stderr=True,
-               send_hardware_metrics=True,
-               run_monitoring_thread=True,
-               handle_uncaught_exceptions=True):
+    def _start(
+        self,
+        abort_callback=None,
+        logger=None,
+        upload_stdout=True,
+        upload_stderr=True,
+        send_hardware_metrics=True,
+        run_monitoring_thread=True,
+        handle_uncaught_exceptions=True,
+    ):
 
         self._execution_context.start(
             abort_callback=abort_callback,
@@ -948,7 +975,7 @@ class Experiment(object):
             upload_stderr=upload_stderr,
             send_hardware_metrics=send_hardware_metrics,
             run_monitoring_thread=run_monitoring_thread,
-            handle_uncaught_exceptions=handle_uncaught_exceptions
+            handle_uncaught_exceptions=handle_uncaught_exceptions,
         )
 
     def stop(self, exc_tb=None):
@@ -998,21 +1025,25 @@ class Experiment(object):
             self.stop("\n".join(traceback.format_tb(exc_tb)) + "\n" + repr(exc_val))
 
     def __str__(self):
-        return 'Experiment({})'.format(self.id)
+        return "Experiment({})".format(self.id)
 
     def __repr__(self):
         return str(self)
 
     def __eq__(self, o):
         # pylint: disable=protected-access
-        return self._id == o._id and self._internal_id == o._internal_id and self._project == o._project
+        return (
+            self._id == o._id
+            and self._internal_id == o._internal_id
+            and self._project == o._project
+        )
 
     def __ne__(self, o):
         return not self.__eq__(o)
 
     @staticmethod
     def _convert_parameter_value(value, parameter_type):
-        if parameter_type == 'double':
+        if parameter_type == "double":
             return float(value)
         else:
             return value
@@ -1037,7 +1068,9 @@ class Experiment(object):
 
         if x is not None and y is not None:
             if not is_float(x):
-                raise InvalidChannelValue(expected_type='float', actual_type=type(x).__name__)
+                raise InvalidChannelValue(
+                    expected_type="float", actual_type=type(x).__name__
+                )
             return x, y
 
     def _send_channels_values(self, channels_with_values):
@@ -1053,10 +1086,14 @@ class Experiment(object):
             channels_by_name[channel.name] = channel
         return channels_by_name
 
-    def _get_channel(self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
+    def _get_channel(
+        self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER
+    ):
         channel = self._find_channel(channel_name, channel_namespace)
         if channel is None:
-            channel = self._create_channel(channel_name, channel_type, channel_namespace)
+            channel = self._create_channel(
+                channel_name, channel_type, channel_namespace
+            )
         return channel
 
     def _find_channel(self, channel_name, channel_namespace):
@@ -1067,7 +1104,9 @@ class Experiment(object):
         else:
             raise RuntimeError("Unknown channel namespace {}".format(channel_namespace))
 
-    def _create_channel(self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
+    def _create_channel(
+        self, channel_name, channel_type, channel_namespace=ChannelNamespace.USER
+    ):
         if channel_namespace == ChannelNamespace.USER:
             return self._backend.create_channel(self, channel_name, channel_type)
         elif channel_namespace == ChannelNamespace.SYSTEM:

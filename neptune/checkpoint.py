@@ -16,7 +16,6 @@
 
 
 class Checkpoint(object):
-
     def __init__(self, _id, name, path):
         self.id = _id
         self.name = name

@@ -24,8 +24,9 @@ from neptune.model import ChannelWithLastValue
 from neptune.backend import LeaderboardApiClient
 
 from neptune.exceptions import ProjectMigratedToNewStructure
-from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import \
-    HostedNeptuneLeaderboardApiClient
+from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import (
+    HostedNeptuneLeaderboardApiClient,
+)
 
 if TYPE_CHECKING:
     from neptune.internal.api_clients import HostedNeptuneBackendApiClient
@@ -36,14 +37,16 @@ _logger = logging.getLogger(__name__)
 # pylint: disable=protected-access
 def with_migration_handling(func):
     @wraps(func)
-    def wrapper(api_proxy: 'MigrationSwitchLeaderboardApiClientProxy', *args, **kwargs):
+    def wrapper(api_proxy: "MigrationSwitchLeaderboardApiClientProxy", *args, **kwargs):
         try:
             return func(api_proxy, *args, **kwargs)
         except ProjectMigratedToNewStructure:
             if not api_proxy._switched:
                 api_proxy._lock.acquire()
                 if not api_proxy._switched:
-                    api_proxy._client = api_proxy._backend_client.get_new_leaderboard_client()
+                    api_proxy._client = (
+                        api_proxy._backend_client.get_new_leaderboard_client()
+                    )
                     api_proxy._switched = True
                 api_proxy._lock.release()
             return func(api_proxy, *args, **kwargs)
@@ -52,8 +55,11 @@ def with_migration_handling(func):
 
 
 class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
-
-    def __init__(self, api_client: HostedNeptuneLeaderboardApiClient, backend_client: 'HostedNeptuneBackendApiClient'):
+    def __init__(
+        self,
+        api_client: HostedNeptuneLeaderboardApiClient,
+        backend_client: "HostedNeptuneBackendApiClient",
+    ):
         self._client = api_client
         self._backend_client = backend_client
         self._lock = threading.RLock()
@@ -100,11 +106,19 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
         return self._client.get_project_members(project_identifier)
 
     @with_migration_handling
-    def get_leaderboard_entries(self, project,
-                                entry_types=None, ids=None,
-                                states=None, owners=None, tags=None,
-                                min_running_time=None):
-        return self._client.get_leaderboard_entries(project, entry_types, ids, states, owners, tags, min_running_time)
+    def get_leaderboard_entries(
+        self,
+        project,
+        entry_types=None,
+        ids=None,
+        states=None,
+        owners=None,
+        tags=None,
+        min_running_time=None,
+    ):
+        return self._client.get_leaderboard_entries(
+            project, entry_types, ids, states, owners, tags, min_running_time
+        )
 
     @with_migration_handling
     def websockets_factory(self, project_id, experiment_id):
@@ -112,22 +126,46 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
 
     @with_migration_handling
     def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
-        return self._client.get_channel_points_csv(experiment, channel_internal_id, channel_name)
+        return self._client.get_channel_points_csv(
+            experiment, channel_internal_id, channel_name
+        )
 
     @with_migration_handling
     def get_metrics_csv(self, experiment):
         return self._client.get_metrics_csv(experiment)
 
     @with_migration_handling
-    def create_experiment(self, project, name, description,
-                          params, properties, tags, abortable,
-                          monitored, git_info, hostname, entrypoint,
-                          notebook_id, checkpoint_id):
+    def create_experiment(
+        self,
+        project,
+        name,
+        description,
+        params,
+        properties,
+        tags,
+        abortable,
+        monitored,
+        git_info,
+        hostname,
+        entrypoint,
+        notebook_id,
+        checkpoint_id,
+    ):
         return self._client.create_experiment(
-            project, name, description,
-            params, properties, tags, abortable,
-            monitored, git_info, hostname, entrypoint,
-            notebook_id, checkpoint_id)
+            project,
+            name,
+            description,
+            params,
+            properties,
+            tags,
+            abortable,
+            monitored,
+            git_info,
+            hostname,
+            entrypoint,
+            notebook_id,
+            checkpoint_id,
+        )
 
     @with_migration_handling
     def upload_source_code(self, experiment, source_target_pairs):
@@ -171,7 +209,9 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
 
     @with_migration_handling
     def upload_experiment_source(self, experiment, data, progress_indicator):
-        return self._client.upload_experiment_source(experiment, data, progress_indicator)
+        return self._client.upload_experiment_source(
+            experiment, data, progress_indicator
+        )
 
     @with_migration_handling
     def extract_experiment_source(self, experiment, data):
@@ -187,10 +227,14 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
 
     @with_migration_handling
     def reset_channel(self, experiment, channel_id, channel_name, channel_type):
-        return self._client.reset_channel(experiment, channel_id, channel_name, channel_type)
+        return self._client.reset_channel(
+            experiment, channel_id, channel_name, channel_type
+        )
 
     @with_migration_handling
-    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+    def create_system_channel(
+        self, experiment, name, channel_type
+    ) -> ChannelWithLastValue:
         return self._client.create_system_channel(experiment, name, channel_type)
 
     @with_migration_handling
@@ -219,7 +263,9 @@ class MigrationSwitchLeaderboardApiClientProxy(LeaderboardApiClient):
 
     @with_migration_handling
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
-        return self._client.send_hardware_metric_reports(experiment, metrics, metric_reports)
+        return self._client.send_hardware_metric_reports(
+            experiment, metrics, metric_reports
+        )
 
     @with_migration_handling
     def log_artifact(self, experiment, artifact, destination=None):

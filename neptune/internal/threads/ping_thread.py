@@ -40,5 +40,5 @@ class PingThread(NeptuneThread):
                 # In this case, this thread is not needed anymore.
                 break
             except Exception:
-                _logger.exception('Unexpected error in ping thread.')
+                _logger.exception("Unexpected error in ping thread.")
             self._interrupted.wait(self.PING_INTERVAL_SECS)

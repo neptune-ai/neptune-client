@@ -41,7 +41,7 @@ class ChannelWithLastValue:
 
     @property
     def trimmed_y(self):
-        return self.y[:255] if self.type == 'text' else self.y
+        return self.y[:255] if self.type == "text" else self.y
 
     @property
     def y(self):
@@ -74,37 +74,41 @@ class LeaderboardEntry(object):
 
     @property
     def project_full_id(self):
-        return '{org_name}/{project_name}'.format(
+        return "{org_name}/{project_name}".format(
             org_name=self.project_leaderboard_entry_dto.organizationName,
-            project_name=self.project_leaderboard_entry_dto.projectName)
+            project_name=self.project_leaderboard_entry_dto.projectName,
+        )
 
     @property
     def system_properties(self):
         entry = self.project_leaderboard_entry_dto
         return {
-            'id': entry.shortId,
-            'name': entry.name,
-            'created': entry.timeOfCreation,
-            'finished': entry.timeOfCompletion,
-            'running_time': entry.runningTime,
-            'owner': entry.owner,
-            'size': entry.size,
-            'tags': entry.tags,
-            'notes': entry.description
+            "id": entry.shortId,
+            "name": entry.name,
+            "created": entry.timeOfCreation,
+            "finished": entry.timeOfCompletion,
+            "running_time": entry.runningTime,
+            "owner": entry.owner,
+            "size": entry.size,
+            "tags": entry.tags,
+            "notes": entry.description,
         }
 
     @property
     def channels(self):
-        return [ChannelWithLastValue(ch) for ch in self.project_leaderboard_entry_dto.channelsLastValues]
+        return [
+            ChannelWithLastValue(ch)
+            for ch in self.project_leaderboard_entry_dto.channelsLastValues
+        ]
 
     def add_channel(self, channel):
-        self.project_leaderboard_entry_dto.channelsLastValues.append(channel.channel_with_value_dto)
+        self.project_leaderboard_entry_dto.channelsLastValues.append(
+            channel.channel_with_value_dto
+        )
 
     @property
     def channels_dict_by_name(self):
-        return dict(
-            (ch.name, ch) for ch in self.channels
-        )
+        return dict((ch.name, ch) for ch in self.channels)
 
     @property
     def parameters(self):

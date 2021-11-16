@@ -20,15 +20,14 @@ from neptune.new.types.sets.set import Set
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class StringSet(Set):
-
     def __init__(self, values: Iterable[str]):
         self.values = set(values)
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_set(self)
 
     def __str__(self):

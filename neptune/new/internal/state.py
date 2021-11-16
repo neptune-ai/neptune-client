@@ -17,7 +17,7 @@ from enum import Enum
 
 
 class ContainerState(Enum):
-    CREATED = 'created'
-    STARTED = 'started'
-    STOPPING = 'stopping'
-    STOPPED = 'stopped'
+    CREATED = "created"
+    STARTED = "started"
+    STOPPING = "stopping"
+    STOPPED = "stopped"

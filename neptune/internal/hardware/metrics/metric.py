@@ -16,7 +16,17 @@
 
 
 class Metric(object):
-    def __init__(self, name, description, resource_type, unit, min_value, max_value, gauges, internal_id=None):
+    def __init__(
+        self,
+        name,
+        description,
+        resource_type,
+        unit,
+        min_value,
+        max_value,
+        gauges,
+        internal_id=None,
+    ):
         self.__internal_id = internal_id
         self.__name = name
         self.__description = description
@@ -63,17 +73,27 @@ class Metric(object):
         return self.__gauges
 
     def __repr__(self):
-        return ('Metric(internal_id={}, name={}, description={}, resource_type={}, unit={}, min_value={}, '
-                'max_value={}, gauges={})').format(self.internal_id, self.name, self.description, self.resource_type,
-                                                   self.unit, self.min_value, self.max_value, self.gauges)
+        return (
+            "Metric(internal_id={}, name={}, description={}, resource_type={}, unit={}, min_value={}, "
+            "max_value={}, gauges={})"
+        ).format(
+            self.internal_id,
+            self.name,
+            self.description,
+            self.resource_type,
+            self.unit,
+            self.min_value,
+            self.max_value,
+            self.gauges,
+        )
 
     def __eq__(self, other):
         return self.__class__ == other.__class__ and repr(self) == repr(other)
 
 
 class MetricResourceType(object):
-    CPU = u'CPU'
-    RAM = u'MEMORY'
-    GPU = u'GPU'
-    GPU_RAM = u'GPU_MEMORY'
-    OTHER = u'OTHER'
+    CPU = u"CPU"
+    RAM = u"MEMORY"
+    GPU = u"GPU"
+    GPU_RAM = u"GPU_MEMORY"
+    OTHER = u"OTHER"

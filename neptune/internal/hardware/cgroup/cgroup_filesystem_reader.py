@@ -20,16 +20,20 @@ import re
 
 class CGroupFilesystemReader(object):
     def __init__(self):
-        cgroup_memory_dir = self.__cgroup_mount_dir(subsystem='memory')
-        self.__memory_usage_file = os.path.join(cgroup_memory_dir, 'memory.usage_in_bytes')
-        self.__memory_limit_file = os.path.join(cgroup_memory_dir, 'memory.limit_in_bytes')
+        cgroup_memory_dir = self.__cgroup_mount_dir(subsystem="memory")
+        self.__memory_usage_file = os.path.join(
+            cgroup_memory_dir, "memory.usage_in_bytes"
+        )
+        self.__memory_limit_file = os.path.join(
+            cgroup_memory_dir, "memory.limit_in_bytes"
+        )
 
-        cgroup_cpu_dir = self.__cgroup_mount_dir(subsystem='cpu')
-        self.__cpu_period_file = os.path.join(cgroup_cpu_dir, 'cpu.cfs_period_us')
-        self.__cpu_quota_file = os.path.join(cgroup_cpu_dir, 'cpu.cfs_quota_us')
+        cgroup_cpu_dir = self.__cgroup_mount_dir(subsystem="cpu")
+        self.__cpu_period_file = os.path.join(cgroup_cpu_dir, "cpu.cfs_period_us")
+        self.__cpu_quota_file = os.path.join(cgroup_cpu_dir, "cpu.cfs_quota_us")
 
-        cgroup_cpuacct_dir = self.__cgroup_mount_dir(subsystem='cpuacct')
-        self.__cpuacct_usage_file = os.path.join(cgroup_cpuacct_dir, 'cpuacct.usage')
+        cgroup_cpuacct_dir = self.__cgroup_mount_dir(subsystem="cpuacct")
+        self.__cpuacct_usage_file = os.path.join(cgroup_cpuacct_dir, "cpuacct.usage")
 
     def get_memory_usage_in_bytes(self):
         return self.__read_int_file(self.__memory_usage_file)
@@ -55,14 +59,14 @@ class CGroupFilesystemReader(object):
         :param subsystem: cgroup subsystem like memory, cpu
         :return: directory where given subsystem is mounted
         """
-        with open('/proc/mounts', 'r') as f:
+        with open("/proc/mounts", "r") as f:
             for l in f.readlines():
-                split_line = re.split(r'\s+', l)
+                split_line = re.split(r"\s+", l)
                 mount_dir = split_line[1]
 
-                if 'cgroup' in mount_dir:
-                    dirname = mount_dir.split('/')[-1]
-                    subsystems = dirname.split(',')
+                if "cgroup" in mount_dir:
+                    dirname = mount_dir.split("/")[-1]
+                    subsystems = dirname.split(",")
                     if subsystem in subsystems:
                         return mount_dir
 

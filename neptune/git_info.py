@@ -31,15 +31,18 @@ class GitInfo(object):
         repository_dirty (:obj:`bool`, optional, default is ``True``):
             ``True``, if the repository has uncommitted changes, ``False`` otherwise.
     """
-    def __init__(self,
-                 commit_id,
-                 message="",
-                 author_name="",
-                 author_email="",
-                 commit_date="",
-                 repository_dirty=True,
-                 active_branch="",
-                 remote_urls=None):
+
+    def __init__(
+        self,
+        commit_id,
+        message="",
+        author_name="",
+        author_email="",
+        commit_date="",
+        repository_dirty=True,
+        active_branch="",
+        remote_urls=None,
+    ):
         if remote_urls is None:
             remote_urls = []
         if commit_id is None:
@@ -61,7 +64,7 @@ class GitInfo(object):
         return not self.__eq__(o)
 
     def __str__(self):
-        return 'GitInfo({})'.format(self.commit_id)
+        return "GitInfo({})".format(self.commit_id)
 
     def __repr__(self):
         return str(self)

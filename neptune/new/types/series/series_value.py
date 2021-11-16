@@ -16,11 +16,10 @@
 
 from typing import TypeVar, Generic
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class SeriesValue(Generic[T]):
-
     def __init__(self, step: float, value: T, timestamp: float):
         self._step = step
         self._value = value

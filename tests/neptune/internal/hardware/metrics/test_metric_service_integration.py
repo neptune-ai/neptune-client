@@ -27,15 +27,22 @@ from neptune.internal.hardware.gauges.cpu import SystemCpuUsageGauge
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.gauges.memory import SystemMemoryUsageGauge
 from neptune.internal.hardware.metrics.metric import Metric, MetricResourceType
-from neptune.internal.hardware.metrics.reports.metric_report import MetricReport, MetricValue
-from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
+from neptune.internal.hardware.metrics.reports.metric_report import (
+    MetricReport,
+    MetricValue,
+)
+from neptune.internal.hardware.metrics.service.metric_service_factory import (
+    MetricServiceFactory,
+)
 from neptune.utils import IS_MACOS
 
 
 class TestMetricServiceIntegration(unittest.TestCase):
     def setUp(self):
         self.backend = MagicMock()
-        self.metric_service_factory = MetricServiceFactory(backend=self.backend, os_environ=os.environ)
+        self.metric_service_factory = MetricServiceFactory(
+            backend=self.backend, os_environ=os.environ
+        )
 
     @unittest.skipIf(IS_MACOS, "MacOS behaves strangely")
     def test_create_system_metrics(self):
@@ -52,37 +59,42 @@ class TestMetricServiceIntegration(unittest.TestCase):
 
         # when
         self.metric_service_factory.create(
-            gauge_mode=GaugeMode.SYSTEM, experiment=experiment, reference_timestamp=time.time())
+            gauge_mode=GaugeMode.SYSTEM,
+            experiment=experiment,
+            reference_timestamp=time.time(),
+        )
 
         # then
-        self.backend.create_hardware_metric.assert_has_calls([
-            call(
-                experiment,
-                Metric(
-                    internal_id=cpu_metric_id,
-                    name=u'CPU - usage',
-                    description=u'average of all cores',
-                    resource_type=MetricResourceType.CPU,
-                    unit=u'%',
-                    min_value=0.0,
-                    max_value=100.0,
-                    gauges=[SystemCpuUsageGauge()]
-                )
-            ),
-            call(
-                experiment,
-                Metric(
-                    internal_id=ram_metric_id,
-                    name=u'RAM',
-                    description=u'',
-                    resource_type=MetricResourceType.RAM,
-                    unit=u'GB',
-                    min_value=0.0,
-                    max_value=memory_amount_gb,
-                    gauges=[SystemMemoryUsageGauge()]
-                )
-            )
-        ])
+        self.backend.create_hardware_metric.assert_has_calls(
+            [
+                call(
+                    experiment,
+                    Metric(
+                        internal_id=cpu_metric_id,
+                        name=u"CPU - usage",
+                        description=u"average of all cores",
+                        resource_type=MetricResourceType.CPU,
+                        unit=u"%",
+                        min_value=0.0,
+                        max_value=100.0,
+                        gauges=[SystemCpuUsageGauge()],
+                    ),
+                ),
+                call(
+                    experiment,
+                    Metric(
+                        internal_id=ram_metric_id,
+                        name=u"RAM",
+                        description=u"",
+                        resource_type=MetricResourceType.RAM,
+                        unit=u"GB",
+                        min_value=0.0,
+                        max_value=memory_amount_gb,
+                        gauges=[SystemMemoryUsageGauge()],
+                    ),
+                ),
+            ]
+        )
 
     @unittest.skipIf(IS_MACOS, "MacOS behaves strangely")
     def test_report_and_send_metrics(self):
@@ -95,7 +107,10 @@ class TestMetricServiceIntegration(unittest.TestCase):
 
         # and
         metric_service = self.metric_service_factory.create(
-            gauge_mode=GaugeMode.SYSTEM, experiment=experiment, reference_timestamp=experiment_start)
+            gauge_mode=GaugeMode.SYSTEM,
+            experiment=experiment,
+            reference_timestamp=experiment_start,
+        )
         metrics_container = metric_service.metrics_container
 
         # when
@@ -108,15 +123,29 @@ class TestMetricServiceIntegration(unittest.TestCase):
             [
                 MetricReport(
                     metric=metrics_container.cpu_usage_metric,
-                    values=[MetricValue(timestamp=second_after_start, running_time=1.0, gauge_name=u'cpu', value=ANY)]
+                    values=[
+                        MetricValue(
+                            timestamp=second_after_start,
+                            running_time=1.0,
+                            gauge_name=u"cpu",
+                            value=ANY,
+                        )
+                    ],
                 ),
                 MetricReport(
                     metric=metrics_container.memory_metric,
-                    values=[MetricValue(timestamp=second_after_start, running_time=1.0, gauge_name=u'ram', value=ANY)]
-                )
-            ]
+                    values=[
+                        MetricValue(
+                            timestamp=second_after_start,
+                            running_time=1.0,
+                            gauge_name=u"ram",
+                            value=ANY,
+                        )
+                    ],
+                ),
+            ],
         )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

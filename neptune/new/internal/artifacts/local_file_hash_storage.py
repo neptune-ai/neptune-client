@@ -47,7 +47,7 @@ class LocalFileHashStorage:
         )
         self.session.commit()
 
-    def fetch_one(self, path: Path) -> 'LocalFileHash':
+    def fetch_one(self, path: Path) -> "LocalFileHash":
         found = [
             LocalFileHashStorage.LocalFileHash(*row)
             for row in self.cursor.execute(

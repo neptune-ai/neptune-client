@@ -38,7 +38,9 @@ def project_name_lookup(backend: NeptuneBackend, name: Optional[str] = None) -> 
         available_workspaces = backend.get_available_workspaces()
         available_projects = backend.get_available_projects()
 
-        raise NeptuneMissingProjectNameException(available_workspaces=available_workspaces,
-                                                 available_projects=available_projects)
+        raise NeptuneMissingProjectNameException(
+            available_workspaces=available_workspaces,
+            available_projects=available_projects,
+        )
 
     return backend.get_project(name)

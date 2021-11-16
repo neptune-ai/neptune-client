@@ -21,26 +21,33 @@ from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
 from neptune.internal.hardware.gauges.gpu import GpuMemoryGauge, GpuUsageGauge
 
 
-@patch('neptune.internal.hardware.gpu.gpu_monitor.nvmlInit', MagicMock())
+@patch("neptune.internal.hardware.gpu.gpu_monitor.nvmlInit", MagicMock())
 class TestGPUGauges(unittest.TestCase):
     def setUp(self):
         self.card_index = 2
         self.gpu_card_handle = MagicMock()
 
-        patcher = patch('neptune.internal.hardware.gpu.gpu_monitor.nvmlDeviceGetHandleByIndex')
+        patcher = patch(
+            "neptune.internal.hardware.gpu.gpu_monitor.nvmlDeviceGetHandleByIndex"
+        )
         nvmlDeviceGetHandleByIndex = patcher.start()
-        nvmlDeviceGetHandleByIndex.side_effect = \
-            lambda card_index: self.gpu_card_handle if card_index == self.card_index else None
+        nvmlDeviceGetHandleByIndex.side_effect = (
+            lambda card_index: self.gpu_card_handle
+            if card_index == self.card_index
+            else None
+        )
         self.addCleanup(patcher.stop)
 
-    @patch('neptune.internal.hardware.gpu.gpu_monitor.nvmlDeviceGetUtilizationRates')
+    @patch("neptune.internal.hardware.gpu.gpu_monitor.nvmlDeviceGetUtilizationRates")
     def test_gpu_usage_gauge(self, nvmlDeviceGetMemoryInfo):
         # given
         gauge = GpuUsageGauge(card_index=self.card_index)
         # and
         util_info = MagicMock()
         util_info.gpu = 40
-        nvmlDeviceGetMemoryInfo.side_effect = lambda handle: util_info if handle == self.gpu_card_handle else None
+        nvmlDeviceGetMemoryInfo.side_effect = (
+            lambda handle: util_info if handle == self.gpu_card_handle else None
+        )
 
         # when
         usage_percent = gauge.value()
@@ -49,14 +56,16 @@ class TestGPUGauges(unittest.TestCase):
         self.assertEqual(40.0, usage_percent)
         self.assertEqual(float, type(usage_percent))
 
-    @patch('neptune.internal.hardware.gpu.gpu_monitor.nvmlDeviceGetMemoryInfo')
+    @patch("neptune.internal.hardware.gpu.gpu_monitor.nvmlDeviceGetMemoryInfo")
     def test_gpu_memory_gauge(self, nvmlDeviceGetMemoryInfo):
         # given
         gauge = GpuMemoryGauge(card_index=self.card_index)
         # and
         memory_info = MagicMock()
         memory_info.used = 3 * BYTES_IN_ONE_GB
-        nvmlDeviceGetMemoryInfo.side_effect = lambda handle: memory_info if handle == self.gpu_card_handle else None
+        nvmlDeviceGetMemoryInfo.side_effect = (
+            lambda handle: memory_info if handle == self.gpu_card_handle else None
+        )
 
         # when
         memory_gb = gauge.value()
@@ -66,5 +75,5 @@ class TestGPUGauges(unittest.TestCase):
         self.assertEqual(float, type(memory_gb))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

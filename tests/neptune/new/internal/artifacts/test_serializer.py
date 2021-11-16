@@ -21,20 +21,20 @@ from neptune.new.internal.artifacts.types import ArtifactMetadataSerializer
 class TestArtifactMetadataSerializer(unittest.TestCase):
     def test_simple(self):
         metadata = {
-            'location': "s3://bucket/path/to/file",
-            'last_modification': '2021-08-09 09:41:53',
-            'file_size': '18'
+            "location": "s3://bucket/path/to/file",
+            "last_modification": "2021-08-09 09:41:53",
+            "file_size": "18",
         }
 
         serialized = ArtifactMetadataSerializer.serialize(metadata)
 
         self.assertListEqual(
             [
-                {'key': 'file_size', 'value': '18'},
-                {'key': 'last_modification', 'value': '2021-08-09 09:41:53'},
-                {'key': 'location', 'value': 's3://bucket/path/to/file'}
+                {"key": "file_size", "value": "18"},
+                {"key": "last_modification", "value": "2021-08-09 09:41:53"},
+                {"key": "location", "value": "s3://bucket/path/to/file"},
             ],
-            serialized
+            serialized,
         )
 
         deserialized = ArtifactMetadataSerializer.deserialize(serialized)

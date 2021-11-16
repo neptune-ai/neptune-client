@@ -23,11 +23,18 @@ from logging import StreamHandler
 from neptune.internal.abort import DefaultAbortImpl, CustomAbortImpl
 from neptune.internal.channels.channels import ChannelNamespace
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
+from neptune.internal.hardware.metrics.service.metric_service_factory import (
+    MetricServiceFactory,
+)
 from neptune.internal.streams.channel_writer import ChannelWriter
-from neptune.internal.streams.stdstream_uploader import StdOutWithUpload, StdErrWithUpload
+from neptune.internal.streams.stdstream_uploader import (
+    StdOutWithUpload,
+    StdErrWithUpload,
+)
 from neptune.internal.threads.aborting_thread import AbortingThread
-from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
+from neptune.internal.threads.hardware_metric_reporting_thread import (
+    HardwareMetricReportingThread,
+)
 from neptune.internal.threads.ping_thread import PingThread
 from neptune.utils import is_notebook, in_docker, is_ipython
 
@@ -35,7 +42,6 @@ _logger = logging.getLogger(__name__)
 
 
 class ExecutionContext(object):
-
     def __init__(self, backend, experiment):
         self._backend = backend
         self._experiment = experiment
@@ -50,22 +56,28 @@ class ExecutionContext(object):
 
         self._previous_uncaught_exception_handler = None
 
-    def start(self,
-              abort_callback=None,
-              logger=None,
-              upload_stdout=True,
-              upload_stderr=True,
-              send_hardware_metrics=True,
-              run_monitoring_thread=True,
-              handle_uncaught_exceptions=True):
+    def start(
+        self,
+        abort_callback=None,
+        logger=None,
+        upload_stdout=True,
+        upload_stderr=True,
+        send_hardware_metrics=True,
+        run_monitoring_thread=True,
+        handle_uncaught_exceptions=True,
+    ):
 
         if handle_uncaught_exceptions:
             self._set_uncaught_exception_handler()
 
         if logger:
             # pylint: disable=protected-access
-            channel = self._experiment._get_channel('logger', 'text', ChannelNamespace.SYSTEM)
-            channel_writer = ChannelWriter(self._experiment, channel.name, ChannelNamespace.SYSTEM)
+            channel = self._experiment._get_channel(
+                "logger", "text", ChannelNamespace.SYSTEM
+            )
+            channel_writer = ChannelWriter(
+                self._experiment, channel.name, ChannelNamespace.SYSTEM
+            )
             self._logger_handler = StreamHandler(channel_writer)
             self._logger = logger
             logger.addHandler(self._logger_handler)
@@ -76,11 +88,15 @@ class ExecutionContext(object):
         if upload_stderr and not is_notebook():
             self._stderr_uploader = StdErrWithUpload(self._experiment)
 
-        abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
+        abortable = (
+            abort_callback is not None or DefaultAbortImpl.requirements_installed()
+        )
         if abortable:
             self._run_aborting_thread(abort_callback)
         else:
-            _logger.warning('psutil is not installed. You will not be able to abort this experiment from the UI.')
+            _logger.warning(
+                "psutil is not installed. You will not be able to abort this experiment from the UI."
+            )
 
         if run_monitoring_thread:
             self._run_monitoring_thread()
@@ -113,9 +129,10 @@ class ExecutionContext(object):
         sys.excepthook = self._previous_uncaught_exception_handler
 
     def _set_uncaught_exception_handler(self):
-
         def exception_handler(exc_type, exc_val, exc_tb):
-            self._experiment.stop("\n".join(traceback.format_tb(exc_tb)) + "\n" + repr(exc_val))
+            self._experiment.stop(
+                "\n".join(traceback.format_tb(exc_tb)) + "\n" + repr(exc_val)
+            )
 
             sys.__excepthook__(exc_type, exc_val, exc_tb)
 
@@ -135,7 +152,7 @@ class ExecutionContext(object):
         websocket_factory = self._backend.websockets_factory(
             # pylint: disable=protected-access
             project_id=self._experiment._project.internal_id,
-            experiment_id=self._experiment.internal_id
+            experiment_id=self._experiment.internal_id,
         )
         if not websocket_factory:
             return
@@ -143,12 +160,14 @@ class ExecutionContext(object):
         self._aborting_thread = AbortingThread(
             websocket_factory=websocket_factory,
             abort_impl=abort_impl,
-            experiment=self._experiment
+            experiment=self._experiment,
         )
         self._aborting_thread.start()
 
     def _run_monitoring_thread(self):
-        self._ping_thread = PingThread(backend=self._backend, experiment=self._experiment)
+        self._ping_thread = PingThread(
+            backend=self._backend, experiment=self._experiment
+        )
         self._ping_thread.start()
 
     def _run_hardware_metrics_reporting_thread(self):
@@ -156,11 +175,10 @@ class ExecutionContext(object):
         metric_service = MetricServiceFactory(self._backend, os.environ).create(
             gauge_mode=gauge_mode,
             experiment=self._experiment,
-            reference_timestamp=time.time()
+            reference_timestamp=time.time(),
         )
 
         self._hardware_metric_thread = HardwareMetricReportingThread(
-            metric_service=metric_service,
-            metric_sending_interval_seconds=10
+            metric_service=metric_service, metric_sending_interval_seconds=10
         )
         self._hardware_metric_thread.start()

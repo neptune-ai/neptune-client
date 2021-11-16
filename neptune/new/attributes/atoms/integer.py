@@ -21,7 +21,6 @@ from neptune.new.attributes.atoms.atom import Atom
 
 
 class Integer(Atom):
-
     def assign(self, value: Union[IntegerVal, float, int], wait: bool = False):
         if not isinstance(value, IntegerVal):
             value = IntegerVal(value)

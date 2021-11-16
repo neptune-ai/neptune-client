@@ -31,7 +31,11 @@ from neptune.new.internal.utils import limits
 _logger = logging.getLogger(__name__)
 
 try:
-    from numpy import ndarray as numpy_ndarray, array as numpy_array, uint8 as numpy_uint8
+    from numpy import (
+        ndarray as numpy_ndarray,
+        array as numpy_array,
+        uint8 as numpy_uint8,
+    )
 except ImportError:
     numpy_ndarray = None
     numpy_array = None
@@ -107,7 +111,9 @@ def _to_html(chart) -> str:
             print("Plotly not installed. Logging plot as an image.")
             return _image_content_to_html(_get_figure_image_data(chart))
         except UserWarning:
-            print("Couldn't convert Matplotlib plot to interactive Plotly plot. Logging plot as an image instead.")
+            print(
+                "Couldn't convert Matplotlib plot to interactive Plotly plot. Logging plot as an image instead."
+            )
             return _image_content_to_html(_get_figure_image_data(chart))
 
     elif is_pandas_dataframe(chart):
@@ -123,7 +129,9 @@ def _to_html(chart) -> str:
         return _export_bokeh_figure(chart)
 
     else:
-        raise ValueError("Currently supported are matplotlib, plotly, altair, and bokeh figures")
+        raise ValueError(
+            "Currently supported are matplotlib, plotly, altair, and bokeh figures"
+        )
 
 
 def _matplotlib_to_plotly(chart):
@@ -146,7 +154,8 @@ def _matplotlib_to_plotly(chart):
         warnings.filterwarnings(
             "error",
             category=UserWarning,
-            message=".*Plotly can only import path collections linked to 'data' coordinates.*")
+            message=".*Plotly can only import path collections linked to 'data' coordinates.*",
+        )
         chart = plotly.tools.mpl_to_plotly(chart)
 
     return chart
@@ -166,11 +175,13 @@ def _get_numpy_as_image(array):
     if array_max > 1:
         data_range_warnings.append(f"the largest value in the array is {array_max}")
     if data_range_warnings:
-        data_range_warning_message = (" and ".join(data_range_warnings) + ". ").capitalize()
+        data_range_warning_message = (
+            " and ".join(data_range_warnings) + ". "
+        ).capitalize()
         click.echo(
             f"{data_range_warning_message}"
             f"To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
-            err=True
+            err=True,
         )
     array *= 255
     shape = array.shape
@@ -182,36 +193,42 @@ def _get_numpy_as_image(array):
             return _get_pil_image_data(pilimage_fromarray(array2d.astype(numpy_uint8)))
         if shape[2] in (3, 4):
             return _get_pil_image_data(pilimage_fromarray(array.astype(numpy_uint8)))
-    raise ValueError("Incorrect size of numpy.ndarray. Should be 2-dimensional or"
-                     "3-dimensional with 3rd dimension of size 1, 3 or 4.")
+    raise ValueError(
+        "Incorrect size of numpy.ndarray. Should be 2-dimensional or"
+        "3-dimensional with 3rd dimension of size 1, 3 or 4."
+    )
 
 
 def _get_pil_image_data(image: PILImage) -> bytes:
     with io.BytesIO() as image_buffer:
-        image.save(image_buffer, format='PNG')
+        image.save(image_buffer, format="PNG")
         return image_buffer.getvalue()
 
 
 def _get_figure_image_data(figure) -> bytes:
     with io.BytesIO() as image_buffer:
-        figure.savefig(image_buffer, format='png', bbox_inches="tight")
+        figure.savefig(image_buffer, format="png", bbox_inches="tight")
         return image_buffer.getvalue()
 
 
 def _is_torch_tensor(image):
-    return image.__class__.__module__.startswith('torch')\
-           and image.__class__.__name__ == 'Tensor'\
-           and hasattr(image, "numpy")
+    return (
+        image.__class__.__module__.startswith("torch")
+        and image.__class__.__name__ == "Tensor"
+        and hasattr(image, "numpy")
+    )
 
 
 def _is_tensorflow_tensor(image):
-    return image.__class__.__module__.startswith('tensorflow.')\
-           and 'Tensor' in image.__class__.__name__\
-           and hasattr(image, "numpy")
+    return (
+        image.__class__.__module__.startswith("tensorflow.")
+        and "Tensor" in image.__class__.__name__
+        and hasattr(image, "numpy")
+    )
 
 
 def _is_matplotlib_pyplot(chart):
-    return chart.__class__.__module__.startswith('matplotlib.pyplot')
+    return chart.__class__.__module__.startswith("matplotlib.pyplot")
 
 
 def is_numpy_array(image) -> bool:
@@ -223,19 +240,31 @@ def is_pil_image(image) -> bool:
 
 
 def is_matplotlib_figure(image):
-    return image.__class__.__module__.startswith('matplotlib.') and image.__class__.__name__ == 'Figure'
+    return (
+        image.__class__.__module__.startswith("matplotlib.")
+        and image.__class__.__name__ == "Figure"
+    )
 
 
 def is_plotly_figure(chart):
-    return chart.__class__.__module__.startswith('plotly.') and chart.__class__.__name__ == 'Figure'
+    return (
+        chart.__class__.__module__.startswith("plotly.")
+        and chart.__class__.__name__ == "Figure"
+    )
 
 
 def is_altair_chart(chart):
-    return chart.__class__.__module__.startswith('altair.') and 'Chart' in chart.__class__.__name__
+    return (
+        chart.__class__.__module__.startswith("altair.")
+        and "Chart" in chart.__class__.__name__
+    )
 
 
 def is_bokeh_figure(chart):
-    return chart.__class__.__module__.startswith('bokeh.') and chart.__class__.__name__ == 'Figure'
+    return (
+        chart.__class__.__module__.startswith("bokeh.")
+        and chart.__class__.__name__ == "Figure"
+    )
 
 
 def is_pandas_dataframe(table):
@@ -257,7 +286,7 @@ def _export_plotly_figure(image):
 
 def _export_altair_chart(chart):
     buffer = StringIO()
-    chart.save(buffer, format='html')
+    chart.save(buffer, format="html")
     buffer.seek(0)
     return buffer.getvalue()
 

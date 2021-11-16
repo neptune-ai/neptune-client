@@ -29,25 +29,48 @@ import requests
 import urllib3
 from urllib3.exceptions import NewConnectionError
 from bravado.client import SwaggerClient
-from bravado.exception import BravadoConnectionError, BravadoTimeoutError, HTTPForbidden, \
-    HTTPServerError, HTTPUnauthorized, HTTPServiceUnavailable, HTTPRequestTimeout, \
-    HTTPGatewayTimeout, HTTPBadGateway, HTTPClientError, HTTPTooManyRequests, HTTPError
+from bravado.exception import (
+    BravadoConnectionError,
+    BravadoTimeoutError,
+    HTTPForbidden,
+    HTTPServerError,
+    HTTPUnauthorized,
+    HTTPServiceUnavailable,
+    HTTPRequestTimeout,
+    HTTPGatewayTimeout,
+    HTTPBadGateway,
+    HTTPClientError,
+    HTTPTooManyRequests,
+    HTTPError,
+)
 from bravado.http_client import HttpClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
 from requests import Session
 
-from neptune.new.envs import NEPTUNE_RETRIES_TIMEOUT_ENV, NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE
-from neptune.new.exceptions import SSLError, NeptuneConnectionLostException, \
-    Unauthorized, Forbidden, CannotResolveHostname, UnsupportedClientVersion, ClientHttpError, \
-    NeptuneFeaturesNotAvailableException
+from neptune.new.envs import (
+    NEPTUNE_RETRIES_TIMEOUT_ENV,
+    NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE,
+)
+from neptune.new.exceptions import (
+    SSLError,
+    NeptuneConnectionLostException,
+    Unauthorized,
+    Forbidden,
+    CannotResolveHostname,
+    UnsupportedClientVersion,
+    ClientHttpError,
+    NeptuneFeaturesNotAvailableException,
+)
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.utils import replace_patch_version
 
 _logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+    from neptune.new.internal.backends.hosted_neptune_backend import (
+        HostedNeptuneBackend,
+    )
 
 
 class OptionalFeatures:
@@ -59,7 +82,6 @@ retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
 
 def with_api_exceptions_handler(func):
-
     def wrapper(*args, **kwargs):
         last_exception = None
         start_time = time.monotonic()
@@ -71,10 +93,19 @@ def with_api_exceptions_handler(func):
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError as e:
                 raise SSLError() from e
-            except (BravadoConnectionError, BravadoTimeoutError,
-                    requests.exceptions.ConnectionError, requests.exceptions.Timeout,
-                    HTTPRequestTimeout, HTTPServiceUnavailable, HTTPGatewayTimeout, HTTPBadGateway,
-                    HTTPTooManyRequests, HTTPServerError, NewConnectionError) as e:
+            except (
+                BravadoConnectionError,
+                BravadoTimeoutError,
+                requests.exceptions.ConnectionError,
+                requests.exceptions.Timeout,
+                HTTPRequestTimeout,
+                HTTPServiceUnavailable,
+                HTTPGatewayTimeout,
+                HTTPBadGateway,
+                HTTPTooManyRequests,
+                HTTPServerError,
+                NewConnectionError,
+            ) as e:
                 time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                 last_exception = e
                 continue
@@ -89,12 +120,13 @@ def with_api_exceptions_handler(func):
                     raise
                 status_code = e.response.status_code
                 if status_code in (
-                        HTTPRequestTimeout.status_code,
-                        HTTPBadGateway.status_code,
-                        HTTPServiceUnavailable.status_code,
-                        HTTPGatewayTimeout.status_code,
-                        HTTPTooManyRequests.status_code,
-                        HTTPServerError.status_code):
+                    HTTPRequestTimeout.status_code,
+                    HTTPBadGateway.status_code,
+                    HTTPServiceUnavailable.status_code,
+                    HTTPGatewayTimeout.status_code,
+                    HTTPTooManyRequests.status_code,
+                    HTTPServerError.status_code,
+                ):
                     time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                     last_exception = e
                     continue
@@ -113,7 +145,7 @@ def with_api_exceptions_handler(func):
 
 @lru_cache(maxsize=None, typed=True)
 def verify_host_resolution(url: str) -> None:
-    host = urlparse(url).netloc.split(':')[0]
+    host = urlparse(url).netloc.split(":")[0]
     try:
         socket.gethostbyname(host)
     except socket.gaierror:
@@ -121,10 +153,12 @@ def verify_host_resolution(url: str) -> None:
 
 
 uuid_format = SwaggerFormat(
-    format='uuid',
+    format="uuid",
     to_python=lambda x: x,
     to_wire=lambda x: x,
-    validate=lambda x: None, description='')
+    validate=lambda x: None,
+    description="",
+)
 
 
 @with_api_exceptions_handler
@@ -135,26 +169,42 @@ def create_swagger_client(url: str, http_client: HttpClient) -> SwaggerClient:
             validate_swagger_spec=False,
             validate_requests=False,
             validate_responses=False,
-            formats=[uuid_format]
+            formats=[uuid_format],
         ),
-        http_client=http_client)
+        http_client=http_client,
+    )
 
 
 def verify_client_version(client_config: ClientConfig, version: Version):
     # Fix for failing in E2E when installing development version with pip and Github
-    if str(version) == '0+unknown':
+    if str(version) == "0+unknown":
         return
 
     version_with_patch_0 = Version(replace_patch_version(str(version)))
-    if client_config.min_compatible_version and client_config.min_compatible_version > version:
-        raise UnsupportedClientVersion(version, min_version=client_config.min_compatible_version)
-    if client_config.max_compatible_version and client_config.max_compatible_version < version_with_patch_0:
-        raise UnsupportedClientVersion(version, max_version=client_config.max_compatible_version)
-    if client_config.min_recommended_version and client_config.min_recommended_version > version:
+    if (
+        client_config.min_compatible_version
+        and client_config.min_compatible_version > version
+    ):
+        raise UnsupportedClientVersion(
+            version, min_version=client_config.min_compatible_version
+        )
+    if (
+        client_config.max_compatible_version
+        and client_config.max_compatible_version < version_with_patch_0
+    ):
+        raise UnsupportedClientVersion(
+            version, max_version=client_config.max_compatible_version
+        )
+    if (
+        client_config.min_recommended_version
+        and client_config.min_recommended_version > version
+    ):
         click.echo(
             "WARNING: There is a new version of neptune-client {} (installed: {}).".format(
-                client_config.min_recommended_version, version),
-            sys.stderr)
+                client_config.min_recommended_version, version
+            ),
+            sys.stderr,
+        )
 
 
 def update_session_proxies(session: Session, proxies: Optional[Dict[str, str]]):
@@ -166,19 +216,24 @@ def update_session_proxies(session: Session, proxies: Optional[Dict[str, str]]):
 
 
 def build_operation_url(base_api: str, operation_url: str) -> str:
-    if '://' not in base_api:
-        base_api = f'https://{base_api}'
+    if "://" not in base_api:
+        base_api = f"https://{base_api}"
 
     return urljoin(base=base_api, url=operation_url)
 
 
 class MissingApiClient(SwaggerClient):
-    """ catch-all class to gracefully handle calls to unavailable API """
-    def __init__(self, backend: 'HostedNeptuneBackend'):  # pylint: disable=super-init-not-called
+    """catch-all class to gracefully handle calls to unavailable API"""
+
+    def __init__(
+        self, backend: "HostedNeptuneBackend"
+    ):  # pylint: disable=super-init-not-called
         self._backend = backend
 
     def __getattr__(self, item):
-        raise NeptuneFeaturesNotAvailableException(features=self._backend.missing_features)
+        raise NeptuneFeaturesNotAvailableException(
+            features=self._backend.missing_features
+        )
 
 
 # https://stackoverflow.com/a/44776960
@@ -186,6 +241,7 @@ def cache(func):
     """
     Transform mutable dictionary into immutable before call to lru_cache
     """
+
     class HDict(dict):
         def __hash__(self):
             return hash(frozenset(self.items()))
@@ -212,7 +268,9 @@ def ssl_verify():
 
 def parse_validation_errors(error: HTTPError) -> Dict[str, str]:
     return {
-        f"{error_description.get('errorCode').get('name')}": error_description.get('context', '')
+        f"{error_description.get('errorCode').get('name')}": error_description.get(
+            "context", ""
+        )
         for validation_error in error.swagger_result.validationErrors
-        for error_description in validation_error.get('errors')
+        for error_description in validation_error.get("errors")
     }

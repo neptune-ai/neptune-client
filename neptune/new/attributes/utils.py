@@ -16,8 +16,21 @@
 from typing import List, TYPE_CHECKING
 
 from neptune.new.attributes import (
-    Artifact, Boolean, Datetime, File, FileSeries, FileSet, Float, FloatSeries, GitRef, Integer, NotebookRef, RunState,
-    String, StringSeries, StringSet
+    Artifact,
+    Boolean,
+    Datetime,
+    File,
+    FileSeries,
+    FileSet,
+    Float,
+    FloatSeries,
+    GitRef,
+    Integer,
+    NotebookRef,
+    RunState,
+    String,
+    StringSeries,
+    StringSet,
 )
 from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.backends.api_model import AttributeType
@@ -46,8 +59,10 @@ _attribute_type_to_attr_class_map = {
 
 
 def create_attribute_from_type(
-        attribute_type: AttributeType, run: 'AttributeContainer', path: List[str],
-) -> 'Attribute':
+    attribute_type: AttributeType,
+    run: "AttributeContainer",
+    path: List[str],
+) -> "Attribute":
     try:
         return _attribute_type_to_attr_class_map[attribute_type](run, path)
     except KeyError:

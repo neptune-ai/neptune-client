@@ -43,11 +43,10 @@ from neptune.new.internal.operation import (
     UploadFileSet,
 )
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class OperationVisitor(Generic[Ret]):
-
     def visit(self, op: Operation) -> Ret:
         return op.accept(self)
 

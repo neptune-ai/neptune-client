@@ -25,7 +25,7 @@ from neptune.projects import Project
 
 def a_string():
     char_set = string.ascii_letters
-    return ''.join(random.sample(char_set * 10, 10))
+    return "".join(random.sample(char_set * 10, 10))
 
 
 def a_uuid_string():
@@ -46,7 +46,7 @@ def sort_df_by_columns(df):
 
 
 def an_experiment_id():
-    prefix = ''.join(random.choice(string.ascii_uppercase) for _ in range(3))
+    prefix = "".join(random.choice(string.ascii_uppercase) for _ in range(3))
     number = random.randint(0, 100)
     return "{}-{}".format(prefix, number)
 
@@ -60,5 +60,5 @@ def a_project():
         backend=mock.MagicMock(),
         internal_id=a_uuid_string(),
         name=a_string(),
-        namespace=a_string()
+        namespace=a_string(),
     )

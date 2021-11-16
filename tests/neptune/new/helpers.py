@@ -28,9 +28,9 @@ def create_file(content=None, binary_mode=False) -> str:
      ref. https://docs.python.org/3.9/library/tempfile.html#tempfile.NamedTemporaryFile
     """
     if binary_mode:
-        mode = 'wb'
+        mode = "wb"
     else:
-        mode = 'w'
+        mode = "w"
     with NamedTemporaryFile(mode, delete=False) as file:
         if content:
             file.write(content)

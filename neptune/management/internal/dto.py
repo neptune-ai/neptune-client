@@ -18,62 +18,66 @@ from enum import Enum
 from neptune.new.internal.utils import verify_type
 
 from neptune.management.exceptions import UnsupportedValue
-from neptune.management.internal.types import ProjectVisibility, ProjectMemberRole, WorkspaceMemberRole
+from neptune.management.internal.types import (
+    ProjectVisibility,
+    ProjectMemberRole,
+    WorkspaceMemberRole,
+)
 
 
 class ProjectVisibilityDTO(Enum):
-    PRIVATE = 'priv'
-    PUBLIC = 'pub'
+    PRIVATE = "priv"
+    PUBLIC = "pub"
 
     @classmethod
-    def from_str(cls, visibility: str) -> 'ProjectVisibilityDTO':
-        verify_type('visibility', visibility, str)
+    def from_str(cls, visibility: str) -> "ProjectVisibilityDTO":
+        verify_type("visibility", visibility, str)
 
         try:
             return {
                 ProjectVisibility.PRIVATE: ProjectVisibilityDTO.PRIVATE,
-                ProjectVisibility.PUBLIC: ProjectVisibilityDTO.PUBLIC
+                ProjectVisibility.PUBLIC: ProjectVisibilityDTO.PUBLIC,
             }[visibility]
         except KeyError as e:
             raise UnsupportedValue(enum=cls.__name__, value=visibility) from e
 
 
 class ProjectMemberRoleDTO(Enum):
-    VIEWER = 'viewer'
-    MEMBER = 'member'
-    MANAGER = 'manager'
+    VIEWER = "viewer"
+    MEMBER = "member"
+    MANAGER = "manager"
 
     @classmethod
-    def from_str(cls, role: str) -> 'ProjectMemberRoleDTO':
-        verify_type('role', role, str)
+    def from_str(cls, role: str) -> "ProjectMemberRoleDTO":
+        verify_type("role", role, str)
 
         try:
             return {
                 ProjectMemberRole.VIEWER: ProjectMemberRoleDTO.VIEWER,
                 ProjectMemberRole.CONTRIBUTOR: ProjectMemberRoleDTO.MEMBER,
-                ProjectMemberRole.OWNER: ProjectMemberRoleDTO.MANAGER
+                ProjectMemberRole.OWNER: ProjectMemberRoleDTO.MANAGER,
             }[role]
         except KeyError as e:
             raise UnsupportedValue(enum=cls.__name__, value=role) from e
 
     @staticmethod
     def to_domain(role: str) -> str:
-        verify_type('role', role, str)
+        verify_type("role", role, str)
 
         return {
             ProjectMemberRoleDTO.VIEWER.value: ProjectMemberRole.VIEWER,
             ProjectMemberRoleDTO.MANAGER.value: ProjectMemberRole.OWNER,
-            ProjectMemberRoleDTO.MEMBER.value: ProjectMemberRole.CONTRIBUTOR
+            ProjectMemberRoleDTO.MEMBER.value: ProjectMemberRole.CONTRIBUTOR,
         }.get(role)
 
 
 class WorkspaceMemberRoleDTO(Enum):
-    OWNER = 'owner'
-    MEMBER = 'member'
+    OWNER = "owner"
+    MEMBER = "member"
 
     @staticmethod
     def to_domain(role: str) -> str:
         return {
             WorkspaceMemberRoleDTO.OWNER.value: WorkspaceMemberRole.ADMIN,
-            WorkspaceMemberRoleDTO.MEMBER.value: WorkspaceMemberRole.MEMBER
+            WorkspaceMemberRoleDTO.MEMBER.value: WorkspaceMemberRole.MEMBER,
         }.get(role)

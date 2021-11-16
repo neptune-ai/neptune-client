@@ -25,7 +25,6 @@ from neptune.new.exceptions import NeptuneConnectionLostException
 
 
 class Daemon(threading.Thread):
-
     def __init__(self, sleep_time: float):
         super().__init__(daemon=True)
         self._sleep_time = sleep_time
@@ -78,22 +77,28 @@ class Daemon(threading.Thread):
                         result = func(self_, *args, **kwargs)
                         if self_.last_backoff_time > 0:
                             self_.last_backoff_time = 0
-                            click.echo("Communication with Neptune restored!", sys.stderr)
+                            click.echo(
+                                "Communication with Neptune restored!", sys.stderr
+                            )
                         return result
                     except NeptuneConnectionLostException as e:
                         if self_.last_backoff_time == 0:
-                            click.echo("Experiencing connection interruptions. "
-                                       "Will try to reestablish communication with Neptune. "
-                                       f"Internal exception was: {e.cause.__class__.__name__}",
-                                       sys.stderr)
+                            click.echo(
+                                "Experiencing connection interruptions. "
+                                "Will try to reestablish communication with Neptune. "
+                                f"Internal exception was: {e.cause.__class__.__name__}",
+                                sys.stderr,
+                            )
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:
-                            self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)
+                            self_.last_backoff_time = min(
+                                self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF
+                            )
                         time.sleep(self_.last_backoff_time)
                     except Exception:
                         click.echo(
                             f"Unexpected error occurred in Neptune background thread: {self.kill_message}",
-                            sys.stderr
+                            sys.stderr,
                         )
                         raise
 

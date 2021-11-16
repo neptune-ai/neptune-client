@@ -18,11 +18,11 @@ try:
     # pylint: disable=import-error
     from neptune_optuna.impl import *
 except ModuleNotFoundError as e:
-    if e.name == 'neptune_optuna':
+    if e.name == "neptune_optuna":
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+
         raise NeptuneIntegrationNotInstalledException(
-            integration_package_name="neptune-optuna",
-            framework_name="optuna"
+            integration_package_name="neptune-optuna", framework_name="optuna"
         ) from None
     else:
         raise

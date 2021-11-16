@@ -21,7 +21,6 @@ from neptune.model import ChannelWithLastValue
 
 
 class ApiClient(ABC):
-
     @property
     @abstractmethod
     def api_address(self):
@@ -48,7 +47,7 @@ class BackendApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def create_leaderboard_backend(self, project) -> 'LeaderboardApiClient':
+    def create_leaderboard_backend(self, project) -> "LeaderboardApiClient":
         pass
 
 
@@ -58,10 +57,16 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def get_leaderboard_entries(self, project,
-                                entry_types=None, ids=None,
-                                states=None, owners=None, tags=None,
-                                min_running_time=None):
+    def get_leaderboard_entries(
+        self,
+        project,
+        entry_types=None,
+        ids=None,
+        states=None,
+        owners=None,
+        tags=None,
+        min_running_time=None,
+    ):
         pass
 
     # pylint: disable=unused-argument
@@ -77,10 +82,22 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def create_experiment(self, project, name, description,
-                          params, properties, tags, abortable,
-                          monitored, git_info, hostname, entrypoint,
-                          notebook_id, checkpoint_id):
+    def create_experiment(
+        self,
+        project,
+        name,
+        description,
+        params,
+        properties,
+        tags,
+        abortable,
+        monitored,
+        git_info,
+        hostname,
+        entrypoint,
+        notebook_id,
+        checkpoint_id,
+    ):
         pass
 
     @abstractmethod
@@ -144,7 +161,9 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
+    def create_system_channel(
+        self, experiment, name, channel_type
+    ) -> ChannelWithLastValue:
         pass
 
     @abstractmethod

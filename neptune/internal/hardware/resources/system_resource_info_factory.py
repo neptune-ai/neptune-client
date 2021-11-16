@@ -16,7 +16,9 @@
 
 from neptune.internal.hardware.cgroup.cgroup_monitor import CGroupMonitor
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.internal.hardware.resources.gpu_card_indices_provider import GPUCardIndicesProvider
+from neptune.internal.hardware.resources.gpu_card_indices_provider import (
+    GPUCardIndicesProvider,
+)
 from neptune.internal.hardware.resources.system_resource_info import SystemResourceInfo
 
 
@@ -25,8 +27,9 @@ class SystemResourceInfoFactory(object):
         self.__system_monitor = system_monitor
         self.__gpu_monitor = gpu_monitor
         self.__gpu_card_indices_provider = GPUCardIndicesProvider(
-            cuda_visible_devices=os_environ.get(u'CUDA_VISIBLE_DEVICES'),
-            gpu_card_count=self.__gpu_monitor.get_card_count())
+            cuda_visible_devices=os_environ.get(u"CUDA_VISIBLE_DEVICES"),
+            gpu_card_count=self.__gpu_monitor.get_card_count(),
+        )
 
     def create(self, gauge_mode):
         if gauge_mode == GaugeMode.SYSTEM:
@@ -34,14 +37,14 @@ class SystemResourceInfoFactory(object):
         elif gauge_mode == GaugeMode.CGROUP:
             return self.__create_cgroup_resource_info()
         else:
-            raise ValueError(str(u'Unknown gauge mode: {}'.format(gauge_mode)))
+            raise ValueError(str(u"Unknown gauge mode: {}".format(gauge_mode)))
 
     def __create_whole_system_resource_info(self):
         return SystemResourceInfo(
             cpu_core_count=float(self.__system_monitor.cpu_count()),
             memory_amount_bytes=self.__system_monitor.virtual_memory().total,
             gpu_card_indices=self.__gpu_card_indices_provider.get(),
-            gpu_memory_amount_bytes=self.__gpu_monitor.get_top_card_memory_in_bytes()
+            gpu_memory_amount_bytes=self.__gpu_monitor.get_top_card_memory_in_bytes(),
         )
 
     def __create_cgroup_resource_info(self):
@@ -51,5 +54,5 @@ class SystemResourceInfoFactory(object):
             cpu_core_count=cgroup_monitor.get_cpu_usage_limit_in_cores(),
             memory_amount_bytes=cgroup_monitor.get_memory_limit_in_bytes(),
             gpu_card_indices=self.__gpu_card_indices_provider.get(),
-            gpu_memory_amount_bytes=self.__gpu_monitor.get_top_card_memory_in_bytes()
+            gpu_memory_amount_bytes=self.__gpu_monitor.get_top_card_memory_in_bytes(),
         )

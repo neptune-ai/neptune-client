@@ -22,7 +22,6 @@ from packaging.version import Version
 
 
 class Project:
-
     def __init__(self, _id: str, name: str, workspace: str):
         self.id = _id
         self.name = name
@@ -30,7 +29,6 @@ class Project:
 
 
 class Workspace:
-
     def __init__(self, _id: str, name: str):
         self.id = _id
         self.name = name
@@ -46,13 +44,14 @@ class ApiRun:
 
 
 class ClientConfig(object):
-
-    def __init__(self,
-                 api_url: str,
-                 display_url: str,
-                 min_recommended_version: Optional[Version],
-                 min_compatible_version: Optional[Version],
-                 max_compatible_version: Optional[Version]):
+    def __init__(
+        self,
+        api_url: str,
+        display_url: str,
+        min_recommended_version: Optional[Version],
+        min_compatible_version: Optional[Version],
+        max_compatible_version: Optional[Version],
+    ):
         self._api_url = api_url
         self._display_url = display_url
         self._min_recommended_version = min_recommended_version
@@ -95,7 +94,7 @@ class AttributeType(Enum):
     GIT_REF = "gitRef"
     RUN_STATE = "experimentState"
     NOTEBOOK_REF = "notebookRef"
-    ARTIFACT = 'artifact'
+    ARTIFACT = "artifact"
 
 
 @dataclass

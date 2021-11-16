@@ -16,7 +16,9 @@
 
 
 class MetricsContainer(object):
-    def __init__(self, cpu_usage_metric, memory_metric, gpu_usage_metric, gpu_memory_metric):
+    def __init__(
+        self, cpu_usage_metric, memory_metric, gpu_usage_metric, gpu_memory_metric
+    ):
         self.cpu_usage_metric = cpu_usage_metric
         self.memory_metric = memory_metric
         self.gpu_usage_metric = gpu_usage_metric
@@ -25,6 +27,11 @@ class MetricsContainer(object):
     def metrics(self):
         return [
             metric
-            for metric in [self.cpu_usage_metric, self.memory_metric, self.gpu_usage_metric, self.gpu_memory_metric]
+            for metric in [
+                self.cpu_usage_metric,
+                self.memory_metric,
+                self.gpu_usage_metric,
+                self.gpu_memory_metric,
+            ]
             if metric is not None
         ]

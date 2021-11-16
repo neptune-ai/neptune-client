@@ -22,36 +22,34 @@ class TestNeptuneBackendMock(unittest.TestCase):
     def test_building_operation_url(self):
         urls = {
             build_operation_url(
-                'https://app.stage.neptune.ai',
-                'api/leaderboard/v1/attributes/download'
+                "https://app.stage.neptune.ai", "api/leaderboard/v1/attributes/download"
             ),
             build_operation_url(
-                'https://app.stage.neptune.ai',
-                '/api/leaderboard/v1/attributes/download'
+                "https://app.stage.neptune.ai",
+                "/api/leaderboard/v1/attributes/download",
             ),
             build_operation_url(
-                'https://app.stage.neptune.ai/',
-                'api/leaderboard/v1/attributes/download'
+                "https://app.stage.neptune.ai/",
+                "api/leaderboard/v1/attributes/download",
             ),
             build_operation_url(
-                'https://app.stage.neptune.ai/',
-                '/api/leaderboard/v1/attributes/download'
+                "https://app.stage.neptune.ai/",
+                "/api/leaderboard/v1/attributes/download",
             ),
             build_operation_url(
-                'app.stage.neptune.ai',
-                'api/leaderboard/v1/attributes/download'
+                "app.stage.neptune.ai", "api/leaderboard/v1/attributes/download"
             ),
             build_operation_url(
-                'app.stage.neptune.ai',
-                '/api/leaderboard/v1/attributes/download'
+                "app.stage.neptune.ai", "/api/leaderboard/v1/attributes/download"
             ),
             build_operation_url(
-                'app.stage.neptune.ai/',
-                'api/leaderboard/v1/attributes/download'
+                "app.stage.neptune.ai/", "api/leaderboard/v1/attributes/download"
             ),
             build_operation_url(
-                'app.stage.neptune.ai/',
-                '/api/leaderboard/v1/attributes/download'
+                "app.stage.neptune.ai/", "/api/leaderboard/v1/attributes/download"
             ),
         }
-        self.assertEqual({'https://app.stage.neptune.ai/api/leaderboard/v1/attributes/download'}, urls)
+        self.assertEqual(
+            {"https://app.stage.neptune.ai/api/leaderboard/v1/attributes/download"},
+            urls,
+        )

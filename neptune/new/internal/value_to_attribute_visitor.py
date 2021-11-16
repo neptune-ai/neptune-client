@@ -50,8 +50,7 @@ if TYPE_CHECKING:
 
 
 class ValueToAttributeVisitor(ValueVisitor[Attribute]):
-
-    def __init__(self, run: 'Run', path: List[str]):
+    def __init__(self, run: "Run", path: List[str]):
         self._run = run
         self._path = path
 

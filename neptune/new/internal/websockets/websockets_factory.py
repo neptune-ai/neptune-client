@@ -21,7 +21,9 @@ from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebso
 
 
 class WebsocketsFactory:
-    def __init__(self, url: str, session: OAuth2Session, proxies: Optional[dict] = None):
+    def __init__(
+        self, url: str, session: OAuth2Session, proxies: Optional[dict] = None
+    ):
         self._url = url
         self._session = session
         self._proxies = proxies
@@ -31,4 +33,5 @@ class WebsocketsFactory:
             url=self._url,
             oauth2_session=self._session,
             shutdown_event=threading.Event(),
-            proxies=self._proxies)
+            proxies=self._proxies,
+        )

@@ -22,29 +22,28 @@ from neptune.exceptions import NeptuneException
 
 ChannelNameWithTypeAndNamespace = namedtuple(
     "ChannelNameWithType",
-    ['channel_id', 'channel_name', 'channel_type', 'channel_namespace']
+    ["channel_id", "channel_name", "channel_type", "channel_namespace"],
 )
 
 
 class ChannelType(Enum):
-    TEXT = 'text'
-    NUMERIC = 'numeric'
-    IMAGE = 'image'
+    TEXT = "text"
+    NUMERIC = "numeric"
+    IMAGE = "image"
 
 
 class ChannelValueType(Enum):
-    TEXT_VALUE = 'text_value'
-    NUMERIC_VALUE = 'numeric_value'
-    IMAGE_VALUE = 'image_value'
+    TEXT_VALUE = "text_value"
+    NUMERIC_VALUE = "numeric_value"
+    IMAGE_VALUE = "image_value"
 
 
 class ChannelNamespace(Enum):
-    USER = 'user'
-    SYSTEM = 'system'
+    USER = "user"
+    SYSTEM = "system"
 
 
 class ChannelValue(object):
-
     def __init__(self, x, y, ts):
         self._x = x
         self._y = y
@@ -71,18 +70,22 @@ class ChannelValue(object):
     @property
     def value_type(self) -> ChannelValueType:
         """We expect that exactly one of `y` values is not None, and according to that we try to determine value type"""
-        unique_channel_value_types = set([
-            ch_value_type for ch_value_type in ChannelValueType if self.y.get(ch_value_type.value) is not None
-        ])
+        unique_channel_value_types = set(
+            [
+                ch_value_type
+                for ch_value_type in ChannelValueType
+                if self.y.get(ch_value_type.value) is not None
+            ]
+        )
         if len(unique_channel_value_types) > 1:
-            raise NeptuneException(f'There are mixed value types in {self}')
+            raise NeptuneException(f"There are mixed value types in {self}")
         if not unique_channel_value_types:
             raise NeptuneException(f"Can't determine type of {self}")
 
         return next(iter(unique_channel_value_types))
 
     def __str__(self):
-        return 'ChannelValue(x={},y={},ts={})'.format(self.x, self.y, self.ts)
+        return "ChannelValue(x={},y={},ts={})".format(self.x, self.y, self.ts)
 
     def __repr__(self):
         return str(self)
@@ -92,7 +95,9 @@ class ChannelValue(object):
 
 
 class ChannelIdWithValues:
-    def __init__(self, channel_id, channel_name, channel_type, channel_namespace, channel_values):
+    def __init__(
+        self, channel_id, channel_name, channel_type, channel_namespace, channel_values
+    ):
         self._channel_id = channel_id
         self._channel_name = channel_name
         self._channel_type = channel_type
@@ -127,7 +132,10 @@ class ChannelIdWithValues:
         return self._channel_namespace
 
     def __eq__(self, other):
-        return self.channel_id == other.channel_id and self.channel_values == other.channel_values
+        return (
+            self.channel_id == other.channel_id
+            and self.channel_values == other.channel_values
+        )
 
     def __gt__(self, other):
         return hash(self.channel_id) < hash(other.channel_id)

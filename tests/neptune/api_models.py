@@ -16,4 +16,4 @@
 
 from collections import namedtuple
 
-ApiParameter = namedtuple('ApiParameter', ['id', 'name', 'parameterType', 'value'])
+ApiParameter = namedtuple("ApiParameter", ["id", "name", "parameterType", "value"])

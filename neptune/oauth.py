@@ -32,7 +32,7 @@ _decoding_options = {
     "verify_nbf": False,
     "verify_iat": False,
     "verify_aud": False,
-    "verify_iss": False
+    "verify_iss": False,
 }
 
 
@@ -53,10 +53,9 @@ class NeptuneAuth(AuthBase):
 
     def _add_token(self, r):
         # pylint: disable=protected-access
-        r.url, r.headers, r.body = self.session._client.add_token(r.url,
-                                                                  http_method=r.method,
-                                                                  body=r.body,
-                                                                  headers=r.headers)
+        r.url, r.headers, r.body = self.session._client.add_token(
+            r.url, http_method=r.method, body=r.body, headers=r.headers
+        )
         return r
 
     @with_api_exceptions_handler
@@ -79,40 +78,54 @@ class NeptuneAuth(AuthBase):
                 self._refresh_session_token()
 
     def _refresh_session_token(self):
-        self.session.refresh_token(self.session.auto_refresh_url, verify=self.session.verify)
-        if self.session.token is not None and self.session.token.get('access_token') is not None:
-            decoded_json_token = jwt.decode(self.session.token.get('access_token'), options=_decoding_options)
-            self.token_expires_at = decoded_json_token.get(u'exp')
+        self.session.refresh_token(
+            self.session.auto_refresh_url, verify=self.session.verify
+        )
+        if (
+            self.session.token is not None
+            and self.session.token.get("access_token") is not None
+        ):
+            decoded_json_token = jwt.decode(
+                self.session.token.get("access_token"), options=_decoding_options
+            )
+            self.token_expires_at = decoded_json_token.get(u"exp")
 
 
 class NeptuneAuthenticator(Authenticator):
-
     def __init__(self, api_token, backend_client, ssl_verify, proxies):
-        super(NeptuneAuthenticator, self).__init__(host='')
+        super(NeptuneAuthenticator, self).__init__(host="")
 
         # We need to pass a lambda to be able to re-create fresh session at any time when needed
         def session_factory():
             try:
-                auth_tokens = backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
+                auth_tokens = (
+                    backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token)
+                    .response()
+                    .result
+                )
             except HTTPUnauthorized:
                 raise NeptuneInvalidApiTokenException()
 
-            decoded_json_token = jwt.decode(auth_tokens.accessToken, options=_decoding_options)
-            expires_at = decoded_json_token.get(u'exp')
-            client_name = decoded_json_token.get(u'azp')
-            refresh_url = u'{realm_url}/protocol/openid-connect/token'.format(realm_url=decoded_json_token.get(u'iss'))
+            decoded_json_token = jwt.decode(
+                auth_tokens.accessToken, options=_decoding_options
+            )
+            expires_at = decoded_json_token.get(u"exp")
+            client_name = decoded_json_token.get(u"azp")
+            refresh_url = u"{realm_url}/protocol/openid-connect/token".format(
+                realm_url=decoded_json_token.get(u"iss")
+            )
             token = {
-                u'access_token': auth_tokens.accessToken,
-                u'refresh_token': auth_tokens.refreshToken,
-                u'expires_in': expires_at - time.time()
+                u"access_token": auth_tokens.accessToken,
+                u"refresh_token": auth_tokens.refreshToken,
+                u"expires_in": expires_at - time.time(),
             }
 
             session = OAuth2Session(
                 client_id=client_name,
                 token=token,
                 auto_refresh_url=refresh_url,
-                auto_refresh_kwargs={'client_id': client_name},
-                token_updater=_no_token_updater
+                auto_refresh_kwargs={"client_id": client_name},
+                token_updater=_no_token_updater,
             )
             session.verify = ssl_verify
 

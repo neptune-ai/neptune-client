@@ -20,7 +20,6 @@ from tests.neptune.new.helpers import create_file
 
 
 class TestJsonFileSplitter(unittest.TestCase):
-
     def test_simple_file(self):
         content = """
 {
@@ -63,7 +62,7 @@ class TestJsonFileSplitter(unittest.TestCase):
             }
             {}"""
 
-        with create_file(content1) as filename, open(filename, 'a') as fp:
+        with create_file(content1) as filename, open(filename, "a") as fp:
             splitter = JsonFileSplitter(filename)
             self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
             self.assertEqual(splitter.get(), {"a": 13})
@@ -94,7 +93,7 @@ class TestJsonFileSplitter(unittest.TestCase):
                 }
             }"""
 
-        with create_file(content1) as filename, open(filename, 'a') as fp:
+        with create_file(content1) as filename, open(filename, "a") as fp:
             splitter = JsonFileSplitter(filename)
             self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
             self.assertEqual(splitter.get(), None)
@@ -116,13 +115,21 @@ class TestJsonFileSplitter(unittest.TestCase):
     "b": "%s"
 }
 {}
-""".lstrip() % ("x" * JsonFileSplitter.BUFFER_SIZE * 2, "y" * JsonFileSplitter.BUFFER_SIZE * 2)
+""".lstrip() % (
+            "x" * JsonFileSplitter.BUFFER_SIZE * 2,
+            "y" * JsonFileSplitter.BUFFER_SIZE * 2,
+        )
 
         with create_file(content) as filename:
             splitter = JsonFileSplitter(filename)
             self.assertEqual(splitter.get(), {"a": 5, "b": "text"})
-            self.assertEqual(splitter.get(), {"a": "x" * JsonFileSplitter.BUFFER_SIZE * 2,
-                                              "b": "y" * JsonFileSplitter.BUFFER_SIZE * 2})
+            self.assertEqual(
+                splitter.get(),
+                {
+                    "a": "x" * JsonFileSplitter.BUFFER_SIZE * 2,
+                    "b": "y" * JsonFileSplitter.BUFFER_SIZE * 2,
+                },
+            )
             self.assertEqual(splitter.get(), {})
             self.assertEqual(splitter.get(), None)
             splitter.close()

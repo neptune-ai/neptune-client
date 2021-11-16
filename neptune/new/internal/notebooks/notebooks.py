@@ -30,6 +30,7 @@ def create_checkpoint(backend: NeptuneBackend, notebook_id: str, notebook_path: 
     if is_ipython():
         # pylint:disable=bad-option-value,import-outside-toplevel,import-error
         import IPython
+
         ipython = IPython.core.getipython.get_ipython()
         execution_count = -1
         if ipython.kernel is not None:
@@ -41,8 +42,10 @@ def create_checkpoint(backend: NeptuneBackend, notebook_id: str, notebook_path: 
 
             checkpoint = backend.create_checkpoint(notebook_id, notebook_path)
             if ipython is not None and ipython.kernel is not None:
-                send_checkpoint_created(notebook_id=notebook_id,
-                                        notebook_path=notebook_path,
-                                        checkpoint_id=checkpoint)
+                send_checkpoint_created(
+                    notebook_id=notebook_id,
+                    notebook_path=notebook_path,
+                    checkpoint_id=checkpoint,
+                )
                 _checkpoints[execution_count] = checkpoint
             return checkpoint

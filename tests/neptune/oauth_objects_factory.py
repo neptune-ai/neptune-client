@@ -20,12 +20,21 @@ import jwt
 
 from tests.neptune.random_utils import a_string
 
-SECRET = 'secret'
+SECRET = "secret"
 
 
 def an_access_token():
-    return jwt.encode({'exp': time.time(), 'azp': a_string(), 'iss': 'http://{}.com'.format(a_string())}, SECRET)
+    return jwt.encode(
+        {
+            "exp": time.time(),
+            "azp": a_string(),
+            "iss": "http://{}.com".format(a_string()),
+        },
+        SECRET,
+    )
 
 
 def a_refresh_token():
-    return jwt.encode({'exp': 0, 'azp': a_string(), 'iss': 'http://{}.com'.format(a_string())}, SECRET)
+    return jwt.encode(
+        {"exp": 0, "azp": a_string(), "iss": "http://{}.com".format(a_string())}, SECRET
+    )

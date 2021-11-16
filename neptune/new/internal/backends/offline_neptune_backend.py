@@ -38,7 +38,6 @@ from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMoc
 
 
 class OfflineNeptuneBackend(NeptuneBackendMock):
-
     def get_attributes(self, run_id: str) -> List[Attribute]:
         raise NeptuneOfflineModeFetchException
 
@@ -63,30 +62,42 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def get_artifact_attribute(self, run_id: str, path: List[str]) -> ArtifactAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
+    def list_artifact_files(
+        self, project_id: str, artifact_hash: str
+    ) -> List[ArtifactFileData]:
         raise NeptuneOfflineModeFetchException
 
-    def get_float_series_attribute(self, run_id: str, path: List[str]) -> FloatSeriesAttribute:
+    def get_float_series_attribute(
+        self, run_id: str, path: List[str]
+    ) -> FloatSeriesAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_string_series_attribute(self, run_id: str, path: List[str]) -> StringSeriesAttribute:
+    def get_string_series_attribute(
+        self, run_id: str, path: List[str]
+    ) -> StringSeriesAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_string_set_attribute(self, run_id: str, path: List[str]) -> StringSetAttribute:
+    def get_string_set_attribute(
+        self, run_id: str, path: List[str]
+    ) -> StringSetAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_string_series_values(self, run_id: str, path: List[str],
-                                 offset: int, limit: int) -> StringSeriesValues:
+    def get_string_series_values(
+        self, run_id: str, path: List[str], offset: int, limit: int
+    ) -> StringSeriesValues:
         raise NeptuneOfflineModeFetchException
 
-    def get_float_series_values(self, run_id: str, path: List[str],
-                                offset: int, limit: int) -> FloatSeriesValues:
+    def get_float_series_values(
+        self, run_id: str, path: List[str], offset: int, limit: int
+    ) -> FloatSeriesValues:
         raise NeptuneOfflineModeFetchException
 
-    def get_image_series_values(self, run_id: str, path: List[str],
-                                offset: int, limit: int) -> ImageSeriesValues:
+    def get_image_series_values(
+        self, run_id: str, path: List[str], offset: int, limit: int
+    ) -> ImageSeriesValues:
         raise NeptuneOfflineModeFetchException
 
-    def download_file_series_by_index(self, run_id: str, path: List[str],
-                                      index: int, destination: str):
+    def download_file_series_by_index(
+        self, run_id: str, path: List[str], index: int, destination: str
+    ):
         raise NeptuneOfflineModeFetchException

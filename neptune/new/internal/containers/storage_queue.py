@@ -17,7 +17,7 @@
 import abc
 from typing import Generic, TypeVar, List, Optional, Tuple
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class StorageQueue(Generic[T]):

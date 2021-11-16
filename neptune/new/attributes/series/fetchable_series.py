@@ -17,13 +17,15 @@ import abc
 from datetime import datetime
 from typing import TypeVar, Generic, Union, Dict
 
-from neptune.new.internal.backends.api_model import FloatSeriesValues, StringSeriesValues
+from neptune.new.internal.backends.api_model import (
+    FloatSeriesValues,
+    StringSeriesValues,
+)
 
-Row = TypeVar('Row', StringSeriesValues, FloatSeriesValues)
+Row = TypeVar("Row", StringSeriesValues, FloatSeriesValues)
 
 
 class FetchableSeries(Generic[Row]):
-
     @abc.abstractmethod
     def _fetch_values_from_backend(self, offset, limit) -> Row:
         pass
@@ -31,6 +33,7 @@ class FetchableSeries(Generic[Row]):
     def fetch_values(self, include_timestamp=True):
         # pylint: disable=import-outside-toplevel
         import pandas as pd
+
         limit = 1000
         val = self._fetch_values_from_backend(0, limit)
         data = val.values
@@ -51,5 +54,5 @@ class FetchableSeries(Generic[Row]):
 
         rows = dict((n, make_row(entry)) for (n, entry) in enumerate(data))
 
-        df = pd.DataFrame.from_dict(data=rows, orient='index')
+        df = pd.DataFrame.from_dict(data=rows, orient="index")
         return df

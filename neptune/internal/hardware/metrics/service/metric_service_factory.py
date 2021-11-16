@@ -16,9 +16,13 @@
 from neptune.internal.hardware.gauges.gauge_factory import GaugeFactory
 from neptune.internal.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.internal.hardware.metrics.metrics_factory import MetricsFactory
-from neptune.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
+from neptune.internal.hardware.metrics.reports.metric_reporter_factory import (
+    MetricReporterFactory,
+)
 from neptune.internal.hardware.metrics.service.metric_service import MetricService
-from neptune.internal.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
+from neptune.internal.hardware.resources.system_resource_info_factory import (
+    SystemResourceInfoFactory,
+)
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
@@ -29,21 +33,29 @@ class MetricServiceFactory(object):
 
     def create(self, gauge_mode, experiment, reference_timestamp):
         system_resource_info = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=GPUMonitor(), os_environ=self.__os_environ
+            system_monitor=SystemMonitor(),
+            gpu_monitor=GPUMonitor(),
+            os_environ=self.__os_environ,
         ).create(gauge_mode=gauge_mode)
 
         gauge_factory = GaugeFactory(gauge_mode=gauge_mode)
-        metrics_factory = MetricsFactory(gauge_factory=gauge_factory, system_resource_info=system_resource_info)
+        metrics_factory = MetricsFactory(
+            gauge_factory=gauge_factory, system_resource_info=system_resource_info
+        )
         metrics_container = metrics_factory.create_metrics_container()
 
         for metric in metrics_container.metrics():
-            metric.internal_id = self.__backend.create_hardware_metric(experiment, metric)
+            metric.internal_id = self.__backend.create_hardware_metric(
+                experiment, metric
+            )
 
-        metric_reporter = MetricReporterFactory(reference_timestamp).create(metrics=metrics_container.metrics())
+        metric_reporter = MetricReporterFactory(reference_timestamp).create(
+            metrics=metrics_container.metrics()
+        )
 
         return MetricService(
             backend=self.__backend,
             metric_reporter=metric_reporter,
             experiment=experiment,
-            metrics_container=metrics_container
+            metrics_container=metrics_container,
         )

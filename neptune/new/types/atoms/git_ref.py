@@ -22,7 +22,7 @@ from neptune.new.types.atoms.atom import Atom
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 @dataclass
@@ -37,7 +37,7 @@ class GitRef(Atom):
     branch: Optional[str]
     remotes: Optional[List[str]]
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_git_ref(self)
 
     def __str__(self):

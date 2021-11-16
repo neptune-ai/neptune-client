@@ -21,21 +21,21 @@ import abc
 
 class ClientFeatures(abc.ABC):
     params = {
-        'init_text_parameter': 'some text',
-        'init_number parameter': 42,
-        'init_list': [1, 2, 3],
-        'init_datetime': datetime.now()
+        "init_text_parameter": "some text",
+        "init_number parameter": 42,
+        "init_list": [1, 2, 3],
+        "init_datetime": datetime.now(),
     }
     properties = {
-        'init_text_property': 'some text',
-        'init_number property': 42,
-        'init_list': [1, 2, 3],
-        'init_datetime': datetime.now(),
+        "init_text_property": "some text",
+        "init_number property": 42,
+        "init_list": [1, 2, 3],
+        "init_datetime": datetime.now(),
     }
 
-    data_dir = 'alpha_integration_dev/data'
-    img_path = f'{data_dir}/g.png'
-    text_file_path = f'{data_dir}/text.txt'
+    data_dir = "alpha_integration_dev/data"
+    img_path = f"{data_dir}/g.png"
+    text_file_path = f"{data_dir}/text.txt"
 
     @contextmanager
     def with_assert_raises(self, exception):
@@ -46,7 +46,7 @@ class ClientFeatures(abc.ABC):
         except exception:
             pass
         else:
-            raise AssertionError(f'Should raise {exception}')
+            raise AssertionError(f"Should raise {exception}")
 
     @staticmethod
     def _remove_file_if_exists(filepath):

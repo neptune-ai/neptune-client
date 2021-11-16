@@ -31,7 +31,7 @@ from neptune.projects import Project
 from neptune.sessions import Session
 from neptune.utils import assure_project_qualified_name
 
-__version__ = get_versions()['version']
+__version__ = get_versions()["version"]
 
 del get_versions
 
@@ -54,9 +54,20 @@ ANONYMOUS_API_TOKEN = constants.ANONYMOUS_API_TOKEN
 
 
 CURRENT_KWARGS = (
-    'project', 'run', 'custom_run_id', 'mode', 'name', 'description', 'tags',
-    'source_files', 'capture_stdout', 'capture_stderr', 'capture_hardware_metrics',
-    'fail_on_exception', 'monitoring_namespace', 'flush_period',
+    "project",
+    "run",
+    "custom_run_id",
+    "mode",
+    "name",
+    "description",
+    "tags",
+    "source_files",
+    "capture_stdout",
+    "capture_stderr",
+    "capture_hardware_metrics",
+    "fail_on_exception",
+    "monitoring_namespace",
+    "flush_period",
 )
 
 
@@ -66,10 +77,14 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
             raise NeptuneIncorrectImportException()
     if kwargs:
         first_key = next(iter(kwargs.keys()))
-        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
+        raise TypeError(
+            f"{caller_name}() got an unexpected keyword argument '{first_key}'"
+        )
 
 
-def init(project_qualified_name=None, api_token=None, proxies=None, backend=None, **kwargs):
+def init(
+    project_qualified_name=None, api_token=None, proxies=None, backend=None, **kwargs
+):
     """Initialize `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with
     specific project.
 
@@ -215,22 +230,24 @@ def set_project(project_qualified_name):
         return project
 
 
-def create_experiment(name=None,
-                      description=None,
-                      params=None,
-                      properties=None,
-                      tags=None,
-                      upload_source_files=None,
-                      abort_callback=None,
-                      logger=None,
-                      upload_stdout=True,
-                      upload_stderr=True,
-                      send_hardware_metrics=True,
-                      run_monitoring_thread=True,
-                      handle_uncaught_exceptions=True,
-                      git_info=None,
-                      hostname=None,
-                      notebook_id=None):
+def create_experiment(
+    name=None,
+    description=None,
+    params=None,
+    properties=None,
+    tags=None,
+    upload_source_files=None,
+    abort_callback=None,
+    logger=None,
+    upload_stdout=True,
+    upload_stderr=True,
+    send_hardware_metrics=True,
+    run_monitoring_thread=True,
+    handle_uncaught_exceptions=True,
+    git_info=None,
+    hostname=None,
+    notebook_id=None,
+):
     """Create and start Neptune experiment.
 
     Alias for: :meth:`~neptune.projects.Project.create_experiment`
@@ -257,7 +274,7 @@ def create_experiment(name=None,
         handle_uncaught_exceptions=handle_uncaught_exceptions,
         git_info=git_info,
         hostname=hostname,
-        notebook_id=notebook_id
+        notebook_id=notebook_id,
     )
 
 
@@ -358,7 +375,9 @@ def log_image(log_name, x, y=None, image_name=None, description=None, timestamp=
 
     Alias for :meth:`~neptune.experiments.Experiment.log_image`
     """
-    return get_experiment().send_image(log_name, x, y, image_name, description, timestamp)
+    return get_experiment().send_image(
+        log_name, x, y, image_name, description, timestamp
+    )
 
 
 def send_artifact(artifact, destination=None):

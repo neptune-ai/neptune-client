@@ -24,16 +24,18 @@ _logger = logging.getLogger(__name__)
 
 class OfflineBackendApiClient(BackendApiClient):
     def __init__(self):
-        _logger.warning('Neptune is running in offline mode. No data is being logged to Neptune.')
-        _logger.warning('Disable offline mode to log your experiments.')
+        _logger.warning(
+            "Neptune is running in offline mode. No data is being logged to Neptune."
+        )
+        _logger.warning("Disable offline mode to log your experiments.")
 
     @property
     def api_address(self):
-        return 'OFFLINE'
+        return "OFFLINE"
 
     @property
     def display_address(self):
-        return 'OFFLINE'
+        return "OFFLINE"
 
     @property
     def proxies(self):
@@ -45,18 +47,18 @@ class OfflineBackendApiClient(BackendApiClient):
     def get_projects(self, namespace):
         return []
 
-    def create_leaderboard_backend(self, project) -> 'OfflineLeaderboardApiClient':
+    def create_leaderboard_backend(self, project) -> "OfflineLeaderboardApiClient":
         return OfflineLeaderboardApiClient()
 
 
 class OfflineLeaderboardApiClient(LeaderboardApiClient):
     @property
     def api_address(self):
-        return 'OFFLINE'
+        return "OFFLINE"
 
     @property
     def display_address(self):
-        return 'OFFLINE'
+        return "OFFLINE"
 
     @property
     def proxies(self):
@@ -66,7 +68,15 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
         return []
 
     def get_leaderboard_entries(
-            self, project, entry_types=None, ids=None, states=None, owners=None, tags=None, min_running_time=None):
+        self,
+        project,
+        entry_types=None,
+        ids=None,
+        states=None,
+        owners=None,
+        tags=None,
+        min_running_time=None,
+    ):
         return []
 
     def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
@@ -75,10 +85,22 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def get_metrics_csv(self, experiment):
         return StringIO()
 
-    def create_experiment(self, project, name, description,
-                          params, properties, tags, abortable,
-                          monitored, git_info, hostname, entrypoint,
-                          notebook_id, checkpoint_id):
+    def create_experiment(
+        self,
+        project,
+        name,
+        description,
+        params,
+        properties,
+        tags,
+        abortable,
+        monitored,
+        git_info,
+        hostname,
+        entrypoint,
+        notebook_id,
+        checkpoint_id,
+    ):
         return NoopObject()
 
     def upload_source_code(self, experiment, source_target_pairs):

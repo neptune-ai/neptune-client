@@ -21,7 +21,9 @@ from mock import MagicMock
 
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.gpu.gpu_monitor import GPUMonitor
-from neptune.internal.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
+from neptune.internal.hardware.resources.system_resource_info_factory import (
+    SystemResourceInfoFactory,
+)
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
 from neptune.utils import IS_WINDOWS, IS_MACOS
 from tests.neptune.utils.assertions import AssertionExtensions
@@ -31,7 +33,10 @@ class TestSystemResourceInfoFactoryIntegration(unittest.TestCase, AssertionExten
     def test_whole_system_resource_info(self):
         # given
         system_resource_info_factory = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=GPUMonitor(), os_environ=os.environ)
+            system_monitor=SystemMonitor(),
+            gpu_monitor=GPUMonitor(),
+            os_environ=os.environ,
+        )
 
         # when
         resource_info = system_resource_info_factory.create(GaugeMode.SYSTEM)
@@ -46,7 +51,10 @@ class TestSystemResourceInfoFactoryIntegration(unittest.TestCase, AssertionExten
     def test_cgroup_resource_info(self):
         # given
         system_resource_info_factory = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=GPUMonitor(), os_environ=os.environ)
+            system_monitor=SystemMonitor(),
+            gpu_monitor=GPUMonitor(),
+            os_environ=os.environ,
+        )
 
         # when
         resource_info = system_resource_info_factory.create(GaugeMode.CGROUP)
@@ -65,7 +73,8 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         gpu_monitor.get_card_count.return_value = 2
         # and
         system_resource_info_factory = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=gpu_monitor, os_environ=dict())
+            system_monitor=SystemMonitor(), gpu_monitor=gpu_monitor, os_environ=dict()
+        )
 
         # when
         resource_info = system_resource_info_factory.create(GaugeMode.SYSTEM)
@@ -79,7 +88,10 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         gpu_monitor.get_card_count.return_value = 4
         # and
         system_resource_info_factory = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=gpu_monitor, os_environ={u'CUDA_VISIBLE_DEVICES': u'1,3'})
+            system_monitor=SystemMonitor(),
+            gpu_monitor=gpu_monitor,
+            os_environ={u"CUDA_VISIBLE_DEVICES": u"1,3"},
+        )
 
         # when
         resource_info = system_resource_info_factory.create(GaugeMode.SYSTEM)
@@ -93,7 +105,10 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         gpu_monitor.get_card_count.return_value = 4
         # and
         system_resource_info_factory = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=gpu_monitor, os_environ={u'CUDA_VISIBLE_DEVICES': u'-1'})
+            system_monitor=SystemMonitor(),
+            gpu_monitor=gpu_monitor,
+            os_environ={u"CUDA_VISIBLE_DEVICES": u"-1"},
+        )
 
         # when
         resource_info = system_resource_info_factory.create(GaugeMode.SYSTEM)
@@ -107,7 +122,10 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         gpu_monitor.get_card_count.return_value = 4
         # and
         system_resource_info_factory = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=gpu_monitor, os_environ={u'CUDA_VISIBLE_DEVICES': u'1,3,5,2'})
+            system_monitor=SystemMonitor(),
+            gpu_monitor=gpu_monitor,
+            os_environ={u"CUDA_VISIBLE_DEVICES": u"1,3,5,2"},
+        )
 
         # when
         resource_info = system_resource_info_factory.create(GaugeMode.SYSTEM)
@@ -121,7 +139,10 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         gpu_monitor.get_card_count.return_value = 2
         # and
         system_resource_info_factory = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=gpu_monitor, os_environ={u'CUDA_VISIBLE_DEVICES': u''})
+            system_monitor=SystemMonitor(),
+            gpu_monitor=gpu_monitor,
+            os_environ={u"CUDA_VISIBLE_DEVICES": u""},
+        )
 
         # when
         resource_info = system_resource_info_factory.create(GaugeMode.SYSTEM)
@@ -135,7 +156,10 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         gpu_monitor.get_card_count.return_value = 4
         # and
         system_resource_info_factory = SystemResourceInfoFactory(
-            system_monitor=SystemMonitor(), gpu_monitor=gpu_monitor, os_environ={u'CUDA_VISIBLE_DEVICES': u'1,3,abc'})
+            system_monitor=SystemMonitor(),
+            gpu_monitor=gpu_monitor,
+            os_environ={u"CUDA_VISIBLE_DEVICES": u"1,3,abc"},
+        )
 
         # when
         resource_info = system_resource_info_factory.create(GaugeMode.SYSTEM)
@@ -144,5 +168,5 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         self.assertEqual([0, 1, 2, 3], resource_info.gpu_card_indices)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

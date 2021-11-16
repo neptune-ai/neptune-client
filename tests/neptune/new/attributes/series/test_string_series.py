@@ -25,7 +25,6 @@ from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 @patch("time.time", new=TestAttributeBase._now)
 class TestStringSeries(TestAttributeBase):
-
     def test_assign_type_error(self):
         values = [55, "string", None]
         for value in values:

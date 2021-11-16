@@ -19,17 +19,21 @@ import sys
 
 def in_interactive():
     """Based on: https://stackoverflow.com/a/2356427/1565454"""
-    return hasattr(sys, 'ps1')
+    return hasattr(sys, "ps1")
 
 
 def in_notebook():
     """Based on: https://stackoverflow.com/a/22424821/1565454"""
     try:
         from IPython import get_ipython
+
         ipy = get_ipython()
-        if ipy is None \
-                or not hasattr(ipy, 'config') or not isinstance(ipy.config, dict) \
-                or 'IPKernelApp' not in ipy.config:
+        if (
+            ipy is None
+            or not hasattr(ipy, "config")
+            or not isinstance(ipy.config, dict)
+            or "IPKernelApp" not in ipy.config
+        ):
             return False
     except ImportError:
         return False

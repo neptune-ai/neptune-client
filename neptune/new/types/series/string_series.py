@@ -22,17 +22,16 @@ from neptune.new.types.series.series import Series
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class StringSeries(Series):
-
     def __init__(self, values):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
         self._values = [str(value) for value in values]
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_series(self)
 
     @property

@@ -18,11 +18,11 @@ try:
     # pylint: disable=import-error
     from neptune_sklearn.impl import *
 except ModuleNotFoundError as e:
-    if e.name == 'neptune_sklearn':
+    if e.name == "neptune_sklearn":
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+
         raise NeptuneIntegrationNotInstalledException(
-            integration_package_name="neptune-sklearn",
-            framework_name="sklearn"
+            integration_package_name="neptune-sklearn", framework_name="sklearn"
         ) from None
     else:
         raise

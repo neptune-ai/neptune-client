@@ -22,17 +22,19 @@ from neptune.new.types.series.series import Series
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class FloatSeries(Series):
 
     # pylint: disable=redefined-builtin
-    def __init__(self,
-                 values,
-                 min: Optional[Union[float, int]] = None,
-                 max: Optional[Union[float, int]] = None,
-                 unit: Optional[str] = None):
+    def __init__(
+        self,
+        values,
+        min: Optional[Union[float, int]] = None,
+        max: Optional[Union[float, int]] = None,
+        unit: Optional[str] = None,
+    ):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
         self._values = [float(value) for value in values]
@@ -40,7 +42,7 @@ class FloatSeries(Series):
         self._max = max
         self._unit = unit
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_float_series(self)
 
     @property

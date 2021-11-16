@@ -23,7 +23,7 @@ from neptune.internal.api_clients import (
 
 
 def backend_factory(*, backend_name, api_token=None, proxies=None) -> BackendApiClient:
-    if backend_name == 'offline':
+    if backend_name == "offline":
         return OfflineBackendApiClient()
 
     elif backend_name is None:

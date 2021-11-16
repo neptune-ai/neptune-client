@@ -24,7 +24,11 @@ from neptune.new.exceptions import (
     NeptuneUnsupportedArtifactFunctionalityException,
 )
 from neptune.new.internal.artifacts.file_hasher import FileHasher
-from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriver,
+    ArtifactFileData,
+    ArtifactFileType,
+)
 
 
 class LocalArtifactDriver(ArtifactDriver):
@@ -36,38 +40,52 @@ class LocalArtifactDriver(ArtifactDriver):
 
     @classmethod
     def matches(cls, path: str) -> bool:
-        return urlparse(path).scheme in ('file', '')
+        return urlparse(path).scheme in ("file", "")
 
     @classmethod
-    def _serialize_metadata(cls, metadata: typing.Dict[str, typing.Any]) -> typing.Dict[str, str]:
+    def _serialize_metadata(
+        cls, metadata: typing.Dict[str, typing.Any]
+    ) -> typing.Dict[str, str]:
         return {
-            "file_path": metadata['file_path'],
-            "last_modified": datetime.fromtimestamp(metadata['last_modified']).strftime(cls.DATETIME_FORMAT),
+            "file_path": metadata["file_path"],
+            "last_modified": datetime.fromtimestamp(metadata["last_modified"]).strftime(
+                cls.DATETIME_FORMAT
+            ),
         }
 
     @classmethod
-    def _deserialize_metadata(cls, metadata: typing.Dict[str, str]) -> typing.Dict[str, typing.Any]:
+    def _deserialize_metadata(
+        cls, metadata: typing.Dict[str, str]
+    ) -> typing.Dict[str, typing.Any]:
         return {
-            "file_path": metadata['file_path'],
-            "last_modified": datetime.strptime(metadata['last_modified'], cls.DATETIME_FORMAT),
+            "file_path": metadata["file_path"],
+            "last_modified": datetime.strptime(
+                metadata["last_modified"], cls.DATETIME_FORMAT
+            ),
         }
 
     @classmethod
-    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
-        file_protocol_prefix = 'file://'
+    def get_tracked_files(
+        cls, path: str, destination: str = None
+    ) -> typing.List[ArtifactFileData]:
+        file_protocol_prefix = "file://"
         if path.startswith(file_protocol_prefix):
-            path = path[len(file_protocol_prefix):]
+            path = path[len(file_protocol_prefix) :]
 
-        if '*' in path:
+        if "*" in path:
             raise NeptuneUnsupportedArtifactFunctionalityException(
-                f'Wildcard characters (*,?) in location URI ({path}) are not supported.'
+                f"Wildcard characters (*,?) in location URI ({path}) are not supported."
             )
 
         source_location = pathlib.Path(path).expanduser()
 
         stored_files: typing.List[ArtifactFileData] = list()
 
-        files_to_check = source_location.rglob('*') if source_location.is_dir() else [source_location]
+        files_to_check = (
+            source_location.rglob("*")
+            if source_location.is_dir()
+            else [source_location]
+        )
         for file in files_to_check:
             # symlink dirs are omitted by rglob('*')
             if not file.is_file():
@@ -77,7 +95,11 @@ class LocalArtifactDriver(ArtifactDriver):
                 file_path = file.relative_to(source_location).as_posix()
             else:
                 file_path = file.name
-            file_path = file_path if destination is None else (pathlib.Path(destination) / file_path).as_posix()
+            file_path = (
+                file_path
+                if destination is None
+                else (pathlib.Path(destination) / file_path).as_posix()
+            )
 
             stored_files.append(
                 ArtifactFileData(
@@ -85,24 +107,27 @@ class LocalArtifactDriver(ArtifactDriver):
                     file_hash=FileHasher.get_local_file_hash(file),
                     type=ArtifactFileType.LOCAL.value,
                     size=file.stat().st_size,
-                    metadata=cls._serialize_metadata({
-                        'file_path': f'file://{file.resolve().as_posix()}',
-                        'last_modified': file.stat().st_mtime,
-                    })
+                    metadata=cls._serialize_metadata(
+                        {
+                            "file_path": f"file://{file.resolve().as_posix()}",
+                            "last_modified": file.stat().st_mtime,
+                        }
+                    ),
                 )
             )
 
         return stored_files
 
     @classmethod
-    def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
+    def download_file(
+        cls, destination: pathlib.Path, file_definition: ArtifactFileData
+    ):
         parsed_path = urlparse(file_definition.metadata.get("file_path"))
         absolute_path = pathlib.Path(parsed_path.netloc + parsed_path.path)
 
         if not absolute_path.is_file():
             raise NeptuneLocalStorageAccessException(
-                path=absolute_path,
-                expected_description="an existing file"
+                path=absolute_path, expected_description="an existing file"
             )
 
         os.makedirs(str(destination.parent), exist_ok=True)

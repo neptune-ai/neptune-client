@@ -16,7 +16,11 @@
 import re
 from typing import Optional
 
-from neptune.management.exceptions import InvalidProjectName, ConflictingWorkspaceName, MissingWorkspaceName
+from neptune.management.exceptions import (
+    InvalidProjectName,
+    ConflictingWorkspaceName,
+    MissingWorkspaceName,
+)
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 
@@ -26,7 +30,10 @@ def normalize_project_name(name: str, workspace: Optional[str] = None):
     if not project_spec:
         raise InvalidProjectName(name=name)
 
-    extracted_workspace, extracted_name = project_spec['workspace'], project_spec['project']
+    extracted_workspace, extracted_name = (
+        project_spec["workspace"],
+        project_spec["project"],
+    )
 
     if not workspace and not extracted_workspace:
         raise MissingWorkspaceName(name=name)
@@ -34,4 +41,4 @@ def normalize_project_name(name: str, workspace: Optional[str] = None):
     if workspace and extracted_workspace and workspace != extracted_workspace:
         raise ConflictingWorkspaceName(name=name, workspace=workspace)
 
-    return f'{extracted_workspace or workspace}/{extracted_name}'
+    return f"{extracted_workspace or workspace}/{extracted_name}"

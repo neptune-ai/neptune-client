@@ -24,7 +24,6 @@ from neptune.new.logging import Logger as NeptuneLogger
 
 
 class StdStreamCaptureLogger:
-
     def __init__(self, run: Run, attribute_name: str, stream: TextIO):
         self._logger = NeptuneLogger(run, attribute_name)
         self.stream = stream
@@ -47,7 +46,6 @@ class StdStreamCaptureLogger:
 
 
 class StdoutCaptureLogger(StdStreamCaptureLogger):
-
     def __init__(self, run: Run, attribute_name: str):
         super().__init__(run, attribute_name, sys.stdout)
         sys.stdout = self
@@ -57,7 +55,6 @@ class StdoutCaptureLogger(StdStreamCaptureLogger):
 
 
 class StderrCaptureLogger(StdStreamCaptureLogger):
-
     def __init__(self, run: Run, attribute_name: str):
         super().__init__(run, attribute_name, sys.stderr)
         sys.stderr = self

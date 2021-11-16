@@ -21,9 +21,14 @@ from tempfile import NamedTemporaryFile, TemporaryDirectory
 import mock
 from mock import MagicMock, patch, call
 
-from neptune.new.internal.backends.hosted_file_operations import upload_file_attribute, upload_file_set_attribute, \
-    download_file_attribute, _get_content_disposition_filename, _attribute_upload_response_handler, \
-    download_file_set_attribute
+from neptune.new.internal.backends.hosted_file_operations import (
+    upload_file_attribute,
+    upload_file_set_attribute,
+    download_file_attribute,
+    _get_content_disposition_filename,
+    _attribute_upload_response_handler,
+    download_file_set_attribute,
+)
 from neptune.utils import IS_WINDOWS
 
 
@@ -31,12 +36,12 @@ class TestHostedFileOperations(unittest.TestCase):
     # pylint:disable=protected-access
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.new.internal.backends.hosted_file_operations._upload_loop')
+    @patch("neptune.new.internal.backends.hosted_file_operations._upload_loop")
     def test_upload_file_attribute(self, upload_loop_mock):
         # given
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
-        upload_loop_mock.return_value = b'null'
+        upload_loop_mock.return_value = b"null"
 
         # when
         with NamedTemporaryFile("w") as f:
@@ -45,7 +50,8 @@ class TestHostedFileOperations(unittest.TestCase):
                 run_id=exp_uuid,
                 attribute="target/path.txt",
                 source=f.name,
-                ext="txt")
+                ext="txt",
+            )
 
         # then
         upload_loop_mock.assert_called_once_with(
@@ -56,16 +62,17 @@ class TestHostedFileOperations(unittest.TestCase):
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
-                "ext": "txt"
-            })
+                "ext": "txt",
+            },
+        )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.new.internal.backends.hosted_file_operations._upload_loop')
+    @patch("neptune.new.internal.backends.hosted_file_operations._upload_loop")
     def test_upload_file_attribute_from_stream(self, upload_loop_mock):
         # given
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
-        upload_loop_mock.return_value = b'null'
+        upload_loop_mock.return_value = b"null"
 
         # when
         upload_file_attribute(
@@ -73,7 +80,8 @@ class TestHostedFileOperations(unittest.TestCase):
             run_id=exp_uuid,
             attribute="target/path.txt",
             source=b"Some content of test stream",
-            ext="txt")
+            ext="txt",
+        )
 
         # then
         upload_loop_mock.assert_called_once_with(
@@ -84,22 +92,26 @@ class TestHostedFileOperations(unittest.TestCase):
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "target/path.txt",
-                "ext": "txt"
-            })
+                "ext": "txt",
+            },
+        )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.new.internal.backends.hosted_file_operations._upload_loop_chunk')
-    @patch('neptune.new.internal.utils.glob', new=lambda path, recursive=False: [path.replace('*', 'file.txt')])
+    @patch("neptune.new.internal.backends.hosted_file_operations._upload_loop_chunk")
+    @patch(
+        "neptune.new.internal.utils.glob",
+        new=lambda path, recursive=False: [path.replace("*", "file.txt")],
+    )
     def test_upload_single_file_in_file_set_attribute(self, upload_loop_chunk_mock):
         # given
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
-        upload_loop_chunk_mock.return_value = b'null'
+        upload_loop_chunk_mock.return_value = b"null"
         chunk_size = 1024 * 1024
 
         # when
         with NamedTemporaryFile("w") as temp_file:
-            with open(temp_file.name, 'wb') as handler:
+            with open(temp_file.name, "wb") as handler:
                 handler.write(os.urandom(2 * chunk_size))
 
             upload_file_set_attribute(
@@ -107,45 +119,50 @@ class TestHostedFileOperations(unittest.TestCase):
                 run_id=str(exp_uuid),
                 attribute="some/attribute",
                 file_globs=[temp_file.name],
-                reset=True)
+                reset=True,
+            )
 
         # then
-        upload_loop_chunk_mock.assert_has_calls([
-            call(
-                mock.ANY,
-                mock.ANY,
-                http_client=swagger_mock.swagger_spec.http_client,
-                query_params={
-                    "experimentId": str(exp_uuid),
-                    "attribute": "some/attribute",
-                    "reset": "True",
-                    "path": os.path.basename(temp_file.name)
-                },
-                url='https://ui.neptune.ai/uploadFileSetChunk'
-            ),
-            call(
-                mock.ANY,
-                mock.ANY,
-                http_client=swagger_mock.swagger_spec.http_client,
-                query_params={
-                    "experimentId": str(exp_uuid),
-                    "attribute": "some/attribute",
-                    "reset": "False",
-                    "path": os.path.basename(temp_file.name)
-                },
-                url='https://ui.neptune.ai/uploadFileSetChunk'
-            )
-        ])
-
+        upload_loop_chunk_mock.assert_has_calls(
+            [
+                call(
+                    mock.ANY,
+                    mock.ANY,
+                    http_client=swagger_mock.swagger_spec.http_client,
+                    query_params={
+                        "experimentId": str(exp_uuid),
+                        "attribute": "some/attribute",
+                        "reset": "True",
+                        "path": os.path.basename(temp_file.name),
+                    },
+                    url="https://ui.neptune.ai/uploadFileSetChunk",
+                ),
+                call(
+                    mock.ANY,
+                    mock.ANY,
+                    http_client=swagger_mock.swagger_spec.http_client,
+                    query_params={
+                        "experimentId": str(exp_uuid),
+                        "attribute": "some/attribute",
+                        "reset": "False",
+                        "path": os.path.basename(temp_file.name),
+                    },
+                    url="https://ui.neptune.ai/uploadFileSetChunk",
+                ),
+            ]
+        )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.new.internal.backends.hosted_file_operations.upload_raw_data')
-    @patch('neptune.new.internal.utils.glob', new=lambda path, recursive=False: [path.replace('*', 'file.txt')])
+    @patch("neptune.new.internal.backends.hosted_file_operations.upload_raw_data")
+    @patch(
+        "neptune.new.internal.utils.glob",
+        new=lambda path, recursive=False: [path.replace("*", "file.txt")],
+    )
     def test_upload_multiple_files_in_file_set_attribute(self, upload_raw_data_mock):
         # given
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
-        upload_raw_data_mock.return_value = b'null'
+        upload_raw_data_mock.return_value = b"null"
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:
@@ -155,7 +172,8 @@ class TestHostedFileOperations(unittest.TestCase):
                     run_id=exp_uuid,
                     attribute="some/attribute",
                     file_globs=[temp_file_1.name, temp_file_2.name],
-                    reset=True)
+                    reset=True,
+                )
 
         # then
         upload_raw_data_mock.assert_called_once_with(
@@ -166,16 +184,17 @@ class TestHostedFileOperations(unittest.TestCase):
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "some/attribute",
-                "reset": "True"
-            })
+                "reset": "True",
+            },
+        )
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
-    @patch('neptune.new.internal.backends.hosted_file_operations.upload_raw_data')
+    @patch("neptune.new.internal.backends.hosted_file_operations.upload_raw_data")
     def test_missing_files_or_directory(self, upload_raw_data_mock):
         # given
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
-        upload_raw_data_mock.return_value = b'null'
+        upload_raw_data_mock.return_value = b"null"
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:
@@ -185,8 +204,14 @@ class TestHostedFileOperations(unittest.TestCase):
                         swagger_client=swagger_mock,
                         run_id=exp_uuid,
                         attribute="some/attribute",
-                        file_globs=[temp_file_1.name, temp_file_2.name, os.path.abspath("missing_file"), temp_dir],
-                        reset=True)
+                        file_globs=[
+                            temp_file_1.name,
+                            temp_file_2.name,
+                            os.path.abspath("missing_file"),
+                            temp_dir,
+                        ],
+                        reset=True,
+                    )
 
         # then
         upload_raw_data_mock.assert_called_once_with(
@@ -197,13 +222,16 @@ class TestHostedFileOperations(unittest.TestCase):
             query_params={
                 "experimentId": str(exp_uuid),
                 "attribute": "some/attribute",
-                "reset": "True"
-            })
+                "reset": "True",
+            },
+        )
 
     def test_get_content_disposition_filename(self):
         # given
         response_mock = MagicMock()
-        response_mock.headers = {'Content-Disposition': 'attachment; filename="sample.file"'}
+        response_mock.headers = {
+            "Content-Disposition": 'attachment; filename="sample.file"'
+        }
 
         # when
         filename = _get_content_disposition_filename(response_mock)
@@ -211,43 +239,49 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         self.assertEqual(filename, "sample.file")
 
-    @patch('neptune.new.internal.backends.hosted_file_operations._store_response_as_file')
-    @patch('neptune.new.internal.backends.hosted_file_operations._download_raw_data')
+    @patch(
+        "neptune.new.internal.backends.hosted_file_operations._store_response_as_file"
+    )
+    @patch("neptune.new.internal.backends.hosted_file_operations._download_raw_data")
     def test_download_file_attribute(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
         exp_uuid = str(uuid.uuid4())
 
         # when
-        download_file_attribute(swagger_client=swagger_mock,
-                                run_id=exp_uuid,
-                                attribute="some/attribute",
-                                destination=None)
+        download_file_attribute(
+            swagger_client=swagger_mock,
+            run_id=exp_uuid,
+            attribute="some/attribute",
+            destination=None,
+        )
 
         # then
         download_raw.assert_called_once_with(
             http_client=swagger_mock.swagger_spec.http_client,
             url="https://ui.neptune.ai/attributes/download",
             headers={"Accept": "application/octet-stream"},
-            query_params={
-                "experimentId": str(exp_uuid),
-                "attribute": "some/attribute"
-            },
+            query_params={"experimentId": str(exp_uuid), "attribute": "some/attribute"},
         )
         store_response_mock.assert_called_once_with(download_raw.return_value, None)
 
-    @patch('neptune.new.internal.backends.hosted_file_operations._store_response_as_file')
-    @patch('neptune.new.internal.backends.hosted_file_operations._download_raw_data')
-    @patch('neptune.new.internal.backends.hosted_file_operations._get_download_url', new=lambda _, _id: "some_url")
+    @patch(
+        "neptune.new.internal.backends.hosted_file_operations._store_response_as_file"
+    )
+    @patch("neptune.new.internal.backends.hosted_file_operations._download_raw_data")
+    @patch(
+        "neptune.new.internal.backends.hosted_file_operations._get_download_url",
+        new=lambda _, _id: "some_url",
+    )
     def test_download_file_set_attribute(self, download_raw, store_response_mock):
         # given
         swagger_mock = self._get_swagger_mock()
         download_id = str(uuid.uuid4())
 
         # when
-        download_file_set_attribute(swagger_client=swagger_mock,
-                                    download_id=download_id,
-                                    destination=None)
+        download_file_set_attribute(
+            swagger_client=swagger_mock, download_id=download_id, destination=None
+        )
 
         # then
         download_raw.assert_called_once_with(
@@ -262,16 +296,24 @@ class TestHostedFileOperations(unittest.TestCase):
         swagger_mock = MagicMock()
         swagger_mock.swagger_spec.http_client = MagicMock()
         swagger_mock.swagger_spec.api_url = "ui.neptune.ai"
-        swagger_mock.api.uploadFileSetAttributeChunk.operation.path_name = "/uploadFileSetChunk"
-        swagger_mock.api.uploadFileSetAttributeTar.operation.path_name = "/uploadFileSetTar"
+        swagger_mock.api.uploadFileSetAttributeChunk.operation.path_name = (
+            "/uploadFileSetChunk"
+        )
+        swagger_mock.api.uploadFileSetAttributeTar.operation.path_name = (
+            "/uploadFileSetTar"
+        )
         swagger_mock.api.uploadPath.operation.path_name = "/uploadPath"
         swagger_mock.api.uploadAttribute.operation.path_name = "/attributes/upload"
         swagger_mock.api.downloadAttribute.operation.path_name = "/attributes/download"
-        swagger_mock.api.downloadFileSetAttributeZip.operation.path_name = "/attributes/downloadFileSetZip"
-        swagger_mock.api.downloadFileSetAttributeZip.operation.path_name = "/attributes/downloadFileSetZip"
+        swagger_mock.api.downloadFileSetAttributeZip.operation.path_name = (
+            "/attributes/downloadFileSetZip"
+        )
+        swagger_mock.api.downloadFileSetAttributeZip.operation.path_name = (
+            "/attributes/downloadFileSetZip"
+        )
         swagger_mock.api.download.operation.path_name = "/download"
         return swagger_mock
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

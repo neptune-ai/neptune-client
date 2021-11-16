@@ -21,11 +21,10 @@ from neptune.new.types.value import Value
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
 
-Ret = TypeVar('Ret')
+Ret = TypeVar("Ret")
 
 
 class FileSet(Value):
-
     def __init__(self, file_globs: Union[str, Iterable[str]]):
         verify_type("file_globs", file_globs, (str, Iterable))
         if isinstance(file_globs, str):
@@ -34,7 +33,7 @@ class FileSet(Value):
             verify_collection_type("file_globs", file_globs, str)
         self.file_globs: List[str] = list(file_globs)
 
-    def accept(self, visitor: 'ValueVisitor[Ret]') -> Ret:
+    def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_file_set(self)
 
     def __str__(self):

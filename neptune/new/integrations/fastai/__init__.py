@@ -18,11 +18,11 @@ try:
     # pylint: disable=import-error
     from neptune_fastai.impl import *
 except ModuleNotFoundError as e:
-    if e.name == 'neptune_fastai':
+    if e.name == "neptune_fastai":
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+
         raise NeptuneIntegrationNotInstalledException(
-            integration_package_name="neptune-fastai",
-            framework_name="fastai"
+            integration_package_name="neptune-fastai", framework_name="fastai"
         ) from None
     else:
         raise

@@ -35,7 +35,8 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     StringSeriesValues,
     FloatSeriesValues,
-    ImageSeriesValues, ArtifactAttribute,
+    ImageSeriesValues,
+    ArtifactAttribute,
 )
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
@@ -43,7 +44,6 @@ from neptune.new.types.atoms import GitRef
 
 
 class NeptuneBackend:
-
     @abc.abstractmethod
     def close(self) -> None:
         pass
@@ -60,7 +60,9 @@ class NeptuneBackend:
         return
 
     # pylint: disable=unused-argument
-    def websockets_factory(self, project_id: str, run_id: str) -> Optional[WebsocketsFactory]:
+    def websockets_factory(
+        self, project_id: str, run_id: str
+    ) -> Optional[WebsocketsFactory]:
         return None
 
     @abc.abstractmethod
@@ -68,10 +70,9 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_available_projects(self,
-                               workspace_id: Optional[str] = None,
-                               search_term: Optional[str] = None
-                               ) -> List[Project]:
+    def get_available_projects(
+        self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
+    ) -> List[Project]:
         pass
 
     @abc.abstractmethod
@@ -83,13 +84,14 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def create_run(self,
-                   project_id: str,
-                   git_ref: Optional[GitRef] = None,
-                   custom_run_id: Optional[str] = None,
-                   notebook_id: Optional[str] = None,
-                   checkpoint_id: Optional[str] = None
-                   ) -> ApiRun:
+    def create_run(
+        self,
+        project_id: str,
+        git_ref: Optional[GitRef] = None,
+        custom_run_id: Optional[str] = None,
+        notebook_id: Optional[str] = None,
+        checkpoint_id: Optional[str] = None,
+    ) -> ApiRun:
         pass
 
     @abc.abstractmethod
@@ -100,7 +102,9 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def execute_operations(self, run_id: str, operations: List[Operation]) -> List[NeptuneException]:
+    def execute_operations(
+        self, run_id: str, operations: List[Operation]
+    ) -> List[NeptuneException]:
         pass
 
     @abc.abstractmethod
@@ -108,11 +112,15 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def download_file(self, run_id: str, path: List[str], destination: Optional[str] = None):
+    def download_file(
+        self, run_id: str, path: List[str], destination: Optional[str] = None
+    ):
         pass
 
     @abc.abstractmethod
-    def download_file_set(self, run_id: str, path: List[str], destination: Optional[str] = None):
+    def download_file_set(
+        self, run_id: str, path: List[str], destination: Optional[str] = None
+    ):
         pass
 
     @abc.abstractmethod
@@ -144,45 +152,61 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
+    def list_artifact_files(
+        self, project_id: str, artifact_hash: str
+    ) -> List[ArtifactFileData]:
         pass
 
     @abc.abstractmethod
-    def get_float_series_attribute(self, run_id: str, path: List[str]) -> FloatSeriesAttribute:
+    def get_float_series_attribute(
+        self, run_id: str, path: List[str]
+    ) -> FloatSeriesAttribute:
         pass
 
     @abc.abstractmethod
-    def get_string_series_attribute(self, run_id: str, path: List[str]) -> StringSeriesAttribute:
+    def get_string_series_attribute(
+        self, run_id: str, path: List[str]
+    ) -> StringSeriesAttribute:
         pass
 
     @abc.abstractmethod
-    def get_string_set_attribute(self, run_id: str, path: List[str]) -> StringSetAttribute:
+    def get_string_set_attribute(
+        self, run_id: str, path: List[str]
+    ) -> StringSetAttribute:
         pass
 
     @abc.abstractmethod
-    def download_file_series_by_index(self, run_id: str, path: List[str],
-                                      index: int, destination: str):
+    def download_file_series_by_index(
+        self, run_id: str, path: List[str], index: int, destination: str
+    ):
         pass
 
     @abc.abstractmethod
-    def get_image_series_values(self, run_id: str, path: List[str],
-                                offset: int, limit: int) -> ImageSeriesValues:
+    def get_image_series_values(
+        self, run_id: str, path: List[str], offset: int, limit: int
+    ) -> ImageSeriesValues:
         pass
 
     @abc.abstractmethod
-    def get_string_series_values(self, run_id: str, path: List[str],
-                                 offset: int, limit: int) -> StringSeriesValues:
+    def get_string_series_values(
+        self, run_id: str, path: List[str], offset: int, limit: int
+    ) -> StringSeriesValues:
         pass
 
     @abc.abstractmethod
-    def get_float_series_values(self, run_id: str, path: List[str],
-                                offset: int, limit: int) -> FloatSeriesValues:
+    def get_float_series_values(
+        self, run_id: str, path: List[str], offset: int, limit: int
+    ) -> FloatSeriesValues:
         pass
 
     @abc.abstractmethod
-    def get_run_url(self, run_id: str, workspace: str, project_name: str, short_id: str) -> str:
+    def get_run_url(
+        self, run_id: str, workspace: str, project_name: str, short_id: str
+    ) -> str:
         pass
 
     @abc.abstractmethod
-    def fetch_atom_attribute_values(self, run_id: str, path: List[str]) -> List[Tuple[str, AttributeType, Any]]:
+    def fetch_atom_attribute_values(
+        self, run_id: str, path: List[str]
+    ) -> List[Tuple[str, AttributeType, Any]]:
         pass

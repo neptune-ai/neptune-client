@@ -18,11 +18,12 @@ try:
     # pylint: disable=import-error
     from neptune_tensorflow_keras.impl import *
 except ModuleNotFoundError as e:
-    if e.name == 'neptune_tensorflow_keras':
+    if e.name == "neptune_tensorflow_keras":
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+
         raise NeptuneIntegrationNotInstalledException(
             integration_package_name="neptune-tensorflow-keras",
-            framework_name="tensorflow-keras"
+            framework_name="tensorflow-keras",
         ) from None
     else:
         raise

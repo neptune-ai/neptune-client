@@ -36,11 +36,17 @@ from .sync_operation_processor import SyncOperationProcessor
 
 
 def get_operation_processor(
-        mode: Mode, parent_id: str, backend: NeptuneBackend, lock: threading.RLock, flush_period: float,
+    mode: Mode,
+    parent_id: str,
+    backend: NeptuneBackend,
+    lock: threading.RLock,
+    flush_period: float,
 ) -> OperationProcessor:
 
     if mode == Mode.ASYNC:
-        data_path = "{}/{}/{}".format(NEPTUNE_DATA_DIRECTORY, ASYNC_DIRECTORY, parent_id)
+        data_path = "{}/{}/{}".format(
+            NEPTUNE_DATA_DIRECTORY, ASYNC_DIRECTORY, parent_id
+        )
         try:
             execution_id = len(os.listdir(data_path))
         except FileNotFoundError:
@@ -49,23 +55,27 @@ def get_operation_processor(
         execution_path = execution_path.replace(" ", "_").replace(":", ".")
         return AsyncOperationProcessor(
             parent_id,
-            DiskQueue(Path(execution_path), lambda x: x.to_dict(), Operation.from_dict, lock),
+            DiskQueue(
+                Path(execution_path), lambda x: x.to_dict(), Operation.from_dict, lock
+            ),
             backend,
             lock,
-            sleep_time=flush_period)
+            sleep_time=flush_period,
+        )
     elif mode == Mode.SYNC:
         return SyncOperationProcessor(parent_id, backend)
     elif mode == Mode.DEBUG:
         return SyncOperationProcessor(parent_id, backend)
     elif mode == Mode.OFFLINE:
         # the object was returned by mocked backend and has some random ID.
-        data_path = "{}/{}/{}".format(NEPTUNE_DATA_DIRECTORY, OFFLINE_DIRECTORY, parent_id)
-        storage_queue = DiskQueue(Path(data_path),
-                                  lambda x: x.to_dict(),
-                                  Operation.from_dict,
-                                  lock)
+        data_path = "{}/{}/{}".format(
+            NEPTUNE_DATA_DIRECTORY, OFFLINE_DIRECTORY, parent_id
+        )
+        storage_queue = DiskQueue(
+            Path(data_path), lambda x: x.to_dict(), Operation.from_dict, lock
+        )
         return OfflineOperationProcessor(storage_queue)
     elif mode == Mode.READ_ONLY:
         return ReadOnlyOperationProcessor(parent_id, backend)
     else:
-        raise ValueError(f'mode should be one of {[m for m in Mode]}')
+        raise ValueError(f"mode should be one of {[m for m in Mode]}")

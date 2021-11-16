@@ -14,14 +14,14 @@
 # limitations under the License.
 #
 class ProjectVisibility:
-    PRIVATE = 'priv'
-    PUBLIC = 'pub'
+    PRIVATE = "priv"
+    PUBLIC = "pub"
 
 
 class ProjectMemberRole:
-    VIEWER = 'viewer'
-    OWNER = 'owner'
-    CONTRIBUTOR = 'contributor'
+    VIEWER = "viewer"
+    OWNER = "owner"
+    CONTRIBUTOR = "contributor"
 
     # Deprecated
     MEMBER = CONTRIBUTOR
@@ -32,5 +32,5 @@ MemberRole = ProjectMemberRole
 
 
 class WorkspaceMemberRole:
-    ADMIN = 'admin'
-    MEMBER = 'member'
+    ADMIN = "admin"
+    MEMBER = "member"

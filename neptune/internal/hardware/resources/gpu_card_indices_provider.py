@@ -21,7 +21,7 @@ class GPUCardIndicesProvider(object):
     def __init__(self, cuda_visible_devices, gpu_card_count):
         self.__cuda_visible_devices = cuda_visible_devices
         self.__gpu_card_count = gpu_card_count
-        self.__cuda_visible_devices_regex = r'^-?\d+(,-?\d+)*$'
+        self.__cuda_visible_devices_regex = r"^-?\d+(,-?\d+)*$"
 
     def get(self):
         if self.__is_cuda_visible_devices_correct():
@@ -30,15 +30,16 @@ class GPUCardIndicesProvider(object):
             return list(range(self.__gpu_card_count))
 
     def __is_cuda_visible_devices_correct(self):
-        return self.__cuda_visible_devices is not None \
-               and re.match(self.__cuda_visible_devices_regex, self.__cuda_visible_devices)
+        return self.__cuda_visible_devices is not None and re.match(
+            self.__cuda_visible_devices_regex, self.__cuda_visible_devices
+        )
 
     def __gpu_card_indices_from_cuda_visible_devices(self):
         correct_indices = []
 
         # According to CUDA Toolkit specification.
         # https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#env-vars
-        for gpu_index_str in self.__cuda_visible_devices.split(','):
+        for gpu_index_str in self.__cuda_visible_devices.split(","):
             gpu_index = int(gpu_index_str)
             if 0 <= gpu_index < self.__gpu_card_count:
                 correct_indices.append(gpu_index)

@@ -25,17 +25,18 @@ from neptune.new.types.series.series import Series as SeriesVal
 
 from neptune.new.attributes.attribute import Attribute
 
-Val = TypeVar('Val', bound=SeriesVal)
-Data = TypeVar('Data')
+Val = TypeVar("Val", bound=SeriesVal)
+Data = TypeVar("Data")
 
 
 class Series(Attribute, Generic[Val, Data]):
-
     def clear(self, wait: bool = False) -> None:
         self._clear_impl(wait)
 
     @abc.abstractmethod
-    def _get_log_operation_from_value(self, value: Val, step: Optional[float], timestamp: float) -> Operation:
+    def _get_log_operation_from_value(
+        self, value: Val, step: Optional[float], timestamp: float
+    ) -> Operation:
         pass
 
     # pylint: disable=unused-argument
@@ -68,17 +69,23 @@ class Series(Attribute, Generic[Val, Data]):
             else:
                 self._enqueue_operation(clear_op, wait=False)
                 ts = time.time()
-                self._enqueue_operation(self._get_log_operation_from_value(value, None, ts), wait=wait)
+                self._enqueue_operation(
+                    self._get_log_operation_from_value(value, None, ts), wait=wait
+                )
 
-    def log(self,
-            value: Union[Data, Iterable[Data]],
-            step: Optional[float] = None,
-            timestamp: Optional[float] = None,
-            wait: bool = False,
-            **kwargs) -> None:
+    def log(
+        self,
+        value: Union[Data, Iterable[Data]],
+        step: Optional[float] = None,
+        timestamp: Optional[float] = None,
+        wait: bool = False,
+        **kwargs
+    ) -> None:
         if is_collection(value):
             if step is not None and len(value) > 1:
-                raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
+                raise ValueError(
+                    "Collection of values are not supported for explicitly defined 'step'."
+                )
             value = self._data_to_value(value, **kwargs)
         else:
             value = self._data_to_value([value], **kwargs)

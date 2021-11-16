@@ -25,19 +25,24 @@ from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestString(TestAttributeBase):
-
     def test_assign(self):
         value_and_expected = [
             ("qwertyu", "qwertyu"),
-            (StringVal("Some string"), "Some string")
+            (StringVal("Some string"), "Some string"),
         ]
 
         for value, expected in value_and_expected:
             processor = MagicMock()
-            exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
+            exp, path, wait = (
+                self._create_run(processor),
+                self._random_path(),
+                self._random_wait(),
+            )
             var = String(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(AssignString(path, expected), wait)
+            processor.enqueue_operation.assert_called_once_with(
+                AssignString(path, expected), wait
+            )
 
     def test_get(self):
         exp, path = self._create_run(), self._random_path()

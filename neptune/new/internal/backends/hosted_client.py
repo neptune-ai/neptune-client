@@ -34,6 +34,7 @@ from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.credentials import Credentials
 from neptune.new.version import version as neptune_client_version
 from neptune.new.exceptions import UnsupportedClientVersion
+
 # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
 from neptune.oauth import NeptuneAuthenticator
 
@@ -45,10 +46,10 @@ CONNECT_TIMEOUT = 30  # helps detecting internet connection lost
 REQUEST_TIMEOUT = None
 
 DEFAULT_REQUEST_KWARGS = {
-    '_request_options': {
+    "_request_options": {
         "connect_timeout": CONNECT_TIMEOUT,
         "timeout": REQUEST_TIMEOUT,
-        "headers": {"X-Neptune-LegacyClient": "false"}
+        "headers": {"X-Neptune-LegacyClient": "false"},
     }
 }
 
@@ -59,21 +60,24 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
 
     update_session_proxies(http_client.session, proxies)
 
-    user_agent = 'neptune-client/{lib_version} ({system}, python {python_version})'.format(
-        lib_version=neptune_client_version,
-        system=platform.platform(),
-        python_version=platform.python_version())
-    http_client.session.headers.update({'User-Agent': user_agent})
+    user_agent = (
+        "neptune-client/{lib_version} ({system}, python {python_version})".format(
+            lib_version=neptune_client_version,
+            system=platform.platform(),
+            python_version=platform.python_version(),
+        )
+    )
+    http_client.session.headers.update({"User-Agent": user_agent})
 
     return http_client
 
 
 @cache
 def _get_token_client(
-        credentials: Credentials,
-        ssl_verify: bool,
-        proxies: Dict[str, str],
-        endpoint_url: str = None
+    credentials: Credentials,
+    ssl_verify: bool,
+    proxies: Dict[str, str],
+    endpoint_url: str = None,
 ) -> SwaggerClient:
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
     if proxies is None:
@@ -83,20 +87,28 @@ def _get_token_client(
 
     return create_swagger_client(
         build_operation_url(endpoint_url or config_api_url, BACKEND_SWAGGER_PATH),
-        token_http_client
+        token_http_client,
     )
 
 
 @cache
 @with_api_exceptions_handler
-def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> ClientConfig:
-    backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
+def get_client_config(
+    credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]
+) -> ClientConfig:
+    backend_client = _get_token_client(
+        credentials=credentials, ssl_verify=ssl_verify, proxies=proxies
+    )
 
-    config = backend_client.api.getClientConfig(
-        X_Neptune_Api_Token=credentials.api_token,
-        alpha="true",
-        **DEFAULT_REQUEST_KWARGS,
-    ).response().result
+    config = (
+        backend_client.api.getClientConfig(
+            X_Neptune_Api_Token=credentials.api_token,
+            alpha="true",
+            **DEFAULT_REQUEST_KWARGS,
+        )
+        .response()
+        .result
+    )
 
     if hasattr(config, "pyLibVersions"):
         min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
@@ -108,22 +120,24 @@ def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[
     return ClientConfig(
         api_url=config.apiUrl,
         display_url=config.applicationUrl,
-        min_recommended_version=version.parse(min_recommended) if min_recommended else None,
-        min_compatible_version=version.parse(min_compatible) if min_compatible else None,
-        max_compatible_version=version.parse(max_compatible) if max_compatible else None
+        min_recommended_version=version.parse(min_recommended)
+        if min_recommended
+        else None,
+        min_compatible_version=version.parse(min_compatible)
+        if min_compatible
+        else None,
+        max_compatible_version=version.parse(max_compatible)
+        if max_compatible
+        else None,
     )
 
 
 @cache
 def create_http_client_with_auth(
-        credentials: Credentials,
-        ssl_verify: bool,
-        proxies: Dict[str, str]
+    credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]
 ) -> Tuple[RequestsClient, ClientConfig]:
     client_config = get_client_config(
-        credentials=credentials,
-        ssl_verify=ssl_verify,
-        proxies=proxies
+        credentials=credentials, ssl_verify=ssl_verify, proxies=proxies
     )
 
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
@@ -141,34 +155,38 @@ def create_http_client_with_auth(
             credentials=credentials,
             ssl_verify=ssl_verify,
             proxies=proxies,
-            endpoint_url=endpoint_url
+            endpoint_url=endpoint_url,
         ),
         ssl_verify,
-        proxies
+        proxies,
     )
 
     return http_client, client_config
 
 
 @cache
-def create_backend_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
+def create_backend_client(
+    client_config: ClientConfig, http_client: HttpClient
+) -> SwaggerClient:
     return create_swagger_client(
-        build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH),
-        http_client
+        build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH), http_client
     )
 
 
 @cache
-def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
+def create_leaderboard_client(
+    client_config: ClientConfig, http_client: HttpClient
+) -> SwaggerClient:
     return create_swagger_client(
         build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
-        http_client
+        http_client,
     )
 
 
 @cache
-def create_artifacts_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
+def create_artifacts_client(
+    client_config: ClientConfig, http_client: HttpClient
+) -> SwaggerClient:
     return create_swagger_client(
-        build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH),
-        http_client
+        build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH), http_client
     )

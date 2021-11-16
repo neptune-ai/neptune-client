@@ -27,4 +27,5 @@ class ReconnectingWebsocketFactory(object):
             url=self._url,
             oauth2_session=self._backend.authenticator.auth.session,
             shutdown_event=shutdown_condition,
-            proxies=self._backend.proxies)
+            proxies=self._backend.proxies,
+        )

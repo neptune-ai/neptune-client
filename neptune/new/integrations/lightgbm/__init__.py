@@ -18,11 +18,11 @@ try:
     # pylint: disable=import-error
     from neptune_lightgbm.impl import *
 except ModuleNotFoundError as e:
-    if e.name == 'neptune_lightgbm':
+    if e.name == "neptune_lightgbm":
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
+
         raise NeptuneIntegrationNotInstalledException(
-            integration_package_name="neptune-lightgbm",
-            framework_name="lightgbm"
+            integration_package_name="neptune-lightgbm", framework_name="lightgbm"
         ) from None
     else:
         raise

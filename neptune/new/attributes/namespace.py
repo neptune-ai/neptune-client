@@ -18,7 +18,10 @@ from typing import Any, Dict, TYPE_CHECKING, Iterator, List, Mapping, Union
 
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.internal.run_structure import ContainerStructure
-from neptune.new.internal.utils.generic_attribute_mapper import atomic_attribute_types_map, NoValue
+from neptune.new.internal.utils.generic_attribute_mapper import (
+    atomic_attribute_types_map,
+    NoValue,
+)
 from neptune.new.internal.utils.paths import parse_path, path_to_str
 from neptune.new.types.namespace import Namespace as NamespaceVal
 
@@ -27,7 +30,7 @@ if TYPE_CHECKING:
 
 
 class Namespace(Attribute, MutableMapping):
-    def __init__(self, container: 'AttributeContainer', path: List[str]):
+    def __init__(self, container: "AttributeContainer", path: List[str]):
         Attribute.__init__(self, container, path)
         self._attributes = {}
         self._str_path = path_to_str(path)
@@ -70,12 +73,17 @@ class Namespace(Attribute, MutableMapping):
                 result[k] = self._collect_atom_values(v)
             else:
                 attr_type, attr_value = v
-                if attr_type in atomic_attribute_types_map and attr_value is not NoValue:
+                if (
+                    attr_type in atomic_attribute_types_map
+                    and attr_value is not NoValue
+                ):
                     result[k] = v[1]
         return result
 
     def fetch(self) -> dict:
-        attributes = self._backend.fetch_atom_attribute_values(self._container_id, self._path)
+        attributes = self._backend.fetch_atom_attribute_values(
+            self._container_id, self._path
+        )
         run_struct = ContainerStructure()
         prefix_len = len(self._path)
         for attr_name, attr_type, attr_value in attributes:
@@ -84,7 +92,7 @@ class Namespace(Attribute, MutableMapping):
 
 
 class NamespaceBuilder:
-    def __init__(self, container: 'AttributeContainer'):
+    def __init__(self, container: "AttributeContainer"):
         self._run = container
 
     def __call__(self, path: List[str]) -> Namespace:

@@ -26,29 +26,46 @@ from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFileSet(TestAttributeBase):
-
     def test_assign(self):
         globs = ["path1", "dir/", "glob/*.py"]
         expected = [os.path.abspath(glob) for glob in globs]
 
         processor = MagicMock()
-        exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
+        exp, path, wait = (
+            self._create_run(processor),
+            self._random_path(),
+            self._random_wait(),
+        )
         var = FileSet(exp, path)
         var.assign(globs, wait=wait)
-        processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected, reset=True), wait)
+        processor.enqueue_operation.assert_called_once_with(
+            UploadFileSet(path, expected, reset=True), wait
+        )
 
     def test_upload_files(self):
         globs = ["path1", "dir/", "glob/*.py"]
         processor = MagicMock()
-        exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
+        exp, path, wait = (
+            self._create_run(processor),
+            self._random_path(),
+            self._random_wait(),
+        )
         var = FileSet(exp, path)
         var.upload_files(globs, wait=wait)
         processor.enqueue_operation.assert_called_once_with(
-            UploadFileSet(path, [os.path.abspath(glob) for glob in globs], reset=False), wait)
+            UploadFileSet(path, [os.path.abspath(glob) for glob in globs], reset=False),
+            wait,
+        )
 
     def test_delete_files(self):
         processor = MagicMock()
-        exp, path, wait = self._create_run(processor), self._random_path(), self._random_wait()
+        exp, path, wait = (
+            self._create_run(processor),
+            self._random_path(),
+            self._random_wait(),
+        )
         var = FileSet(exp, path)
         var.delete_files(["path1", "dir/"], wait=wait)
-        processor.enqueue_operation.assert_called_once_with(DeleteFiles(path, {"path1", "dir/"}), wait)
+        processor.enqueue_operation.assert_called_once_with(
+            DeleteFiles(path, {"path1", "dir/"}), wait
+        )

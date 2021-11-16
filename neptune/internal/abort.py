@@ -16,6 +16,7 @@
 
 try:
     import psutil
+
     PSUTIL_INSTALLED = True
 except ImportError:
     PSUTIL_INSTALLED = False
