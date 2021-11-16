@@ -145,10 +145,6 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def extract_experiment_source(self, experiment, data):
-        pass
-
-    @abstractmethod
     def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         pass
 

@@ -136,9 +136,6 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
     def upload_experiment_source(self, experiment, data, progress_indicator):
         pass
 
-    def extract_experiment_source(self, experiment, data):
-        pass
-
     def create_channel(self, experiment, name, channel_type):
         return NoopObject()
 
@@ -176,9 +173,6 @@ class OfflineLeaderboardApiClient(LeaderboardApiClient):
         pass
 
     def delete_artifacts(self, experiment, path):
-        pass
-
-    def rm_data(self, experiment, path):
         pass
 
     def download_data(self, experiment, path, destination):
