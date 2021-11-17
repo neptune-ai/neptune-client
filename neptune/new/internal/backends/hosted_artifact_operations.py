@@ -31,7 +31,6 @@ from neptune.new.exceptions import (
 )
 from neptune.new.internal.backends.api_model import ArtifactModel
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
-
 from neptune.new.internal.operation import Operation, AssignArtifact
 
 
