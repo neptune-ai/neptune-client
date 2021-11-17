@@ -22,6 +22,7 @@ from neptune.internal.storage.storage_utils import (
     UploadEntry,
     UploadPackage,
     split_upload_files,
+    AttributeUploadConfiguration,
 )
 
 
@@ -36,13 +37,16 @@ class TestUploadStorageUtils(unittest.TestCase):
         # GIVEN
         entry = UploadEntry("/tmp/test.gz", "test.gz")
         size = 10 * self.MAX_PACKAGE_SIZE
+        config = AttributeUploadConfiguration(size)
         getsize.return_value = size
 
         # EXPECT
         expected = UploadPackage()
         expected.update(entry, size)
         self.assertEqual(
-            list(split_upload_files([entry], max_package_size=self.MAX_PACKAGE_SIZE)),
+            list(
+                split_upload_files(upload_entries={entry}, upload_configuration=config)
+            ),
             [expected],
         )
 
@@ -54,12 +58,13 @@ class TestUploadStorageUtils(unittest.TestCase):
         # AND
         upload_entry = UploadEntry(entry.source_path, entry.target_path)
         size = 10 * self.MAX_PACKAGE_SIZE
+        config = AttributeUploadConfiguration(size)
         getsize.return_value = size
 
         # EXPECT
         expected = UploadPackage()
         expected.update(entry, size)
         for package in split_upload_files(
-            [upload_entry], max_package_size=self.MAX_PACKAGE_SIZE
+            upload_entries={upload_entry}, upload_configuration=config
         ):
             self.assertFalse(package.is_empty())

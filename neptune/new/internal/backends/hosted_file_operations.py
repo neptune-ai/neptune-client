@@ -25,6 +25,7 @@ from bravado.exception import HTTPUnprocessableEntity, HTTPPaymentRequired
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
+from neptune.internal.hardware.constants import DEFAULT_CHUNK_SIZE
 from neptune.new.exceptions import (
     FileUploadError,
     MetadataInconsistency,
@@ -47,7 +48,10 @@ from neptune.internal.storage.storage_utils import (
     split_upload_files,
     UploadEntry,
     normalize_file_name,
+    AttributeUploadConfiguration,
 )
+
+DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)
 
 
 def upload_file_attribute(
@@ -72,8 +76,23 @@ def upload_file_attribute(
         upload_entry = UploadEntry(
             source if isinstance(source, str) else BytesIO(source), target
         )
+        upload_configuration = DEFAULT_UPLOAD_CONFIG
+        if hasattr(swagger_client.api, "getUploadConfig"):
+            params = {
+                "parentId": run_id,
+                "parentType": "run",
+                "attribute": attribute,
+                "length": upload_entry.length(),
+            }
+            config_result = (
+                swagger_client.api.getUploadConfig(**params).response().result
+            )
+            upload_configuration = AttributeUploadConfiguration(
+                chunk_size=config_result.chunkSize
+            )
+
         _upload_loop(
-            file_chunk_stream=FileChunkStream(upload_entry),
+            file_chunk_stream=FileChunkStream(upload_entry, upload_configuration),
             response_handler=_attribute_upload_response_handler,
             http_client=swagger_client.swagger_spec.http_client,
             url=url,
@@ -93,7 +112,20 @@ def upload_file_set_attribute(
     unique_upload_entries = get_unique_upload_entries(file_globs)
 
     try:
-        for package in split_upload_files(unique_upload_entries):
+        upload_configuration = DEFAULT_UPLOAD_CONFIG
+        if hasattr(swagger_client.api, "getUploadConfig"):
+            params = {"parentId": run_id, "parentType": "run", "attribute": attribute}
+            config_result = (
+                swagger_client.api.getUploadConfig(**params).response().result
+            )
+            upload_configuration = AttributeUploadConfiguration(
+                chunk_size=config_result.chunkSize
+            )
+
+        for package in split_upload_files(
+            upload_entries=unique_upload_entries,
+            upload_configuration=upload_configuration,
+        ):
             if package.is_empty() and not reset:
                 continue
 
@@ -131,7 +163,10 @@ def upload_file_set_attribute(
                     swagger_client.swagger_spec.api_url,
                     swagger_client.api.uploadFileSetAttributeChunk.operation.path_name,
                 )
-                file_chunk_stream = FileChunkStream(package.items[0])
+                file_chunk_stream = FileChunkStream(
+                    upload_entry=package.items[0],
+                    upload_configuration=upload_configuration,
+                )
                 _upload_loop(
                     file_chunk_stream=file_chunk_stream,
                     response_handler=_attribute_upload_response_handler,

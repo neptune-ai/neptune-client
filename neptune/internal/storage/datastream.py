@@ -15,15 +15,15 @@
 #
 
 import io
-import os
-import stat
 import tarfile
 from typing import AnyStr, Union, BinaryIO, Any, Generator
 
 from future.builtins import object
 
-from neptune.internal.hardware.constants import BYTES_IN_FIVE_MB
-from neptune.internal.storage.storage_utils import UploadEntry
+from neptune.internal.storage.storage_utils import (
+    UploadEntry,
+    AttributeUploadConfiguration,
+)
 
 
 class FileChunk(object):
@@ -43,46 +43,28 @@ class FileChunkStream(object):
     fobj: Union[BinaryIO, io.BytesIO]
     filename: str
     length: int
+    upload_configuration: AttributeUploadConfiguration
 
-    def __init__(self, upload_entry: UploadEntry):
+    def __init__(
+        self,
+        upload_entry: UploadEntry,
+        upload_configuration: AttributeUploadConfiguration,
+    ):
         self.filename = upload_entry.target_path
-        if upload_entry.is_stream():
-            self.fobj = upload_entry.source_path
-            self.length = self.fobj.getbuffer().nbytes
-            self.permissions = "----------"
-        else:
-            self.fobj = io.open(upload_entry.source_path, "rb")
-            self.length = os.path.getsize(upload_entry.source_path)
-            self.permissions = self.permissions_to_unix_string(upload_entry.source_path)
-
-    @classmethod
-    def permissions_to_unix_string(cls, path):
-        st = 0
-        if os.path.exists(path):
-            st = os.lstat(path).st_mode
-        is_dir = "d" if stat.S_ISDIR(st) else "-"
-        dic = {
-            "7": "rwx",
-            "6": "rw-",
-            "5": "r-x",
-            "4": "r--",
-            "3": "-wx",
-            "2": "-w-",
-            "1": "--x",
-            "0": "---",
-        }
-        perm = ("%03o" % st)[-3:]
-        return is_dir + "".join(dic.get(x, x) for x in perm)
+        self.upload_configuration = upload_configuration
+        self.length = upload_entry.length()
+        self.fobj = upload_entry.get_stream()
+        self.permissions = upload_entry.get_permissions()
 
     def __eq__(self, fs):
         if isinstance(self, fs.__class__):
             return self.__dict__ == fs.__dict__
         return False
 
-    def generate(self, chunk_size=BYTES_IN_FIVE_MB) -> Generator[FileChunk, Any, None]:
+    def generate(self) -> Generator[FileChunk, Any, None]:
         last_offset = 0
         while True:
-            chunk = self.fobj.read(chunk_size)
+            chunk = self.fobj.read(self.upload_configuration.chunk_size)
             if chunk:
                 if isinstance(chunk, str):
                     chunk = chunk.encode("utf-8")

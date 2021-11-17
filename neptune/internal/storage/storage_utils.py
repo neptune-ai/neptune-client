@@ -13,23 +13,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import io
 import logging
 import os
+import stat
 import time
+from dataclasses import dataclass
 from io import BytesIO
 from pprint import pformat
 from abc import ABCMeta, abstractmethod
-from typing import Union, Generator, Set, List
+from typing import Union, Generator, Set, List, BinaryIO
 
 import six
 
 _logger = logging.getLogger(__name__)
 
 
+@dataclass
+class AttributeUploadConfiguration:
+    chunk_size: int
+
+
 class UploadEntry(object):
     def __init__(self, source_path: Union[str, BytesIO], target_path: str):
         self.source_path = source_path
         self.target_path = target_path
+
+    def length(self) -> int:
+        if self.is_stream():
+            return self.source_path.getbuffer().nbytes
+        else:
+            return os.path.getsize(self.source_path)
+
+    def get_stream(self) -> Union[BinaryIO, io.BytesIO]:
+        if self.is_stream():
+            return self.source_path
+        else:
+            return io.open(self.source_path, "rb")
+
+    def get_permissions(self) -> str:
+        if self.is_stream():
+            return "----------"
+        else:
+            return self.permissions_to_unix_string(self.source_path)
+
+    @classmethod
+    def permissions_to_unix_string(cls, path):
+        st = 0
+        if os.path.exists(path):
+            st = os.lstat(path).st_mode
+        is_dir = "d" if stat.S_ISDIR(st) else "-"
+        dic = {
+            "7": "rwx",
+            "6": "rw-",
+            "5": "r-x",
+            "4": "r--",
+            "3": "-wx",
+            "2": "-w-",
+            "1": "--x",
+            "0": "---",
+        }
+        perm = ("%03o" % st)[-3:]
+        return is_dir + "".join(dic.get(x, x) for x in perm)
 
     def __eq__(self, other):
         """
@@ -193,7 +238,9 @@ def scan_unique_upload_entries(upload_entries):
 
 
 def split_upload_files(
-    upload_entries: Set[UploadEntry], max_package_size=1 * 1024 * 1024, max_files=500
+    upload_entries: Set[UploadEntry],
+    upload_configuration: AttributeUploadConfiguration,
+    max_files=500,
 ) -> Generator[UploadPackage, None, None]:
     current_package = UploadPackage()
 
@@ -208,7 +255,7 @@ def split_upload_files(
         else:
             size = os.path.getsize(entry.source_path)
             if (
-                size + current_package.size > max_package_size
+                size + current_package.size > upload_configuration.chunk_size
                 or current_package.len > max_files
             ) and not current_package.is_empty():
                 yield current_package
