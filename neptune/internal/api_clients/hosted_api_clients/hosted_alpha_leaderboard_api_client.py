@@ -461,9 +461,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             ],
         )
 
-    def update_experiment(self, experiment, properties):
-        raise NeptuneException("`update_experiment` shouldn't be called.")
-
     @with_api_exceptions_handler
     def set_property(self, experiment, key, value):
         """Save attribute casted to string under `alpha_consts.PROPERTIES_ATTRIBUTE_SPACE` namespace"""
@@ -504,11 +501,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         self._execute_operations(
             experiment=experiment,
             operations=operations,
-        )
-
-    def upload_experiment_source(self, experiment, data, progress_indicator):
-        raise NeptuneException(
-            "This function should never be called for alpha project."
         )
 
     @staticmethod
@@ -649,9 +641,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             )
 
         self._execute_operations(experiment, send_operations)
-
-    def mark_succeeded(self, experiment):
-        pass
 
     def mark_failed(self, experiment, traceback):
         operations = []

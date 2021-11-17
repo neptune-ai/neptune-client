@@ -1003,9 +1003,7 @@ class Experiment(object):
         self._channels_values_sender.join()
 
         try:
-            if exc_tb is None:
-                self._backend.mark_succeeded(self)
-            else:
+            if exc_tb is not None:
                 self._backend.mark_failed(self, exc_tb)
         except ExperimentAlreadyFinished:
             pass

@@ -125,10 +125,6 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def update_experiment(self, experiment, properties):
-        pass
-
-    @abstractmethod
     def set_property(self, experiment, key, value):
         pass
 
@@ -138,10 +134,6 @@ class LeaderboardApiClient(ApiClient, ABC):
 
     @abstractmethod
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
-        pass
-
-    @abstractmethod
-    def upload_experiment_source(self, experiment, data, progress_indicator):
         pass
 
     @abstractmethod
@@ -168,10 +160,6 @@ class LeaderboardApiClient(ApiClient, ABC):
 
     @abstractmethod
     def send_channels_values(self, experiment, channels_with_values):
-        pass
-
-    @abstractmethod
-    def mark_succeeded(self, experiment):
         pass
 
     @abstractmethod

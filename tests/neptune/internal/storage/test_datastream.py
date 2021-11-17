@@ -16,7 +16,7 @@
 
 import unittest
 
-from io import BytesIO
+from io import StringIO
 from mock import patch
 
 from neptune.internal.storage.datastream import FileChunkStream, FileChunk
@@ -63,9 +63,7 @@ class TestFileChunkStream(unittest.TestCase):
         text = u"ABCDEFGHIJKLMNOPRSTUWXYZ"
 
         # when
-        stream = FileChunkStream(
-            UploadEntry(BytesIO(bytes(text, "utf-8")), "some/path")
-        )
+        stream = FileChunkStream(UploadEntry(StringIO(text), "some/path"))
         chunks = list()
         for chunk in stream.generate(chunk_size=10):
             chunks.append(chunk)
