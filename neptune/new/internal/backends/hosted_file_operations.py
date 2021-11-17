@@ -25,7 +25,7 @@ from bravado.exception import HTTPUnprocessableEntity, HTTPPaymentRequired
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
-from neptune.internal.hardware.constants import DEFAULT_CHUNK_SIZE
+from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 from neptune.new.exceptions import (
     FileUploadError,
     MetadataInconsistency,
@@ -51,6 +51,7 @@ from neptune.internal.storage.storage_utils import (
     AttributeUploadConfiguration,
 )
 
+DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)
 
 
