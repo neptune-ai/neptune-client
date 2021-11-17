@@ -13,10 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import logging
 import os
 import re
+import sys
 import time
+import math
+import json
 from collections import namedtuple
 from http.client import NOT_FOUND
 from io import StringIO
@@ -24,11 +28,18 @@ from itertools import groupby
 from pathlib import Path
 from typing import Dict, List
 
+import requests
 import six
 from bravado.exception import HTTPNotFound
+
+from neptune.backend import LeaderboardApiClient
+from neptune.checkpoint import Checkpoint
+from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.internal.websockets.reconnecting_websocket_factory import (
     ReconnectingWebsocketFactory,
 )
+
+from neptune.api_exceptions import NotebookNotFound
 
 from neptune.api_exceptions import (
     ExperimentNotFound,
@@ -45,9 +56,6 @@ from neptune.exceptions import (
     NeptuneException,
 )
 from neptune.experiments import Experiment
-from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import (
-    HostedNeptuneLeaderboardApiClient,
-)
 from neptune.internal.channels.channels import (
     ChannelNamespace,
     ChannelType,
@@ -96,7 +104,12 @@ from neptune.new.internal.utils import (
     paths as alpha_path_utils,
 )
 from neptune.new.internal.utils.paths import parse_path
-from neptune.utils import assure_directory_exists, with_api_exceptions_handler
+from neptune.notebook import Notebook
+from neptune.utils import (
+    assure_directory_exists,
+    with_api_exceptions_handler,
+    NoopObject,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -139,7 +152,76 @@ LegacyLeaderboardEntry = namedtuple(
 )
 
 
-class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
+class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
+    @with_api_exceptions_handler
+    def __init__(self, backend_api_client):
+        self._backend_api_client = backend_api_client
+
+        self._client_config = self._create_client_config(
+            api_token=self.credentials.api_token, backend_client=self.backend_client
+        )
+
+        self.leaderboard_swagger_client = self._get_swagger_client(
+            "{}/api/leaderboard/swagger.json".format(self._client_config.api_url),
+            self._backend_api_client.http_client,
+        )
+
+        if sys.version_info >= (3, 7):
+            try:
+                # pylint: disable=no-member
+                os.register_at_fork(after_in_child=self._handle_fork_in_child)
+            except AttributeError:
+                pass
+
+    def _handle_fork_in_child(self):
+        self.leaderboard_swagger_client = NoopObject()
+
+    @property
+    def http_client(self):
+        return self._backend_api_client.http_client
+
+    @property
+    def backend_client(self):
+        return self._backend_api_client.backend_client
+
+    @property
+    def authenticator(self):
+        return self._backend_api_client.authenticator
+
+    @property
+    def credentials(self):
+        return self._backend_api_client.credentials
+
+    @property
+    def backend_swagger_client(self):
+        return self._backend_api_client.backend_swagger_client
+
+    @property
+    def client_lib_version(self):
+        return self._backend_api_client.client_lib_version
+
+    @property
+    def api_address(self):
+        return self._client_config.api_url
+
+    @property
+    def display_address(self):
+        return self._backend_api_client.display_address
+
+    @property
+    def proxies(self):
+        return self._backend_api_client.proxies
+
+    @with_api_exceptions_handler
+    def get_project_members(self, project_identifier):
+        try:
+            r = self.backend_swagger_client.api.listProjectMembers(
+                projectIdentifier=project_identifier
+            ).response()
+            return r.result
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier)
+
     @with_api_exceptions_handler
     def create_experiment(
         self,
@@ -245,6 +327,104 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         )
 
     @with_api_exceptions_handler
+    def get_notebook(self, project, notebook_id):
+        try:
+            api_notebook_list = (
+                self.leaderboard_swagger_client.api.listNotebooks(
+                    projectIdentifier=project.internal_id, id=[notebook_id]
+                )
+                .response()
+                .result
+            )
+
+            if not api_notebook_list.entries:
+                raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+            api_notebook = api_notebook_list.entries[0]
+
+            return Notebook(
+                backend=self,
+                project=project,
+                _id=api_notebook.id,
+                owner=api_notebook.owner,
+            )
+        except HTTPNotFound:
+            raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+    @with_api_exceptions_handler
+    def get_last_checkpoint(self, project, notebook_id):
+        try:
+            api_checkpoint_list = (
+                self.leaderboard_swagger_client.api.listCheckpoints(
+                    notebookId=notebook_id, offset=0, limit=1
+                )
+                .response()
+                .result
+            )
+
+            if not api_checkpoint_list.entries:
+                raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+            checkpoint = api_checkpoint_list.entries[0]
+            return Checkpoint(checkpoint.id, checkpoint.name, checkpoint.path)
+        except HTTPNotFound:
+            raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
+
+    @with_api_exceptions_handler
+    def create_notebook(self, project):
+        try:
+            api_notebook = (
+                self.leaderboard_swagger_client.api.createNotebook(
+                    projectIdentifier=project.internal_id
+                )
+                .response()
+                .result
+            )
+
+            return Notebook(
+                backend=self,
+                project=project,
+                _id=api_notebook.id,
+                owner=api_notebook.owner,
+            )
+        except HTTPNotFound:
+            raise ProjectNotFound(project_identifier=project.full_id)
+
+    @with_api_exceptions_handler
+    def create_checkpoint(self, notebook_id, jupyter_path, _file=None):
+        if _file is not None:
+            with self._upload_raw_data(
+                api_method=self.leaderboard_swagger_client.api.createCheckpoint,
+                data=_file,
+                headers={"Content-Type": "application/octet-stream"},
+                path_params={"notebookId": notebook_id},
+                query_params={"jupyterPath": jupyter_path},
+            ) as response:
+                if response.status_code == NOT_FOUND:
+                    raise NotebookNotFound(notebook_id=notebook_id)
+                else:
+                    response.raise_for_status()
+                    CheckpointDTO = self.leaderboard_swagger_client.get_model(
+                        "CheckpointDTO"
+                    )
+                    return CheckpointDTO.unmarshal(response.json())
+        else:
+            try:
+                NewCheckpointDTO = self.leaderboard_swagger_client.get_model(
+                    "NewCheckpointDTO"
+                )
+                return (
+                    self.leaderboard_swagger_client.api.createEmptyCheckpoint(
+                        notebookId=notebook_id,
+                        checkpoint=NewCheckpointDTO(path=jupyter_path),
+                    )
+                    .response()
+                    .result
+                )
+            except HTTPNotFound:
+                return None
+
+    @with_api_exceptions_handler
     def get_experiment(self, experiment_id):
         api_attributes = self._get_api_experiment_attributes(experiment_id)
         attributes = api_attributes.attributes
@@ -278,9 +458,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
                 if AlphaParameterDTO.is_valid_attribute(attr)
             ],
         )
-
-    def update_experiment(self, experiment, properties):
-        raise NeptuneException("`update_experiment` shouldn't be called.")
 
     @with_api_exceptions_handler
     def set_property(self, experiment, key, value):
@@ -322,11 +499,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
         self._execute_operations(
             experiment=experiment,
             operations=operations,
-        )
-
-    def upload_experiment_source(self, experiment, data, progress_indicator):
-        raise NeptuneException(
-            "This function should never be called for alpha project."
         )
 
     @staticmethod
@@ -467,9 +639,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             )
 
         self._execute_operations(experiment, send_operations)
-
-    def mark_succeeded(self, experiment):
-        pass
 
     def mark_failed(self, experiment, traceback):
         operations = []
@@ -1112,3 +1281,70 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneLeaderboardApiClient):
             x=attribute.stringSeriesProperties.lastStep,
             y=attribute.stringSeriesProperties.last,
         )
+
+    @staticmethod
+    def _get_all_items(get_portion, step):
+        items = []
+
+        previous_items = None
+        while previous_items is None or len(previous_items) >= step:
+            previous_items = get_portion(limit=step, offset=len(items))
+            items += previous_items
+
+        return items
+
+    def _upload_raw_data(self, api_method, data, headers, path_params, query_params):
+        url = self.api_address + api_method.operation.path_name + "?"
+
+        for key, val in path_params.items():
+            url = url.replace("{" + key + "}", val)
+
+        for key, val in query_params.items():
+            url = url + key + "=" + val + "&"
+
+        session = self.http_client.session
+
+        request = self.authenticator.apply(
+            requests.Request(method="POST", url=url, data=data, headers=headers)
+        )
+
+        return session.send(session.prepare_request(request))
+
+    def _get_parameter_with_type(self, parameter):
+        string_type = "string"
+        double_type = "double"
+        if isinstance(parameter, bool):
+            return (string_type, str(parameter))
+        elif isinstance(parameter, float) or isinstance(parameter, int):
+            if math.isinf(parameter) or math.isnan(parameter):
+                return (string_type, json.dumps(parameter))
+            else:
+                return (double_type, str(parameter))
+        else:
+            return (string_type, str(parameter))
+
+    def _convert_to_experiment(self, api_experiment, project):
+        # pylint: disable=protected-access
+        return Experiment(
+            backend=project._backend,
+            project=project,
+            _id=api_experiment.shortId,
+            internal_id=api_experiment.id,
+        )
+
+    def _download_raw_data(self, api_method, headers, path_params, query_params):
+        url = self.api_address + api_method.operation.path_name + "?"
+
+        for key, val in path_params.items():
+            url = url.replace("{" + key + "}", val)
+
+        for key, val in query_params.items():
+            url = url + key + "=" + val + "&"
+
+        session = self.http_client.session
+
+        request = self.authenticator.apply(
+            requests.Request(method="GET", url=url, headers=headers)
+        )
+
+        return session.send(session.prepare_request(request), stream=True)
