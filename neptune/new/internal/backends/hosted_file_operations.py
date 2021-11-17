@@ -37,6 +37,7 @@ from neptune.new.internal.backends.utils import (
     build_operation_url,
     with_api_exceptions_handler,
     handle_server_raw_response_messages,
+    handle_server_response_messages,
 )
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import (
@@ -358,9 +359,9 @@ def download_file_set_attribute(
 
 def _get_download_url(swagger_client: SwaggerClient, download_id: str):
     params = {"id": download_id}
-    download_request = (
-        swagger_client.api.getDownloadPrepareRequest(**params).response().result
-    )
+    download_request = handle_server_response_messages(
+        swagger_client.api.getDownloadPrepareRequest(**params).response()
+    ).result
     return download_request.downloadUrl
 
 

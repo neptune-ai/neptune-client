@@ -731,9 +731,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = (
-                self.artifacts_client.api.listArtifactFiles(**params).response().result
-            )
+            result = handle_server_response_messages(
+                self.artifacts_client.api.listArtifactFiles(**params).response()
+            ).result
             return [ArtifactFileData.from_dto(a) for a in result.files]
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)

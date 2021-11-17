@@ -30,7 +30,10 @@ from neptune.new.exceptions import (
     NeptuneEmptyLocationException,
 )
 from neptune.new.internal.backends.api_model import ArtifactModel
-from neptune.new.internal.backends.utils import with_api_exceptions_handler
+from neptune.new.internal.backends.utils import (
+    with_api_exceptions_handler,
+    handle_server_response_messages,
+)
 from neptune.new.internal.operation import Operation, AssignArtifact
 
 
@@ -147,7 +150,9 @@ def create_new_artifact(
         **default_request_params,
     }
     try:
-        result = swagger_client.api.createNewArtifact(**params).response().result
+        result = handle_server_response_messages(
+            swagger_client.api.createNewArtifact(**params).response()
+        ).result
         return ArtifactModel(
             hash=result.artifactHash,
             received_metadata=result.receivedMetadata,
@@ -172,9 +177,9 @@ def upload_artifact_files_metadata(
         **default_request_params,
     }
     try:
-        result = (
-            swagger_client.api.uploadArtifactFilesMetadata(**params).response().result
-        )
+        result = handle_server_response_messages(
+            swagger_client.api.uploadArtifactFilesMetadata(**params).response()
+        ).result
         return ArtifactModel(
             hash=result.artifactHash,
             size=result.size,
@@ -201,7 +206,9 @@ def create_artifact_version(
         **default_request_params,
     }
     try:
-        result = swagger_client.api.createArtifactVersion(**params).response().result
+        result = handle_server_response_messages(
+            swagger_client.api.createArtifactVersion(**params).response()
+        ).result
         return ArtifactModel(
             hash=result.artifactHash,
             size=result.size,

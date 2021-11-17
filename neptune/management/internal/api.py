@@ -39,6 +39,7 @@ from neptune.new.internal.backends.utils import (
     with_api_exceptions_handler,
     ssl_verify,
     parse_validation_errors,
+    handle_server_response_messages,
 )
 from neptune.management.internal.utils import normalize_project_name
 from neptune.management.internal.types import *
@@ -100,7 +101,9 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
         **DEFAULT_REQUEST_KWARGS,
     }
 
-    projects = backend_client.api.listProjects(**params).response().result.entries
+    projects = handle_server_response_messages(
+        backend_client.api.listProjects(**params).response()
+    ).result.entries
 
     return [
         normalize_project_name(name=project.name, workspace=project.organizationName)
@@ -163,11 +166,9 @@ def create_project(
     workspace, name = project_spec["workspace"], project_spec["project"]
 
     try:
-        workspaces = (
-            backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS)
-            .response()
-            .result
-        )
+        workspaces = handle_server_response_messages(
+            backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS).response()
+        ).result
         workspace_name_to_id = {f"{f.name}": f.id for f in workspaces}
     except HTTPNotFound:
         raise WorkspaceNotFound(workspace=workspace)
@@ -187,7 +188,9 @@ def create_project(
     }
 
     try:
-        response = backend_client.api.createProject(**params).response()
+        response = handle_server_response_messages(
+            backend_client.api.createProject(**params).response()
+        )
         return normalize_project_name(
             name=response.result.name, workspace=response.result.organizationName
         )
@@ -233,7 +236,9 @@ def delete_project(
     params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
 
     try:
-        backend_client.api.deleteProject(**params).response()
+        handle_server_response_messages(
+            backend_client.api.deleteProject(**params).response()
+        )
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
     except HTTPForbidden as e:
@@ -297,7 +302,9 @@ def add_project_member(
     }
 
     try:
-        backend_client.api.addProjectMember(**params).response()
+        handle_server_response_messages(
+            backend_client.api.addProjectMember(**params).response()
+        )
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
     except HTTPConflict as e:
@@ -340,7 +347,9 @@ def get_project_member_list(
     params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
 
     try:
-        result = backend_client.api.listProjectMembers(**params).response().result
+        result = handle_server_response_messages(
+            backend_client.api.listProjectMembers(**params).response()
+        ).result
         return {
             f"{m.registeredMemberInfo.username}": ProjectMemberRoleDTO.to_domain(m.role)
             for m in result
@@ -392,7 +401,9 @@ def remove_project_member(
     }
 
     try:
-        backend_client.api.deleteProjectMember(**params).response()
+        handle_server_response_messages(
+            backend_client.api.deleteProjectMember(**params)
+        ).response()
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
     except HTTPUnprocessableEntity as e:
@@ -434,7 +445,9 @@ def get_workspace_member_list(
     params = {"organizationIdentifier": name, **DEFAULT_REQUEST_KWARGS}
 
     try:
-        result = backend_client.api.listOrganizationMembers(**params).response().result
+        result = handle_server_response_messages(
+            backend_client.api.listOrganizationMembers(**params).response()
+        ).result
         return {
             f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(
                 m.role

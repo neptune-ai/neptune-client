@@ -29,6 +29,7 @@ from neptune.new.internal.backends.utils import (
     create_swagger_client,
     verify_client_version,
     cache,
+    handle_server_response_messages,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.credentials import Credentials
@@ -100,15 +101,13 @@ def get_client_config(
         credentials=credentials, ssl_verify=ssl_verify, proxies=proxies
     )
 
-    config = (
+    config = handle_server_response_messages(
         backend_client.api.getClientConfig(
             X_Neptune_Api_Token=credentials.api_token,
             alpha="true",
             **DEFAULT_REQUEST_KWARGS,
-        )
-        .response()
-        .result
-    )
+        ).response()
+    ).result
 
     if hasattr(config, "pyLibVersions"):
         min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)

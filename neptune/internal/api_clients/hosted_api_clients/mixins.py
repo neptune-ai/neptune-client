@@ -32,6 +32,7 @@ from neptune.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.internal.api_clients.client_config import ClientConfig
+from neptune.new.internal.backends.utils import handle_server_response_messages
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
@@ -68,9 +69,9 @@ class HostedNeptuneMixin:
     @with_api_exceptions_handler
     def _create_client_config(self, api_token, backend_client):
         client_config_args = self._get_client_config_args(api_token)
-        config = (
-            backend_client.api.getClientConfig(**client_config_args).response().result
-        )
+        config = handle_server_response_messages(
+            backend_client.api.getClientConfig(**client_config_args).response()
+        ).result
 
         if hasattr(config, "pyLibVersions"):
             min_recommended = getattr(

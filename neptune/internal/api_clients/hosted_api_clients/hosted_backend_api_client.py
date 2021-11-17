@@ -41,6 +41,7 @@ from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_ap
     HostedAlphaLeaderboardApiClient,
 )
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
+from neptune.new.internal.backends.utils import handle_server_response_messages
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
 from neptune.utils import (
@@ -151,9 +152,11 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
-            response = self.backend_swagger_client.api.getProject(
-                projectIdentifier=project_qualified_name
-            ).response()
+            response = handle_server_response_messages(
+                self.backend_swagger_client.api.getProject(
+                    projectIdentifier=project_qualified_name
+                ).response()
+            )
             warning = response.metadata.headers.get("X-Server-Warning")
             if warning:
                 click.echo("{warning}{content}{end}".format(content=warning, **STYLES))
@@ -171,9 +174,11 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     @with_api_exceptions_handler
     def get_projects(self, namespace):
         try:
-            r = self.backend_swagger_client.api.listProjects(
-                organizationIdentifier=namespace
-            ).response()
+            r = handle_server_response_messages(
+                self.backend_swagger_client.api.listProjects(
+                    organizationIdentifier=namespace
+                ).response()
+            )
             return r.result.entries
         except HTTPNotFound:
             raise WorkspaceNotFound(namespace_name=namespace)

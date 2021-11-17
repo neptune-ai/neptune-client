@@ -24,6 +24,7 @@ from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
 
 from neptune.new.exceptions import NeptuneInvalidApiTokenException
+from neptune.new.internal.backends.utils import handle_server_response_messages
 from neptune.utils import with_api_exceptions_handler, update_session_proxies
 
 _decoding_options = {
@@ -98,11 +99,11 @@ class NeptuneAuthenticator(Authenticator):
         # We need to pass a lambda to be able to re-create fresh session at any time when needed
         def session_factory():
             try:
-                auth_tokens = (
-                    backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token)
-                    .response()
-                    .result
-                )
+                auth_tokens = handle_server_response_messages(
+                    backend_client.api.exchangeApiToken(
+                        X_Neptune_Api_Token=api_token
+                    ).response()
+                ).result
             except HTTPUnauthorized:
                 raise NeptuneInvalidApiTokenException()
 

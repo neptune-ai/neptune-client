@@ -222,9 +222,11 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     @with_api_exceptions_handler
     def get_project_members(self, project_identifier):
         try:
-            r = self.backend_swagger_client.api.listProjectMembers(
-                projectIdentifier=project_identifier
-            ).response()
+            r = handle_server_response_messages(
+                self.backend_swagger_client.api.listProjectMembers(
+                    projectIdentifier=project_identifier
+                ).response()
+            )
             return r.result
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier)
@@ -860,11 +862,11 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         params = {
             "experimentId": experiment_id,
         }
-        return (
-            self.leaderboard_swagger_client.api.getExperimentAttributes(**params)
-            .response()
-            .result
-        )
+        return handle_server_response_messages(
+            self.leaderboard_swagger_client.api.getExperimentAttributes(
+                **params
+            ).response()
+        ).result
 
     def _remove_attribute(self, experiment, str_path: str):
         """Removes given attribute"""
