@@ -40,21 +40,16 @@ class FileChunk(object):
 
 
 class FileChunkStream(object):
-    fobj: Union[BinaryIO, io.BytesIO]
-    filename: str
-    length: int
-    upload_configuration: AttributeUploadConfiguration
-
     def __init__(
         self,
         upload_entry: UploadEntry,
         upload_configuration: AttributeUploadConfiguration,
     ):
-        self.filename = upload_entry.target_path
-        self.upload_configuration = upload_configuration
-        self.length = upload_entry.length()
-        self.fobj = upload_entry.get_stream()
-        self.permissions = upload_entry.get_permissions()
+        self.filename: str = upload_entry.target_path
+        self.upload_configuration: AttributeUploadConfiguration = upload_configuration
+        self.length: int = upload_entry.length()
+        self.fobj: Union[BinaryIO, io.BytesIO] = upload_entry.get_stream()
+        self.permissions: str = upload_entry.get_permissions()
 
     def __eq__(self, fs):
         if isinstance(self, fs.__class__):

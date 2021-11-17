@@ -111,21 +111,17 @@ class UploadEntry(object):
 
 
 class UploadPackage(object):
-    items: List[UploadEntry]
-    size: int
-    len: int
-
     def __init__(self):
-        self.items = []
-        self.size = 0
-        self.len = 0
+        self.items: List[UploadEntry] = []
+        self.size: int = 0
+        self.len: int = 0
 
     def reset(self):
         self.items = []
         self.size = 0
         self.len = 0
 
-    def update(self, entry, size):
+    def update(self, entry: UploadEntry, size: int):
         self.items.append(entry)
         self.size += size
         self.len += 1
