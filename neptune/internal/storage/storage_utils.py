@@ -13,25 +13,68 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import io
 import logging
 import os
+import stat
 import time
+from dataclasses import dataclass
+from io import BytesIO
 from pprint import pformat
 from abc import ABCMeta, abstractmethod
-import six
+from typing import Union, Generator, Set, List, BinaryIO
 
-from neptune.internal.storage.datastream import (
-    compress_to_tar_gz_in_memory,
-    FileChunkStream,
-)
+import six
 
 _logger = logging.getLogger(__name__)
 
 
+@dataclass
+class AttributeUploadConfiguration:
+    chunk_size: int
+
+
 class UploadEntry(object):
-    def __init__(self, source_path, target_path):
+    def __init__(self, source_path: Union[str, BytesIO], target_path: str):
         self.source_path = source_path
         self.target_path = target_path
+
+    def length(self) -> int:
+        if self.is_stream():
+            return self.source_path.getbuffer().nbytes
+        else:
+            return os.path.getsize(self.source_path)
+
+    def get_stream(self) -> Union[BinaryIO, io.BytesIO]:
+        if self.is_stream():
+            return self.source_path
+        else:
+            return io.open(self.source_path, "rb")
+
+    def get_permissions(self) -> str:
+        if self.is_stream():
+            return "----------"
+        else:
+            return self.permissions_to_unix_string(self.source_path)
+
+    @classmethod
+    def permissions_to_unix_string(cls, path):
+        st = 0
+        if os.path.exists(path):
+            st = os.lstat(path).st_mode
+        is_dir = "d" if stat.S_ISDIR(st) else "-"
+        dic = {
+            "7": "rwx",
+            "6": "rw-",
+            "5": "r-x",
+            "4": "r--",
+            "3": "-wx",
+            "2": "-w-",
+            "1": "--x",
+            "0": "---",
+        }
+        perm = ("%03o" % st)[-3:]
+        return is_dir + "".join(dic.get(x, x) for x in perm)
 
     def __eq__(self, other):
         """
@@ -69,16 +112,16 @@ class UploadEntry(object):
 
 class UploadPackage(object):
     def __init__(self):
-        self.items = []
-        self.size = 0
-        self.len = 0
+        self.items: List[UploadEntry] = []
+        self.size: int = 0
+        self.len: int = 0
 
     def reset(self):
         self.items = []
         self.size = 0
         self.len = 0
 
-    def update(self, entry, size):
+    def update(self, entry: UploadEntry, size: int):
         self.items.append(entry)
         self.size += size
         self.len += 1
@@ -190,7 +233,11 @@ def scan_unique_upload_entries(upload_entries):
     return walked_entries
 
 
-def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_files=500):
+def split_upload_files(
+    upload_entries: Set[UploadEntry],
+    upload_configuration: AttributeUploadConfiguration,
+    max_files=500,
+) -> Generator[UploadPackage, None, None]:
     current_package = UploadPackage()
 
     for entry in upload_entries:
@@ -204,7 +251,7 @@ def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_fil
         else:
             size = os.path.getsize(entry.source_path)
             if (
-                size + current_package.size > max_package_size
+                size + current_package.size > upload_configuration.chunk_size
                 or current_package.len > max_files
             ) and not current_package.is_empty():
                 yield current_package
@@ -216,45 +263,3 @@ def split_upload_files(upload_entries, max_package_size=1 * 1024 * 1024, max_fil
 
 def normalize_file_name(name):
     return name.replace(os.sep, "/")
-
-
-def upload_to_storage(
-    upload_entries, upload_api_fun, upload_tar_api_fun, warn_limit=None, **kwargs
-):
-    unique_upload_entries = scan_unique_upload_entries(upload_entries)
-    progress_indicator = SilentProgressIndicator()
-
-    if warn_limit is not None:
-        total_size = 0
-        for entry in unique_upload_entries:
-            if not entry.is_stream():
-                total_size += os.path.getsize(entry.source_path)
-        if total_size >= warn_limit:
-            progress_indicator = LoggingProgressIndicator(total_size)
-
-    for package in split_upload_files(unique_upload_entries):
-        if package.is_empty():
-            continue
-
-        uploading_multiple_entries = package.len > 1
-        creating_a_single_empty_dir = (
-            package.len == 1
-            and not package.items[0].is_stream()
-            and os.path.isdir(package.items[0].source_path)
-        )
-
-        if uploading_multiple_entries or creating_a_single_empty_dir:
-            data = compress_to_tar_gz_in_memory(upload_entries=package.items)
-            upload_tar_api_fun(**dict(kwargs, data=data))
-            progress_indicator.progress(package.size)
-        else:
-            file_chunk_stream = FileChunkStream(package.items[0])
-            upload_api_fun(
-                **dict(
-                    kwargs,
-                    data=file_chunk_stream,
-                    progress_indicator=progress_indicator,
-                )
-            )
-
-    progress_indicator.complete()

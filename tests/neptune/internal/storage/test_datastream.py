@@ -16,11 +16,14 @@
 
 import unittest
 
-from io import StringIO
+from io import BytesIO
 from mock import patch
 
 from neptune.internal.storage.datastream import FileChunkStream, FileChunk
-from neptune.internal.storage.storage_utils import UploadEntry
+from neptune.internal.storage.storage_utils import (
+    UploadEntry,
+    AttributeUploadConfiguration,
+)
 
 
 class TestFileChunkStream(unittest.TestCase):
@@ -32,7 +35,7 @@ class TestFileChunkStream(unittest.TestCase):
         lstat.return_value.st_mode = 0o731
 
         # when
-        permissions_string = FileChunkStream.permissions_to_unix_string("/some/path")
+        permissions_string = UploadEntry.permissions_to_unix_string("/some/path")
 
         # then
         self.assertEqual("-rwx-wx--x", permissions_string)
@@ -45,7 +48,7 @@ class TestFileChunkStream(unittest.TestCase):
         lstat.return_value.st_mode = 0o642
 
         # when
-        permissions_string = FileChunkStream.permissions_to_unix_string("/some/path")
+        permissions_string = UploadEntry.permissions_to_unix_string("/some/path")
 
         # then
         self.assertEqual("drw-r---w-", permissions_string)
@@ -53,7 +56,7 @@ class TestFileChunkStream(unittest.TestCase):
     @patch("os.path.exists", new=lambda _: False)
     def test_permissions_to_unix_string_for_nonexistent_file(self):
         # when
-        permissions_string = FileChunkStream.permissions_to_unix_string("/some/path")
+        permissions_string = UploadEntry.permissions_to_unix_string("/some/path")
 
         # then
         self.assertEqual("-" * 10, permissions_string)
@@ -63,13 +66,16 @@ class TestFileChunkStream(unittest.TestCase):
         text = u"ABCDEFGHIJKLMNOPRSTUWXYZ"
 
         # when
-        stream = FileChunkStream(UploadEntry(StringIO(text), "some/path"))
+        stream = FileChunkStream(
+            UploadEntry(BytesIO(bytes(text, "utf-8")), "some/path"),
+            AttributeUploadConfiguration(10),
+        )
         chunks = list()
-        for chunk in stream.generate(chunk_size=10):
+        for chunk in stream.generate():
             chunks.append(chunk)
 
         # then
-        self.assertEqual(stream.length, None)
+        self.assertEqual(stream.length, 24)
         self.assertEqual(
             chunks,
             [

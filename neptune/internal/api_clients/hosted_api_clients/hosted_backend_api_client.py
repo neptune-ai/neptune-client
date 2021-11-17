@@ -230,7 +230,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             and self._client_config.min_recommended_version > parsed_version
         ):
             click.echo(
-                "WARNING: There is a new version of neptune-client {} (installed: {}).".format(
+                "WARNING: We recommend an upgrade to a new version of neptune-client - {} (installed - {}).".format(
                     self._client_config.min_recommended_version, self.client_lib_version
                 ),
                 sys.stderr,

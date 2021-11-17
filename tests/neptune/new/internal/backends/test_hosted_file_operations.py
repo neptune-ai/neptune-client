@@ -107,7 +107,10 @@ class TestHostedFileOperations(unittest.TestCase):
         exp_uuid = uuid.uuid4()
         swagger_mock = self._get_swagger_mock()
         upload_loop_chunk_mock.return_value = b"null"
-        chunk_size = 1024 * 1024
+        chunk_size = 5 * 1024 * 1024
+        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = (
+            chunk_size
+        )
 
         # when
         with NamedTemporaryFile("w") as temp_file:
@@ -163,6 +166,9 @@ class TestHostedFileOperations(unittest.TestCase):
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_raw_data_mock.return_value = b"null"
+        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = (
+            10
+        )
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:
@@ -195,6 +201,9 @@ class TestHostedFileOperations(unittest.TestCase):
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_raw_data_mock.return_value = b"null"
+        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = (
+            10
+        )
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:
