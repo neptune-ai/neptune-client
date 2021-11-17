@@ -37,16 +37,8 @@ from neptune.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.internal.api_clients.credentials import Credentials
-from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import \
-    HostedAlphaLeaderboardApiClient
 from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import (
     HostedAlphaLeaderboardApiClient,
-)
-from neptune.internal.api_clients.hosted_api_clients.hosted_leaderboard_api_client import (
-    HostedNeptuneLeaderboardApiClient,
-)
-from neptune.internal.api_clients.hosted_api_clients.migration_switch_leaderboard_api_client_proxy import (
-    MigrationSwitchLeaderboardApiClientProxy,
 )
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.oauth import NeptuneAuthenticator

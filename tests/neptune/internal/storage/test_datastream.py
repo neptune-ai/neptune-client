@@ -63,13 +63,15 @@ class TestFileChunkStream(unittest.TestCase):
         text = u"ABCDEFGHIJKLMNOPRSTUWXYZ"
 
         # when
-        stream = FileChunkStream(UploadEntry(BytesIO(bytes(text, 'utf-8')), "some/path"))
+        stream = FileChunkStream(
+            UploadEntry(BytesIO(bytes(text, "utf-8")), "some/path")
+        )
         chunks = list()
         for chunk in stream.generate(chunk_size=10):
             chunks.append(chunk)
 
         # then
-        self.assertEqual(stream.length, 24)
+        self.assertEqual(stream.length, None)
         self.assertEqual(
             chunks,
             [
