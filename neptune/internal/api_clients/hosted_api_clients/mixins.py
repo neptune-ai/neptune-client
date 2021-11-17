@@ -69,8 +69,8 @@ class HostedNeptuneMixin:
     def _create_client_config(self, api_token, backend_client):
         client_config_args = self._get_client_config_args(api_token)
         config = (
-            backend_client.api.getClientConfig(**client_config_args).response()
-        ).result
+            backend_client.api.getClientConfig(**client_config_args).response().result
+        )
 
         if hasattr(config, "pyLibVersions"):
             min_recommended = getattr(

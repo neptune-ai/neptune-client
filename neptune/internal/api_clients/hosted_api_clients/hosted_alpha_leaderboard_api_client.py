@@ -839,8 +839,10 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         return (
             self.leaderboard_swagger_client.api.prepareForDownloadFileSetAttributeZip(
                 **params
-            ).response()
-        ).result
+            )
+            .response()
+            .result
+        )
 
     def download_artifacts(
         self, experiment: Experiment, path=None, destination_dir=None
@@ -866,10 +868,10 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             "experimentId": experiment_id,
         }
         return (
-            self.leaderboard_swagger_client.api.getExperimentAttributes(
-                **params
-            ).response()
-        ).result
+            self.leaderboard_swagger_client.api.getExperimentAttributes(**params)
+            .response()
+            .result
+        )
 
     def _remove_attribute(self, experiment, str_path: str):
         """Removes given attribute"""
@@ -965,10 +967,10 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         }
         try:
             result = (
-                self.leaderboard_swagger_client.api.executeOperations(
-                    **kwargs
-                ).response()
-            ).result
+                self.leaderboard_swagger_client.api.executeOperations(**kwargs)
+                .response()
+                .result
+            )
             errors = [
                 alpha_exceptions.MetadataInconsistency(err.errorDescription)
                 for err in result
@@ -1084,8 +1086,10 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 self.leaderboard_swagger_client.api.getFloatSeriesValuesCSV(
                     experimentId=experiment.internal_id,
                     attribute=channel_attribute_path,
-                ).response()
-            ).incoming_response.text
+                )
+                .response()
+                .incoming_response.text
+            )
             lines = csv.split("\n")[:-1]
             return [line.split(",") for line in lines]
         except HTTPNotFound:
@@ -1184,8 +1188,10 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                         sortDirection=["ascending"],
                         limit=limit,
                         offset=offset,
-                    ).response()
-                ).result.entries
+                    )
+                    .response()
+                    .result.entries
+                )
 
             return [
                 LeaderboardEntry(self._to_leaderboard_entry_dto(e))

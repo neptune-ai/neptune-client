@@ -243,7 +243,6 @@ def handle_server_raw_response_messages(response: Response):
 
 # TODO print in color once colored exceptions are added
 class NeptuneResponseAdapter(RequestsResponseAdapter):
-
     @property
     def raw_bytes(self) -> bytes:
         self._handle_response()
