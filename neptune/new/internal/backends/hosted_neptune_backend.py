@@ -84,7 +84,6 @@ from neptune.new.internal.backends.utils import (
     with_api_exceptions_handler,
     MissingApiClient,
     OptionalFeatures,
-    handle_server_response_messages,
 )
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
@@ -194,12 +193,10 @@ class HostedNeptuneBackend(NeptuneBackend):
                         available_workspaces=self.get_available_workspaces(),
                     )
 
-            response = handle_server_response_messages(
-                self.backend_client.api.getProject(
-                    projectIdentifier=project_id,
-                    **DEFAULT_REQUEST_KWARGS,
-                ).response()
-            )
+            response = self.backend_client.api.getProject(
+                projectIdentifier=project_id,
+                **DEFAULT_REQUEST_KWARGS,
+            ).response()
             project = response.result
             project_version = project.version if hasattr(project, "version") else 1
             if project_version < 2:
@@ -219,17 +216,15 @@ class HostedNeptuneBackend(NeptuneBackend):
         self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
     ) -> List[Project]:
         try:
-            response = handle_server_response_messages(
-                self.backend_client.api.listProjects(
-                    limit=5,
-                    organizationIdentifier=workspace_id,
-                    searchTerm=search_term,
-                    sortBy=["lastViewed"],
-                    sortDirection=["descending"],
-                    userRelation="memberOrHigher",
-                    **DEFAULT_REQUEST_KWARGS,
-                ).response()
-            )
+            response = self.backend_client.api.listProjects(
+                limit=5,
+                organizationIdentifier=workspace_id,
+                searchTerm=search_term,
+                sortBy=["lastViewed"],
+                sortDirection=["descending"],
+                userRelation="memberOrHigher",
+                **DEFAULT_REQUEST_KWARGS,
+            ).response()
             projects = response.result.entries
             return list(
                 map(
@@ -245,11 +240,9 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def get_available_workspaces(self) -> List[Workspace]:
         try:
-            response = handle_server_response_messages(
-                self.backend_client.api.listOrganizations(
-                    **DEFAULT_REQUEST_KWARGS,
-                ).response()
-            )
+            response = self.backend_client.api.listOrganizations(
+                **DEFAULT_REQUEST_KWARGS,
+            ).response()
             workspaces = response.result
             return list(
                 map(
@@ -263,12 +256,14 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def get_run(self, run_id: str):
         try:
-            run = handle_server_response_messages(
+            run = (
                 self.leaderboard_client.api.getExperiment(
                     experimentId=run_id,
                     **DEFAULT_REQUEST_KWARGS,
-                ).response()
-            ).result
+                )
+                .response()
+                .result
+            )
             return ApiRun(
                 run.id, run.shortId, run.organizationName, run.projectName, run.trashed
             )
@@ -323,9 +318,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            run = handle_server_response_messages(
-                self.leaderboard_client.api.createExperiment(**kwargs).response()
-            ).result
+            run = (
+                self.leaderboard_client.api.createExperiment(**kwargs).response().result
+            )
             return ApiRun(
                 run.id, run.shortId, run.organizationName, run.projectName, run.trashed
             )
@@ -335,13 +330,15 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         try:
-            return handle_server_response_messages(
+            return (
                 self.leaderboard_client.api.createEmptyCheckpoint(
                     notebookId=notebook_id,
                     checkpoint={"path": jupyter_path},
                     **DEFAULT_REQUEST_KWARGS,
-                ).response()
-            ).result.id
+                )
+                .response()
+                .result.id
+            )
         except HTTPNotFound:
             return None
 
@@ -354,12 +351,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             }
         }
         try:
-            handle_server_response_messages(
-                self.leaderboard_client.api.ping(
-                    experimentId=run_id,
-                    **request_kwargs,
-                ).response()
-            ).result
+            self.leaderboard_client.api.ping(
+                experimentId=run_id,
+                **request_kwargs,
+            ).response().result
         except HTTPNotFound:
             raise RunUUIDNotFound(run_id)
 
@@ -518,9 +513,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.executeOperations(**kwargs).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.executeOperations(**kwargs)
+                .response()
+                .result
+            )
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
             raise RunUUIDNotFound(run_id=run_id) from e
@@ -539,9 +536,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            run = handle_server_response_messages(
-                self.leaderboard_client.api.getExperimentAttributes(**params).response()
-            ).result
+            run = (
+                self.leaderboard_client.api.getExperimentAttributes(**params)
+                .response()
+                .result
+            )
 
             attribute_type_names = [at.value for at in AttributeType]
             accepted_attributes = [
@@ -624,9 +623,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getFloatAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getFloatAttribute(**params)
+                .response()
+                .result
+            )
             return FloatAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -639,9 +640,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getIntAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getIntAttribute(**params).response().result
+            )
             return IntAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -654,9 +655,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getBoolAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getBoolAttribute(**params).response().result
+            )
             return BoolAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -669,9 +670,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getFileAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getFileAttribute(**params).response().result
+            )
             return FileAttribute(name=result.name, ext=result.ext, size=result.size)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -684,9 +685,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getStringAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getStringAttribute(**params)
+                .response()
+                .result
+            )
             return StringAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -699,9 +702,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getDatetimeAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getDatetimeAttribute(**params)
+                .response()
+                .result
+            )
             return DatetimeAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -714,9 +719,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getArtifactAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getArtifactAttribute(**params)
+                .response()
+                .result
+            )
             return ArtifactAttribute(hash=result.hash)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -731,9 +738,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.artifacts_client.api.listArtifactFiles(**params).response()
-            ).result
+            result = (
+                self.artifacts_client.api.listArtifactFiles(**params).response().result
+            )
             return [ArtifactFileData.from_dto(a) for a in result.files]
         except HTTPNotFound:
             raise ArtifactNotFoundException(artifact_hash)
@@ -748,9 +755,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getFloatSeriesAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getFloatSeriesAttribute(**params)
+                .response()
+                .result
+            )
             return FloatSeriesAttribute(result.last)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -765,11 +774,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getStringSeriesAttribute(
-                    **params
-                ).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getStringSeriesAttribute(**params)
+                .response()
+                .result
+            )
             return StringSeriesAttribute(result.last)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -784,9 +793,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getStringSetAttribute(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getStringSetAttribute(**params)
+                .response()
+                .result
+            )
             return StringSetAttribute(set(result.values))
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -803,9 +814,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getImageSeriesValues(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getImageSeriesValues(**params)
+                .response()
+                .result
+            )
             return ImageSeriesValues(result.totalItemCount)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
@@ -822,9 +835,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getStringSeriesValues(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getStringSeriesValues(**params)
+                .response()
+                .result
+            )
             return StringSeriesValues(
                 result.totalItemCount,
                 [
@@ -847,9 +862,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getFloatSeriesValues(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getFloatSeriesValues(**params)
+                .response()
+                .result
+            )
             return FloatSeriesValues(
                 result.totalItemCount,
                 [
@@ -872,9 +889,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             if namespace_prefix:
                 # don't want to catch "ns/attribute/other" while looking for "ns/attr"
                 namespace_prefix += "/"
-            result = handle_server_response_messages(
-                self.leaderboard_client.api.getExperimentAttributes(**params).response()
-            ).result
+            result = (
+                self.leaderboard_client.api.getExperimentAttributes(**params)
+                .response()
+                .result
+            )
             return [
                 (attr.name, attr.type, map_attribute_result_to_value(attr))
                 for attr in result.attributes
@@ -891,11 +910,13 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            return handle_server_response_messages(
+            return (
                 self.leaderboard_client.api.prepareForDownloadFileSetAttributeZip(
                     **params
-                ).response()
-            ).result
+                )
+                .response()
+                .result
+            )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
@@ -909,7 +930,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         tags: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
         def get_portion(limit, offset):
-            return handle_server_response_messages(
+            return (
                 self.leaderboard_client.api.getLeaderboard(
                     projectIdentifier=project_id,
                     shortId=_id,
@@ -923,8 +944,10 @@ class HostedNeptuneBackend(NeptuneBackend):
                     limit=limit,
                     offset=offset,
                     **DEFAULT_REQUEST_KWARGS,
-                ).response()
-            ).result.entries
+                )
+                .response()
+                .result.entries
+            )
 
         def to_leaderboard_entry(entry) -> LeaderboardEntry:
             supported_attribute_types = {item.value for item in AttributeType}

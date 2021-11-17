@@ -21,6 +21,8 @@ from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
 from packaging import version
 
+from neptune.new.exceptions import UnsupportedClientVersion
+from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.utils import (
     with_api_exceptions_handler,
     build_operation_url,
@@ -29,12 +31,10 @@ from neptune.new.internal.backends.utils import (
     create_swagger_client,
     verify_client_version,
     cache,
-    handle_server_response_messages,
+    NeptuneResponseAdapter,
 )
-from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.credentials import Credentials
 from neptune.new.version import version as neptune_client_version
-from neptune.new.exceptions import UnsupportedClientVersion
 
 # TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
 from neptune.oauth import NeptuneAuthenticator
@@ -56,7 +56,9 @@ DEFAULT_REQUEST_KWARGS = {
 
 
 def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
-    http_client = RequestsClient(ssl_verify=ssl_verify)
+    http_client = RequestsClient(
+        ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
+    )
     http_client.session.verify = ssl_verify
 
     update_session_proxies(http_client.session, proxies)
@@ -101,13 +103,15 @@ def get_client_config(
         credentials=credentials, ssl_verify=ssl_verify, proxies=proxies
     )
 
-    config = handle_server_response_messages(
+    config = (
         backend_client.api.getClientConfig(
             X_Neptune_Api_Token=credentials.api_token,
             alpha="true",
             **DEFAULT_REQUEST_KWARGS,
-        ).response()
-    ).result
+        )
+        .response()
+        .result
+    )
 
     if hasattr(config, "pyLibVersions"):
         min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)

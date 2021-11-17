@@ -92,7 +92,6 @@ from neptune.new.internal.backends.operation_api_object_converter import (
     OperationApiObjectConverter as AlphaOperationApiObjectConverter,
 )
 from neptune.new.internal.backends.utils import (
-    handle_server_response_messages,
     handle_server_raw_response_messages,
 )
 from neptune.new.internal.operation import (
@@ -222,11 +221,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     @with_api_exceptions_handler
     def get_project_members(self, project_identifier):
         try:
-            r = handle_server_response_messages(
-                self.backend_swagger_client.api.listProjectMembers(
-                    projectIdentifier=project_identifier
-                ).response()
-            )
+            r = self.backend_swagger_client.api.listProjectMembers(
+                projectIdentifier=project_identifier
+            ).response()
             return r.result
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier)
@@ -302,11 +299,11 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         }
 
         try:
-            api_experiment = handle_server_response_messages(
-                self.leaderboard_swagger_client.api.createExperiment(
-                    **kwargs
-                ).response()
-            ).result
+            api_experiment = (
+                self.leaderboard_swagger_client.api.createExperiment(**kwargs)
+                .response()
+                .result
+            )
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
 
@@ -338,11 +335,13 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     @with_api_exceptions_handler
     def get_notebook(self, project, notebook_id):
         try:
-            api_notebook_list = handle_server_response_messages(
+            api_notebook_list = (
                 self.leaderboard_swagger_client.api.listNotebooks(
                     projectIdentifier=project.internal_id, id=[notebook_id]
-                ).response()
-            ).result
+                )
+                .response()
+                .result
+            )
 
             if not api_notebook_list.entries:
                 raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
@@ -361,11 +360,13 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     @with_api_exceptions_handler
     def get_last_checkpoint(self, project, notebook_id):
         try:
-            api_checkpoint_list = handle_server_response_messages(
+            api_checkpoint_list = (
                 self.leaderboard_swagger_client.api.listCheckpoints(
                     notebookId=notebook_id, offset=0, limit=1
-                ).response()
-            ).result
+                )
+                .response()
+                .result
+            )
 
             if not api_checkpoint_list.entries:
                 raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
@@ -378,11 +379,13 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     @with_api_exceptions_handler
     def create_notebook(self, project):
         try:
-            api_notebook = handle_server_response_messages(
+            api_notebook = (
                 self.leaderboard_swagger_client.api.createNotebook(
                     projectIdentifier=project.internal_id
-                ).response()
-            ).result
+                )
+                .response()
+                .result
+            )
 
             return Notebook(
                 backend=self,
@@ -416,12 +419,14 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 NewCheckpointDTO = self.leaderboard_swagger_client.get_model(
                     "NewCheckpointDTO"
                 )
-                return handle_server_response_messages(
+                return (
                     self.leaderboard_swagger_client.api.createEmptyCheckpoint(
                         notebookId=notebook_id,
                         checkpoint=NewCheckpointDTO(path=jupyter_path),
-                    ).response()
-                ).result
+                    )
+                    .response()
+                    .result
+                )
             except HTTPNotFound:
                 return None
 
@@ -659,11 +664,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
 
     def ping_experiment(self, experiment):
         try:
-            handle_server_response_messages(
-                self.leaderboard_swagger_client.api.ping(
-                    experimentId=str(experiment.internal_id)
-                ).response()
-            ).result
+            self.leaderboard_swagger_client.api.ping(
+                experimentId=str(experiment.internal_id)
+            ).response().result
         except HTTPNotFound:
             # pylint: disable=protected-access
             raise ExperimentNotFound(
@@ -833,7 +836,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             "experimentId": run_id,
             "attribute": path,
         }
-        return handle_server_response_messages(
+        return (
             self.leaderboard_swagger_client.api.prepareForDownloadFileSetAttributeZip(
                 **params
             ).response()
@@ -862,7 +865,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         params = {
             "experimentId": experiment_id,
         }
-        return handle_server_response_messages(
+        return (
             self.leaderboard_swagger_client.api.getExperimentAttributes(
                 **params
             ).response()
@@ -961,7 +964,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             ],
         }
         try:
-            result = handle_server_response_messages(
+            result = (
                 self.leaderboard_swagger_client.api.executeOperations(
                     **kwargs
                 ).response()
@@ -1077,7 +1080,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     @with_api_exceptions_handler
     def _get_channel_tuples_from_csv(self, experiment, channel_attribute_path):
         try:
-            csv = handle_server_response_messages(
+            csv = (
                 self.leaderboard_swagger_client.api.getFloatSeriesValuesCSV(
                     experimentId=experiment.internal_id,
                     attribute=channel_attribute_path,
@@ -1167,7 +1170,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         try:
 
             def get_portion(limit, offset):
-                return handle_server_response_messages(
+                return (
                     self.leaderboard_swagger_client.api.getLeaderboard(
                         projectIdentifier=project.full_id,
                         shortId=ids,

@@ -41,7 +41,7 @@ from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_ap
     HostedAlphaLeaderboardApiClient,
 )
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
-from neptune.new.internal.backends.utils import handle_server_response_messages
+from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
 from neptune.utils import (
@@ -73,9 +73,13 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             urllib3.disable_warnings()
             ssl_verify = False
 
-        self._http_client = RequestsClient(ssl_verify=ssl_verify)
+        self._http_client = RequestsClient(
+            ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
+        )
         # for session re-creation we need to keep an authenticator-free version of http client
-        self._http_client_for_token = RequestsClient(ssl_verify=ssl_verify)
+        self._http_client_for_token = RequestsClient(
+            ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
+        )
 
         user_agent = (
             "neptune-client/{lib_version} ({system}, python {python_version})".format(
@@ -152,11 +156,9 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
-            response = handle_server_response_messages(
-                self.backend_swagger_client.api.getProject(
-                    projectIdentifier=project_qualified_name
-                ).response()
-            )
+            response = self.backend_swagger_client.api.getProject(
+                projectIdentifier=project_qualified_name
+            ).response()
             warning = response.metadata.headers.get("X-Server-Warning")
             if warning:
                 click.echo("{warning}{content}{end}".format(content=warning, **STYLES))
@@ -174,11 +176,9 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     @with_api_exceptions_handler
     def get_projects(self, namespace):
         try:
-            r = handle_server_response_messages(
-                self.backend_swagger_client.api.listProjects(
-                    organizationIdentifier=namespace
-                ).response()
-            )
+            r = self.backend_swagger_client.api.listProjects(
+                organizationIdentifier=namespace
+            ).response()
             return r.result.entries
         except HTTPNotFound:
             raise WorkspaceNotFound(namespace_name=namespace)
