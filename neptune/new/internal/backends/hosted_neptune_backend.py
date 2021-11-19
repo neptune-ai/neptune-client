@@ -17,7 +17,6 @@ import logging
 import re
 from typing import List, Optional, Dict, Iterable, Tuple, Any
 
-import click
 from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity, HTTPPaymentRequired
 from simplejson import JSONDecodeError
 
@@ -198,11 +197,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                 projectIdentifier=project_id,
                 **DEFAULT_REQUEST_KWARGS,
             ).response()
-            warning = response.metadata.headers.get("X-Server-Warning")
-            if warning:
-                click.echo(
-                    warning
-                )  # TODO print in color once colored exceptions are added
             project = response.result
             project_version = project.version if hasattr(project, "version") else 1
             if project_version < 2:
@@ -231,11 +225,6 @@ class HostedNeptuneBackend(NeptuneBackend):
                 userRelation="memberOrHigher",
                 **DEFAULT_REQUEST_KWARGS,
             ).response()
-            warning = response.metadata.headers.get("X-Server-Warning")
-            if warning:
-                click.echo(
-                    warning
-                )  # TODO print in color once colored exceptions are added
             projects = response.result.entries
             return list(
                 map(
@@ -254,11 +243,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             response = self.backend_client.api.listOrganizations(
                 **DEFAULT_REQUEST_KWARGS,
             ).response()
-            warning = response.metadata.headers.get("X-Server-Warning")
-            if warning:
-                click.echo(
-                    warning
-                )  # TODO print in color once colored exceptions are added
             workspaces = response.result
             return list(
                 map(

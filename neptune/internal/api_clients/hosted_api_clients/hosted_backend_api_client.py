@@ -41,6 +41,7 @@ from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_ap
     HostedAlphaLeaderboardApiClient,
 )
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
+from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
 from neptune.utils import (
@@ -72,9 +73,13 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             urllib3.disable_warnings()
             ssl_verify = False
 
-        self._http_client = RequestsClient(ssl_verify=ssl_verify)
+        self._http_client = RequestsClient(
+            ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
+        )
         # for session re-creation we need to keep an authenticator-free version of http client
-        self._http_client_for_token = RequestsClient(ssl_verify=ssl_verify)
+        self._http_client_for_token = RequestsClient(
+            ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
+        )
 
         user_agent = (
             "neptune-client/{lib_version} ({system}, python {python_version})".format(

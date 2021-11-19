@@ -26,7 +26,7 @@ from http.client import NOT_FOUND
 from io import StringIO
 from itertools import groupby
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, TYPE_CHECKING
 
 import requests
 import six
@@ -91,6 +91,9 @@ from neptune.new.internal.backends.operation_api_name_visitor import (
 from neptune.new.internal.backends.operation_api_object_converter import (
     OperationApiObjectConverter as AlphaOperationApiObjectConverter,
 )
+from neptune.new.internal.backends.utils import (
+    handle_server_raw_response_messages,
+)
 from neptune.new.internal.operation import (
     AssignString,
     ConfigFloatSeries,
@@ -151,10 +154,13 @@ LegacyLeaderboardEntry = namedtuple(
     "properties",
 )
 
+if TYPE_CHECKING:
+    from neptune.internal.api_clients import HostedNeptuneBackendApiClient
+
 
 class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     @with_api_exceptions_handler
-    def __init__(self, backend_api_client):
+    def __init__(self, backend_api_client: "HostedNeptuneBackendApiClient"):
         self._backend_api_client = backend_api_client
 
         self._client_config = self._create_client_config(
@@ -1308,7 +1314,9 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             requests.Request(method="POST", url=url, data=data, headers=headers)
         )
 
-        return session.send(session.prepare_request(request))
+        return handle_server_raw_response_messages(
+            session.send(session.prepare_request(request))
+        )
 
     def _get_parameter_with_type(self, parameter):
         string_type = "string"
@@ -1347,4 +1355,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             requests.Request(method="GET", url=url, headers=headers)
         )
 
-        return session.send(session.prepare_request(request), stream=True)
+        return handle_server_raw_response_messages(
+            session.send(session.prepare_request(request), stream=True)
+        )

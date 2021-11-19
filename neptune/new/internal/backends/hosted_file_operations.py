@@ -36,6 +36,7 @@ from neptune.new.exceptions import (
 from neptune.new.internal.backends.utils import (
     build_operation_url,
     with_api_exceptions_handler,
+    handle_server_raw_response_messages,
 )
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.internal.storage.datastream import (
@@ -278,7 +279,9 @@ def upload_raw_data(
         Request(method="POST", url=url, data=data, headers=headers)
     )
 
-    response = session.send(session.prepare_request(request))
+    response = handle_server_raw_response_messages(
+        session.send(session.prepare_request(request))
+    )
     if response.status_code in (
         HTTPUnprocessableEntity.status_code,
         HTTPPaymentRequired.status_code,
@@ -397,7 +400,10 @@ def _download_raw_data(
         Request(method="GET", url=url, headers=headers)
     )
 
-    response = session.send(session.prepare_request(request), stream=True)
+    response = handle_server_raw_response_messages(
+        session.send(session.prepare_request(request), stream=True)
+    )
+
     response.raise_for_status()
     return response
 

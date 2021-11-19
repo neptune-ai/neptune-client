@@ -20,13 +20,14 @@ import socket
 import sys
 import time
 from functools import lru_cache, wraps
-from typing import Optional, Dict, TYPE_CHECKING
+from typing import Optional, Dict, TYPE_CHECKING, Mapping, Text, Any
 from urllib.parse import urlparse, urljoin
 
 
 import click
 import requests
 import urllib3
+from bravado.requests_client import RequestsResponseAdapter
 from urllib3.exceptions import NewConnectionError
 from bravado.client import SwaggerClient
 from bravado.exception import (
@@ -46,7 +47,7 @@ from bravado.exception import (
 from bravado.http_client import HttpClient
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
-from requests import Session
+from requests import Session, Response
 
 from neptune.new.envs import (
     NEPTUNE_RETRIES_TIMEOUT_ENV,
@@ -220,6 +221,56 @@ def build_operation_url(base_api: str, operation_url: str) -> str:
         base_api = f"https://{base_api}"
 
     return urljoin(base=base_api, url=operation_url)
+
+
+# TODO print in color once colored exceptions are added
+def handle_server_raw_response_messages(response: Response):
+    try:
+        info = response.headers.get("X-Server-Info")
+        if info:
+            click.echo(info)
+        warning = response.headers.get("X-Server-Warning")
+        if warning:
+            click.echo(warning)
+        error = response.headers.get("X-Server-Error")
+        if error:
+            click.echo(message=error, err=True)
+        return response
+    except Exception:
+        # any issues with printing server messages should not cause code to fail
+        return response
+
+
+# TODO print in color once colored exceptions are added
+class NeptuneResponseAdapter(RequestsResponseAdapter):
+    @property
+    def raw_bytes(self) -> bytes:
+        self._handle_response()
+        return super().raw_bytes
+
+    @property
+    def text(self) -> Text:
+        self._handle_response()
+        return super().text
+
+    def json(self, **kwargs) -> Mapping[Text, Any]:
+        self._handle_response()
+        return super().json(**kwargs)
+
+    def _handle_response(self):
+        try:
+            info = self._delegate.headers.get("X-Server-Info")
+            if info:
+                click.echo(info)
+            warning = self._delegate.headers.get("X-Server-Warning")
+            if warning:
+                click.echo(warning)
+            error = self._delegate.headers.get("X-Server-Error")
+            if error:
+                click.echo(message=error, err=True)
+        except Exception:
+            # any issues with printing server messages should not cause code to fail
+            pass
 
 
 class MissingApiClient(SwaggerClient):
