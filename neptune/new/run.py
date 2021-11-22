@@ -18,6 +18,7 @@ import threading
 from neptune.new.attribute_container import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
@@ -69,6 +70,8 @@ class Run(AttributeContainer):
     """
 
     last_run = None  # "static" instance of recently created Run
+
+    container_type = ContainerType.RUN
 
     LEGACY_METHODS = (
         "create_experiment",

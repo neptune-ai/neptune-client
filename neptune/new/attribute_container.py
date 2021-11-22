@@ -42,6 +42,7 @@ from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
@@ -80,7 +81,7 @@ def ensure_not_stopped(fun):
 
 
 class AttributeContainer(AbstractContextManager):
-    container_type: None
+    container_type: ContainerType
 
     LEGACY_METHODS = set()
 
