@@ -15,6 +15,8 @@
 #
 import threading
 
+import click
+
 from neptune.new.attribute_container import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
@@ -122,3 +124,8 @@ class Run(AttributeContainer):
         return self._backend.get_run_url(
             self._id, self._workspace, self._project_name, self._short_id
         )
+
+    def _startup(self, debug_mode):
+        if not debug_mode:
+            click.echo(self.get_run_url())
+        super()._startup(debug_mode)

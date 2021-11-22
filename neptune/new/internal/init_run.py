@@ -20,8 +20,6 @@ import threading
 from platform import node as get_hostname
 from typing import List, Optional, Union
 
-import click
-
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.envs import (
     CUSTOM_RUN_ID_ENV_NAME,
@@ -50,12 +48,8 @@ from neptune.new.internal.streams.std_capture_background_job import (
 from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
 from neptune.new.internal.utils.source_code import upload_source_code
 from neptune.new.internal.utils.traceback_job import TracebackJob
-from neptune.new.internal.utils.uncaught_exception_handler import (
-    instance as uncaught_exception_handler,
-)
 from neptune.new.internal.websockets.websocket_signals_background_job import (
     WebsocketSignalsBackgroundJob,
 )
@@ -332,20 +326,7 @@ def init(
             # upload default sources ONLY if creating a new run
             upload_source_code(source_files=source_files, run=_run)
 
-    _run.start()
-
-    if mode != Mode.DEBUG:
-        click.echo(_run.get_run_url())
-
-        if in_interactive() or in_notebook():
-            click.echo(
-                "Remember to stop your run once you’ve finished logging your metadata"
-                " (https://docs.neptune.ai/api-reference/run#stop)."
-                " It will be stopped automatically only when the notebook"
-                " kernel/interactive console is terminated."
-            )
-
-    uncaught_exception_handler.activate()
+    _run._startup(debug_mode=mode == Mode.DEBUG)
 
     return _run
 

@@ -13,15 +13,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import threading
 from typing import Union, Optional, Iterable
 
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.attribute_container import AttributeContainer
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.background_job import BackgroundJob
+from neptune.new.internal.operation_processors.operation_processor import (
+    OperationProcessor,
+)
 from neptune.new.internal.utils import verify_type, verify_collection_type
 from neptune.new.runs_table import RunsTable
 
 
-class Project:
+class Project(AttributeContainer):
     """A class for managing a Neptune project and retrieving information from it.
 
     You may also want to check `Project docs page`_.
@@ -30,9 +35,21 @@ class Project:
        https://docs.neptune.ai/api-reference/project
     """
 
-    def __init__(self, _id: str, backend: HostedNeptuneBackend):
-        self._id = _id
-        self._backend = backend
+    def __init__(
+        self,
+        _id: str,
+        backend: NeptuneBackend,
+        op_processor: OperationProcessor,
+        background_job: BackgroundJob,
+        lock: threading.RLock,
+        workspace: str,
+        project_name: str,
+    ):
+        super().__init__(
+            _id, backend, op_processor, background_job, lock, project_id=_id
+        )
+        self._workspace = workspace
+        self._project_name = project_name
 
     # pylint:disable=redefined-builtin
     def fetch_runs_table(

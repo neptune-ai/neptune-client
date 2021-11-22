@@ -60,6 +60,10 @@ from neptune.new.internal.utils import (
     is_dict_like,
 )
 from neptune.new.internal.utils.paths import parse_path
+from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
+from neptune.new.internal.utils.uncaught_exception_handler import (
+    instance as uncaught_exception_handler,
+)
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms.datetime import Datetime
@@ -489,6 +493,20 @@ class AttributeContainer(AbstractContextManager):
 
     def _get_root_handler(self):
         return Handler(self, "")
+
+    def _startup(self, debug_mode):
+        self.start()
+
+        if not debug_mode:
+            if in_interactive() or in_notebook():
+                click.echo(
+                    "Remember to stop your run once you’ve finished logging your metadata"
+                    " (https://docs.neptune.ai/api-reference/run#stop)."
+                    " It will be stopped automatically only when the notebook"
+                    " kernel/interactive console is terminated."
+                )
+
+        uncaught_exception_handler.activate()
 
     def _shutdown_hook(self):
         self.stop()
