@@ -2,6 +2,7 @@
 
 ### Fixes
 - Fixed fetching numeric values in debug mode ([#745](https://github.com/neptune-ai/neptune-client/pull/745))
+- Ensure StdStreamCaptureLogger doesn't log after .close() ([#759](https://github.com/neptune-ai/neptune-client/pull/759))
 
 ## neptune-client 0.13.1
 
