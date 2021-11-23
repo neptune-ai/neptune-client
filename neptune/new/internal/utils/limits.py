@@ -30,9 +30,10 @@ STREAM_SIZE_LIMIT_BYTES = _STREAM_SIZE_LIMIT_MB * BYTES_IN_MB
 
 def custom_run_id_exceeds_length(custom_run_id):
     if custom_run_id and len(custom_run_id) > _CUSTOM_RUN_ID_LENGTH:
-        _logger.warning('Given custom_run_id exceeds %s'
-                        ' characters and it will be ignored.',
-                        _CUSTOM_RUN_ID_LENGTH)
+        _logger.warning(
+            "Given custom_run_id exceeds %s" " characters and it will be ignored.",
+            _CUSTOM_RUN_ID_LENGTH,
+        )
         return True
     return False
 
