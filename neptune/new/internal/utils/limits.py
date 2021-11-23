@@ -18,6 +18,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+_CUSTOM_RUN_ID_LENGTH = 36
 _IMAGE_SIZE_LIMIT_MB = 15
 _IN_MEMORY_SIZE_LIMIT_MB = 32
 _STREAM_SIZE_LIMIT_MB = 32
@@ -25,6 +26,16 @@ _STREAM_SIZE_LIMIT_MB = 32
 BYTES_IN_MB = 1024 * 1024
 
 STREAM_SIZE_LIMIT_BYTES = _STREAM_SIZE_LIMIT_MB * BYTES_IN_MB
+
+
+def custom_run_id_exceeds_length(custom_run_id):
+    if custom_run_id and len(custom_run_id) > _CUSTOM_RUN_ID_LENGTH:
+        _logger.warning(
+            "Given custom_run_id exceeds %s" " characters and it will be ignored.",
+            _CUSTOM_RUN_ID_LENGTH,
+        )
+        return True
+    return False
 
 
 def image_size_exceeds_limit(content_size):
