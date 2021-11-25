@@ -326,6 +326,7 @@ def init(
             # upload default sources ONLY if creating a new run
             upload_source_code(source_files=source_files, run=_run)
 
+    # pylint: disable=protected-access
     _run._startup(debug_mode=mode == Mode.DEBUG)
 
     return _run

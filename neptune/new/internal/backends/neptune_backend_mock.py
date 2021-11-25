@@ -141,10 +141,11 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_available_workspaces(self) -> List[Workspace]:
         return [Workspace(str(uuid.uuid4()), self.WORKSPACE_NAME)]
 
+    # pylint: disable=unused-argument
+    # FIXME: stop ignoring container_type on NPT-11117
     def _create_container(
         self, container_id: str, container_type: ContainerType, sys_id
     ):
-        # FIXME: stop ignoring container_type on NPT-11117
         container = self._runs.setdefault(
             container_id, ContainerStructure[Value, dict]()
         )

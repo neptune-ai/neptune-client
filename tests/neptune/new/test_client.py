@@ -250,7 +250,7 @@ class TestClientProject(unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     @classmethod
-    def setUp(self) -> None:
+    def setUp(cls) -> None:
         if PROJECT_ENV_NAME in os.environ:
             del os.environ[PROJECT_ENV_NAME]
 

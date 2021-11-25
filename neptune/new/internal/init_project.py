@@ -69,6 +69,7 @@ def init_project(
         project_obj.name,
     )
 
+    # pylint: disable=protected-access
     project._startup(debug_mode=mode == Mode.DEBUG)
     return project
 
