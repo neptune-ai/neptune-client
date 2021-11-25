@@ -1,3 +1,8 @@
+## neptune-client 0.13.3
+
+### Fixes
+- Fixed multithreading bug with StdStreamCaptureLogger ([#760](https://github.com/neptune-ai/neptune-client/pull/760))
+
 ## neptune-client 0.13.2
 
 ### Fixes
