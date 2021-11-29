@@ -33,8 +33,13 @@ from neptune.new.exceptions import (
     NeptunePossibleLegacyUsageException,
 )
 from neptune.new.run import Run
-from neptune.new.internal.init_project import get_project, init_project
-from neptune.new.internal.init_run import __version__, init
+from neptune.new.internal.init_impl import (
+    __version__,
+    get_project,
+    init_project,
+    init_run,
+    init,
+)
 
 
 def _raise_legacy_client_expected(*args, **kwargs):

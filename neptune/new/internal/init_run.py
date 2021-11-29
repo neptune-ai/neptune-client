@@ -77,7 +77,7 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
         )
 
 
-def init(
+def init_run(
     project: Optional[str] = None,
     api_token: Optional[str] = None,
     run: Optional[str] = None,
@@ -192,7 +192,7 @@ def init(
     .. _init docs page:
        https://docs.neptune.ai/api-reference/neptune#init
     """
-    _check_for_extra_kwargs(init.__name__, kwargs)
+    _check_for_extra_kwargs(init_run.__name__, kwargs)
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("run", run, (str, type(None)))

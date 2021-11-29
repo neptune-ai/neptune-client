@@ -46,10 +46,15 @@ class Project(AttributeContainer):
         project_name: str,
     ):
         super().__init__(
-            _id, backend, op_processor, background_job, lock, project_id=_id
+            _id,
+            backend,
+            op_processor,
+            background_job,
+            lock,
+            project_id=_id,
+            project_name=project_name,
+            workspace=workspace,
         )
-        self._workspace = workspace
-        self._project_name = project_name
 
     # pylint:disable=redefined-builtin
     def fetch_runs_table(

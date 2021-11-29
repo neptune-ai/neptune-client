@@ -144,7 +144,7 @@ class NeptuneBackendMock(NeptuneBackend):
     # pylint: disable=unused-argument
     # FIXME: stop ignoring container_type on NPT-11117
     def _create_container(
-        self, container_id: str, container_type: ContainerType, sys_id
+        self, container_id: str, container_type: ContainerType, sys_id: str
     ):
         container = self._runs.setdefault(
             container_id, ContainerStructure[Value, dict]()

@@ -111,9 +111,16 @@ class Run(AttributeContainer):
         project_id: str,
         monitoring_namespace: str = "monitoring",
     ):
-        super().__init__(_id, backend, op_processor, background_job, lock, project_id)
-        self._workspace = workspace
-        self._project_name = project_name
+        super().__init__(
+            _id,
+            backend,
+            op_processor,
+            background_job,
+            lock,
+            project_id,
+            project_name,
+            workspace,
+        )
         self._short_id = short_id
         self.monitoring_namespace = monitoring_namespace
 
