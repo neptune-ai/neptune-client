@@ -14,18 +14,64 @@
 # limitations under the License.
 #
 import logging
+import threading
 from typing import Optional
 
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
-from neptune.new.internal.credentials import Credentials
+from neptune.new.internal.backgroud_job_list import BackgroundJobList
+from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
 from neptune.new.project import Project
+from neptune.new.types.mode import Mode
 from neptune.new.version import version as parsed_version
 
 __version__ = str(parsed_version)
 
 _logger = logging.getLogger(__name__)
+
+
+def init_project(
+    name: Optional[str] = None,
+    api_token: Optional[str] = None,
+    mode: str = Mode.ASYNC.value,
+    flush_period: float = 5,
+    proxies: Optional[dict] = None,
+) -> Project:
+    verify_type("name", name, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+    verify_type("mode", mode, str)
+    verify_type("flush_period", flush_period, (int, float))
+    verify_type("proxies", proxies, (dict, type(None)))
+
+    backend = get_backend(mode, api_token=api_token, proxies=proxies)
+    project_obj = project_name_lookup(backend, name)
+
+    project_lock = threading.RLock()
+
+    operation_processor = get_operation_processor(
+        mode,
+        parent_id=project_obj.id,
+        backend=backend,
+        lock=project_lock,
+        flush_period=flush_period,
+    )
+
+    background_jobs = []
+
+    project = Project(
+        project_obj.id,
+        backend,
+        operation_processor,
+        BackgroundJobList(background_jobs),
+        project_lock,
+        project_obj.workspace,
+        project_obj.name,
+    )
+
+    # pylint: disable=protected-access
+    project._startup(debug_mode=mode == Mode.DEBUG)
+    return project
 
 
 def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> Project:
@@ -58,10 +104,4 @@ def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> 
     .. _get_project docs page:
        https://docs.neptune.ai/api-reference/neptune#get_project
     """
-    verify_type("name", name, (str, type(None)))
-    verify_type("api_token", api_token, (str, type(None)))
-
-    backend = HostedNeptuneBackend(Credentials.from_token(api_token=api_token))
-    project_obj = project_name_lookup(backend, name)
-
-    return Project(project_obj.id, backend)
+    return init_project(name, api_token, mode=Mode.READ_ONLY.value)

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import abc
-from typing import Any, List, Tuple, Optional
+from typing import Any, List, Tuple, Optional, Iterable
 
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -37,6 +37,7 @@ from neptune.new.internal.backends.api_model import (
     FloatSeriesValues,
     ImageSeriesValues,
     ArtifactAttribute,
+    LeaderboardEntry,
 )
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
@@ -209,4 +210,15 @@ class NeptuneBackend:
     def fetch_atom_attribute_values(
         self, run_id: str, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:
+        pass
+
+    @abc.abstractmethod
+    def get_leaderboard(
+        self,
+        project_id: str,
+        _id: Optional[Iterable[str]] = None,
+        state: Optional[Iterable[str]] = None,
+        owner: Optional[Iterable[str]] = None,
+        tags: Optional[Iterable[str]] = None,
+    ) -> List[LeaderboardEntry]:
         pass

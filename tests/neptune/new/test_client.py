@@ -22,13 +22,14 @@ from datetime import datetime
 
 from mock import Mock, patch
 
-from neptune.new import ANONYMOUS, Run, get_last_run, get_project, init
+from neptune.new import ANONYMOUS, Run, get_last_run, get_project, init, init_project
 from neptune.new.attributes.atoms import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneOfflineModeFetchException,
     NeptuneUninitializedException,
+    NeptuneMissingProjectNameException,
 )
 from neptune.new.internal.backends.api_model import (
     ApiRun,
@@ -43,7 +44,7 @@ from neptune.utils import IS_WINDOWS
 
 
 @patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
-class TestClient(unittest.TestCase):
+class TestClientRun(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
@@ -90,7 +91,7 @@ class TestClient(unittest.TestCase):
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
         new=lambda _, _id: ApiRun(
-            uuid.UUID("12345678-1234-5678-1234-567812345678"),
+            "12345678-1234-5678-1234-567812345678",
             "SAN-94",
             "workspace",
             "sandbox",
@@ -125,7 +126,7 @@ class TestClient(unittest.TestCase):
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
         new=lambda _, _id: ApiRun(
-            uuid.UUID("12345678-1234-5678-1234-567812345678"),
+            "12345678-1234-5678-1234-567812345678",
             "SAN-94",
             "workspace",
             "sandbox",
@@ -138,13 +139,11 @@ class TestClient(unittest.TestCase):
     )
     def test_resume(self):
         with init(flush_period=0.5, run="SAN-94") as exp:
-            self.assertEqual(exp._id, uuid.UUID("12345678-1234-5678-1234-567812345678"))
+            self.assertEqual(exp._id, "12345678-1234-5678-1234-567812345678")
             self.assertIsInstance(exp.get_structure()["test"], String)
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
-    @patch(
-        "neptune.new.internal.init_impl.os.path.isfile", new=lambda file: "." in file
-    )
+    @patch("neptune.new.internal.init_run.os.path.isfile", new=lambda file: "." in file)
     @patch(
         "neptune.new.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
@@ -192,9 +191,7 @@ class TestClient(unittest.TestCase):
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
     @patch("neptune.new.internal.utils.source_code.get_common_root", new=lambda _: None)
-    @patch(
-        "neptune.new.internal.init_impl.os.path.isfile", new=lambda file: "." in file
-    )
+    @patch("neptune.new.internal.init_run.os.path.isfile", new=lambda file: "." in file)
     @patch(
         "neptune.new.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
@@ -214,15 +211,144 @@ class TestClient(unittest.TestCase):
             exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py"
         )
 
-    @patch("neptune.new.internal.get_project_impl.HostedNeptuneBackend")
-    def test_get_table_as_pandas(self, backend_init_mock):
-        # given
-        backend_mock = Mock()
-        backend_init_mock.return_value = backend_mock
+    def test_last_exp_is_raising_exception_when_non_initialized(self):
+        # given uninitialized run
+        Run.last_run = None
 
-        # and
+        # expect: raises NeptuneUninitializedException
+        with self.assertRaises(NeptuneUninitializedException):
+            get_last_run()
+
+    def test_last_exp_is_the_latest_initialized(self):
+        # given two initialized runs
+        with init() as exp1, init() as exp2:
+            # expect: `neptune.latest_run` to be the latest initialized one
+            self.assertIsNot(exp1, get_last_run())
+            self.assertIs(exp2, get_last_run())
+
+
+@patch(
+    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
+    new=lambda _, _id: ApiRun(
+        "12345678-1234-5678-1234-567812345678",
+        "SAN-94",
+        "workspace",
+        "sandbox",
+        False,
+    ),
+)
+@patch(
+    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+    new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)],
+)
+@patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
+class TestClientProject(unittest.TestCase):
+    PROJECT_NAME = "organization/project"
+
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
+    @classmethod
+    def setUp(cls) -> None:
+        if PROJECT_ENV_NAME in os.environ:
+            del os.environ[PROJECT_ENV_NAME]
+
+    def test_incorrect_mode(self):
+        with self.assertRaises(ValueError):
+            init_project(name=self.PROJECT_NAME, mode="srtgj")
+
+    def test_debug_mode(self):
+        project = init_project(name=self.PROJECT_NAME, mode="debug")
+        project["some/variable"] = 13
+        self.assertEqual(13, project["some/variable"].fetch())
+        self.assertNotIn(str(project._id), os.listdir(".neptune"))
+
+    def test_offline_mode(self):
+        project = init_project(name=self.PROJECT_NAME, mode="offline")
+        project["some/variable"] = 13
+        with self.assertRaises(NeptuneOfflineModeFetchException):
+            project["some/variable"].fetch()
+        self.assertIn(str(project._id), os.listdir(".neptune/offline"))
+        self.assertIn(
+            "data-1.log", os.listdir(".neptune/offline/{}".format(project._id))
+        )
+
+    def test_sync_mode(self):
+        project = init_project(name=self.PROJECT_NAME, mode="sync")
+        project["some/variable"] = 13
+        self.assertEqual(13, project["some/variable"].fetch())
+        self.assertNotIn(str(project._id), os.listdir(".neptune"))
+
+    def test_async_mode(self):
+        with init_project(
+            name=self.PROJECT_NAME, mode="async", flush_period=0.5
+        ) as project:
+            project["some/variable"] = 13
+            with self.assertRaises(MetadataInconsistency):
+                project["some/variable"].fetch()
+            project.wait()
+            self.assertEqual(13, project["some/variable"].fetch())
+            self.assertIn(str(project._id), os.listdir(".neptune/async"))
+            execution_dir = os.listdir(".neptune/async/{}".format(project._id))[0]
+            self.assertIn(
+                "data-1.log",
+                os.listdir(".neptune/async/{}/{}".format(project._id, execution_dir)),
+            )
+
+    def test_no_project_name(self):
+        with self.assertRaises(NeptuneMissingProjectNameException):
+            init_project(mode="async")
+
+    def test_inexistent_project(self):
+        with self.assertRaises(NeptuneMissingProjectNameException):
+            init_project(mode="async")
+
+    def test_project_name_env_var(self):
+        os.environ[PROJECT_ENV_NAME] = self.PROJECT_NAME
+
+        project = init_project(mode="sync")
+        project["some/variable"] = 13
+        self.assertEqual(13, project["some/variable"].fetch())
+
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
+        new=lambda _, _id: ApiRun(
+            "12345678-1234-5678-1234-567812345678",
+            "SAN-94",
+            "workspace",
+            "sandbox",
+            False,
+        ),
+    )
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+        new=lambda _, _uuid: [Attribute("some/variable", AttributeType.INT)],
+    )
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
+        new=lambda _, _uuid, _path: IntAttribute(42),
+    )
+    def test_read_only_mode(self):
+        exp = init_project(name=self.PROJECT_NAME, mode="read-only")
+
+        with self.assertLogs() as caplog:
+            exp["some/variable"] = 13
+            exp["some/other_variable"] = 11
+            self.assertEqual(
+                caplog.output,
+                [
+                    "WARNING:neptune.new.internal.operation_processors.read_only_operation_processor:"
+                    "Client in read-only mode, nothing will be saved to server."
+                ],
+            )
+
+        self.assertEqual(42, exp["some/variable"].fetch())
+        self.assertNotIn(str(exp._id), os.listdir(".neptune"))
+
+    @staticmethod
+    def build_attributes_leaderboard(now: datetime):
         attributes = []
-        now = datetime.now()
         attributes.append(
             AttributeWithProperties(
                 "run/state", AttributeType.RUN_STATE, Mock(value="idle")
@@ -268,14 +394,21 @@ class TestClient(unittest.TestCase):
         attributes.append(
             AttributeWithProperties("image/series", AttributeType.IMAGE_SERIES, None)
         )
+        return attributes
+
+    @patch.object(NeptuneBackendMock, "get_leaderboard")
+    def test_get_table_as_pandas(self, get_leaderboard):
+        # given
+        now = datetime.now()
+        attributes = self.build_attributes_leaderboard(now)
 
         # and
-        empty_entry = LeaderboardEntry(uuid.uuid4(), [])
-        filled_entry = LeaderboardEntry(uuid.uuid4(), attributes)
-        backend_mock.get_leaderboard = Mock(return_value=[empty_entry, filled_entry])
+        empty_entry = LeaderboardEntry(str(uuid.uuid4()), [])
+        filled_entry = LeaderboardEntry(str(uuid.uuid4()), attributes)
+        get_leaderboard.return_value = [empty_entry, filled_entry]
 
         # when
-        df = get_project().fetch_runs_table().to_pandas()
+        df = get_project(self.PROJECT_NAME).fetch_runs_table().to_pandas()
 
         # then
         self.assertEqual("idle", df["run/state"][1])
@@ -294,69 +427,20 @@ class TestClient(unittest.TestCase):
         with self.assertRaises(KeyError):
             self.assertTrue(df["image/series"])
 
-    @patch("neptune.new.internal.get_project_impl.HostedNeptuneBackend")
-    def test_get_table_as_runs(self, backend_init_mock):
+    @patch.object(NeptuneBackendMock, "get_leaderboard")
+    @patch.object(NeptuneBackendMock, "download_file")
+    @patch.object(NeptuneBackendMock, "download_file_set")
+    def test_get_table_as_runs(self, download_file_set, download_file, get_leaderboard):
         # given
-        backend_mock = Mock()
-        backend_init_mock.return_value = backend_mock
-
-        # and
-        exp_id = uuid.uuid4()
-        attributes = []
+        exp_id = str(uuid.uuid4())
         now = datetime.now()
-        attributes.append(
-            AttributeWithProperties(
-                "run/state", AttributeType.RUN_STATE, Mock(value="idle")
-            )
-        )
-        attributes.append(
-            AttributeWithProperties("float", AttributeType.FLOAT, Mock(value=12.5))
-        )
-        attributes.append(
-            AttributeWithProperties(
-                "string", AttributeType.STRING, Mock(value="some text")
-            )
-        )
-        attributes.append(
-            AttributeWithProperties("datetime", AttributeType.DATETIME, Mock(value=now))
-        )
-        attributes.append(
-            AttributeWithProperties(
-                "float/series", AttributeType.FLOAT_SERIES, Mock(last=8.7)
-            )
-        )
-        attributes.append(
-            AttributeWithProperties(
-                "string/series", AttributeType.STRING_SERIES, Mock(last="last text")
-            )
-        )
-        attributes.append(
-            AttributeWithProperties(
-                "string/set", AttributeType.STRING_SET, Mock(values=["a", "b"])
-            )
-        )
-        attributes.append(
-            AttributeWithProperties(
-                "git/ref",
-                AttributeType.GIT_REF,
-                Mock(commit=Mock(commitId="abcdef0123456789")),
-            )
-        )
-        attributes.append(AttributeWithProperties("file", AttributeType.FILE, None))
-        attributes.append(
-            AttributeWithProperties("file/set", AttributeType.FILE_SET, None)
-        )
-        attributes.append(
-            AttributeWithProperties("image/series", AttributeType.IMAGE_SERIES, None)
-        )
+        attributes = self.build_attributes_leaderboard(now)
 
         # and
-        backend_mock.get_leaderboard = Mock(
-            return_value=[LeaderboardEntry(exp_id, attributes)]
-        )
+        get_leaderboard.return_value = [LeaderboardEntry(exp_id, attributes)]
 
         # when
-        exp = get_project().fetch_runs_table().to_runs()[0]
+        exp = get_project(self.PROJECT_NAME).fetch_runs_table().to_runs()[0]
 
         # then
         self.assertEqual("idle", exp["run/state"].get())
@@ -377,26 +461,7 @@ class TestClient(unittest.TestCase):
             exp["image/series"].get()
 
         exp["file"].download("some_directory")
-        backend_mock.download_file.assert_called_with(
-            exp_id, ["file"], "some_directory"
-        )
+        download_file.assert_called_with(exp_id, ["file"], "some_directory")
 
         exp["file/set"].download("some_directory")
-        backend_mock.download_file_set.assert_called_with(
-            exp_id, ["file", "set"], "some_directory"
-        )
-
-    def test_last_exp_is_raising_exception_when_non_initialized(self):
-        # given uninitialized run
-        Run.last_run = None
-
-        # expect: raises NeptuneUninitializedException
-        with self.assertRaises(NeptuneUninitializedException):
-            get_last_run()
-
-    def test_last_exp_is_the_latest_initialized(self):
-        # given two initialized runs
-        with init() as exp1, init() as exp2:
-            # expect: `neptune.latest_run` to be the latest initialized one
-            self.assertIsNot(exp1, get_last_run())
-            self.assertIs(exp2, get_last_run())
+        download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")

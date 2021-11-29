@@ -17,7 +17,7 @@ import os
 import uuid
 from datetime import datetime
 from shutil import copyfile
-from typing import Optional, List, Dict, TypeVar, Type, Tuple, Any
+from typing import Optional, List, Dict, TypeVar, Type, Tuple, Any, Iterable
 from zipfile import ZipFile
 
 from neptune.new.exceptions import (
@@ -49,11 +49,13 @@ from neptune.new.internal.backends.api_model import (
     ImageSeriesValues,
     StringPointValue,
     FloatPointValue,
+    LeaderboardEntry,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     get_unique_upload_entries,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.internal.operation import (
     AssignArtifact,
@@ -105,30 +107,63 @@ Val = TypeVar("Val", bound=Value)
 
 
 class NeptuneBackendMock(NeptuneBackend):
+    WORKSPACE_NAME = "offline"
+    PROJECT_NAME = "project-placeholder"
+    PROJECT_KEY = "OFFLINE"
+
     def close(self) -> None:
         pass
 
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
+        self._project_id: str = str(uuid.uuid4())
         self._runs: Dict[str, ContainerStructure[Value, dict]] = dict()
+        self._next_run = 1
         self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = (
             self.AttributeTypeConverterValueVisitor()
+        )
+        self._create_container(
+            self._project_id, ContainerType.PROJECT, self.PROJECT_KEY
         )
 
     def get_display_address(self) -> str:
         return "OFFLINE"
 
     def get_project(self, project_id: str) -> Project:
-        return Project(str(uuid.uuid4()), "project-placeholder", "offline")
+        return Project(self._project_id, self.PROJECT_NAME, self.WORKSPACE_NAME)
 
     def get_available_projects(
         self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
     ) -> List[Project]:
-        return [Project(str(uuid.uuid4()), "project-placeholder", "offline")]
+        return [Project(str(uuid.uuid4()), self.PROJECT_NAME, self.WORKSPACE_NAME)]
 
     def get_available_workspaces(self) -> List[Workspace]:
-        return [Workspace(str(uuid.uuid4()), "offline")]
+        return [Workspace(str(uuid.uuid4()), self.WORKSPACE_NAME)]
+
+    # pylint: disable=unused-argument
+    # FIXME: stop ignoring container_type on NPT-11117
+    def _create_container(
+        self, container_id: str, container_type: ContainerType, sys_id: str
+    ):
+        container = self._runs.setdefault(
+            container_id, ContainerStructure[Value, dict]()
+        )
+        container.set(["sys", "id"], String(sys_id))
+        container.set(["sys", "state"], String("running"))
+        container.set(["sys", "owner"], String("offline_user"))
+        container.set(["sys", "size"], Float(0))
+        container.set(["sys", "tags"], StringSet(set()))
+        container.set(["sys", "creation_time"], Datetime(datetime.now()))
+        container.set(["sys", "modification_time"], Datetime(datetime.now()))
+        container.set(["sys", "failed"], Boolean(False))
+        return container
+
+    def _get_container(self, container_id: str, container_type: ContainerType):
+        # FIXME: fix usages, stop ignoring container_type and raise appropriate exception in NPT-11117
+        if container_id not in self._runs:
+            raise RunUUIDNotFound(container_id)
+        return self._runs[container_id]
 
     def create_run(
         self,
@@ -138,22 +173,17 @@ class NeptuneBackendMock(NeptuneBackend):
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
     ) -> ApiRun:
-        short_id = "OFFLINE-{}".format(len(self._runs) + 1)
+        short_id = f"{self.PROJECT_KEY}-{self._next_run}"
+        self._next_run += 1
         new_run_id = str(uuid.uuid4())
-        self._runs[new_run_id] = ContainerStructure[Value, dict]()
-        self._runs[new_run_id].set(["sys", "id"], String(short_id))
-        self._runs[new_run_id].set(["sys", "state"], String("running"))
-        self._runs[new_run_id].set(["sys", "owner"], String("offline_user"))
-        self._runs[new_run_id].set(["sys", "size"], Float(0))
-        self._runs[new_run_id].set(["sys", "tags"], StringSet(set()))
-        self._runs[new_run_id].set(["sys", "creation_time"], Datetime(datetime.now()))
-        self._runs[new_run_id].set(
-            ["sys", "modification_time"], Datetime(datetime.now())
+        container = self._create_container(
+            new_run_id, ContainerType.RUN, sys_id=short_id
         )
-        self._runs[new_run_id].set(["sys", "failed"], Boolean(False))
         if git_ref:
-            self._runs[new_run_id].set(["source_code", "git"], git_ref)
-        return ApiRun(new_run_id, short_id, "workspace", "sandbox", False)
+            container.set(["source_code", "git"], git_ref)
+        return ApiRun(
+            new_run_id, short_id, self.WORKSPACE_NAME, self.PROJECT_NAME, False
+        )
 
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None
@@ -173,9 +203,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return result
 
     def _execute_operation(self, run_id: str, op: Operation) -> None:
-        if run_id not in self._runs:
-            raise RunUUIDNotFound(run_id)
-        run = self._runs[run_id]
+        run = self._get_container(run_id, None)
         val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):
@@ -192,9 +220,7 @@ class NeptuneBackendMock(NeptuneBackend):
             run.pop(op.path)
 
     def get_attributes(self, run_id: str) -> List[Attribute]:
-        if run_id not in self._runs:
-            raise RunUUIDNotFound(run_id)
-        run = self._runs[run_id]
+        run = self._get_container(run_id, None)
         return list(self._generate_attributes(None, run.get_structure()))
 
     def _generate_attributes(self, base_path: Optional[str], values: dict):
@@ -211,7 +237,8 @@ class NeptuneBackendMock(NeptuneBackend):
     def download_file(
         self, run_id: str, path: List[str], destination: Optional[str] = None
     ):
-        value: File = self._runs[run_id].get(path)
+        run = self._get_container(run_id, None)
+        value: File = run.get(path)
         target_path = os.path.abspath(
             destination
             or (path[-1] + ("." + value.extension if value.extension else ""))
@@ -225,7 +252,8 @@ class NeptuneBackendMock(NeptuneBackend):
     def download_file_set(
         self, run_id: str, path: List[str], destination: Optional[str] = None
     ):
-        source_file_set_value: FileSet = self._runs[run_id].get(path)
+        run = self._get_container(run_id, None)
+        source_file_set_value: FileSet = run.get(path)
 
         if destination is None:
             target_file = path[-1] + ".zip"
@@ -298,9 +326,8 @@ class NeptuneBackendMock(NeptuneBackend):
     def _get_attribute(
         self, run_id: str, path: List[str], expected_type: Type[Val]
     ) -> Val:
-        if run_id not in self._runs:
-            raise RunUUIDNotFound(run_id)
-        value: Optional[Value] = self._runs[run_id].get(path)
+        run = self._get_container(run_id, None)
+        value: Optional[Value] = run.get(path)
         str_path = path_to_str(path)
         if value is None:
             raise MetadataInconsistency("Attribute {} not found".format(str_path))
@@ -367,7 +394,8 @@ class NeptuneBackendMock(NeptuneBackend):
     def fetch_atom_attribute_values(
         self, run_id: str, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:
-        values = self._get_attribute_values(self._runs[run_id].get(path), path)
+        run = self._get_container(run_id, None)
+        values = self._get_attribute_values(run.get(path), path)
         namespace_prefix = path_to_str(path)
         if namespace_prefix:
             # don't want to catch "ns/attribute/other" while looking for "ns/attr"
@@ -377,6 +405,16 @@ class NeptuneBackendMock(NeptuneBackend):
             for (full_path, attr_type, attr_value) in values
             if full_path.startswith(namespace_prefix)
         ]
+
+    def get_leaderboard(
+        self,
+        project_id: str,
+        _id: Optional[Iterable[str]] = None,
+        state: Optional[Iterable[str]] = None,
+        owner: Optional[Iterable[str]] = None,
+        tags: Optional[Iterable[str]] = None,
+    ) -> List[LeaderboardEntry]:
+        pass
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
         def visit_float(self, _: Float) -> AttributeType:

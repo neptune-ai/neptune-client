@@ -23,7 +23,7 @@ from neptune.new.internal.backends.api_model import (
     AttributeWithProperties,
     AttributeType,
 )
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.utils.paths import join_paths, parse_path
 
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ logger = logging.getLogger(__name__)
 class RunsTableEntry:
     def __init__(
         self,
-        backend: HostedNeptuneBackend,
+        backend: NeptuneBackend,
         _id: str,
         attributes: List[AttributeWithProperties],
     ):
@@ -145,7 +145,7 @@ class LeaderboardHandler:
 
 
 class RunsTable:
-    def __init__(self, backend: HostedNeptuneBackend, entries: List[LeaderboardEntry]):
+    def __init__(self, backend: NeptuneBackend, entries: List[LeaderboardEntry]):
         self._backend = backend
         self._entries = entries
 
