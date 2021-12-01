@@ -66,7 +66,7 @@ class TestArtifact(TestAttributeBase):
         ]
 
         self.exp.set_attribute(self.path_str, Artifact(self.exp, self.path))
-        self.exp._backend._runs[self.exp._id].set(
+        self.exp._backend._containers[self.exp._id].set(
             self.path, ArtifactAttr(self.artifact_hash)
         )
         self.exp._backend._artifacts[

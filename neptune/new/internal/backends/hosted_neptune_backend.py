@@ -15,28 +15,19 @@
 #
 import logging
 import re
-from typing import List, Optional, Dict, Iterable, Tuple, Any
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity, HTTPPaymentRequired
+from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 from simplejson import JSONDecodeError
 
-from neptune.new.internal.artifacts.types import ArtifactFileData
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.exceptions import (
-    ClientHttpError,
-    FetchAttributeNotFoundException,
-    RunNotFound,
-    RunUUIDNotFound,
-    InternalClientError,
-    MetadataInconsistency,
-    NeptuneException,
-    NeptuneLegacyProjectException,
-    ProjectNotFound,
-    ProjectNameCollision,
-    NeptuneLimitExceedException,
-    ArtifactNotFoundException,
-    NeptuneFeaturesNotAvailableException,
+    ArtifactNotFoundException, ClientHttpError, ContainerUUIDNotFound,
+    FetchAttributeNotFoundException, InternalClientError, MetadataInconsistency,
+    NeptuneException, NeptuneFeaturesNotAvailableException,
+    NeptuneLegacyProjectException, NeptuneLimitExceedException, ProjectNameCollision,
+    ProjectNotFound, RunNotFound,
 )
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     ArtifactAttribute,
@@ -61,16 +52,18 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     Workspace,
 )
+from neptune.new.internal.backends.hosted_artifact_operations import (track_to_existing_artifact, track_to_new_artifact)
+from neptune.new.internal.backends.hosted_client import (
+    DEFAULT_REQUEST_KWARGS, create_artifacts_client,
+    create_backend_client, create_http_client_with_auth,
+    create_leaderboard_client,
+)
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
     download_file_set_attribute,
     download_image_series_element,
     upload_file_attribute,
     upload_file_set_attribute,
-)
-from neptune.new.internal.backends.hosted_artifact_operations import (
-    track_to_new_artifact,
-    track_to_existing_artifact,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import (
@@ -81,17 +74,10 @@ from neptune.new.internal.backends.operation_api_object_converter import (
 )
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.new.internal.backends.utils import (
+    MissingApiClient, OptionalFeatures, build_operation_url, ssl_verify,
     with_api_exceptions_handler,
-    MissingApiClient,
-    OptionalFeatures,
 )
-from neptune.new.internal.backends.hosted_client import (
-    DEFAULT_REQUEST_KWARGS,
-    create_http_client_with_auth,
-    create_backend_client,
-    create_leaderboard_client,
-    create_artifacts_client,
-)
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     Operation,
@@ -100,22 +86,22 @@ from neptune.new.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.new.internal.utils import verify_type, base64_decode
+from neptune.new.internal.utils import base64_decode, verify_type
 from neptune.new.internal.utils.generic_attribute_mapper import (
     map_attribute_result_to_value,
 )
 from neptune.new.internal.utils.paths import path_to_str
-from neptune.new.internal.backends.utils import build_operation_url, ssl_verify
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 _logger = logging.getLogger(__name__)
 
 
 class HostedNeptuneBackend(NeptuneBackend):
     def __init__(
-        self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None
+            self, credentials: Credentials, proxies: Optional[Dict[str, str]] = None
     ):
         self.credentials = credentials
         self.proxies = proxies
@@ -149,7 +135,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         return self._client_config.display_url
 
     def websockets_factory(
-        self, project_id: str, run_id: str
+            self, project_id: str, run_id: str
     ) -> Optional[WebsocketsFactory]:
         base_url = re.sub(r"^http", "ws", self._client_config.api_url)
         return WebsocketsFactory(
@@ -159,9 +145,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             session=self._http_client.authenticator.auth.session,
             proxies=self.proxies,
         )
-
-    def close(self) -> None:
-        pass
 
     @with_api_exceptions_handler
     def get_project(self, project_id: str) -> Project:
@@ -213,7 +196,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_available_projects(
-        self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
+            self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
     ) -> List[Project]:
         try:
             response = self.backend_client.api.listProjects(
@@ -261,8 +244,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                     experimentId=run_id,
                     **DEFAULT_REQUEST_KWARGS,
                 )
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return ApiRun(
                 run.id, run.shortId, run.organizationName, run.projectName, run.trashed
@@ -272,12 +255,12 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def create_run(
-        self,
-        project_id: str,
-        git_ref: Optional[GitRef] = None,
-        custom_run_id: Optional[str] = None,
-        notebook_id: Optional[str] = None,
-        checkpoint_id: Optional[str] = None,
+            self,
+            project_id: str,
+            git_ref: Optional[GitRef] = None,
+            custom_run_id: Optional[str] = None,
+            notebook_id: Optional[str] = None,
+            checkpoint_id: Optional[str] = None,
     ) -> ApiRun:
         verify_type("project_id", project_id, str)
 
@@ -336,8 +319,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                     checkpoint={"path": jupyter_path},
                     **DEFAULT_REQUEST_KWARGS,
                 )
-                .response()
-                .result.id
+                    .response()
+                    .result.id
             )
         except HTTPNotFound:
             return None
@@ -356,10 +339,10 @@ class HostedNeptuneBackend(NeptuneBackend):
                 **request_kwargs,
             ).response().result
         except HTTPNotFound:
-            raise RunUUIDNotFound(run_id)
+            raise ContainerUUIDNotFound(run_id, ContainerType.RUN)
 
     def execute_operations(
-        self, run_id: str, operations: List[Operation]
+            self, run_id: str, operations: List[Operation]
     ) -> List[NeptuneException]:
         errors = []
 
@@ -403,7 +386,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         return errors
 
     def _execute_upload_operations(
-        self, run_id: str, upload_operations: List[Operation]
+            self, run_id: str, upload_operations: List[Operation]
     ) -> List[NeptuneException]:
         errors = list()
 
@@ -444,7 +427,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         return errors
 
     def _execute_upload_operations_with_400_retry(
-        self, run_id: str, upload_operations: List[Operation]
+            self, run_id: str, upload_operations: List[Operation]
     ) -> List[NeptuneException]:
         while True:
             try:
@@ -455,14 +438,14 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def _execute_artifact_operations(
-        self, run_id: str, artifact_operations: List[TrackFilesToArtifact]
+            self, run_id: str, artifact_operations: List[TrackFilesToArtifact]
     ) -> Tuple[List[Optional[NeptuneException]], List[Optional[Operation]]]:
         errors = list()
         assign_operations = list()
 
         for op in artifact_operations:
             try:
-                artifact_hash = self.get_artifact_attribute(run_id, op.path).hash
+                artifact_hash = self.get_artifact_attribute(run_id, ContainerType.RUN, op.path).hash
             except FetchAttributeNotFoundException:
                 artifact_hash = None
 
@@ -496,7 +479,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def _execute_operations(
-        self, run_id: str, operations: List[Operation]
+            self, run_id: str, operations: List[Operation]
     ) -> List[MetadataInconsistency]:
         kwargs = {
             "experimentId": run_id,
@@ -504,8 +487,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 {
                     "path": path_to_str(op.path),
                     OperationApiNameVisitor()
-                    .visit(op): OperationApiObjectConverter()
-                    .convert(op),
+                        .visit(op): OperationApiObjectConverter()
+                        .convert(op),
                 }
                 for op in operations
             ],
@@ -515,31 +498,31 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = (
                 self.leaderboard_client.api.executeOperations(**kwargs)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
-            raise RunUUIDNotFound(run_id=run_id) from e
+            raise ContainerUUIDNotFound(container_id=run_id, container_type=ContainerType.RUN) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
             raise NeptuneLimitExceedException(
                 reason=e.response.json().get("title", "Unknown reason")
             ) from e
 
     @with_api_exceptions_handler
-    def get_attributes(self, run_id: str) -> List[Attribute]:
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
         def to_attribute(attr) -> Attribute:
             return Attribute(attr.name, AttributeType(attr.type))
 
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
             run = (
                 self.leaderboard_client.api.getExperimentAttributes(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
 
             attribute_type_names = [at.value for at in AttributeType]
@@ -564,15 +547,15 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.type in attribute_type_names
             ]
         except HTTPNotFound:
-            raise RunUUIDNotFound(run_id=run_id)
+            raise ContainerUUIDNotFound(container_id=container_id, container_type=container_type)
 
     def download_file_series_by_index(
-        self, run_id: str, path: List[str], index: int, destination: str
+            self, container_id: str, container_type: ContainerType, path: List[str], index: int, destination: str
     ):
         try:
             download_image_series_element(
                 swagger_client=self.leaderboard_client,
-                run_id=run_id,
+                run_id=container_id,
                 attribute=path_to_str(path),
                 index=index,
                 destination=destination,
@@ -584,12 +567,12 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise
 
     def download_file(
-        self, run_id: str, path: List[str], destination: Optional[str] = None
+            self, container_id: str, container_type: ContainerType, path: List[str], destination: Optional[str] = None
     ):
         try:
             download_file_attribute(
                 swagger_client=self.leaderboard_client,
-                run_id=run_id,
+                run_id=container_id,
                 attribute=path_to_str(path),
                 destination=destination,
             )
@@ -600,9 +583,9 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise
 
     def download_file_set(
-        self, run_id: str, path: List[str], destination: Optional[str] = None
+            self, container_id: str, container_type: ContainerType, path: List[str], destination: Optional[str] = None
     ):
-        download_request = self._get_file_set_download_request(run_id, path)
+        download_request = self._get_file_set_download_request(container_id, container_type, path)
         try:
             download_file_set_attribute(
                 swagger_client=self.leaderboard_client,
@@ -616,26 +599,26 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise
 
     @with_api_exceptions_handler
-    def get_float_attribute(self, run_id: str, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = (
                 self.leaderboard_client.api.getFloatAttribute(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return FloatAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_int_attribute(self, run_id: str, path: List[str]) -> IntAttribute:
+    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -648,9 +631,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_bool_attribute(self, run_id: str, path: List[str]) -> BoolAttribute:
+    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -663,9 +646,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_file_attribute(self, run_id: str, path: List[str]) -> FileAttribute:
+    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -678,51 +661,54 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_string_attribute(self, run_id: str, path: List[str]) -> StringAttribute:
+    def get_string_attribute(self, container_id: str, container_type: ContainerType,
+            path: List[str]) -> StringAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = (
                 self.leaderboard_client.api.getStringAttribute(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return StringAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_datetime_attribute(self, run_id: str, path: List[str]) -> DatetimeAttribute:
+    def get_datetime_attribute(self, container_id: str, container_type: ContainerType,
+            path: List[str]) -> DatetimeAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = (
                 self.leaderboard_client.api.getDatetimeAttribute(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return DatetimeAttribute(result.value)
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_artifact_attribute(self, run_id: str, path: List[str]) -> ArtifactAttribute:
+    def get_artifact_attribute(self, container_id: str, container_type: ContainerType,
+            path: List[str]) -> ArtifactAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = (
                 self.leaderboard_client.api.getArtifactAttribute(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return ArtifactAttribute(hash=result.hash)
         except HTTPNotFound:
@@ -730,7 +716,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def list_artifact_files(
-        self, project_id: str, artifact_hash: str
+            self, project_id: str, artifact_hash: str
     ) -> List[ArtifactFileData]:
         params = {
             "projectIdentifier": project_id,
@@ -747,18 +733,18 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_float_series_attribute(
-        self, run_id: str, path: List[str]
+            self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> FloatSeriesAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = (
                 self.leaderboard_client.api.getFloatSeriesAttribute(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return FloatSeriesAttribute(result.last)
         except HTTPNotFound:
@@ -766,18 +752,18 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_string_series_attribute(
-        self, run_id: str, path: List[str]
+            self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSeriesAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = (
                 self.leaderboard_client.api.getStringSeriesAttribute(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return StringSeriesAttribute(result.last)
         except HTTPNotFound:
@@ -785,18 +771,18 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_string_set_attribute(
-        self, run_id: str, path: List[str]
+            self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSetAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
             result = (
                 self.leaderboard_client.api.getStringSetAttribute(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return StringSetAttribute(set(result.values))
         except HTTPNotFound:
@@ -804,10 +790,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_image_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
     ) -> ImageSeriesValues:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
             "offset": offset,
@@ -816,8 +802,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = (
                 self.leaderboard_client.api.getImageSeriesValues(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return ImageSeriesValues(result.totalItemCount)
         except HTTPNotFound:
@@ -825,10 +811,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_string_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
     ) -> StringSeriesValues:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
             "offset": offset,
@@ -837,8 +823,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = (
                 self.leaderboard_client.api.getStringSeriesValues(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return StringSeriesValues(
                 result.totalItemCount,
@@ -852,10 +838,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_float_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
     ) -> FloatSeriesValues:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
             "offset": offset,
@@ -864,8 +850,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             result = (
                 self.leaderboard_client.api.getFloatSeriesValues(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return FloatSeriesValues(
                 result.totalItemCount,
@@ -879,10 +865,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def fetch_atom_attribute_values(
-        self, run_id: str, path: List[str]
+            self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
         }
         try:
             namespace_prefix = path_to_str(path)
@@ -891,8 +877,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 namespace_prefix += "/"
             result = (
                 self.leaderboard_client.api.getExperimentAttributes(**params)
-                .response()
-                .result
+                    .response()
+                    .result
             )
             return [
                 (attr.name, attr.type, map_attribute_result_to_value(attr))
@@ -900,12 +886,14 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.name.startswith(namespace_prefix)
             ]
         except HTTPNotFound:
-            raise RunUUIDNotFound(run_id)
+            raise ContainerUUIDNotFound(container_id, container_type)
 
+    # pylint: disable=unused-argument
     @with_api_exceptions_handler
-    def _get_file_set_download_request(self, run_id: str, path: List[str]):
+    def _get_file_set_download_request(self, container_id: str, container_type: ContainerType, path: List[str]):
+        # FIXME: NPT-11118 use container_type
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -914,20 +902,20 @@ class HostedNeptuneBackend(NeptuneBackend):
                 self.leaderboard_client.api.prepareForDownloadFileSetAttributeZip(
                     **params
                 )
-                .response()
-                .result
+                    .response()
+                    .result
             )
         except HTTPNotFound:
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
     def get_leaderboard(
-        self,
-        project_id: str,
-        _id: Optional[Iterable[str]] = None,
-        state: Optional[Iterable[str]] = None,
-        owner: Optional[Iterable[str]] = None,
-        tags: Optional[Iterable[str]] = None,
+            self,
+            project_id: str,
+            _id: Optional[Iterable[str]] = None,
+            state: Optional[Iterable[str]] = None,
+            owner: Optional[Iterable[str]] = None,
+            tags: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
         def get_portion(limit, offset):
             return (
@@ -945,8 +933,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                     offset=offset,
                     **DEFAULT_REQUEST_KWARGS,
                 )
-                .response()
-                .result.entries
+                    .response()
+                    .result.entries
             )
 
         def to_leaderboard_entry(entry) -> LeaderboardEntry:
@@ -971,7 +959,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ProjectNotFound(project_id)
 
     def get_run_url(
-        self, run_id: str, workspace: str, project_name: str, short_id: str
+            self, run_id: str, workspace: str, project_name: str, short_id: str
     ) -> str:
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/e/{short_id}"

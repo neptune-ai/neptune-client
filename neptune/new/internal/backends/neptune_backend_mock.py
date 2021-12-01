@@ -17,73 +17,36 @@ import os
 import uuid
 from datetime import datetime
 from shutil import copyfile
-from typing import Optional, List, Dict, TypeVar, Type, Tuple, Any, Iterable
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, TypeVar
 from zipfile import ZipFile
 
 from neptune.new.exceptions import (
+    ContainerUUIDNotFound, InternalClientError, MetadataInconsistency, NeptuneException,
     RunNotFound,
-    RunUUIDNotFound,
-    InternalClientError,
-    MetadataInconsistency,
-    NeptuneException,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
-    ApiRun,
-    ArtifactAttribute,
-    Attribute,
-    AttributeType,
-    BoolAttribute,
-    DatetimeAttribute,
-    FileAttribute,
-    FloatAttribute,
-    FloatSeriesAttribute,
-    IntAttribute,
-    Project,
-    Workspace,
-    StringAttribute,
-    StringSeriesAttribute,
-    StringSetAttribute,
-    StringSeriesValues,
-    FloatSeriesValues,
-    ImageSeriesValues,
-    StringPointValue,
-    FloatPointValue,
-    LeaderboardEntry,
+    ApiRun, ArtifactAttribute, Attribute, AttributeType, BoolAttribute,
+    DatetimeAttribute, FileAttribute, FloatAttribute, FloatPointValue,
+    FloatSeriesAttribute, FloatSeriesValues, ImageSeriesValues,
+    IntAttribute, LeaderboardEntry, Project, StringAttribute,
+    StringPointValue, StringSeriesAttribute, StringSeriesValues,
+    StringSetAttribute, Workspace,
 )
 from neptune.new.internal.backends.hosted_file_operations import (
     get_unique_upload_entries,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.internal.operation import (
-    AssignArtifact,
-    AddStrings,
-    AssignBool,
-    AssignDatetime,
-    AssignFloat,
-    AssignInt,
-    AssignString,
-    ClearArtifact,
-    ClearFloatLog,
-    ClearImageLog,
-    ClearStringLog,
-    ClearStringSet,
-    ConfigFloatSeries,
-    DeleteAttribute,
-    DeleteFiles,
-    LogFloats,
-    LogImages,
-    LogStrings,
-    Operation,
-    RemoveStrings,
-    TrackFilesToArtifact,
-    UploadFile,
-    UploadFileContent,
-    UploadFileSet,
+    AddStrings, AssignArtifact, AssignBool, AssignDatetime, AssignFloat,
+    AssignInt, AssignString, ClearArtifact, ClearFloatLog, ClearImageLog,
+    ClearStringLog, ClearStringSet, ConfigFloatSeries, DeleteAttribute,
+    DeleteFiles, LogFloats, LogImages, LogStrings, Operation, RemoveStrings,
+    TrackFilesToArtifact, UploadFile, UploadFileContent, UploadFileSet,
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
+from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
@@ -96,8 +59,8 @@ from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.file_set import FileSet
 from neptune.new.types.namespace import Namespace
-from neptune.new.types.series.float_series import FloatSeries
 from neptune.new.types.series.file_series import FileSeries
+from neptune.new.types.series.float_series import FloatSeries
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value import Value
@@ -111,13 +74,10 @@ class NeptuneBackendMock(NeptuneBackend):
     PROJECT_NAME = "project-placeholder"
     PROJECT_KEY = "OFFLINE"
 
-    def close(self) -> None:
-        pass
-
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
         self._project_id: str = str(uuid.uuid4())
-        self._runs: Dict[str, ContainerStructure[Value, dict]] = dict()
+        self._containers: Dict[(str, ContainerType), ContainerStructure[Value, dict]] = dict()
         self._next_run = 1
         self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = (
@@ -134,20 +94,19 @@ class NeptuneBackendMock(NeptuneBackend):
         return Project(self._project_id, self.PROJECT_NAME, self.WORKSPACE_NAME)
 
     def get_available_projects(
-        self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
+            self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
     ) -> List[Project]:
         return [Project(str(uuid.uuid4()), self.PROJECT_NAME, self.WORKSPACE_NAME)]
 
     def get_available_workspaces(self) -> List[Workspace]:
         return [Workspace(str(uuid.uuid4()), self.WORKSPACE_NAME)]
 
-    # pylint: disable=unused-argument
-    # FIXME: stop ignoring container_type on NPT-11117
     def _create_container(
-        self, container_id: str, container_type: ContainerType, sys_id: str
+            self, container_id: str, container_type: ContainerType, sys_id: str
     ):
-        container = self._runs.setdefault(
-            container_id, ContainerStructure[Value, dict]()
+        container = self._containers.setdefault(
+            (container_id, container_type),
+            ContainerStructure[Value, dict]()
         )
         container.set(["sys", "id"], String(sys_id))
         container.set(["sys", "state"], String("running"))
@@ -160,18 +119,19 @@ class NeptuneBackendMock(NeptuneBackend):
         return container
 
     def _get_container(self, container_id: str, container_type: ContainerType):
-        # FIXME: fix usages, stop ignoring container_type and raise appropriate exception in NPT-11117
-        if container_id not in self._runs:
-            raise RunUUIDNotFound(container_id)
-        return self._runs[container_id]
+        key = (container_id, container_type)
+        if key not in self._containers:
+            raise ContainerUUIDNotFound(container_id, container_type)
+        container = self._containers[(container_id, container_type)]
+        return container
 
     def create_run(
-        self,
-        project_id: str,
-        git_ref: Optional[GitRef] = None,
-        custom_run_id: Optional[str] = None,
-        notebook_id: Optional[str] = None,
-        checkpoint_id: Optional[str] = None,
+            self,
+            project_id: str,
+            git_ref: Optional[GitRef] = None,
+            custom_run_id: Optional[str] = None,
+            notebook_id: Optional[str] = None,
+            checkpoint_id: Optional[str] = None,
     ) -> ApiRun:
         short_id = f"{self.PROJECT_KEY}-{self._next_run}"
         self._next_run += 1
@@ -192,7 +152,7 @@ class NeptuneBackendMock(NeptuneBackend):
         raise RunNotFound(run_id)
 
     def execute_operations(
-        self, run_id: str, operations: List[Operation]
+            self, run_id: str, operations: List[Operation]
     ) -> List[NeptuneException]:
         result = []
         for op in operations:
@@ -203,7 +163,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return result
 
     def _execute_operation(self, run_id: str, op: Operation) -> None:
-        run = self._get_container(run_id, None)
+        run = self._get_container(run_id, ContainerType.RUN)
         val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):
@@ -219,8 +179,8 @@ class NeptuneBackendMock(NeptuneBackend):
         else:
             run.pop(op.path)
 
-    def get_attributes(self, run_id: str) -> List[Attribute]:
-        run = self._get_container(run_id, None)
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
+        run = self._get_container(container_id, container_type)
         return list(self._generate_attributes(None, run.get_structure()))
 
     def _generate_attributes(self, base_path: Optional[str], values: dict):
@@ -235,9 +195,9 @@ class NeptuneBackendMock(NeptuneBackend):
                 )
 
     def download_file(
-        self, run_id: str, path: List[str], destination: Optional[str] = None
+            self, container_id: str, container_type: ContainerType, path: List[str], destination: Optional[str] = None
     ):
-        run = self._get_container(run_id, None)
+        run = self._get_container(container_id, container_type)
         value: File = run.get(path)
         target_path = os.path.abspath(
             destination
@@ -250,9 +210,9 @@ class NeptuneBackendMock(NeptuneBackend):
             copyfile(value.path, target_path)
 
     def download_file_set(
-        self, run_id: str, path: List[str], destination: Optional[str] = None
+            self, container_id: str, container_type: ContainerType, path: List[str], destination: Optional[str] = None
     ):
-        run = self._get_container(run_id, None)
+        run = self._get_container(container_id, container_type)
         source_file_set_value: FileSet = run.get(path)
 
         if destination is None:
@@ -268,65 +228,68 @@ class NeptuneBackendMock(NeptuneBackend):
             for upload_entry in upload_entries:
                 zipObj.write(upload_entry.source_path, upload_entry.target_path)
 
-    def get_float_attribute(self, run_id: str, path: List[str]) -> FloatAttribute:
-        val = self._get_attribute(run_id, path, Float)
+    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:
+        val = self._get_attribute(container_id, container_type, path, Float)
         return FloatAttribute(val.value)
 
-    def get_int_attribute(self, run_id: str, path: List[str]) -> IntAttribute:
-        val = self._get_attribute(run_id, path, Integer)
+    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntAttribute:
+        val = self._get_attribute(container_id, container_type, path, Integer)
         return IntAttribute(val.value)
 
-    def get_bool_attribute(self, run_id: str, path: List[str]) -> BoolAttribute:
-        val = self._get_attribute(run_id, path, Boolean)
+    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolAttribute:
+        val = self._get_attribute(container_id, container_type, path, Boolean)
         return BoolAttribute(val.value)
 
-    def get_file_attribute(self, run_id: str, path: List[str]) -> FileAttribute:
-        val = self._get_attribute(run_id, path, File)
+    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
+        val = self._get_attribute(container_id, container_type, path, File)
         return FileAttribute(
             name=os.path.basename(val.path) if val.path else "",
             ext=val.extension or "",
             size=0,
         )
 
-    def get_string_attribute(self, run_id: str, path: List[str]) -> StringAttribute:
-        val = self._get_attribute(run_id, path, String)
+    def get_string_attribute(self, container_id: str, container_type: ContainerType,
+            path: List[str]) -> StringAttribute:
+        val = self._get_attribute(container_id, container_type, path, String)
         return StringAttribute(val.value)
 
-    def get_datetime_attribute(self, run_id: str, path: List[str]) -> DatetimeAttribute:
-        val = self._get_attribute(run_id, path, Datetime)
+    def get_datetime_attribute(self, container_id: str, container_type: ContainerType,
+            path: List[str]) -> DatetimeAttribute:
+        val = self._get_attribute(container_id, container_type, path, Datetime)
         return DatetimeAttribute(val.value)
 
-    def get_artifact_attribute(self, run_id: str, path: List[str]) -> ArtifactAttribute:
-        val = self._get_attribute(run_id, path, Artifact)
+    def get_artifact_attribute(self, container_id: str, container_type: ContainerType,
+            path: List[str]) -> ArtifactAttribute:
+        val = self._get_attribute(container_id, container_type, path, Artifact)
         return ArtifactAttribute(val.hash)
 
     def list_artifact_files(
-        self, project_id: str, artifact_hash: str
+            self, project_id: str, artifact_hash: str
     ) -> List[ArtifactFileData]:
         return self._artifacts[(project_id, artifact_hash)]
 
     def get_float_series_attribute(
-        self, run_id: str, path: List[str]
+            self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> FloatSeriesAttribute:
-        val = self._get_attribute(run_id, path, FloatSeries)
+        val = self._get_attribute(container_id, container_type, path, FloatSeries)
         return FloatSeriesAttribute(val.values[-1] if val.values else None)
 
     def get_string_series_attribute(
-        self, run_id: str, path: List[str]
+            self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSeriesAttribute:
-        val = self._get_attribute(run_id, path, StringSeries)
+        val = self._get_attribute(container_id, container_type, path, StringSeries)
         return StringSeriesAttribute(val.values[-1] if val.values else None)
 
     def get_string_set_attribute(
-        self, run_id: str, path: List[str]
+            self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSetAttribute:
-        val = self._get_attribute(run_id, path, StringSet)
+        val = self._get_attribute(container_id, container_type, path, StringSet)
         return StringSetAttribute(set(val.values))
 
     def _get_attribute(
-        self, run_id: str, path: List[str], expected_type: Type[Val]
+            self, container_id: str, container_type: ContainerType, path: List[str], expected_type: Type[Val]
     ) -> Val:
-        run = self._get_container(run_id, None)
+        run = self._get_container(container_id, container_type)
         value: Optional[Value] = run.get(path)
         str_path = path_to_str(path)
         if value is None:
@@ -338,9 +301,9 @@ class NeptuneBackendMock(NeptuneBackend):
         )
 
     def get_string_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
     ) -> StringSeriesValues:
-        val = self._get_attribute(run_id, path, StringSeries)
+        val = self._get_attribute(container_id, container_type, path, StringSeries)
         return StringSeriesValues(
             len(val.values),
             [
@@ -350,9 +313,9 @@ class NeptuneBackendMock(NeptuneBackend):
         )
 
     def get_float_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
     ) -> FloatSeriesValues:
-        val = self._get_attribute(run_id, path, FloatSeries)
+        val = self._get_attribute(container_id, container_type, path, FloatSeries)
         return FloatSeriesValues(
             len(val.values),
             [
@@ -362,17 +325,17 @@ class NeptuneBackendMock(NeptuneBackend):
         )
 
     def get_image_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
     ) -> ImageSeriesValues:
         return ImageSeriesValues(0)
 
     def download_file_series_by_index(
-        self, run_id: str, path: List[str], index: int, destination: str
+            self, container_id: str, container_type: ContainerType, path: List[str], index: int, destination: str
     ):
-        pass
+        """Non relevant for backend"""
 
     def get_run_url(
-        self, run_id: str, workspace: str, project_name: str, short_id: str
+            self, run_id: str, workspace: str, project_name: str, short_id: str
     ) -> str:
         return f"offline/{run_id}"
 
@@ -392,9 +355,9 @@ class NeptuneBackendMock(NeptuneBackend):
                     return attr_path, attr_type, NoValue
 
     def fetch_atom_attribute_values(
-        self, run_id: str, path: List[str]
+            self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:
-        run = self._get_container(run_id, None)
+        run = self._get_container(container_id, container_type)
         values = self._get_attribute_values(run.get(path), path)
         namespace_prefix = path_to_str(path)
         if namespace_prefix:
@@ -407,14 +370,14 @@ class NeptuneBackendMock(NeptuneBackend):
         ]
 
     def get_leaderboard(
-        self,
-        project_id: str,
-        _id: Optional[Iterable[str]] = None,
-        state: Optional[Iterable[str]] = None,
-        owner: Optional[Iterable[str]] = None,
-        tags: Optional[Iterable[str]] = None,
+            self,
+            project_id: str,
+            _id: Optional[Iterable[str]] = None,
+            state: Optional[Iterable[str]] = None,
+            owner: Optional[Iterable[str]] = None,
+            tags: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
-        pass
+        """Non relevant for mock"""
 
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
         def visit_float(self, _: Float) -> AttributeType:
@@ -469,51 +432,51 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_assign_float(self, op: AssignFloat) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, Float
+                    self._current_value, Float
             ):
                 raise self._create_type_error("assign", Float.__name__)
             return Float(op.value)
 
         def visit_assign_int(self, op: AssignInt) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, Integer
+                    self._current_value, Integer
             ):
                 raise self._create_type_error("assign", Integer.__name__)
             return Integer(op.value)
 
         def visit_assign_bool(self, op: AssignBool) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, Boolean
+                    self._current_value, Boolean
             ):
                 raise self._create_type_error("assign", Boolean.__name__)
             return Boolean(op.value)
 
         def visit_assign_string(self, op: AssignString) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, String
+                    self._current_value, String
             ):
                 raise self._create_type_error("assign", String.__name__)
             return String(op.value)
 
         def visit_assign_datetime(self, op: AssignDatetime) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, Datetime
+                    self._current_value, Datetime
             ):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
 
         def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, Artifact
+                    self._current_value, Artifact
             ):
                 raise self._create_type_error("assign", Artifact.__name__)
             return Artifact(op.hash)
 
         def visit_track_files_to_artifact(
-            self, _: TrackFilesToArtifact
+                self, _: TrackFilesToArtifact
         ) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, Artifact
+                    self._current_value, Artifact
             ):
                 raise self._create_type_error("save", Artifact.__name__)
             return Artifact(self._artifact_hash)
@@ -527,14 +490,14 @@ class NeptuneBackendMock(NeptuneBackend):
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, File
+                    self._current_value, File
             ):
                 raise self._create_type_error("save", File.__name__)
             return File(path=op.file_path, extension=op.ext)
 
         def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
             if self._current_value is not None and not isinstance(
-                self._current_value, File
+                    self._current_value, File
             ):
                 raise self._create_type_error("upload_files", File.__name__)
             return File(content=base64_decode(op.file_content), extension=op.ext)

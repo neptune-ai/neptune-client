@@ -96,7 +96,7 @@ class TestIterateSubpaths(unittest.TestCase):
     def setUp(self):
         self.backend = NeptuneBackendMock()
         exp = self.backend.create_run(self.project_uuid)
-        self.structure = self.backend._runs[exp.id]
+        self.structure = self.backend._containers[exp.id]
         self.structure.set(["attributes", "float"], Value())
         self.structure.set(["attributes", "node", "one"], Value())
         self.structure.set(["attributes", "node", "two"], Value())
