@@ -118,7 +118,7 @@ class Handler:
         with self._run.lock():
             attr = self._run.get_attribute(self._path)
             if attr:
-                attr.assign(value, wait)
+                attr.process_assignment(value, wait)
             else:
                 self._run.define(self._path, value, wait)
 

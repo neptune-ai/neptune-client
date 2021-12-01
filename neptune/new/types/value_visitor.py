@@ -14,8 +14,10 @@
 # limitations under the License.
 #
 import abc
+import typing
 from typing import TypeVar, Generic
 
+from neptune.new.attributes.attribute import Attribute
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.boolean import Boolean
@@ -93,4 +95,10 @@ class ValueVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_namespace(self, value: Namespace) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def copy_value(
+        self, source_type: typing.Type[Attribute], source_path: typing.List[str]
+    ) -> Ret:
         pass

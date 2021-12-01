@@ -17,6 +17,7 @@ import json
 import unittest
 import uuid
 
+from neptune.new.attributes import Integer
 from neptune.new.internal.operation import *
 
 
@@ -113,6 +114,12 @@ class TestOperations(unittest.TestCase):
                 [("file/path/f.txt", None)],
             ),
             ClearArtifact(TestOperations._random_path()),
+            CopyAttribute(
+                TestOperations._random_path(),
+                container_id=str(uuid.uuid4()),
+                source_path=TestOperations._random_path(),
+                source_attr_cls=Integer,
+            ),
         ]
 
     @staticmethod

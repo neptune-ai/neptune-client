@@ -67,3 +67,7 @@ def create_attribute_from_type(
         return _attribute_type_to_attr_class_map[attribute_type](run, path)
     except KeyError:
         raise InternalClientError(f"Unexpected type: {attribute_type}")
+
+
+def delayed_():
+    pass

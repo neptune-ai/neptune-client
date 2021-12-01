@@ -71,6 +71,7 @@ from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
+from neptune.new.types.value_copy import ValueCopy
 
 
 def ensure_not_stopped(fun):
@@ -345,6 +346,8 @@ class AttributeContainer(AbstractContextManager):
     ) -> Attribute:
         if isinstance(value, Value):
             pass
+        elif isinstance(value, Handler):
+            value = ValueCopy(value)
         elif is_bool(value):
             value = Boolean(value)
         elif is_int(value):
@@ -373,7 +376,7 @@ class AttributeContainer(AbstractContextManager):
                 )
             attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
             self._structure.set(parsed_path, attr)
-            attr.assign(value, wait)
+            attr.process_assignment(value, wait)
             return attr
 
     def get_attribute(self, path: str) -> Optional[Attribute]:

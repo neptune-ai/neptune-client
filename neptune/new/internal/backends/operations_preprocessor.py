@@ -30,6 +30,7 @@ from neptune.new.internal.operation import (
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
+    CopyAttribute,
     DeleteAttribute,
     DeleteFiles,
     LogFloats,
@@ -284,6 +285,9 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def visit_clear_artifact(self, op: ClearStringSet) -> None:
         self._process_modify_op(_DataType.ARTIFACT, op, self._clear_modifier())
+
+    def visit_copy_attribute(self, _: CopyAttribute) -> None:
+        raise NotImplementedError("This operation is client-side only")
 
     @staticmethod
     def _assign_modifier():

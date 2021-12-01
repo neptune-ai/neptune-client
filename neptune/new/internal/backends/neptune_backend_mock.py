@@ -70,6 +70,7 @@ from neptune.new.internal.operation import (
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
+    CopyAttribute,
     DeleteAttribute,
     DeleteFiles,
     LogFloats,
@@ -215,7 +216,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 )
             else:
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
-        visitor = NeptuneBackendMock.NewValueOpVisitor(op.path, val)
+        visitor = NeptuneBackendMock.NewValueOpVisitor(self, op.path, val)
         new_val = visitor.visit(op)
         if new_val is not None:
             run.set(op.path, new_val)
@@ -510,8 +511,14 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_namespace(self, _: Namespace) -> AttributeType:
             raise NotImplementedError
 
+        def copy_value(
+            self, source_type: Type[Attribute], source_path: List[str]
+        ) -> AttributeType:
+            raise NotImplementedError
+
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
-        def __init__(self, path: List[str], current_value: Optional[Value]):
+        def __init__(self, backend, path: List[str], current_value: Optional[Value]):
+            self._backend = backend
             self._path = path
             self._current_value = current_value
             self._artifact_hash = (
@@ -706,6 +713,12 @@ class NeptuneBackendMock(NeptuneBackend):
                     )
                 )
             return None
+
+        def visit_copy_attribute(self, op: CopyAttribute) -> Optional[Value]:
+            getter = op.source_attr_cls.getter
+            create_assignment_operation = op.source_attr_cls.create_assignment_operation
+            value = getter(self._backend, op.container_id, op.source_path)
+            return create_assignment_operation(self._path, value).accept(self)
 
         def _create_type_error(self, op_name, expected):
             return MetadataInconsistency(

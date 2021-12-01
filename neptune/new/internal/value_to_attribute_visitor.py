@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, TYPE_CHECKING
+from typing import List, TYPE_CHECKING, Type
 
 from neptune.new.attributes.atoms.artifact import Artifact as ArtifactAttr
 from neptune.new.attributes.atoms.datetime import Datetime as DatetimeAttr
@@ -95,3 +95,8 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
 
     def visit_namespace(self, _: Namespace) -> Attribute:
         return NamespaceAttr(self._run, self._path)
+
+    def copy_value(
+        self, source_type: Type[Attribute], source_path: List[str]
+    ) -> Attribute:
+        return source_type(self._run, source_path)
