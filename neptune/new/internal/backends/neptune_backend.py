@@ -103,7 +103,10 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def execute_operations(
-        self, run_id: str, operations: List[Operation]
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        operations: List[Operation],
     ) -> List[NeptuneException]:
         pass
 

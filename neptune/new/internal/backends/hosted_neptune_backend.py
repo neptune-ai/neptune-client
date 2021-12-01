@@ -358,7 +358,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ContainerUUIDNotFound(run_id, ContainerType.RUN)
 
     def execute_operations(
-        self, run_id: str, operations: List[Operation]
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        operations: List[Operation],
     ) -> List[NeptuneException]:
         errors = []
 
@@ -382,7 +385,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         # Upload operations should be done first since they are idempotent
         errors.extend(
             self._execute_upload_operations_with_400_retry(
-                run_id=run_id, upload_operations=upload_operations
+                container_id=container_id, upload_operations=upload_operations
             )
         )
 
@@ -390,19 +393,25 @@ class HostedNeptuneBackend(NeptuneBackend):
             artifact_operations_errors,
             assign_artifact_operations,
         ) = self._execute_artifact_operations(
-            run_id=run_id, artifact_operations=artifact_operations
+            container_id=container_id,
+            container_type=container_type,
+            artifact_operations=artifact_operations,
         )
 
         errors.extend(artifact_operations_errors)
         other_operations.extend(assign_artifact_operations)
 
         if other_operations:
-            errors.extend(self._execute_operations(run_id, other_operations))
+            errors.extend(
+                self._execute_operations(
+                    container_id, container_type, operations=other_operations
+                )
+            )
 
         return errors
 
     def _execute_upload_operations(
-        self, run_id: str, upload_operations: List[Operation]
+        self, container_id: str, upload_operations: List[Operation]
     ) -> List[NeptuneException]:
         errors = list()
 
@@ -410,7 +419,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             if isinstance(op, UploadFile):
                 error = upload_file_attribute(
                     swagger_client=self.leaderboard_client,
-                    run_id=run_id,
+                    container_id=container_id,
                     attribute=path_to_str(op.path),
                     source=op.file_path,
                     ext=op.ext,
@@ -420,7 +429,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             elif isinstance(op, UploadFileContent):
                 error = upload_file_attribute(
                     swagger_client=self.leaderboard_client,
-                    run_id=run_id,
+                    container_id=container_id,
                     attribute=path_to_str(op.path),
                     source=base64_decode(op.file_content),
                     ext=op.ext,
@@ -430,7 +439,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             elif isinstance(op, UploadFileSet):
                 error = upload_file_set_attribute(
                     swagger_client=self.leaderboard_client,
-                    run_id=run_id,
+                    container_id=container_id,
                     attribute=path_to_str(op.path),
                     file_globs=op.file_globs,
                     reset=op.reset,
@@ -443,18 +452,21 @@ class HostedNeptuneBackend(NeptuneBackend):
         return errors
 
     def _execute_upload_operations_with_400_retry(
-        self, run_id: str, upload_operations: List[Operation]
+        self, container_id: str, upload_operations: List[Operation]
     ) -> List[NeptuneException]:
         while True:
             try:
-                return self._execute_upload_operations(run_id, upload_operations)
+                return self._execute_upload_operations(container_id, upload_operations)
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
 
     @with_api_exceptions_handler
     def _execute_artifact_operations(
-        self, run_id: str, artifact_operations: List[TrackFilesToArtifact]
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        artifact_operations: List[TrackFilesToArtifact],
     ) -> Tuple[List[Optional[NeptuneException]], List[Optional[Operation]]]:
         errors = list()
         assign_operations = list()
@@ -462,7 +474,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in artifact_operations:
             try:
                 artifact_hash = self.get_artifact_attribute(
-                    run_id, ContainerType.RUN, op.path
+                    container_id, container_type, ContainerType.RUN,op.path
                 ).hash
             except FetchAttributeNotFoundException:
                 artifact_hash = None
@@ -473,7 +485,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         swagger_client=self.artifacts_client,
                         project_id=op.project_id,
                         path=op.path,
-                        parent_identifier=run_id,
+                        parent_identifier=container_id,
                         entries=op.entries,
                         default_request_params=DEFAULT_REQUEST_KWARGS,
                     )
@@ -483,7 +495,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         project_id=op.project_id,
                         path=op.path,
                         artifact_hash=artifact_hash,
-                        parent_identifier=run_id,
+                        parent_identifier=container_id,
                         entries=op.entries,
                         default_request_params=DEFAULT_REQUEST_KWARGS,
                     )
@@ -497,10 +509,13 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def _execute_operations(
-        self, run_id: str, operations: List[Operation]
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        operations: List[Operation],
     ) -> List[MetadataInconsistency]:
         kwargs = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "operations": [
                 {
                     "path": path_to_str(op.path),
@@ -522,7 +537,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(
-                container_id=run_id, container_type=ContainerType.RUN
+                container_id=container_id, container_type=container_type
             ) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
             raise NeptuneLimitExceedException(
@@ -584,7 +599,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             download_image_series_element(
                 swagger_client=self.leaderboard_client,
-                run_id=container_id,
+                container_id=container_id,
                 attribute=path_to_str(path),
                 index=index,
                 destination=destination,
@@ -605,7 +620,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         try:
             download_file_attribute(
                 swagger_client=self.leaderboard_client,
-                run_id=container_id,
+                container_id=container_id,
                 attribute=path_to_str(path),
                 destination=destination,
             )

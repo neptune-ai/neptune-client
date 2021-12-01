@@ -36,6 +36,7 @@ from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.hardware.hardware_metric_reporting_job import (
     HardwareMetricReportingJob,
 )
@@ -260,6 +261,7 @@ def init_run(
     operation_processor = get_operation_processor(
         mode,
         parent_id=api_run.id,
+        parent_type=ContainerType.RUN,
         backend=backend,
         lock=run_lock,
         flush_period=flush_period,

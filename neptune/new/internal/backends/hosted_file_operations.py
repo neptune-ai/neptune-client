@@ -58,7 +58,7 @@ DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SI
 
 def upload_file_attribute(
     swagger_client: SwaggerClient,
-    run_id: str,
+    container_id: str,
     attribute: str,
     source: Union[str, bytes],
     ext: str,
@@ -81,8 +81,7 @@ def upload_file_attribute(
         upload_configuration = DEFAULT_UPLOAD_CONFIG
         if hasattr(swagger_client.api, "getUploadConfig"):
             params = {
-                "parentId": run_id,
-                "parentType": "run",
+                "parentId": container_id,
                 "attribute": attribute,
                 "length": upload_entry.length(),
             }
@@ -98,7 +97,11 @@ def upload_file_attribute(
             response_handler=_attribute_upload_response_handler,
             http_client=swagger_client.swagger_spec.http_client,
             url=url,
-            query_params={"experimentId": run_id, "attribute": attribute, "ext": ext},
+            query_params={
+                "experimentId": container_id,
+                "attribute": attribute,
+                "ext": ext,
+            },
         )
     except MetadataInconsistency as e:
         return e
@@ -106,7 +109,7 @@ def upload_file_attribute(
 
 def upload_file_set_attribute(
     swagger_client: SwaggerClient,
-    run_id: str,
+    container_id: str,
     attribute: str,
     file_globs: Iterable[str],
     reset: bool,
@@ -116,7 +119,7 @@ def upload_file_set_attribute(
     try:
         upload_configuration = DEFAULT_UPLOAD_CONFIG
         if hasattr(swagger_client.api, "getUploadConfig"):
-            params = {"parentId": run_id, "parentType": "run", "attribute": attribute}
+            params = {"parentId": container_id, "attribute": attribute}
             config_result = (
                 swagger_client.api.getUploadConfig(**params).response().result
             )
@@ -154,7 +157,7 @@ def upload_file_set_attribute(
                     data=data,
                     headers={"Content-Type": "application/octet-stream"},
                     query_params={
-                        "experimentId": run_id,
+                        "experimentId": container_id,
                         "attribute": attribute,
                         "reset": str(reset),
                     },
@@ -175,7 +178,7 @@ def upload_file_set_attribute(
                     http_client=swagger_client.swagger_spec.http_client,
                     url=url,
                     query_params={
-                        "experimentId": str(run_id),
+                        "experimentId": str(container_id),
                         "attribute": attribute,
                         "reset": str(reset),
                         "path": file_chunk_stream.filename,
@@ -295,7 +298,7 @@ def upload_raw_data(
 
 def download_image_series_element(
     swagger_client: SwaggerClient,
-    run_id: str,
+    container_id: str,
     attribute: str,
     index: int,
     destination: str,
@@ -308,7 +311,11 @@ def download_image_series_element(
         http_client=swagger_client.swagger_spec.http_client,
         url=url,
         headers={},
-        query_params={"experimentId": run_id, "attribute": attribute, "index": index},
+        query_params={
+            "experimentId": container_id,
+            "attribute": attribute,
+            "index": index,
+        },
     )
     _store_response_as_file(
         response,
@@ -321,7 +328,7 @@ def download_image_series_element(
 
 def download_file_attribute(
     swagger_client: SwaggerClient,
-    run_id: str,
+    container_id: str,
     attribute: str,
     destination: Optional[str] = None,
 ):
@@ -333,7 +340,7 @@ def download_file_attribute(
         http_client=swagger_client.swagger_spec.http_client,
         url=url,
         headers={"Accept": "application/octet-stream"},
-        query_params={"experimentId": run_id, "attribute": attribute},
+        query_params={"experimentId": container_id, "attribute": attribute},
     )
     _store_response_as_file(response, destination)
 

@@ -20,6 +20,7 @@ from typing import Optional
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
 from neptune.new.project import Project
@@ -52,6 +53,7 @@ def init_project(
     operation_processor = get_operation_processor(
         mode,
         parent_id=project_obj.id,
+        parent_type=ContainerType.PROJECT,
         backend=backend,
         lock=project_lock,
         flush_period=flush_period,

@@ -55,7 +55,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignFloat(["x"], 5)])
+        backend.execute_operations(exp.id, ContainerType.RUN, [AssignFloat(["x"], 5)])
 
         # when
         ret = backend.get_float_attribute(exp.id, ContainerType.RUN, ["x"])
@@ -67,7 +67,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abcx")])
+        backend.execute_operations(
+            exp.id, ContainerType.RUN, [AssignString(["x"], "abcx")]
+        )
 
         # when
         ret = backend.get_string_attribute(exp.id, ContainerType.RUN, ["x"])
@@ -81,7 +83,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         exp = backend.create_run(self.project_uuid)
         now = datetime.datetime.now()
         now = now.replace(microsecond=1000 * int(now.microsecond / 1000))
-        backend.execute_operations(exp.id, [AssignDatetime(["x"], now)])
+        backend.execute_operations(
+            exp.id, ContainerType.RUN, [AssignDatetime(["x"], now)]
+        )
 
         # when
         ret = backend.get_datetime_attribute(exp.id, ContainerType.RUN, ["x"])
@@ -95,6 +99,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         exp = backend.create_run(self.project_uuid)
         backend.execute_operations(
             exp.id,
+            ContainerType.RUN,
             [
                 LogFloats(
                     ["x"],
@@ -107,6 +112,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         )
         backend.execute_operations(
             exp.id,
+            ContainerType.RUN,
             [
                 LogFloats(
                     ["x"],
@@ -130,6 +136,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         exp = backend.create_run(self.project_uuid)
         backend.execute_operations(
             exp.id,
+            ContainerType.RUN,
             [
                 LogStrings(
                     ["x"],
@@ -142,6 +149,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         )
         backend.execute_operations(
             exp.id,
+            ContainerType.RUN,
             [
                 LogStrings(
                     ["x"],
@@ -163,7 +171,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AddStrings(["x"], {"abcx", "qwe"})])
+        backend.execute_operations(
+            exp.id, ContainerType.RUN, [AddStrings(["x"], {"abcx", "qwe"})]
+        )
 
         # when
         ret = backend.get_string_set_attribute(exp.id, ContainerType.RUN, ["x"])
@@ -177,6 +187,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         exp = backend.create_run(self.project_uuid)
         backend.execute_operations(
             exp.id,
+            ContainerType.RUN,
             [
                 LogStrings(
                     ["x"],
@@ -189,6 +200,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         )
         backend.execute_operations(
             exp.id,
+            ContainerType.RUN,
             [
                 LogStrings(
                     ["x"],
@@ -202,7 +214,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # when
         ret = backend.get_string_series_values(
-            exp.id, ContainerType.RUN, ["x"], limit=100, offset=0
+            exp.id, ContainerType.RUN, path=["x"], limit=100, offset=0
         )
 
         # then
@@ -225,6 +237,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         exp = backend.create_run(self.project_uuid)
         backend.execute_operations(
             exp.id,
+            ContainerType.RUN,
             [
                 LogFloats(
                     ["x"],
@@ -237,6 +250,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         )
         backend.execute_operations(
             exp.id,
+            ContainerType.RUN,
             [
                 LogFloats(
                     ["x"],
@@ -250,7 +264,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # when
         ret = backend.get_float_series_values(
-            exp.id, ContainerType.RUN, ["x"], limit=100, offset=0
+            exp.id, ContainerType.RUN, path=["x"], limit=100, offset=0
         )
 
         # then
@@ -271,7 +285,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        backend.execute_operations(
+            exp.id, ContainerType.RUN, [AssignString(["x"], "abc")]
+        )
 
         # then
         with self.assertRaises(MetadataInconsistency):
@@ -281,7 +297,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignFloat(["x"], 5)])
+        backend.execute_operations(exp.id, ContainerType.RUN, [AssignFloat(["x"], 5)])
 
         # then
         with self.assertRaises(MetadataInconsistency):
@@ -291,7 +307,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        backend.execute_operations(
+            exp.id, ContainerType.RUN, [AssignString(["x"], "abc")]
+        )
 
         # then
         with self.assertRaises(MetadataInconsistency):
@@ -301,7 +319,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        backend.execute_operations(
+            exp.id, ContainerType.RUN, [AssignString(["x"], "abc")]
+        )
 
         # then
         with self.assertRaises(MetadataInconsistency):
@@ -311,7 +331,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        backend.execute_operations(
+            exp.id, ContainerType.RUN, [AssignString(["x"], "abc")]
+        )
 
         # then
         with self.assertRaises(MetadataInconsistency):
@@ -321,7 +343,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         # given
         backend = NeptuneBackendMock()
         exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        backend.execute_operations(
+            exp.id, ContainerType.RUN, [AssignString(["x"], "abc")]
+        )
 
         # then
         with self.assertRaises(MetadataInconsistency):

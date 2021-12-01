@@ -39,6 +39,7 @@ from neptune.new.internal.backends.hosted_client import (
     create_leaderboard_client,
     create_artifacts_client,
 )
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     AssignString,
@@ -96,7 +97,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # when
         result = backend.execute_operations(
-            run_id=exp_uuid,
+            container_id=exp_uuid,
+            container_type=ContainerType.RUN,
             operations=[
                 UploadFile(
                     path=["some", "files", "some_file"],
@@ -146,28 +148,28 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             [
                 call(
                     swagger_client=backend.leaderboard_client,
-                    run_id=exp_uuid,
+                    container_id=exp_uuid,
                     attribute="some/other/file.txt",
                     source="other/file/path.txt",
                     ext="txt",
                 ),
                 call(
                     swagger_client=backend.leaderboard_client,
-                    run_id=exp_uuid,
+                    container_id=exp_uuid,
                     attribute="some/files/some_file",
                     source="path_to_file",
                     ext="",
                 ),
                 call(
                     swagger_client=backend.leaderboard_client,
-                    run_id=exp_uuid,
+                    container_id=exp_uuid,
                     attribute="some/files/some_text_stream",
                     source=some_text.encode("utf-8"),
                     ext="txt",
                 ),
                 call(
                     swagger_client=backend.leaderboard_client,
-                    run_id=exp_uuid,
+                    container_id=exp_uuid,
                     attribute="some/files/some_binary_stream",
                     source=some_binary,
                     ext="bin",
@@ -196,7 +198,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # when
         backend.execute_operations(
-            run_id=exp_uuid,
+            container_id=exp_uuid,
+            container_type=ContainerType.RUN,
             operations=[
                 UploadFile(
                     path=["some", "path", "1", "var"], ext="", file_path="/path/to/file"
@@ -218,21 +221,21 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             [
                 call(
                     swagger_client=backend.leaderboard_client,
-                    run_id=exp_uuid,
+                    container_id=exp_uuid,
                     attribute="some/path/1/var",
                     source="/path/to/file",
                     ext="",
                 ),
                 call(
                     swagger_client=backend.leaderboard_client,
-                    run_id=exp_uuid,
+                    container_id=exp_uuid,
                     attribute="some/path/2/var",
                     source="/some.file/with.dots.txt",
                     ext="txt",
                 ),
                 call(
                     swagger_client=backend.leaderboard_client,
-                    run_id=exp_uuid,
+                    container_id=exp_uuid,
                     attribute="some/path/3/var",
                     source="/path/to/some_image.jpeg",
                     ext="jpeg",
@@ -250,6 +253,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         backend = HostedNeptuneBackend(credentials)
         exp_id = str(uuid.uuid4())
         project_id = str(uuid.uuid4())
+        container_type = ContainerType.RUN  # TODO: test  projects as well
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
@@ -262,7 +266,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # when
         backend.execute_operations(
-            run_id=exp_id,
+            container_id=exp_id,
+            container_type=container_type,
             operations=[
                 TrackFilesToArtifact(
                     path=["sub", "one"],
@@ -341,7 +346,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         # when
         backend.execute_operations(
-            run_id=exp_id,
+            container_id=exp_id,
+            container_type=ContainerType.RUN,
             operations=[
                 TrackFilesToArtifact(
                     path=["sub", "one"],
@@ -475,7 +481,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # then:
         with self.assertRaises(NeptuneLimitExceedException):
             backend.execute_operations(
-                run_id=exp_uuid,
+                container_id=exp_uuid,
+                container_type=ContainerType.RUN,
                 operations=[
                     LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
                 ],
@@ -497,7 +504,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # then:
         with self.assertRaises(NeptuneLimitExceedException):
             backend.execute_operations(
-                run_id=exp_uuid,
+                container_id=exp_uuid,
+                container_type=ContainerType.RUN,
                 operations=[
                     LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
                 ],

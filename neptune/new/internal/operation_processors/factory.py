@@ -33,11 +33,14 @@ from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
+from ..container_type import ContainerType
 
 
 def get_operation_processor(
     mode: Mode,
+    # TODO: JK rename from parent?
     parent_id: str,
+    parent_type: ContainerType,
     backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
@@ -55,6 +58,7 @@ def get_operation_processor(
         execution_path = execution_path.replace(" ", "_").replace(":", ".")
         return AsyncOperationProcessor(
             parent_id,
+            parent_type,
             DiskQueue(
                 Path(execution_path), lambda x: x.to_dict(), Operation.from_dict, lock
             ),
@@ -63,9 +67,9 @@ def get_operation_processor(
             sleep_time=flush_period,
         )
     elif mode == Mode.SYNC:
-        return SyncOperationProcessor(parent_id, backend)
+        return SyncOperationProcessor(parent_id, parent_type, backend)
     elif mode == Mode.DEBUG:
-        return SyncOperationProcessor(parent_id, backend)
+        return SyncOperationProcessor(parent_id, parent_type, backend)
     elif mode == Mode.OFFLINE:
         # the object was returned by mocked backend and has some random ID.
         data_path = "{}/{}/{}".format(
