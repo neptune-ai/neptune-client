@@ -26,8 +26,8 @@ _logger = logging.getLogger(__name__)
 
 
 class ReadOnlyOperationProcessor(OperationProcessor):
-    def __init__(self, run_id: str, backend: NeptuneBackend):
-        self._run_id = run_id
+    def __init__(self, container_id: str, backend: NeptuneBackend):
+        self._container_id = container_id
         self._backend = backend
         self._warning_emitted = False
 
