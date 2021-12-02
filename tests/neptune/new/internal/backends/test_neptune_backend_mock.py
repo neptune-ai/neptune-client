@@ -47,7 +47,6 @@ from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMoc
 
 class TestNeptuneBackendMock(unittest.TestCase):
     # pylint:disable=protected-access
-    # FIXME: Add parametrized tests for PLM in NPT-11118
 
     project_uuid = uuid.uuid4()
 
