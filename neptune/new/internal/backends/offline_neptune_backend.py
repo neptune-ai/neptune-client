@@ -35,47 +35,36 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.container_type import ContainerType
 
 
 class OfflineNeptuneBackend(NeptuneBackendMock):
-    def get_attributes(
-        self, container_id: str, container_type: ContainerType
-    ) -> List[Attribute]:
+    def get_attributes(self, container_id: str) -> List[Attribute]:
         raise NeptuneOfflineModeFetchException
 
-    def get_float_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FloatAttribute:
+    def get_float_attribute(self, container_id: str, path: List[str]) -> FloatAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_int_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> IntAttribute:
+    def get_int_attribute(self, container_id: str, path: List[str]) -> IntAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_bool_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> BoolAttribute:
+    def get_bool_attribute(self, container_id: str, path: List[str]) -> BoolAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_file_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FileAttribute:
+    def get_file_attribute(self, container_id: str, path: List[str]) -> FileAttribute:
         raise NeptuneOfflineModeFetchException
 
     def get_string_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, path: List[str]
     ) -> StringAttribute:
         raise NeptuneOfflineModeFetchException
 
     def get_datetime_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, path: List[str]
     ) -> DatetimeAttribute:
         raise NeptuneOfflineModeFetchException
 
     def get_artifact_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, path: List[str]
     ) -> ArtifactAttribute:
         raise NeptuneOfflineModeFetchException
 
@@ -85,24 +74,23 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
         raise NeptuneOfflineModeFetchException
 
     def get_float_series_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, path: List[str]
     ) -> FloatSeriesAttribute:
         raise NeptuneOfflineModeFetchException
 
     def get_string_series_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, path: List[str]
     ) -> StringSeriesAttribute:
         raise NeptuneOfflineModeFetchException
 
     def get_string_set_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, path: List[str]
     ) -> StringSetAttribute:
         raise NeptuneOfflineModeFetchException
 
     def get_string_series_values(
         self,
         container_id: str,
-        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
@@ -112,7 +100,6 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def get_float_series_values(
         self,
         container_id: str,
-        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
@@ -122,7 +109,6 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def get_image_series_values(
         self,
         container_id: str,
-        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
@@ -132,7 +118,6 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def download_file_series_by_index(
         self,
         container_id: str,
-        container_type: ContainerType,
         path: List[str],
         index: int,
         destination: str,

@@ -46,8 +46,3 @@ class Attribute:
     def _container_id(self) -> str:
         # pylint: disable=protected-access
         return self._container._id
-
-    @property
-    def _container_type(self) -> "ContainerType":
-        # pylint: disable=protected-access
-        return self._container.container_type

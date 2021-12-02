@@ -14,26 +14,24 @@
 # limitations under the License.
 #
 # pylint: disable=protected-access
-import uuid
 import pathlib
 import tempfile
+import uuid
 from unittest.mock import Mock
-from mock import MagicMock, call
 
 from _pytest.monkeypatch import MonkeyPatch
+from mock import MagicMock, call
 
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.exceptions import NeptuneUnhandledArtifactTypeException
 from neptune.new.internal.artifacts.types import (
-    ArtifactFileData,
     ArtifactDriver,
     ArtifactDriversMap,
+    ArtifactFileData,
 )
-from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.operation import TrackFilesToArtifact
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.artifact import Artifact as ArtifactAttr
-from neptune.new.internal.operation import TrackFilesToArtifact
-
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -67,7 +65,7 @@ class TestArtifact(TestAttributeBase):
         ]
 
         self.exp.set_attribute(self.path_str, Artifact(self.exp, self.path))
-        self.exp._backend._containers[(self.exp._id, ContainerType.RUN)].set(
+        self.exp._backend._containers[self.exp._id].set(
             self.path, ArtifactAttr(self.artifact_hash)
         )
         self.exp._backend._artifacts[

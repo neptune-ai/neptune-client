@@ -18,7 +18,6 @@ import uuid
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.types.value import Value
 
@@ -97,8 +96,7 @@ class TestIterateSubpaths(unittest.TestCase):
     def setUp(self):
         self.backend = NeptuneBackendMock()
         exp = self.backend.create_run(self.project_uuid)
-        # FIXME test for projects
-        self.structure = self.backend._containers[(exp.id, ContainerType.RUN)]
+        self.structure = self.backend._containers[exp.id]
         self.structure.set(["attributes", "float"], Value())
         self.structure.set(["attributes", "node", "one"], Value())
         self.structure.set(["attributes", "node", "two"], Value())

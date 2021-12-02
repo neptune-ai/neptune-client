@@ -23,7 +23,6 @@ from neptune.exceptions import STYLES
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import Project, Workspace
-from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.utils import replace_patch_version
 
 
@@ -277,11 +276,9 @@ class RunNotFound(NeptuneException):
 
 
 class ContainerUUIDNotFound(NeptuneException):
-    def __init__(self, container_id: str, container_type: ContainerType):
+    def __init__(self, container_id: str):
         super().__init__(
-            "Container with ID {} of type {} not found. Could be deleted.".format(
-                container_id, container_type
-            )
+            "Container with ID {} not found. Could be deleted.".format(container_id)
         )
 
 
