@@ -21,7 +21,6 @@ from neptune.new.internal.operation import Operation
 
 if TYPE_CHECKING:
     from neptune.new.attribute_container import AttributeContainer
-    from neptune.new.internal.container_type import ContainerType
 
 
 class Attribute:

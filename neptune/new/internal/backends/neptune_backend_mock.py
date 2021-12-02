@@ -55,7 +55,6 @@ from neptune.new.internal.backends.hosted_file_operations import (
     get_unique_upload_entries,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import (
     AddStrings,
     AssignArtifact,
@@ -114,15 +113,13 @@ class NeptuneBackendMock(NeptuneBackend):
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
         self._project_id: str = str(uuid.uuid4())
-        self._containers: Dict[
-            (str, ContainerType), ContainerStructure[Value, dict]
-        ] = dict()
+        self._containers: Dict[str, ContainerStructure[Value, dict]] = dict()
         self._next_run = 1
         self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = (
             self.AttributeTypeConverterValueVisitor()
         )
-        self._create_container(self._project_id, ContainerType.PROJECT)
+        self._create_container(self._project_id, self.PROJECT_KEY)
 
     def get_display_address(self) -> str:
         return "OFFLINE"
@@ -155,8 +152,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def _get_container(self, container_id: str):
         if container_id not in self._containers:
             raise ContainerUUIDNotFound(container_id)
-        container = self._containers[container_id]
-        return container
+        return self._containers[container_id]
 
     def create_run(
         self,
