@@ -279,8 +279,9 @@ class RunNotFound(NeptuneException):
 class ContainerUUIDNotFound(NeptuneException):
     def __init__(self, container_id: str, container_type: ContainerType):
         super().__init__(
-            "Container with ID {} of type {} not found. Could be deleted."
-                .format(container_id, container_type)
+            "Container with ID {} of type {} not found. Could be deleted.".format(
+                container_id, container_type
+            )
         )
 
 

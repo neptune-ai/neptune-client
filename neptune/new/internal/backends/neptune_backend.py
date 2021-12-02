@@ -19,11 +19,24 @@ from typing import Any, Iterable, List, Optional, Tuple
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
-    ApiRun, ArtifactAttribute, Attribute, AttributeType, BoolAttribute,
-    DatetimeAttribute, FileAttribute, FloatAttribute,
-    FloatSeriesAttribute, FloatSeriesValues, ImageSeriesValues,
-    IntAttribute, LeaderboardEntry, Project, StringAttribute,
-    StringSeriesAttribute, StringSeriesValues, StringSetAttribute,
+    ApiRun,
+    ArtifactAttribute,
+    Attribute,
+    AttributeType,
+    BoolAttribute,
+    DatetimeAttribute,
+    FileAttribute,
+    FloatAttribute,
+    FloatSeriesAttribute,
+    FloatSeriesValues,
+    ImageSeriesValues,
+    IntAttribute,
+    LeaderboardEntry,
+    Project,
+    StringAttribute,
+    StringSeriesAttribute,
+    StringSeriesValues,
+    StringSetAttribute,
     Workspace,
 )
 from neptune.new.internal.container_type import ContainerType
@@ -48,7 +61,7 @@ class NeptuneBackend:
 
     # pylint: disable=unused-argument
     def websockets_factory(
-            self, project_id: str, run_id: str
+        self, project_id: str, run_id: str
     ) -> Optional[WebsocketsFactory]:
         return None
 
@@ -58,7 +71,7 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_available_projects(
-            self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
+        self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
     ) -> List[Project]:
         pass
 
@@ -72,12 +85,12 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def create_run(
-            self,
-            project_id: str,
-            git_ref: Optional[GitRef] = None,
-            custom_run_id: Optional[str] = None,
-            notebook_id: Optional[str] = None,
-            checkpoint_id: Optional[str] = None,
+        self,
+        project_id: str,
+        git_ref: Optional[GitRef] = None,
+        custom_run_id: Optional[str] = None,
+        notebook_id: Optional[str] = None,
+        checkpoint_id: Optional[str] = None,
     ) -> ApiRun:
         pass
 
@@ -90,124 +103,165 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def execute_operations(
-            self, run_id: str, operations: List[Operation]
+        self, run_id: str, operations: List[Operation]
     ) -> List[NeptuneException]:
         pass
 
     @abc.abstractmethod
-    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
+    def get_attributes(
+        self, container_id: str, container_type: ContainerType
+    ) -> List[Attribute]:
         pass
 
     @abc.abstractmethod
     def download_file(
-            self, container_id: str, container_type: ContainerType, path: List[str], destination: Optional[str] = None
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        destination: Optional[str] = None,
     ):
         pass
 
     @abc.abstractmethod
     def download_file_set(
-            self, container_id: str, container_type: ContainerType, path: List[str], destination: Optional[str] = None
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        destination: Optional[str] = None,
     ):
         pass
 
     @abc.abstractmethod
-    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> FloatAttribute:
         pass
 
     @abc.abstractmethod
-    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntAttribute:
+    def get_int_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> IntAttribute:
         pass
 
     @abc.abstractmethod
-    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolAttribute:
+    def get_bool_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> BoolAttribute:
         pass
 
     @abc.abstractmethod
-    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
+    def get_file_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> FileAttribute:
         pass
 
     @abc.abstractmethod
-    def get_string_attribute(self, container_id: str, container_type: ContainerType,
-            path: List[str]) -> StringAttribute:
+    def get_string_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> StringAttribute:
         pass
 
     @abc.abstractmethod
-    def get_datetime_attribute(self, container_id: str, container_type: ContainerType,
-            path: List[str]) -> DatetimeAttribute:
+    def get_datetime_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> DatetimeAttribute:
         pass
 
     @abc.abstractmethod
-    def get_artifact_attribute(self, container_id: str, container_type: ContainerType,
-            path: List[str]) -> ArtifactAttribute:
+    def get_artifact_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> ArtifactAttribute:
         pass
 
     @abc.abstractmethod
     def list_artifact_files(
-            self, project_id: str, artifact_hash: str
+        self, project_id: str, artifact_hash: str
     ) -> List[ArtifactFileData]:
         pass
 
     @abc.abstractmethod
     def get_float_series_attribute(
-            self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> FloatSeriesAttribute:
         pass
 
     @abc.abstractmethod
     def get_string_series_attribute(
-            self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSeriesAttribute:
         pass
 
     @abc.abstractmethod
     def get_string_set_attribute(
-            self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSetAttribute:
         pass
 
     @abc.abstractmethod
     def download_file_series_by_index(
-            self, container_id: str, container_type: ContainerType, path: List[str], index: int, destination: str
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        index: int,
+        destination: str,
     ):
         pass
 
     @abc.abstractmethod
     def get_image_series_values(
-            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
     ) -> ImageSeriesValues:
         pass
 
     @abc.abstractmethod
     def get_string_series_values(
-            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
     ) -> StringSeriesValues:
         pass
 
     @abc.abstractmethod
     def get_float_series_values(
-            self, container_id: str, container_type: ContainerType, path: List[str], offset: int, limit: int
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
     ) -> FloatSeriesValues:
         pass
 
     @abc.abstractmethod
     def get_run_url(
-            self, run_id: str, workspace: str, project_name: str, short_id: str
+        self, run_id: str, workspace: str, project_name: str, short_id: str
     ) -> str:
         pass
 
     @abc.abstractmethod
     def fetch_atom_attribute_values(
-            self, container_id: str, container_type: ContainerType, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:
         pass
 
     @abc.abstractmethod
     def get_leaderboard(
-            self,
-            project_id: str,
-            _id: Optional[Iterable[str]] = None,
-            state: Optional[Iterable[str]] = None,
-            owner: Optional[Iterable[str]] = None,
-            tags: Optional[Iterable[str]] = None,
+        self,
+        project_id: str,
+        _id: Optional[Iterable[str]] = None,
+        state: Optional[Iterable[str]] = None,
+        owner: Optional[Iterable[str]] = None,
+        tags: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
         pass

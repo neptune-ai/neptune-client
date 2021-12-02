@@ -29,6 +29,7 @@ from neptune.new.internal.artifacts.types import (
     ArtifactDriver,
     ArtifactDriversMap,
 )
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.artifact import Artifact as ArtifactAttr
 from neptune.new.internal.operation import TrackFilesToArtifact
@@ -66,7 +67,7 @@ class TestArtifact(TestAttributeBase):
         ]
 
         self.exp.set_attribute(self.path_str, Artifact(self.exp, self.path))
-        self.exp._backend._containers[self.exp._id].set(
+        self.exp._backend._containers[(self.exp._id, ContainerType.RUN)].set(
             self.path, ArtifactAttr(self.artifact_hash)
         )
         self.exp._backend._artifacts[

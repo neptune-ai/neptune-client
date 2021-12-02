@@ -82,7 +82,7 @@ class Namespace(Attribute, MutableMapping):
 
     def fetch(self) -> dict:
         attributes = self._backend.fetch_atom_attribute_values(
-            self._container_id, self._path
+            self._container_id, self._container_type, self._path
         )
         run_struct = ContainerStructure()
         prefix_len = len(self._path)

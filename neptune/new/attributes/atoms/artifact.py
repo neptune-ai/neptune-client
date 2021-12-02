@@ -47,7 +47,9 @@ class Artifact(Atom):
 
     def fetch_hash(self) -> str:
         self._check_feature()
-        val = self._backend.get_artifact_attribute(self._container_id, self._path)
+        val = self._backend.get_artifact_attribute(
+            self._container_id, self._container_type, self._path
+        )
         return val.hash
 
     def fetch_files_list(self) -> typing.List[ArtifactFileData]:
