@@ -30,5 +30,7 @@ class Integer(Atom):
 
     def fetch(self) -> float:
         # pylint: disable=protected-access
-        val = self._backend.get_int_attribute(self._container_id, self._path)
+        val = self._backend.get_int_attribute(
+            self._container_id, self._container_type, self._path
+        )
         return val.value

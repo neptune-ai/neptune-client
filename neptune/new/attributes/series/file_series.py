@@ -84,7 +84,7 @@ class FileSeries(Series[Val, Data]):
     def download(self, destination: Optional[str]):
         target_dir = self._get_destination(destination)
         item_count = self._backend.get_image_series_values(
-            self._container_id, self._path, 0, 1
+            self._container_id, self._container_type, self._path, 0, 1
         ).totalItemCount
         for i in range(0, item_count):
             self._backend.download_file_series_by_index(

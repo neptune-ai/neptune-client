@@ -39,6 +39,7 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     Workspace,
 )
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
@@ -107,13 +108,16 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_attributes(self, container_id: str) -> List[Attribute]:
+    def get_attributes(
+        self, container_id: str, container_type: ContainerType
+    ) -> List[Attribute]:
         pass
 
     @abc.abstractmethod
     def download_file(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
     ):
@@ -123,42 +127,51 @@ class NeptuneBackend:
     def download_file_set(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
     ):
         pass
 
     @abc.abstractmethod
-    def get_float_attribute(self, container_id: str, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> FloatAttribute:
         pass
 
     @abc.abstractmethod
-    def get_int_attribute(self, container_id: str, path: List[str]) -> IntAttribute:
+    def get_int_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> IntAttribute:
         pass
 
     @abc.abstractmethod
-    def get_bool_attribute(self, container_id: str, path: List[str]) -> BoolAttribute:
+    def get_bool_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> BoolAttribute:
         pass
 
     @abc.abstractmethod
-    def get_file_attribute(self, container_id: str, path: List[str]) -> FileAttribute:
+    def get_file_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> FileAttribute:
         pass
 
     @abc.abstractmethod
     def get_string_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringAttribute:
         pass
 
     @abc.abstractmethod
     def get_datetime_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> DatetimeAttribute:
         pass
 
     @abc.abstractmethod
     def get_artifact_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> ArtifactAttribute:
         pass
 
@@ -170,19 +183,19 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_float_series_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> FloatSeriesAttribute:
         pass
 
     @abc.abstractmethod
     def get_string_series_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSeriesAttribute:
         pass
 
     @abc.abstractmethod
     def get_string_set_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSetAttribute:
         pass
 
@@ -190,6 +203,7 @@ class NeptuneBackend:
     def download_file_series_by_index(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         index: int,
         destination: str,
@@ -200,6 +214,7 @@ class NeptuneBackend:
     def get_image_series_values(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
@@ -210,6 +225,7 @@ class NeptuneBackend:
     def get_string_series_values(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
@@ -220,6 +236,7 @@ class NeptuneBackend:
     def get_float_series_values(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
@@ -234,7 +251,7 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def fetch_atom_attribute_values(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:
         pass
 

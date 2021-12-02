@@ -105,7 +105,7 @@ class TestClientRun(unittest.TestCase):
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
-        new=lambda _, _uuid, _path: IntAttribute(42),
+        new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
         exp = init(mode="read-only", run="SAN-94")
@@ -136,7 +136,7 @@ class TestClientRun(unittest.TestCase):
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid: [Attribute("test", AttributeType.STRING)],
+        new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
     )
     def test_resume(self):
         with init(flush_period=0.5, run="SAN-94") as exp:

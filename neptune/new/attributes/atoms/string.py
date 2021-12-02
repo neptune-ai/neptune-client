@@ -31,5 +31,7 @@ class String(Atom):
 
     def fetch(self) -> str:
         # pylint: disable=protected-access
-        val = self._backend.get_string_attribute(self._container_id, self._path)
+        val = self._backend.get_string_attribute(
+            self._container_id, self._container_type, self._path
+        )
         return val.value

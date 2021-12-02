@@ -66,4 +66,6 @@ class FileSet(Attribute):
 
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file_set(self._container_id, self._path, destination)
+        self._backend.download_file_set(
+            self._container_id, self._container_type, self._path, destination
+        )

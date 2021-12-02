@@ -76,10 +76,12 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
     def fetch_last(self) -> str:
         # pylint: disable=protected-access
-        val = self._backend.get_string_series_attribute(self._container_id, self._path)
+        val = self._backend.get_string_series_attribute(
+            self._container_id, self._container_type, self._path
+        )
         return val.last
 
     def _fetch_values_from_backend(self, offset, limit) -> StringSeriesValues:
         return self._backend.get_string_series_values(
-            self._container_id, self._path, offset, limit
+            self._container_id, self._container_type, self._path, offset, limit
         )

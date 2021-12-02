@@ -122,7 +122,9 @@ class NeptuneBackendMock(NeptuneBackend):
         self._attribute_type_converter_value_visitor = (
             self.AttributeTypeConverterValueVisitor()
         )
-        self._create_container(self._project_id, ContainerType.PROJECT)
+        self._create_container(
+            self._project_id, ContainerType.PROJECT, self.PROJECT_KEY
+        )
 
     def get_display_address(self) -> str:
         return "OFFLINE"
@@ -138,9 +140,11 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_available_workspaces(self) -> List[Workspace]:
         return [Workspace(str(uuid.uuid4()), self.WORKSPACE_NAME)]
 
-    def _create_container(self, container_id: str, sys_id: str):
+    def _create_container(
+        self, container_id: str, container_type: ContainerType, sys_id: str
+    ):
         container = self._containers.setdefault(
-            container_id, ContainerStructure[Value, dict]()
+            (container_id, container_type), ContainerStructure[Value, dict]()
         )
         container.set(["sys", "id"], String(sys_id))
         container.set(["sys", "state"], String("running"))
@@ -152,10 +156,11 @@ class NeptuneBackendMock(NeptuneBackend):
         container.set(["sys", "failed"], Boolean(False))
         return container
 
-    def _get_container(self, container_id: str):
-        if container_id not in self._containers:
-            raise ContainerUUIDNotFound(container_id)
-        container = self._containers[container_id]
+    def _get_container(self, container_id: str, container_type: ContainerType):
+        key = (container_id, container_type)
+        if key not in self._containers:
+            raise ContainerUUIDNotFound(container_id, container_type)
+        container = self._containers[(container_id, container_type)]
         return container
 
     def create_run(
@@ -169,7 +174,9 @@ class NeptuneBackendMock(NeptuneBackend):
         short_id = f"{self.PROJECT_KEY}-{self._next_run}"
         self._next_run += 1
         new_run_id = str(uuid.uuid4())
-        container = self._create_container(new_run_id, sys_id=short_id)
+        container = self._create_container(
+            new_run_id, ContainerType.RUN, sys_id=short_id
+        )
         if git_ref:
             container.set(["source_code", "git"], git_ref)
         return ApiRun(
@@ -194,7 +201,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return result
 
     def _execute_operation(self, run_id: str, op: Operation) -> None:
-        run = self._get_container(run_id)
+        run = self._get_container(run_id, ContainerType.RUN)
         val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):
@@ -210,8 +217,10 @@ class NeptuneBackendMock(NeptuneBackend):
         else:
             run.pop(op.path)
 
-    def get_attributes(self, container_id: str) -> List[Attribute]:
-        run = self._get_container(container_id)
+    def get_attributes(
+        self, container_id: str, container_type: ContainerType
+    ) -> List[Attribute]:
+        run = self._get_container(container_id, container_type)
         return list(self._generate_attributes(None, run.get_structure()))
 
     def _generate_attributes(self, base_path: Optional[str], values: dict):
@@ -228,10 +237,11 @@ class NeptuneBackendMock(NeptuneBackend):
     def download_file(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
     ):
-        run = self._get_container(container_id)
+        run = self._get_container(container_id, container_type)
         value: File = run.get(path)
         target_path = os.path.abspath(
             destination
@@ -246,10 +256,11 @@ class NeptuneBackendMock(NeptuneBackend):
     def download_file_set(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         destination: Optional[str] = None,
     ):
-        run = self._get_container(container_id)
+        run = self._get_container(container_id, container_type)
         source_file_set_value: FileSet = run.get(path)
 
         if destination is None:
@@ -265,20 +276,28 @@ class NeptuneBackendMock(NeptuneBackend):
             for upload_entry in upload_entries:
                 zipObj.write(upload_entry.source_path, upload_entry.target_path)
 
-    def get_float_attribute(self, container_id: str, path: List[str]) -> FloatAttribute:
-        val = self._get_attribute(container_id, path, Float)
+    def get_float_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> FloatAttribute:
+        val = self._get_attribute(container_id, container_type, path, Float)
         return FloatAttribute(val.value)
 
-    def get_int_attribute(self, container_id: str, path: List[str]) -> IntAttribute:
-        val = self._get_attribute(container_id, path, Integer)
+    def get_int_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> IntAttribute:
+        val = self._get_attribute(container_id, container_type, path, Integer)
         return IntAttribute(val.value)
 
-    def get_bool_attribute(self, container_id: str, path: List[str]) -> BoolAttribute:
-        val = self._get_attribute(container_id, path, Boolean)
+    def get_bool_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> BoolAttribute:
+        val = self._get_attribute(container_id, container_type, path, Boolean)
         return BoolAttribute(val.value)
 
-    def get_file_attribute(self, container_id: str, path: List[str]) -> FileAttribute:
-        val = self._get_attribute(container_id, path, File)
+    def get_file_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> FileAttribute:
+        val = self._get_attribute(container_id, container_type, path, File)
         return FileAttribute(
             name=os.path.basename(val.path) if val.path else "",
             ext=val.extension or "",
@@ -286,21 +305,21 @@ class NeptuneBackendMock(NeptuneBackend):
         )
 
     def get_string_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringAttribute:
-        val = self._get_attribute(container_id, path, String)
+        val = self._get_attribute(container_id, container_type, path, String)
         return StringAttribute(val.value)
 
     def get_datetime_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> DatetimeAttribute:
-        val = self._get_attribute(container_id, path, Datetime)
+        val = self._get_attribute(container_id, container_type, path, Datetime)
         return DatetimeAttribute(val.value)
 
     def get_artifact_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> ArtifactAttribute:
-        val = self._get_attribute(container_id, path, Artifact)
+        val = self._get_attribute(container_id, container_type, path, Artifact)
         return ArtifactAttribute(val.hash)
 
     def list_artifact_files(
@@ -309,30 +328,31 @@ class NeptuneBackendMock(NeptuneBackend):
         return self._artifacts[(project_id, artifact_hash)]
 
     def get_float_series_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> FloatSeriesAttribute:
-        val = self._get_attribute(container_id, path, FloatSeries)
+        val = self._get_attribute(container_id, container_type, path, FloatSeries)
         return FloatSeriesAttribute(val.values[-1] if val.values else None)
 
     def get_string_series_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSeriesAttribute:
-        val = self._get_attribute(container_id, path, StringSeries)
+        val = self._get_attribute(container_id, container_type, path, StringSeries)
         return StringSeriesAttribute(val.values[-1] if val.values else None)
 
     def get_string_set_attribute(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSetAttribute:
-        val = self._get_attribute(container_id, path, StringSet)
+        val = self._get_attribute(container_id, container_type, path, StringSet)
         return StringSetAttribute(set(val.values))
 
     def _get_attribute(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         expected_type: Type[Val],
     ) -> Val:
-        run = self._get_container(container_id)
+        run = self._get_container(container_id, container_type)
         value: Optional[Value] = run.get(path)
         str_path = path_to_str(path)
         if value is None:
@@ -346,11 +366,12 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_string_series_values(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
     ) -> StringSeriesValues:
-        val = self._get_attribute(container_id, path, StringSeries)
+        val = self._get_attribute(container_id, container_type, path, StringSeries)
         return StringSeriesValues(
             len(val.values),
             [
@@ -362,11 +383,12 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_float_series_values(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
     ) -> FloatSeriesValues:
-        val = self._get_attribute(container_id, path, FloatSeries)
+        val = self._get_attribute(container_id, container_type, path, FloatSeries)
         return FloatSeriesValues(
             len(val.values),
             [
@@ -378,6 +400,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_image_series_values(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         offset: int,
         limit: int,
@@ -387,6 +410,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def download_file_series_by_index(
         self,
         container_id: str,
+        container_type: ContainerType,
         path: List[str],
         index: int,
         destination: str,
@@ -414,9 +438,9 @@ class NeptuneBackendMock(NeptuneBackend):
                     return attr_path, attr_type, NoValue
 
     def fetch_atom_attribute_values(
-        self, container_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:
-        run = self._get_container(container_id)
+        run = self._get_container(container_id, container_type)
         values = self._get_attribute_values(run.get(path), path)
         namespace_prefix = path_to_str(path)
         if namespace_prefix:
