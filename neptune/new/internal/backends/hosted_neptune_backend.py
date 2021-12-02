@@ -958,7 +958,6 @@ class HostedNeptuneBackend(NeptuneBackend):
     def _get_file_set_download_request(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ):
-        # FIXME: NPT-11118 use container_type
         params = {
             "experimentId": container_id,
             "attribute": path_to_str(path),
