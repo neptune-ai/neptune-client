@@ -18,7 +18,6 @@ import unittest
 import uuid
 from unittest.mock import call
 
-import pytest
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 from mock import MagicMock, patch
 from packaging.version import Version
@@ -27,19 +26,20 @@ from neptune.new.exceptions import (
     CannotResolveHostname,
     FileUploadError,
     MetadataInconsistency,
-    UnsupportedClientVersion,
     NeptuneLimitExceedException,
+    UnsupportedClientVersion,
 )
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
-    _get_token_client,  # pylint:disable=protected-access
-    get_client_config,
-    create_http_client_with_auth,
-    create_backend_client,
-    create_leaderboard_client,
+    _get_token_client,
     create_artifacts_client,
-)
+    create_backend_client,
+    create_http_client_with_auth,
+    create_leaderboard_client,
+    get_client_config,
+)  # pylint:disable=protected-access
+from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
@@ -49,7 +49,6 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileContent,
 )
-from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 
@@ -81,6 +80,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         create_leaderboard_client.cache_clear()
         create_artifacts_client.cache_clear()
 
+        self.container_types = [ContainerType.RUN, ContainerType.PROJECT]
+
     @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
     def test_execute_operations(self, upload_mock, swagger_client_factory):
         # given
@@ -96,7 +97,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         some_text = "Some streamed text"
         some_binary = b"Some streamed binary"
 
-        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+        for container_type in self.container_types:
             with self.subTest(msg=f"For type {container_type.value}"):
                 upload_mock.reset_mock()
                 swagger_client_factory.reset_mock()
@@ -209,7 +210,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         backend = HostedNeptuneBackend(credentials)
         container_uuid = str(uuid.uuid4())
 
-        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+        for container_type in self.container_types:
             with self.subTest(msg=f"For type {container_type.value}"):
                 upload_mock.reset_mock()
                 swagger_client_factory.reset_mock()
@@ -284,7 +285,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             response=MagicMock()
         )
 
-        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+        for container_type in self.container_types:
             with self.subTest(msg=f"For type {container_type.value}"):
                 track_to_new_artifact_mock.reset_mock()
                 swagger_client_factory.reset_mock()
@@ -378,7 +379,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             "dummyHash"
         )
 
-        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+        for container_type in self.container_types:
             track_to_existing_artifact_mock.reset_mock()
             swagger_client_factory.reset_mock()
 
@@ -530,7 +531,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
 
         # then:
-        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+        for container_type in self.container_types:
             with self.subTest(msg=f"For type {container_type.value}"):
                 with self.assertRaises(NeptuneLimitExceedException):
                     backend.execute_operations(
@@ -555,7 +556,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
 
         # then:
-        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+        for container_type in self.container_types:
             with self.subTest(msg=f"For type {container_type.value}"):
                 with self.assertRaises(NeptuneLimitExceedException):
                     backend.execute_operations(

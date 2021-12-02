@@ -98,7 +98,7 @@ class NeptuneBackend:
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         pass
 
-    def ping_run(self, run_id: str):
+    def ping(self, container_id: str, container_type: ContainerType):
         """Do nothing by default"""
 
     @abc.abstractmethod

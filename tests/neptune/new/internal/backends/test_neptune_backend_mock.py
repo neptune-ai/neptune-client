@@ -15,50 +15,44 @@
 #
 import datetime
 import unittest
-import uuid
 from random import randint
 from time import time
 
 from neptune.new.exceptions import MetadataInconsistency
-
 from neptune.new.internal.backends.api_model import (
     DatetimeAttribute,
     FloatAttribute,
-    StringAttribute,
-    FloatSeriesAttribute,
-    StringSeriesAttribute,
-    StringSetAttribute,
-    StringSeriesValues,
-    FloatSeriesValues,
-    StringPointValue,
     FloatPointValue,
+    FloatSeriesAttribute,
+    FloatSeriesValues,
+    StringAttribute,
+    StringPointValue,
+    StringSeriesAttribute,
+    StringSeriesValues,
+    StringSetAttribute,
 )
+from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.container_type import ContainerType
-
 from neptune.new.internal.operation import (
+    AddStrings,
+    AssignDatetime,
     AssignFloat,
     AssignString,
-    AssignDatetime,
     LogFloats,
     LogStrings,
-    AddStrings,
 )
-
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from tests.neptune.random_utils import a_string
 
 
 class TestNeptuneBackendMock(unittest.TestCase):
     # pylint:disable=protected-access
 
-    project_uuid = uuid.uuid4()
-
     def setUp(self) -> None:
-        self.backend = NeptuneBackendMock(self.project_uuid)
-        self.exp = self.backend.create_run(str(self.project_uuid))
+        self.backend = NeptuneBackendMock()
+        self.exp = self.backend.create_run(self.backend._project_id)
         self.ids_with_types = [
             (self.exp.id, ContainerType.RUN),
-            (str(self.project_uuid), ContainerType.PROJECT),
+            (self.backend._project_id, ContainerType.PROJECT),
         ]
 
     def test_get_float_attribute(self):

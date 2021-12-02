@@ -111,11 +111,9 @@ class NeptuneBackendMock(NeptuneBackend):
     PROJECT_NAME = "project-placeholder"
     PROJECT_KEY = "OFFLINE"
 
-    def __init__(self, project_id: uuid.UUID = None):
+    def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
-        self._project_id: str = (
-            str(uuid.uuid4()) if project_id is None else str(project_id)
-        )
+        self._project_id: str = str(uuid.uuid4())
         self._containers: Dict[
             (str, ContainerType), ContainerStructure[Value, dict]
         ] = dict()

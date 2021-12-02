@@ -211,7 +211,7 @@ class AttributeContainer(AbstractContextManager):
         return self._get_root_handler().fetch()
 
     def ping(self):
-        self._backend.ping_run(self._id)
+        self._backend.ping(self._id, self.container_type)
 
     def start(self):
         atexit.register(self._shutdown_hook)

@@ -342,7 +342,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             return None
 
     @with_api_exceptions_handler
-    def ping_run(self, run_id: str):
+    def ping(self, container_id: str, container_type):
         request_kwargs = {
             "_request_options": {
                 "timeout": 10,
@@ -351,11 +351,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
         try:
             self.leaderboard_client.api.ping(
-                experimentId=run_id,
+                experimentId=container_id,
                 **request_kwargs,
             ).response().result
         except HTTPNotFound:
-            raise ContainerUUIDNotFound(run_id, ContainerType.RUN)
+            raise ContainerUUIDNotFound(container_id, container_type)
 
     def execute_operations(
         self,
