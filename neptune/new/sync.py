@@ -236,7 +236,7 @@ def sync_run(run_path: Path, qualified_run_name: str) -> None:
     run_id = run_path.name
     click.echo("Synchronising {}".format(qualified_run_name))
     for execution_path in run_path.iterdir():
-        # TODO: JK is it run, or maybe an Project?
+        # TODO: take care of `sync_project`, maybe in the same function? NPT-11261
         sync_execution(execution_path, run_id, ContainerType.RUN)
     click.echo("Synchronization of run {} completed.".format(qualified_run_name))
 

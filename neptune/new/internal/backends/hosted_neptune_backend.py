@@ -474,7 +474,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         for op in artifact_operations:
             try:
                 artifact_hash = self.get_artifact_attribute(
-                    container_id, container_type, ContainerType.RUN,op.path
+                    container_id, container_type, ContainerType.RUN, op.path
                 ).hash
             except FetchAttributeNotFoundException:
                 artifact_hash = None

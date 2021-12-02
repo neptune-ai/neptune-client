@@ -260,8 +260,8 @@ def init_run(
 
     operation_processor = get_operation_processor(
         mode,
-        parent_id=api_run.id,
-        parent_type=ContainerType.RUN,
+        container_id=api_run.id,
+        container_type=ContainerType.RUN,
         backend=backend,
         lock=run_lock,
         flush_period=flush_period,
