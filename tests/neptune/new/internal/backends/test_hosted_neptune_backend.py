@@ -18,6 +18,7 @@ import unittest
 import uuid
 from unittest.mock import call
 
+import pytest
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 from mock import MagicMock, patch
 from packaging.version import Version
@@ -85,7 +86,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
-        exp_uuid = str(uuid.uuid4())
+        container_uuid = str(uuid.uuid4())
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
@@ -95,154 +96,174 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         some_text = "Some streamed text"
         some_binary = b"Some streamed binary"
 
-        # when
-        result = backend.execute_operations(
-            container_id=exp_uuid,
-            container_type=ContainerType.RUN,
-            operations=[
-                UploadFile(
-                    path=["some", "files", "some_file"],
-                    ext="",
-                    file_path="path_to_file",
-                ),
-                UploadFileContent(
-                    path=["some", "files", "some_text_stream"],
-                    ext="txt",
-                    file_content=base64_encode(some_text.encode("utf-8")),
-                ),
-                UploadFileContent(
-                    path=["some", "files", "some_binary_stream"],
-                    ext="bin",
-                    file_content=base64_encode(some_binary),
-                ),
-                LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
-                AssignString(["properties", "name"], "some text"),
-                UploadFile(
-                    path=["some", "other", "file.txt"],
-                    ext="txt",
-                    file_path="other/file/path.txt",
-                ),
-            ],
-        )
+        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+            with self.subTest(msg=f"For type {container_type.value}"):
+                upload_mock.reset_mock()
+                swagger_client_factory.reset_mock()
 
-        # than
-        swagger_client.api.executeOperations.assert_called_once_with(
-            **{
-                "experimentId": str(exp_uuid),
-                "operations": [
-                    {
-                        "path": "images/img1",
-                        "logFloats": {
-                            "entries": [
-                                {"value": 1, "step": 2, "timestampMilliseconds": 3000}
-                            ]
-                        },
-                    },
-                    {"path": "properties/name", "assignString": {"value": "some text"}},
-                ],
-                **DEFAULT_REQUEST_KWARGS,
-            }
-        )
+                # when
+                result = backend.execute_operations(
+                    container_id=container_uuid,
+                    container_type=container_type,
+                    operations=[
+                        UploadFile(
+                            path=["some", "files", "some_file"],
+                            ext="",
+                            file_path="path_to_file",
+                        ),
+                        UploadFileContent(
+                            path=["some", "files", "some_text_stream"],
+                            ext="txt",
+                            file_content=base64_encode(some_text.encode("utf-8")),
+                        ),
+                        UploadFileContent(
+                            path=["some", "files", "some_binary_stream"],
+                            ext="bin",
+                            file_content=base64_encode(some_binary),
+                        ),
+                        LogFloats(["images", "img1"], [LogFloats.ValueType(1, 2, 3)]),
+                        AssignString(["properties", "name"], "some text"),
+                        UploadFile(
+                            path=["some", "other", "file.txt"],
+                            ext="txt",
+                            file_path="other/file/path.txt",
+                        ),
+                    ],
+                )
 
-        upload_mock.assert_has_calls(
-            [
-                call(
-                    swagger_client=backend.leaderboard_client,
-                    container_id=exp_uuid,
-                    attribute="some/other/file.txt",
-                    source="other/file/path.txt",
-                    ext="txt",
-                ),
-                call(
-                    swagger_client=backend.leaderboard_client,
-                    container_id=exp_uuid,
-                    attribute="some/files/some_file",
-                    source="path_to_file",
-                    ext="",
-                ),
-                call(
-                    swagger_client=backend.leaderboard_client,
-                    container_id=exp_uuid,
-                    attribute="some/files/some_text_stream",
-                    source=some_text.encode("utf-8"),
-                    ext="txt",
-                ),
-                call(
-                    swagger_client=backend.leaderboard_client,
-                    container_id=exp_uuid,
-                    attribute="some/files/some_binary_stream",
-                    source=some_binary,
-                    ext="bin",
-                ),
-            ],
-            any_order=True,
-        )
+                # then
+                swagger_client.api.executeOperations.assert_called_once_with(
+                    **{
+                        "experimentId": str(container_uuid),
+                        "operations": [
+                            {
+                                "path": "images/img1",
+                                "logFloats": {
+                                    "entries": [
+                                        {
+                                            "value": 1,
+                                            "step": 2,
+                                            "timestampMilliseconds": 3000,
+                                        }
+                                    ]
+                                },
+                            },
+                            {
+                                "path": "properties/name",
+                                "assignString": {"value": "some text"},
+                            },
+                        ],
+                        **DEFAULT_REQUEST_KWARGS,
+                    }
+                )
 
-        self.assertEqual(
-            [
-                FileUploadError("file1", "error2"),
-                FileUploadError("file1", "error2"),
-                FileUploadError("file1", "error2"),
-                FileUploadError("file1", "error2"),
-                MetadataInconsistency("error1"),
-            ],
-            result,
-        )
+                upload_mock.assert_has_calls(
+                    [
+                        call(
+                            swagger_client=backend.leaderboard_client,
+                            container_id=container_uuid,
+                            attribute="some/other/file.txt",
+                            source="other/file/path.txt",
+                            ext="txt",
+                        ),
+                        call(
+                            swagger_client=backend.leaderboard_client,
+                            container_id=container_uuid,
+                            attribute="some/files/some_file",
+                            source="path_to_file",
+                            ext="",
+                        ),
+                        call(
+                            swagger_client=backend.leaderboard_client,
+                            container_id=container_uuid,
+                            attribute="some/files/some_text_stream",
+                            source=some_text.encode("utf-8"),
+                            ext="txt",
+                        ),
+                        call(
+                            swagger_client=backend.leaderboard_client,
+                            container_id=container_uuid,
+                            attribute="some/files/some_binary_stream",
+                            source=some_binary,
+                            ext="bin",
+                        ),
+                    ],
+                    any_order=True,
+                )
+
+                self.assertEqual(
+                    [
+                        FileUploadError("file1", "error2"),
+                        FileUploadError("file1", "error2"),
+                        FileUploadError("file1", "error2"),
+                        FileUploadError("file1", "error2"),
+                        MetadataInconsistency("error1"),
+                    ],
+                    result,
+                )
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
     def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
-        exp_uuid = str(uuid.uuid4())
+        container_uuid = str(uuid.uuid4())
 
-        # when
-        backend.execute_operations(
-            container_id=exp_uuid,
-            container_type=ContainerType.RUN,
-            operations=[
-                UploadFile(
-                    path=["some", "path", "1", "var"], ext="", file_path="/path/to/file"
-                ),
-                UploadFile(
-                    path=["some", "path", "2", "var"],
-                    ext="txt",
-                    file_path="/some.file/with.dots.txt",
-                ),
-                UploadFile(
-                    path=["some", "path", "3", "var"],
-                    ext="jpeg",
-                    file_path="/path/to/some_image.jpeg",
-                ),
-            ],
-        )
+        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+            with self.subTest(msg=f"For type {container_type.value}"):
+                upload_mock.reset_mock()
+                swagger_client_factory.reset_mock()
 
-        upload_mock.assert_has_calls(
-            [
-                call(
-                    swagger_client=backend.leaderboard_client,
-                    container_id=exp_uuid,
-                    attribute="some/path/1/var",
-                    source="/path/to/file",
-                    ext="",
-                ),
-                call(
-                    swagger_client=backend.leaderboard_client,
-                    container_id=exp_uuid,
-                    attribute="some/path/2/var",
-                    source="/some.file/with.dots.txt",
-                    ext="txt",
-                ),
-                call(
-                    swagger_client=backend.leaderboard_client,
-                    container_id=exp_uuid,
-                    attribute="some/path/3/var",
-                    source="/path/to/some_image.jpeg",
-                    ext="jpeg",
-                ),
-            ],
-            any_order=True,
-        )
+                # when
+                backend.execute_operations(
+                    container_id=container_uuid,
+                    container_type=container_type,
+                    operations=[
+                        UploadFile(
+                            path=["some", "path", "1", "var"],
+                            ext="",
+                            file_path="/path/to/file",
+                        ),
+                        UploadFile(
+                            path=["some", "path", "2", "var"],
+                            ext="txt",
+                            file_path="/some.file/with.dots.txt",
+                        ),
+                        UploadFile(
+                            path=["some", "path", "3", "var"],
+                            ext="jpeg",
+                            file_path="/path/to/some_image.jpeg",
+                        ),
+                    ],
+                )
+
+                # then
+                upload_mock.assert_has_calls(
+                    [
+                        call(
+                            swagger_client=backend.leaderboard_client,
+                            container_id=container_uuid,
+                            attribute="some/path/1/var",
+                            source="/path/to/file",
+                            ext="",
+                        ),
+                        call(
+                            swagger_client=backend.leaderboard_client,
+                            container_id=container_uuid,
+                            attribute="some/path/2/var",
+                            source="/some.file/with.dots.txt",
+                            ext="txt",
+                        ),
+                        call(
+                            swagger_client=backend.leaderboard_client,
+                            container_id=container_uuid,
+                            attribute="some/path/3/var",
+                            source="/path/to/some_image.jpeg",
+                            ext="jpeg",
+                        ),
+                    ],
+                    any_order=True,
+                )
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_new_artifact")
     def test_track_to_new_artifact(
@@ -251,9 +272,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
-        exp_id = str(uuid.uuid4())
+        container_id = str(uuid.uuid4())
         project_id = str(uuid.uuid4())
-        container_type = ContainerType.RUN  # TODO: test  projects as well
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
@@ -264,64 +284,78 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             response=MagicMock()
         )
 
-        # when
-        backend.execute_operations(
-            container_id=exp_id,
-            container_type=container_type,
-            operations=[
-                TrackFilesToArtifact(
-                    path=["sub", "one"],
-                    project_id=project_id,
-                    entries=[("/path/to/file", "/path/to")],
-                ),
-                TrackFilesToArtifact(
-                    path=["sub", "two"],
-                    project_id=project_id,
-                    entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                ),
-                TrackFilesToArtifact(
-                    path=["sub", "three"],
-                    project_id=project_id,
-                    entries=[("/path/to/file1", None)],
-                ),
-                TrackFilesToArtifact(
-                    path=["sub", "three"],
-                    project_id=project_id,
-                    entries=[("/path/to/file2", None)],
-                ),
-            ],
-        )
+        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+            with self.subTest(msg=f"For type {container_type.value}"):
+                track_to_new_artifact_mock.reset_mock()
+                swagger_client_factory.reset_mock()
 
-        # then
-        track_to_new_artifact_mock.assert_has_calls(
-            [
-                call(
-                    swagger_client=swagger_client,
-                    project_id=project_id,
-                    path=["sub", "one"],
-                    parent_identifier=str(exp_id),
-                    entries=[("/path/to/file", "/path/to")],
-                    default_request_params=DEFAULT_REQUEST_KWARGS,
-                ),
-                call(
-                    swagger_client=swagger_client,
-                    project_id=project_id,
-                    path=["sub", "two"],
-                    parent_identifier=str(exp_id),
-                    entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                    default_request_params=DEFAULT_REQUEST_KWARGS,
-                ),
-                call(
-                    swagger_client=swagger_client,
-                    project_id=project_id,
-                    path=["sub", "three"],
-                    parent_identifier=str(exp_id),
-                    entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                    default_request_params=DEFAULT_REQUEST_KWARGS,
-                ),
-            ],
-            any_order=True,
-        )
+                # when
+                backend.execute_operations(
+                    container_id=container_id,
+                    container_type=container_type,
+                    operations=[
+                        TrackFilesToArtifact(
+                            path=["sub", "one"],
+                            project_id=project_id,
+                            entries=[("/path/to/file", "/path/to")],
+                        ),
+                        TrackFilesToArtifact(
+                            path=["sub", "two"],
+                            project_id=project_id,
+                            entries=[
+                                ("/path/to/file1", None),
+                                ("/path/to/file2", None),
+                            ],
+                        ),
+                        TrackFilesToArtifact(
+                            path=["sub", "three"],
+                            project_id=project_id,
+                            entries=[("/path/to/file1", None)],
+                        ),
+                        TrackFilesToArtifact(
+                            path=["sub", "three"],
+                            project_id=project_id,
+                            entries=[("/path/to/file2", None)],
+                        ),
+                    ],
+                )
+
+                # then
+                track_to_new_artifact_mock.assert_has_calls(
+                    [
+                        call(
+                            swagger_client=swagger_client,
+                            project_id=project_id,
+                            path=["sub", "one"],
+                            parent_identifier=str(container_id),
+                            entries=[("/path/to/file", "/path/to")],
+                            default_request_params=DEFAULT_REQUEST_KWARGS,
+                        ),
+                        call(
+                            swagger_client=swagger_client,
+                            project_id=project_id,
+                            path=["sub", "two"],
+                            parent_identifier=str(container_id),
+                            entries=[
+                                ("/path/to/file1", None),
+                                ("/path/to/file2", None),
+                            ],
+                            default_request_params=DEFAULT_REQUEST_KWARGS,
+                        ),
+                        call(
+                            swagger_client=swagger_client,
+                            project_id=project_id,
+                            path=["sub", "three"],
+                            parent_identifier=str(container_id),
+                            entries=[
+                                ("/path/to/file1", None),
+                                ("/path/to/file2", None),
+                            ],
+                            default_request_params=DEFAULT_REQUEST_KWARGS,
+                        ),
+                    ],
+                    any_order=True,
+                )
 
     @patch(
         "neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact"
@@ -332,7 +366,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
-        exp_id = str(uuid.uuid4())
+        container_id = str(uuid.uuid4())
         project_id = str(uuid.uuid4())
 
         response_error = MagicMock()
@@ -344,67 +378,84 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
             "dummyHash"
         )
 
-        # when
-        backend.execute_operations(
-            container_id=exp_id,
-            container_type=ContainerType.RUN,
-            operations=[
-                TrackFilesToArtifact(
-                    path=["sub", "one"],
-                    project_id=project_id,
-                    entries=[("/path/to/file", "/path/to")],
-                ),
-                TrackFilesToArtifact(
-                    path=["sub", "two"],
-                    project_id=project_id,
-                    entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                ),
-                TrackFilesToArtifact(
-                    path=["sub", "three"],
-                    project_id=project_id,
-                    entries=[("/path/to/file1", None)],
-                ),
-                TrackFilesToArtifact(
-                    path=["sub", "three"],
-                    project_id=project_id,
-                    entries=[("/path/to/file2", None)],
-                ),
-            ],
-        )
+        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+            track_to_existing_artifact_mock.reset_mock()
+            swagger_client_factory.reset_mock()
 
-        # then
-        track_to_existing_artifact_mock.assert_has_calls(
-            [
-                call(
-                    swagger_client=swagger_client,
-                    project_id=project_id,
-                    path=["sub", "one"],
-                    artifact_hash="dummyHash",
-                    parent_identifier=str(exp_id),
-                    entries=[("/path/to/file", "/path/to")],
-                    default_request_params=DEFAULT_REQUEST_KWARGS,
-                ),
-                call(
-                    swagger_client=swagger_client,
-                    project_id=project_id,
-                    path=["sub", "two"],
-                    artifact_hash="dummyHash",
-                    parent_identifier=str(exp_id),
-                    entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                    default_request_params=DEFAULT_REQUEST_KWARGS,
-                ),
-                call(
-                    swagger_client=swagger_client,
-                    project_id=project_id,
-                    path=["sub", "three"],
-                    artifact_hash="dummyHash",
-                    parent_identifier=str(exp_id),
-                    entries=[("/path/to/file1", None), ("/path/to/file2", None)],
-                    default_request_params=DEFAULT_REQUEST_KWARGS,
-                ),
-            ],
-            any_order=True,
-        )
+            with self.subTest(msg=f"For type {container_type.value}"):
+                track_to_existing_artifact_mock.reset_mock()
+                swagger_client_factory.reset_mock()
+
+                # when
+                backend.execute_operations(
+                    container_id=container_id,
+                    container_type=container_type,
+                    operations=[
+                        TrackFilesToArtifact(
+                            path=["sub", "one"],
+                            project_id=project_id,
+                            entries=[("/path/to/file", "/path/to")],
+                        ),
+                        TrackFilesToArtifact(
+                            path=["sub", "two"],
+                            project_id=project_id,
+                            entries=[
+                                ("/path/to/file1", None),
+                                ("/path/to/file2", None),
+                            ],
+                        ),
+                        TrackFilesToArtifact(
+                            path=["sub", "three"],
+                            project_id=project_id,
+                            entries=[("/path/to/file1", None)],
+                        ),
+                        TrackFilesToArtifact(
+                            path=["sub", "three"],
+                            project_id=project_id,
+                            entries=[("/path/to/file2", None)],
+                        ),
+                    ],
+                )
+
+                # then
+                track_to_existing_artifact_mock.assert_has_calls(
+                    [
+                        call(
+                            swagger_client=swagger_client,
+                            project_id=project_id,
+                            path=["sub", "one"],
+                            artifact_hash="dummyHash",
+                            parent_identifier=str(container_id),
+                            entries=[("/path/to/file", "/path/to")],
+                            default_request_params=DEFAULT_REQUEST_KWARGS,
+                        ),
+                        call(
+                            swagger_client=swagger_client,
+                            project_id=project_id,
+                            path=["sub", "two"],
+                            artifact_hash="dummyHash",
+                            parent_identifier=str(container_id),
+                            entries=[
+                                ("/path/to/file1", None),
+                                ("/path/to/file2", None),
+                            ],
+                            default_request_params=DEFAULT_REQUEST_KWARGS,
+                        ),
+                        call(
+                            swagger_client=swagger_client,
+                            project_id=project_id,
+                            path=["sub", "three"],
+                            artifact_hash="dummyHash",
+                            parent_identifier=str(container_id),
+                            entries=[
+                                ("/path/to/file1", None),
+                                ("/path/to/file2", None),
+                            ],
+                            default_request_params=DEFAULT_REQUEST_KWARGS,
+                        ),
+                    ],
+                    any_order=True,
+                )
 
     @patch(
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
@@ -469,7 +520,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
-        exp_uuid = str(uuid.uuid4())
+        container_uuid = str(uuid.uuid4())
 
         # when:
         error = MagicMock()
@@ -479,20 +530,22 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
 
         # then:
-        with self.assertRaises(NeptuneLimitExceedException):
-            backend.execute_operations(
-                container_id=exp_uuid,
-                container_type=ContainerType.RUN,
-                operations=[
-                    LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
-                ],
-            )
+        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+            with self.subTest(msg=f"For type {container_type.value}"):
+                with self.assertRaises(NeptuneLimitExceedException):
+                    backend.execute_operations(
+                        container_id=container_uuid,
+                        container_type=container_type,
+                        operations=[
+                            LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
+                        ],
+                    )
 
     def test_limit_exceed_legacy(self, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
-        exp_uuid = str(uuid.uuid4())
+        container_uuid = str(uuid.uuid4())
 
         # when:
         error = MagicMock()
@@ -502,11 +555,13 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         )
 
         # then:
-        with self.assertRaises(NeptuneLimitExceedException):
-            backend.execute_operations(
-                container_id=exp_uuid,
-                container_type=ContainerType.RUN,
-                operations=[
-                    LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
-                ],
-            )
+        for container_type in [ContainerType.RUN, ContainerType.PROJECT]:
+            with self.subTest(msg=f"For type {container_type.value}"):
+                with self.assertRaises(NeptuneLimitExceedException):
+                    backend.execute_operations(
+                        container_id=container_uuid,
+                        container_type=container_type,
+                        operations=[
+                            LogFloats(["float1"], [LogFloats.ValueType(1, 2, 3)]),
+                        ],
+                    )
