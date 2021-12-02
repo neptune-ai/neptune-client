@@ -15,28 +15,27 @@
 #
 import logging
 import re
-from typing import List, Optional, Dict, Iterable, Tuple, Any
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
-from bravado.exception import HTTPNotFound, HTTPUnprocessableEntity, HTTPPaymentRequired
+from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 from simplejson import JSONDecodeError
 
-from neptune.new.internal.artifacts.types import ArtifactFileData
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.exceptions import (
+    ArtifactNotFoundException,
     ClientHttpError,
+    ContainerUUIDNotFound,
     FetchAttributeNotFoundException,
-    RunNotFound,
-    RunUUIDNotFound,
     InternalClientError,
     MetadataInconsistency,
     NeptuneException,
-    NeptuneLegacyProjectException,
-    ProjectNotFound,
-    ProjectNameCollision,
-    NeptuneLimitExceedException,
-    ArtifactNotFoundException,
     NeptuneFeaturesNotAvailableException,
+    NeptuneLegacyProjectException,
+    NeptuneLimitExceedException,
+    ProjectNameCollision,
+    ProjectNotFound,
+    RunNotFound,
 )
+from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ApiRun,
     ArtifactAttribute,
@@ -61,16 +60,23 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     Workspace,
 )
+from neptune.new.internal.backends.hosted_artifact_operations import (
+    track_to_existing_artifact,
+    track_to_new_artifact,
+)
+from neptune.new.internal.backends.hosted_client import (
+    DEFAULT_REQUEST_KWARGS,
+    create_artifacts_client,
+    create_backend_client,
+    create_http_client_with_auth,
+    create_leaderboard_client,
+)
 from neptune.new.internal.backends.hosted_file_operations import (
     download_file_attribute,
     download_file_set_attribute,
     download_image_series_element,
     upload_file_attribute,
     upload_file_set_attribute,
-)
-from neptune.new.internal.backends.hosted_artifact_operations import (
-    track_to_new_artifact,
-    track_to_existing_artifact,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.operation_api_name_visitor import (
@@ -81,17 +87,13 @@ from neptune.new.internal.backends.operation_api_object_converter import (
 )
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.new.internal.backends.utils import (
-    with_api_exceptions_handler,
     MissingApiClient,
     OptionalFeatures,
+    build_operation_url,
+    ssl_verify,
+    with_api_exceptions_handler,
 )
-from neptune.new.internal.backends.hosted_client import (
-    DEFAULT_REQUEST_KWARGS,
-    create_http_client_with_auth,
-    create_backend_client,
-    create_leaderboard_client,
-    create_artifacts_client,
-)
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
     Operation,
@@ -100,15 +102,15 @@ from neptune.new.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.new.internal.utils import verify_type, base64_decode
+from neptune.new.internal.utils import base64_decode, verify_type
 from neptune.new.internal.utils.generic_attribute_mapper import (
     map_attribute_result_to_value,
 )
 from neptune.new.internal.utils.paths import path_to_str
-from neptune.new.internal.backends.utils import build_operation_url, ssl_verify
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 _logger = logging.getLogger(__name__)
 
@@ -159,9 +161,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             session=self._http_client.authenticator.auth.session,
             proxies=self.proxies,
         )
-
-    def close(self) -> None:
-        pass
 
     @with_api_exceptions_handler
     def get_project(self, project_id: str) -> Project:
@@ -356,7 +355,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 **request_kwargs,
             ).response().result
         except HTTPNotFound:
-            raise RunUUIDNotFound(run_id)
+            raise ContainerUUIDNotFound(run_id, ContainerType.RUN)
 
     def execute_operations(
         self, run_id: str, operations: List[Operation]
@@ -462,7 +461,9 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         for op in artifact_operations:
             try:
-                artifact_hash = self.get_artifact_attribute(run_id, op.path).hash
+                artifact_hash = self.get_artifact_attribute(
+                    run_id, ContainerType.RUN, op.path
+                ).hash
             except FetchAttributeNotFoundException:
                 artifact_hash = None
 
@@ -520,19 +521,23 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
-            raise RunUUIDNotFound(run_id=run_id) from e
+            raise ContainerUUIDNotFound(
+                container_id=run_id, container_type=ContainerType.RUN
+            ) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
             raise NeptuneLimitExceedException(
                 reason=e.response.json().get("title", "Unknown reason")
             ) from e
 
     @with_api_exceptions_handler
-    def get_attributes(self, run_id: str) -> List[Attribute]:
+    def get_attributes(
+        self, container_id: str, container_type: ContainerType
+    ) -> List[Attribute]:
         def to_attribute(attr) -> Attribute:
             return Attribute(attr.name, AttributeType(attr.type))
 
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
@@ -564,15 +569,22 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.type in attribute_type_names
             ]
         except HTTPNotFound:
-            raise RunUUIDNotFound(run_id=run_id)
+            raise ContainerUUIDNotFound(
+                container_id=container_id, container_type=container_type
+            )
 
     def download_file_series_by_index(
-        self, run_id: str, path: List[str], index: int, destination: str
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        index: int,
+        destination: str,
     ):
         try:
             download_image_series_element(
                 swagger_client=self.leaderboard_client,
-                run_id=run_id,
+                run_id=container_id,
                 attribute=path_to_str(path),
                 index=index,
                 destination=destination,
@@ -584,12 +596,16 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise
 
     def download_file(
-        self, run_id: str, path: List[str], destination: Optional[str] = None
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        destination: Optional[str] = None,
     ):
         try:
             download_file_attribute(
                 swagger_client=self.leaderboard_client,
-                run_id=run_id,
+                run_id=container_id,
                 attribute=path_to_str(path),
                 destination=destination,
             )
@@ -600,9 +616,15 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise
 
     def download_file_set(
-        self, run_id: str, path: List[str], destination: Optional[str] = None
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        destination: Optional[str] = None,
     ):
-        download_request = self._get_file_set_download_request(run_id, path)
+        download_request = self._get_file_set_download_request(
+            container_id, container_type, path
+        )
         try:
             download_file_set_attribute(
                 swagger_client=self.leaderboard_client,
@@ -616,9 +638,11 @@ class HostedNeptuneBackend(NeptuneBackend):
                 raise
 
     @with_api_exceptions_handler
-    def get_float_attribute(self, run_id: str, path: List[str]) -> FloatAttribute:
+    def get_float_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> FloatAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -633,9 +657,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_int_attribute(self, run_id: str, path: List[str]) -> IntAttribute:
+    def get_int_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> IntAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -648,9 +674,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_bool_attribute(self, run_id: str, path: List[str]) -> BoolAttribute:
+    def get_bool_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> BoolAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -663,9 +691,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_file_attribute(self, run_id: str, path: List[str]) -> FileAttribute:
+    def get_file_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> FileAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -678,9 +708,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_string_attribute(self, run_id: str, path: List[str]) -> StringAttribute:
+    def get_string_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> StringAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -695,9 +727,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_datetime_attribute(self, run_id: str, path: List[str]) -> DatetimeAttribute:
+    def get_datetime_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> DatetimeAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -712,9 +746,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_artifact_attribute(self, run_id: str, path: List[str]) -> ArtifactAttribute:
+    def get_artifact_attribute(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ) -> ArtifactAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -747,10 +783,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_float_series_attribute(
-        self, run_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> FloatSeriesAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -766,10 +802,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_string_series_attribute(
-        self, run_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSeriesAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -785,10 +821,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_string_set_attribute(
-        self, run_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> StringSetAttribute:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }
@@ -804,10 +840,15 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_image_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
     ) -> ImageSeriesValues:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
             "offset": offset,
@@ -825,10 +866,15 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_string_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
     ) -> StringSeriesValues:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
             "offset": offset,
@@ -852,10 +898,15 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_float_series_values(
-        self, run_id: str, path: List[str], offset: int, limit: int
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        path: List[str],
+        offset: int,
+        limit: int,
     ) -> FloatSeriesValues:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             "limit": limit,
             "offset": offset,
@@ -879,10 +930,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def fetch_atom_attribute_values(
-        self, run_id: str, path: List[str]
+        self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
         }
         try:
             namespace_prefix = path_to_str(path)
@@ -900,12 +951,15 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.name.startswith(namespace_prefix)
             ]
         except HTTPNotFound:
-            raise RunUUIDNotFound(run_id)
+            raise ContainerUUIDNotFound(container_id, container_type)
 
+    # pylint: disable=unused-argument
     @with_api_exceptions_handler
-    def _get_file_set_download_request(self, run_id: str, path: List[str]):
+    def _get_file_set_download_request(
+        self, container_id: str, container_type: ContainerType, path: List[str]
+    ):
         params = {
-            "experimentId": run_id,
+            "experimentId": container_id,
             "attribute": path_to_str(path),
             **DEFAULT_REQUEST_KWARGS,
         }

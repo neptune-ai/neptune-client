@@ -14,16 +14,17 @@
 # limitations under the License.
 #
 
-from typing import Union, Optional, List
+from typing import List, Optional, Union
 from urllib.parse import urlparse
 
 from packaging.version import Version
 
+from neptune.exceptions import STYLES
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
-from neptune.new.internal.utils import replace_patch_version
 from neptune.new.internal.backends.api_model import Project, Workspace
-from neptune.exceptions import STYLES
+from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.utils import replace_patch_version
 
 
 class NeptuneException(Exception):
@@ -275,9 +276,13 @@ class RunNotFound(NeptuneException):
         super().__init__("Run {} not found.".format(run_id))
 
 
-class RunUUIDNotFound(NeptuneException):
-    def __init__(self, run_id: str):
-        super().__init__("Run with ID {} not found. Could be deleted.".format(run_id))
+class ContainerUUIDNotFound(NeptuneException):
+    def __init__(self, container_id: str, container_type: ContainerType):
+        super().__init__(
+            "Container with ID {} of type {} not found. Could be deleted.".format(
+                container_id, container_type
+            )
+        )
 
 
 class InactiveRunException(NeptuneException):

@@ -486,7 +486,7 @@ class AttributeContainer(AbstractContextManager):
         with self._lock:
             if wait:
                 self._op_processor.wait()
-            attributes = self._backend.get_attributes(self._id)
+            attributes = self._backend.get_attributes(self._id, self.container_type)
             self._structure.clear()
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)

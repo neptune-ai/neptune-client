@@ -32,6 +32,7 @@ from neptune.new.internal.backends.api_model import (
     StringPointValue,
     FloatPointValue,
 )
+from neptune.new.internal.container_type import ContainerType
 
 from neptune.new.internal.operation import (
     AssignFloat,
@@ -57,7 +58,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         backend.execute_operations(exp.id, [AssignFloat(["x"], 5)])
 
         # when
-        ret = backend.get_float_attribute(exp.id, ["x"])
+        ret = backend.get_float_attribute(exp.id, ContainerType.RUN, ["x"])
 
         # then
         self.assertEqual(FloatAttribute(5), ret)
@@ -69,7 +70,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         backend.execute_operations(exp.id, [AssignString(["x"], "abcx")])
 
         # when
-        ret = backend.get_string_attribute(exp.id, ["x"])
+        ret = backend.get_string_attribute(exp.id, ContainerType.RUN, ["x"])
 
         # then
         self.assertEqual(StringAttribute("abcx"), ret)
@@ -83,7 +84,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         backend.execute_operations(exp.id, [AssignDatetime(["x"], now)])
 
         # when
-        ret = backend.get_datetime_attribute(exp.id, ["x"])
+        ret = backend.get_datetime_attribute(exp.id, ContainerType.RUN, ["x"])
 
         # then
         self.assertEqual(DatetimeAttribute(now), ret)
@@ -118,7 +119,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         )
 
         # when
-        ret = backend.get_float_series_attribute(exp.id, ["x"])
+        ret = backend.get_float_series_attribute(exp.id, ContainerType.RUN, ["x"])
 
         # then
         self.assertEqual(FloatSeriesAttribute(9), ret)
@@ -153,7 +154,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         )
 
         # when
-        ret = backend.get_string_series_attribute(exp.id, ["x"])
+        ret = backend.get_string_series_attribute(exp.id, ContainerType.RUN, ["x"])
 
         # then
         self.assertEqual(StringSeriesAttribute("qwe"), ret)
@@ -165,7 +166,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         backend.execute_operations(exp.id, [AddStrings(["x"], {"abcx", "qwe"})])
 
         # when
-        ret = backend.get_string_set_attribute(exp.id, ["x"])
+        ret = backend.get_string_set_attribute(exp.id, ContainerType.RUN, ["x"])
 
         # then
         self.assertEqual(StringSetAttribute({"abcx", "qwe"}), ret)
@@ -200,7 +201,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         )
 
         # when
-        ret = backend.get_string_series_values(exp.id, ["x"], limit=100, offset=0)
+        ret = backend.get_string_series_values(
+            exp.id, ContainerType.RUN, ["x"], limit=100, offset=0
+        )
 
         # then
         self.assertEqual(
@@ -246,7 +249,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
         )
 
         # when
-        ret = backend.get_float_series_values(exp.id, ["x"], limit=100, offset=0)
+        ret = backend.get_float_series_values(
+            exp.id, ContainerType.RUN, ["x"], limit=100, offset=0
+        )
 
         # then
         self.assertEqual(
@@ -270,7 +275,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_float_series_attribute(exp.id, ["x"])
+            backend.get_float_series_attribute(exp.id, ContainerType.RUN, ["x"])
 
     def test_get_string_attribute_wrong_type(self):
         # given
@@ -280,7 +285,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_string_attribute(exp.id, ["x"])
+            backend.get_string_attribute(exp.id, ContainerType.RUN, ["x"])
 
     def test_get_datetime_attribute_wrong_type(self):
         # given
@@ -290,7 +295,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_datetime_attribute(exp.id, ["x"])
+            backend.get_datetime_attribute(exp.id, ContainerType.RUN, ["x"])
 
     def test_get_float_series_attribute_wrong_type(self):
         # given
@@ -300,7 +305,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_float_series_attribute(exp.id, ["x"])
+            backend.get_float_series_attribute(exp.id, ContainerType.RUN, ["x"])
 
     def test_get_string_series_attribute_wrong_type(self):
         # given
@@ -310,7 +315,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_string_series_attribute(exp.id, ["x"])
+            backend.get_string_series_attribute(exp.id, ContainerType.RUN, ["x"])
 
     def test_get_string_set_attribute_wrong_type(self):
         # given
@@ -320,4 +325,4 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
         # then
         with self.assertRaises(MetadataInconsistency):
-            backend.get_string_set_attribute(exp.id, ["x"])
+            backend.get_string_set_attribute(exp.id, ContainerType.RUN, ["x"])
