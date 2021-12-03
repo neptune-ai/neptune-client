@@ -53,7 +53,7 @@ def init_project(
     operation_processor = get_operation_processor(
         mode,
         container_id=project_obj.id,
-        container_type=ContainerType.PROJECT,
+        container_type=Project.container_type
         backend=backend,
         lock=project_lock,
         flush_period=flush_period,
