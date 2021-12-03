@@ -27,6 +27,7 @@ import neptune.new.sync
 from neptune.new.constants import OFFLINE_DIRECTORY
 from neptune.new.exceptions import ProjectNotFound
 from neptune.new.internal.backends.api_model import Project
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
@@ -179,8 +180,8 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
     # pylint: disable=no-member
     neptune.new.sync.backend.execute_operations.has_calls(
         [
-            mocker.call(unsync_exp.id, ["op-1"]),
-            mocker.call(registered_offline_run.id, ["op-1"]),
+            mocker.call(unsync_exp.id, ContainerType.RUN, ["op-1"]),
+            mocker.call(registered_offline_run.id, ContainerType.RUN, ["op-1"]),
         ],
         any_order=True,
     )
@@ -245,7 +246,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
     # and
     # pylint: disable=no-member
     neptune.new.sync.backend.execute_operations.assert_called_with(
-        registered_offline_exp.id, ["op-0", "op-1"]
+        registered_offline_exp.id, ContainerType.RUN, operations=["op-0", "op-1"]
     )
 
 

@@ -43,6 +43,7 @@ from neptune.new.exceptions import (
 from neptune.new.internal.backends.api_model import Project, ApiRun
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import Operation
@@ -235,11 +236,14 @@ def sync_run(run_path: Path, qualified_run_name: str) -> None:
     run_id = run_path.name
     click.echo("Synchronising {}".format(qualified_run_name))
     for execution_path in run_path.iterdir():
-        sync_execution(execution_path, run_id)
+        # TODO: take care of `sync_project`, maybe in the same function? NPT-11261
+        sync_execution(execution_path, run_id, ContainerType.RUN)
     click.echo("Synchronization of run {} completed.".format(qualified_run_name))
 
 
-def sync_execution(execution_path: Path, run_id: str) -> None:
+def sync_execution(
+    execution_path: Path, container_id: str, container_type: ContainerType
+) -> None:
     disk_queue = DiskQueue(
         execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock()
     )
@@ -251,7 +255,9 @@ def sync_execution(execution_path: Path, run_id: str) -> None:
         start_time = time.monotonic()
         while True:
             try:
-                backend.execute_operations(run_id, batch)
+                backend.execute_operations(
+                    container_id, container_type, operations=batch
+                )
                 break
             except NeptuneConnectionLostException as ex:
                 if time.monotonic() - start_time > retries_timeout:

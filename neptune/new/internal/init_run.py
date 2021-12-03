@@ -23,14 +23,14 @@ from typing import List, Optional, Union
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.envs import (
     CUSTOM_RUN_ID_ENV_NAME,
+    MONITORING_NAMESPACE,
     NEPTUNE_NOTEBOOK_ID,
     NEPTUNE_NOTEBOOK_PATH,
-    MONITORING_NAMESPACE,
 )
 from neptune.new.exceptions import (
     NeedExistingRunForReadOnlyMode,
-    NeptuneRunResumeAndCustomIdCollision,
     NeptunePossibleLegacyUsageException,
+    NeptuneRunResumeAndCustomIdCollision,
 )
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -259,7 +259,8 @@ def init_run(
 
     operation_processor = get_operation_processor(
         mode,
-        parent_id=api_run.id,
+        container_id=api_run.id,
+        container_type=Run.container_type,
         backend=backend,
         lock=run_lock,
         flush_period=flush_period,

@@ -22,6 +22,7 @@ from typing import Optional, List
 
 import click
 
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.containers.storage_queue import StorageQueue
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
@@ -41,14 +42,16 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def __init__(
         self,
-        run_id: str,
+        container_id: str,
+        container_type: ContainerType,
         queue: StorageQueue[Operation],
         backend: NeptuneBackend,
         lock: threading.RLock,
         sleep_time: float = 5,
         batch_size: int = 1000,
     ):
-        self._run_id = run_id
+        self._container_id = container_id
+        self._container_type = container_type
         self._queue = queue
         self._backend = backend
         self._batch_size = batch_size
@@ -218,7 +221,9 @@ class AsyncOperationProcessor(OperationProcessor):
         def process_batch(self, batch: List[Operation], version: int) -> None:
             # TODO: Handle Metadata errors
             result = self._processor._backend.execute_operations(
-                self._processor._run_id, batch
+                container_id=self._processor._container_id,
+                container_type=self._processor._container_type,
+                operations=batch,
             )
 
             with self._processor._waiting_cond:

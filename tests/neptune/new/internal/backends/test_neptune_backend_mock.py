@@ -15,314 +15,380 @@
 #
 import datetime
 import unittest
-import uuid
+from random import randint
 from time import time
 
 from neptune.new.exceptions import MetadataInconsistency
-
 from neptune.new.internal.backends.api_model import (
     DatetimeAttribute,
     FloatAttribute,
-    StringAttribute,
-    FloatSeriesAttribute,
-    StringSeriesAttribute,
-    StringSetAttribute,
-    StringSeriesValues,
-    FloatSeriesValues,
-    StringPointValue,
     FloatPointValue,
+    FloatSeriesAttribute,
+    FloatSeriesValues,
+    StringAttribute,
+    StringPointValue,
+    StringSeriesAttribute,
+    StringSeriesValues,
+    StringSetAttribute,
 )
+from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.container_type import ContainerType
-
 from neptune.new.internal.operation import (
+    AddStrings,
+    AssignDatetime,
     AssignFloat,
     AssignString,
-    AssignDatetime,
     LogFloats,
     LogStrings,
-    AddStrings,
 )
-
-from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from tests.neptune.random_utils import a_string
 
 
 class TestNeptuneBackendMock(unittest.TestCase):
     # pylint:disable=protected-access
 
-    project_uuid = uuid.uuid4()
+    def setUp(self) -> None:
+        self.backend = NeptuneBackendMock()
+        self.exp = self.backend.create_run(self.backend._project_id)
+        self.ids_with_types = [
+            (self.exp.id, ContainerType.RUN),
+            (self.backend._project_id, ContainerType.PROJECT),
+        ]
 
     def test_get_float_attribute(self):
-        # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignFloat(["x"], 5)])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                # given
+                digit = randint(1, 10 ** 4)
+                self.backend.execute_operations(
+                    container_id, container_type, operations=[AssignFloat(["x"], digit)]
+                )
 
-        # when
-        ret = backend.get_float_attribute(exp.id, ContainerType.RUN, ["x"])
+                # when
+                ret = self.backend.get_float_attribute(
+                    container_id, container_type, path=["x"]
+                )
 
-        # then
-        self.assertEqual(FloatAttribute(5), ret)
+                # then
+                self.assertEqual(FloatAttribute(digit), ret)
 
     def test_get_string_attribute(self):
-        # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abcx")])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                # given
+                text = a_string()
+                self.backend.execute_operations(
+                    container_id, container_type, operations=[AssignString(["x"], text)]
+                )
 
-        # when
-        ret = backend.get_string_attribute(exp.id, ContainerType.RUN, ["x"])
+                # when
+                ret = self.backend.get_string_attribute(
+                    container_id, container_type, path=["x"]
+                )
 
-        # then
-        self.assertEqual(StringAttribute("abcx"), ret)
+                # then
+                self.assertEqual(StringAttribute(text), ret)
 
     def test_get_datetime_attribute(self):
-        # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        now = datetime.datetime.now()
-        now = now.replace(microsecond=1000 * int(now.microsecond / 1000))
-        backend.execute_operations(exp.id, [AssignDatetime(["x"], now)])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                # given
+                now = datetime.datetime.now()
+                now = now.replace(microsecond=1000 * int(now.microsecond / 1000))
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignDatetime(["x"], now)]
+                )
 
-        # when
-        ret = backend.get_datetime_attribute(exp.id, ContainerType.RUN, ["x"])
+                # when
+                ret = self.backend.get_datetime_attribute(
+                    container_id, container_type, ["x"]
+                )
 
-        # then
-        self.assertEqual(DatetimeAttribute(now), ret)
+                # then
+                self.assertEqual(DatetimeAttribute(now), ret)
 
     def test_get_float_series_attribute(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(
-            exp.id,
-            [
-                LogFloats(
-                    ["x"],
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
                     [
-                        LogFloats.ValueType(5, None, time()),
-                        LogFloats.ValueType(3, None, time()),
+                        LogFloats(
+                            ["x"],
+                            [
+                                LogFloats.ValueType(5, None, time()),
+                                LogFloats.ValueType(3, None, time()),
+                            ],
+                        )
                     ],
                 )
-            ],
-        )
-        backend.execute_operations(
-            exp.id,
-            [
-                LogFloats(
-                    ["x"],
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
                     [
-                        LogFloats.ValueType(2, None, time()),
-                        LogFloats.ValueType(9, None, time()),
+                        LogFloats(
+                            ["x"],
+                            [
+                                LogFloats.ValueType(2, None, time()),
+                                LogFloats.ValueType(9, None, time()),
+                            ],
+                        )
                     ],
                 )
-            ],
-        )
 
-        # when
-        ret = backend.get_float_series_attribute(exp.id, ContainerType.RUN, ["x"])
+                # when
+                ret = self.backend.get_float_series_attribute(
+                    container_id, container_type, ["x"]
+                )
 
-        # then
-        self.assertEqual(FloatSeriesAttribute(9), ret)
+                # then
+                self.assertEqual(FloatSeriesAttribute(9), ret)
 
     def test_get_string_series_attribute(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(
-            exp.id,
-            [
-                LogStrings(
-                    ["x"],
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
                     [
-                        LogStrings.ValueType("adf", None, time()),
-                        LogStrings.ValueType("sdg", None, time()),
+                        LogStrings(
+                            ["x"],
+                            [
+                                LogStrings.ValueType("adf", None, time()),
+                                LogStrings.ValueType("sdg", None, time()),
+                            ],
+                        )
                     ],
                 )
-            ],
-        )
-        backend.execute_operations(
-            exp.id,
-            [
-                LogStrings(
-                    ["x"],
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
                     [
-                        LogStrings.ValueType("dfh", None, time()),
-                        LogStrings.ValueType("qwe", None, time()),
+                        LogStrings(
+                            ["x"],
+                            [
+                                LogStrings.ValueType("dfh", None, time()),
+                                LogStrings.ValueType("qwe", None, time()),
+                            ],
+                        )
                     ],
                 )
-            ],
-        )
 
-        # when
-        ret = backend.get_string_series_attribute(exp.id, ContainerType.RUN, ["x"])
+                # when
+                ret = self.backend.get_string_series_attribute(
+                    container_id, container_type, ["x"]
+                )
 
-        # then
-        self.assertEqual(StringSeriesAttribute("qwe"), ret)
+                # then
+                self.assertEqual(StringSeriesAttribute("qwe"), ret)
 
     def test_get_string_set_attribute(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AddStrings(["x"], {"abcx", "qwe"})])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id, container_type, [AddStrings(["x"], {"abcx", "qwe"})]
+                )
 
-        # when
-        ret = backend.get_string_set_attribute(exp.id, ContainerType.RUN, ["x"])
+                # when
+                ret = self.backend.get_string_set_attribute(
+                    container_id, container_type, ["x"]
+                )
 
-        # then
+                # then
         self.assertEqual(StringSetAttribute({"abcx", "qwe"}), ret)
 
     def test_get_string_series_values(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(
-            exp.id,
-            [
-                LogStrings(
-                    ["x"],
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
                     [
-                        LogStrings.ValueType("adf", None, time()),
-                        LogStrings.ValueType("sdg", None, time()),
+                        LogStrings(
+                            ["x"],
+                            [
+                                LogStrings.ValueType("adf", None, time()),
+                                LogStrings.ValueType("sdg", None, time()),
+                            ],
+                        )
                     ],
                 )
-            ],
-        )
-        backend.execute_operations(
-            exp.id,
-            [
-                LogStrings(
-                    ["x"],
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
                     [
-                        LogStrings.ValueType("dfh", None, time()),
-                        LogStrings.ValueType("qwe", None, time()),
+                        LogStrings(
+                            ["x"],
+                            [
+                                LogStrings.ValueType("dfh", None, time()),
+                                LogStrings.ValueType("qwe", None, time()),
+                            ],
+                        )
                     ],
                 )
-            ],
-        )
 
-        # when
-        ret = backend.get_string_series_values(
-            exp.id, ContainerType.RUN, ["x"], limit=100, offset=0
-        )
+                # when
+                ret = self.backend.get_string_series_values(
+                    container_id, container_type, path=["x"], limit=100, offset=0
+                )
 
-        # then
-        self.assertEqual(
-            StringSeriesValues(
-                4,
-                [
-                    StringPointValue(timestampMillis=42342, step=0, value="adf"),
-                    StringPointValue(timestampMillis=42342, step=1, value="sdg"),
-                    StringPointValue(timestampMillis=42342, step=2, value="dfh"),
-                    StringPointValue(timestampMillis=42342, step=3, value="qwe"),
-                ],
-            ),
-            ret,
-        )
+                # then
+                self.assertEqual(
+                    StringSeriesValues(
+                        4,
+                        [
+                            StringPointValue(
+                                timestampMillis=42342, step=0, value="adf"
+                            ),
+                            StringPointValue(
+                                timestampMillis=42342, step=1, value="sdg"
+                            ),
+                            StringPointValue(
+                                timestampMillis=42342, step=2, value="dfh"
+                            ),
+                            StringPointValue(
+                                timestampMillis=42342, step=3, value="qwe"
+                            ),
+                        ],
+                    ),
+                    ret,
+                )
 
     def test_get_float_series_values(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(
-            exp.id,
-            [
-                LogFloats(
-                    ["x"],
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
                     [
-                        LogFloats.ValueType(5, None, time()),
-                        LogFloats.ValueType(3, None, time()),
+                        LogFloats(
+                            ["x"],
+                            [
+                                LogFloats.ValueType(5, None, time()),
+                                LogFloats.ValueType(3, None, time()),
+                            ],
+                        )
                     ],
                 )
-            ],
-        )
-        backend.execute_operations(
-            exp.id,
-            [
-                LogFloats(
-                    ["x"],
+                self.backend.execute_operations(
+                    container_id,
+                    container_type,
                     [
-                        LogFloats.ValueType(2, None, time()),
-                        LogFloats.ValueType(9, None, time()),
+                        LogFloats(
+                            ["x"],
+                            [
+                                LogFloats.ValueType(2, None, time()),
+                                LogFloats.ValueType(9, None, time()),
+                            ],
+                        )
                     ],
                 )
-            ],
-        )
 
-        # when
-        ret = backend.get_float_series_values(
-            exp.id, ContainerType.RUN, ["x"], limit=100, offset=0
-        )
+                # when
+                ret = self.backend.get_float_series_values(
+                    container_id, container_type, path=["x"], limit=100, offset=0
+                )
 
-        # then
-        self.assertEqual(
-            FloatSeriesValues(
-                4,
-                [
-                    FloatPointValue(timestampMillis=42342, step=0, value=5),
-                    FloatPointValue(timestampMillis=42342, step=1, value=3),
-                    FloatPointValue(timestampMillis=42342, step=2, value=2),
-                    FloatPointValue(timestampMillis=42342, step=3, value=9),
-                ],
-            ),
-            ret,
-        )
+                # then
+                self.assertEqual(
+                    FloatSeriesValues(
+                        4,
+                        [
+                            FloatPointValue(timestampMillis=42342, step=0, value=5),
+                            FloatPointValue(timestampMillis=42342, step=1, value=3),
+                            FloatPointValue(timestampMillis=42342, step=2, value=2),
+                            FloatPointValue(timestampMillis=42342, step=3, value=9),
+                        ],
+                    ),
+                    ret,
+                )
 
     def test_get_float_attribute_wrong_type(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")]
+                )
 
-        # then
-        with self.assertRaises(MetadataInconsistency):
-            backend.get_float_series_attribute(exp.id, ContainerType.RUN, ["x"])
+                # then
+                with self.assertRaises(MetadataInconsistency):
+                    self.backend.get_float_series_attribute(
+                        container_id, container_type, ["x"]
+                    )
 
     def test_get_string_attribute_wrong_type(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignFloat(["x"], 5)])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignFloat(["x"], 5)]
+                )
 
-        # then
-        with self.assertRaises(MetadataInconsistency):
-            backend.get_string_attribute(exp.id, ContainerType.RUN, ["x"])
+                # then
+                with self.assertRaises(MetadataInconsistency):
+                    self.backend.get_string_attribute(
+                        container_id, container_type, ["x"]
+                    )
 
     def test_get_datetime_attribute_wrong_type(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")]
+                )
 
-        # then
-        with self.assertRaises(MetadataInconsistency):
-            backend.get_datetime_attribute(exp.id, ContainerType.RUN, ["x"])
+                # then
+                with self.assertRaises(MetadataInconsistency):
+                    self.backend.get_datetime_attribute(
+                        container_id, container_type, ["x"]
+                    )
 
     def test_get_float_series_attribute_wrong_type(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")]
+                )
 
-        # then
-        with self.assertRaises(MetadataInconsistency):
-            backend.get_float_series_attribute(exp.id, ContainerType.RUN, ["x"])
+                # then
+                with self.assertRaises(MetadataInconsistency):
+                    self.backend.get_float_series_attribute(
+                        container_id, container_type, ["x"]
+                    )
 
     def test_get_string_series_attribute_wrong_type(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")]
+                )
 
-        # then
-        with self.assertRaises(MetadataInconsistency):
-            backend.get_string_series_attribute(exp.id, ContainerType.RUN, ["x"])
+                # then
+                with self.assertRaises(MetadataInconsistency):
+                    self.backend.get_string_series_attribute(
+                        container_id, container_type, ["x"]
+                    )
 
     def test_get_string_set_attribute_wrong_type(self):
         # given
-        backend = NeptuneBackendMock()
-        exp = backend.create_run(self.project_uuid)
-        backend.execute_operations(exp.id, [AssignString(["x"], "abc")])
+        for container_id, container_type in self.ids_with_types:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")]
+                )
 
-        # then
-        with self.assertRaises(MetadataInconsistency):
-            backend.get_string_set_attribute(exp.id, ContainerType.RUN, ["x"])
+                # then
+                with self.assertRaises(MetadataInconsistency):
+                    self.backend.get_string_set_attribute(
+                        container_id, container_type, ["x"]
+                    )

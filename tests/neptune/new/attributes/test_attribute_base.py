@@ -21,6 +21,8 @@ import uuid
 from typing import Optional
 
 from mock import MagicMock
+
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
@@ -43,7 +45,7 @@ class TestAttributeBase(unittest.TestCase):
         backend = NeptuneBackendMock()
         exp = backend.create_run(str(uuid.uuid4()))
         if processor is None:
-            processor = SyncOperationProcessor(exp.id, backend)
+            processor = SyncOperationProcessor(exp.id, ContainerType.RUN, backend)
         _run = Run(
             exp.id,
             backend,

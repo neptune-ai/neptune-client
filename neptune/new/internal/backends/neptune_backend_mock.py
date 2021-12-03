@@ -190,18 +190,23 @@ class NeptuneBackendMock(NeptuneBackend):
         raise RunNotFound(run_id)
 
     def execute_operations(
-        self, run_id: str, operations: List[Operation]
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        operations: List[Operation],
     ) -> List[NeptuneException]:
         result = []
         for op in operations:
             try:
-                self._execute_operation(run_id, op)
+                self._execute_operation(container_id, container_type, op)
             except NeptuneException as e:
                 result.append(e)
         return result
 
-    def _execute_operation(self, run_id: str, op: Operation) -> None:
-        run = self._get_container(run_id, ContainerType.RUN)
+    def _execute_operation(
+        self, container_id: str, container_type: ContainerType, op: Operation
+    ) -> None:
+        run = self._get_container(container_id, container_type)
         val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):

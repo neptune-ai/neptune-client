@@ -19,6 +19,7 @@ from typing import Union, Optional, Iterable
 from neptune.new.attribute_container import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
@@ -34,6 +35,8 @@ class Project(AttributeContainer):
     .. _Project docs page:
        https://docs.neptune.ai/api-reference/project
     """
+
+    container_type = ContainerType.PROJECT
 
     def __init__(
         self,
