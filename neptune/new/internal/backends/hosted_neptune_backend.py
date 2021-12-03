@@ -342,7 +342,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             return None
 
     @with_api_exceptions_handler
-    def ping(self, container_id: str, container_type):
+    def ping(self, container_id: str, container_type: ContainerType):
         request_kwargs = {
             "_request_options": {
                 "timeout": 10,
