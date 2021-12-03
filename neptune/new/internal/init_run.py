@@ -261,7 +261,7 @@ def init_run(
     operation_processor = get_operation_processor(
         mode,
         container_id=api_run.id,
-        container_type=ContainerType.RUN,
+        container_type=Run.container_type
         backend=backend,
         lock=run_lock,
         flush_period=flush_period,
