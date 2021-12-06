@@ -21,11 +21,11 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, TypeVar
 from zipfile import ZipFile
 
 from neptune.new.exceptions import (
-    ContainerUUIDNotFound,
     InternalClientError,
     MetadataInconsistency,
     NeptuneException,
     RunNotFound,
+    raise_container_not_found,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -159,7 +159,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def _get_container(self, container_id: str, container_type: ContainerType):
         key = (container_id, container_type)
         if key not in self._containers:
-            raise ContainerUUIDNotFound(container_id, container_type)
+            raise_container_not_found(container_id, container_type)
         container = self._containers[(container_id, container_type)]
         return container
 
