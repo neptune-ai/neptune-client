@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 from typing import List, Optional, Union
 from urllib.parse import urlparse
 
@@ -277,12 +276,43 @@ class RunNotFound(NeptuneException):
 
 
 class ContainerUUIDNotFound(NeptuneException):
+    container_id: str
+    container_type: ContainerType
+
     def __init__(self, container_id: str, container_type: ContainerType):
+        self.container_id = container_id
+        self.container_type = container_type
         super().__init__(
-            "Container with ID {} of type {} not found. Could be deleted.".format(
-                container_id, container_type
+            "{} with ID {} not found. Could be deleted.".format(
+                container_type.value.capitalize(), container_id
             )
         )
+
+
+def raise_container_not_found(
+    container_id: str, container_type: ContainerType, from_exception: Exception = None
+):
+    if container_type == ContainerType.RUN:
+        error_class = RunUUIDNotFound
+    elif container_type == ContainerType.PROJECT:
+        error_class = ProjectUUIDNotFound
+    else:
+        raise InternalClientError(f"Unknown container_type: {container_type}")
+
+    if from_exception:
+        raise error_class(container_id) from from_exception
+    else:
+        raise error_class(container_id)
+
+
+class RunUUIDNotFound(ContainerUUIDNotFound):
+    def __init__(self, container_id: str):
+        super().__init__(container_id, container_type=ContainerType.RUN)
+
+
+class ProjectUUIDNotFound(ContainerUUIDNotFound):
+    def __init__(self, container_id: str):
+        super().__init__(container_id, container_type=ContainerType.PROJECT)
 
 
 class InactiveRunException(NeptuneException):
