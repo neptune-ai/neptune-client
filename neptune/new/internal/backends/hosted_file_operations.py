@@ -81,7 +81,7 @@ def upload_file_attribute(
         upload_configuration = DEFAULT_UPLOAD_CONFIG
         if hasattr(swagger_client.api, "getUploadConfig"):
             params = {
-                "parentId": container_id,
+                "experimentId": container_id,
                 "attribute": attribute,
                 "length": upload_entry.length(),
             }
@@ -119,7 +119,7 @@ def upload_file_set_attribute(
     try:
         upload_configuration = DEFAULT_UPLOAD_CONFIG
         if hasattr(swagger_client.api, "getUploadConfig"):
-            params = {"parentId": container_id, "attribute": attribute}
+            params = {"experimentId": container_id, "attribute": attribute}
             config_result = (
                 swagger_client.api.getUploadConfig(**params).response().result
             )
