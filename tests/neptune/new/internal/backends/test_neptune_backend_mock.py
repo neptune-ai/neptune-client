@@ -15,10 +15,15 @@
 #
 import datetime
 import unittest
+import uuid
 from random import randint
 from time import time
 
-from neptune.new.exceptions import MetadataInconsistency
+from neptune.new.exceptions import (
+    MetadataInconsistency,
+    ProjectUUIDNotFound,
+    RunUUIDNotFound,
+)
 from neptune.new.internal.backends.api_model import (
     DatetimeAttribute,
     FloatAttribute,
@@ -351,20 +356,6 @@ class TestNeptuneBackendMock(unittest.TestCase):
                         container_id, container_type, ["x"]
                     )
 
-    def test_get_float_series_attribute_wrong_type(self):
-        # given
-        for container_id, container_type in self.ids_with_types:
-            with self.subTest(f"For containerType: {container_type}"):
-                self.backend.execute_operations(
-                    container_id, container_type, [AssignString(["x"], "abc")]
-                )
-
-                # then
-                with self.assertRaises(MetadataInconsistency):
-                    self.backend.get_float_series_attribute(
-                        container_id, container_type, ["x"]
-                    )
-
     def test_get_string_series_attribute_wrong_type(self):
         # given
         for container_id, container_type in self.ids_with_types:
@@ -391,4 +382,28 @@ class TestNeptuneBackendMock(unittest.TestCase):
                 with self.assertRaises(MetadataInconsistency):
                     self.backend.get_string_set_attribute(
                         container_id, container_type, ["x"]
+                    )
+
+    def test_container_not_found(self):
+        # given
+        ids_with_types_and_exceptions = [
+            (container_id, container_type, exception_type)
+            for (container_id, container_type), exception_type in zip(
+                self.ids_with_types, [RunUUIDNotFound, ProjectUUIDNotFound]
+            )
+        ]
+        for (
+            container_id,
+            container_type,
+            exception_type,
+        ) in ids_with_types_and_exceptions:
+            with self.subTest(f"For containerType: {container_type}"):
+                self.backend.execute_operations(
+                    container_id, container_type, [AssignString(["x"], "abc")]
+                )
+
+                # then
+                with self.assertRaises(exception_type):
+                    self.backend.get_float_series_attribute(
+                        str(uuid.uuid4()), container_type, ["x"]
                     )
