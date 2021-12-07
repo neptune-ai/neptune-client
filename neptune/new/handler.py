@@ -35,6 +35,7 @@ from neptune.new.internal.utils import (
 )
 from neptune.new.internal.utils.paths import join_paths, parse_path
 from neptune.new.types.atoms.file import File as FileVal
+from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.new.run import Run
@@ -118,6 +119,8 @@ class Handler:
         with self._run.lock():
             attr = self._run.get_attribute(self._path)
             if attr:
+                if isinstance(value, Handler):
+                    value = ValueCopy(value)
                 attr.process_assignment(value, wait)
             else:
                 self._run.define(self._path, value, wait)
