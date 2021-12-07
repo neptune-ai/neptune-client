@@ -124,10 +124,22 @@ class TestRun(unittest.TestCase):
 
     def test_assign_copy(self):
         exp = init(mode="debug")
-        exp["some/path/num"] = 42
-        exp["copied/path"] = exp["some/path/num"]
+        now = datetime.now()
+        test_values = [
+            ("num", 42),
+            ("str", "Bat'leth"),
+            ("float", 63.2),
+            ("bool", True),
+            ("datetime", now.replace(microsecond=1000 * int(now.microsecond / 1000))),
+        ]
+        for attr_name, attr_value in test_values:
+            exp[f"some/path/{attr_name}"] = attr_value
+            exp[f"copied/{attr_name}"] = exp[f"some/path/{attr_name}"]
+
         exp.wait()
-        self.assertEqual(42, exp["copied/path"].fetch())
+
+        for attr_name, attr_value in test_values:
+            self.assertEqual(attr_value, exp[f"copied/{attr_name}"].fetch())
 
     def test_assign_copy_to_existing(self):
         exp = init(mode="debug")

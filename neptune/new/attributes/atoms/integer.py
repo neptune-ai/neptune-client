@@ -15,43 +15,16 @@
 #
 import typing
 
+from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import AssignInt, CopyAttribute
-from neptune.new.internal.utils.paths import parse_path
+from neptune.new.internal.operation import AssignInt
 from neptune.new.types.atoms.integer import Integer as IntegerVal
-from neptune.new.attributes.atoms.atom import Atom
-from neptune.new.types.value_copy import ValueCopy
 
 if typing.TYPE_CHECKING:
     from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 
 
-class Integer(Atom):
-    def copy(self, value: ValueCopy, wait: bool = False):
-        # pylint: disable=protected-access
-        with self._container.lock():
-            source_path = value.source_handler._path
-            source_attr = value.source_handler._run.get_attribute(source_path)
-            self._enqueue_operation(
-                CopyAttribute(
-                    self._path,
-                    value.source_handler._container_id,
-                    value.source_handler._container_type,
-                    parse_path(source_path),
-                    source_attr.__class__,
-                ),
-                wait,
-            )
-
-    def assign(self, value: typing.Union[IntegerVal, float, int], wait: bool = False):
-        if not isinstance(value, IntegerVal):
-            value = IntegerVal(value)
-
-        with self._container.lock():
-            self._enqueue_operation(
-                self.create_assignment_operation(self._path, value.value), wait
-            )
-
+class Integer(CopiableAtom):
     @staticmethod
     def create_assignment_operation(path, value: int):
         return AssignInt(path, value)
@@ -63,5 +36,11 @@ class Integer(Atom):
         val = backend.get_int_attribute(container_id, container_type, path)
         return val.value
 
-    def fetch(self) -> int:
-        return self.getter(self._backend, self._container_id, self._container_type, self._path)
+    def assign(self, value: typing.Union[IntegerVal, float, int], wait: bool = False):
+        if not isinstance(value, IntegerVal):
+            value = IntegerVal(value)
+
+        with self._container.lock():
+            self._enqueue_operation(
+                self.create_assignment_operation(self._path, value.value), wait
+            )

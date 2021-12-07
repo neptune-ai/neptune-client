@@ -13,25 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Union
+import typing
 
-
+from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import AssignString
 from neptune.new.types.atoms.string import String as StringVal
-from neptune.new.attributes.atoms.atom import Atom
+
+if typing.TYPE_CHECKING:
+    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 
 
-class String(Atom):
-    def assign(self, value: Union[StringVal, str], wait: bool = False):
+class String(CopiableAtom):
+    @staticmethod
+    def create_assignment_operation(path, value: str):
+        return AssignString(path, value)
+
+    @staticmethod
+    def getter(
+        backend: "NeptuneBackend", container_id: str, container_type: ContainerType, path: typing.List[str]
+    ) -> str:
+        val = backend.get_string_attribute(container_id, container_type, path)
+        return val.value
+
+    def assign(self, value: typing.Union[StringVal, str], wait: bool = False):
         if not isinstance(value, StringVal):
             value = StringVal(value)
 
         with self._container.lock():
-            self._enqueue_operation(AssignString(self._path, value.value), wait)
-
-    def fetch(self) -> str:
-        # pylint: disable=protected-access
-        val = self._backend.get_string_attribute(
-            self._container_id, self._container_type, self._path
-        )
-        return val.value
+            self._enqueue_operation(
+                self.create_assignment_operation(self._path, value.value), wait
+            )
