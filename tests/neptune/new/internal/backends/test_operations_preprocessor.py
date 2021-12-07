@@ -17,6 +17,7 @@
 # pylint: disable=protected-access
 
 import uuid
+from unittest.mock import Mock
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
@@ -47,7 +48,7 @@ ILog = LogImages.ValueType
 class TestOperationsPreprocessor(TestAttributeBase):
     def test_delete_attribute(self):
         # given
-        processor = OperationsPreprocessor()
+        processor = OperationsPreprocessor(Mock())
 
         # when
         processor.process(
@@ -83,7 +84,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
     def test_assign(self):
         # given
-        processor = OperationsPreprocessor()
+        processor = OperationsPreprocessor(Mock())
 
         # when
         processor.process(
@@ -127,7 +128,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
     def test_series(self):
         # given
-        processor = OperationsPreprocessor()
+        processor = OperationsPreprocessor(Mock())
 
         # when
         processor.process(
@@ -204,7 +205,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
     def test_sets(self):
         # given
-        processor = OperationsPreprocessor()
+        processor = OperationsPreprocessor(Mock())
 
         # when
         processor.process(
@@ -269,7 +270,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
     def test_file_set(self):
         # given
-        processor = OperationsPreprocessor()
+        processor = OperationsPreprocessor(Mock())
 
         # when
         processor.process(
@@ -314,7 +315,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
 
     def test_artifacts(self):
         # given
-        processor = OperationsPreprocessor()
+        processor = OperationsPreprocessor(Mock())
         project_uuid = uuid.uuid4()
 
         # when
