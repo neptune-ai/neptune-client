@@ -143,7 +143,7 @@ def create_new_artifact(
         "projectIdentifier": project_id,
         "hash": artifact_hash,
         "size": size,
-        "parentIdentifier": parent_identifier,
+        "experimentId": parent_identifier,
         **default_request_params,
     }
     try:
