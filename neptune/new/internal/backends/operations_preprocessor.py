@@ -50,14 +50,15 @@ T = TypeVar("T")
 
 
 class OperationsPreprocessor:
-    def __init__(self):
+    def __init__(self, backend):
+        self._backend = backend
         self._accumulators = dict()
 
     def process(self, operations: List[Operation]):
         for op in operations:
             path_str = path_to_str(op.path)
             self._accumulators.setdefault(
-                path_str, _OperationsAccumulator(op.path)
+                path_str, _OperationsAccumulator(self._backend, op.path)
             ).visit(op)
         result = []
         for acc in self._accumulators.values():
@@ -93,7 +94,8 @@ class _DataType(Enum):
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
-    def __init__(self, path: List[str]):
+    def __init__(self, backend, path: List[str]):
+        self._backend = backend
         self._path = path
         self._type = None
         self._delete_ops = []
@@ -286,8 +288,12 @@ class _OperationsAccumulator(OperationVisitor[None]):
     def visit_clear_artifact(self, op: ClearStringSet) -> None:
         self._process_modify_op(_DataType.ARTIFACT, op, self._clear_modifier())
 
-    def visit_copy_attribute(self, _: CopyAttribute) -> None:
-        raise NotImplementedError("This operation is client-side only")
+    def visit_copy_attribute(self, op: CopyAttribute) -> None:
+        getter = op.source_attr_cls.getter
+        create_assignment_operation = op.source_attr_cls.create_assignment_operation
+        value = getter(self._backend, op.container_id, op.source_path)
+        assignement_op: Operation = create_assignment_operation(self._path, value)
+        assignement_op.accept(self)
 
     @staticmethod
     def _assign_modifier():

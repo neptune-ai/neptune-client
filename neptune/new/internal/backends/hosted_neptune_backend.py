@@ -365,7 +365,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     ) -> List[NeptuneException]:
         errors = []
 
-        operations_preprocessor = OperationsPreprocessor()
+        operations_preprocessor = OperationsPreprocessor(self)
         operations_preprocessor.process(operations)
         errors.extend(operations_preprocessor.get_errors())
 

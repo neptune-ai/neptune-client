@@ -533,7 +533,7 @@ class CopyAttribute(Operation):
         }.get(data["source_attr_name"])
 
         if source_attr_cls is None:
-            raise MalformedOperation()
+            raise MalformedOperation("Copy of non-copiable type found in queue!")
 
         return CopyAttribute(
             data["path"],
