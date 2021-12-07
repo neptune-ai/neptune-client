@@ -129,6 +129,14 @@ class TestRun(unittest.TestCase):
         exp.wait()
         self.assertEqual(42, exp["copied/path"].fetch())
 
+    def test_assign_copy_to_existing(self):
+        exp = init(mode="debug")
+        exp["some/path/num"] = 42
+        exp["copied/path"] = 54
+        exp["copied/path"] = exp["some/path/num"]
+        exp.wait()
+        self.assertEqual(42, exp["copied/path"].fetch())
+
     def test_access_blocked_after_stop(self):
         exp = init(mode="debug")
         exp["attr1"] = 1
