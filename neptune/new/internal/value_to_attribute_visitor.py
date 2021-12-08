@@ -99,4 +99,4 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
     def copy_value(
         self, source_type: Type[Attribute], source_path: List[str]
     ) -> Attribute:
-        return source_type(self._run, source_path)
+        return source_type(self._run, self._path)

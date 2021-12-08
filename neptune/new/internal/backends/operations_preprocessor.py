@@ -50,15 +50,14 @@ T = TypeVar("T")
 
 
 class OperationsPreprocessor:
-    def __init__(self, backend):
-        self._backend = backend
+    def __init__(self):
         self._accumulators = dict()
 
     def process(self, operations: List[Operation]):
         for op in operations:
             path_str = path_to_str(op.path)
             self._accumulators.setdefault(
-                path_str, _OperationsAccumulator(self._backend, op.path)
+                path_str, _OperationsAccumulator(op.path)
             ).visit(op)
         result = []
         for acc in self._accumulators.values():
@@ -91,11 +90,11 @@ class _DataType(Enum):
     IMAGE_SERIES = "Image Series"
     STRING_SET = "String Set"
     ARTIFACT = "Artifact"
+    COPY = "Copy"
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
-    def __init__(self, backend, path: List[str]):
-        self._backend = backend
+    def __init__(self, path: List[str]):
         self._path = path
         self._type = None
         self._delete_ops = []
@@ -120,18 +119,20 @@ class _OperationsAccumulator(OperationVisitor[None]):
             # This case should never happen since inconsistencies on data types are verified on user api.
             # So such operations should not appear in the queue without delete operation between them.
             # Still we want to support this case to avoid some unclear dependencies and assumptions.
-            self._errors.append(
-                MetadataInconsistency(
-                    "Cannot perform {} operation on {}: Attribute is not a {}".format(
-                        op.__class__.__name__,
-                        path_to_str(self._path),
-                        expected_type.value,
+            if self._type != _DataType.COPY and expected_type != _DataType.COPY:
+                # Copying DOES happen and gets a free pass
+                self._errors.append(
+                    MetadataInconsistency(
+                        "Cannot perform {} operation on {}: Attribute is not a {}".format(
+                            op.__class__.__name__,
+                            path_to_str(self._path),
+                            expected_type.value,
+                        )
                     )
                 )
-            )
-        else:
-            self._type = expected_type
-            self._modify_ops = modifier(self._modify_ops, op)
+                return
+        self._type = expected_type
+        self._modify_ops = modifier(self._modify_ops, op)
 
     def _process_config_op(self, expected_type: _DataType, op: Operation) -> None:
 
@@ -289,11 +290,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._process_modify_op(_DataType.ARTIFACT, op, self._clear_modifier())
 
     def visit_copy_attribute(self, op: CopyAttribute) -> None:
-        getter = op.source_attr_cls.getter
-        create_assignment_operation = op.source_attr_cls.create_assignment_operation
-        value = getter(self._backend, op.container_id, op.source_path)
-        assignement_op: Operation = create_assignment_operation(self._path, value)
-        assignement_op.accept(self)
+        self._process_modify_op(_DataType.COPY, op, self._assign_modifier())
 
     @staticmethod
     def _assign_modifier():
