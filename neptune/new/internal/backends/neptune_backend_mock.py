@@ -715,10 +715,7 @@ class NeptuneBackendMock(NeptuneBackend):
             return None
 
         def visit_copy_attribute(self, op: CopyAttribute) -> Optional[Value]:
-            getter = op.source_attr_cls.getter
-            create_assignment_operation = op.source_attr_cls.create_assignment_operation
-            value = getter(self._backend, op.container_id, op.source_path)
-            return create_assignment_operation(self._path, value).accept(self)
+            return op.resolve(self._backend).accept(self)
 
         def _create_type_error(self, op_name, expected):
             return MetadataInconsistency(

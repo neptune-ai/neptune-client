@@ -23,6 +23,7 @@ from neptune.new.internal.backends.utils import (
     build_operation_url,
     ExecuteOperationsBatchingManager,
 )
+from neptune.new.internal.container_type import ContainerType
 
 
 class TestNeptuneBackendMock(unittest.TestCase):
@@ -70,10 +71,14 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
         operations = [
             operation.AssignInt(["a"], 12),
             operation.AssignString(["b/c"], "test"),
-            operation.CopyAttribute(["a"], str(uuid.uuid4()), ["b"], Integer),
+            operation.CopyAttribute(
+                ["a"], str(uuid.uuid4()), ContainerType.RUN, ["b"], Integer
+            ),
             operation.AssignFloat(["q/d"], 44.12),
             operation.AssignInt(["pp"], 12),
-            operation.CopyAttribute(["q/d"], str(uuid.uuid4()), ["b"], String),
+            operation.CopyAttribute(
+                ["q/d"], str(uuid.uuid4()), ContainerType.RUN, ["b"], String
+            ),
         ]
 
         for op in operations:
@@ -128,9 +133,15 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
         manager = ExecuteOperationsBatchingManager()
 
         operations = [
-            operation.CopyAttribute(["a"], str(uuid.uuid4()), ["b"], Integer),
-            operation.CopyAttribute(["q/d"], str(uuid.uuid4()), ["b"], String),
-            operation.CopyAttribute(["pp"], str(uuid.uuid4()), ["b"], Integer),
+            operation.CopyAttribute(
+                ["a"], str(uuid.uuid4()), ContainerType.RUN, ["b"], Integer
+            ),
+            operation.CopyAttribute(
+                ["q/d"], str(uuid.uuid4()), ContainerType.RUN, ["b"], String
+            ),
+            operation.CopyAttribute(
+                ["pp"], str(uuid.uuid4()), ContainerType.RUN, ["b"], Integer
+            ),
         ]
 
         for op in operations:

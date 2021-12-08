@@ -36,6 +36,7 @@ class CopiableAtom(Atom):
                 CopyAttribute(
                     self._path,
                     value.source_handler._container_id,
+                    value.source_handler._container_type,
                     parse_path(source_path),
                     source_attr.__class__,
                 ),
@@ -50,9 +51,14 @@ class CopiableAtom(Atom):
     @staticmethod
     @abc.abstractmethod
     def getter(
-        backend: "NeptuneBackend", container_id: str, container_type: ContainerType, path: typing.List[str]
+        backend: "NeptuneBackend",
+        container_id: str,
+        container_type: ContainerType,
+        path: typing.List[str],
     ) -> int:
         ...
 
     def fetch(self):
-        return self.getter(self._backend, self._container_id, self._container_type, self._path)
+        return self.getter(
+            self._backend, self._container_id, self._container_type, self._path
+        )

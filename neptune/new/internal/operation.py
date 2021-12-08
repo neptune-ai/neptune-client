@@ -521,7 +521,7 @@ class CopyAttribute(Operation):
     def to_dict(self) -> dict:
         ret = super().to_dict()
         ret["container_id"] = self.container_id
-        ret["container_type"] = self.container_type
+        ret["container_type"] = self.container_type.value
         ret["source_path"] = self.source_path
         ret["source_attr_name"] = self.source_attr_cls.__name__
         return ret
@@ -540,7 +540,7 @@ class CopyAttribute(Operation):
         return CopyAttribute(
             data["path"],
             data["container_id"],
-            data["container_type"],
+            ContainerType(data["container_type"]),
             data["source_path"],
             source_attr_cls,
         )
@@ -549,5 +549,7 @@ class CopyAttribute(Operation):
         # repack CopyAttribute op into target attribute assignment
         getter = self.source_attr_cls.getter
         create_assignment_operation = self.source_attr_cls.create_assignment_operation
-        value = getter(backend, self.container_id, self.source_path)
+        value = getter(
+            backend, self.container_id, self.container_type, self.source_path
+        )
         return create_assignment_operation(self.path, value)

@@ -117,6 +117,7 @@ class TestOperations(unittest.TestCase):
             CopyAttribute(
                 TestOperations._random_path(),
                 container_id=str(uuid.uuid4()),
+                container_type=ContainerType.RUN,
                 source_path=TestOperations._random_path(),
                 source_attr_cls=Integer,
             ),
