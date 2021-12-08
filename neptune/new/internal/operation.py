@@ -23,6 +23,8 @@ from neptune.new.exceptions import InternalClientError, MalformedOperation
 from neptune.new.internal.container_type import ContainerType
 
 if TYPE_CHECKING:
+    from neptune.new.attributes.attribute import Attribute
+    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
     from neptune.new.internal.operation_visitor import OperationVisitor
 
 Ret = TypeVar("Ret")
@@ -542,3 +544,10 @@ class CopyAttribute(Operation):
             data["source_path"],
             source_attr_cls,
         )
+
+    def resolve(self, backend: "NeptuneBackend") -> Operation:
+        # repack CopyAttribute op into target attribute assignment
+        getter = self.source_attr_cls.getter
+        create_assignment_operation = self.source_attr_cls.create_assignment_operation
+        value = getter(backend, self.container_id, self.source_path)
+        return create_assignment_operation(self.path, value)

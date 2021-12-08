@@ -20,7 +20,17 @@ import socket
 import sys
 import time
 from functools import lru_cache, wraps
-from typing import Optional, Dict, TYPE_CHECKING, Mapping, Text, Any
+from typing import (
+    Optional,
+    Dict,
+    TYPE_CHECKING,
+    Mapping,
+    Text,
+    Any,
+    List,
+    Iterable,
+    Generator,
+)
 from urllib.parse import urlparse, urljoin
 
 
@@ -64,11 +74,13 @@ from neptune.new.exceptions import (
     NeptuneFeaturesNotAvailableException,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
+from neptune.new.internal.operation import Operation, CopyAttribute
 from neptune.new.internal.utils import replace_patch_version
 
 _logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
     from neptune.new.internal.backends.hosted_neptune_backend import (
         HostedNeptuneBackend,
     )
@@ -325,3 +337,41 @@ def parse_validation_errors(error: HTTPError) -> Dict[str, str]:
         for validation_error in error.swagger_result.validationErrors
         for error_description in validation_error.get("errors")
     }
+
+
+class ExecuteOperationsBatchingManager:
+    def __init__(self):
+        self._batches: List[List[Operation]] = []
+        self._current: Optional[List[Operation]] = None
+
+    def _add_to_current(self, op: Operation):
+        if self._current is None:
+            self._add_to_new(op)
+        else:
+            self._current.append(op)
+
+    def _add_to_new(self, op: Operation):
+        self._batches.append([op])
+        self._current = self._batches[-1]
+
+    def append(self, op: Operation):
+        # we have to send all earlier operations before each CopyAttribute to make sure server has all attribute
+        #  values that could be the copy source
+        if isinstance(op, CopyAttribute):
+            self._add_to_new(op)
+        else:
+            self._add_to_current(op)
+
+    def extend(self, ops: Iterable[Operation]):
+        for op in ops:
+            self.append(op)
+
+    def iterate_resolved_batches(
+        self, backend: "NeptuneBackend"
+    ) -> Generator[List[Operation], None, None]:
+        for batch in self._batches:
+            # only the first operation in batch can be a CopyAttribute, see append
+            if isinstance(batch[0], CopyAttribute):
+                op: CopyAttribute = batch[0]
+                batch[0] = op.resolve(backend)
+            yield batch

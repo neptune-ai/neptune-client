@@ -87,6 +87,7 @@ from neptune.new.internal.backends.operation_api_object_converter import (
 )
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.new.internal.backends.utils import (
+    ExecuteOperationsBatchingManager,
     MissingApiClient,
     OptionalFeatures,
     build_operation_url,
@@ -96,7 +97,6 @@ from neptune.new.internal.backends.utils import (
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import (
-    CopyAttribute,
     Operation,
     TrackFilesToArtifact,
     UploadFile,
@@ -370,20 +370,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         operations_preprocessor.process(operations)
         errors.extend(operations_preprocessor.get_errors())
 
-        upload_operations, artifact_operations, copy_operations, other_operations = (
-            [],
-            [],
-            [],
-            [],
-        )
-
+        upload_operations, artifact_operations = [], []
+        other_operations = ExecuteOperationsBatchingManager()
         for op in operations_preprocessor.get_operations():
             if isinstance(op, (UploadFile, UploadFileContent, UploadFileSet)):
                 upload_operations.append(op)
             elif isinstance(op, TrackFilesToArtifact):
                 artifact_operations.append(op)
-            elif isinstance(op, CopyAttribute):
-                copy_operations.append(op)
             else:
                 other_operations.append(op)
 
@@ -409,28 +402,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         errors.extend(artifact_operations_errors)
         other_operations.extend(assign_artifact_operations)
 
-        if other_operations:
-            errors.extend(
-                self._execute_operations(
-                    container_id, container_type, operations=other_operations
-                )
-            )
-
-        # copy operations are performed in a separate batch in the end,
-        # so we can reference attributes set in the same batch
-        if copy_operations:
-            # repack CopyAttribute ops into target attribute assignments
-            unpacked_copy_operations = []
-            for op in copy_operations:
-                getter = op.source_attr_cls.getter
-                create_assignment_operation = (
-                    op.source_attr_cls.create_assignment_operation
-                )
-                value = getter(self, op.container_id, op.source_path)
-                assignment_op: Operation = create_assignment_operation(op.path, value)
-                unpacked_copy_operations.append(assignment_op)
-
-            errors.extend(self._execute_operations(run_id, unpacked_copy_operations))
+        for batch in other_operations.iterate_resolved_batches(self):
+            errors.extend(self._execute_operations(container_id, container_type, operations=batch))
 
         return errors
 
