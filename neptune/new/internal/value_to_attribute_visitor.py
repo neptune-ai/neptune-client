@@ -96,5 +96,8 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
     def visit_namespace(self, _: Namespace) -> Attribute:
         return NamespaceAttr(self._run, self._path)
 
-    def copy_value(self, source_type: Type[Attribute], _: List[str]) -> Attribute:
+    # pylint: disable=unused-argument
+    def copy_value(
+        self, source_type: Type[Attribute], source_path: List[str]
+    ) -> Attribute:
         return source_type(self._run, self._path)
