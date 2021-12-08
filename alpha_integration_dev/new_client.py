@@ -76,7 +76,7 @@ class NewClientFeatures(ClientFeatures):
         prop_to_del_absent = False
         try:
             self.exp[PROPERTIES_ATTRIBUTE_SPACE]["prop_to_del"].fetch()
-        except MissingFieldException:
+        except AttributeError:
             prop_to_del_absent = True
         assert prop_to_del_absent
 

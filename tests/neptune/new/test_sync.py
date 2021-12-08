@@ -57,7 +57,9 @@ def prepare_runs(path):
     for exp in registered_runs:
         exp_path = path / "async" / str(exp.id) / execution_id
         exp_path.mkdir(parents=True)
-        queue = DiskQueue(exp_path, lambda x: x, lambda x: x, threading.RLock())
+        queue = DiskQueue(
+            exp_path, lambda x: x, lambda x: x, threading.RLock(), ContainerType.RUN
+        )
         queue.put("op-0")
         queue.put("op-1")
 
@@ -88,7 +90,9 @@ def prepare_offline_run(path):
     offline_exp_path = path / OFFLINE_DIRECTORY / offline_exp_uuid
     offline_exp_path.mkdir(parents=True)
 
-    queue = DiskQueue(offline_exp_path, lambda x: x, lambda x: x, threading.RLock())
+    queue = DiskQueue(
+        offline_exp_path, lambda x: x, lambda x: x, threading.RLock(), ContainerType.RUN
+    )
     queue.put("op-0")
     queue.put("op-1")
     SyncOffsetFile(
@@ -154,7 +158,9 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
         lambda _: Project(str(uuid.uuid4()), "project", "workspace"),
     )
     mocker.patch.object(
-        neptune.new.sync, "register_offline_run", lambda _: registered_offline_run
+        neptune.new.sync,
+        "register_offline_run",
+        lambda project, container_type: (registered_offline_run, True),
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
@@ -212,7 +218,9 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
         lambda _: Project(str(uuid.uuid4()), "project", "workspace"),
     )
     mocker.patch.object(
-        neptune.new.sync, "register_offline_run", lambda _: registered_offline_exp
+        neptune.new.sync,
+        "register_offline_run",
+        lambda project, container_type: (registered_offline_exp, True),
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
