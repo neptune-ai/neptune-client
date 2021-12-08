@@ -66,7 +66,7 @@ class OperationsPreprocessor:
 
     def get_operations(self) -> List[Operation]:
         result = []
-        for _, acc in sorted(self._accumulators.items()):
+        for _, acc in self._accumulators.items():
             result.extend(acc.get_operations())
         return result
 
