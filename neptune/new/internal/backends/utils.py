@@ -85,11 +85,6 @@ if TYPE_CHECKING:
         HostedNeptuneBackend,
     )
 
-
-class OptionalFeatures:
-    ARTIFACTS = "artifacts"
-
-
 MAX_RETRY_TIME = 30
 retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))
 
@@ -195,26 +190,26 @@ def verify_client_version(client_config: ClientConfig, version: Version):
 
     version_with_patch_0 = Version(replace_patch_version(str(version)))
     if (
-        client_config.min_compatible_version
-        and client_config.min_compatible_version > version
+        client_config.version_info.min_compatible
+        and client_config.version_info.min_compatible > version
     ):
         raise UnsupportedClientVersion(
-            version, min_version=client_config.min_compatible_version
+            version, min_version=client_config.version_info.min_compatible
         )
     if (
-        client_config.max_compatible_version
-        and client_config.max_compatible_version < version_with_patch_0
+        client_config.version_info.max_compatible
+        and client_config.version_info.max_compatible < version_with_patch_0
     ):
         raise UnsupportedClientVersion(
-            version, max_version=client_config.max_compatible_version
+            version, max_version=client_config.version_info.max_compatible
         )
     if (
-        client_config.min_recommended_version
-        and client_config.min_recommended_version > version
+        client_config.version_info.min_recommended
+        and client_config.version_info.min_recommended > version
     ):
         click.echo(
             "WARNING: We recommend an upgrade to a new version of neptune-client - {} (installed - {}).".format(
-                client_config.min_recommended_version, version
+                client_config.version_info.min_recommended, version
             ),
             sys.stderr,
         )
@@ -288,15 +283,11 @@ class NeptuneResponseAdapter(RequestsResponseAdapter):
 class MissingApiClient(SwaggerClient):
     """catch-all class to gracefully handle calls to unavailable API"""
 
-    def __init__(
-        self, backend: "HostedNeptuneBackend"
-    ):  # pylint: disable=super-init-not-called
-        self._backend = backend
+    def __init__(self, feature_name: str):  # pylint: disable=super-init-not-called
+        self.feature_name = feature_name
 
     def __getattr__(self, item):
-        raise NeptuneFeaturesNotAvailableException(
-            features=self._backend.missing_features
-        )
+        raise NeptuneFeaturesNotAvailableException(missing_feature=self.feature_name)
 
 
 # https://stackoverflow.com/a/44776960

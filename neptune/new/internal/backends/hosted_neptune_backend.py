@@ -18,7 +18,7 @@ import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
-from simplejson import JSONDecodeError
+from bravado.requests_client import RequestsClient
 
 from neptune.new.exceptions import (
     ArtifactNotFoundException,
@@ -59,6 +59,8 @@ from neptune.new.internal.backends.api_model import (
     StringSeriesValues,
     StringSetAttribute,
     Workspace,
+    ClientConfig,
+    OptionalFeatures,
 )
 from neptune.new.internal.backends.hosted_artifact_operations import (
     track_to_existing_artifact,
@@ -89,7 +91,6 @@ from neptune.new.internal.backends.operations_preprocessor import OperationsPrep
 from neptune.new.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
     MissingApiClient,
-    OptionalFeatures,
     build_operation_url,
     ssl_verify,
     with_api_exceptions_handler,
@@ -124,9 +125,11 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.proxies = proxies
         self.missing_features = []
 
-        self._http_client, self._client_config = create_http_client_with_auth(
+        http_client, client_config = create_http_client_with_auth(
             credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
         )
+        self._http_client: RequestsClient = http_client
+        self._client_config: ClientConfig = client_config
 
         self.backend_client = create_backend_client(
             self._client_config, self._http_client
@@ -135,18 +138,17 @@ class HostedNeptuneBackend(NeptuneBackend):
             self._client_config, self._http_client
         )
 
-        try:
+        if self._client_config.has_feature(OptionalFeatures.ARTIFACTS):
             self.artifacts_client = create_artifacts_client(
                 self._client_config, self._http_client
             )
-        except JSONDecodeError:
-            # thanks for nice error handling, bravado
-            self.artifacts_client = MissingApiClient(self)
-            self.missing_features.append(OptionalFeatures.ARTIFACTS)
+        else:
+            # create a stub
+            self.artifacts_client = MissingApiClient(OptionalFeatures.ARTIFACTS)
 
     def verify_feature_available(self, feature_name: str):
-        if feature_name in self.missing_features:
-            raise NeptuneFeaturesNotAvailableException(self.missing_features)
+        if not self._client_config.has_feature(feature_name):
+            raise NeptuneFeaturesNotAvailableException(feature_name)
 
     def get_display_address(self) -> str:
         return self._client_config.display_url
