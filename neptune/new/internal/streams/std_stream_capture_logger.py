@@ -28,13 +28,14 @@ class StdStreamCaptureLogger:
         self._logger = NeptuneLogger(run, attribute_name)
         self.stream = stream
         self._thread_local = threading.local()
+        self.enabled = True
 
     def write(self, data: str):
         if not hasattr(self._thread_local, "inside_write"):
             self._thread_local.inside_write = False
 
         self.stream.write(data)
-        if not self._thread_local.inside_write:
+        if self.enabled and not self._thread_local.inside_write:
             try:
                 self._thread_local.inside_write = True
                 self._logger.log(data)
@@ -44,6 +45,9 @@ class StdStreamCaptureLogger:
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
+    def close(self):
+        self.enabled = False
+
 
 class StdoutCaptureLogger(StdStreamCaptureLogger):
     def __init__(self, run: Run, attribute_name: str):
@@ -52,6 +56,7 @@ class StdoutCaptureLogger(StdStreamCaptureLogger):
 
     def close(self):
         sys.stdout = self.stream
+        super().close()
 
 
 class StderrCaptureLogger(StdStreamCaptureLogger):
@@ -61,3 +66,4 @@ class StderrCaptureLogger(StdStreamCaptureLogger):
 
     def close(self):
         sys.stderr = self.stream
+        super().close()

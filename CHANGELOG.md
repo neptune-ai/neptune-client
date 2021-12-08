@@ -1,7 +1,13 @@
-## neptune-client 0.13.2 [UNRELEASED]
+## neptune-client 0.13.3
+
+### Fixes
+- Fixed multithreading bug with StdStreamCaptureLogger ([#762](https://github.com/neptune-ai/neptune-client/pull/762))
+
+## neptune-client 0.13.2
 
 ### Fixes
 - Fixed fetching numeric values in debug mode ([#745](https://github.com/neptune-ai/neptune-client/pull/745))
+- Ensure StdStreamCaptureLogger doesn't log after .close() ([#759](https://github.com/neptune-ai/neptune-client/pull/759))
 
 ## neptune-client 0.13.1
 

@@ -47,6 +47,7 @@ from neptune.new.internal.streams.std_capture_background_job import (
 )
 from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
+from neptune.new.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.internal.utils.source_code import upload_source_code
 from neptune.new.internal.utils.traceback_job import TracebackJob
@@ -243,10 +244,7 @@ def init_run(
         if mode == Mode.READ_ONLY:
             raise NeedExistingRunForReadOnlyMode()
         git_ref = get_git_info(discover_git_repo_location())
-        if custom_run_id and len(custom_run_id) > 32:
-            _logger.warning(
-                "Given custom_run_id exceeds 32 characters and it will be ignored."
-            )
+        if custom_run_id_exceeds_length(custom_run_id):
             custom_run_id = None
 
         notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
