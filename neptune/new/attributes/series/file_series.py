@@ -98,7 +98,11 @@ class FileSeries(Series[Val, Data]):
         ).totalItemCount
         if item_count > 0:
             self._backend.download_file_series_by_index(
-                self._container_id, self._container_type, self._path, item_count - 1, target_dir
+                self._container_id,
+                self._container_type,
+                self._path,
+                item_count - 1,
+                target_dir,
             )
         else:
             raise ValueError("Unable to download last file - series is empty")
