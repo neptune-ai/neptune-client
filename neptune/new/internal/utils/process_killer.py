@@ -17,6 +17,8 @@
 import os
 import signal
 
+from neptune.new.envs import NEPTUNE_SUBPROCESS_KILL_TIMEOUT
+
 try:
     import psutil
 
@@ -25,22 +27,24 @@ except ImportError:
     PSUTIL_INSTALLED = False
 
 
-KILL_TIMEOUT = 5
+KILL_TIMEOUT = int(os.getenv(NEPTUNE_SUBPROCESS_KILL_TIMEOUT, "5"))
 
 
 def kill_me():
     if PSUTIL_INSTALLED:
         process = psutil.Process(os.getpid())
         try:
-            children = _get_process_children(process) + [process]
+            children = _get_process_children(process)
         except psutil.NoSuchProcess:
             children = []
 
-        for process in children:
-            _terminate(process)
+        for child_proc in children:
+            _terminate(child_proc)
         _, alive = psutil.wait_procs(children, timeout=KILL_TIMEOUT)
-        for process in alive:
-            _kill(process)
+        for child_proc in alive:
+            _kill(child_proc)
+        # finish with terminating self
+        _terminate(process)
     else:
         os.kill(os.getpid(), signal.SIGINT)
 
