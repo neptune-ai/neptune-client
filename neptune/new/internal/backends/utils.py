@@ -20,7 +20,16 @@ import socket
 import sys
 import time
 from functools import lru_cache, wraps
-from typing import Optional, Dict, TYPE_CHECKING, Mapping, Text, Any
+from typing import (
+    Optional,
+    Dict,
+    TYPE_CHECKING,
+    Mapping,
+    Text,
+    Any,
+    List,
+    Iterable,
+)
 from urllib.parse import urlparse, urljoin
 
 
@@ -64,11 +73,13 @@ from neptune.new.exceptions import (
     NeptuneFeaturesNotAvailableException,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
+from neptune.new.internal.operation import Operation, CopyAttribute
 from neptune.new.internal.utils import replace_patch_version
 
 _logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
+    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
     from neptune.new.internal.backends.hosted_neptune_backend import (
         HostedNeptuneBackend,
     )
@@ -325,3 +336,23 @@ def parse_validation_errors(error: HTTPError) -> Dict[str, str]:
         for validation_error in error.swagger_result.validationErrors
         for error_description in validation_error.get("errors")
     }
+
+
+class ExecuteOperationsBatchingManager:
+    def __init__(self, backend: "NeptuneBackend"):
+        self._backend = backend
+
+    def get_batch(self, ops: Iterable[Operation]) -> List[Operation]:
+        batch = []
+        for op in ops:
+            if isinstance(op, CopyAttribute):
+                if not batch:
+                    # CopyAttribute can be at the start of a batch
+                    batch.append(op.resolve(self._backend))
+                else:
+                    # cannot have CopyAttribute after any other op in a batch
+                    break
+            else:
+                batch.append(op)
+
+        return batch

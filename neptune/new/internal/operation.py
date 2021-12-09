@@ -16,12 +16,15 @@
 import abc
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, TypeVar, Generic, Optional, Set, Tuple
+from typing import List, TypeVar, Generic, Optional, Set, Tuple, Type
 from typing import TYPE_CHECKING
 
-from neptune.new.exceptions import InternalClientError
+from neptune.new.exceptions import InternalClientError, MalformedOperation
+from neptune.new.internal.container_type import ContainerType
 
 if TYPE_CHECKING:
+    from neptune.new.attributes.attribute import Attribute
+    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
     from neptune.new.internal.operation_visitor import OperationVisitor
 
 Ret = TypeVar("Ret")
@@ -503,3 +506,50 @@ class ClearArtifact(Operation):
     @staticmethod
     def from_dict(data: dict) -> "ClearArtifact":
         return ClearArtifact(data["path"])
+
+
+@dataclass
+class CopyAttribute(Operation):
+    container_id: str
+    container_type: ContainerType
+    source_path: List[str]
+    source_attr_cls: Type["Attribute"]
+
+    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
+        return visitor.visit_copy_attribute(self)
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["container_id"] = self.container_id
+        ret["container_type"] = self.container_type.value
+        ret["source_path"] = self.source_path
+        ret["source_attr_name"] = self.source_attr_cls.__name__
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> "CopyAttribute":
+        from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
+
+        source_attr_cls = {
+            cls.__name__: cls for cls in all_subclasses(CopiableAtom)
+        }.get(data["source_attr_name"])
+
+        if source_attr_cls is None:
+            raise MalformedOperation("Copy of non-copiable type found in queue!")
+
+        return CopyAttribute(
+            data["path"],
+            data["container_id"],
+            ContainerType(data["container_type"]),
+            data["source_path"],
+            source_attr_cls,
+        )
+
+    def resolve(self, backend: "NeptuneBackend") -> Operation:
+        # repack CopyAttribute op into target attribute assignment
+        getter = self.source_attr_cls.getter
+        create_assignment_operation = self.source_attr_cls.create_assignment_operation
+        value = getter(
+            backend, self.container_id, self.container_type, self.source_path
+        )
+        return create_assignment_operation(self.path, value)

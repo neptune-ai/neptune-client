@@ -30,6 +30,7 @@ from neptune.new.internal.operation import (
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
+    CopyAttribute,
     DeleteAttribute,
     DeleteFiles,
     LogFloats,
@@ -140,4 +141,8 @@ class OperationVisitor(Generic[Ret]):
 
     @abc.abstractmethod
     def visit_clear_artifact(self, op: ClearArtifact) -> Ret:
+        pass
+
+    @abc.abstractmethod
+    def visit_copy_attribute(self, op: CopyAttribute) -> Ret:
         pass

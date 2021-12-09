@@ -18,6 +18,7 @@ from typing import List, TYPE_CHECKING
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 
 from neptune.new.internal.operation import Operation
+from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.new.attribute_container import AttributeContainer
@@ -51,3 +52,12 @@ class Attribute:
     def _container_type(self) -> "ContainerType":
         # pylint: disable=protected-access
         return self._container.container_type
+
+    def copy(self, value: ValueCopy, wait: bool = False):
+        raise Exception(f"{type(self).__name__} doesn't support copying")
+
+    def process_assignment(self, value, wait=False):
+        if isinstance(value, ValueCopy):
+            return self.copy(value, wait)
+        else:
+            return self.assign(value, wait)

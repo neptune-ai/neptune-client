@@ -29,6 +29,7 @@ from neptune.new.internal.operation import (
     ClearStringLog,
     ClearStringSet,
     ConfigFloatSeries,
+    CopyAttribute,
     DeleteAttribute,
     DeleteFiles,
     LogFloats,
@@ -155,3 +156,6 @@ class OperationApiObjectConverter(OperationVisitor[dict]):
 
     def visit_clear_artifact(self, _: ClearArtifact) -> Ret:
         return {}
+
+    def visit_copy_attribute(self, _: CopyAttribute) -> Ret:
+        raise NotImplementedError("This operation is client-side only")

@@ -87,6 +87,7 @@ from neptune.new.internal.backends.operation_api_object_converter import (
 )
 from neptune.new.internal.backends.operations_preprocessor import OperationsPreprocessor
 from neptune.new.internal.backends.utils import (
+    ExecuteOperationsBatchingManager,
     MissingApiClient,
     OptionalFeatures,
     build_operation_url,
@@ -362,15 +363,17 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         operations: List[Operation],
-    ) -> List[NeptuneException]:
+    ) -> Tuple[int, List[NeptuneException]]:
         errors = []
 
+        batching_mgr = ExecuteOperationsBatchingManager(self)
+        operations_batch = batching_mgr.get_batch(operations)
+
         operations_preprocessor = OperationsPreprocessor()
-        operations_preprocessor.process(operations)
+        operations_preprocessor.process(operations_batch)
         errors.extend(operations_preprocessor.get_errors())
 
         upload_operations, artifact_operations, other_operations = [], [], []
-
         for op in operations_preprocessor.get_operations():
             if isinstance(op, (UploadFile, UploadFileContent, UploadFileSet)):
                 upload_operations.append(op)
@@ -401,14 +404,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         errors.extend(artifact_operations_errors)
         other_operations.extend(assign_artifact_operations)
 
-        if other_operations:
-            errors.extend(
-                self._execute_operations(
-                    container_id, container_type, operations=other_operations
-                )
+        errors.extend(
+            self._execute_operations(
+                container_id, container_type, operations=other_operations
             )
+        )
 
-        return errors
+        return len(operations_batch), errors
 
     def _execute_upload_operations(
         self, container_id: str, upload_operations: List[Operation]
