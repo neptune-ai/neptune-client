@@ -195,14 +195,14 @@ class NeptuneBackendMock(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         operations: List[Operation],
-    ) -> List[NeptuneException]:
+    ) -> Tuple[int, List[NeptuneException]]:
         result = []
         for op in operations:
             try:
                 self._execute_operation(container_id, container_type, op)
             except NeptuneException as e:
                 result.append(e)
-        return result
+        return len(operations), result
 
     def _execute_operation(
         self, container_id: str, container_type: ContainerType, op: Operation

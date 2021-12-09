@@ -64,9 +64,9 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
 
 class TestExecuteOperationsBatchingManager(unittest.TestCase):
-    def test_copies_splits_batches_and_resolve(self):
+    def test_cut_batch_on_copy(self):
         backend = Mock()
-        manager = ExecuteOperationsBatchingManager()
+        manager = ExecuteOperationsBatchingManager(backend)
 
         operations = [
             operation.AssignInt(["a"], 12),
@@ -81,31 +81,35 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             ),
         ]
 
-        for op in operations:
-            manager.append(op)
+        batch = manager.get_batch(operations)
+        self.assertEqual(operations[0:2], batch)
 
-        batches = list(manager.iterate_resolved_batches(backend))
-        expected_batches = [
-            operations[0:2],
-            (
-                [
-                    operation.AssignInt(
-                        operations[2].path, backend.get_int_attribute.return_value.value
-                    )
-                ]
-                + operations[3:5]
+    def test_get_nonempty_batch_with_copy_first(self):
+        backend = Mock()
+        manager = ExecuteOperationsBatchingManager(backend)
+
+        operations = [
+            operation.CopyAttribute(
+                ["a"], str(uuid.uuid4()), ContainerType.RUN, ["b"], Integer
             ),
-            [
-                operation.AssignString(
-                    operations[5].path, backend.get_string_attribute.return_value.value
-                )
-            ],
+            operation.AssignFloat(["q/d"], 44.12),
+            operation.AssignInt(["pp"], 12),
+            operation.CopyAttribute(
+                ["q/d"], str(uuid.uuid4()), ContainerType.RUN, ["b"], String
+            ),
         ]
-        self.assertEqual(expected_batches, batches)
+
+        batch = manager.get_batch(operations)
+        expected_batch = [
+            operation.AssignInt(
+                operations[0].path, backend.get_int_attribute.return_value.value
+            )
+        ] + operations[1:3]
+        self.assertEqual(expected_batch, batch)
 
     def test_no_copies_is_ok(self):
         backend = Mock()
-        manager = ExecuteOperationsBatchingManager()
+        manager = ExecuteOperationsBatchingManager(backend)
 
         operations = [
             operation.AssignInt(["a"], 12),
@@ -114,23 +118,19 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             operation.AssignInt(["pp"], 12),
         ]
 
-        for op in operations:
-            manager.append(op)
-
-        batches = list(manager.iterate_resolved_batches(backend))
-        self.assertEqual([operations], batches)
+        batch = manager.get_batch(operations)
+        self.assertEqual(operations, batch)
 
     def test_no_ops_is_ok(self):
         backend = Mock()
-        manager = ExecuteOperationsBatchingManager()
+        manager = ExecuteOperationsBatchingManager(backend)
 
-        batches = list(manager.iterate_resolved_batches(backend))
-        self.assertEqual([], batches)
-        backend.assert_not_called()
+        batch = manager.get_batch([])
+        self.assertEqual([], batch)
 
     def test_subsequent_copies_is_ok(self):
         backend = Mock()
-        manager = ExecuteOperationsBatchingManager()
+        manager = ExecuteOperationsBatchingManager(backend)
 
         operations = [
             operation.CopyAttribute(
@@ -144,25 +144,10 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             ),
         ]
 
-        for op in operations:
-            manager.append(op)
-
-        batches = list(manager.iterate_resolved_batches(backend))
-        expected_batches = [
-            [
-                operation.AssignInt(
-                    operations[0].path, backend.get_int_attribute.return_value.value
-                )
-            ],
-            [
-                operation.AssignString(
-                    operations[1].path, backend.get_string_attribute.return_value.value
-                )
-            ],
-            [
-                operation.AssignInt(
-                    operations[2].path, backend.get_int_attribute.return_value.value
-                )
-            ],
+        batch = manager.get_batch(operations)
+        expected_batch = [
+            operation.AssignInt(
+                operations[0].path, backend.get_int_attribute.return_value.value
+            )
         ]
-        self.assertEqual(expected_batches, batches)
+        self.assertEqual(expected_batch, batch)

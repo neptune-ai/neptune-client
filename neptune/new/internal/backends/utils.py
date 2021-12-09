@@ -29,7 +29,6 @@ from typing import (
     Any,
     List,
     Iterable,
-    Generator,
 )
 from urllib.parse import urlparse, urljoin
 
@@ -340,38 +339,20 @@ def parse_validation_errors(error: HTTPError) -> Dict[str, str]:
 
 
 class ExecuteOperationsBatchingManager:
-    def __init__(self):
-        self._batches: List[List[Operation]] = []
-        self._current: Optional[List[Operation]] = None
+    def __init__(self, backend: "NeptuneBackend"):
+        self._backend = backend
 
-    def _add_to_current(self, op: Operation):
-        if self._current is None:
-            self._add_to_new(op)
-        else:
-            self._current.append(op)
-
-    def _add_to_new(self, op: Operation):
-        self._batches.append([op])
-        self._current = self._batches[-1]
-
-    def append(self, op: Operation):
-        # we have to send all earlier operations before each CopyAttribute to make sure server has all attribute
-        #  values that could be the copy source
-        if isinstance(op, CopyAttribute):
-            self._add_to_new(op)
-        else:
-            self._add_to_current(op)
-
-    def extend(self, ops: Iterable[Operation]):
+    def get_batch(self, ops: Iterable[Operation]) -> List[Operation]:
+        batch = []
         for op in ops:
-            self.append(op)
+            if isinstance(op, CopyAttribute):
+                if not batch:
+                    # CopyAttribute can be at the start of a batch
+                    batch.append(op.resolve(self._backend))
+                else:
+                    # cannot have CopyAttribute after any other op in a batch
+                    break
+            else:
+                batch.append(op)
 
-    def iterate_resolved_batches(
-        self, backend: "NeptuneBackend"
-    ) -> Generator[List[Operation], None, None]:
-        for batch in self._batches:
-            # only the first operation in batch can be a CopyAttribute, see append
-            if isinstance(batch[0], CopyAttribute):
-                op: CopyAttribute = batch[0]
-                batch[0] = op.resolve(backend)
-            yield batch
+        return batch

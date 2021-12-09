@@ -107,7 +107,7 @@ class NeptuneBackend:
         container_id: str,
         container_type: ContainerType,
         operations: List[Operation],
-    ) -> List[NeptuneException]:
+    ) -> Tuple[int, List[NeptuneException]]:
         pass
 
     @abc.abstractmethod

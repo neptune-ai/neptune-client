@@ -363,15 +363,17 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         operations: List[Operation],
-    ) -> List[NeptuneException]:
+    ) -> Tuple[int, List[NeptuneException]]:
         errors = []
 
+        batching_mgr = ExecuteOperationsBatchingManager(self)
+        operations_batch = batching_mgr.get_batch(operations)
+
         operations_preprocessor = OperationsPreprocessor()
-        operations_preprocessor.process(operations)
+        operations_preprocessor.process(operations_batch)
         errors.extend(operations_preprocessor.get_errors())
 
-        upload_operations, artifact_operations = [], []
-        other_operations = ExecuteOperationsBatchingManager()
+        upload_operations, artifact_operations, other_operations = [], [], []
         for op in operations_preprocessor.get_operations():
             if isinstance(op, (UploadFile, UploadFileContent, UploadFileSet)):
                 upload_operations.append(op)
@@ -402,12 +404,13 @@ class HostedNeptuneBackend(NeptuneBackend):
         errors.extend(artifact_operations_errors)
         other_operations.extend(assign_artifact_operations)
 
-        for batch in other_operations.iterate_resolved_batches(self):
-            errors.extend(
-                self._execute_operations(container_id, container_type, operations=batch)
+        errors.extend(
+            self._execute_operations(
+                container_id, container_type, operations=other_operations
             )
+        )
 
-        return errors
+        return len(operations_batch), errors
 
     def _execute_upload_operations(
         self, container_id: str, upload_operations: List[Operation]

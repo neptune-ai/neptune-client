@@ -219,21 +219,28 @@ class AsyncOperationProcessor(OperationProcessor):
             )
         )
         def process_batch(self, batch: List[Operation], version: int) -> None:
-            # TODO: Handle Metadata errors
-            result = self._processor._backend.execute_operations(
-                container_id=self._processor._container_id,
-                container_type=self._processor._container_type,
-                operations=batch,
-            )
+            expected_count = len(batch)
+            version_to_ack = version - expected_count
+            while True:
+                # TODO: Handle Metadata errors
+                processed_count, errors = self._processor._backend.execute_operations(
+                    container_id=self._processor._container_id,
+                    container_type=self._processor._container_type,
+                    operations=batch,
+                )
+                version_to_ack += processed_count
+                batch = batch[processed_count:]
+                with self._processor._waiting_cond:
+                    self._processor._queue.ack(version_to_ack)
 
-            with self._processor._waiting_cond:
-                self._processor._queue.ack(version)
+                    for error in errors:
+                        _logger.error(
+                            "Error occurred during asynchronous operation processing: %s",
+                            error,
+                        )
 
-                for error in result:
-                    _logger.error(
-                        "Error occurred during asynchronous operation processing: %s",
-                        error,
-                    )
+                    self._processor._consumed_version = version_to_ack
 
-                self._processor._consumed_version = version
-                self._processor._waiting_cond.notify_all()
+                    if version_to_ack == version:
+                        self._processor._waiting_cond.notify_all()
+                        return

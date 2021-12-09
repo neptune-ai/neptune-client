@@ -66,7 +66,7 @@ class OperationsPreprocessor:
 
     def get_operations(self) -> List[Operation]:
         result = []
-        for _, acc in self._accumulators.items():
+        for _, acc in sorted(self._accumulators.items()):
             result.extend(acc.get_operations())
         return result
 
@@ -90,7 +90,6 @@ class _DataType(Enum):
     IMAGE_SERIES = "Image Series"
     STRING_SET = "String Set"
     ARTIFACT = "Artifact"
-    COPY = "Copy"
 
 
 class _OperationsAccumulator(OperationVisitor[None]):
@@ -119,20 +118,18 @@ class _OperationsAccumulator(OperationVisitor[None]):
             # This case should never happen since inconsistencies on data types are verified on user api.
             # So such operations should not appear in the queue without delete operation between them.
             # Still we want to support this case to avoid some unclear dependencies and assumptions.
-            if self._type != _DataType.COPY and expected_type != _DataType.COPY:
-                # Copying DOES happen and gets a free pass
-                self._errors.append(
-                    MetadataInconsistency(
-                        "Cannot perform {} operation on {}: Attribute is not a {}".format(
-                            op.__class__.__name__,
-                            path_to_str(self._path),
-                            expected_type.value,
-                        )
+            self._errors.append(
+                MetadataInconsistency(
+                    "Cannot perform {} operation on {}: Attribute is not a {}".format(
+                        op.__class__.__name__,
+                        path_to_str(self._path),
+                        expected_type.value,
                     )
                 )
-                return
-        self._type = expected_type
-        self._modify_ops = modifier(self._modify_ops, op)
+            )
+        else:
+            self._type = expected_type
+            self._modify_ops = modifier(self._modify_ops, op)
 
     def _process_config_op(self, expected_type: _DataType, op: Operation) -> None:
 
@@ -290,7 +287,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._process_modify_op(_DataType.ARTIFACT, op, self._clear_modifier())
 
     def visit_copy_attribute(self, op: CopyAttribute) -> None:
-        self._process_modify_op(_DataType.COPY, op, self._assign_modifier())
+        raise MetadataInconsistency("No CopyAttribute should reach accumulator")
 
     @staticmethod
     def _assign_modifier():

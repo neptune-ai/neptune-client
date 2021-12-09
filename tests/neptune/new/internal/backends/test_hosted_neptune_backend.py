@@ -193,13 +193,16 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                 )
 
                 self.assertEqual(
-                    [
-                        FileUploadError("file1", "error2"),
-                        FileUploadError("file1", "error2"),
-                        FileUploadError("file1", "error2"),
-                        FileUploadError("file1", "error2"),
-                        MetadataInconsistency("error1"),
-                    ],
+                    (
+                        6,
+                        [
+                            FileUploadError("file1", "error2"),
+                            FileUploadError("file1", "error2"),
+                            FileUploadError("file1", "error2"),
+                            FileUploadError("file1", "error2"),
+                            MetadataInconsistency("error1"),
+                        ],
+                    ),
                     result,
                 )
 
