@@ -1,3 +1,9 @@
+## neptune-client 0.13.4
+
+### Fixes
+- Fix issue that prevented waiting for subprocesses to finish after receiving stop signal from backend ([#774](https://github.com/neptune-ai/neptune-client/pull/774));
+  Timeout now overridable using environment var `NEPTUNE_SUBPROCESS_KILL_TIMEOUT`
+
 ## neptune-client 0.13.3
 
 ### Fixes
