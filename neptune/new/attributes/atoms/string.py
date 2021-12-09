@@ -31,7 +31,10 @@ class String(CopiableAtom):
 
     @staticmethod
     def getter(
-        backend: "NeptuneBackend", container_id: str, container_type: ContainerType, path: typing.List[str]
+        backend: "NeptuneBackend",
+        container_id: str,
+        container_type: ContainerType,
+        path: typing.List[str],
     ) -> str:
         val = backend.get_string_attribute(container_id, container_type, path)
         return val.value

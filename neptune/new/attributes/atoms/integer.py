@@ -31,7 +31,10 @@ class Integer(CopiableAtom):
 
     @staticmethod
     def getter(
-        backend: "NeptuneBackend", container_id: str, container_type: ContainerType, path: typing.List[str]
+        backend: "NeptuneBackend",
+        container_id: str,
+        container_type: ContainerType,
+        path: typing.List[str],
     ) -> int:
         val = backend.get_int_attribute(container_id, container_type, path)
         return val.value

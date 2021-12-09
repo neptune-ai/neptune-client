@@ -403,7 +403,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         other_operations.extend(assign_artifact_operations)
 
         for batch in other_operations.iterate_resolved_batches(self):
-            errors.extend(self._execute_operations(container_id, container_type, operations=batch))
+            errors.extend(
+                self._execute_operations(container_id, container_type, operations=batch)
+            )
 
         return errors
 

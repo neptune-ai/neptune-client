@@ -33,7 +33,10 @@ class Datetime(CopiableAtom):
 
     @staticmethod
     def getter(
-        backend: "NeptuneBackend", container_id: str, container_type: ContainerType, path: typing.List[str]
+        backend: "NeptuneBackend",
+        container_id: str,
+        container_type: ContainerType,
+        path: typing.List[str],
     ) -> datetime:
         val = backend.get_datetime_attribute(container_id, container_type, path)
         return val.value
