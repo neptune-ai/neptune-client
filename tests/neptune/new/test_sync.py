@@ -17,6 +17,8 @@
 # pylint: disable=redefined-outer-name
 
 import os
+import random
+import string
 import threading
 import uuid
 from random import randint
@@ -45,6 +47,63 @@ def a_run():
     return ApiRun(
         str(uuid.uuid4()), "EXP-{}".format(randint(42, 12342)), "org", "proj", False
     )
+
+
+def a_project():
+    return ApiRun(
+        str(uuid.uuid4()),
+        f"EX{random.choice(string.ascii_letters).upper()}",
+        "org",
+        "proj",
+        False,
+    )
+
+
+def generate_get_run_impl(registered_experiments):
+    def get_run_impl(run_id):
+        """This function will return run as well as projects. Will be cleaned in ModelRegistry"""
+        for exp in registered_experiments:
+            if run_id in (str(exp.id), get_qualified_name(exp)):
+                return exp
+
+    return get_run_impl
+
+
+def prepare_projects(path):
+    unsync_project = a_project()
+    sync_project = a_project()
+    registered_projects = (unsync_project, sync_project)
+
+    execution_id = "exec-0"
+
+    for project in registered_projects:
+        project_path = path / "async" / str(project.id) / execution_id
+        project_path.mkdir(parents=True)
+        queue = DiskQueue(
+            project_path,
+            lambda x: x,
+            lambda x: x,
+            threading.RLock(),
+            ContainerType.PROJECT,
+        )
+        queue.put("op-proj-0")
+        queue.put("op-proj-1")
+
+    SyncOffsetFile(
+        path / "async" / str(unsync_project.id) / execution_id / "last_ack_version"
+    ).write(1)
+    SyncOffsetFile(
+        path / "async" / str(unsync_project.id) / execution_id / "last_put_version"
+    ).write(2)
+
+    SyncOffsetFile(
+        path / "async" / str(sync_project.id) / execution_id / "last_ack_version"
+    ).write(2)
+    SyncOffsetFile(
+        path / "async" / str(sync_project.id) / execution_id / "last_put_version"
+    ).write(2)
+
+    return unsync_project, sync_project, generate_get_run_impl(registered_projects)
 
 
 def prepare_runs(path):
@@ -77,12 +136,7 @@ def prepare_runs(path):
         path / "async" / str(sync_exp.id) / execution_id / "last_put_version"
     ).write(2)
 
-    def get_run_impl(run_id):
-        for run in registered_runs:
-            if run_id in (str(run.id), get_qualified_name(run)):
-                return run
-
-    return unsync_exp, sync_exp, get_run_impl
+    return unsync_exp, sync_exp, generate_get_run_impl(registered_runs)
 
 
 def prepare_offline_run(path):
@@ -100,6 +154,35 @@ def prepare_offline_run(path):
     ).write(2)
 
     return offline_exp_uuid
+
+
+def test_list_projects(tmp_path, mocker, capsys):
+    """TODO: we're mentioning projects as runs, will be improved with ModelRegistry"""
+    # given
+    unsync_proj, sync_proj, get_exp_impl = prepare_projects(tmp_path)
+    offline_exp_uuid = prepare_offline_run(tmp_path)
+
+    # and
+    mocker.patch.object(neptune.new.sync, "get_run", get_exp_impl)
+    mocker.patch.object(Operation, "from_dict")
+
+    # when
+    synchronization_status(tmp_path)
+
+    # then
+    captured = capsys.readouterr()
+    assert captured.err == ""
+    assert (
+        "Synchronized runs:\n- {}".format(get_qualified_name(sync_proj)) in captured.out
+    )
+    assert (
+        "Unsynchronized runs:\n- {}".format(get_qualified_name(unsync_proj))
+        in captured.out
+    )
+    assert (
+        "Unsynchronized offline runs:\n- offline/{}".format(offline_exp_uuid)
+        in captured.out
+    )
 
 
 def test_list_runs(tmp_path, mocker, capsys):
@@ -144,7 +227,9 @@ def test_list_runs_when_no_run(tmp_path, capsys):
 
 def test_sync_all_runs(tmp_path, mocker, capsys):
     # given
-    unsync_exp, sync_exp, get_run_impl = prepare_runs(tmp_path)
+    unsync_proj, sync_proj, _ = prepare_projects(tmp_path)
+    unsync_exp, sync_exp, _ = prepare_runs(tmp_path)
+    get_run_impl = generate_get_run_impl((unsync_proj, sync_proj, unsync_exp, sync_exp))
     offline_exp_uuid = prepare_offline_run(tmp_path)
     registered_offline_run = a_run()
 
@@ -176,11 +261,19 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
         )
     ) in captured.out
     assert "Synchronising {}".format(get_qualified_name(unsync_exp)) in captured.out
+    assert "Synchronising {}".format(get_qualified_name(unsync_proj)) in captured.out
     assert (
         "Synchronization of run {} completed.".format(get_qualified_name(unsync_exp))
         in captured.out
     )
+    assert (
+        "Synchronization of project {} completed.".format(
+            get_qualified_name(unsync_proj)
+        )
+        in captured.out
+    )
     assert "Synchronising {}".format(get_qualified_name(sync_exp)) not in captured.out
+    assert "Synchronising {}".format(get_qualified_name(sync_proj)) not in captured.out
 
     # and
     # pylint: disable=no-member
@@ -188,6 +281,7 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
         [
             mocker.call(unsync_exp.id, ContainerType.RUN, ["op-1"]),
             mocker.call(registered_offline_run.id, ContainerType.RUN, ["op-1"]),
+            mocker.call(unsync_proj.id, ContainerType.PROJECT, ["op-proj-1"]),
         ],
         any_order=True,
     )

@@ -17,6 +17,7 @@ import logging
 import threading
 from typing import Optional
 
+from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
@@ -43,6 +44,9 @@ def init_project(
     verify_type("mode", mode, str)
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
+
+    if mode == Mode.OFFLINE:
+        raise NeptuneException("Project can't be initialized in OFFLINE mode")
 
     backend = get_backend(mode, api_token=api_token, proxies=proxies)
     project_obj = project_name_lookup(backend, name)

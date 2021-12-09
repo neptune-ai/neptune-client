@@ -27,6 +27,7 @@ from neptune.new.attributes.atoms import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     MetadataInconsistency,
+    NeptuneException,
     NeptuneOfflineModeFetchException,
     NeptuneUninitializedException,
     NeptuneMissingProjectNameException,
@@ -269,14 +270,16 @@ class TestClientProject(unittest.TestCase):
         self.assertNotIn(str(project._id), os.listdir(".neptune"))
 
     def test_offline_mode(self):
-        project = init_project(name=self.PROJECT_NAME, mode="offline")
-        project["some/variable"] = 13
-        with self.assertRaises(NeptuneOfflineModeFetchException):
-            project["some/variable"].fetch()
-        self.assertIn(str(project._id), os.listdir(".neptune/offline"))
-        self.assertIn(
-            "data-1.log", os.listdir(".neptune/offline/{}".format(project._id))
-        )
+        with self.assertRaises(NeptuneException):
+            init_project(name=self.PROJECT_NAME, mode="offline")
+        # project = init_project(name=self.PROJECT_NAME, mode="offline")
+        # project["some/variable"] = 13
+        # with self.assertRaises(NeptuneOfflineModeFetchException):
+        #     project["some/variable"].fetch()
+        # self.assertIn(str(project._id), os.listdir(".neptune/offline"))
+        # self.assertIn(
+        #     "data-1.log", os.listdir(".neptune/offline/{}".format(project._id))
+        # )
 
     def test_sync_mode(self):
         project = init_project(name=self.PROJECT_NAME, mode="sync")

@@ -243,7 +243,9 @@ def sync_run(run_path: Path, qualified_run_name: str) -> None:
     for execution_path in run_path.iterdir():
         container_type = ContainerTypeFile(execution_path).container_type
         sync_execution(execution_path, run_id, container_type)
-    click.echo("Synchronization of run {} completed.".format(qualified_run_name))
+    click.echo(
+        f"Synchronization of {container_type.value} {qualified_run_name} completed."
+    )
 
 
 def sync_execution(

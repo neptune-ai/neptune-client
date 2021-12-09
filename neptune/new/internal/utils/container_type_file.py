@@ -41,12 +41,12 @@ class ContainerTypeFile:
                 container_type_from_file = ContainerType(f.read())
 
         if container_type_from_file is None:
-            # No information about tape stored on disk
+            # No information about type stored on disk
             if default_container_type is None:
                 raise NeptuneInternalException("Can't determine container_type")
             return default_container_type
         else:
-            # No information about type is stored on disk
+            # Information about type is stored on disk
             if (
                 default_container_type is not None
                 and container_type_from_file != default_container_type
