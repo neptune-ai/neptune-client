@@ -45,14 +45,14 @@ from neptune.new.sync import (
 
 def a_run():
     return ApiRun(
-        str(uuid.uuid4()), "EXP-{}".format(randint(42, 12342)), "org", "proj", False
+        str(uuid.uuid4()), "RUN-{}".format(randint(42, 12342)), "org", "proj", False
     )
 
 
 def a_project():
     return ApiRun(
         str(uuid.uuid4()),
-        f"EX{random.choice(string.ascii_letters).upper()}",
+        "".join((random.choice(string.ascii_letters).upper() for _ in range(3))),
         "org",
         "proj",
         False,
