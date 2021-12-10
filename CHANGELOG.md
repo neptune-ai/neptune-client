@@ -1,3 +1,8 @@
+## neptune-client 0.13.5
+
+### Fixes
+- Restore RunMode for backward compatibility ([#775](https://github.com/neptune-ai/neptune-client/pull/775));
+
 ## neptune-client 0.13.4
 
 ### Fixes
