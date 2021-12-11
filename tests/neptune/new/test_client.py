@@ -269,17 +269,17 @@ class TestClientProject(unittest.TestCase):
         self.assertEqual(13, project["some/variable"].fetch())
         self.assertNotIn(str(project._id), os.listdir(".neptune"))
 
-    def test_offline_mode(self):
+    def test_offline_mode_for_project(self):
         with self.assertRaises(NeptuneException):
             init_project(name=self.PROJECT_NAME, mode="offline")
-        # project = init_project(name=self.PROJECT_NAME, mode="offline")
-        # project["some/variable"] = 13
-        # with self.assertRaises(NeptuneOfflineModeFetchException):
-        #     project["some/variable"].fetch()
-        # self.assertIn(str(project._id), os.listdir(".neptune/offline"))
-        # self.assertIn(
-        #     "data-1.log", os.listdir(".neptune/offline/{}".format(project._id))
-        # )
+
+    def test_offline_mode_for_run(self):
+        run = init(name=self.PROJECT_NAME, mode="offline")
+        run["some/variable"] = 13
+        with self.assertRaises(NeptuneOfflineModeFetchException):
+            run["some/variable"].fetch()
+        self.assertIn(str(run._id), os.listdir(".neptune/offline"))
+        self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(run._id)))
 
     def test_sync_mode(self):
         project = init_project(name=self.PROJECT_NAME, mode="sync")
