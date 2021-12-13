@@ -59,7 +59,11 @@ def get_operation_processor(
             container_id,
             container_type,
             DiskQueue(
-                Path(execution_path), lambda x: x.to_dict(), Operation.from_dict, lock
+                Path(execution_path),
+                lambda x: x.to_dict(),
+                Operation.from_dict,
+                lock,
+                container_type,
             ),
             backend,
             lock,
@@ -75,7 +79,11 @@ def get_operation_processor(
             NEPTUNE_DATA_DIRECTORY, OFFLINE_DIRECTORY, container_id
         )
         storage_queue = DiskQueue(
-            Path(data_path), lambda x: x.to_dict(), Operation.from_dict, lock
+            Path(data_path),
+            lambda x: x.to_dict(),
+            Operation.from_dict,
+            lock,
+            container_type,
         )
         return OfflineOperationProcessor(storage_queue)
     elif mode == Mode.READ_ONLY:
