@@ -12,31 +12,34 @@ import inspect
 import importlib
 
 EXCLUDED_MODULES = [
-    'neptune.internal',
-    'neptune.new.internal',
-    'neptune.vendor.pynvml',
-    'neptune.management.internal',
+    "neptune.internal",
+    "neptune.new.internal",
+    "neptune.vendor.pynvml",
+    "neptune.management.internal",
 ]
 
 
 def extract_module_classes(module_name: str):
     for module_info in pkgutil.iter_modules([module_name]):
-        if module_info.name.startswith('_'):
+        if module_info.name.startswith("_"):
             continue
 
         if module_info.ispkg:
-            for module_dotted, classname in extract_module_classes(f'{module_name}/{module_info.name}'):
+            for module_dotted, classname in extract_module_classes(
+                f"{module_name}/{module_info.name}"
+            ):
                 yield (module_dotted, classname)
         else:
-            module_dotted = module_name.replace('/', '.') + '.' + module_info.name
+            module_dotted = module_name.replace("/", ".") + "." + module_info.name
             # print(module_dotted)
             module = importlib.import_module(module_dotted)
             for classname, _ in inspect.getmembers(module, inspect.isclass):
                 yield (module_dotted, classname)
 
 
-if __name__ == '__main__':
-    print("""#
+if __name__ == "__main__":
+    print(
+        """#
 # Copyright (c) 2021, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -54,8 +57,9 @@ if __name__ == '__main__':
 # pylint: disable=unused-import,reimported,import-error
 import unittest
 
-""")
-    for module_name, classname in sorted(list(extract_module_classes('neptune'))):
+"""
+    )
+    for module_name, classname in sorted(list(extract_module_classes("neptune"))):
         excluded = False
 
         for excluded_module in EXCLUDED_MODULES:
@@ -64,10 +68,12 @@ import unittest
                 break
 
         if not excluded:
-            print('from', module_name, 'import', classname)
+            print("from", module_name, "import", classname)
 
-    print("""
+    print(
+        """
 
 class TestImports(unittest.TestCase):
     def test_imports(self):
-        pass""")
+        pass"""
+    )
