@@ -1,3 +1,4 @@
+
 #
 # Copyright (c) 2021, Neptune Labs Sp. z o.o.
 #
@@ -15,6 +16,7 @@
 #
 # pylint: disable=unused-import,reimported
 import unittest
+
 
 from neptune.api_exceptions import ChannelAlreadyExists
 from neptune.api_exceptions import ChannelDoesNotExist
@@ -97,46 +99,6 @@ from neptune.management.exceptions import UnsupportedValue
 from neptune.management.exceptions import UserAlreadyHasAccess
 from neptune.management.exceptions import UserNotExistsOrWithoutAccess
 from neptune.management.exceptions import WorkspaceNotFound
-from neptune.management.internal.api import AccessRevokedOnDeletion
-from neptune.management.internal.api import AccessRevokedOnMemberRemoval
-from neptune.management.internal.api import BadRequestException
-from neptune.management.internal.api import Credentials
-from neptune.management.internal.api import Dict
-from neptune.management.internal.api import HTTPBadRequest
-from neptune.management.internal.api import HTTPConflict
-from neptune.management.internal.api import HTTPForbidden
-from neptune.management.internal.api import HTTPNotFound
-from neptune.management.internal.api import HTTPUnprocessableEntity
-from neptune.management.internal.api import List
-from neptune.management.internal.api import MemberRole
-from neptune.management.internal.api import ProjectAlreadyExists
-from neptune.management.internal.api import ProjectMemberRole
-from neptune.management.internal.api import ProjectMemberRoleDTO
-from neptune.management.internal.api import ProjectNotFound
-from neptune.management.internal.api import ProjectVisibility
-from neptune.management.internal.api import ProjectVisibilityDTO
-from neptune.management.internal.api import ProjectsLimitReached
-from neptune.management.internal.api import SwaggerClient
-from neptune.management.internal.api import UserAlreadyHasAccess
-from neptune.management.internal.api import UserNotExistsOrWithoutAccess
-from neptune.management.internal.api import WorkspaceMemberRole
-from neptune.management.internal.api import WorkspaceMemberRoleDTO
-from neptune.management.internal.api import WorkspaceNotFound
-from neptune.management.internal.dto import Enum
-from neptune.management.internal.dto import ProjectMemberRole
-from neptune.management.internal.dto import ProjectMemberRoleDTO
-from neptune.management.internal.dto import ProjectVisibility
-from neptune.management.internal.dto import ProjectVisibilityDTO
-from neptune.management.internal.dto import UnsupportedValue
-from neptune.management.internal.dto import WorkspaceMemberRole
-from neptune.management.internal.dto import WorkspaceMemberRoleDTO
-from neptune.management.internal.types import MemberRole
-from neptune.management.internal.types import ProjectMemberRole
-from neptune.management.internal.types import ProjectVisibility
-from neptune.management.internal.types import WorkspaceMemberRole
-from neptune.management.internal.utils import ConflictingWorkspaceName
-from neptune.management.internal.utils import InvalidProjectName
-from neptune.management.internal.utils import MissingWorkspaceName
 from neptune.model import ChannelWithLastValue
 from neptune.model import LeaderboardEntry
 from neptune.model import Point
