@@ -72,6 +72,8 @@ _logger = logging.getLogger(__name__)
 
 LEGACY_KWARGS = ("project_qualified_name", "backend")
 
+RunMode = Mode  # for backward compatibility
+
 
 def _check_for_extra_kwargs(caller_name, kwargs: dict):
     for name in LEGACY_KWARGS:
