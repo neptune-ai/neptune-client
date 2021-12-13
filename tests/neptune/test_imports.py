@@ -102,6 +102,7 @@ from neptune.model import ChannelWithLastValue
 from neptune.model import LeaderboardEntry
 from neptune.model import Point
 from neptune.model import Points
+<<<<<<< Updated upstream
 from neptune.new.attribute_container import AbstractContextManager
 from neptune.new.attribute_container import Attribute
 from neptune.new.attribute_container import AttributeContainer
@@ -129,6 +130,8 @@ from neptune.new.attribute_container import String
 from neptune.new.attribute_container import Value
 from neptune.new.attribute_container import ValueToAttributeVisitor
 from neptune.new.attribute_container import datetime
+=======
+>>>>>>> Stashed changes
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.atoms.artifact import ArtifactDriver
 from neptune.new.attributes.atoms.artifact import ArtifactDriversMap
@@ -183,7 +186,10 @@ from neptune.new.attributes.file_set import FileSetVal
 from neptune.new.attributes.file_set import Iterable
 from neptune.new.attributes.file_set import UploadFileSet
 from neptune.new.attributes.namespace import Attribute
+<<<<<<< Updated upstream
 from neptune.new.attributes.namespace import ContainerStructure
+=======
+>>>>>>> Stashed changes
 from neptune.new.attributes.namespace import Dict
 from neptune.new.attributes.namespace import Iterator
 from neptune.new.attributes.namespace import List
@@ -193,6 +199,10 @@ from neptune.new.attributes.namespace import Namespace
 from neptune.new.attributes.namespace import NamespaceBuilder
 from neptune.new.attributes.namespace import NamespaceVal
 from neptune.new.attributes.namespace import NoValue
+<<<<<<< Updated upstream
+=======
+from neptune.new.attributes.namespace import RunStructure
+>>>>>>> Stashed changes
 from neptune.new.attributes.series.fetchable_series import Dict
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.fetchable_series import FloatSeriesValues
@@ -347,6 +357,7 @@ from neptune.new.project import HostedNeptuneBackend
 from neptune.new.project import Iterable
 from neptune.new.project import Project
 from neptune.new.project import RunsTable
+<<<<<<< Updated upstream
 from neptune.new.run import AttributeContainer
 from neptune.new.run import BackgroundJob
 from neptune.new.run import ContainerState
@@ -354,6 +365,36 @@ from neptune.new.run import NeptuneBackend
 from neptune.new.run import OperationProcessor
 from neptune.new.run import Run
 from neptune.new.run import RunState
+=======
+from neptune.new.run import AbstractContextManager
+from neptune.new.run import Attribute
+from neptune.new.run import AttributeType
+from neptune.new.run import BackgroundJob
+from neptune.new.run import Boolean
+from neptune.new.run import Datetime
+from neptune.new.run import DeleteAttribute
+from neptune.new.run import Dict
+from neptune.new.run import Enum
+from neptune.new.run import Float
+from neptune.new.run import Handler
+from neptune.new.run import InactiveRunException
+from neptune.new.run import Integer
+from neptune.new.run import List
+from neptune.new.run import MetadataInconsistency
+from neptune.new.run import Namespace
+from neptune.new.run import NamespaceAttr
+from neptune.new.run import NamespaceBuilder
+from neptune.new.run import NeptuneBackend
+from neptune.new.run import NeptunePossibleLegacyUsageException
+from neptune.new.run import OperationProcessor
+from neptune.new.run import Run
+from neptune.new.run import RunState
+from neptune.new.run import RunStructure
+from neptune.new.run import String
+from neptune.new.run import Value
+from neptune.new.run import ValueToAttributeVisitor
+from neptune.new.run import datetime
+>>>>>>> Stashed changes
 from neptune.new.runs_table import AttributeType
 from neptune.new.runs_table import AttributeWithProperties
 from neptune.new.runs_table import Dict
@@ -419,8 +460,11 @@ from neptune.new.types.file_set import Iterable
 from neptune.new.types.file_set import List
 from neptune.new.types.file_set import TypeVar
 from neptune.new.types.file_set import Value
+<<<<<<< Updated upstream
 from neptune.new.types.mode import Enum
 from neptune.new.types.mode import Mode
+=======
+>>>>>>> Stashed changes
 from neptune.new.types.namespace import Namespace
 from neptune.new.types.namespace import TypeVar
 from neptune.new.types.namespace import Value
