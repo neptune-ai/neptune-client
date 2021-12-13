@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pylint: disable=unused-import,reimported,import-error
+# pylint: disable=unused-import,reimported,import-error,no-name-in-module
 import unittest
 
 
