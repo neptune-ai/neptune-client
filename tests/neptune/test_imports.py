@@ -1,4 +1,3 @@
-
 #
 # Copyright (c) 2021, Neptune Labs Sp. z o.o.
 #
@@ -14,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pylint: disable=unused-import,reimported
+# pylint: disable=unused-import,reimported,import-error
 import unittest
 
 
