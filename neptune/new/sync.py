@@ -264,12 +264,20 @@ def sync_execution(
             break
 
         start_time = time.monotonic()
+        expected_count = len(batch)
+        version_to_ack = version - expected_count
         while True:
             try:
-                backend.execute_operations(
-                    container_id, container_type, operations=batch
+                processed_count, _ = backend.execute_operations(
+                    container_id,
+                    container_type,
+                    operations=batch,
                 )
-                break
+                version_to_ack += processed_count
+                batch = batch[processed_count:]
+                disk_queue.ack(version)
+                if version_to_ack == version:
+                    break
             except NeptuneConnectionLostException as ex:
                 if time.monotonic() - start_time > retries_timeout:
                     raise ex
@@ -279,8 +287,6 @@ def sync_execution(
                     f"Internal exception was: {ex.cause.__class__.__name__}",
                     sys.stderr,
                 )
-
-        disk_queue.ack(version)
 
 
 def sync_all_registered_runs(base_path: Path) -> None:

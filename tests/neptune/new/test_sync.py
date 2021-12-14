@@ -248,6 +248,7 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
         lambda project, container_type: (registered_offline_run, True),
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
+    neptune.new.sync.backend.execute_operations.return_value = (1, [])
 
     # when
     sync_all_runs(tmp_path, "foo")
@@ -317,6 +318,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
         lambda project, container_type: (registered_offline_exp, True),
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
+    neptune.new.sync.backend.execute_operations.return_value = (2, [])
 
     # when
     sync_selected_runs(
