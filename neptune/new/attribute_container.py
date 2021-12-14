@@ -507,7 +507,7 @@ class AttributeContainer(AbstractContextManager):
         if not debug_mode:
             if in_interactive() or in_notebook():
                 click.echo(
-                    "Remember to stop your run once you’ve finished logging your metadata"
+                    f"Remember to stop your {self.container_type.value} once you’ve finished logging your metadata"
                     " (https://docs.neptune.ai/api-reference/run#stop)."
                     " It will be stopped automatically only when the notebook"
                     " kernel/interactive console is terminated."
