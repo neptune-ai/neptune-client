@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import abc
 import atexit
 import itertools
 import threading
@@ -35,6 +35,7 @@ from neptune.new.attributes.namespace import (
 )
 from neptune.new.exceptions import (
     MetadataInconsistency,
+    InactiveProjectDescription,
     InactiveRunException,
     NeptunePossibleLegacyUsageException,
 )
@@ -76,10 +77,13 @@ from neptune.new.types.value_copy import ValueCopy
 
 def ensure_not_stopped(fun):
     @wraps(fun)
-    def inner_fun(self, *args, **kwargs):
+    def inner_fun(self: "AttributeContainer", *args, **kwargs):
         # pylint: disable=protected-access
         if self._state == ContainerState.STOPPED:
-            raise InactiveRunException(short_id=self._short_id)
+            if self.container_type == ContainerType.RUN:
+                raise InactiveRunException(label=self._label)
+            elif self.container_type == ContainerType.PROJECT:
+                raise InactiveProjectDescription(label=self._label)
         return fun(self, *args, **kwargs)
 
     return inner_fun
@@ -125,6 +129,11 @@ class AttributeContainer(AbstractContextManager):
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{item}'"
         )
+
+    @property
+    @abc.abstractmethod
+    def _label(self) -> str:
+        raise NotImplementedError
 
     def _get_subpath_suggestions(
         self, path_prefix: str = None, limit: int = 1000
@@ -507,7 +516,7 @@ class AttributeContainer(AbstractContextManager):
         if not debug_mode:
             if in_interactive() or in_notebook():
                 click.echo(
-                    "Remember to stop your run once you’ve finished logging your metadata"
+                    f"Remember to stop your {self.container_type.value} once you’ve finished logging your metadata"
                     " (https://docs.neptune.ai/api-reference/run#stop)."
                     " It will be stopped automatically only when the notebook"
                     " kernel/interactive console is terminated."
