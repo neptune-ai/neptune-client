@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Union, Optional, Iterable
+from typing import List, Union, Optional, Iterable
 
 import click
 
@@ -54,7 +54,7 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> Iterable[Operation]:
+    ) -> List[Operation]:
         values = [
             LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values
         ]

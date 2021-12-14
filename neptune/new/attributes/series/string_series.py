@@ -42,7 +42,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> Iterable[Operation]:
+    ) -> List[Operation]:
         values = [v[:MAX_STRING_SERIES_VALUE_LENGTH] for v in value.values]
         if not self._value_truncation_occurred and any(
             [len(v) > MAX_STRING_SERIES_VALUE_LENGTH for v in value.values]

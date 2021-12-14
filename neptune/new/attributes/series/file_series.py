@@ -41,7 +41,7 @@ Data = File
 class FileSeries(Series[Val, Data]):
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> Iterable[Operation]:
+    ) -> List[Operation]:
         values = [
             LogImages.ValueType(
                 ImageValue(

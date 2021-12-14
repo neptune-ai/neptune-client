@@ -36,7 +36,7 @@ class Series(Attribute, Generic[Val, Data]):
     @abc.abstractmethod
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> Iterable[Operation]:
+    ) -> List[Operation]:
         pass
 
     # pylint: disable=unused-argument
