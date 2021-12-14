@@ -266,10 +266,14 @@ def sync_execution(
         start_time = time.monotonic()
         while True:
             try:
-                backend.execute_operations(
-                    container_id, container_type, operations=batch
+                processed_count, _ = backend.execute_operations(
+                    container_id,
+                    container_type,
+                    operations=batch,
                 )
-                break
+                batch = batch[processed_count:]
+                if len(batch) == 0:
+                    break
             except NeptuneConnectionLostException as ex:
                 if time.monotonic() - start_time > retries_timeout:
                     raise ex
