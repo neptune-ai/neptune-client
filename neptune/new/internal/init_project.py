@@ -81,7 +81,11 @@ def init_project(
     return project
 
 
-def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> Project:
+def get_project(
+    name: Optional[str] = None,
+    api_token: Optional[str] = None,
+    proxies: Optional[dict] = None,
+) -> Project:
     """Get a project with given `name`.
 
     Args:
@@ -111,4 +115,4 @@ def get_project(name: Optional[str] = None, api_token: Optional[str] = None) -> 
     .. _get_project docs page:
        https://docs.neptune.ai/api-reference/neptune#get_project
     """
-    return init_project(name, api_token, mode=Mode.READ_ONLY.value)
+    return init_project(name, api_token, mode=Mode.READ_ONLY.value, proxies=proxies)
