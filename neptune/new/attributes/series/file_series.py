@@ -17,7 +17,7 @@ import imghdr
 import os
 import pathlib
 
-from typing import Optional, Iterable
+from typing import List, Optional, Iterable
 
 from neptune.new.internal.utils import base64_encode
 
@@ -32,15 +32,16 @@ from neptune.new.internal.operation import (
     Operation,
 )
 from neptune.new.attributes.series.series import Series
+from neptune.utils import split_to_chunks
 
 Val = FileSeriesVal
 Data = File
 
 
 class FileSeries(Series[Val, Data]):
-    def _get_log_operation_from_value(
+    def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> Operation:
+    ) -> List[Operation]:
         values = [
             LogImages.ValueType(
                 ImageValue(
@@ -53,7 +54,7 @@ class FileSeries(Series[Val, Data]):
             )
             for val in value.values
         ]
-        return LogImages(self._path, values)
+        return [LogImages(self._path, chunk) for chunk in split_to_chunks(values, 1)]
 
     def _get_clear_operation(self) -> Operation:
         return ClearImageLog(self._path)
