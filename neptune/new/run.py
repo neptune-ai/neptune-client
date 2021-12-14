@@ -23,7 +23,42 @@ from neptune.new.internal.operation_processors.operation_processor import (
 )
 from neptune.new.internal.state import ContainerState
 
-RunState = ContainerState  # backwards compatibility
+# backwards compatibility
+# pylint: disable=unused-import
+from neptune.new.attributes.attribute import Attribute
+from neptune.new.attributes.namespace import (
+    NamespaceBuilder,
+    Namespace as NamespaceAttr,
+)
+from neptune.new.exceptions import (
+    MetadataInconsistency,
+    InactiveRunException,
+    NeptunePossibleLegacyUsageException,
+)
+from neptune.new.handler import Handler
+from neptune.new.internal.backends.api_model import AttributeType
+from neptune.new.internal.operation import DeleteAttribute
+from neptune.new.internal.run_structure import ContainerStructure as RunStructure
+from neptune.new.internal.utils import (
+    is_bool,
+    is_float,
+    is_float_like,
+    is_int,
+    is_string,
+    is_string_like,
+    verify_type,
+    is_dict_like,
+)
+from neptune.new.internal.utils.paths import parse_path
+from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.new.types import Boolean, Integer
+from neptune.new.types.atoms.datetime import Datetime
+from neptune.new.types.atoms.float import Float
+from neptune.new.types.atoms.string import String
+from neptune.new.types.namespace import Namespace
+from neptune.new.types.value import Value
+
+RunState = ContainerState
 
 
 class Run(AttributeContainer):
