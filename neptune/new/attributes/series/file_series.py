@@ -17,7 +17,7 @@ import imghdr
 import os
 import pathlib
 
-from typing import Optional, Iterable
+from typing import List, Optional, Iterable
 
 from neptune.new.internal.utils import base64_encode
 
