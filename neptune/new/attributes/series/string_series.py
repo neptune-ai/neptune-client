@@ -27,7 +27,7 @@ from neptune.new.attributes.series.series import Series
 from neptune.utils import split_to_chunks
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.attribute_container import AttributeContainer
 
 Val = StringSeriesVal
 Data = str
@@ -36,7 +36,7 @@ MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
 
 class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
-    def __init__(self, container: "Run", path: List[str]):
+    def __init__(self, container: "AttributeContainer", path: List[str]):
         super().__init__(container, path)
         self._value_truncation_occurred = False
 

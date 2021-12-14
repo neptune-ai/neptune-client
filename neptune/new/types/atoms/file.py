@@ -31,7 +31,7 @@ from neptune.new.internal.utils.images import (
 )
 
 
-from neptune.new.internal.utils import verify_type, get_stream_content
+from neptune.new.internal.utils import limits, verify_type, get_stream_content
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -105,6 +105,10 @@ class File(Atom):
             content = content.encode("utf-8")
         else:
             ext = "bin"
+
+        if limits.file_size_exceeds_limit(len(content)):
+            content = ""
+
         return File(content=content, extension=extension or ext)
 
     @staticmethod
