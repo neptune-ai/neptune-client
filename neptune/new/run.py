@@ -126,6 +126,10 @@ class Run(AttributeContainer):
 
         Run.last_run = self
 
+    @property
+    def _label(self) -> str:
+        return self._short_id
+
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser"""
         return self._backend.get_run_url(

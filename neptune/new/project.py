@@ -59,6 +59,10 @@ class Project(AttributeContainer):
             workspace=workspace,
         )
 
+    @property
+    def _label(self) -> str:
+        return f"{self._workspace}/{self._project_name}"
+
     # pylint:disable=redefined-builtin
     def fetch_runs_table(
         self,
