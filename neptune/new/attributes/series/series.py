@@ -15,7 +15,7 @@
 #
 import abc
 import time
-from typing import Optional, TypeVar, Generic, Union, Iterable
+from typing import List, Optional, TypeVar, Generic, Union, Iterable
 
 from neptune.new.internal.operation import Operation
 
