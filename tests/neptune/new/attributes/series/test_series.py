@@ -15,20 +15,17 @@
 #
 
 # pylint: disable=protected-access
-from typing import Optional, Iterable
 
 from mock import MagicMock, call, patch
 
 from neptune.new.internal.operation import (
     ClearFloatLog,
     LogFloats,
-    Operation,
     ConfigFloatSeries,
     ClearStringLog,
 )
 from neptune.new.attributes.series.float_series import FloatSeries, FloatSeriesVal
 from neptune.new.attributes.series.string_series import StringSeries, StringSeriesVal
-from neptune.new.attributes.series.series import Series
 
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
@@ -74,7 +71,6 @@ class TestSeries(TestAttributeBase):
         value_and_expected = [
             (13, [LogFloats.ValueType(13, None, self._now())]),
             (15.3, [LogFloats.ValueType(15.3, None, self._now())]),
-            ([], []),
             (
                 [1, 9, 7],
                 [
@@ -179,23 +175,3 @@ class TestSeries(TestAttributeBase):
         var = FloatSeries(exp, path)
         var.clear(wait=wait)
         processor.enqueue_operation.assert_called_once_with(ClearFloatLog(path), wait)
-
-    class SeriesTestClass(Series[FloatSeriesVal, int]):
-        def _get_log_operation_from_value(
-            self, value: FloatSeriesVal, step: Optional[float], timestamp: float
-        ) -> Operation:
-            values = [
-                LogFloats.ValueType(val, step=step, ts=timestamp)
-                for val in value.values
-            ]
-            return LogFloats(self._path, values)
-
-        def _get_clear_operation(self) -> Operation:
-            return ClearFloatLog(self._path)
-
-        # pylint: disable=unused-argument
-        def _data_to_value(self, values: Iterable, **kwargs) -> FloatSeriesVal:
-            return FloatSeriesVal(values)
-
-        def _is_value_type(self, value) -> bool:
-            return isinstance(value, FloatSeriesVal)
