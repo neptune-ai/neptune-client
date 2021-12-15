@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import abc
 import atexit
 import itertools
 import threading
@@ -35,6 +35,7 @@ from neptune.new.attributes.namespace import (
 )
 from neptune.new.exceptions import (
     MetadataInconsistency,
+    InactiveProjectException,
     InactiveRunException,
     NeptunePossibleLegacyUsageException,
 )
@@ -42,6 +43,7 @@ from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
@@ -59,6 +61,10 @@ from neptune.new.internal.utils import (
     is_dict_like,
 )
 from neptune.new.internal.utils.paths import parse_path
+from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
+from neptune.new.internal.utils.uncaught_exception_handler import (
+    instance as uncaught_exception_handler,
+)
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms.datetime import Datetime
@@ -66,21 +72,25 @@ from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
+from neptune.new.types.value_copy import ValueCopy
 
 
 def ensure_not_stopped(fun):
     @wraps(fun)
-    def inner_fun(self, *args, **kwargs):
+    def inner_fun(self: "AttributeContainer", *args, **kwargs):
         # pylint: disable=protected-access
         if self._state == ContainerState.STOPPED:
-            raise InactiveRunException(short_id=self._short_id)
+            if self.container_type == ContainerType.RUN:
+                raise InactiveRunException(label=self._label)
+            elif self.container_type == ContainerType.PROJECT:
+                raise InactiveProjectException(label=self._label)
         return fun(self, *args, **kwargs)
 
     return inner_fun
 
 
 class AttributeContainer(AbstractContextManager):
-    container_type: None
+    container_type: ContainerType
 
     LEGACY_METHODS = set()
 
@@ -92,9 +102,13 @@ class AttributeContainer(AbstractContextManager):
         background_job: BackgroundJob,
         lock: threading.RLock,
         project_id: str,
+        project_name: str,
+        workspace: str,
     ):
         self._id = _id
         self._project_id = project_id
+        self._project_name = project_name
+        self._workspace = workspace
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
@@ -115,6 +129,11 @@ class AttributeContainer(AbstractContextManager):
         raise AttributeError(
             f"'{self.__class__.__name__}' object has no attribute '{item}'"
         )
+
+    @property
+    @abc.abstractmethod
+    def _label(self) -> str:
+        raise NotImplementedError
 
     def _get_subpath_suggestions(
         self, path_prefix: str = None, limit: int = 1000
@@ -202,7 +221,7 @@ class AttributeContainer(AbstractContextManager):
         return self._get_root_handler().fetch()
 
     def ping(self):
-        self._backend.ping_run(self._id)
+        self._backend.ping(self._id, self.container_type)
 
     def start(self):
         atexit.register(self._shutdown_hook)
@@ -336,6 +355,8 @@ class AttributeContainer(AbstractContextManager):
     ) -> Attribute:
         if isinstance(value, Value):
             pass
+        elif isinstance(value, Handler):
+            value = ValueCopy(value)
         elif is_bool(value):
             value = Boolean(value)
         elif is_int(value):
@@ -364,7 +385,7 @@ class AttributeContainer(AbstractContextManager):
                 )
             attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
             self._structure.set(parsed_path, attr)
-            attr.assign(value, wait)
+            attr.process_assignment(value, wait)
             return attr
 
     def get_attribute(self, path: str) -> Optional[Attribute]:
@@ -477,7 +498,7 @@ class AttributeContainer(AbstractContextManager):
         with self._lock:
             if wait:
                 self._op_processor.wait()
-            attributes = self._backend.get_attributes(self._id)
+            attributes = self._backend.get_attributes(self._id, self.container_type)
             self._structure.clear()
             for attribute in attributes:
                 self._define_attribute(parse_path(attribute.path), attribute.type)
@@ -488,6 +509,20 @@ class AttributeContainer(AbstractContextManager):
 
     def _get_root_handler(self):
         return Handler(self, "")
+
+    def _startup(self, debug_mode):
+        self.start()
+
+        if not debug_mode:
+            if in_interactive() or in_notebook():
+                click.echo(
+                    f"Remember to stop your {self.container_type.value} once you’ve finished logging your metadata"
+                    " (https://docs.neptune.ai/api-reference/run#stop)."
+                    " It will be stopped automatically only when the notebook"
+                    " kernel/interactive console is terminated."
+                )
+
+        uncaught_exception_handler.activate()
 
     def _shutdown_hook(self):
         self.stop()

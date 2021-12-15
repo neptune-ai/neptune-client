@@ -33,11 +33,13 @@ from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
+from ..container_type import ContainerType
 
 
 def get_operation_processor(
     mode: Mode,
-    parent_id: str,
+    container_id: str,
+    container_type: ContainerType,
     backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
@@ -45,7 +47,7 @@ def get_operation_processor(
 
     if mode == Mode.ASYNC:
         data_path = "{}/{}/{}".format(
-            NEPTUNE_DATA_DIRECTORY, ASYNC_DIRECTORY, parent_id
+            NEPTUNE_DATA_DIRECTORY, ASYNC_DIRECTORY, container_id
         )
         try:
             execution_id = len(os.listdir(data_path))
@@ -54,28 +56,37 @@ def get_operation_processor(
         execution_path = "{}/exec-{}-{}".format(data_path, execution_id, datetime.now())
         execution_path = execution_path.replace(" ", "_").replace(":", ".")
         return AsyncOperationProcessor(
-            parent_id,
+            container_id,
+            container_type,
             DiskQueue(
-                Path(execution_path), lambda x: x.to_dict(), Operation.from_dict, lock
+                Path(execution_path),
+                lambda x: x.to_dict(),
+                Operation.from_dict,
+                lock,
+                container_type,
             ),
             backend,
             lock,
             sleep_time=flush_period,
         )
     elif mode == Mode.SYNC:
-        return SyncOperationProcessor(parent_id, backend)
+        return SyncOperationProcessor(container_id, container_type, backend)
     elif mode == Mode.DEBUG:
-        return SyncOperationProcessor(parent_id, backend)
+        return SyncOperationProcessor(container_id, container_type, backend)
     elif mode == Mode.OFFLINE:
         # the object was returned by mocked backend and has some random ID.
         data_path = "{}/{}/{}".format(
-            NEPTUNE_DATA_DIRECTORY, OFFLINE_DIRECTORY, parent_id
+            NEPTUNE_DATA_DIRECTORY, OFFLINE_DIRECTORY, container_id
         )
         storage_queue = DiskQueue(
-            Path(data_path), lambda x: x.to_dict(), Operation.from_dict, lock
+            Path(data_path),
+            lambda x: x.to_dict(),
+            Operation.from_dict,
+            lock,
+            container_type,
         )
         return OfflineOperationProcessor(storage_queue)
     elif mode == Mode.READ_ONLY:
-        return ReadOnlyOperationProcessor(parent_id, backend)
+        return ReadOnlyOperationProcessor(container_id, backend)
     else:
         raise ValueError(f"mode should be one of {[m for m in Mode]}")

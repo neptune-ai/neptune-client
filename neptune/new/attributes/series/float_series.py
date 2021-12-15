@@ -81,10 +81,12 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     def fetch_last(self) -> float:
         # pylint: disable=protected-access
-        val = self._backend.get_float_series_attribute(self._container_id, self._path)
+        val = self._backend.get_float_series_attribute(
+            self._container_id, self._container_type, self._path
+        )
         return val.last
 
     def _fetch_values_from_backend(self, offset, limit) -> FloatSeriesValues:
         return self._backend.get_float_series_values(
-            self._container_id, self._path, offset, limit
+            self._container_id, self._container_type, self._path, offset, limit
         )

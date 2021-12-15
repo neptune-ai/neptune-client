@@ -16,6 +16,7 @@
 from typing import Optional
 
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
@@ -23,13 +24,18 @@ from neptune.new.internal.operation_processors.operation_processor import (
 
 
 class SyncOperationProcessor(OperationProcessor):
-    def __init__(self, run_id: str, backend: NeptuneBackend):
-        self._run_id = run_id
+    def __init__(
+        self, container_id: str, container_type: ContainerType, backend: NeptuneBackend
+    ):
+        self._container_id = container_id
+        self._container_type = container_type
         self._backend = backend
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument
-        errors = self._backend.execute_operations(self._run_id, [op])
+        _, errors = self._backend.execute_operations(
+            self._container_id, self._container_type, [op]
+        )
         if errors:
             raise errors[0]
 

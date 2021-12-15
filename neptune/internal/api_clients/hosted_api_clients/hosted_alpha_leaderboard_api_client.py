@@ -899,7 +899,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             if isinstance(upload_operation, alpha_operation.UploadFile):
                 alpha_hosted_file_operations.upload_file_attribute(
                     swagger_client=self.leaderboard_swagger_client,
-                    run_id=experiment_id,
+                    container_id=experiment_id,
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     source=upload_operation.file_path,
                     ext=upload_operation.ext,
@@ -907,7 +907,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             elif isinstance(upload_operation, alpha_operation.UploadFileContent):
                 alpha_hosted_file_operations.upload_file_attribute(
                     swagger_client=self.leaderboard_swagger_client,
-                    run_id=experiment_id,
+                    container_id=experiment_id,
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     source=base64_decode(upload_operation.file_content),
                     ext=upload_operation.ext,
@@ -915,7 +915,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             elif isinstance(upload_operation, alpha_operation.UploadFileSet):
                 alpha_hosted_file_operations.upload_file_set_attribute(
                     swagger_client=self.leaderboard_swagger_client,
-                    run_id=experiment_id,
+                    container_id=experiment_id,
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     file_globs=upload_operation.file_globs,
                     reset=upload_operation.reset,

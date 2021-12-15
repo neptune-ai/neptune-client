@@ -15,9 +15,12 @@
 #
 import threading
 
+import click
+
 from neptune.new.attribute_container import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
@@ -105,6 +108,8 @@ class Run(AttributeContainer):
 
     last_run = None  # "static" instance of recently created Run
 
+    container_type = ContainerType.RUN
+
     LEGACY_METHODS = (
         "create_experiment",
         "send_metric",
@@ -141,16 +146,32 @@ class Run(AttributeContainer):
         project_id: str,
         monitoring_namespace: str = "monitoring",
     ):
-        super().__init__(_id, backend, op_processor, background_job, lock, project_id)
-        self._workspace = workspace
-        self._project_name = project_name
+        super().__init__(
+            _id,
+            backend,
+            op_processor,
+            background_job,
+            lock,
+            project_id,
+            project_name,
+            workspace,
+        )
         self._short_id = short_id
         self.monitoring_namespace = monitoring_namespace
 
         Run.last_run = self
+
+    @property
+    def _label(self) -> str:
+        return self._short_id
 
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser"""
         return self._backend.get_run_url(
             self._id, self._workspace, self._project_name, self._short_id
         )
+
+    def _startup(self, debug_mode):
+        if not debug_mode:
+            click.echo(self.get_run_url())
+        super()._startup(debug_mode)

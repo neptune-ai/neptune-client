@@ -13,17 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-from typing import Union, Optional, List
+from typing import List, Optional, Union
 from urllib.parse import urlparse
 
 from packaging.version import Version
 
+from neptune.exceptions import STYLES
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
-from neptune.new.internal.utils import replace_patch_version
 from neptune.new.internal.backends.api_model import Project, Workspace
-from neptune.exceptions import STYLES
+from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.utils import replace_patch_version
 
 
 class NeptuneException(Exception):
@@ -275,31 +275,92 @@ class RunNotFound(NeptuneException):
         super().__init__("Run {} not found.".format(run_id))
 
 
-class RunUUIDNotFound(NeptuneException):
-    def __init__(self, run_id: str):
-        super().__init__("Run with ID {} not found. Could be deleted.".format(run_id))
+class ContainerUUIDNotFound(NeptuneException):
+    container_id: str
+    container_type: ContainerType
+
+    def __init__(self, container_id: str, container_type: ContainerType):
+        self.container_id = container_id
+        self.container_type = container_type
+        super().__init__(
+            "{} with ID {} not found. Could be deleted.".format(
+                container_type.value.capitalize(), container_id
+            )
+        )
 
 
-class InactiveRunException(NeptuneException):
-    def __init__(self, short_id: str):
+def raise_container_not_found(
+    container_id: str, container_type: ContainerType, from_exception: Exception = None
+):
+    if container_type == ContainerType.RUN:
+        error_class = RunUUIDNotFound
+    elif container_type == ContainerType.PROJECT:
+        error_class = ProjectUUIDNotFound
+    else:
+        raise InternalClientError(f"Unknown container_type: {container_type}")
+
+    if from_exception:
+        raise error_class(container_id) from from_exception
+    else:
+        raise error_class(container_id)
+
+
+class RunUUIDNotFound(ContainerUUIDNotFound):
+    def __init__(self, container_id: str):
+        super().__init__(container_id, container_type=ContainerType.RUN)
+
+
+class ProjectUUIDNotFound(ContainerUUIDNotFound):
+    def __init__(self, container_id: str):
+        super().__init__(container_id, container_type=ContainerType.PROJECT)
+
+
+class InactiveContainerException(NeptuneException):
+    resume_info: str
+
+    def __init__(self, container_type: ContainerType, label: str):
         message = """
 {h1}
-----InactiveRunException----------------------------------------
+----{cls}----------------------------------------
 {end}
-It seems you are trying to log (or fetch) metadata to a run that was stopped ({short_id}).
-What should I do?
-    - Resume the run to continue logging to it:
-    https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
-    - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only,
-    you can resume a run in read-only mode:
-    https://docs.neptune.ai/you-should-know/connection-modes#read-only
+It seems you are trying to log (or fetch) metadata to a {container_type} that was stopped ({label}).
+What should I do?{resume_info}
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/api-reference/run#stop
-    - https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
+    - https://docs.neptune.ai/api-reference/{container_type}#.stop
     - https://docs.neptune.ai/you-should-know/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(short_id=short_id, **STYLES))
+        super().__init__(
+            message.format(
+                cls=self.__class__.__name__,
+                label=label,
+                container_type=container_type.value,
+                resume_info=self.resume_info,
+                **STYLES,
+            )
+        )
+
+
+class InactiveRunException(InactiveContainerException):
+    resume_info = """
+    - Resume the run to continue logging to it:
+    https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
+    - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
+    you can resume a {container_type} in read-only mode:
+    https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
+
+    def __init__(self, label: str):
+        super().__init__(label=label, container_type=ContainerType.RUN)
+
+
+class InactiveProjectException(InactiveContainerException):
+    resume_info = """
+    - Initialize connection to the project again to continue logging to it:
+    https://docs.neptune.ai/api-reference/neptune#.init_project
+    - Don't invoke `stop()` on a {container_type} that you want to access."""
+
+    def __init__(self, label: str):
+        super().__init__(label=label, container_type=ContainerType.PROJECT)
 
 
 class NeptuneMissingApiTokenException(NeptuneException):

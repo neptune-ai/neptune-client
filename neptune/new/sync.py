@@ -22,7 +22,7 @@ import threading
 import time
 import uuid
 from pathlib import Path
-from typing import Sequence, Iterable, List, Optional, Tuple, Any
+from typing import Any, Iterable, List, Optional, Sequence, Tuple
 
 import click
 
@@ -40,12 +40,14 @@ from neptune.new.exceptions import (
     ProjectNotFound,
     RunNotFound,
 )
-from neptune.new.internal.backends.api_model import Project, ApiRun
+from neptune.new.internal.backends.api_model import ApiRun, Project
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import Operation
+from neptune.new.internal.utils.container_type_file import ContainerTypeFile
 
 #######################################################################################################################
 # Run and Project utilities
@@ -146,7 +148,11 @@ def get_offline_runs_ids(base_path: Path) -> List[str]:
 def partition_runs(base_path: Path) -> Tuple[List[ApiRun], List[ApiRun], int]:
     synced_runs_ids = []
     unsynced_runs_ids = []
-    for run_path in (base_path / ASYNC_DIRECTORY).iterdir():
+    async_path = base_path / ASYNC_DIRECTORY
+    if not async_path.is_dir():
+        return [], [], 0
+
+    for run_path in async_path.iterdir():
         run_id = run_path.name
         if is_run_synced(run_path):
             synced_runs_ids.append(run_id)
@@ -235,13 +241,22 @@ def sync_run(run_path: Path, qualified_run_name: str) -> None:
     run_id = run_path.name
     click.echo("Synchronising {}".format(qualified_run_name))
     for execution_path in run_path.iterdir():
-        sync_execution(execution_path, run_id)
-    click.echo("Synchronization of run {} completed.".format(qualified_run_name))
+        container_type = ContainerTypeFile(execution_path).container_type
+        sync_execution(execution_path, run_id, container_type)
+    click.echo(
+        f"Synchronization of {container_type.value} {qualified_run_name} completed."
+    )
 
 
-def sync_execution(execution_path: Path, run_id: str) -> None:
+def sync_execution(
+    execution_path: Path, container_id: str, container_type: ContainerType
+) -> None:
     disk_queue = DiskQueue(
-        execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock()
+        execution_path,
+        lambda x: x.to_dict(),
+        Operation.from_dict,
+        threading.RLock(),
+        container_type,
     )
     while True:
         batch, version = disk_queue.get_batch(1000)
@@ -249,10 +264,20 @@ def sync_execution(execution_path: Path, run_id: str) -> None:
             break
 
         start_time = time.monotonic()
+        expected_count = len(batch)
+        version_to_ack = version - expected_count
         while True:
             try:
-                backend.execute_operations(run_id, batch)
-                break
+                processed_count, _ = backend.execute_operations(
+                    container_id,
+                    container_type,
+                    operations=batch,
+                )
+                version_to_ack += processed_count
+                batch = batch[processed_count:]
+                disk_queue.ack(version)
+                if version_to_ack == version:
+                    break
             except NeptuneConnectionLostException as ex:
                 if time.monotonic() - start_time > retries_timeout:
                     raise ex
@@ -263,11 +288,13 @@ def sync_execution(execution_path: Path, run_id: str) -> None:
                     sys.stderr,
                 )
 
-        disk_queue.ack(version)
-
 
 def sync_all_registered_runs(base_path: Path) -> None:
-    for run_path in (base_path / ASYNC_DIRECTORY).iterdir():
+    async_path = base_path / ASYNC_DIRECTORY
+    if not async_path.is_dir():
+        return
+
+    for run_path in async_path.iterdir():
         if not is_run_synced(run_path):
             run_id = run_path.name
             run = get_run(run_id)
@@ -293,9 +320,16 @@ def sync_selected_registered_runs(
                 )
 
 
-def register_offline_run(project: Project) -> Optional[ApiRun]:
+def register_offline_run(
+    project: Project, container_type: ContainerType
+) -> Optional[Tuple[ApiRun, bool]]:
     try:
-        return backend.create_run(project.id)
+        if container_type == ContainerType.RUN:
+            return backend.create_run(project.id), True
+        else:
+            # No need for registering project.
+            # Project must've been registered before.
+            return backend.get_run(project.id), False
     except Exception as e:
         click.echo(
             "Exception occurred while trying to create a run "
@@ -307,7 +341,9 @@ def register_offline_run(project: Project) -> Optional[ApiRun]:
 
 
 def move_offline_run(base_path: Path, offline_id: str, server_id: str) -> None:
+    # create async directory for run
     (base_path / ASYNC_DIRECTORY / server_id).mkdir(parents=True)
+    # mv offline directory inside async one
     (base_path / OFFLINE_DIRECTORY / offline_id).rename(
         base_path / ASYNC_DIRECTORY / server_id / "exec-0-offline"
     )
@@ -318,19 +354,23 @@ def register_offline_runs(
 ) -> List[ApiRun]:
     result = []
     for run_id in offline_runs_ids:
-        if (base_path / OFFLINE_DIRECTORY / run_id).is_dir():
-            run = register_offline_run(project)
+        dir_path = base_path / OFFLINE_DIRECTORY / run_id
+        if dir_path.is_dir():
+            container_type = ContainerTypeFile(dir_path).container_type
+            run, registered = register_offline_run(
+                project, container_type=container_type
+            )
             if run:
                 move_offline_run(base_path, offline_id=run_id, server_id=run.id)
+                verb = "registered as" if registered else "recognized as"
                 click.echo(
-                    "Offline run {} registered as {}".format(
-                        run_id, get_qualified_name(run)
-                    )
+                    f"Offline {container_type.value} {run_id} {verb} {get_qualified_name(run)}"
                 )
                 result.append(run)
         else:
             click.echo(
-                "Offline run with UUID {} not found on disk.".format(run_id), err=True
+                f"Offline {container_type.value} with UUID {run_id} not found on disk.",
+                err=True,
             )
     return result
 
