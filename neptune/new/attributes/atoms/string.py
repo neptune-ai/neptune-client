@@ -38,19 +38,18 @@ class String(Atom):
         if not isinstance(value, StringVal):
             value = StringVal(value)
 
-        if (
-            not self._value_truncation_occurred
-            and len(value.value) > String.MAX_VALUE_LENGTH
-        ):
-            # the first truncation
-            self._value_truncation_occurred = True
-            click.echo(
-                f"Warning: string '{path_to_str(self._path)}' value was "
-                f"longer than {String.MAX_VALUE_LENGTH} characters and was truncated. "
-                f"This warning is printed only once.",
-                err=True,
-            )
-        value.value = value.value[: String.MAX_VALUE_LENGTH]
+        if len(value.value) > String.MAX_VALUE_LENGTH:
+            value.value = value.value[: String.MAX_VALUE_LENGTH]
+
+            if not self._value_truncation_occurred:
+                # the first truncation
+                self._value_truncation_occurred = True
+                click.echo(
+                    f"Warning: string '{path_to_str(self._path)}' value was "
+                    f"longer than {String.MAX_VALUE_LENGTH} characters and was truncated. "
+                    f"This warning is printed only once.",
+                    err=True,
+                )
 
         with self._container.lock():
             self._enqueue_operation(AssignString(self._path, value.value), wait)
