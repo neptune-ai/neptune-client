@@ -41,6 +41,7 @@ from neptune.new.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.new.internal.container_type import ContainerType
 from neptune.utils import IS_WINDOWS
 
 
@@ -468,7 +469,11 @@ class TestClientProject(unittest.TestCase):
             exp["image/series"].get()
 
         exp["file"].download("some_directory")
-        download_file.assert_called_with(exp_id, ["file"], "some_directory")
+        download_file.assert_called_with(
+            exp_id, ContainerType.RUN, ["file"], "some_directory"
+        )
 
         exp["file/set"].download("some_directory")
-        download_file_set.assert_called_with(exp_id, ["file", "set"], "some_directory")
+        download_file_set.assert_called_with(
+            exp_id, ContainerType.RUN, ["file", "set"], "some_directory"
+        )
