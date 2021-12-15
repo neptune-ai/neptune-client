@@ -71,6 +71,7 @@ from neptune.new.exceptions import (
     UnsupportedClientVersion,
     ClientHttpError,
     NeptuneFeaturesNotAvailableException,
+    MetadataInconsistency,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.operation import Operation, CopyAttribute
@@ -347,8 +348,12 @@ class ExecuteOperationsBatchingManager:
         for op in ops:
             if isinstance(op, CopyAttribute):
                 if not batch:
-                    # CopyAttribute can be at the start of a batch
-                    batch.append(op.resolve(self._backend))
+                    try:
+                        # CopyAttribute can be at the start of a batch
+                        batch.append(op.resolve(self._backend))
+                    except MetadataInconsistency as e:
+                        # print info and skip this operation
+                        print(e)
                 else:
                     # cannot have CopyAttribute after any other op in a batch
                     break
