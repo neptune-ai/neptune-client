@@ -15,7 +15,7 @@
 #
 import abc
 import time
-from typing import Optional, TypeVar, Generic, Union, Iterable
+from typing import List, Optional, TypeVar, Generic, Union, Iterable
 
 from neptune.new.internal.operation import Operation
 
@@ -34,9 +34,9 @@ class Series(Attribute, Generic[Val, Data]):
         self._clear_impl(wait)
 
     @abc.abstractmethod
-    def _get_log_operation_from_value(
+    def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> Operation:
+    ) -> List[Operation]:
         pass
 
     # pylint: disable=unused-argument
@@ -69,9 +69,9 @@ class Series(Attribute, Generic[Val, Data]):
             else:
                 self._enqueue_operation(clear_op, wait=False)
                 ts = time.time()
-                self._enqueue_operation(
-                    self._get_log_operation_from_value(value, None, ts), wait=wait
-                )
+                ops = self._get_log_operations_from_value(value, None, ts)
+                for op in ops:
+                    self._enqueue_operation(op, wait=wait)
 
     def log(
         self,
@@ -98,10 +98,11 @@ class Series(Attribute, Generic[Val, Data]):
         if not timestamp:
             timestamp = time.time()
 
-        op = self._get_log_operation_from_value(value, step, timestamp)
+        ops = self._get_log_operations_from_value(value, step, timestamp)
 
         with self._container.lock():
-            self._enqueue_operation(op, wait)
+            for op in ops:
+                self._enqueue_operation(op, wait)
 
     def _clear_impl(self, wait: bool = False) -> None:
         op = self._get_clear_operation()

@@ -24,9 +24,10 @@ from neptune.new.types.series.string_series import StringSeries as StringSeriesV
 
 from neptune.new.internal.operation import LogStrings, ClearStringLog, Operation
 from neptune.new.attributes.series.series import Series
+from neptune.utils import split_to_chunks
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.attribute_container import AttributeContainer
 
 Val = StringSeriesVal
 Data = str
@@ -35,13 +36,13 @@ MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
 
 class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
-    def __init__(self, container: "Run", path: List[str]):
+    def __init__(self, container: "AttributeContainer", path: List[str]):
         super().__init__(container, path)
         self._value_truncation_occurred = False
 
-    def _get_log_operation_from_value(
+    def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> Operation:
+    ) -> List[Operation]:
         values = [v[:MAX_STRING_SERIES_VALUE_LENGTH] for v in value.values]
         if not self._value_truncation_occurred and any(
             [len(v) > MAX_STRING_SERIES_VALUE_LENGTH for v in value.values]
@@ -56,7 +57,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
             )
 
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in values]
-        return LogStrings(self._path, values)
+        return [LogStrings(self._path, chunk) for chunk in split_to_chunks(values, 10)]
 
     def _get_clear_operation(self) -> Operation:
         return ClearStringLog(self._path)

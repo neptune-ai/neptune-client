@@ -43,3 +43,12 @@ class TestFloatSeries(TestAttributeBase):
         var.log(5)
         var.log(34)
         self.assertEqual(34, var.fetch_last())
+
+    def test_log(self):
+        exp, path = self._create_run(), self._random_path()
+        var = FloatSeries(exp, path)
+        var.log([val for val in range(0, 5000)])
+        self.assertEqual(4999, var.fetch_last())
+        values = list(var.fetch_values()["value"].array)
+        expected = list(range(0, 5000))
+        self.assertEqual(len(set(expected)), len(set(values)))

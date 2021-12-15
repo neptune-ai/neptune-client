@@ -28,6 +28,8 @@ from neptune.new.types.namespace import Namespace as NamespaceVal
 if TYPE_CHECKING:
     from neptune.new.attribute_container import AttributeContainer
 
+RunStructure = ContainerStructure  # backwards compatibility
+
 
 class Namespace(Attribute, MutableMapping):
     def __init__(self, container: "AttributeContainer", path: List[str]):

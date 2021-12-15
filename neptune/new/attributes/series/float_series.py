@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Union, Optional, Iterable
+from typing import List, Union, Optional, Iterable
 
 import click
 
@@ -30,6 +30,7 @@ from neptune.new.internal.operation import (
     ConfigFloatSeries,
 )
 from neptune.new.attributes.series.series import Series
+from neptune.utils import split_to_chunks
 
 Val = FloatSeriesVal
 Data = Union[float, int]
@@ -51,13 +52,13 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
         with self._container.lock():
             self._enqueue_operation(ConfigFloatSeries(self._path, min, max, unit), wait)
 
-    def _get_log_operation_from_value(
+    def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> Operation:
+    ) -> List[Operation]:
         values = [
             LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values
         ]
-        return LogFloats(self._path, values)
+        return [LogFloats(self._path, chunk) for chunk in split_to_chunks(values, 100)]
 
     def _get_clear_operation(self) -> Operation:
         return ClearFloatLog(self._path)

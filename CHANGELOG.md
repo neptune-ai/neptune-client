@@ -1,3 +1,21 @@
+## neptune-client 0.13.6
+
+### Fixes
+- Fix veryfing data size limits in String Atoms and File.from_content ([#784](https://github.com/neptune-ai/neptune-client/pull/784))
+
+## neptune-client 0.13.5
+
+### Fixes
+- Restore RunMode for backward compatibility ([#775](https://github.com/neptune-ai/neptune-client/pull/775))
+- Restore imports for backward compatibility ([#777](https://github.com/neptune-ai/neptune-client/pull/777))
+- Limit number of Series elements sent in single request ([#780](https://github.com/neptune-ai/neptune-client/pull/780))
+
+## neptune-client 0.13.4
+
+### Fixes
+- Fix issue that prevented waiting for subprocesses to finish after receiving stop signal from backend ([#774](https://github.com/neptune-ai/neptune-client/pull/774))
+  Timeout now overridable using environment var `NEPTUNE_SUBPROCESS_KILL_TIMEOUT`
+
 ## neptune-client 0.13.3
 
 ### Fixes
