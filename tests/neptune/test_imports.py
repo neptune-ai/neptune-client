@@ -114,11 +114,9 @@ from neptune.new.attributes.atoms.artifact import TrackFilesToArtifact
 from neptune.new.attributes.atoms.atom import Atom
 from neptune.new.attributes.atoms.atom import Attribute
 from neptune.new.attributes.atoms.boolean import AssignBool
-from neptune.new.attributes.atoms.boolean import Atom
 from neptune.new.attributes.atoms.boolean import Boolean
 from neptune.new.attributes.atoms.boolean import BooleanVal
 from neptune.new.attributes.atoms.datetime import AssignDatetime
-from neptune.new.attributes.atoms.datetime import Atom
 from neptune.new.attributes.atoms.datetime import Datetime
 from neptune.new.attributes.atoms.datetime import DatetimeVal
 from neptune.new.attributes.atoms.datetime import datetime
@@ -128,13 +126,11 @@ from neptune.new.attributes.atoms.file import FileVal
 from neptune.new.attributes.atoms.file import UploadFile
 from neptune.new.attributes.atoms.file import UploadFileContent
 from neptune.new.attributes.atoms.float import AssignFloat
-from neptune.new.attributes.atoms.float import Atom
 from neptune.new.attributes.atoms.float import Float
 from neptune.new.attributes.atoms.float import FloatVal
 from neptune.new.attributes.atoms.git_ref import Atom
 from neptune.new.attributes.atoms.git_ref import GitRef
 from neptune.new.attributes.atoms.integer import AssignInt
-from neptune.new.attributes.atoms.integer import Atom
 from neptune.new.attributes.atoms.integer import Integer
 from neptune.new.attributes.atoms.integer import IntegerVal
 from neptune.new.attributes.atoms.notebook_ref import Atom
@@ -142,7 +138,6 @@ from neptune.new.attributes.atoms.notebook_ref import NotebookRef
 from neptune.new.attributes.atoms.run_state import Atom
 from neptune.new.attributes.atoms.run_state import RunState
 from neptune.new.attributes.atoms.string import AssignString
-from neptune.new.attributes.atoms.string import Atom
 from neptune.new.attributes.atoms.string import String
 from neptune.new.attributes.atoms.string import StringVal
 from neptune.new.attributes.attribute import Attribute
@@ -316,7 +311,6 @@ from neptune.new.integrations.python_logger import Run
 from neptune.new.integrations.python_logger import RunState
 from neptune.new.logging.logger import Logger
 from neptune.new.logging.logger import Run
-from neptune.new.project import HostedNeptuneBackend
 from neptune.new.project import Iterable
 from neptune.new.project import Project
 from neptune.new.project import RunsTable
@@ -346,7 +340,6 @@ from neptune.new.run import ValueToAttributeVisitor
 from neptune.new.runs_table import AttributeType
 from neptune.new.runs_table import AttributeWithProperties
 from neptune.new.runs_table import Dict
-from neptune.new.runs_table import HostedNeptuneBackend
 from neptune.new.runs_table import LeaderboardEntry
 from neptune.new.runs_table import LeaderboardHandler
 from neptune.new.runs_table import List
