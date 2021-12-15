@@ -149,6 +149,12 @@ class TestRun(unittest.TestCase):
         exp.wait()
         self.assertEqual(42, exp["copied/path"].fetch())
 
+    def test_assign_copy_from_nonexistent(self):
+        exp = init(mode="debug")
+        with self.assertRaises(Exception) as e:
+            exp["copied/path"] = exp["some/path/num"]
+        self.assertEqual("NoneType doesn't support copying", str(e.exception))
+
     def test_access_blocked_after_stop(self):
         exp = init(mode="debug")
         exp["attr1"] = 1

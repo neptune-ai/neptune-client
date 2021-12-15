@@ -81,7 +81,7 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             ),
         ]
 
-        batch = manager.get_batch(operations)
+        batch = manager.get_batch(operations, [])
         self.assertEqual(operations[0:2], batch)
 
     def test_get_nonempty_batch_with_copy_first(self):
@@ -99,7 +99,7 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             ),
         ]
 
-        batch = manager.get_batch(operations)
+        batch = manager.get_batch(operations, [])
         expected_batch = [
             operation.AssignInt(
                 operations[0].path, backend.get_int_attribute.return_value.value
@@ -118,14 +118,14 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             operation.AssignInt(["pp"], 12),
         ]
 
-        batch = manager.get_batch(operations)
+        batch = manager.get_batch(operations, [])
         self.assertEqual(operations, batch)
 
     def test_no_ops_is_ok(self):
         backend = Mock()
         manager = ExecuteOperationsBatchingManager(backend)
 
-        batch = manager.get_batch([])
+        batch = manager.get_batch([], [])
         self.assertEqual([], batch)
 
     def test_subsequent_copies_is_ok(self):
@@ -144,7 +144,7 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             ),
         ]
 
-        batch = manager.get_batch(operations)
+        batch = manager.get_batch(operations, [])
         expected_batch = [
             operation.AssignInt(
                 operations[0].path, backend.get_int_attribute.return_value.value

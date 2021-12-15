@@ -367,7 +367,8 @@ class HostedNeptuneBackend(NeptuneBackend):
         errors = []
 
         batching_mgr = ExecuteOperationsBatchingManager(self)
-        operations_batch = batching_mgr.get_batch(operations)
+        operations_batch = batching_mgr.get_batch(operations, errors)
+        dropped_operations = len(errors)
 
         operations_preprocessor = OperationsPreprocessor()
         operations_preprocessor.process(operations_batch)
@@ -410,7 +411,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
         )
 
-        return len(operations_batch), errors
+        return len(operations_batch) + dropped_operations, errors
 
     def _execute_upload_operations(
         self, container_id: str, upload_operations: List[Operation]
