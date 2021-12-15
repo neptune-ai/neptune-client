@@ -26,6 +26,8 @@ if TYPE_CHECKING:
 
 
 class Attribute:
+    supports_copy = False
+
     def __init__(self, container: "AttributeContainer", path: List[str]):
         super().__init__()
         self._container = container

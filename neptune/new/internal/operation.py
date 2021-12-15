@@ -528,10 +528,10 @@ class CopyAttribute(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> "CopyAttribute":
-        from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
+        from neptune.new.attributes.attribute import Attribute
 
         source_attr_cls = {
-            cls.__name__: cls for cls in all_subclasses(CopiableAtom)
+            cls.__name__: cls for cls in all_subclasses(Attribute) if cls.supports_copy
         }.get(data["source_attr_name"])
 
         if source_attr_cls is None:
