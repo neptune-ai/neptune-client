@@ -2,6 +2,7 @@
 
 ### Features
 - Interacting with project-level metadata ([#758](https://github.com/neptune-ai/neptune-client/pull/758))
+- Copy feature for non-file single value attributes ([#768](https://github.com/neptune-ai/neptune-client/pull/768))
 
 ### Fixes
 - Fix verifying data size limits in String Atoms and File.from_content ([#784](https://github.com/neptune-ai/neptune-client/pull/784))
