@@ -1,3 +1,8 @@
+## neptune-client 0.13.6
+
+### Fixes
+- Fix veryfing data size limits in String Atoms and File.from_content ([#784](https://github.com/neptune-ai/neptune-client/pull/784))
+
 ## neptune-client 0.13.5
 
 ### Fixes
