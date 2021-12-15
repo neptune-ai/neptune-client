@@ -316,40 +316,49 @@ class ProjectUUIDNotFound(ContainerUUIDNotFound):
 
 
 class InactiveContainerException(NeptuneException):
+    resume_info: str
+
     def __init__(self, container_type: ContainerType, label: str):
         message = """
-    {h1}
-    ----{cls}----------------------------------------
-    {end}
-    It seems you are trying to log (or fetch) metadata to a {container_type} that was stopped ({label}).
-    What should I do?
-        - Resume the {container_type} to continue logging to it:
-        https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
-        - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
-        you can resume a {container_type} in read-only mode:
-        https://docs.neptune.ai/you-should-know/connection-modes#read-only
-    You may also want to check the following docs pages:
-        - https://docs.neptune.ai/api-reference/run#stop
-        - https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
-        - https://docs.neptune.ai/you-should-know/connection-modes
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
-    """
+{h1}
+----{cls}----------------------------------------
+{end}
+It seems you are trying to log (or fetch) metadata to a {container_type} that was stopped ({label}).
+What should I do?{resume_info}
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/api-reference/{container_type}#.stop
+    - https://docs.neptune.ai/you-should-know/connection-modes
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
         super().__init__(
             message.format(
                 cls=self.__class__.__name__,
                 label=label,
                 container_type=container_type.value,
+                resume_info=self.resume_info,
                 **STYLES,
             )
         )
 
 
 class InactiveRunException(InactiveContainerException):
+    resume_info = """
+    - Resume the run to continue logging to it:
+    https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
+    - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
+    you can resume a {container_type} in read-only mode:
+    https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
+
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.RUN)
 
 
-class InactiveProjectDescription(InactiveContainerException):
+class InactiveProjectException(InactiveContainerException):
+    resume_info = """
+    - Initialize connection to the project again to continue logging to it:
+    https://docs.neptune.ai/api-reference/neptune#.init_project
+    - Don't invoke `stop()` on a {container_type} that you want to access."""
+
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.PROJECT)
 
