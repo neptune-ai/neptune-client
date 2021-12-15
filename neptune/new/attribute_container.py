@@ -35,7 +35,7 @@ from neptune.new.attributes.namespace import (
 )
 from neptune.new.exceptions import (
     MetadataInconsistency,
-    InactiveProjectDescription,
+    InactiveProjectException,
     InactiveRunException,
     NeptunePossibleLegacyUsageException,
 )
@@ -83,7 +83,7 @@ def ensure_not_stopped(fun):
             if self.container_type == ContainerType.RUN:
                 raise InactiveRunException(label=self._label)
             elif self.container_type == ContainerType.PROJECT:
-                raise InactiveProjectDescription(label=self._label)
+                raise InactiveProjectException(label=self._label)
         return fun(self, *args, **kwargs)
 
     return inner_fun
