@@ -24,6 +24,7 @@ from neptune.new.internal.backends.api_model import (
     AttributeType,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.utils.paths import join_paths, parse_path
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,9 @@ class RunsTableEntry:
             if attr.path == path:
                 _type = attr.type
                 if _type == AttributeType.FILE:
-                    self._backend.download_file(self._id, parse_path(path), destination)
+                    self._backend.download_file(
+                        self._id, ContainerType.RUN, parse_path(path), destination
+                    )
                     return
                 raise MetadataInconsistency(
                     "Cannot download file from attribute of type {}".format(_type)
@@ -111,7 +114,7 @@ class RunsTableEntry:
                 _type = attr.type
                 if _type == AttributeType.FILE_SET:
                     self._backend.download_file_set(
-                        self._id, parse_path(path), destination
+                        self._id, ContainerType.RUN, parse_path(path), destination
                     )
                     return
                 raise MetadataInconsistency(
