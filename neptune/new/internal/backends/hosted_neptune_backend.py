@@ -15,10 +15,9 @@
 #
 import logging
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING
 
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
-from simplejson import JSONDecodeError
 
 from neptune.new.exceptions import (
     ArtifactNotFoundException,
@@ -27,7 +26,7 @@ from neptune.new.exceptions import (
     InternalClientError,
     MetadataInconsistency,
     NeptuneException,
-    NeptuneFeaturesNotAvailableException,
+    NeptuneFeatureNotAvailableException,
     NeptuneLegacyProjectException,
     NeptuneLimitExceedException,
     ProjectNameCollision,
@@ -59,6 +58,7 @@ from neptune.new.internal.backends.api_model import (
     StringSeriesValues,
     StringSetAttribute,
     Workspace,
+    OptionalFeatures,
 )
 from neptune.new.internal.backends.hosted_artifact_operations import (
     track_to_existing_artifact,
@@ -89,7 +89,6 @@ from neptune.new.internal.backends.operations_preprocessor import OperationsPrep
 from neptune.new.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
     MissingApiClient,
-    OptionalFeatures,
     build_operation_url,
     ssl_verify,
     with_api_exceptions_handler,
@@ -113,6 +112,11 @@ from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
+if TYPE_CHECKING:
+    from bravado.requests_client import RequestsClient
+    from neptune.new.internal.backends.api_model import ClientConfig
+
+
 _logger = logging.getLogger(__name__)
 
 
@@ -126,7 +130,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         self._http_client, self._client_config = create_http_client_with_auth(
             credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
-        )
+        )  # type: (RequestsClient, ClientConfig)
 
         self.backend_client = create_backend_client(
             self._client_config, self._http_client
@@ -135,18 +139,17 @@ class HostedNeptuneBackend(NeptuneBackend):
             self._client_config, self._http_client
         )
 
-        try:
+        if self._client_config.has_feature(OptionalFeatures.ARTIFACTS):
             self.artifacts_client = create_artifacts_client(
                 self._client_config, self._http_client
             )
-        except JSONDecodeError:
-            # thanks for nice error handling, bravado
-            self.artifacts_client = MissingApiClient(self)
-            self.missing_features.append(OptionalFeatures.ARTIFACTS)
+        else:
+            # create a stub
+            self.artifacts_client = MissingApiClient(OptionalFeatures.ARTIFACTS)
 
     def verify_feature_available(self, feature_name: str):
-        if feature_name in self.missing_features:
-            raise NeptuneFeaturesNotAvailableException(self.missing_features)
+        if not self._client_config.has_feature(feature_name):
+            raise NeptuneFeatureNotAvailableException(feature_name)
 
     def get_display_address(self) -> str:
         return self._client_config.display_url

@@ -1003,20 +1003,19 @@ Neptune could not find files in the requested location ({location}) during creat
         )
 
 
-class NeptuneFeaturesNotAvailableException(NeptuneException):
-    def __init__(self, features: List[str]):
+class NeptuneFeatureNotAvailableException(NeptuneException):
+    def __init__(self, missing_feature):
         message = """
 {h1}
-----NeptuneFeaturesNotAvailableException----------------------------------------------
+----NeptuneFeatureNotAvailableException----------------------------------------------
 {end}
-Following features are not yet supported by the Neptune instance you are using:
-{features_desc}
+Following feature is not yet supported by the Neptune instance you are using:
+{missing_feature}
 
-An update of the Neptune instance is required in order to use them. Please contact your local Neptune administrator
+An update of the Neptune instance is required in order to use it. Please contact your local Neptune administrator
 or the Neptune support directly (support@neptune.ai) about the upcoming updates.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        features_desc = "\n".join(f"    - {f}" for f in features)
-        self.message = message.format(features_desc=features_desc, **STYLES)
+        self.message = message.format(missing_feature=missing_feature, **STYLES)
         super().__init__(message)

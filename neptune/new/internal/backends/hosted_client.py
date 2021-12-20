@@ -19,7 +19,6 @@ from typing import Dict, Tuple
 from bravado.client import SwaggerClient
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
-from packaging import version
 
 from neptune.new.exceptions import UnsupportedClientVersion
 from neptune.new.internal.backends.api_model import ClientConfig
@@ -113,26 +112,10 @@ def get_client_config(
         .result
     )
 
-    if hasattr(config, "pyLibVersions"):
-        min_recommended = getattr(config.pyLibVersions, "minRecommendedVersion", None)
-        min_compatible = getattr(config.pyLibVersions, "minCompatibleVersion", None)
-        max_compatible = getattr(config.pyLibVersions, "maxCompatibleVersion", None)
-    else:
+    client_config = ClientConfig.from_api_response(config)
+    if not client_config.version_info:
         raise UnsupportedClientVersion(neptune_client_version, max_version="0.4.111")
-
-    return ClientConfig(
-        api_url=config.apiUrl,
-        display_url=config.applicationUrl,
-        min_recommended_version=version.parse(min_recommended)
-        if min_recommended
-        else None,
-        min_compatible_version=version.parse(min_compatible)
-        if min_compatible
-        else None,
-        max_compatible_version=version.parse(max_compatible)
-        if max_compatible
-        else None,
-    )
+    return client_config
 
 
 @cache

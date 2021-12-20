@@ -22,7 +22,7 @@ from neptune.new.internal.artifacts.types import (
     ArtifactDriversMap,
     ArtifactFileData,
 )
-from neptune.new.internal.backends.utils import OptionalFeatures
+from neptune.new.internal.backends.api_model import OptionalFeatures
 from neptune.new.internal.operation import AssignArtifact, TrackFilesToArtifact
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 

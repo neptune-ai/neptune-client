@@ -261,7 +261,7 @@ from neptune.new.exceptions import NeptuneApiException
 from neptune.new.exceptions import NeptuneConnectionLostException
 from neptune.new.exceptions import NeptuneEmptyLocationException
 from neptune.new.exceptions import NeptuneException
-from neptune.new.exceptions import NeptuneFeaturesNotAvailableException
+from neptune.new.exceptions import NeptuneFeatureNotAvailableException
 from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
 from neptune.new.exceptions import NeptuneInvalidApiTokenException
 from neptune.new.exceptions import NeptuneLegacyIncompatibilityException
