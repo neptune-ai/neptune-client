@@ -15,10 +15,9 @@
 #
 import logging
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING
 
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
-from bravado.requests_client import RequestsClient
 
 from neptune.new.exceptions import (
     ArtifactNotFoundException,
@@ -59,7 +58,6 @@ from neptune.new.internal.backends.api_model import (
     StringSeriesValues,
     StringSetAttribute,
     Workspace,
-    ClientConfig,
     OptionalFeatures,
 )
 from neptune.new.internal.backends.hosted_artifact_operations import (
@@ -113,6 +111,11 @@ from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+
+if TYPE_CHECKING:
+    from bravado.requests_client import RequestsClient
+    from neptune.new.internal.backends.api_model import ClientConfig
+
 
 _logger = logging.getLogger(__name__)
 
