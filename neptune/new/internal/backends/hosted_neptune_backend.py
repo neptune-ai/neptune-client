@@ -27,7 +27,7 @@ from neptune.new.exceptions import (
     InternalClientError,
     MetadataInconsistency,
     NeptuneException,
-    NeptuneFeaturesNotAvailableException,
+    NeptuneFeatureNotAvailableException,
     NeptuneLegacyProjectException,
     NeptuneLimitExceedException,
     ProjectNameCollision,
@@ -125,11 +125,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         self.proxies = proxies
         self.missing_features = []
 
-        http_client, client_config = create_http_client_with_auth(
+        self._http_client, self._client_config = create_http_client_with_auth(
             credentials=credentials, ssl_verify=ssl_verify(), proxies=proxies
-        )
-        self._http_client: RequestsClient = http_client
-        self._client_config: ClientConfig = client_config
+        )  # type: (RequestsClient, ClientConfig)
 
         self.backend_client = create_backend_client(
             self._client_config, self._http_client
@@ -148,7 +146,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     def verify_feature_available(self, feature_name: str):
         if not self._client_config.has_feature(feature_name):
-            raise NeptuneFeaturesNotAvailableException(feature_name)
+            raise NeptuneFeatureNotAvailableException(feature_name)
 
     def get_display_address(self) -> str:
         return self._client_config.display_url

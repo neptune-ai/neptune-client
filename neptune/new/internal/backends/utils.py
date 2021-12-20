@@ -70,7 +70,7 @@ from neptune.new.exceptions import (
     CannotResolveHostname,
     UnsupportedClientVersion,
     ClientHttpError,
-    NeptuneFeaturesNotAvailableException,
+    NeptuneFeatureNotAvailableException,
     MetadataInconsistency,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
@@ -287,7 +287,7 @@ class MissingApiClient(SwaggerClient):
         self.feature_name = feature_name
 
     def __getattr__(self, item):
-        raise NeptuneFeaturesNotAvailableException(missing_feature=self.feature_name)
+        raise NeptuneFeatureNotAvailableException(missing_feature=self.feature_name)
 
 
 # https://stackoverflow.com/a/44776960
