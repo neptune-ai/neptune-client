@@ -1012,7 +1012,7 @@ class NeptuneFeatureNotAvailableException(NeptuneException):
 Following feature is not yet supported by the Neptune instance you are using:
 {missing_feature}
 
-An update of the Neptune instance is required in order to use them. Please contact your local Neptune administrator
+An update of the Neptune instance is required in order to use it. Please contact your local Neptune administrator
 or the Neptune support directly (support@neptune.ai) about the upcoming updates.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
