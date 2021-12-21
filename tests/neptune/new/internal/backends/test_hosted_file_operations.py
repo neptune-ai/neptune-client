@@ -51,6 +51,7 @@ class TestHostedFileOperations(unittest.TestCase):
                 attribute="target/path.txt",
                 source=f.name,
                 ext="txt",
+                multipart_config=None,
             )
 
         # then
@@ -81,6 +82,7 @@ class TestHostedFileOperations(unittest.TestCase):
             attribute="target/path.txt",
             source=b"Some content of test stream",
             ext="txt",
+            multipart_config=None,
         )
 
         # then
@@ -123,6 +125,7 @@ class TestHostedFileOperations(unittest.TestCase):
                 attribute="some/attribute",
                 file_globs=[temp_file.name],
                 reset=True,
+                multipart_config=None,
             )
 
         # then
@@ -179,6 +182,7 @@ class TestHostedFileOperations(unittest.TestCase):
                     attribute="some/attribute",
                     file_globs=[temp_file_1.name, temp_file_2.name],
                     reset=True,
+                    multipart_config=None,
                 )
 
         # then
@@ -220,6 +224,7 @@ class TestHostedFileOperations(unittest.TestCase):
                             temp_dir,
                         ],
                         reset=True,
+                        multipart_config=None,
                     )
 
         # then

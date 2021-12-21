@@ -101,6 +101,7 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileContent,
     UploadFileSet,
+    DeleteAttribute,
 )
 from neptune.new.internal.utils import base64_decode, verify_type
 from neptune.new.internal.utils.generic_attribute_mapper import (
@@ -392,7 +393,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         # Upload operations should be done first since they are idempotent
         errors.extend(
             self._execute_upload_operations_with_400_retry(
-                container_id=container_id, upload_operations=upload_operations
+                container_id=container_id,
+                container_type=container_type,
+                upload_operations=upload_operations,
             )
         )
 
@@ -417,52 +420,79 @@ class HostedNeptuneBackend(NeptuneBackend):
         return len(operations_batch) + dropped_operations, errors
 
     def _execute_upload_operations(
-        self, container_id: str, upload_operations: List[Operation]
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        upload_operations: List[Operation],
     ) -> List[NeptuneException]:
         errors = list()
 
+        if self._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD):
+            multipart_config = self._client_config.multipart_config
+            # collect delete operations and execute them
+            attributes_to_reset = [
+                DeleteAttribute(op.path)
+                for op in upload_operations
+                if isinstance(op, UploadFileSet) and op.reset
+            ]
+            errors.extend(
+                self._execute_operations(
+                    container_id, container_type, operations=attributes_to_reset
+                )
+            )
+        else:
+            multipart_config = None
+
         for op in upload_operations:
             if isinstance(op, UploadFile):
-                error = upload_file_attribute(
+                upload_errors = upload_file_attribute(
                     swagger_client=self.leaderboard_client,
                     container_id=container_id,
                     attribute=path_to_str(op.path),
                     source=op.file_path,
                     ext=op.ext,
+                    multipart_config=multipart_config,
                 )
-                if error:
-                    errors.append(error)
+                if upload_errors:
+                    errors.extend(upload_errors)
             elif isinstance(op, UploadFileContent):
-                error = upload_file_attribute(
+                upload_errors = upload_file_attribute(
                     swagger_client=self.leaderboard_client,
                     container_id=container_id,
                     attribute=path_to_str(op.path),
                     source=base64_decode(op.file_content),
                     ext=op.ext,
+                    multipart_config=multipart_config,
                 )
-                if error:
-                    errors.append(error)
+                if upload_errors:
+                    errors.extend(upload_errors)
             elif isinstance(op, UploadFileSet):
-                error = upload_file_set_attribute(
+                upload_errors = upload_file_set_attribute(
                     swagger_client=self.leaderboard_client,
                     container_id=container_id,
                     attribute=path_to_str(op.path),
                     file_globs=op.file_globs,
                     reset=op.reset,
+                    multipart_config=multipart_config,
                 )
-                if error:
-                    errors.append(error)
+                if upload_errors:
+                    errors.extend(upload_errors)
             else:
                 raise InternalClientError("Upload operation in neither File or FileSet")
 
         return errors
 
     def _execute_upload_operations_with_400_retry(
-        self, container_id: str, upload_operations: List[Operation]
+        self,
+        container_id: str,
+        container_type: ContainerType,
+        upload_operations: List[Operation],
     ) -> List[NeptuneException]:
         while True:
             try:
-                return self._execute_upload_operations(container_id, upload_operations)
+                return self._execute_upload_operations(
+                    container_id, container_type, upload_operations
+                )
             except ClientHttpError as ex:
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex

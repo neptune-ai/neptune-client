@@ -13,11 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import collections
+import enum
 import json
 import os
 import time
 from io import BytesIO
-from typing import List, Optional, Dict, Iterable, Callable, Set, Union, AnyStr
+from typing import List, Optional, Dict, Iterable, Set, Union, AnyStr
 from urllib.parse import urlencode
 
 from bravado.client import SwaggerClient
@@ -33,6 +35,7 @@ from neptune.new.exceptions import (
     NeptuneException,
     NeptuneLimitExceedException,
 )
+from neptune.new.internal.backends.api_model import MultipartConfig
 from neptune.new.internal.backends.utils import (
     build_operation_url,
     with_api_exceptions_handler,
@@ -43,6 +46,7 @@ from neptune.internal.storage.datastream import (
     compress_to_tar_gz_in_memory,
     FileChunkStream,
     FileChunk,
+    FileChunker,
 )
 from neptune.internal.storage.storage_utils import (
     scan_unique_upload_entries,
@@ -56,55 +60,64 @@ DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)
 
 
+class FileUploadTarget(enum.Enum):
+    FILE_ATOM = "file"
+    FILE_SET = "fileset"
+
+
 def upload_file_attribute(
     swagger_client: SwaggerClient,
     container_id: str,
     attribute: str,
     source: Union[str, bytes],
     ext: str,
-) -> Optional[NeptuneException]:
+    multipart_config: Optional[MultipartConfig],
+) -> List[NeptuneException]:
     if isinstance(source, str) and not os.path.isfile(source):
-        return FileUploadError(source, "Path not found or is a not a file.")
+        return [FileUploadError(source, "Path not found or is a not a file.")]
 
     target = attribute
     if ext:
         target += "." + ext
 
     try:
-        url = build_operation_url(
-            swagger_client.swagger_spec.api_url,
-            swagger_client.api.uploadAttribute.operation.path_name,
-        )
         upload_entry = UploadEntry(
             source if isinstance(source, str) else BytesIO(source), target
         )
-        upload_configuration = DEFAULT_UPLOAD_CONFIG
-        if hasattr(swagger_client.api, "getUploadConfig"):
-            params = {
-                "parentId": container_id,
-                "attribute": attribute,
-                "length": upload_entry.length(),
-            }
-            config_result = (
-                swagger_client.api.getUploadConfig(**params).response().result
+        if multipart_config is None:
+            # the legacy upload procedure
+            url = build_operation_url(
+                swagger_client.swagger_spec.api_url,
+                swagger_client.api.uploadAttribute.operation.path_name,
             )
-            upload_configuration = AttributeUploadConfiguration(
-                chunk_size=config_result.chunkSize
-            )
+            upload_configuration = DEFAULT_UPLOAD_CONFIG
 
-        _upload_loop(
-            file_chunk_stream=FileChunkStream(upload_entry, upload_configuration),
-            response_handler=_attribute_upload_response_handler,
-            http_client=swagger_client.swagger_spec.http_client,
-            url=url,
-            query_params={
-                "experimentId": container_id,
-                "attribute": attribute,
-                "ext": ext,
-            },
-        )
+            _upload_loop(
+                file_chunk_stream=FileChunkStream(upload_entry, upload_configuration),
+                http_client=swagger_client.swagger_spec.http_client,
+                url=url,
+                query_params={
+                    "experimentId": container_id,
+                    "attribute": attribute,
+                    "ext": ext,
+                },
+            )
+        else:
+            result = _multichunk_upload(
+                upload_entry,
+                query_params={
+                    "experimentIdentifier": container_id,
+                    "attribute": attribute,
+                    "ext": ext,
+                },
+                swagger_client=swagger_client,
+                multipart_config=multipart_config,
+                target=FileUploadTarget.FILE_ATOM,
+            )
+            print(result)
     except MetadataInconsistency as e:
-        return e
+        print(len(e.args), e.args)
+        return [e]
 
 
 def upload_file_set_attribute(
@@ -113,20 +126,12 @@ def upload_file_set_attribute(
     attribute: str,
     file_globs: Iterable[str],
     reset: bool,
-) -> Optional[NeptuneException]:
+    multipart_config: Optional[MultipartConfig],
+) -> List[NeptuneException]:
     unique_upload_entries = get_unique_upload_entries(file_globs)
 
     try:
         upload_configuration = DEFAULT_UPLOAD_CONFIG
-        if hasattr(swagger_client.api, "getUploadConfig"):
-            params = {"parentId": container_id, "attribute": attribute}
-            config_result = (
-                swagger_client.api.getUploadConfig(**params).response().result
-            )
-            upload_configuration = AttributeUploadConfiguration(
-                chunk_size=config_result.chunkSize
-            )
-
         for package in split_upload_files(
             upload_entries=unique_upload_entries,
             upload_configuration=upload_configuration,
@@ -164,30 +169,47 @@ def upload_file_set_attribute(
                 )
                 _attribute_upload_response_handler(result)
             else:
-                url = build_operation_url(
-                    swagger_client.swagger_spec.api_url,
-                    swagger_client.api.uploadFileSetAttributeChunk.operation.path_name,
-                )
-                file_chunk_stream = FileChunkStream(
-                    upload_entry=package.items[0],
-                    upload_configuration=upload_configuration,
-                )
-                _upload_loop(
-                    file_chunk_stream=file_chunk_stream,
-                    response_handler=_attribute_upload_response_handler,
-                    http_client=swagger_client.swagger_spec.http_client,
-                    url=url,
-                    query_params={
-                        "experimentId": str(container_id),
-                        "attribute": attribute,
-                        "reset": str(reset),
-                        "path": file_chunk_stream.filename,
-                    },
-                )
+                upload_entry = package.items[0]
+                if multipart_config is None:
+                    # the legacy upload procedure
+                    url = build_operation_url(
+                        swagger_client.swagger_spec.api_url,
+                        swagger_client.api.uploadFileSetAttributeChunk.operation.path_name,
+                    )
+                    file_chunk_stream = FileChunkStream(
+                        upload_entry=upload_entry,
+                        upload_configuration=upload_configuration,
+                    )
+                    _upload_loop(
+                        file_chunk_stream=file_chunk_stream,
+                        http_client=swagger_client.swagger_spec.http_client,
+                        url=url,
+                        query_params={
+                            "experimentId": container_id,
+                            "attribute": attribute,
+                            "reset": str(reset),
+                            "path": upload_entry.target_path,
+                        },
+                    )
+                else:
+                    _multichunk_upload(
+                        upload_entry,
+                        query_params={
+                            "experimentIdentifier": container_id,
+                            "attribute": attribute,
+                            "subPath": upload_entry.target_path,
+                        },
+                        swagger_client=swagger_client,
+                        multipart_config=multipart_config,
+                        target=FileUploadTarget.FILE_SET,
+                    )
 
             reset = False
     except MetadataInconsistency as e:
-        return e
+        if len(e.args) == 1:
+            return [e]
+        else:
+            return [MetadataInconsistency(desc) for desc in e.args]
 
 
 def get_unique_upload_entries(file_globs: Iterable[str]) -> Set[UploadEntry]:
@@ -219,41 +241,159 @@ def _attribute_upload_response_handler(result: bytes) -> None:
         raise InternalClientError("Unexpected response from server: {}".format(result))
 
     if isinstance(parsed, type(None)):
+        # old format with empty optional error
         return
     if isinstance(parsed, dict):
         if "errorDescription" in parsed:
+            # old format with optional error
             raise MetadataInconsistency(parsed["errorDescription"])
-        else:
-            raise InternalClientError(
-                "Unexpected response from server: {}".format(result)
-            )
+        elif "errors" in parsed:
+            # new format with a list of errors
+            error_list = parsed["errors"]
+            if isinstance(error_list, list):
+                if len(error_list) == 0:
+                    return
+                try:
+                    raise MetadataInconsistency(
+                        *[item["errorDescription"] for item in parsed["errors"]]
+                    )
+                except KeyError:
+                    # fall into default InternalClientError
+                    pass
+
+    raise InternalClientError("Unexpected response from server: {}".format(result))
 
 
-def _upload_loop(
-    file_chunk_stream: FileChunkStream,
-    response_handler: Callable[[bytes], None],
+MultipartUrlSet = collections.namedtuple(
+    "MultipartUrlSet", ["start_chunked", "finish_chunked", "send_chunk", "single"]
+)
+
+MULTIPART_URLS = {
+    FileUploadTarget.FILE_ATOM: MultipartUrlSet(
+        "fileAtomMultipartUploadStart",
+        "fileAtomMultipartUploadFinish",
+        "fileAtomMultipartUploadPart",
+        "fileAtomUpload",
+    ),
+    FileUploadTarget.FILE_SET: MultipartUrlSet(
+        "fileFileSetMultipartUploadStart",
+        "fileSetFileMultipartUploadFinish",
+        "fileSetFileMultipartUploadPart",
+        "fileSetFileUpload",
+    ),
+}
+
+
+def _build_multipart_urlset(
+    swagger_client: SwaggerClient, target: FileUploadTarget
+) -> MultipartUrlSet:
+    urlnameset = MULTIPART_URLS[target]
+    return MultipartUrlSet(
+        start_chunked=getattr(swagger_client.api, urlnameset.start_chunked),
+        finish_chunked=getattr(swagger_client.api, urlnameset.finish_chunked),
+        send_chunk=build_operation_url(
+            swagger_client.swagger_spec.api_url,
+            getattr(swagger_client.api, urlnameset.send_chunk).operation.path_name,
+        ),
+        single=build_operation_url(
+            swagger_client.swagger_spec.api_url,
+            getattr(swagger_client.api, urlnameset.single).operation.path_name,
+        ),
+    )
+
+
+def _multichunk_upload(
+    upload_entry: UploadEntry,
+    swagger_client: SwaggerClient,
     query_params: dict,
-    **kwargs
+    multipart_config: MultipartConfig,
+    target: FileUploadTarget,
 ):
+    urlset = _build_multipart_urlset(swagger_client, target)
+    file_stream = upload_entry.get_stream()
+    entry_length = upload_entry.length()
+    try:
+        if entry_length <= multipart_config.max_single_part_size:
+            # single upload
+            data = file_stream.read()
+            result = upload_raw_data(
+                http_client=swagger_client.swagger_spec.http_client,
+                url=urlset.single,
+                data=data,
+                query_params=query_params,
+            )
+            _attribute_upload_response_handler(result)
+        else:
+            # chunked upload
+            result = (
+                urlset.start_chunked(**query_params, totalLength=entry_length)
+                .response()
+                .result
+            )
+            if result.errors:
+                raise MetadataInconsistency(
+                    [err.errorDescription for err in result.errors]
+                )
+
+            if "ext" in query_params:
+                del query_params["ext"]
+
+            upload_id = result.uploadId
+            chunker = FileChunker(
+                upload_entry.source_path, file_stream, entry_length, multipart_config
+            )
+            for idx, chunk in enumerate(chunker.generate()):
+                result = upload_raw_data(
+                    http_client=swagger_client.swagger_spec.http_client,
+                    url=urlset.send_chunk,
+                    data=chunk.data,
+                    headers={"X-Range": _build_x_range(chunk, entry_length)},
+                    query_params={
+                        "uploadId": upload_id,
+                        "uploadPartIdx": idx,
+                        **query_params,
+                    },
+                )
+                _attribute_upload_response_handler(result)
+
+            result = (
+                urlset.finish_chunked(**query_params, uploadId=upload_id)
+                .response()
+                .result
+            )
+            if result.errors:
+                raise MetadataInconsistency(
+                    [err.errorDescription for err in result.errors]
+                )
+        return []
+    finally:
+        file_stream.close()
+
+
+def _upload_loop(file_chunk_stream: FileChunkStream, query_params: dict, **kwargs):
     for iteration, chunk in enumerate(file_chunk_stream.generate()):
         if "reset" in query_params and iteration != 0:
             query_params["reset"] = str(False)
         result = _upload_loop_chunk(
             chunk, file_chunk_stream, query_params=query_params.copy(), **kwargs
         )
-        response_handler(result)
+        _attribute_upload_response_handler(result)
 
     file_chunk_stream.close()
+
+
+def _build_x_range(chunk: FileChunk, total_size: int) -> str:
+    return "bytes=%d-%d/%d" % (
+        chunk.start,
+        chunk.end - 1,
+        total_size,
+    )
 
 
 def _upload_loop_chunk(
     chunk: FileChunk, file_chunk_stream: FileChunkStream, query_params: dict, **kwargs
 ):
-    binary_range = "bytes=%d-%d/%d" % (
-        chunk.start,
-        chunk.end - 1,
-        file_chunk_stream.length,
-    )
+    binary_range = _build_x_range(chunk, file_chunk_stream.length)
     headers = {
         "Content-Filename": file_chunk_stream.filename,
         "X-Range": binary_range,
@@ -262,7 +402,7 @@ def _upload_loop_chunk(
     if file_chunk_stream.permissions is not None:
         headers["X-File-Permissions"] = file_chunk_stream.permissions
     return upload_raw_data(
-        data=chunk.get_data(), headers=headers, query_params=query_params, **kwargs
+        data=chunk.data, headers=headers, query_params=query_params, **kwargs
     )
 
 
@@ -281,7 +421,6 @@ def upload_raw_data(
     request = http_client.authenticator.apply(
         Request(method="POST", url=url, data=data, headers=headers)
     )
-
     response = handle_server_raw_response_messages(
         session.send(session.prepare_request(request))
     )
@@ -293,6 +432,10 @@ def upload_raw_data(
             reason=response.json().get("title", "Unknown reason")
         )
     response.raise_for_status()
+    if query_params.get("attribute") == "b":
+        return (
+            b'{"errors": [{"errorDescription": "fizz"}, {"errorDescription": "buzz"}]}'
+        )
     return response.content
 
 
