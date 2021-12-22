@@ -103,7 +103,7 @@ def upload_file_attribute(
                 },
             )
         else:
-            result = _multichunk_upload(
+            _multichunk_upload(
                 upload_entry,
                 query_params={
                     "experimentIdentifier": container_id,
