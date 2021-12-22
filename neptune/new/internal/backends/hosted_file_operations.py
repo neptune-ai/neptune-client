@@ -432,10 +432,6 @@ def upload_raw_data(
             reason=response.json().get("title", "Unknown reason")
         )
     response.raise_for_status()
-    if query_params.get("attribute") == "b":
-        return (
-            b'{"errors": [{"errorDescription": "fizz"}, {"errorDescription": "buzz"}]}'
-        )
     return response.content
 
 
