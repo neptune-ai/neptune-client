@@ -31,7 +31,7 @@ from neptune.exceptions import (
     DeprecatedApiToken,
     UnsupportedClientVersion,
 )
-from neptune.internal.api_clients.client_config import ClientConfig
+from neptune.internal.api_clients.client_config import ClientConfig, MultipartConfig
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)
@@ -85,6 +85,21 @@ class HostedNeptuneMixin:
             )
             raise UnsupportedClientVersion(self.client_lib_version, None, "0.4.111")
 
+        multipart_upload_config_obj = getattr(config, "multiPartUpload", None)
+        has_multipart_upload = getattr(multipart_upload_config_obj, "enabled", False)
+        if not has_multipart_upload:
+            multipart_upload_config = None
+        else:
+            min_chunk_size = getattr(multipart_upload_config_obj, "minChunkSize")
+            max_chunk_size = getattr(multipart_upload_config_obj, "maxChunkSize")
+            max_chunk_count = getattr(multipart_upload_config_obj, "maxChunkCount")
+            max_single_part_size = getattr(
+                multipart_upload_config_obj, "maxSinglePartSize"
+            )
+            multipart_upload_config = MultipartConfig(
+                min_chunk_size, max_chunk_size, max_chunk_count, max_single_part_size
+            )
+
         return ClientConfig(
             api_url=config.apiUrl,
             display_url=config.applicationUrl,
@@ -97,6 +112,7 @@ class HostedNeptuneMixin:
             max_compatible_version=version.parse(max_compatible)
             if max_compatible
             else None,
+            multipart_config=multipart_upload_config,
         )
 
     def _verify_host_resolution(self, api_url, app_url):

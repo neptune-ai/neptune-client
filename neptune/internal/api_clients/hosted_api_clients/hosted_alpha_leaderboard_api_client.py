@@ -903,7 +903,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     source=upload_operation.file_path,
                     ext=upload_operation.ext,
-                    multipart_config=None,
+                    multipart_config=self._client_config.multipart_config,
                 )
             elif isinstance(upload_operation, alpha_operation.UploadFileContent):
                 alpha_hosted_file_operations.upload_file_attribute(
@@ -912,7 +912,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     source=base64_decode(upload_operation.file_content),
                     ext=upload_operation.ext,
-                    multipart_config=None,
+                    multipart_config=self._client_config.multipart_config,
                 )
             elif isinstance(upload_operation, alpha_operation.UploadFileSet):
                 alpha_hosted_file_operations.upload_file_set_attribute(
@@ -921,7 +921,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                     attribute=alpha_path_utils.path_to_str(upload_operation.path),
                     file_globs=upload_operation.file_globs,
                     reset=upload_operation.reset,
-                    multipart_config=None,
+                    multipart_config=self._client_config.multipart_config,
                 )
             else:
                 raise NeptuneException("Upload operation in neither File or FileSet")

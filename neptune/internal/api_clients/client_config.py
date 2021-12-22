@@ -15,6 +15,16 @@
 #
 
 
+class MultipartConfig:
+    def __init__(
+        self, min_chunk_size, max_chunk_size, max_chunk_count, max_single_part_size
+    ):
+        self.min_chunk_size = min_chunk_size
+        self.max_chunk_size = max_chunk_size
+        self.max_chunk_count = max_chunk_count
+        self.max_single_part_size = max_single_part_size
+
+
 class ClientConfig(object):
     def __init__(
         self,
@@ -23,12 +33,14 @@ class ClientConfig(object):
         min_recommended_version,
         min_compatible_version,
         max_compatible_version,
+        multipart_config,
     ):
         self._api_url = api_url
         self._display_url = display_url
         self._min_recommended_version = min_recommended_version
         self._min_compatible_version = min_compatible_version
         self._max_compatible_version = max_compatible_version
+        self._multipart_config = multipart_config
 
     @property
     def api_url(self):
@@ -49,3 +61,7 @@ class ClientConfig(object):
     @property
     def max_compatible_version(self):
         return self._max_compatible_version
+
+    @property
+    def multipart_config(self):
+        return self._multipart_config
