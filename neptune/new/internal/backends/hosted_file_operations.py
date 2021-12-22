@@ -276,7 +276,7 @@ MULTIPART_URLS = {
         "fileAtomUpload",
     ),
     FileUploadTarget.FILE_SET: MultipartUrlSet(
-        "fileFileSetMultipartUploadStart",
+        "fileSetFileMultipartUploadStart",
         "fileSetFileMultipartUploadFinish",
         "fileSetFileMultipartUploadPart",
         "fileSetFileUpload",
