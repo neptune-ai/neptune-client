@@ -114,9 +114,7 @@ def upload_file_attribute(
                 multipart_config=multipart_config,
                 target=FileUploadTarget.FILE_ATOM,
             )
-            print(result)
     except MetadataInconsistency as e:
-        print(len(e.args), e.args)
         return [e]
 
 
