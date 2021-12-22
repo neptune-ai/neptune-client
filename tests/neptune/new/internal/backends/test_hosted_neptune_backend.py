@@ -93,7 +93,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         response_error.errorDescription = "error1"
         swagger_client.api.executeOperations().response().result = [response_error]
         swagger_client.api.executeOperations.reset_mock()
-        upload_mock.return_value = FileUploadError("file1", "error2")
+        upload_mock.return_value = [FileUploadError("file1", "error2")]
         some_text = "Some streamed text"
         some_binary = b"Some streamed binary"
 
@@ -158,6 +158,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     }
                 )
 
+                print(upload_mock.call_args_list)
+
                 upload_mock.assert_has_calls(
                     [
                         call(
@@ -166,6 +168,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/other/file.txt",
                             source="other/file/path.txt",
                             ext="txt",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -173,6 +176,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/files/some_file",
                             source="path_to_file",
                             ext="",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -180,6 +184,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/files/some_text_stream",
                             source=some_text.encode("utf-8"),
                             ext="txt",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -187,6 +192,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/files/some_binary_stream",
                             source=some_binary,
                             ext="bin",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                     ],
                     any_order=True,
@@ -240,7 +246,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         ),
                     ],
                 )
-
+                print(upload_mock.call_args_list)
                 # then
                 upload_mock.assert_has_calls(
                     [
@@ -250,6 +256,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/path/1/var",
                             source="/path/to/file",
                             ext="",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -257,6 +264,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/path/2/var",
                             source="/some.file/with.dots.txt",
                             ext="txt",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -264,6 +272,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/path/3/var",
                             source="/path/to/some_image.jpeg",
                             ext="jpeg",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                     ],
                     any_order=True,

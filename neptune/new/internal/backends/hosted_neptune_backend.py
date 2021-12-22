@@ -435,11 +435,12 @@ class HostedNeptuneBackend(NeptuneBackend):
                 for op in upload_operations
                 if isinstance(op, UploadFileSet) and op.reset
             ]
-            errors.extend(
-                self._execute_operations(
-                    container_id, container_type, operations=attributes_to_reset
+            if attributes_to_reset:
+                errors.extend(
+                    self._execute_operations(
+                        container_id, container_type, operations=attributes_to_reset
+                    )
                 )
-            )
         else:
             multipart_config = None
 

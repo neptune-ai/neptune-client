@@ -26,7 +26,6 @@ from neptune.new.internal.backends.hosted_file_operations import (
     upload_file_set_attribute,
     download_file_attribute,
     _get_content_disposition_filename,
-    _attribute_upload_response_handler,
     download_file_set_attribute,
 )
 from neptune.utils import IS_WINDOWS
@@ -57,7 +56,6 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         upload_loop_mock.assert_called_once_with(
             file_chunk_stream=mock.ANY,
-            response_handler=_attribute_upload_response_handler,
             http_client=swagger_mock.swagger_spec.http_client,
             url="https://ui.neptune.ai/attributes/upload",
             query_params={
@@ -88,7 +86,6 @@ class TestHostedFileOperations(unittest.TestCase):
         # then
         upload_loop_mock.assert_called_once_with(
             file_chunk_stream=mock.ANY,
-            response_handler=_attribute_upload_response_handler,
             http_client=swagger_mock.swagger_spec.http_client,
             url="https://ui.neptune.ai/attributes/upload",
             query_params={
