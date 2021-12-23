@@ -36,7 +36,9 @@ class Workspace:
 
 @dataclass
 class ApiRun:
+    # TODO: rename class
     id: str
+    # type ContainerType
     short_id: str
     workspace: str
     project_name: str

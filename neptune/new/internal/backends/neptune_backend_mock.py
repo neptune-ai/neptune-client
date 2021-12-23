@@ -26,6 +26,8 @@ from neptune.new.exceptions import (
     NeptuneException,
     RunNotFound,
     raise_container_not_found,
+    ModelNotFound,
+    ModelVersionNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -184,11 +186,23 @@ class NeptuneBackendMock(NeptuneBackend):
             new_run_id, short_id, self.WORKSPACE_NAME, self.PROJECT_NAME, False
         )
 
+    def create_model(self, project_id: str, key: str) -> ApiRun:
+        return None
+
+    def create_model_version(self, project_id: str, model_id: str) -> ApiRun:
+        return None
+
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None
 
     def get_run(self, run_id: str) -> ApiRun:
         raise RunNotFound(run_id)
+
+    def get_model(self, model_id: str) -> ApiRun:
+        raise ModelNotFound(model_id)
+
+    def get_model_version(self, model_version_id: str) -> ApiRun:
+        raise ModelVersionNotFound(model_version_id)
 
     def execute_operations(
         self,

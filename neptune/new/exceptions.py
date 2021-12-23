@@ -270,9 +270,44 @@ You may also want to check the following docs pages:
         )
 
 
-class RunNotFound(NeptuneException):
+class ExperimentNotFound(NeptuneException):
+    container_id: str
+    container_type: ContainerType
+
+    def __init__(self, container_id: str, container_type: ContainerType) -> None:
+        self.container_id = container_id
+        self.container_type = container_type
+        super().__init__(
+            "{} {} not found.".format(container_type.value.capitalize(), container_id)
+        )
+
+    @classmethod
+    def of_container_type(cls, container_type: ContainerType, container_id: str):
+        if container_type == ContainerType.RUN:
+            return RunNotFound(run_id=container_id)
+        elif container_type == ContainerType.MODEL:
+            return ModelNotFound(model_id=container_id)
+        elif container_type == ContainerType.MODEL_VERSION:
+            return ModelVersionNotFound(model_version_id=container_id)
+        else:
+            raise InternalClientError(f"Unexpected ContainerType: {container_type}")
+
+
+class RunNotFound(ExperimentNotFound):
     def __init__(self, run_id: str) -> None:
-        super().__init__("Run {} not found.".format(run_id))
+        super().__init__(container_id=run_id, container_type=ContainerType.RUN)
+
+
+class ModelNotFound(ExperimentNotFound):
+    def __init__(self, model_id: str) -> None:
+        super().__init__(container_id=model_id, container_type=ContainerType.MODEL)
+
+
+class ModelVersionNotFound(ExperimentNotFound):
+    def __init__(self, model_version_id: str) -> None:
+        super().__init__(
+            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
+        )
 
 
 class ContainerUUIDNotFound(NeptuneException):

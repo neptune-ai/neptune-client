@@ -20,3 +20,5 @@ import enum
 class ContainerType(enum.Enum):
     RUN = "run"
     PROJECT = "project"
+    MODEL = "model"
+    MODEL_VERSION = "model_version"
