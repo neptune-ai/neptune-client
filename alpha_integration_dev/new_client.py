@@ -41,7 +41,9 @@ from neptune.new.types import File
 class NewClientFeatures(ClientFeatures):
     def __init__(self):
         super().__init__()
-        self.exp = neptune.init(source_files="alpha_integration_dev/*.py")
+        self.exp = neptune.init(
+            source_files="alpha_integration_dev/*.py",
+        )
 
         # download sources
         self.exp.sync()
