@@ -15,6 +15,7 @@
 #
 import os
 import uuid
+from collections import defaultdict
 from datetime import datetime
 from shutil import copyfile
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, TypeVar
@@ -120,7 +121,8 @@ class NeptuneBackendMock(NeptuneBackend):
         self._containers: Dict[
             (str, ContainerType), ContainerStructure[Value, dict]
         ] = dict()
-        self._next_run = 1
+        self._next_run = 1  # counter for runs
+        self._next_model_version = defaultdict(lambda: 1)  # counter for model versions
         self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = (
             self.AttributeTypeConverterValueVisitor()
@@ -192,10 +194,31 @@ class NeptuneBackendMock(NeptuneBackend):
         )
 
     def create_model(self, project_id: str, key: str) -> ApiExperiment:
-        return None
+        short_id = f"{self.PROJECT_KEY}-{key}"
+        new_run_id = str(uuid.uuid4())
+        self._create_container(new_run_id, ContainerType.MODEL, sys_id=short_id)
+        return ApiExperiment(
+            id=new_run_id,
+            type=ContainerType.MODEL,
+            short_id=short_id,
+            workspace=self.WORKSPACE_NAME,
+            project_name=self.PROJECT_NAME,
+            trashed=False,
+        )
 
     def create_model_version(self, project_id: str, model_id: str) -> ApiExperiment:
-        return None
+        short_id = f"{self.PROJECT_KEY}-{self._next_model_version[model_id]}"
+        self._next_model_version[model_id] += 1
+        new_run_id = str(uuid.uuid4())
+        self._create_container(new_run_id, ContainerType.MODEL_VERSION, sys_id=short_id)
+        return ApiExperiment(
+            id=new_run_id,
+            type=ContainerType.MODEL,
+            short_id=short_id,
+            workspace=self.WORKSPACE_NAME,
+            project_name=self.PROJECT_NAME,
+            trashed=False,
+        )
 
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None

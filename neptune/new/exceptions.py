@@ -331,6 +331,10 @@ def raise_container_not_found(
         error_class = RunUUIDNotFound
     elif container_type == ContainerType.PROJECT:
         error_class = ProjectUUIDNotFound
+    elif container_type == ContainerType.MODEL:
+        error_class = ModelUUIDNotFound
+    elif container_type == ContainerType.MODEL_VERSION:
+        error_class = ModelVersionUUIDNotFound
     else:
         raise InternalClientError(f"Unknown container_type: {container_type}")
 
@@ -348,6 +352,16 @@ class RunUUIDNotFound(ContainerUUIDNotFound):
 class ProjectUUIDNotFound(ContainerUUIDNotFound):
     def __init__(self, container_id: str):
         super().__init__(container_id, container_type=ContainerType.PROJECT)
+
+
+class ModelUUIDNotFound(ContainerUUIDNotFound):
+    def __init__(self, container_id: str):
+        super().__init__(container_id, container_type=ContainerType.MODEL)
+
+
+class ModelVersionUUIDNotFound(ContainerUUIDNotFound):
+    def __init__(self, container_id: str):
+        super().__init__(container_id, container_type=ContainerType.MODEL_VERSION)
 
 
 class InactiveContainerException(NeptuneException):

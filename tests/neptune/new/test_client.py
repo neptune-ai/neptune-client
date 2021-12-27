@@ -236,17 +236,6 @@ class TestClientRun(unittest.TestCase):
 
 
 @patch(
-    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-    new=lambda _, _id: ApiExperiment(
-        id="12345678-1234-5678-1234-567812345678",
-        type=ContainerType.RUN,
-        short_id="SAN-94",
-        workspace="workspace",
-        project_name="sandbox",
-        trashed=False,
-    ),
-)
-@patch(
     "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
     new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
 )
@@ -322,21 +311,6 @@ class TestClientProject(unittest.TestCase):
         project["some/variable"] = 13
         self.assertEqual(13, project["some/variable"].fetch())
 
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, _id: ApiExperiment(
-            id="12345678-1234-5678-1234-567812345678",
-            type=ContainerType.RUN,
-            short_id="SAN-94",
-            workspace="workspace",
-            project_name="sandbox",
-            trashed=False,
-        ),
-    )
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("some/variable", AttributeType.INT)],
-    )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
