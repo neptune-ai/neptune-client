@@ -38,7 +38,6 @@ class Workspace:
 
 @dataclass
 class ApiExperiment:
-    # TODO: rename class
     id: str
     type: ContainerType
     short_id: str
