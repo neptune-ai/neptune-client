@@ -142,7 +142,7 @@ class Run(AttributeContainer):
         lock: threading.RLock,
         workspace: str,
         project_name: str,
-        short_id: str,
+        sys_id: str,
         project_id: str,
         monitoring_namespace: str = "monitoring",
     ):
@@ -156,19 +156,19 @@ class Run(AttributeContainer):
             project_name,
             workspace,
         )
-        self._short_id = short_id
+        self._sys_id = sys_id
         self.monitoring_namespace = monitoring_namespace
 
         Run.last_run = self
 
     @property
     def _label(self) -> str:
-        return self._short_id
+        return self._sys_id
 
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser"""
         return self._backend.get_run_url(
-            self._id, self._workspace, self._project_name, self._short_id
+            self._id, self._workspace, self._project_name, self._sys_id
         )
 
     def _startup(self, debug_mode):

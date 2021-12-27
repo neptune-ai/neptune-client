@@ -40,7 +40,7 @@ class Workspace:
 class ApiExperiment:
     id: str
     type: ContainerType
-    short_id: str
+    sys_id: str
     workspace: str
     project_name: str
     trashed: bool

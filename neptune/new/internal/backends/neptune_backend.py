@@ -296,7 +296,7 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_run_url(
-        self, run_id: str, workspace: str, project_name: str, short_id: str
+        self, run_id: str, workspace: str, project_name: str, sys_id: str
     ) -> str:
         pass
 
