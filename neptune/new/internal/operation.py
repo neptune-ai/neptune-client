@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 
 from neptune.new.exceptions import InternalClientError, MalformedOperation
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.types.model_version_stage import ModelVersionStage
 
 if TYPE_CHECKING:
     from neptune.new.attributes.attribute import Attribute
@@ -553,3 +554,30 @@ class CopyAttribute(Operation):
             backend, self.container_id, self.container_type, self.source_path
         )
         return create_assignment_operation(self.path, value)
+
+
+@dataclass
+class ChangeStage(Operation):
+    container_id: str
+    stage: ModelVersionStage
+
+    def __init__(self, container_id: str, stage: ModelVersionStage):
+        self.container_id = container_id
+        self.stage = stage
+        self.path = None
+
+    def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
+        raise NotImplementedError("TODO: improve ChangeStage handling")
+
+    def to_dict(self) -> dict:
+        ret = super().to_dict()
+        ret["container_id"] = self.container_id
+        ret["stage"] = self.stage
+        return ret
+
+    @staticmethod
+    def from_dict(data: dict) -> "ChangeStage":
+        return ChangeStage(
+            container_id=data["container_id"],
+            stage=ModelVersionStage(data["stage"]),
+        )
