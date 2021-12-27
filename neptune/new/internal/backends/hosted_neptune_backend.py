@@ -333,14 +333,16 @@ class HostedNeptuneBackend(NeptuneBackend):
             else None
         )
 
-        base_params = {
+        additional_params = {
             "gitInfo": git_info,
             "customId": custom_run_id,
         }
 
         if notebook_id is not None and checkpoint_id is not None:
-            base_params["notebookId"] = notebook_id if notebook_id is not None else None
-            base_params["checkpointId"] = (
+            additional_params["notebookId"] = (
+                notebook_id if notebook_id is not None else None
+            )
+            additional_params["checkpointId"] = (
                 checkpoint_id if checkpoint_id is not None else None
             )
 
@@ -348,11 +350,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             project_id=project_id,
             parent_id=project_id,
             container_type=ContainerType.RUN,
-            base_params=base_params,
+            additional_params=additional_params,
         )
 
     def create_model(self, project_id: str, key: str = "") -> ApiExperiment:
-        base_params = {
+        additional_params = {
             "key": key,
         }
 
@@ -360,7 +362,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             project_id=project_id,
             parent_id=project_id,
             container_type=ContainerType.MODEL,
-            base_params=base_params,
+            additional_params=additional_params,
         )
 
     def create_model_version(self, project_id: str, model_id: str) -> ApiExperiment:
@@ -375,17 +377,17 @@ class HostedNeptuneBackend(NeptuneBackend):
         project_id: str,
         parent_id: str,
         container_type: ContainerType,
-        base_params: dict = None,
+        additional_params: dict = None,
     ):
-        if base_params is None:
-            base_params = dict()
+        if additional_params is None:
+            additional_params = dict()
 
         params = {
             "projectIdentifier": project_id,
             "parentId": parent_id,
             "type": container_type,
             "cliVersion": str(neptune_client_version),
-            **base_params,
+            **additional_params,
         }
 
         kwargs = {
