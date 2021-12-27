@@ -19,7 +19,7 @@ from typing import Any, Iterable, List, Optional, Tuple
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
-    ApiRun,
+    ApiExperiment,
     ArtifactAttribute,
     Attribute,
     AttributeType,
@@ -80,7 +80,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_run(self, run_id: str) -> ApiRun:
+    def get_run(self, run_id: str) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
@@ -91,11 +91,11 @@ class NeptuneBackend:
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
-    ) -> ApiRun:
+    ) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
-    def get_model(self, model_id: str) -> ApiRun:
+    def get_model(self, model_id: str) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
@@ -103,11 +103,11 @@ class NeptuneBackend:
         self,
         project_id: str,
         key: str,
-    ) -> ApiRun:
+    ) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
-    def get_model_version(self, model_version_id: str) -> ApiRun:
+    def get_model_version(self, model_version_id: str) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
@@ -115,7 +115,7 @@ class NeptuneBackend:
         self,
         project_id: str,
         model_id: str,
-    ) -> ApiRun:
+    ) -> ApiExperiment:
         pass
 
     @abc.abstractmethod

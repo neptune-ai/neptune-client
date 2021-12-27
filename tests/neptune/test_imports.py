@@ -347,7 +347,7 @@ from neptune.new.runs_table import MetadataInconsistency
 from neptune.new.runs_table import RunsTable
 from neptune.new.runs_table import RunsTableEntry
 from neptune.new.runs_table import datetime
-from neptune.new.sync import ApiRun
+from neptune.new.sync import ApiExperiment
 from neptune.new.sync import CannotSynchronizeOfflineRunsWithoutProject
 from neptune.new.sync import Credentials
 from neptune.new.sync import DiskQueue

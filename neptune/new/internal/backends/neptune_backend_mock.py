@@ -31,7 +31,7 @@ from neptune.new.exceptions import (
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
-    ApiRun,
+    ApiExperiment,
     ArtifactAttribute,
     Attribute,
     AttributeType,
@@ -173,7 +173,7 @@ class NeptuneBackendMock(NeptuneBackend):
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
-    ) -> ApiRun:
+    ) -> ApiExperiment:
         short_id = f"{self.PROJECT_KEY}-{self._next_run}"
         self._next_run += 1
         new_run_id = str(uuid.uuid4())
@@ -182,26 +182,31 @@ class NeptuneBackendMock(NeptuneBackend):
         )
         if git_ref:
             container.set(["source_code", "git"], git_ref)
-        return ApiRun(
-            new_run_id, short_id, self.WORKSPACE_NAME, self.PROJECT_NAME, False
+        return ApiExperiment(
+            id=new_run_id,
+            type=ContainerType.RUN,
+            short_id=short_id,
+            workspace=self.WORKSPACE_NAME,
+            project_name=self.PROJECT_NAME,
+            trashed=False,
         )
 
-    def create_model(self, project_id: str, key: str) -> ApiRun:
+    def create_model(self, project_id: str, key: str) -> ApiExperiment:
         return None
 
-    def create_model_version(self, project_id: str, model_id: str) -> ApiRun:
+    def create_model_version(self, project_id: str, model_id: str) -> ApiExperiment:
         return None
 
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None
 
-    def get_run(self, run_id: str) -> ApiRun:
+    def get_run(self, run_id: str) -> ApiExperiment:
         raise RunNotFound(run_id)
 
-    def get_model(self, model_id: str) -> ApiRun:
+    def get_model(self, model_id: str) -> ApiExperiment:
         raise ModelNotFound(model_id)
 
-    def get_model_version(self, model_version_id: str) -> ApiRun:
+    def get_model_version(self, model_version_id: str) -> ApiExperiment:
         raise ModelVersionNotFound(model_version_id)
 
     def execute_operations(

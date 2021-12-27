@@ -20,6 +20,8 @@ from typing import Optional, List, Set, Any, FrozenSet
 
 from packaging import version
 
+from neptune.new.internal.container_type import ContainerType
+
 
 class Project:
     def __init__(self, _id: str, name: str, workspace: str):
@@ -35,10 +37,9 @@ class Workspace:
 
 
 @dataclass
-class ApiRun:
-    # TODO: rename class
+class ApiExperiment:
     id: str
-    # type ContainerType
+    type: ContainerType
     short_id: str
     workspace: str
     project_name: str
