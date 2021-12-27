@@ -559,11 +559,11 @@ class CopyAttribute(Operation):
 @dataclass
 class ChangeStage(Operation):
     container_id: str
-    stage: ModelVersionStage
+    stage: str
 
     def __init__(self, container_id: str, stage: ModelVersionStage):
         self.container_id = container_id
-        self.stage = stage
+        self.stage = stage.value
         self.path = None
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:

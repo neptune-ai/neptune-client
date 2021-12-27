@@ -121,6 +121,9 @@ class TestOperations(unittest.TestCase):
                 source_path=TestOperations._random_path(),
                 source_attr_cls=Integer,
             ),
+            ChangeStage(
+                container_id=str(uuid.uuid4()), stage=ModelVersionStage.PRODUCTION
+            ),
         ]
 
     @staticmethod
