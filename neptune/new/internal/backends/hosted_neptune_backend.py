@@ -31,12 +31,12 @@ from neptune.new.exceptions import (
     NeptuneLimitExceedException,
     ProjectNameCollision,
     ProjectNotFound,
-    RunNotFound,
     raise_container_not_found,
+    ExperimentNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
-    ApiRun,
+    ApiExperiment,
     ArtifactAttribute,
     Attribute,
     AttributeType,
@@ -258,22 +258,45 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @with_api_exceptions_handler
     def get_run(self, run_id: str):
+        return self._get_experiment(
+            container_id=run_id, container_type=ContainerType.RUN
+        )
+
+    @with_api_exceptions_handler
+    def get_model(self, model_id: str) -> ApiExperiment:
+        return self._get_experiment(
+            container_id=model_id, container_type=ContainerType.MODEL
+        )
+
+    @with_api_exceptions_handler
+    def get_model_version(self, model_version_id: str) -> ApiExperiment:
+        return self._get_experiment(
+            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
+        )
+
+    def _get_experiment(
+        self, container_id: str, container_type: ContainerType
+    ) -> ApiExperiment:
         try:
-            run = (
+            experiment = (
                 self.leaderboard_client.api.getExperiment(
-                    experimentId=run_id,
+                    experimentId=container_id,
                     **DEFAULT_REQUEST_KWARGS,
                 )
                 .response()
                 .result
             )
-            if run.type != ContainerType.RUN:
-                raise RunNotFound(run_id)
-            return ApiRun(
-                run.id, run.shortId, run.organizationName, run.projectName, run.trashed
-            )
+
+            if experiment.type != container_type:
+                raise ExperimentNotFound.of_container_type(
+                    container_type=container_type, container_id=container_id
+                )
+
+            return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
-            raise RunNotFound(run_id)
+            raise ExperimentNotFound.of_container_type(
+                container_type=container_type, container_id=container_id
+            )
 
     @with_api_exceptions_handler
     def create_run(
@@ -283,7 +306,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
-    ) -> ApiRun:
+    ) -> ApiExperiment:
         verify_type("project_id", project_id, str)
 
         git_info = (
@@ -303,20 +326,62 @@ class HostedNeptuneBackend(NeptuneBackend):
             else None
         )
 
-        params = {
-            "projectIdentifier": project_id,
-            "parentId": project_id,
-            "type": ContainerType.RUN,
-            "cliVersion": str(neptune_client_version),
+        additional_params = {
             "gitInfo": git_info,
             "customId": custom_run_id,
         }
 
         if notebook_id is not None and checkpoint_id is not None:
-            params["notebookId"] = notebook_id if notebook_id is not None else None
-            params["checkpointId"] = (
+            additional_params["notebookId"] = (
+                notebook_id if notebook_id is not None else None
+            )
+            additional_params["checkpointId"] = (
                 checkpoint_id if checkpoint_id is not None else None
             )
+
+        return self._create_experiment(
+            project_id=project_id,
+            parent_id=project_id,
+            container_type=ContainerType.RUN,
+            additional_params=additional_params,
+        )
+
+    def create_model(self, project_id: str, key: str = "") -> ApiExperiment:
+        additional_params = {
+            "key": key,
+        }
+
+        return self._create_experiment(
+            project_id=project_id,
+            parent_id=project_id,
+            container_type=ContainerType.MODEL,
+            additional_params=additional_params,
+        )
+
+    def create_model_version(self, project_id: str, model_id: str) -> ApiExperiment:
+        return self._create_experiment(
+            project_id=project_id,
+            parent_id=model_id,
+            container_type=ContainerType.MODEL_VERSION,
+        )
+
+    def _create_experiment(
+        self,
+        project_id: str,
+        parent_id: str,
+        container_type: ContainerType,
+        additional_params: Optional[dict] = None,
+    ):
+        if additional_params is None:
+            additional_params = dict()
+
+        params = {
+            "projectIdentifier": project_id,
+            "parentId": parent_id,
+            "type": container_type,
+            "cliVersion": str(neptune_client_version),
+            **additional_params,
+        }
 
         kwargs = {
             "experimentCreationParams": params,
@@ -325,12 +390,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            run = (
+            experiment = (
                 self.leaderboard_client.api.createExperiment(**kwargs).response().result
             )
-            return ApiRun(
-                run.id, run.shortId, run.organizationName, run.projectName, run.trashed
-            )
+            return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_id)
 
@@ -564,7 +627,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            run = (
+            experiment = (
                 self.leaderboard_client.api.getExperimentAttributes(**params)
                 .response()
                 .result
@@ -572,11 +635,13 @@ class HostedNeptuneBackend(NeptuneBackend):
 
             attribute_type_names = [at.value for at in AttributeType]
             accepted_attributes = [
-                attr for attr in run.attributes if attr.type in attribute_type_names
+                attr
+                for attr in experiment.attributes
+                if attr.type in attribute_type_names
             ]
 
             # Notify about ignored attrs
-            ignored_attributes = set(attr.type for attr in run.attributes) - set(
+            ignored_attributes = set(attr.type for attr in experiment.attributes) - set(
                 attr.type for attr in accepted_attributes
             )
             if ignored_attributes:

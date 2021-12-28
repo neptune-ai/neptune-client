@@ -40,7 +40,7 @@ from neptune.new.exceptions import (
     ProjectNotFound,
     RunNotFound,
 )
-from neptune.new.internal.backends.api_model import ApiRun, Project
+from neptune.new.internal.backends.api_model import ApiExperiment, Project
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
@@ -60,7 +60,7 @@ backend: NeptuneBackend = None
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
-def get_run(run_id: str) -> Optional[ApiRun]:
+def get_run(run_id: str) -> Optional[ApiExperiment]:
     try:
         return backend.get_run(run_id)
     except RunNotFound:
@@ -106,7 +106,7 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
         return None
 
 
-def get_qualified_name(run: ApiRun) -> str:
+def get_qualified_name(run: ApiExperiment) -> str:
     return "{}/{}/{}".format(run.workspace, run.project_name, run.short_id)
 
 
@@ -145,7 +145,9 @@ def get_offline_runs_ids(base_path: Path) -> List[str]:
     return result
 
 
-def partition_runs(base_path: Path) -> Tuple[List[ApiRun], List[ApiRun], int]:
+def partition_runs(
+    base_path: Path,
+) -> Tuple[List[ApiExperiment], List[ApiExperiment], int]:
     synced_runs_ids = []
     unsynced_runs_ids = []
     async_path = base_path / ASYNC_DIRECTORY
@@ -182,8 +184,8 @@ flag. Alternatively, you can set the environment variable
 
 def list_runs(
     base_path: Path,
-    synced_runs: Sequence[ApiRun],
-    unsynced_runs: Sequence[ApiRun],
+    synced_runs: Sequence[ApiExperiment],
+    unsynced_runs: Sequence[ApiExperiment],
     offline_runs_ids: Sequence[str],
 ) -> None:
     if not synced_runs and not unsynced_runs and not offline_runs_ids:
@@ -322,7 +324,7 @@ def sync_selected_registered_runs(
 
 def register_offline_run(
     project: Project, container_type: ContainerType
-) -> Optional[Tuple[ApiRun, bool]]:
+) -> Optional[Tuple[ApiExperiment, bool]]:
     try:
         if container_type == ContainerType.RUN:
             return backend.create_run(project.id), True
@@ -351,7 +353,7 @@ def move_offline_run(base_path: Path, offline_id: str, server_id: str) -> None:
 
 def register_offline_runs(
     base_path: Path, project: Project, offline_runs_ids: Iterable[str]
-) -> List[ApiRun]:
+) -> List[ApiExperiment]:
     result = []
     for run_id in offline_runs_ids:
         dir_path = base_path / OFFLINE_DIRECTORY / run_id

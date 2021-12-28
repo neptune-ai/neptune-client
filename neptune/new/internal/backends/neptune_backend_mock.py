@@ -15,6 +15,7 @@
 #
 import os
 import uuid
+from collections import defaultdict
 from datetime import datetime
 from shutil import copyfile
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, TypeVar
@@ -26,10 +27,12 @@ from neptune.new.exceptions import (
     NeptuneException,
     RunNotFound,
     raise_container_not_found,
+    ModelNotFound,
+    ModelVersionNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
-    ApiRun,
+    ApiExperiment,
     ArtifactAttribute,
     Attribute,
     AttributeType,
@@ -118,7 +121,8 @@ class NeptuneBackendMock(NeptuneBackend):
         self._containers: Dict[
             (str, ContainerType), ContainerStructure[Value, dict]
         ] = dict()
-        self._next_run = 1
+        self._next_run = 1  # counter for runs
+        self._next_model_version = defaultdict(lambda: 1)  # counter for model versions
         self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
         self._attribute_type_converter_value_visitor = (
             self.AttributeTypeConverterValueVisitor()
@@ -171,7 +175,7 @@ class NeptuneBackendMock(NeptuneBackend):
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
-    ) -> ApiRun:
+    ) -> ApiExperiment:
         short_id = f"{self.PROJECT_KEY}-{self._next_run}"
         self._next_run += 1
         new_run_id = str(uuid.uuid4())
@@ -180,15 +184,53 @@ class NeptuneBackendMock(NeptuneBackend):
         )
         if git_ref:
             container.set(["source_code", "git"], git_ref)
-        return ApiRun(
-            new_run_id, short_id, self.WORKSPACE_NAME, self.PROJECT_NAME, False
+        return ApiExperiment(
+            id=new_run_id,
+            type=ContainerType.RUN,
+            short_id=short_id,
+            workspace=self.WORKSPACE_NAME,
+            project_name=self.PROJECT_NAME,
+            trashed=False,
+        )
+
+    def create_model(self, project_id: str, key: str) -> ApiExperiment:
+        short_id = f"{self.PROJECT_KEY}-{key}"
+        new_run_id = str(uuid.uuid4())
+        self._create_container(new_run_id, ContainerType.MODEL, sys_id=short_id)
+        return ApiExperiment(
+            id=new_run_id,
+            type=ContainerType.MODEL,
+            short_id=short_id,
+            workspace=self.WORKSPACE_NAME,
+            project_name=self.PROJECT_NAME,
+            trashed=False,
+        )
+
+    def create_model_version(self, project_id: str, model_id: str) -> ApiExperiment:
+        short_id = f"{self.PROJECT_KEY}-{self._next_model_version[model_id]}"
+        self._next_model_version[model_id] += 1
+        new_run_id = str(uuid.uuid4())
+        self._create_container(new_run_id, ContainerType.MODEL_VERSION, sys_id=short_id)
+        return ApiExperiment(
+            id=new_run_id,
+            type=ContainerType.MODEL,
+            short_id=short_id,
+            workspace=self.WORKSPACE_NAME,
+            project_name=self.PROJECT_NAME,
+            trashed=False,
         )
 
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None
 
-    def get_run(self, run_id: str) -> ApiRun:
+    def get_run(self, run_id: str) -> ApiExperiment:
         raise RunNotFound(run_id)
+
+    def get_model(self, model_id: str) -> ApiExperiment:
+        raise ModelNotFound(model_id)
+
+    def get_model_version(self, model_version_id: str) -> ApiExperiment:
+        raise ModelVersionNotFound(model_version_id)
 
     def execute_operations(
         self,

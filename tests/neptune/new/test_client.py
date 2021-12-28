@@ -28,17 +28,17 @@ from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneException,
+    NeptuneMissingProjectNameException,
     NeptuneOfflineModeFetchException,
     NeptuneUninitializedException,
-    NeptuneMissingProjectNameException,
 )
 from neptune.new.internal.backends.api_model import (
-    ApiRun,
+    ApiExperiment,
     Attribute,
     AttributeType,
     AttributeWithProperties,
-    LeaderboardEntry,
     IntAttribute,
+    LeaderboardEntry,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.container_type import ContainerType
@@ -96,12 +96,13 @@ class TestClientRun(unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, _id: ApiRun(
-            "12345678-1234-5678-1234-567812345678",
-            "SAN-94",
-            "workspace",
-            "sandbox",
-            False,
+        new=lambda _, _id: ApiExperiment(
+            id="12345678-1234-5678-1234-567812345678",
+            type=ContainerType.RUN,
+            short_id="SAN-94",
+            workspace="workspace",
+            project_name="sandbox",
+            trashed=False,
         ),
     )
     @patch(
@@ -131,12 +132,13 @@ class TestClientRun(unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, _id: ApiRun(
-            "12345678-1234-5678-1234-567812345678",
-            "SAN-94",
-            "workspace",
-            "sandbox",
-            False,
+        new=lambda _, _id: ApiExperiment(
+            id="12345678-1234-5678-1234-567812345678",
+            type=ContainerType.RUN,
+            short_id="SAN-94",
+            workspace="workspace",
+            project_name="sandbox",
+            trashed=False,
         ),
     )
     @patch(
@@ -234,16 +236,6 @@ class TestClientRun(unittest.TestCase):
 
 
 @patch(
-    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-    new=lambda _, _id: ApiRun(
-        "12345678-1234-5678-1234-567812345678",
-        "SAN-94",
-        "workspace",
-        "sandbox",
-        False,
-    ),
-)
-@patch(
     "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
     new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
 )
@@ -319,20 +311,6 @@ class TestClientProject(unittest.TestCase):
         project["some/variable"] = 13
         self.assertEqual(13, project["some/variable"].fetch())
 
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, _id: ApiRun(
-            "12345678-1234-5678-1234-567812345678",
-            "SAN-94",
-            "workspace",
-            "sandbox",
-            False,
-        ),
-    )
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("some/variable", AttributeType.INT)],
-    )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),

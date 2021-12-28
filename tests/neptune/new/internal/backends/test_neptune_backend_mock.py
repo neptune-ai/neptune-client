@@ -21,6 +21,8 @@ from time import time
 
 from neptune.new.exceptions import (
     MetadataInconsistency,
+    ModelUUIDNotFound,
+    ModelVersionUUIDNotFound,
     ProjectUUIDNotFound,
     RunUUIDNotFound,
 )
@@ -54,10 +56,20 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
     def setUp(self) -> None:
         self.backend = NeptuneBackendMock()
-        self.exp = self.backend.create_run(self.backend._project_id)
+        project_id = self.backend._project_id
+        exp = self.backend.create_run(project_id=project_id)
+        model = self.backend.create_model(
+            project_id=project_id,
+            key="MOD",
+        )
+        model_version = self.backend.create_model_version(
+            project_id=project_id, model_id=model.id
+        )
         self.ids_with_types = [
-            (self.exp.id, ContainerType.RUN),
             (self.backend._project_id, ContainerType.PROJECT),
+            (exp.id, ContainerType.RUN),
+            (model.id, ContainerType.MODEL),
+            (model_version.id, ContainerType.MODEL_VERSION),
         ]
 
     def test_get_float_attribute(self):
@@ -389,7 +401,13 @@ class TestNeptuneBackendMock(unittest.TestCase):
         ids_with_types_and_exceptions = [
             (container_id, container_type, exception_type)
             for (container_id, container_type), exception_type in zip(
-                self.ids_with_types, [RunUUIDNotFound, ProjectUUIDNotFound]
+                self.ids_with_types,
+                [
+                    ProjectUUIDNotFound,
+                    RunUUIDNotFound,
+                    ModelUUIDNotFound,
+                    ModelVersionUUIDNotFound,
+                ],
             )
         ]
         for (

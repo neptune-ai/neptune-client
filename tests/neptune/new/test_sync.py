@@ -34,7 +34,7 @@ from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.new.sync import (
-    ApiRun,
+    ApiExperiment,
     get_project,
     get_qualified_name,
     sync_all_runs,
@@ -44,18 +44,26 @@ from neptune.new.sync import (
 
 
 def a_run():
-    return ApiRun(
-        str(uuid.uuid4()), "RUN-{}".format(randint(42, 12342)), "org", "proj", False
+    return ApiExperiment(
+        id=str(uuid.uuid4()),
+        type=ContainerType.RUN,
+        short_id="RUN-{}".format(randint(42, 12342)),
+        workspace="org",
+        project_name="proj",
+        trashed=False,
     )
 
 
 def a_project():
-    return ApiRun(
-        str(uuid.uuid4()),
-        "".join((random.choice(string.ascii_letters).upper() for _ in range(3))),
-        "org",
-        "proj",
-        False,
+    return ApiExperiment(
+        id=str(uuid.uuid4()),
+        type=ContainerType.PROJECT,
+        short_id="".join(
+            (random.choice(string.ascii_letters).upper() for _ in range(3))
+        ),
+        workspace="org",
+        project_name="proj",
+        trashed=False,
     )
 
 
