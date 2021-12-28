@@ -292,14 +292,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                     container_type=container_type, container_id=container_id
                 )
 
-            return ApiExperiment(
-                id=experiment.id,
-                type=ContainerType(experiment.type),
-                short_id=experiment.shortId,
-                workspace=experiment.organizationName,
-                project_name=experiment.projectName,
-                trashed=experiment.trashed,
-            )
+            return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
             raise ExperimentNotFound.of_container_type(
                 container_type=container_type, container_id=container_id
@@ -377,7 +370,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         project_id: str,
         parent_id: str,
         container_type: ContainerType,
-        additional_params: dict = None,
+        additional_params: Optional[dict] = None,
     ):
         if additional_params is None:
             additional_params = dict()
@@ -400,14 +393,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             experiment = (
                 self.leaderboard_client.api.createExperiment(**kwargs).response().result
             )
-            return ApiExperiment(
-                id=experiment.id,
-                type=ContainerType(experiment.type),
-                short_id=experiment.shortId,
-                workspace=experiment.organizationName,
-                project_name=experiment.projectName,
-                trashed=experiment.trashed,
-            )
+            return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_id)
 

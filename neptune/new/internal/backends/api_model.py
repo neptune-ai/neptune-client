@@ -45,6 +45,17 @@ class ApiExperiment:
     project_name: str
     trashed: bool
 
+    @classmethod
+    def from_experiment(cls, response_exp):
+        return cls(
+            id=response_exp.id,
+            type=ContainerType(response_exp.type),
+            short_id=response_exp.shortId,
+            workspace=response_exp.organizationName,
+            project_name=response_exp.projectName,
+            trashed=response_exp.trashed,
+        )
+
 
 class OptionalFeatures:
     VERSION_INFO = "version_info"
