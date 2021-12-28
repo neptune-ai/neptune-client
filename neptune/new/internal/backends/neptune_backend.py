@@ -119,30 +119,6 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_model(self, model_id: str) -> ApiRun:
-        pass
-
-    @abc.abstractmethod
-    def create_model(
-        self,
-        project_id: str,
-        key: str,
-    ) -> ApiRun:
-        pass
-
-    @abc.abstractmethod
-    def get_model_version(self, model_version_id: str) -> ApiRun:
-        pass
-
-    @abc.abstractmethod
-    def create_model_version(
-        self,
-        project_id: str,
-        model_id: str,
-    ) -> ApiRun:
-        pass
-
-    @abc.abstractmethod
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         pass
 

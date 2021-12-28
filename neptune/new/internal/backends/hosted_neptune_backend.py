@@ -1115,10 +1115,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ProjectNotFound(project_id)
 
     def get_run_url(
-        self, run_id: str, workspace: str, project_name: str, short_id: str
+        self, run_id: str, workspace: str, project_name: str, sys_id: str
     ) -> str:
         base_url = self.get_display_address()
-        return f"{base_url}/{workspace}/{project_name}/e/{short_id}"
+        return f"{base_url}/{workspace}/{project_name}/e/{sys_id}"
 
     @staticmethod
     def _get_all_items(get_portion, step):

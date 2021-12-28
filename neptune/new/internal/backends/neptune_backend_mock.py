@@ -218,12 +218,6 @@ class NeptuneBackendMock(NeptuneBackend):
             trashed=False,
         )
 
-    def create_model(self, project_id: str, key: str) -> ApiRun:
-        return None
-
-    def create_model_version(self, project_id: str, model_id: str) -> ApiRun:
-        return None
-
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None
 
