@@ -17,13 +17,17 @@ import os
 import unittest
 from datetime import datetime
 
-from neptune.new import ANONYMOUS, Run, init, init_project, init_run
+from neptune.new import ANONYMOUS, Run, init, init_project, init_run, init_model
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     InactiveProjectException,
     MetadataInconsistency,
     InactiveRunException,
+    InactiveModelException,
+    InactiveModelVersionException,
 )
+from neptune.new.model import Model
+from neptune.new.model_version import ModelVersion
 from neptune.new.project import Project
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
@@ -45,7 +49,8 @@ class TestExperiment(unittest.TestCase):
         run1 = init(**kwargs)
         run2 = init_run(**kwargs)
         project = init_project(**kwargs)
-        return [run1, run2, project]
+        model = init_model(**kwargs)
+        return [run1, run2, project, model]
 
     def test_define(self):
         for exp in self.get_experiments(flush_period=0.5):
@@ -199,6 +204,10 @@ class TestExperiment(unittest.TestCase):
                     expected_exception = InactiveRunException
                 elif isinstance(exp, Project):
                     expected_exception = InactiveProjectException
+                elif isinstance(exp, Model):
+                    expected_exception = InactiveModelException
+                elif isinstance(exp, ModelVersion):
+                    expected_exception = InactiveModelVersionException
                 else:
                     raise ValueError(f"Not supported exp type: {type(exp)}")
 

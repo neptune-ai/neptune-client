@@ -36,6 +36,7 @@ from neptune.new.run import Run
 from neptune.new.internal.init_impl import (
     __version__,
     get_project,
+    init_model,
     init_project,
     init_run,
     init,

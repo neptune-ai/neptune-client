@@ -402,6 +402,22 @@ class InactiveRunException(InactiveContainerException):
         super().__init__(label=label, container_type=ContainerType.RUN)
 
 
+class InactiveModelException(InactiveContainerException):
+    resume_info = """
+    TODO: NPT-11349"""
+
+    def __init__(self, label: str):
+        super().__init__(label=label, container_type=ContainerType.MODEL)
+
+
+class InactiveModelVersionException(InactiveContainerException):
+    resume_info = """
+    TODO: NPT-11349"""
+
+    def __init__(self, label: str):
+        super().__init__(label=label, container_type=ContainerType.MODEL_VERSION)
+
+
 class InactiveProjectException(InactiveContainerException):
     resume_info = """
     - Initialize connection to the project again to continue logging to it:
@@ -504,15 +520,18 @@ class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
         super().__init__("Cannot synchronize offline runs without a project.")
 
 
-class NeedExistingRunForReadOnlyMode(NeptuneException):
-    def __init__(self):
+class NeedExistingExperimentForReadOnlyMode(NeptuneException):
+    container_type: ContainerType
+    callback_name: str
+
+    def __init__(self, container_type: ContainerType, callback_name: str):
         message = """
 {h1}
-----NeedExistingRunForReadOnlyMode-----------------------------------------
+----{class_name}-----------------------------------------
 {end}
-Read-only mode can be used only with an existing run.
+Read-only mode can be used only with an existing {container_type}.
 
-Parameter {python}run{end} of {python}neptune.init(){end} must be provided and reference
+Parameter {python}{container_type}{end} of {python}{callback_name}{end} must be provided and reference
 an existing run when using {python}mode="read-only"{end}.
 
 You may also want to check the following docs pages:
@@ -521,7 +540,31 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(**STYLES))
+        self.container_type = container_type
+        self.callback_name = callback_name
+        print(STYLES)
+        super().__init__(
+            message.format(
+                class_name=type(self).__name__,
+                container_type=self.container_type.value,
+                callback_name=self.callback_name,
+                **STYLES,
+            )
+        )
+
+
+class NeedExistingRunForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
+    def __init__(self):
+        super().__init__(
+            container_type=ContainerType.RUN, callback_name="neptune.init_run"
+        )
+
+
+class NeedExistingModelForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
+    def __init__(self):
+        super().__init__(
+            container_type=ContainerType.RUN, callback_name="neptune.init_run"
+        )
 
 
 class NeptuneRunResumeAndCustomIdCollision(NeptuneException):

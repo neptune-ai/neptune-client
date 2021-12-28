@@ -38,6 +38,8 @@ from neptune.new.exceptions import (
     InactiveProjectException,
     InactiveRunException,
     NeptunePossibleLegacyUsageException,
+    InactiveModelException,
+    InactiveModelVersionException,
 )
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
@@ -84,6 +86,12 @@ def ensure_not_stopped(fun):
                 raise InactiveRunException(label=self._label)
             elif self.container_type == ContainerType.PROJECT:
                 raise InactiveProjectException(label=self._label)
+            elif self.container_type == ContainerType.MODEL:
+                raise InactiveModelException(label=self._label)
+            elif self.container_type == ContainerType.MODEL_VERSION:
+                raise InactiveModelVersionException(label=self._label)
+            else:
+                raise ValueError(f"Unknown container type: {self.container_type}")
         return fun(self, *args, **kwargs)
 
     return inner_fun

@@ -218,6 +218,7 @@ def init_run(
             source_files = [source_files]
         else:
             verify_collection_type("source_files", source_files, str)
+    mode = Mode(mode)
 
     name = "Untitled" if run is None and name is None else name
     description = "" if run is None and description is None else description
