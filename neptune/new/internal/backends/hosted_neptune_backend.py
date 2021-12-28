@@ -267,6 +267,8 @@ class HostedNeptuneBackend(NeptuneBackend):
                 .response()
                 .result
             )
+            if run.type != ContainerType.RUN:
+                raise RunNotFound(run_id)
             return ApiRun(
                 run.id, run.shortId, run.organizationName, run.projectName, run.trashed
             )
@@ -303,6 +305,8 @@ class HostedNeptuneBackend(NeptuneBackend):
 
         params = {
             "projectIdentifier": project_id,
+            "parentId": project_id,
+            "type": ContainerType.RUN,
             "cliVersion": str(neptune_client_version),
             "gitInfo": git_info,
             "customId": custom_run_id,
