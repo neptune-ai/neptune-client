@@ -1,10 +1,8 @@
 name: Test
 on:
   push:
-    branches:
-      - master
-    tags:
-      - *
+    branches: [master]
+  workflow_dispatch:
 jobs:
   integration:
     runs-on: ${{ matrix.os }}
