@@ -1,7 +1,7 @@
 freezegun
 mock
 munch
-pylint
+pylint==2.9.6
 pylintfileheader
 pytest
 pytest-cov
