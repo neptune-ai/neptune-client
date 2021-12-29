@@ -2,11 +2,12 @@ name: Test
 on:
   push:
     branches: [master]
+    tags:
+      - *
 jobs:
   integration:
     runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false
       matrix:
         os: [ubuntu-latest] #, macos-latest, windows-latest]
         python-version: [3.6] #, 3.7, 3.8]
