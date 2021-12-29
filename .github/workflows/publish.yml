@@ -2,7 +2,7 @@ name: Publish
 on:
   release:
     workflows: ["Lint", "Test"]
-    types: [released]
+    types: [created]
 jobs:
   pypi:
     runs-on: ubuntu-latest
