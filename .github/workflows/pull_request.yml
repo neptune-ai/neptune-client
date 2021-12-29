@@ -1,15 +1,14 @@
 name: Test
 on:
   push:
-    branches: [master]
-#    branches-ignore: [master]
+    branches-ignore: [master]
 jobs:
   integration:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.6, 3.8] # minimum, maximum
+        python-version: [3.6, 3.9] # minimum, maximum
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2

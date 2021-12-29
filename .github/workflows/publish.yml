@@ -1,12 +1,10 @@
 name: Publish
 on:
-#  release:
-#    workflows: ["Lint", "Test"]
-#    types: [published]
-  workflow_run:
+  release:
     workflows: ["Lint", "Test"]
+    types: [published]
 jobs:
-  publish:
+  pypi:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
