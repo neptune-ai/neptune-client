@@ -19,4 +19,4 @@ bokeh
 pre-commit
 
 # Installing Torch on Windows increases the test duration by ~10 minutes
-torch; platform_system != 'Windows'
+torch; platform_system != 'Windows' and python_version <= '3.9'
