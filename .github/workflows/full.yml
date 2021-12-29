@@ -12,7 +12,7 @@ jobs:
       - name: Install Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3
+          python-version: 3.9
 
       - name: Install dependencies
         uses: ./.github/actions/dependencies
@@ -25,7 +25,7 @@ jobs:
         run: |
           python -m pylint -j 0 -f parseable neptune tests
 
-  test:
+  integration:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
