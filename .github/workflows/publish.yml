@@ -1,14 +1,13 @@
 name: Publish
 on:
   release:
-    workflows: ["Lint"]
     types:
     - published
-#  workflow_run:
-#    workflows:
-#      - "Lint"
-#    types:
-#      - completed
+  workflow_run:
+    workflows:
+      - "Lint"
+    types:
+      - completed
 jobs:
   pypi:
     runs-on: ubuntu-latest
