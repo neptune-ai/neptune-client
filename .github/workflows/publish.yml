@@ -1,8 +1,10 @@
 name: Publish
 on:
-  release:
+#  release:
+#    workflows: ["Lint", "Test"]
+#    types: [published]
+  workflow_run:
     workflows: ["Lint", "Test"]
-    types: [published]
 jobs:
   publish:
     runs-on: ubuntu-latest
