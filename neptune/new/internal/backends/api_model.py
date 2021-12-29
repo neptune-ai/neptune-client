@@ -40,7 +40,7 @@ class Workspace:
 class ApiExperiment:
     id: str
     type: ContainerType
-    short_id: str
+    sys_id: str
     workspace: str
     project_name: str
     trashed: bool
@@ -50,7 +50,7 @@ class ApiExperiment:
         return cls(
             id=response_exp.id,
             type=ContainerType(response_exp.type),
-            short_id=response_exp.shortId,
+            sys_id=response_exp.shortId,
             workspace=response_exp.organizationName,
             project_name=response_exp.projectName,
             trashed=response_exp.trashed,

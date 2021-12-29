@@ -107,7 +107,7 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
 
 
 def get_qualified_name(run: ApiExperiment) -> str:
-    return "{}/{}/{}".format(run.workspace, run.project_name, run.short_id)
+    return "{}/{}/{}".format(run.workspace, run.project_name, run.sys_id)
 
 
 def is_valid_uuid(val: Any) -> bool:

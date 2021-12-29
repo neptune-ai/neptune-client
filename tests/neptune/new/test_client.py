@@ -99,7 +99,7 @@ class TestClientRun(unittest.TestCase):
         new=lambda _, _id: ApiExperiment(
             id="12345678-1234-5678-1234-567812345678",
             type=ContainerType.RUN,
-            short_id="SAN-94",
+            sys_id="SAN-94",
             workspace="workspace",
             project_name="sandbox",
             trashed=False,
@@ -135,7 +135,7 @@ class TestClientRun(unittest.TestCase):
         new=lambda _, _id: ApiExperiment(
             id="12345678-1234-5678-1234-567812345678",
             type=ContainerType.RUN,
-            short_id="SAN-94",
+            sys_id="SAN-94",
             workspace="workspace",
             project_name="sandbox",
             trashed=False,

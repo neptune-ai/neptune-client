@@ -47,7 +47,7 @@ def a_run():
     return ApiExperiment(
         id=str(uuid.uuid4()),
         type=ContainerType.RUN,
-        short_id="RUN-{}".format(randint(42, 12342)),
+        sys_id="RUN-{}".format(randint(42, 12342)),
         workspace="org",
         project_name="proj",
         trashed=False,
@@ -58,9 +58,7 @@ def a_project():
     return ApiExperiment(
         id=str(uuid.uuid4()),
         type=ContainerType.PROJECT,
-        short_id="".join(
-            (random.choice(string.ascii_letters).upper() for _ in range(3))
-        ),
+        sys_id="".join((random.choice(string.ascii_letters).upper() for _ in range(3))),
         workspace="org",
         project_name="proj",
         trashed=False,

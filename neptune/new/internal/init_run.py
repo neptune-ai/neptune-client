@@ -297,7 +297,7 @@ def init_run(
         run_lock,
         api_run.workspace,
         api_run.project_name,
-        api_run.short_id,
+        api_run.sys_id,
         project_obj.id,
         monitoring_namespace,
     )
