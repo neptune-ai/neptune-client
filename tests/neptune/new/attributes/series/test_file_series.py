@@ -23,7 +23,7 @@ from neptune.new.internal.operation import ImageValue, LogImages, ClearImageLog
 from neptune.new.types import File
 from neptune.new.attributes.series.file_series import FileSeries
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
-from tests.neptune.new.helpers import create_file
+from tests.neptune.new.utils.file_helpers import create_file
 
 
 @patch("time.time", new=TestAttributeBase._now)

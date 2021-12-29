@@ -940,7 +940,11 @@ class PlotlyIncompatibilityException(Exception):
         )
 
 
-class NeptunePossibleLegacyUsageException(NeptuneException):
+class NeptuneWongInitParametersException(NeptuneException):
+    pass
+
+
+class NeptunePossibleLegacyUsageException(NeptuneWongInitParametersException):
     def __init__(self):
         message = """
 {h1}

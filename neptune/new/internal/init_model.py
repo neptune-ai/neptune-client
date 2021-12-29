@@ -21,6 +21,7 @@ from typing import Optional
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
+    NeptuneWongInitParametersException,
 )
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
@@ -56,6 +57,15 @@ def init_model(
     verify_type("mode", mode, str)
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
+
+    # verify exclusive arguments
+    # pylint: disable=superfluous-parens
+    if not ((model is not None) ^ (key is not None)):
+        raise NeptuneWongInitParametersException("NPT-11349 exactly one of: model, key")
+    if model is not None and name is not None:
+        raise NeptuneWongInitParametersException("NPT-11349 name only with key")
+
+    # make mode proper Enum instead of string
     mode = Mode(mode)
 
     name = "Untitled" if model is None and name is None else name

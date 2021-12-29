@@ -47,7 +47,7 @@ from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.new.types.sets.string_set import StringSet as StringSetVal
-from tests.neptune.new.helpers import create_file
+from tests.neptune.new.utils.file_helpers import create_file
 
 
 class TestHandler(unittest.TestCase):

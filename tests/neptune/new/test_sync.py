@@ -17,11 +17,8 @@
 # pylint: disable=redefined-outer-name
 
 import os
-import random
-import string
 import threading
 import uuid
-from random import randint
 
 import pytest
 
@@ -34,35 +31,13 @@ from neptune.new.internal.containers.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.new.sync import (
-    ApiExperiment,
     get_project,
     get_qualified_name,
     sync_all_runs,
     sync_selected_runs,
     synchronization_status,
 )
-
-
-def a_run():
-    return ApiExperiment(
-        id=str(uuid.uuid4()),
-        type=ContainerType.RUN,
-        sys_id="RUN-{}".format(randint(42, 12342)),
-        workspace="org",
-        project_name="proj",
-        trashed=False,
-    )
-
-
-def a_project():
-    return ApiExperiment(
-        id=str(uuid.uuid4()),
-        type=ContainerType.PROJECT,
-        sys_id="".join((random.choice(string.ascii_letters).upper() for _ in range(3))),
-        workspace="org",
-        project_name="proj",
-        trashed=False,
-    )
+from tests.neptune.new.utils.api_experiments_factory import api_project, api_run
 
 
 def generate_get_run_impl(registered_experiments):
@@ -76,8 +51,8 @@ def generate_get_run_impl(registered_experiments):
 
 
 def prepare_projects(path):
-    unsync_project = a_project()
-    sync_project = a_project()
+    unsync_project = api_project()
+    sync_project = api_project()
     registered_projects = (unsync_project, sync_project)
 
     execution_id = "exec-0"
@@ -113,8 +88,8 @@ def prepare_projects(path):
 
 
 def prepare_runs(path):
-    unsync_exp = a_run()
-    sync_exp = a_run()
+    unsync_exp = api_run()
+    sync_exp = api_run()
     registered_runs = (unsync_exp, sync_exp)
 
     execution_id = "exec-0"
@@ -237,7 +212,7 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
     unsync_exp, sync_exp, _ = prepare_runs(tmp_path)
     get_run_impl = generate_get_run_impl((unsync_proj, sync_proj, unsync_exp, sync_exp))
     offline_exp_uuid = prepare_offline_run(tmp_path)
-    registered_offline_run = a_run()
+    registered_offline_run = api_run()
 
     # and
     mocker.patch.object(neptune.new.sync, "get_run", get_run_impl)
@@ -298,7 +273,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
     # given
     unsync_exp, sync_exp, get_run_impl = prepare_runs(tmp_path)
     offline_exp_uuid = prepare_offline_run(tmp_path)
-    registered_offline_exp = a_run()
+    registered_offline_exp = api_run()
 
     def get_run_impl_(run_id: str):
         if run_id in (
@@ -383,7 +358,7 @@ def test_sync_non_existent_run(tmp_path, mocker, capsys):
     # given
     mocker.patch.object(neptune.new.sync, "get_project")
     mocker.patch.object(neptune.new.sync, "get_run")
-    neptune.new.sync.get_run.return_value = a_run()
+    neptune.new.sync.get_run.return_value = api_run()
 
     # when
     sync_selected_runs(tmp_path, "foo", ["bar"])

@@ -49,7 +49,7 @@ class TestExperiment(unittest.TestCase):
         run1 = init(**kwargs)
         run2 = init_run(**kwargs)
         project = init_project(**kwargs)
-        model = init_model(**kwargs)
+        model = init_model(key="MOD", **kwargs)
         return [run1, run2, project, model]
 
     def test_define(self):

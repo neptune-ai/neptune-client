@@ -24,19 +24,19 @@ from neptune.new import ANONYMOUS, Run, get_last_run, init_run
 from neptune.new.attributes.atoms import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import NeptuneUninitializedException
-
 from neptune.new.internal.backends.api_model import (
-    ApiExperiment,
     Attribute,
     AttributeType,
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.container_type import ContainerType
 from neptune.utils import IS_WINDOWS
 from tests.neptune.new.client.abstract_experiment_test_mixin import (
     AbstractExperimentTestMixin,
 )
+from tests.neptune.new.utils.api_experiments_factory import api_run
+
+AN_API_RUN = api_run()
 
 
 @patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
@@ -52,14 +52,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, _id: ApiExperiment(
-            id="12345678-1234-5678-1234-567812345678",
-            type=ContainerType.RUN,
-            sys_id="SAN-94",
-            workspace="workspace",
-            project_name="sandbox",
-            trashed=False,
-        ),
+        new=lambda _, _id: AN_API_RUN,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
@@ -70,7 +63,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
-        exp = init_run(mode="read-only", run="SAN-94")
+        exp = init_run(mode="read-only", run="whatever")
 
         with self.assertLogs() as caplog:
             exp["some/variable"] = 13
@@ -88,22 +81,15 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, _id: ApiExperiment(
-            id="12345678-1234-5678-1234-567812345678",
-            type=ContainerType.RUN,
-            sys_id="SAN-94",
-            workspace="workspace",
-            project_name="sandbox",
-            trashed=False,
-        ),
+        new=lambda _, _run_id: AN_API_RUN,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
     )
     def test_resume(self):
-        with init_run(flush_period=0.5, run="SAN-94") as exp:
-            self.assertEqual(exp._id, "12345678-1234-5678-1234-567812345678")
+        with init_run(flush_period=0.5, run="whatever") as exp:
+            self.assertEqual(exp._id, AN_API_RUN.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
