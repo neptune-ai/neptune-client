@@ -28,7 +28,7 @@ fake = Faker()
 
 
 class TestSeries(BaseE2ETest):
-    @pytest.mark.parametrize('container', ['project', 'run'], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_log_numbers(self, container: AttributeContainer):
         key = self.gen_key()
         values = [random.random() for _ in range(50)]
@@ -40,9 +40,9 @@ class TestSeries(BaseE2ETest):
         assert container[key].fetch_last() == values[-1]
 
         fetched_values = container[key].fetch_values()
-        assert list(fetched_values['value']) == values
+        assert list(fetched_values["value"]) == values
 
-    @pytest.mark.parametrize('container', ['project', 'run'], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_log_strings(self, container: AttributeContainer):
         key = self.gen_key()
         values = [fake.word() for _ in range(50)]
@@ -54,9 +54,9 @@ class TestSeries(BaseE2ETest):
         assert container[key].fetch_last() == values[-1]
 
         fetched_values = container[key].fetch_values()
-        assert list(fetched_values['value']) == values
+        assert list(fetched_values["value"]) == values
 
-    @pytest.mark.parametrize('container', ['project', 'run'], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_log_images(self, container: AttributeContainer):
         key = self.gen_key()
         # images with size between 200KB - 12MB
@@ -67,8 +67,8 @@ class TestSeries(BaseE2ETest):
         container.sync()
 
         with tmp_context():
-            container[key].download_last('last')
-            container[key].download('all')
+            container[key].download_last("last")
+            container[key].download("all")
 
             with Image.open("last/3.png") as img:
                 assert img == image_to_png(image=images[-1])

@@ -26,7 +26,7 @@ from neptune.management import (
     delete_project,
     remove_project_member,
     MemberRole,
-    ProjectVisibility
+    ProjectVisibility,
 )
 from neptune.management.internal.utils import normalize_project_name
 from tests.base import BaseE2ETest
@@ -41,31 +41,37 @@ class TestManagement(BaseE2ETest):
         project_slug = fake.slug()
         project_name: str = f"temp-{datetime.now().strftime('%Y%m%d')}-{project_slug}"
         project_key: str = project_slug.replace("-", "")[:3].upper()
-        project_identifier: str = normalize_project_name(name=project_name, workspace=environment.workspace)
+        project_identifier: str = normalize_project_name(
+            name=project_name, workspace=environment.workspace
+        )
 
-        assert project_identifier not in get_project_list(api_token=environment.admin_token)
-        assert environment.user in get_workspace_member_list(
-            name=environment.workspace,
+        assert project_identifier not in get_project_list(
             api_token=environment.admin_token
         )
-        assert get_workspace_member_list(
-            name=environment.workspace,
-            api_token=environment.admin_token
-        ).get(environment.user) == 'member'
+        assert environment.user in get_workspace_member_list(
+            name=environment.workspace, api_token=environment.admin_token
+        )
+        assert (
+            get_workspace_member_list(
+                name=environment.workspace, api_token=environment.admin_token
+            ).get(environment.user)
+            == "member"
+        )
 
         created_project_identifier = create_project(
             name=project_name,
             key=project_key,
             visibility=ProjectVisibility.PRIVATE,
             workspace=environment.workspace,
-            api_token=environment.admin_token
+            api_token=environment.admin_token,
         )
 
         assert created_project_identifier == project_identifier
-        assert created_project_identifier in get_project_list(api_token=environment.admin_token)
-        assert environment.user not in get_project_member_list(
-            name=created_project_identifier,
+        assert created_project_identifier in get_project_list(
             api_token=environment.admin_token
+        )
+        assert environment.user not in get_project_member_list(
+            name=created_project_identifier, api_token=environment.admin_token
         )
 
         add_project_member(
@@ -73,33 +79,36 @@ class TestManagement(BaseE2ETest):
             username=environment.user,
             # pylint: disable=no-member
             role=MemberRole.CONTRIBUTOR,
-            api_token=environment.admin_token
+            api_token=environment.admin_token,
         )
 
         assert environment.user in get_project_member_list(
-            name=created_project_identifier,
-            api_token=environment.admin_token
+            name=created_project_identifier, api_token=environment.admin_token
         )
-        assert get_project_member_list(
-            name=created_project_identifier,
-            api_token=environment.admin_token
-        ).get(environment.user) == 'contributor'
-        assert created_project_identifier in get_project_list(api_token=environment.user_token)
+        assert (
+            get_project_member_list(
+                name=created_project_identifier, api_token=environment.admin_token
+            ).get(environment.user)
+            == "contributor"
+        )
+        assert created_project_identifier in get_project_list(
+            api_token=environment.user_token
+        )
 
         remove_project_member(
             name=created_project_identifier,
             username=environment.user,
-            api_token=environment.admin_token
+            api_token=environment.admin_token,
         )
 
         assert environment.user not in get_project_member_list(
-            name=created_project_identifier,
-            api_token=environment.admin_token
+            name=created_project_identifier, api_token=environment.admin_token
         )
 
         delete_project(
-            name=created_project_identifier,
-            api_token=environment.admin_token
+            name=created_project_identifier, api_token=environment.admin_token
         )
 
-        assert project_identifier not in get_project_list(api_token=environment.admin_token)
+        assert project_identifier not in get_project_list(
+            api_token=environment.admin_token
+        )

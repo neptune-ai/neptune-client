@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 __all__ = [
-    'BaseE2ETest',
+    "BaseE2ETest",
 ]
 
 import uuid
@@ -32,4 +32,4 @@ class BaseE2ETest:
             container.pop(self.__class__.__name__)
 
     def gen_key(self):
-        return f'{self.__class__.__name__}/{uuid.uuid4()}'
+        return f"{self.__class__.__name__}/{uuid.uuid4()}"

@@ -22,26 +22,24 @@ import pytest
 import neptune.new as neptune
 
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope="session")
 def container(request):
-    if request.param == 'project':
+    if request.param == "project":
         project = neptune.init_project()
         yield project
         project.stop()
 
-    if request.param == 'run':
-        exp = neptune.init_run(
-            name='E2e main run'
-        )
+    if request.param == "run":
+        exp = neptune.init_run(name="E2e main run")
         yield exp
         exp.stop()
 
 
 @pytest.fixture()
 def bucket():
-    bucket_name = os.environ.get('BUCKET_NAME')
+    bucket_name = os.environ.get("BUCKET_NAME")
 
-    s3_client = boto3.resource('s3')
+    s3_client = boto3.resource("s3")
     s3_bucket = s3_client.Bucket(bucket_name)
 
     yield bucket_name, s3_client
@@ -50,18 +48,18 @@ def bucket():
 
 
 Environment = namedtuple(
-    'Environment',
-    ['workspace', 'project', 'user_token', 'admin_token', 'admin', 'user']
+    "Environment",
+    ["workspace", "project", "user_token", "admin_token", "admin", "user"],
 )
 
 
 @pytest.fixture()
 def environment():
     yield Environment(
-        workspace=os.getenv('WORKSPACE_NAME'),
-        project=os.getenv('NEPTUNE_PROJECT'),
-        user_token=os.getenv('NEPTUNE_API_TOKEN'),
-        admin_token=os.getenv('ADMIN_NEPTUNE_API_TOKEN'),
-        admin=os.getenv('ADMIN_USERNAME'),
-        user=os.getenv('USER_USERNAME'),
+        workspace=os.getenv("WORKSPACE_NAME"),
+        project=os.getenv("NEPTUNE_PROJECT"),
+        user_token=os.getenv("NEPTUNE_API_TOKEN"),
+        admin_token=os.getenv("ADMIN_NEPTUNE_API_TOKEN"),
+        admin=os.getenv("ADMIN_USERNAME"),
+        user=os.getenv("USER_USERNAME"),
     )

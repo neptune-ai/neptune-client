@@ -95,33 +95,41 @@ class TestSync(BaseE2ETest):
 
         # pylint: disable=protected-access
         queue_dir = list(Path(f"./.neptune/async/{exp._id}/").glob("exec-*"))[0]
-        with open(queue_dir / "last_put_version", encoding='utf-8') as last_put_version_f:
+        with open(
+            queue_dir / "last_put_version", encoding="utf-8"
+        ) as last_put_version_f:
             last_put_version = int(last_put_version_f.read())
-        with open(queue_dir / "data-1.log", "a", encoding='utf-8') as queue_f:
+        with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
             queue_f.write(
-                json.dumps({
-                    "obj": {
-                        "type": "AssignString",
-                        "path": key.split("/"),
-                        "value": updated_value
-                    },
-                    "version": last_put_version + 1
-                })
+                json.dumps(
+                    {
+                        "obj": {
+                            "type": "AssignString",
+                            "path": key.split("/"),
+                            "value": updated_value,
+                        },
+                        "version": last_put_version + 1,
+                    }
+                )
             )
             queue_f.write(
-                json.dumps({
-                    "obj": {
-                        "type": "CopyAttribute",
-                        "path": ["copy"] + key.split("/"),
-                        "container_id": exp._id,
-                        "container_type": exp.container_type.value,
-                        "source_path": key.split("/"),
-                        "source_attr_name": "String",
-                    },
-                    "version": last_put_version + 2
-                })
+                json.dumps(
+                    {
+                        "obj": {
+                            "type": "CopyAttribute",
+                            "path": ["copy"] + key.split("/"),
+                            "container_id": exp._id,
+                            "container_type": exp.container_type.value,
+                            "source_path": key.split("/"),
+                            "source_attr_name": "String",
+                        },
+                        "version": last_put_version + 2,
+                    }
+                )
             )
-        with open(queue_dir / "last_put_version", "w", encoding='utf-8') as last_put_version_f:
+        with open(
+            queue_dir / "last_put_version", "w", encoding="utf-8"
+        ) as last_put_version_f:
             last_put_version_f.write(str(last_put_version + 2))
 
         # other exp should see only original value from server

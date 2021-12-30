@@ -27,9 +27,7 @@ fake = Faker()
 class TestInitRun(BaseE2ETest):
     # TODO: test all remaining init parameters
     def test_resuming_run(self):
-        exp = neptune.init(
-            name='E2e init resume'
-        )
+        exp = neptune.init(name="E2e init resume")
 
         key = self.gen_key()
         val = fake.word()
@@ -43,9 +41,7 @@ class TestInitRun(BaseE2ETest):
 
     def test_custom_run_id(self):
         custom_run_id = "-".join((fake.word() for _ in range(3)))
-        run = neptune.init(
-            custom_run_id=custom_run_id
-        )
+        run = neptune.init(custom_run_id=custom_run_id)
 
         key = self.gen_key()
         val = fake.word()
@@ -58,15 +54,12 @@ class TestInitRun(BaseE2ETest):
         assert exp2[key].fetch() == val
 
     def test_send_source_code(self):
-        exp = neptune.init(
-            source_files='**/*.py',
-            name='E2e init source code'
-        )
+        exp = neptune.init(source_files="**/*.py", name="E2e init source code")
 
         # download sources
         exp.sync()
-        with with_check_if_file_appears('files.zip'):
-            exp['source_code/files'].download()
+        with with_check_if_file_appears("files.zip"):
+            exp["source_code/files"].download()
 
 
 class TestInitProject(BaseE2ETest):
@@ -95,7 +88,16 @@ class TestInitProject(BaseE2ETest):
         read_only_project = neptune.get_project()
         read_only_project.sync()
 
-        assert set(read_only_project.get_structure()['sys']) == {'creation_time', 'id', 'modification_time',
-                                                                 'monitoring_time', 'owner', 'ping_time',
-                                                                 'running_time', 'size', 'state', 'tags'}
+        assert set(read_only_project.get_structure()["sys"]) == {
+            "creation_time",
+            "id",
+            "modification_time",
+            "monitoring_time",
+            "owner",
+            "ping_time",
+            "running_time",
+            "size",
+            "state",
+            "tags",
+        }
         assert read_only_project[key].fetch() == val

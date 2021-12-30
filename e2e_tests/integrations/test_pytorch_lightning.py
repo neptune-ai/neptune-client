@@ -37,12 +37,12 @@ from pytorch_lightning.loggers import NeptuneLogger
 from tests.integrations.common import does_series_converge
 
 PARAMS = {
-    'max_epochs': 3,
-    'save_top_k': 2,
-    'learning_rate': 0.005,
-    'decay_factor': 0.99,
-    'batch_size': 64,
-    'linear': 64
+    "max_epochs": 3,
+    "save_top_k": 2,
+    "learning_rate": 0.005,
+    "decay_factor": 0.99,
+    "batch_size": 64,
+    "linear": 64,
 }
 
 
@@ -92,9 +92,7 @@ class LitModel(pl.LightningModule):
         self.log("train/loss", loss, prog_bar=False)
         y_true = y.cpu().detach().numpy()
         y_pred = y_hat.argmax(axis=1).cpu().detach().numpy()
-        return {"loss": loss,
-                "y_true": y_true,
-                "y_pred": y_pred}
+        return {"loss": loss, "y_true": y_true, "y_pred": y_pred}
 
     def training_epoch_end(self, outputs):
         y_true = np.array([])
@@ -112,9 +110,7 @@ class LitModel(pl.LightningModule):
         self.log("val/loss", loss, prog_bar=False)
         y_true = y.cpu().detach().numpy()
         y_pred = y_hat.argmax(axis=1).cpu().detach().numpy()
-        return {"loss": loss,
-                "y_true": y_true,
-                "y_pred": y_pred}
+        return {"loss": loss, "y_true": y_true, "y_pred": y_pred}
 
     def validation_epoch_end(self, outputs):
         for dl_idx in range(2):
@@ -141,9 +137,7 @@ class LitModel(pl.LightningModule):
                 neptune.types.File.as_image(img),
                 description=f"y_pred={y_pred[j]}, y_true={y_true[j]}",
             )
-        return {"loss": loss,
-                "y_true": y_true,
-                "y_pred": y_pred}
+        return {"loss": loss, "y_true": y_true, "y_pred": y_pred}
 
     def test_epoch_end(self, outputs):
         y_true = np.array([])
@@ -175,27 +169,42 @@ class MNISTDataModule(pl.LightningDataModule):
 
     def setup(self, stage=None):
         # transforms
-        transform = transforms.Compose([transforms.ToTensor(),
-                                        transforms.Normalize(self.normalization_vector[0],
-                                                             self.normalization_vector[1])])
+        transform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    self.normalization_vector[0], self.normalization_vector[1]
+                ),
+            ]
+        )
         if stage == "fit":
             mnist_train = MNIST(os.getcwd(), train=True, transform=transform)
             # do not use whole set, to save time spent on training
-            self.mnist_train, self.mnist_val1, self.mnist_val2, _ = random_split(mnist_train, [5000, 500, 500, 54000])
+            self.mnist_train, self.mnist_val1, self.mnist_val2, _ = random_split(
+                mnist_train, [5000, 500, 500, 54000]
+            )
         if stage == "test":
             self.mnist_test = MNIST(os.getcwd(), train=False, transform=transform)
 
     def train_dataloader(self):
-        mnist_train = DataLoader(self.mnist_train, batch_size=self.batch_size, num_workers=4)
+        mnist_train = DataLoader(
+            self.mnist_train, batch_size=self.batch_size, num_workers=4
+        )
         return mnist_train
 
     def val_dataloader(self):
-        mnist_val1 = DataLoader(self.mnist_val1, batch_size=self.batch_size, num_workers=4)
-        mnist_val2 = DataLoader(self.mnist_val2, batch_size=self.batch_size, num_workers=4)
+        mnist_val1 = DataLoader(
+            self.mnist_val1, batch_size=self.batch_size, num_workers=4
+        )
+        mnist_val2 = DataLoader(
+            self.mnist_val2, batch_size=self.batch_size, num_workers=4
+        )
         return [mnist_val1, mnist_val2]
 
     def test_dataloader(self):
-        mnist_test = DataLoader(self.mnist_test, batch_size=self.batch_size, num_workers=1)
+        mnist_test = DataLoader(
+            self.mnist_test, batch_size=self.batch_size, num_workers=1
+        )
         return mnist_test
 
 
@@ -207,39 +216,37 @@ class TestPytorchLightning(unittest.TestCase):
     def setUpClass(cls):
         # given
         cls.common_neptune_run = neptune.init(
-            name='Integration pytorch-lightning',
+            name="Integration pytorch-lightning",
         )
         # and
         model_checkpoint = ModelCheckpoint(
             dirpath="my_model/checkpoints/",
             filename="{epoch:02d}-{val/loss/dataloader_idx_1:.2f}",
             save_weights_only=True,
-            save_top_k=PARAMS['save_top_k'],
+            save_top_k=PARAMS["save_top_k"],
             save_last=True,
             monitor="val/loss/dataloader_idx_1",
-            every_n_epochs=1
+            every_n_epochs=1,
         )
         neptune_logger = NeptuneLogger(
-            run=cls.common_neptune_run,
-            prefix='custom_prefix'
+            run=cls.common_neptune_run, prefix="custom_prefix"
         )
         # and (Subject)
         trainer = pl.Trainer(
-            max_epochs=PARAMS['max_epochs'],
+            max_epochs=PARAMS["max_epochs"],
             log_every_n_steps=10,
             logger=neptune_logger,
             track_grad_norm=2,
             callbacks=[model_checkpoint],
         )
         model = LitModel(
-            linear=PARAMS['linear'],
-            learning_rate=PARAMS['learning_rate'],
-            decay_factor=PARAMS['decay_factor'],
-            neptune_logger=neptune_logger
+            linear=PARAMS["linear"],
+            learning_rate=PARAMS["learning_rate"],
+            decay_factor=PARAMS["decay_factor"],
+            neptune_logger=neptune_logger,
         )
         data_module = MNISTDataModule(
-            normalization_vector=((0.1307,), (0.3081,)),
-            batch_size=PARAMS['batch_size']
+            normalization_vector=((0.1307,), (0.3081,)), batch_size=PARAMS["batch_size"]
         )
 
         # then
@@ -249,26 +256,39 @@ class TestPytorchLightning(unittest.TestCase):
 
     def test_logging_values(self):
         # correct integration version is logged
-        logged_version = self.common_neptune_run['source_code/integrations/pytorch-lightning'].fetch()
+        logged_version = self.common_neptune_run[
+            "source_code/integrations/pytorch-lightning"
+        ].fetch()
         assert logged_version == pl.__version__  # pylint: disable=E1101
 
         # epoch are logged in steps [1, 1, ...., 2, 2, ..., 3, 3 ...]
-        logged_epochs = list(self.common_neptune_run['custom_prefix/epoch'].fetch_values()['value'])
+        logged_epochs = list(
+            self.common_neptune_run["custom_prefix/epoch"].fetch_values()["value"]
+        )
         assert sorted(logged_epochs) == logged_epochs
         assert set(logged_epochs) == {0, 1, 2}
 
         # does train_loss converge?
-        training_loss = list(self.common_neptune_run['custom_prefix/train/loss'].fetch_values()['value'])
+        training_loss = list(
+            self.common_neptune_run["custom_prefix/train/loss"].fetch_values()["value"]
+        )
         assert does_series_converge(training_loss)
 
     def test_saving_models(self):
-        best_model_path = self.common_neptune_run['custom_prefix/model/best_model_path'].fetch()
-        assert re.match(r'.*my_model/checkpoints/epoch=.*-val/loss/dataloader_idx_1=.*\.ckpt$', best_model_path)
-        best_model_score = self.common_neptune_run['custom_prefix/model/best_model_score'].fetch()
+        best_model_path = self.common_neptune_run[
+            "custom_prefix/model/best_model_path"
+        ].fetch()
+        assert re.match(
+            r".*my_model/checkpoints/epoch=.*-val/loss/dataloader_idx_1=.*\.ckpt$",
+            best_model_path,
+        )
+        best_model_score = self.common_neptune_run[
+            "custom_prefix/model/best_model_score"
+        ].fetch()
         assert 0 < best_model_score < 1
 
         # make sure that exactly `save_top_k` checkpoints
         # NOTE: when `max_epochs` is close to `save_top_k` there may be less than `save_top_k` saved models
-        checkpoints = self.common_neptune_run['custom_prefix/model/checkpoints'].fetch()
-        assert all((checkpoint.startswith('epoch=') for checkpoint in checkpoints))
+        checkpoints = self.common_neptune_run["custom_prefix/model/checkpoints"].fetch()
+        assert all((checkpoint.startswith("epoch=") for checkpoint in checkpoints))
         assert len(checkpoints) == 2
