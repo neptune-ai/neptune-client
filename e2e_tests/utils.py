@@ -13,7 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["with_check_if_file_appears", "tmp_context"]
+__all__ = [
+    'with_check_if_file_appears',
+    'tmp_context'
+]
 
 import io
 import os
@@ -72,7 +75,7 @@ def tmp_context():
 
 def generate_image(*, size: int) -> Image:
     random_numbers = numpy.random.rand(size, size, 3) * 255
-    return Image.fromarray(random_numbers.astype("uint8")).convert("RGB")
+    return Image.fromarray(random_numbers.astype('uint8')).convert('RGB')
 
 
 def image_to_png(*, image: Image) -> PngImageFile:
