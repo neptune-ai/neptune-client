@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune-client 0.14.1
+
+## Fixes
+- Fixed legacy url in NVML information ([#795](https://github.com/neptune-ai/neptune-client/pull/795))
+
 ## neptune-client 0.14.0
 
 ### Features
