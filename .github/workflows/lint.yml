@@ -1,8 +1,8 @@
 name: Lint
 on:
   push:
-    tags-ignore:
-      - '**'
+    branches:
+      - '*'
 jobs:
   lint:
     runs-on: ubuntu-latest
