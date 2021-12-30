@@ -65,6 +65,8 @@ def init_model(
         raise NeptuneWongInitParametersException("NPT-11349 name only with key")
 
     # make mode proper Enum instead of string
+
+    # make mode proper Enum instead of string
     mode = Mode(mode)
 
     name = "Untitled" if model is None and name is None else name

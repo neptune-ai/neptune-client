@@ -93,7 +93,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertIsInstance(exp.get_structure()["test"], String)
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
-    @patch("neptune.new.internal.init_run.os.path.isfile", new=lambda file: "." in file)
+    @patch("neptune.new.internal.init.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
         "neptune.new.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],
@@ -141,7 +141,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
     @patch("neptune.new.internal.utils.source_code.get_common_root", new=lambda _: None)
-    @patch("neptune.new.internal.init_run.os.path.isfile", new=lambda file: "." in file)
+    @patch("neptune.new.internal.init.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
         "neptune.new.internal.utils.glob",
         new=lambda path, recursive=False: [path.replace("*", "file.txt")],

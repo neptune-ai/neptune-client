@@ -33,8 +33,7 @@ from neptune.new.exceptions import (
     NeptunePossibleLegacyUsageException,
 )
 from neptune.new.run import Run
-from neptune.new.internal.init_impl import (
-    __version__,
+from neptune.new.internal.init import (
     get_project,
     init_model,
     init_model_version,

@@ -57,9 +57,6 @@ from neptune.new.internal.websockets.websocket_signals_background_job import (
 from neptune.new.run import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
-from neptune.new.version import version as parsed_version
-
-__version__ = str(parsed_version)
 
 _logger = logging.getLogger(__name__)
 
@@ -219,6 +216,8 @@ def init_run(
             source_files = [source_files]
         else:
             verify_collection_type("source_files", source_files, str)
+
+    # for backward compatibility imports
     mode = Mode(mode)
 
     name = "Untitled" if run is None and name is None else name
