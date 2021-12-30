@@ -4,6 +4,12 @@ on:
     branches-ignore:
       - master
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint
+        uses: ./.github/lint/dependencies
+
   integration:
     runs-on: ${{ matrix.os }}
     strategy:

@@ -5,6 +5,12 @@ on:
       - master
   workflow_dispatch:
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lint
+        uses: ./.github/lint/dependencies
+
   integration:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -31,3 +37,21 @@ jobs:
       - name: Build and test
         run : |
           tox -e py
+
+  publish:
+    needs: [lint, integration]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Build and test
+        run : |
+          python setup.py sdist
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
