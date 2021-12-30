@@ -2,16 +2,10 @@ name: Publish
 on:
   release:
     types:
-    - published
-  workflow_run:
-    workflows:
-      - "Lint"
-    types:
-      - completed
+      - published
 jobs:
   pypi:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2

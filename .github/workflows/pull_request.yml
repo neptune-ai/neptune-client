@@ -1,7 +1,8 @@
 name: Test
 on:
   push:
-    branches-ignore: [master]
+    branches-ignore:
+      - master
 jobs:
   integration:
     runs-on: ${{ matrix.os }}
