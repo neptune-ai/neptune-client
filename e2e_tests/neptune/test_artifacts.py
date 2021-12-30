@@ -23,8 +23,8 @@ from faker import Faker
 
 from neptune.new.attribute_container import AttributeContainer
 
-from tests.base import BaseE2ETest
-from tests.utils import tmp_context, with_check_if_file_appears
+from e2e_tests.base import BaseE2ETest
+from e2e_tests.utils import tmp_context, with_check_if_file_appears
 
 
 fake = Faker()

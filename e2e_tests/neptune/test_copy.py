@@ -21,7 +21,7 @@ import neptune.new as neptune
 from neptune.new.run import Run
 from neptune.new.project import Project
 
-from tests.base import BaseE2ETest
+from e2e_tests.base import BaseE2ETest
 
 fake = Faker()
 

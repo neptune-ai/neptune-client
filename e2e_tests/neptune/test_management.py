@@ -29,8 +29,8 @@ from neptune.management import (
     ProjectVisibility,
 )
 from neptune.management.internal.utils import normalize_project_name
-from tests.base import BaseE2ETest
-from tests.conftest import Environment
+from e2e_tests.base import BaseE2ETest
+from e2e_tests.conftest import Environment
 
 fake = Faker()
 

@@ -34,7 +34,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers import NeptuneLogger
 
-from tests.integrations.common import does_series_converge
+from e2e_tests.integrations.common import does_series_converge
 
 PARAMS = {
     "max_epochs": 3,

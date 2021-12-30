@@ -22,8 +22,8 @@ from click.testing import CliRunner
 from faker import Faker
 from neptune.new.sync import sync
 
-from tests.base import BaseE2ETest
-from tests.utils import DISABLE_SYSLOG_KWARGS, tmp_context
+from e2e_tests.base import BaseE2ETest
+from e2e_tests.utils import DISABLE_SYSLOG_KWARGS, tmp_context
 
 fake = Faker()
 runner = CliRunner()

@@ -18,8 +18,8 @@ from faker import Faker
 import neptune.new as neptune
 from neptune.new.project import Project
 
-from tests.base import BaseE2ETest
-from tests.utils import with_check_if_file_appears
+from e2e_tests.base import BaseE2ETest
+from e2e_tests.utils import with_check_if_file_appears
 
 fake = Faker()
 

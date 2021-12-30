@@ -26,8 +26,8 @@ from faker import Faker
 import neptune.new as neptune
 from neptune.new.attribute_container import AttributeContainer
 
-from tests.base import BaseE2ETest
-from tests.utils import tmp_context
+from e2e_tests.base import BaseE2ETest
+from e2e_tests.utils import tmp_context
 
 fake = Faker()
 

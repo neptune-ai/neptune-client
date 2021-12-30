@@ -20,7 +20,7 @@ import pytest
 from faker import Faker
 import neptune.new as neptune
 
-from tests.base import BaseE2ETest
+from e2e_tests.base import BaseE2ETest
 
 fake = Faker()
 
