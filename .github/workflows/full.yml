@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Lint
-        uses: ./.github/lint/dependencies
+        uses: ./.github/actions/lint
 
   integration:
     runs-on: ${{ matrix.os }}
@@ -50,8 +50,8 @@ jobs:
       - name: Build and test
         run : |
           python setup.py sdist
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+#      - name: Publish package
+#        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
+#        with:
+#          user: __token__
+#          password: ${{ secrets.PYPI_API_TOKEN }}

@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Lint
-        uses: ./.github/lint/dependencies
+        uses: ./.github/actions/lint
 
   integration:
     runs-on: ${{ matrix.os }}
