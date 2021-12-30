@@ -16,6 +16,7 @@
 from neptune.new.internal.init_project import get_project, init_project
 from neptune.new.internal.init_run import __version__, init_run
 from neptune.new.internal.init_model import init_model
+from neptune.new.internal.init_model_version import init_model_version
 from neptune.new.types.mode import Mode
 
 init = init_run
@@ -24,6 +25,7 @@ __all__ = [
     "__version__",
     "get_project",
     "init_model",
+    "init_model_version",
     "init_project",
     "init_run",
     "init",
