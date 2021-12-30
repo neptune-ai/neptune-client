@@ -18,13 +18,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [ubuntu-latest] #, macos-latest, windows-latest]
-        python-version: [3.6] #, 3.7, 3.8]
-#        include:
-#          - os: ubuntu-latest
-#            python-version: 3.9
-#          - os: macos-latest
-#            python-version: 3.9
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: [3.6, 3.7, 3.8]
+        include:
+          - os: ubuntu-latest
+            python-version: 3.9
+          - os: macos-latest
+            python-version: 3.9
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -53,8 +53,8 @@ jobs:
       - name: Build and test
         run : |
           python setup.py sdist
-#      - name: Publish package
-#        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
-#        with:
-#          user: __token__
-#          password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
