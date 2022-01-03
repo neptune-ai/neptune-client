@@ -566,7 +566,19 @@ class NeedExistingModelForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
         )
 
 
-class NeptuneRunResumeAndCustomIdCollision(NeptuneException):
+class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
+    def __init__(self):
+        super().__init__(
+            container_type=ContainerType.MODEL_VERSION,
+            callback_name="neptune.init_model_version",
+        )
+
+
+class NeptuneWongInitParametersException(NeptuneException):
+    pass
+
+
+class NeptuneRunResumeAndCustomIdCollision(NeptuneWongInitParametersException):
     def __init__(self):
         message = """
 {h1}
@@ -937,10 +949,6 @@ class PlotlyIncompatibilityException(Exception):
                 matplotlib_version, plotly_version
             )
         )
-
-
-class NeptuneWongInitParametersException(NeptuneException):
-    pass
 
 
 class NeptunePossibleLegacyUsageException(NeptuneWongInitParametersException):
