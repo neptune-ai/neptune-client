@@ -68,4 +68,4 @@ class Model(AttributeContainer):
         """TODO: NPT-11349"""
         leaderboard_entries = self._backend.get_leaderboard(project_id=self._id)
 
-        return ModelVersionsTable(self._backend, leaderboard_entries)
+        return ModelVersionsTable(backend=self._backend, entries=leaderboard_entries)

@@ -15,7 +15,7 @@
 #
 import logging
 from datetime import datetime
-from typing import List, Dict, Optional, Union
+from typing import Any, List, Dict, Optional, Union
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
@@ -44,7 +44,7 @@ class AttributesContainersTableEntry:
         self._attributes = attributes
 
     def __getitem__(self, path: str) -> "LeaderboardHandler":
-        return LeaderboardHandler(self, path)
+        return LeaderboardHandler(table_entry=self, path=path)
 
     def get_attribute_type(self, path: str) -> AttributeType:
         for attr in self._attributes:
@@ -52,7 +52,7 @@ class AttributesContainersTableEntry:
                 return attr.type
         raise ValueError("Could not find {} attribute".format(path))
 
-    def get_attribute_value(self, path: str):
+    def get_attribute_value(self, path: str) -> Any:
         for attr in self._attributes:
             if attr.path == path:
                 _type = attr.type
@@ -102,7 +102,10 @@ class AttributesContainersTableEntry:
                 _type = attr.type
                 if _type == AttributeType.FILE:
                     self._backend.download_file(
-                        self._id, self._container_type, parse_path(path), destination
+                        container_id=self._id,
+                        container_type=self._container_type,
+                        path=parse_path(path),
+                        destination=destination,
                     )
                     return
                 raise MetadataInconsistency(
@@ -116,7 +119,10 @@ class AttributesContainersTableEntry:
                 _type = attr.type
                 if _type == AttributeType.FILE_SET:
                     self._backend.download_file_set(
-                        self._id, self._container_type, parse_path(path), destination
+                        container_id=self._id,
+                        container_type=self._container_type,
+                        path=parse_path(path),
+                        destination=destination,
                     )
                     return
                 raise MetadataInconsistency(
@@ -133,10 +139,12 @@ class LeaderboardHandler:
         self._path = path
 
     def __getitem__(self, path: str) -> "LeaderboardHandler":
-        return LeaderboardHandler(self._table_entry, join_paths(self._path, path))
+        return LeaderboardHandler(
+            table_entry=self._table_entry, path=join_paths(self._path, path)
+        )
 
     def get(self):
-        return self._table_entry.get_attribute_value(self._path)
+        return self._table_entry.get_attribute_value(path=self._path)
 
     def download(self, destination: Optional[str]):
         attr_type = self._table_entry.get_attribute_type(self._path)
@@ -144,7 +152,7 @@ class LeaderboardHandler:
             return self._table_entry.download_file_attribute(self._path, destination)
         elif attr_type == AttributeType.FILE_SET:
             return self._table_entry.download_file_set_attribute(
-                self._path, destination
+                path=self._path, destination=destination
             )
         raise MetadataInconsistency(
             "Cannot download file from attribute of type {}".format(attr_type)
