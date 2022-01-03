@@ -152,7 +152,7 @@ class LeaderboardHandler:
 
 
 class AttributesContainersTable:
-    table_entry_cls: type(AttributesContainersTableEntry) = None
+    table_entry_cls: type(AttributesContainersTableEntry)
 
     def __init__(self, backend: NeptuneBackend, entries: List[LeaderboardEntry]):
         self._backend = backend

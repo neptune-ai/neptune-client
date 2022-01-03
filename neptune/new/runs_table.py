@@ -13,6 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# backwards compatibility
+# pylint: disable=unused-import,wrong-import-order
+from neptune.new.internal.backends.api_model import AttributeType
+from neptune.new.attributes_containers_table import LeaderboardEntry, LeaderboardHandler
+from neptune.new.exceptions import MetadataInconsistency
+
+#
+
 import logging
 from typing import List
 

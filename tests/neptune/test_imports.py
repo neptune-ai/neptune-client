@@ -339,14 +339,12 @@ from neptune.new.run import Value
 from neptune.new.run import ValueToAttributeVisitor
 from neptune.new.runs_table import AttributeType
 from neptune.new.runs_table import AttributeWithProperties
-from neptune.new.runs_table import Dict
 from neptune.new.runs_table import LeaderboardEntry
 from neptune.new.runs_table import LeaderboardHandler
 from neptune.new.runs_table import List
 from neptune.new.runs_table import MetadataInconsistency
 from neptune.new.runs_table import RunsTable
 from neptune.new.runs_table import RunsTableEntry
-from neptune.new.runs_table import datetime
 from neptune.new.sync import ApiExperiment
 from neptune.new.sync import CannotSynchronizeOfflineRunsWithoutProject
 from neptune.new.sync import Credentials
