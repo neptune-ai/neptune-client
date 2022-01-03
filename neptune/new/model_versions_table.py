@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ from neptune.new.internal.container_type import ContainerType
 logger = logging.getLogger(__name__)
 
 
-class RunsTableEntry(AttributesContainersTableEntry):
+class ModelVersionsTableEntry(AttributesContainersTableEntry):
     def __init__(
         self,
         backend: NeptuneBackend,
@@ -38,14 +38,14 @@ class RunsTableEntry(AttributesContainersTableEntry):
     ):
         super().__init__(
             backend=backend,
-            container_type=ContainerType.RUN,
+            container_type=ContainerType.MODEL_VERSION,
             id_=id_,
             attributes=attributes,
         )
 
 
-class RunsTable(AttributesContainersTable):
-    table_entry_cls = RunsTableEntry
+class ModelVersionsTable(AttributesContainersTable):
+    table_entry_cls = ModelVersionsTableEntry
 
-    def to_runs(self):
+    def to_model_versions(self):
         return self.to_table_entries()

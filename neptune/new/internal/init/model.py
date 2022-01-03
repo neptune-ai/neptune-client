@@ -123,3 +123,18 @@ def init_model(
     _model._startup(debug_mode=mode == Mode.DEBUG)
 
     return _model
+
+
+def get_model(
+    model: Optional[str] = None,
+    project: Optional[str] = None,
+    api_token: Optional[str] = None,
+    proxies: Optional[dict] = None,
+):
+    return init_model(
+        model=model,
+        project=project,
+        api_token=api_token,
+        mode=Mode.READ_ONLY.value,
+        proxies=proxies,
+    )

@@ -22,6 +22,7 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
+from neptune.new.model_versions_table import ModelVersionsTable
 
 
 class Model(AttributeContainer):
@@ -62,3 +63,9 @@ class Model(AttributeContainer):
     @property
     def _label(self) -> str:
         return self._sys_id
+
+    def fetch_model_versions_table(self) -> ModelVersionsTable:
+        """TODO: NPT-11349"""
+        leaderboard_entries = self._backend.get_leaderboard(project_id=self._id)
+
+        return ModelVersionsTable(self._backend, leaderboard_entries)

@@ -43,7 +43,7 @@ class ApiExperiment:
     sys_id: str
     workspace: str
     project_name: str
-    trashed: bool
+    trashed: bool = False
 
     @classmethod
     def from_experiment(cls, response_exp):

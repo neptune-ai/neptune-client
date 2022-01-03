@@ -16,13 +16,13 @@
 
 # pylint: disable=protected-access
 import os
-import unittest
 import uuid
+from abc import abstractmethod
 from datetime import datetime
 
 from mock import Mock, patch
 
-from neptune.new import ANONYMOUS, get_project
+from neptune.new import ANONYMOUS
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     MetadataInconsistency,
@@ -34,7 +34,6 @@ from neptune.new.internal.backends.api_model import (
     LeaderboardEntry,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.container_type import ContainerType
 
 
 @patch(
@@ -42,11 +41,16 @@ from neptune.new.internal.container_type import ContainerType
     new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
 )
 @patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
-class TestTables(unittest.TestCase):
-    PROJECT_NAME = "organization/project"
+class AbstractTablesTestMixin:
+    expected_container_type = None
 
+    @abstractmethod
     def get_table(self):
-        return get_project(self.PROJECT_NAME).fetch_runs_table()
+        pass
+
+    @abstractmethod
+    def get_table_entries(self, table):
+        pass
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -141,7 +145,9 @@ class TestTables(unittest.TestCase):
     @patch.object(NeptuneBackendMock, "get_leaderboard")
     @patch.object(NeptuneBackendMock, "download_file")
     @patch.object(NeptuneBackendMock, "download_file_set")
-    def test_get_table_as_runs(self, download_file_set, download_file, get_leaderboard):
+    def test_get_table_as_table_entries(
+        self, download_file_set, download_file, get_leaderboard
+    ):
         # given
         exp_id = str(uuid.uuid4())
         now = datetime.now()
@@ -151,32 +157,32 @@ class TestTables(unittest.TestCase):
         get_leaderboard.return_value = [LeaderboardEntry(exp_id, attributes)]
 
         # when
-        exp = self.get_table().to_runs()[0]
+        table_entry = self.get_table_entries(table=self.get_table())[0]
 
         # then
-        self.assertEqual("idle", exp["run/state"].get())
-        self.assertEqual("idle", exp["run"]["state"].get())
-        self.assertEqual(12.5, exp["float"].get())
-        self.assertEqual("some text", exp["string"].get())
-        self.assertEqual(now, exp["datetime"].get())
-        self.assertEqual(8.7, exp["float/series"].get())
-        self.assertEqual("last text", exp["string/series"].get())
-        self.assertEqual({"a", "b"}, exp["string/set"].get())
-        self.assertEqual("abcdef0123456789", exp["git/ref"].get())
+        self.assertEqual("idle", table_entry["run/state"].get())
+        self.assertEqual("idle", table_entry["run"]["state"].get())
+        self.assertEqual(12.5, table_entry["float"].get())
+        self.assertEqual("some text", table_entry["string"].get())
+        self.assertEqual(now, table_entry["datetime"].get())
+        self.assertEqual(8.7, table_entry["float/series"].get())
+        self.assertEqual("last text", table_entry["string/series"].get())
+        self.assertEqual({"a", "b"}, table_entry["string/set"].get())
+        self.assertEqual("abcdef0123456789", table_entry["git/ref"].get())
 
         with self.assertRaises(MetadataInconsistency):
-            exp["file"].get()
+            table_entry["file"].get()
         with self.assertRaises(MetadataInconsistency):
-            exp["file/set"].get()
+            table_entry["file/set"].get()
         with self.assertRaises(MetadataInconsistency):
-            exp["image/series"].get()
+            table_entry["image/series"].get()
 
-        exp["file"].download("some_directory")
+        table_entry["file"].download("some_directory")
         download_file.assert_called_with(
-            exp_id, ContainerType.RUN, ["file"], "some_directory"
+            exp_id, self.expected_container_type, ["file"], "some_directory"
         )
 
-        exp["file/set"].download("some_directory")
+        table_entry["file/set"].download("some_directory")
         download_file_set.assert_called_with(
-            exp_id, ContainerType.RUN, ["file", "set"], "some_directory"
+            exp_id, self.expected_container_type, ["file", "set"], "some_directory"
         )
