@@ -25,16 +25,16 @@ from neptune.new.exceptions import (
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
+from neptune.new.internal.init.parameters import (
+    DEFAULT_FLUSH_PERIOD,
+    DEFAULT_NAME,
+    OFFLINE_PROJECT_QUALIFIED_NAME,
+)
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.model import Model
 from neptune.new.types.mode import Mode
-from neptune.new.version import version as parsed_version
-
-__version__ = str(parsed_version)
-
-DEFAULT_FLUSH_PERIOD = 5
 
 
 def init_model(
@@ -65,16 +65,14 @@ def init_model(
         raise NeptuneWongInitParametersException("NPT-11349 name only with key")
 
     # make mode proper Enum instead of string
-
-    # make mode proper Enum instead of string
     mode = Mode(mode)
 
-    name = "Untitled" if model is None and name is None else name
+    name = DEFAULT_NAME if model is None and name is None else name
 
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
-        project = "offline/project-placeholder"
+        project = OFFLINE_PROJECT_QUALIFIED_NAME
 
     project_obj = project_name_lookup(backend=backend, name=project)
     project = f"{project_obj.workspace}/{project_obj.name}"

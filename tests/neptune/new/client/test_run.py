@@ -52,7 +52,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, _id: AN_API_RUN,
+        new=lambda _, run_id: AN_API_RUN,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
@@ -81,7 +81,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, _run_id: AN_API_RUN,
+        new=lambda _, run_id: AN_API_RUN,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",

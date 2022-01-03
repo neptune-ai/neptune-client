@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import logging
 import os
 import threading
 from platform import node as get_hostname
@@ -39,6 +38,11 @@ from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.hardware.hardware_metric_reporting_job import (
     HardwareMetricReportingJob,
 )
+from neptune.new.internal.init.parameters import (
+    DEFAULT_FLUSH_PERIOD,
+    DEFAULT_NAME,
+    OFFLINE_PROJECT_QUALIFIED_NAME,
+)
 from neptune.new.internal.notebooks.notebooks import create_checkpoint
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.streams.std_capture_background_job import (
@@ -58,10 +62,7 @@ from neptune.new.run import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
 
-_logger = logging.getLogger(__name__)
 
-
-DEFAULT_FLUSH_PERIOD = 5
 LEGACY_KWARGS = ("project_qualified_name", "backend")
 
 
@@ -220,7 +221,7 @@ def init_run(
     # for backward compatibility imports
     mode = Mode(mode)
 
-    name = "Untitled" if run is None and name is None else name
+    name = DEFAULT_NAME if run is None and name is None else name
     description = "" if run is None and description is None else description
     hostname = get_hostname() if run is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
@@ -231,16 +232,16 @@ def init_run(
     if run and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
 
-    backend = get_backend(mode, api_token=api_token, proxies=proxies)
+    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
-        project = "offline/project-placeholder"
+        project = OFFLINE_PROJECT_QUALIFIED_NAME
 
     project_obj = project_name_lookup(backend, project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
     if run:
-        api_run = backend.get_run(project + "/" + run)
+        api_run = backend.get_run(run_id=project + "/" + run)
     else:
         if mode == Mode.READ_ONLY:
             raise NeedExistingRunForReadOnlyMode()
@@ -251,13 +252,17 @@ def init_run(
         notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
 
         api_run = backend.create_run(
-            project_obj.id, git_ref, custom_run_id, notebook_id, checkpoint_id
+            project_id=project_obj.id,
+            git_ref=git_ref,
+            custom_run_id=custom_run_id,
+            notebook_id=notebook_id,
+            checkpoint_id=checkpoint_id,
         )
 
     run_lock = threading.RLock()
 
     operation_processor = get_operation_processor(
-        mode,
+        mode=mode,
         container_id=api_run.id,
         container_type=Run.container_type,
         backend=backend,
@@ -291,16 +296,16 @@ def init_run(
         background_jobs.append(PingBackgroundJob())
 
     _run = Run(
-        api_run.id,
-        backend,
-        operation_processor,
-        BackgroundJobList(background_jobs),
-        run_lock,
-        api_run.workspace,
-        api_run.project_name,
-        api_run.sys_id,
-        project_obj.id,
-        monitoring_namespace,
+        _id=api_run.id,
+        backend=backend,
+        op_processor=operation_processor,
+        background_job=BackgroundJobList(background_jobs),
+        lock=run_lock,
+        workspace=api_run.workspace,
+        project_name=api_run.project_name,
+        sys_id=api_run.sys_id,
+        project_id=project_obj.id,
+        monitoring_namespace=monitoring_namespace,
     )
     if mode != Mode.OFFLINE:
         _run.sync(wait=False)

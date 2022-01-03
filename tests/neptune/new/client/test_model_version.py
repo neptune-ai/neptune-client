@@ -41,7 +41,7 @@ AN_API_MODEL_VERSION = api_model_version()
 
 @patch(
     "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_model",
-    new=lambda _, _id: AN_API_MODEL,
+    new=lambda _, model_id: AN_API_MODEL,
 )
 @patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
@@ -56,7 +56,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_model_version",
-        new=lambda _, _id: AN_API_MODEL_VERSION,
+        new=lambda _, model_version_id: AN_API_MODEL_VERSION,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
@@ -85,7 +85,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_model_version",
-        new=lambda _, _id: AN_API_MODEL_VERSION,
+        new=lambda _, model_version_id: AN_API_MODEL_VERSION,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",

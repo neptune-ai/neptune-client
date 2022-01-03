@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import logging
 import threading
 from typing import Optional
 
@@ -25,16 +24,15 @@ from neptune.new.exceptions import (
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
+from neptune.new.internal.init.parameters import (
+    DEFAULT_FLUSH_PERIOD,
+    OFFLINE_PROJECT_QUALIFIED_NAME,
+)
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.model_version import ModelVersion
 from neptune.new.types.mode import Mode
-from neptune.new.version import version as parsed_version
-
-__version__ = str(parsed_version)
-
-_logger = logging.getLogger(__name__)
 
 
 def init_model_version(
@@ -45,7 +43,7 @@ def init_model_version(
     project: Optional[str] = None,
     api_token: Optional[str] = None,
     mode: str = Mode.ASYNC.value,
-    flush_period: float = 5,
+    flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> ModelVersion:
     verify_type("version", version, (str, type(None)))
@@ -67,21 +65,23 @@ def init_model_version(
     # make mode proper Enum instead of string
     mode = Mode(mode)
 
-    backend = get_backend(mode, api_token=api_token, proxies=proxies)
+    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
-        project = "offline/project-placeholder"
+        project = OFFLINE_PROJECT_QUALIFIED_NAME
 
     project_obj = project_name_lookup(backend, project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
     if version:
-        api_model_version = backend.get_model_version(project + "/" + version)
+        api_model_version = backend.get_model_version(
+            model_version_id=project + "/" + version
+        )
     else:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelVersionForReadOnlyMode()
 
-        api_model = backend.get_model(project + "/" + model)
+        api_model = backend.get_model(model_id=project + "/" + model)
         api_model_version = backend.create_model_version(
             project_id=project_obj.id, model_id=api_model.id
         )
@@ -89,7 +89,7 @@ def init_model_version(
     model_lock = threading.RLock()
 
     operation_processor = get_operation_processor(
-        mode,
+        mode=mode,
         container_id=api_model_version.id,
         container_type=ModelVersion.container_type,
         backend=backend,
