@@ -31,12 +31,14 @@ __version__ = str(parsed_version)
 
 _logger = logging.getLogger(__name__)
 
+DEFAULT_FLUSH_PERIOD = 5
+
 
 def init_project(
     name: Optional[str] = None,
     api_token: Optional[str] = None,
     mode: str = Mode.ASYNC.value,
-    flush_period: float = 5,
+    flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Project:
     verify_type("name", name, (str, type(None)))
