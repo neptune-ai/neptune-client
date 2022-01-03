@@ -1,17 +1,19 @@
-freezegun
-mock
-munch
-pylint==2.9.6
-pylintfileheader
-pytest
-pytest-cov
-pytest-xdist
-tensorflow; python_version <= '3.9'
-tox
-pytest-timeout
+freezegun==1.1.0
+mock==2.0.0
+munch==2.3.2
+psutil==5.6.6
+pylint==1.9.5; python_version < '3.0'
+pylint==2.9.6; python_version >= '3.0'
+pylintfileheader==0.0.2
+pytest>=5.0
+pytest-cov==2.10.1
+pytest-xdist==2.2.0
+tensorflow; python_version >= '3.0'
+tox==3.6.1
+pytest-timeout==1.4.2
 matplotlib==3.2
-pytest-mock
-moto[s3]
+pytest-mock==3.3.1
+moto[s3]==2.2.1
 plotly
 altair
 vega_datasets
@@ -19,4 +21,4 @@ bokeh
 pre-commit
 
 # Installing Torch on Windows increases the test duration by ~10 minutes
-torch; platform_system != 'Windows' and python_version <= '3.9'
+torch; platform_system != 'Windows' and python_version >= '3.6'
