@@ -562,8 +562,7 @@ class NeedExistingRunForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
 class NeedExistingModelForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
     def __init__(self):
         super().__init__(
-            container_type=ContainerType.MODEL,
-            callback_name="neptune.init_model"
+            container_type=ContainerType.MODEL, callback_name="neptune.init_model"
         )
 
 
