@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import logging
 import threading
 from typing import Optional
 
@@ -35,7 +34,7 @@ from neptune.new.version import version as parsed_version
 
 __version__ = str(parsed_version)
 
-_logger = logging.getLogger(__name__)
+DEFAULT_FLUSH_PERIOD = 5
 
 
 def init_model(
@@ -46,7 +45,7 @@ def init_model(
     project: Optional[str] = None,
     api_token: Optional[str] = None,
     mode: str = Mode.ASYNC.value,
-    flush_period: float = 5,
+    flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Model:
     verify_type("model", model, (str, type(None)))
@@ -70,16 +69,16 @@ def init_model(
 
     name = "Untitled" if model is None and name is None else name
 
-    backend = get_backend(mode, api_token=api_token, proxies=proxies)
+    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
         project = "offline/project-placeholder"
 
-    project_obj = project_name_lookup(backend, project)
+    project_obj = project_name_lookup(backend=backend, name=project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
     if model:
-        api_model = backend.get_model(project + "/" + model)
+        api_model = backend.get_model(model_id=project + "/" + model)
     else:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelForReadOnlyMode()
@@ -89,7 +88,7 @@ def init_model(
     model_lock = threading.RLock()
 
     operation_processor = get_operation_processor(
-        mode,
+        mode=mode,
         container_id=api_model.id,
         container_type=Model.container_type,
         backend=backend,
@@ -112,6 +111,7 @@ def init_model(
         sys_id=api_model.sys_id,
         project_id=project_obj.id,
     )
+
     if mode != Mode.OFFLINE:
         _model.sync(wait=False)
 

@@ -64,6 +64,7 @@ __version__ = str(parsed_version)
 _logger = logging.getLogger(__name__)
 
 
+DEFAULT_FLUSH_PERIOD = 5
 LEGACY_KWARGS = ("project_qualified_name", "backend")
 
 
@@ -93,7 +94,7 @@ def init_run(
     capture_hardware_metrics: bool = True,
     fail_on_exception: bool = True,
     monitoring_namespace: Optional[str] = None,
-    flush_period: float = 5,
+    flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
     capture_traceback: bool = True,
     **kwargs,

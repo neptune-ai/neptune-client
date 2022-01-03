@@ -542,7 +542,6 @@ You may also want to check the following docs pages:
 """
         self.container_type = container_type
         self.callback_name = callback_name
-        print(STYLES)
         super().__init__(
             message.format(
                 class_name=type(self).__name__,
@@ -563,7 +562,7 @@ class NeedExistingRunForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
 class NeedExistingModelForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
     def __init__(self):
         super().__init__(
-            container_type=ContainerType.RUN, callback_name="neptune.init_run"
+            container_type=ContainerType.MODEL, callback_name="neptune.init_model"
         )
 
 
