@@ -35,12 +35,12 @@ class AttributesContainersTableEntry:
         self,
         backend: NeptuneBackend,
         container_type: ContainerType,
-        id_: str,
+        _id: str,
         attributes: List[AttributeWithProperties],
     ):
         self._backend = backend
         self._container_type = container_type
-        self._id = id_
+        self._id = _id
         self._attributes = attributes
 
     def __getitem__(self, path: str) -> "LeaderboardHandler":
@@ -169,7 +169,7 @@ class AttributesContainersTable:
     def to_table_entries(self) -> List[AttributesContainersTableEntry]:
         return [
             self.table_entry_cls(
-                backend=self._backend, id_=e.id, attributes=e.attributes
+                backend=self._backend, _id=e.id, attributes=e.attributes
             )
             for e in self._entries
         ]

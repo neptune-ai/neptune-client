@@ -33,13 +33,13 @@ class ModelVersionsTableEntry(AttributesContainersTableEntry):
     def __init__(
         self,
         backend: NeptuneBackend,
-        id_: str,
+        _id: str,
         attributes: List[AttributeWithProperties],
     ):
         super().__init__(
             backend=backend,
             container_type=ContainerType.MODEL_VERSION,
-            id_=id_,
+            _id=_id,
             attributes=attributes,
         )
 

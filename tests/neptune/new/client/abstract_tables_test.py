@@ -38,7 +38,7 @@ from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMoc
 
 @patch(
     "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-    new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
+    new=lambda _, _uuid, _type: [Attribute(path="test", type=AttributeType.STRING)],
 )
 @patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class AbstractTablesTestMixin:
@@ -179,10 +179,16 @@ class AbstractTablesTestMixin:
 
         table_entry["file"].download("some_directory")
         download_file.assert_called_with(
-            exp_id, self.expected_container_type, ["file"], "some_directory"
+            container_id=exp_id,
+            container_type=self.expected_container_type,
+            path=["file"],
+            destination="some_directory",
         )
 
         table_entry["file/set"].download("some_directory")
         download_file_set.assert_called_with(
-            exp_id, self.expected_container_type, ["file", "set"], "some_directory"
+            container_id=exp_id,
+            container_type=self.expected_container_type,
+            path=["file", "set"],
+            destination="some_directory",
         )
