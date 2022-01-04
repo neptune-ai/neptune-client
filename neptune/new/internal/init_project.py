@@ -33,6 +33,7 @@ _logger = logging.getLogger(__name__)
 
 
 def init_project(
+    *,
     name: Optional[str] = None,
     api_token: Optional[str] = None,
     mode: str = Mode.ASYNC.value,
