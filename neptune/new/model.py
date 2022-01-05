@@ -66,6 +66,8 @@ class Model(AttributeContainer):
 
     def fetch_model_versions_table(self) -> ModelVersionsTable:
         """TODO: NPT-11349"""
-        leaderboard_entries = self._backend.get_leaderboard(project_id=self._id)
+        leaderboard_entries = self._backend.search_leaderboard_entries(
+            project_id=self._project_id, parent_id=self._id, types=[self.container_type]
+        )
 
         return ModelVersionsTable(backend=self._backend, entries=leaderboard_entries)

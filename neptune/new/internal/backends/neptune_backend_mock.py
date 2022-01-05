@@ -514,6 +514,14 @@ class NeptuneBackendMock(NeptuneBackend):
     ) -> List[LeaderboardEntry]:
         """Non relevant for mock"""
 
+    def search_leaderboard_entries(
+        self,
+        project_id: str,
+        parent_id: Optional[Iterable[str]],
+        types: Optional[Iterable[ContainerType]],
+    ) -> List[LeaderboardEntry]:
+        """Non relevant for mock"""
+
     class AttributeTypeConverterValueVisitor(ValueVisitor[AttributeType]):
         def visit_float(self, _: Float) -> AttributeType:
             return AttributeType.FLOAT
