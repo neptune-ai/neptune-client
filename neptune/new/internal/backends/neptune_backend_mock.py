@@ -27,7 +27,6 @@ from neptune.new.exceptions import (
     NeptuneException,
     RunNotFound,
     raise_container_not_found,
-    ModelNotFound,
     ModelVersionNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -91,6 +90,7 @@ from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
+from neptune.new.model import Model
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
@@ -133,9 +133,6 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def get_display_address(self) -> str:
         return "OFFLINE"
-
-    def get_project(self, project_id: str) -> Project:
-        return Project(self._project_id, self.PROJECT_NAME, self.WORKSPACE_NAME)
 
     def get_available_projects(
         self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
@@ -221,11 +218,20 @@ class NeptuneBackendMock(NeptuneBackend):
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None
 
+    def get_project(self, project_id: str) -> Project:
+        return Project(self._project_id, self.PROJECT_NAME, self.WORKSPACE_NAME)
+
     def get_run(self, run_id: str) -> ApiExperiment:
         raise RunNotFound(run_id)
 
     def get_model(self, model_id: str) -> ApiExperiment:
-        raise ModelNotFound(model_id)
+        return ApiExperiment(
+            id=model_id,
+            type=Model.container_type,
+            sys_id="",
+            workspace=self.WORKSPACE_NAME,
+            project_name=self.PROJECT_NAME,
+        )
 
     def get_model_version(self, model_version_id: str) -> ApiExperiment:
         raise ModelVersionNotFound(model_version_id)
@@ -505,6 +511,14 @@ class NeptuneBackendMock(NeptuneBackend):
         state: Optional[Iterable[str]] = None,
         owner: Optional[Iterable[str]] = None,
         tags: Optional[Iterable[str]] = None,
+    ) -> List[LeaderboardEntry]:
+        """Non relevant for mock"""
+
+    def search_leaderboard_entries(
+        self,
+        project_id: str,
+        parent_id: Optional[Iterable[str]],
+        types: Optional[Iterable[ContainerType]],
     ) -> List[LeaderboardEntry]:
         """Non relevant for mock"""
 

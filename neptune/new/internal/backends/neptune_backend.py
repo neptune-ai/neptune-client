@@ -292,3 +292,12 @@ class NeptuneBackend:
         tags: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
         pass
+
+    @abc.abstractmethod
+    def search_leaderboard_entries(
+        self,
+        project_id: str,
+        parent_id: Optional[Iterable[str]],
+        types: Optional[Iterable[ContainerType]],
+    ) -> List[LeaderboardEntry]:
+        pass

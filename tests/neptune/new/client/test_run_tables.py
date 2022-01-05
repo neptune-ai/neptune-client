@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.new.internal.init.project import get_project, init_project
-from neptune.new.internal.init.run import init_run
-from neptune.new.internal.init.model import get_model, init_model
-from neptune.new.internal.init.model_version import init_model_version
-from neptune.new.types.mode import Mode
 
-init = init_run
-RunMode = Mode
+import unittest
+
+from neptune.new import get_project
+from neptune.new.internal.container_type import ContainerType
+from tests.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
+
+
+class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
+    expected_container_type = ContainerType.RUN
+
+    def get_table(self):
+        return get_project("organization/project").fetch_runs_table()
+
+    def get_table_entries(self, table):
+        return table.to_runs()

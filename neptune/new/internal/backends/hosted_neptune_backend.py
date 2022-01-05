@@ -1114,6 +1114,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
 
+    def search_leaderboard_entries(
+        self,
+        project_id: str,
+        parent_id: Optional[Iterable[str]],
+        types: Optional[Iterable[ContainerType]],
+    ) -> List[LeaderboardEntry]:
+        pass
+
     def get_run_url(
         self, run_id: str, workspace: str, project_name: str, sys_id: str
     ) -> str:

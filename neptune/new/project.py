@@ -141,10 +141,10 @@ class Project(AttributeContainer):
         tags = self._as_list("tag", tag)
 
         leaderboard_entries = self._backend.get_leaderboard(
-            self._id, id, state, owner, tags
+            project_id=self._id, _id=id, state=state, owner=owner, tags=tags
         )
 
-        return RunsTable(self._backend, leaderboard_entries)
+        return RunsTable(backend=self._backend, entries=leaderboard_entries)
 
     @staticmethod
     def _as_list(
