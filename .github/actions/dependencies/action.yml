@@ -4,5 +4,5 @@ description: Install base and test dependencies
 runs:
     using: "composite"
     steps:
-    - run: pip install -r requirements.txt -r test_requirements.txt
+    - run: pip install -r requirements.txt -r requirements/test_requirements.txt
       shell: bash
