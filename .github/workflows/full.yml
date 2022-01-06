@@ -67,10 +67,12 @@ jobs:
           pytest ./tests
 
       - name: E2E - Client
+        if: matrix.os != 'windows-latest'
         run: |
           pytest ./e2e_tests -m "not integrations"
 
       - name: E2E - Integrations
+        if: matrix.os != 'windows-latest'
         run: |
           pytest ./e2e_tests -m integrations
 
