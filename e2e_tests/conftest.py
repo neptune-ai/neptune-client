@@ -45,9 +45,6 @@ def environment():
         api_token=admin_token,
     )
 
-    # Await project creation
-    time.sleep(20)
-
     add_project_member(
         name=created_project_identifier,
         username=user,
