@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from datetime import datetime
 from faker import Faker
 import pytest
 
@@ -25,23 +24,19 @@ from neptune.management import (
     create_project,
     delete_project,
     remove_project_member,
-    MemberRole,
-    ProjectVisibility,
 )
 from neptune.management.internal.utils import normalize_project_name
 from e2e_tests.base import BaseE2ETest
-from e2e_tests.conftest import Environment
+from e2e_tests.utils import a_project_name, Environment
 
 fake = Faker()
 
 
 @pytest.mark.management
 class TestManagement(BaseE2ETest):
-    def test_standard_scenario(self, environment: Environment):
-        project_slug = fake.slug()
-        project_name: str = f"temp-{datetime.now().strftime('%Y%m%d')}-{project_slug}"
-        project_key: str = project_slug.replace("-", "")[:3].upper()
-        project_identifier: str = normalize_project_name(
+    def test_standard_scenario(self, environment: "Environment"):
+        project_name, project_key = a_project_name(project_slug=f"{fake.slug()}-mgmt")
+        project_identifier = normalize_project_name(
             name=project_name, workspace=environment.workspace
         )
 
@@ -61,7 +56,7 @@ class TestManagement(BaseE2ETest):
         created_project_identifier = create_project(
             name=project_name,
             key=project_key,
-            visibility=ProjectVisibility.PRIVATE,
+            visibility="priv",
             workspace=environment.workspace,
             api_token=environment.admin_token,
         )
@@ -77,8 +72,7 @@ class TestManagement(BaseE2ETest):
         add_project_member(
             name=created_project_identifier,
             username=environment.user,
-            # pylint: disable=no-member
-            role=MemberRole.CONTRIBUTOR,
+            role="contributor",
             api_token=environment.admin_token,
         )
 

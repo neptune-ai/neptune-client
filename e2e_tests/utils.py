@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    'with_check_if_file_appears',
-    'tmp_context'
-]
+__all__ = ["with_check_if_file_appears", "tmp_context", "a_project_name", "Environment"]
 
 import io
 import os
+import random
 import tempfile
+from datetime import datetime
+from collections import namedtuple
 from contextlib import contextmanager
 
 import numpy
@@ -75,7 +75,7 @@ def tmp_context():
 
 def generate_image(*, size: int) -> Image:
     random_numbers = numpy.random.rand(size, size, 3) * 255
-    return Image.fromarray(random_numbers.astype('uint8')).convert('RGB')
+    return Image.fromarray(random_numbers.astype("uint8")).convert("RGB")
 
 
 def image_to_png(*, image: Image) -> PngImageFile:
@@ -83,3 +83,17 @@ def image_to_png(*, image: Image) -> PngImageFile:
     image.save(png_buf, format="png")
     png_buf.seek(0)
     return PngImageFile(png_buf)
+
+
+def a_project_name(project_slug: str):
+    project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
+    project_key = project_slug.replace("-", "")[:10].upper()
+    project_key = "".join(random.sample(project_key, len(project_key)))
+
+    return project_name, project_key
+
+
+Environment = namedtuple(
+    "Environment",
+    ["workspace", "project", "user_token", "admin_token", "admin", "user"],
+)

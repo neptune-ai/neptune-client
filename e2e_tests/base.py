@@ -18,18 +18,15 @@ __all__ = [
 ]
 
 import uuid
+import inspect
 
 from faker import Faker
-
-from neptune.new.attribute_container import AttributeContainer
 
 fake = Faker()
 
 
 class BaseE2ETest:
-    def cleanup(self, container: AttributeContainer):
-        if container.exists(self.__class__.__name__):
-            container.pop(self.__class__.__name__)
-
     def gen_key(self):
-        return f"{self.__class__.__name__}/{uuid.uuid4()}"
+        # Get test name
+        caller_name = inspect.stack()[1][3]
+        return f"{self.__class__.__name__}/{caller_name}/{fake.unique.slug()}"

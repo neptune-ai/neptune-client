@@ -25,22 +25,22 @@ from e2e_tests.base import BaseE2ETest
 fake = Faker()
 
 
-def store_in_run(run_short_id: str, destination: str):
-    reinitialized_run = neptune.init(run=run_short_id)
+def store_in_run(run_short_id: str, project: str, destination: str):
+    reinitialized_run = neptune.init(run=run_short_id, project=project)
     reinitialized_run[destination] = fake.color()
     reinitialized_run.sync()
 
 
 class TestMultipleRuns(BaseE2ETest):
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_multiple_runs_single(self, container: neptune.Run):
+    def test_multiple_runs_single(self, container: neptune.Run, environment):
         # pylint: disable=protected-access,undefined-loop-variable
 
         number_of_reinitialized = 5
         namespace = fake.unique.word()
 
         reinitialized_runs = [
-            neptune.init(run=container._short_id)
+            neptune.init(run=container._short_id, project=environment.project)
             for _ in range(number_of_reinitialized)
         ]
 
@@ -61,7 +61,7 @@ class TestMultipleRuns(BaseE2ETest):
 
     @pytest.mark.skip(reason="no way of currently testing this")
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_multiple_runs_processes(self, container: neptune.Run):
+    def test_multiple_runs_processes(self, container: neptune.Run, environment):
         # pylint: disable=protected-access
 
         number_of_reinitialized = 10
@@ -74,6 +74,7 @@ class TestMultipleRuns(BaseE2ETest):
                 executor.submit(
                     store_in_run,
                     container._short_id,
+                    environment.project,
                     f"{namespace}/{fake.unique.word()}",
                 )
                 for _ in range(number_of_reinitialized)
@@ -86,7 +87,7 @@ class TestMultipleRuns(BaseE2ETest):
         assert len(container[namespace].fetch()) == number_of_reinitialized + 1
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_multiple_runs_thread(self, container: neptune.Run):
+    def test_multiple_runs_thread(self, container: neptune.Run, environment):
         # pylint: disable=protected-access
 
         number_of_reinitialized = 10
@@ -99,6 +100,7 @@ class TestMultipleRuns(BaseE2ETest):
                 executor.submit(
                     store_in_run,
                     container._short_id,
+                    environment.project,
                     f"{namespace}/{fake.unique.word()}",
                 )
                 for _ in range(number_of_reinitialized)

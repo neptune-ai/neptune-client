@@ -26,8 +26,8 @@ fake = Faker()
 
 class TestInitRun(BaseE2ETest):
     # TODO: test all remaining init parameters
-    def test_resuming_run(self):
-        exp = neptune.init(name="E2e init resume")
+    def test_resuming_run(self, environment):
+        exp = neptune.init(project=environment.project)
 
         key = self.gen_key()
         val = fake.word()
@@ -36,12 +36,13 @@ class TestInitRun(BaseE2ETest):
 
         exp.stop()
 
-        exp2 = neptune.init(run=exp._short_id)  # pylint: disable=protected-access
+        # pylint: disable=protected-access
+        exp2 = neptune.init(run=exp._short_id, project=environment.project)
         assert exp2[key].fetch() == val
 
-    def test_custom_run_id(self):
+    def test_custom_run_id(self, environment):
         custom_run_id = "-".join((fake.word() for _ in range(3)))
-        run = neptune.init(custom_run_id=custom_run_id)
+        run = neptune.init(custom_run_id=custom_run_id, project=environment.project)
 
         key = self.gen_key()
         val = fake.word()
@@ -50,11 +51,15 @@ class TestInitRun(BaseE2ETest):
 
         run.stop()
 
-        exp2 = neptune.init(custom_run_id=custom_run_id)
+        exp2 = neptune.init(custom_run_id=custom_run_id, project=environment.project)
         assert exp2[key].fetch() == val
 
-    def test_send_source_code(self):
-        exp = neptune.init(source_files="**/*.py", name="E2e init source code")
+    def test_send_source_code(self, environment):
+        exp = neptune.init(
+            source_files="**/*.py",
+            name="E2e init source code",
+            project=environment.project,
+        )
 
         # download sources
         exp.sync()
@@ -63,8 +68,8 @@ class TestInitRun(BaseE2ETest):
 
 
 class TestInitProject(BaseE2ETest):
-    def test_resuming_project(self):
-        exp = neptune.init_project()
+    def test_resuming_project(self, environment):
+        exp = neptune.init_project(name=environment.project)
 
         key = self.gen_key()
         val = fake.word()
@@ -73,11 +78,11 @@ class TestInitProject(BaseE2ETest):
 
         exp.stop()
 
-        exp2 = neptune.init_project()
+        exp2 = neptune.init_project(name=environment.project)
         assert exp2[key].fetch() == val
 
-    def test_init_and_readonly(self):
-        project: Project = neptune.init_project()
+    def test_init_and_readonly(self, environment):
+        project: Project = neptune.init_project(name=environment.project)
 
         key = f"{self.gen_key()}-" + "-".join((fake.word() for _ in range(4)))
         val = fake.word()
@@ -85,7 +90,7 @@ class TestInitProject(BaseE2ETest):
         project.sync()
         project.stop()
 
-        read_only_project = neptune.get_project()
+        read_only_project = neptune.get_project(name=environment.project)
         read_only_project.sync()
 
         assert set(read_only_project.get_structure()["sys"]) == {

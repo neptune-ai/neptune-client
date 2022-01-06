@@ -31,11 +31,8 @@ class TestCopying(BaseE2ETest):
     @pytest.mark.parametrize(
         "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
     )
-    def test_copy_project_to_container(self, container: Run, value):
-        project = neptune.init_project()
-
-        self.cleanup(container)
-        self.cleanup(project)
+    def test_copy_project_to_container(self, container: Run, value, environment):
+        project = neptune.init_project(name=environment.project)
 
         src, destination, destination2 = self.gen_key(), self.gen_key(), self.gen_key()
 
@@ -54,12 +51,9 @@ class TestCopying(BaseE2ETest):
     @pytest.mark.parametrize(
         "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
     )
-    def test_copy_run_to_container(self, container: Project, value):
-        run = neptune.init_run()
+    def test_copy_run_to_container(self, container: Project, value, environment):
+        run = neptune.init_run(project=environment.project)
         src, destination, destination2 = self.gen_key(), self.gen_key(), self.gen_key()
-
-        self.cleanup(container)
-        self.cleanup(run)
 
         container[src] = value
         container.sync()
