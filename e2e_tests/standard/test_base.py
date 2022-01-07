@@ -145,7 +145,7 @@ class TestNamespace(BaseE2ETest):
             container[namespace][key2].fetch()
 
 
-class TestStringSet:
+class TestStringSet(BaseE2ETest):
     neptune_tags_path = "sys/tags"
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
@@ -263,20 +263,20 @@ class TestFiles(BaseE2ETest):
 
 
 class TestFetchRunsTable(BaseE2ETest):
-    def test_fetch_table(self):
+    def test_fetch_table(self, environment):
         tag = str(uuid.uuid4())
-        with neptune.init() as run:
+        with neptune.init(project=environment.project) as run:
             run["sys/tags"].add(tag)
             run["value"] = 12
 
-        with neptune.init() as run:
+        with neptune.init(project=environment.project) as run:
             run["sys/tags"].add(tag)
             run["another/value"] = "testing"
 
         # wait for the elasticsearch cache to fill
         time.sleep(1)
 
-        project = neptune.init_project()
+        project = neptune.init_project(name=environment.project)
 
         runs_table = sorted(
             project.fetch_runs_table(tag=tag).to_runs(),

@@ -10,7 +10,8 @@ runs:
           python-version: 3.9
 
       - name: Install dependencies
-        uses: ./.github/actions/dependencies
+        run: pip install -r requirements.txt -r requirements/test_requirements.txt
+        shell: bash
 
       - name: Run pre-commit
         run: pre-commit run --all-files

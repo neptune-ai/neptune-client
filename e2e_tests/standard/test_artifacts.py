@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import uuid
 import tempfile
 import time
 from pathlib import Path
@@ -33,10 +34,8 @@ fake = Faker()
 class TestArtifacts(BaseE2ETest):
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_local_creation(self, container: AttributeContainer):
-        self.cleanup(container)
-
         first, second = self.gen_key(), self.gen_key()
-        filename = fake.file_name()
+        filename = fake.unique.file_name()
 
         with tmp_context() as tmp:
             with open(filename, "w", encoding="utf-8") as handler:
@@ -54,10 +53,8 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_assignment(self, container: AttributeContainer):
-        self.cleanup(container)
-
         first, second = self.gen_key(), self.gen_key()
-        filename = fake.file_name()
+        filename = fake.unique.file_name()
 
         with tmp_context():
             with open(filename, "w", encoding="utf-8") as handler:
@@ -75,10 +72,10 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_local_download(self, container: AttributeContainer):
-        self.cleanup(container)
-
         first, second = self.gen_key(), self.gen_key()
-        filename, filepath = fake.file_name(), fake.file_path(depth=3).lstrip("/")
+        filename, filepath = fake.unique.file_name(), fake.unique.file_path(
+            depth=3
+        ).lstrip("/")
 
         with tmp_context() as tmp:
             with open(filename, "w", encoding="utf-8") as handler:
@@ -104,11 +101,13 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.s3
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_s3_creation(self, container: AttributeContainer, bucket):
-        self.cleanup(container)
-
-        first, second = self.gen_key(), self.gen_key()
-        filename = fake.file_name()
+    def test_s3_creation(self, container: AttributeContainer, bucket, environment):
+        first, second, prefix = (
+            self.gen_key(),
+            self.gen_key(),
+            f"{environment.project}/{self.gen_key()}/{type(container).__name__}",
+        )
+        filename = fake.unique.file_name()
 
         bucket_name, s3_client = bucket
 
@@ -116,10 +115,12 @@ class TestArtifacts(BaseE2ETest):
             with open(filename, "w", encoding="utf-8") as handler:
                 handler.write(fake.paragraph(nb_sentences=5))
 
-            s3_client.meta.client.upload_file(filename, bucket_name, filename)
+            s3_client.meta.client.upload_file(
+                filename, bucket_name, f"{prefix}/{filename}"
+            )
 
-        container[first].track_files(f"s3://{bucket_name}/{filename}")
-        container[second].track_files(f"s3://{bucket_name}/")
+        container[first].track_files(f"s3://{bucket_name}/{prefix}/{filename}")
+        container[second].track_files(f"s3://{bucket_name}/{prefix}")
 
         container.sync()
 
@@ -130,11 +131,12 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.s3
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_s3_download(self, container: AttributeContainer, bucket):
-        self.cleanup(container)
-
+    def test_s3_download(self, container: AttributeContainer, bucket, environment):
         first = self.gen_key()
-        filename, filepath = fake.file_name(), fake.file_path(depth=3).lstrip("/")
+        prefix = f"{environment.project}/{self.gen_key()}/{type(container).__name__}"
+        filename, filepath = fake.unique.file_name(), fake.unique.file_path(
+            depth=3
+        ).lstrip("/")
 
         bucket_name, s3_client = bucket
 
@@ -146,10 +148,14 @@ class TestArtifacts(BaseE2ETest):
             with open(filepath, "w", encoding="utf-8") as handler:
                 handler.write(fake.paragraph(nb_sentences=5))
 
-            s3_client.meta.client.upload_file(filename, bucket_name, filename)
-            s3_client.meta.client.upload_file(filepath, bucket_name, filepath)
+            s3_client.meta.client.upload_file(
+                filename, bucket_name, f"{prefix}/{filename}"
+            )
+            s3_client.meta.client.upload_file(
+                filepath, bucket_name, f"{prefix}/{filepath}"
+            )
 
-        container[first].track_files(f"s3://{bucket_name}/")
+        container[first].track_files(f"s3://{bucket_name}/{prefix}")
 
         container.sync()
 
@@ -163,10 +169,12 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.s3
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_s3_existing(self, container: AttributeContainer, bucket):
-        self.cleanup(container)
-
-        first, second = self.gen_key(), self.gen_key()
+    def test_s3_existing(self, container: AttributeContainer, bucket, environment):
+        first, second, prefix = (
+            self.gen_key(),
+            self.gen_key(),
+            f"{environment.project}/{self.gen_key()}/{type(container).__name__}",
+        )
         filename, filepath = fake.file_name(), fake.file_path(depth=3).lstrip("/")
 
         bucket_name, s3_client = bucket
@@ -179,20 +187,25 @@ class TestArtifacts(BaseE2ETest):
             with open(filepath, "w", encoding="utf-8") as handler:
                 handler.write(fake.paragraph(nb_sentences=5))
 
-            s3_client.meta.client.upload_file(filename, bucket_name, filename)
-            s3_client.meta.client.upload_file(filepath, bucket_name, filepath)
+            s3_client.meta.client.upload_file(
+                filename, bucket_name, f"{prefix}/{filename}"
+            )
+            s3_client.meta.client.upload_file(
+                filepath, bucket_name, f"{prefix}/{filepath}"
+            )
 
         # Track all files - "a" and "b" to first artifact
-        container[first].track_files(f"s3://{bucket_name}/")
+        container[first].track_files(f"s3://{bucket_name}/{prefix}/")
 
         # Track only the "a" file to second artifact
-        container[second].track_files(f"s3://{bucket_name}/{filename}")
+        container[second].track_files(f"s3://{bucket_name}/{prefix}/{filename}")
         container.sync()
 
         # Add "b" file to existing second artifact
         # so it should be now identical as first
         container[second].track_files(
-            f"s3://{bucket_name}/{filepath}", destination=str(Path(filepath).parent)
+            f"s3://{bucket_name}/{prefix}/{filepath}",
+            destination=str(Path(filepath).parent),
         )
         container.sync()
 
@@ -203,8 +216,6 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_local_existing(self, container: AttributeContainer):
-        self.cleanup(container)
-
         first, second = self.gen_key(), self.gen_key()
         filename, filepath = fake.file_name(), fake.file_path(depth=3).lstrip("/")
 
@@ -237,8 +248,6 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_hash_cache(self, container: AttributeContainer):
-        self.cleanup(container)
-
         key = self.gen_key()
         filename = fake.file_name()
 

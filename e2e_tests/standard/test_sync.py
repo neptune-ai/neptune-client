@@ -32,7 +32,7 @@ runner = CliRunner()
 class TestSync(BaseE2ETest):
     SYNCHRONIZED_SYSID_RE = r"\w+/[\w-]+/([\w-]+)"
 
-    def test_sync_run(self):
+    def test_sync_run(self, environment):
         custom_run_id = "-".join((fake.word() for _ in range(3)))
 
         with tmp_context() as tmp:
@@ -44,12 +44,14 @@ class TestSync(BaseE2ETest):
             # init run
             run = neptune.init(
                 custom_run_id=custom_run_id,
+                project=environment.project,
                 **DISABLE_SYSLOG_KWARGS,
             )
 
             def get_next_run():
                 return neptune.init(
                     custom_run_id=custom_run_id,
+                    project=environment.project,
                     **DISABLE_SYSLOG_KWARGS,
                 )
 
@@ -62,7 +64,7 @@ class TestSync(BaseE2ETest):
                 updated_value=updated_value,
             )
 
-    def test_sync_project(self):
+    def test_sync_project(self, environment):
         with tmp_context() as tmp:
             # with test values
             key = f"{self.gen_key()}-" + "-".join((fake.word() for _ in range(3)))
@@ -70,10 +72,10 @@ class TestSync(BaseE2ETest):
             updated_value = fake.word()
 
             # init run
-            project = neptune.init_project()
+            project = neptune.init_project(name=environment.project)
 
             def get_next_project():
-                return neptune.init_project()
+                return neptune.init_project(name=environment.project)
 
             self._test_sync(
                 exp=project,
@@ -145,11 +147,12 @@ class TestSync(BaseE2ETest):
         assert exp3[key].fetch() == updated_value
         assert exp3["copy/" + key].fetch() == updated_value
 
-    def test_offline_sync(self):
+    def test_offline_sync(self, environment):
         with tmp_context() as tmp:
             # create run in offline mode
             run = neptune.init(
                 mode="offline",
+                project=environment.project,
                 **DISABLE_SYSLOG_KWARGS,
             )
             # assign some values
@@ -161,7 +164,7 @@ class TestSync(BaseE2ETest):
             run.stop()
 
             # run asynchronously
-            result = runner.invoke(sync, ["--path", tmp])
+            result = runner.invoke(sync, ["--path", tmp, "-p", environment.project])
             assert result.exit_code == 0
 
             # offline mode doesn't support custom_run_id, we'll have to parse sync output to determine short_id
@@ -169,5 +172,5 @@ class TestSync(BaseE2ETest):
             assert len(sys_id_found.groups()) == 1
             sys_id = sys_id_found.group(1)
 
-            run2 = neptune.init(run=sys_id)
+            run2 = neptune.init(run=sys_id, project=environment.project)
             assert run2[key].fetch() == val

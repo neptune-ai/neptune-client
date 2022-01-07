@@ -13,11 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["with_check_if_file_appears", "tmp_context"]
+__all__ = ["with_check_if_file_appears", "tmp_context", "a_project_name", "Environment"]
 
 import io
 import os
+import random
 import tempfile
+from datetime import datetime
+from collections import namedtuple
 from contextlib import contextmanager
 
 import numpy
@@ -80,3 +83,18 @@ def image_to_png(*, image: Image) -> PngImageFile:
     image.save(png_buf, format="png")
     png_buf.seek(0)
     return PngImageFile(png_buf)
+
+
+def a_project_name(project_slug: str):
+    project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
+    project_key = "".join(
+        random.choices(population=project_slug.replace("-", ""), k=10)
+    ).upper()
+
+    return project_name, project_key
+
+
+Environment = namedtuple(
+    "Environment",
+    ["workspace", "project", "user_token", "admin_token", "admin", "user"],
+)

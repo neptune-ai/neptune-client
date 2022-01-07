@@ -1,4 +1,4 @@
-name: Test
+name: Pull Request
 on:
   push:
     branches-ignore:
@@ -29,8 +29,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Install dependencies
-        uses: ./.github/actions/dependencies
+        run: |
+          pip install -r requirements.txt -r requirements/test_requirements.txt
 
       - name: Build and test
         run : |
-          tox -e py
+          pytest ./tests

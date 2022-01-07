@@ -7,7 +7,6 @@ pytest
 pytest-cov
 pytest-xdist
 tensorflow; python_version <= '3.9'
-tox
 pytest-timeout
 matplotlib==3.2
 pytest-mock
