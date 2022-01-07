@@ -66,7 +66,6 @@ def environment():
 def container(request, environment):
     if request.param == "project":
         project = neptune.init_project(name=environment.project)
-        project.wait()
         yield project
         project.stop()
 
