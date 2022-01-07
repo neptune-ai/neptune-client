@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import os
-import time
 
 from faker import Faker
 import boto3
