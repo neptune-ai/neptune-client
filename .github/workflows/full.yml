@@ -18,6 +18,7 @@ jobs:
       - name: Lint
         uses: ./.github/actions/lint
 
+  # Both integration tests and E2E
   test:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -39,6 +40,9 @@ jobs:
       NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
       ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
       ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+      # Time before went into offline mode
+      # Default is 1 minute, and it made most of the tests to failure
+      # as it takes some time to create project and all internal structures
       NEPTUNE_RETRIES_TIMEOUT: 600
     steps:
       - name: Checkout repository

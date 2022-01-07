@@ -87,10 +87,9 @@ def image_to_png(*, image: Image) -> PngImageFile:
 
 def a_project_name(project_slug: str):
     project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
-    project_key = (project_slug[0] + project_slug[1:].replace("-", "")[:9]).upper()
-
-    random.seed(a=project_name)
-    project_key = "".join(random.sample(population=project_key, k=len(project_key)))
+    project_key = "".join(
+        random.choices(population=project_slug.replace("-", ""), k=10)
+    ).upper()
 
     return project_name, project_key
 
