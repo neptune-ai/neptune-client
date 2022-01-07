@@ -1,9 +1,7 @@
 name: Pull Request
 on:
   push:
-#    branches-ignore:
-#      - master
-    branches:
+    branches-ignore:
       - master
 jobs:
   lint:

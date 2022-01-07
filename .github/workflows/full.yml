@@ -1,15 +1,13 @@
 name: All
 on:
   push:
-    branches-ignore:
+    branches:
       - master
-#    branches:
-#      - master
-#    tags:
-#      - '*'
-#  workflow_dispatch:
-#  schedule:
-#    - cron: '0 6 * * *' # Run every day at arbitrary time (6:00 AM UTC)
+    tags:
+      - '*'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * *' # Run every day at arbitrary time (6:00 AM UTC)
 jobs:
   lint:
     runs-on: ubuntu-latest
