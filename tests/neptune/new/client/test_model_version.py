@@ -23,7 +23,10 @@ from mock import patch
 from neptune.new import ANONYMOUS, init_model_version
 from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneWongInitParametersException
+from neptune.new.exceptions import (
+    NeptuneOfflineModeChangeStageException,
+    NeptuneWongInitParametersException,
+)
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -101,3 +104,17 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             init_model_version(version=None, model=None)
         with self.assertRaises(NeptuneWongInitParametersException):
             init_model_version(version="whatever", model="whatever")
+
+    def test_change_stage(self):
+        exp = self.call_init()
+        exp.change_stage(stage="production")
+
+        self.assertEqual("production", exp["sys/stage"].fetch())
+
+        with self.assertRaises(NeptuneOfflineModeChangeStageException):
+            exp.change_stage(stage="wrong_stage")
+
+    def test_change_stage_of_offline_model_version(self):
+        exp = self.call_init(mode="offline")
+        with self.assertRaises(NeptuneOfflineModeChangeStageException):
+            exp.change_stage(stage="production")

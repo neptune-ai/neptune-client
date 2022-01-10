@@ -769,7 +769,11 @@ You have no permission to access given resource.
         super().__init__(message.format(**STYLES))
 
 
-class NeptuneOfflineModeFetchException(NeptuneException):
+class NeptuneOfflineModeException(NeptuneException):
+    pass
+
+
+class NeptuneOfflineModeFetchException(NeptuneOfflineModeException):
     def __init__(self):
         message = """
 {h1}
@@ -777,6 +781,27 @@ class NeptuneOfflineModeFetchException(NeptuneException):
 {end}
 It seems you are trying to fetch data from the server, while working in an offline mode.
 You need to work in non-offline connection mode to fetch data from the server.
+
+You can set connection mode when creating a new run:
+    {python}run = neptune.init(mode="async"){end}
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/you-should-know/connection-modes
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(**STYLES))
+
+
+class NeptuneOfflineModeChangeStageException(NeptuneOfflineModeException):
+    def __init__(self):
+        message = """
+        TODO: NPT-11349
+{h1}
+----NeptuneOfflineModeChangeStageException---------------------------------------------------
+{end}
+It seems you are trying to change stage, while working in an offline mode.
+You need to work in non-offline connection mode to change stage.
 
 You can set connection mode when creating a new run:
     {python}run = neptune.init(mode="async"){end}

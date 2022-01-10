@@ -21,9 +21,12 @@ from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
+from neptune.new.types.mode import Mode
 
 
 class SyncOperationProcessor(OperationProcessor):
+    mode = Mode.SYNC
+
     def __init__(
         self, container_id: str, container_type: ContainerType, backend: NeptuneBackend
     ):

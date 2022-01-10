@@ -20,9 +20,12 @@ from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
+from neptune.new.types.mode import Mode
 
 
 class OfflineOperationProcessor(OperationProcessor):
+    mode = Mode.OFFLINE
+
     def __init__(self, queue: DiskQueue[Operation]):
         self._queue = queue
 

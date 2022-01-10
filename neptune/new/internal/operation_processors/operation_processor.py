@@ -17,9 +17,12 @@ import abc
 from typing import Optional
 
 from neptune.new.internal.operation import Operation
+from neptune.new.types.mode import Mode
 
 
 class OperationProcessor:
+    mode: Mode
+
     @abc.abstractmethod
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         pass

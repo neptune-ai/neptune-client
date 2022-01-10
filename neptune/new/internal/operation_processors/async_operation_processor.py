@@ -32,6 +32,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
 from neptune.new.internal.threading.daemon import Daemon
 
 # pylint: disable=protected-access
+from neptune.new.types.mode import Mode
 
 _logger = logging.getLogger(__name__)
 
@@ -39,6 +40,8 @@ _logger = logging.getLogger(__name__)
 class AsyncOperationProcessor(OperationProcessor):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30
     STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = 300
+
+    mode = Mode.SYNC
 
     def __init__(
         self,
