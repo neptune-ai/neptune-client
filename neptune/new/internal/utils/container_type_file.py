@@ -43,7 +43,11 @@ class ContainerTypeFile:
         if container_type_from_file is None:
             # No information about type stored on disk
             if default_container_type is None:
-                raise NeptuneInternalException("Can't determine container_type")
+                # When working with legacy data
+                # container_type couldn't be determined
+                # and for backward compatibility
+                # it should be Run at default
+                return ContainerType.RUN
             return default_container_type
         else:
             # Information about type is stored on disk
