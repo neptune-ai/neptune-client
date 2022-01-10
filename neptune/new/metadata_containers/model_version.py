@@ -78,4 +78,12 @@ class ModelVersion(MetadataContainer):
             raise NeptuneOfflineModeChangeStageException()
 
         self.wait()
-        self[SYSTEM_STAGE_ATTRIBUTE_PATH].assign(value=stage.value, wait=True)
+
+        # We are sure that such attribute exists, because
+        # SYSTEM_STAGE_ATTRIBUTE_PATH is set by default on ModelVersion creation
+        attr = self.get_attribute(SYSTEM_STAGE_ATTRIBUTE_PATH)
+
+        attr.process_assignment(
+            value=stage.value,
+            wait=True,
+        )

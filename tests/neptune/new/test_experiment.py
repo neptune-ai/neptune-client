@@ -25,12 +25,14 @@ from neptune.new.exceptions import (
     InactiveRunException,
     InactiveModelException,
     InactiveModelVersionException,
+    NeptuneProtectedPathException,
 )
 from neptune.new.metadata_containers import Model
 from neptune.new.metadata_containers import ModelVersion
 from neptune.new.metadata_containers import Project
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
+from neptune.new.types.model_version_stage import ModelVersionStage
 from neptune.new.types.series import FloatSeries, StringSeries
 
 
@@ -217,3 +219,13 @@ class TestExperiment(unittest.TestCase):
                     exp["attr2"] = 2
                 with self.assertRaises(expected_exception):
                     exp["series"].log(1)
+
+    def test_protected_paths(self):
+        for exp in self.get_experiments():
+            with self.subTest(msg=f"For type {exp.container_type}"):
+                with self.assertRaises(NeptuneProtectedPathException):
+                    exp["sys/stage"] = ModelVersionStage.PRODUCTION.value
+
+                exp["tmp/placeholder"] = ModelVersionStage.PRODUCTION.value
+                with self.assertRaises(NeptuneProtectedPathException):
+                    exp["sys/stage"] = exp["tmp/placeholder"]

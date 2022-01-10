@@ -814,6 +814,14 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**STYLES))
 
 
+class NeptuneProtectedPathException(NeptuneException):
+    def __init__(self, path: str):
+        message = """
+        TODO: NPT-11349
+"""
+        super().__init__(message.format(**STYLES))
+
+
 class OperationNotSupported(NeptuneException):
     def __init__(self, message: str):
         super().__init__(f"Operation not supported: {message}")

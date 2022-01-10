@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from functools import wraps
 from typing import Optional, TYPE_CHECKING, Union, Iterable, List
 
 
@@ -22,12 +23,13 @@ from neptune.new.exceptions import NeptuneException
 
 from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
+from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import MissingFieldException
+from neptune.new.exceptions import NeptuneException, NeptuneProtectedPathException, MissingFieldException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     verify_type,
@@ -46,7 +48,24 @@ if TYPE_CHECKING:
     from neptune.new.run import Run
 
 
+def check_protected_paths(fun):
+    @wraps(fun)
+    def inner_fun(self: "Handler", *args, **kwargs):
+        # pylint: disable=protected-access
+        for path in self.PROTECTED_PATHS:
+            if self._path == path:
+                raise NeptuneProtectedPathException(path)
+        return fun(self, *args, **kwargs)
+
+    return inner_fun
+
+
 class Handler:
+    # paths which can't be modified by client directly
+    PROTECTED_PATHS = [
+        SYSTEM_STAGE_ATTRIBUTE_PATH,
+    ]
+
     def __init__(self, run: "Run", path: str):
         super().__init__()
         self._run = run
@@ -74,6 +93,7 @@ class Handler:
             raise MissingFieldException(self._path)
         return attr
 
+    @check_protected_paths
     def assign(self, value, wait: bool = False) -> None:
         """Assigns the provided value to the field.
 
@@ -124,6 +144,7 @@ class Handler:
             else:
                 self._run.define(self._path, value, wait)
 
+    @check_protected_paths
     def upload(self, value, wait: bool = False) -> None:
         """Uploads provided file under specified field path.
 
@@ -164,6 +185,7 @@ class Handler:
                 self._run.set_attribute(self._path, attr)
             attr.upload(value, wait)
 
+    @check_protected_paths
     def upload_files(
         self, value: Union[str, Iterable[str]], wait: bool = False
     ) -> None:
@@ -179,6 +201,7 @@ class Handler:
                 self._run.set_attribute(self._path, attr)
             attr.upload_files(value, wait)
 
+    @check_protected_paths
     def log(
         self,
         value,
@@ -245,6 +268,7 @@ class Handler:
                 self._run.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
+    @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Adds the provided tag or tags to the run's tags.
 
@@ -269,6 +293,7 @@ class Handler:
                 self._run.set_attribute(self._path, attr)
             attr.add(values, wait)
 
+    @check_protected_paths
     def pop(self, path: str = None, wait: bool = False) -> None:
         if path:
             verify_type("path", path, str)
@@ -276,6 +301,7 @@ class Handler:
         else:
             self._run.pop(self._path, wait)
 
+    @check_protected_paths
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Removes the provided tag or tags from the set.
 
@@ -292,6 +318,7 @@ class Handler:
         """
         return self._pass_call_to_attr(function_name="remove", values=values, wait=wait)
 
+    @check_protected_paths
     def clear(self, wait: bool = False):
         """Removes all tags from the `StringSet`.
 
@@ -447,6 +474,7 @@ class Handler:
     def _pass_call_to_attr(self, function_name, **kwargs):
         return getattr(self._get_attribute(), function_name)(**kwargs)
 
+    @check_protected_paths
     def track_files(
         self, path: str, destination: str = None, wait: bool = False
     ) -> None:
