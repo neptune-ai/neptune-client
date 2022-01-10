@@ -105,13 +105,17 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         with self.assertRaises(NeptuneWongInitParametersException):
             init_model_version(version="whatever", model="whatever")
 
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+        new=lambda _, _uuid, _type: [Attribute("sys/stage", AttributeType.STRING)],
+    )
     def test_change_stage(self):
         exp = self.call_init()
         exp.change_stage(stage="production")
 
         self.assertEqual("production", exp["sys/stage"].fetch())
 
-        with self.assertRaises(NeptuneOfflineModeChangeStageException):
+        with self.assertRaises(ValueError):
             exp.change_stage(stage="wrong_stage")
 
     def test_change_stage_of_offline_model_version(self):
