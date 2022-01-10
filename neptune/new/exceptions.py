@@ -819,6 +819,7 @@ class NeptuneProtectedPathException(NeptuneException):
         message = """
         TODO: NPT-11349
 """
+        self._path = path
         super().__init__(message.format(**STYLES))
 
 

@@ -86,7 +86,7 @@ from neptune.new.internal.operation import (
     UploadFileSet,
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
-from neptune.new.internal.run_structure import ContainerStructure
+from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str

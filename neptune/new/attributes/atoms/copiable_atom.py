@@ -33,7 +33,7 @@ class CopiableAtom(Atom):
         # pylint: disable=protected-access
         with self._container.lock():
             source_path = value.source_handler._path
-            source_attr = value.source_handler._get_attribute()
+            source_attr = value.source_handler._container._get_attribute()
             self._enqueue_operation(
                 CopyAttribute(
                     self._path,

@@ -45,7 +45,7 @@ from neptune.new.types.atoms.file import File as FileVal
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.attribute_container import AttributeContainer
 
 
 def check_protected_paths(fun):
@@ -66,29 +66,29 @@ class Handler:
         SYSTEM_STAGE_ATTRIBUTE_PATH,
     ]
 
-    def __init__(self, run: "Run", path: str):
+    def __init__(self, container: "AttributeContainer", path: str):
         super().__init__()
-        self._run = run
+        self._container = container
         self._path = path
 
     def __repr__(self):
-        attr = self._run.get_attribute(self._path)
+        attr = self._container.get_attribute(self._path)
         formal_type = type(attr).__name__ if attr else "Unassigned"
         return f'<{formal_type} field at "{self._path}">'
 
     def _ipython_key_completions_(self):
         # pylint: disable=protected-access
-        return self._run._get_subpath_suggestions(path_prefix=self._path)
+        return self._container._get_subpath_suggestions(path_prefix=self._path)
 
     def __getitem__(self, path: str) -> "Handler":
-        return Handler(self._run, join_paths(self._path, path))
+        return Handler(self._container, join_paths(self._path, path))
 
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
 
     def _get_attribute(self):
         """Returns Attribute defined in `self._path` or throws MissingFieldException"""
-        attr = self._run.get_attribute(self._path)
+        attr = self._container.get_attribute(self._path)
         if attr is None:
             raise MissingFieldException(self._path)
         return attr
@@ -135,14 +135,14 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        with self._run.lock():
-            attr = self._run.get_attribute(self._path)
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
             if attr:
                 if isinstance(value, Handler):
                     value = ValueCopy(value)
                 attr.process_assignment(value, wait)
             else:
-                self._run.define(self._path, value, wait)
+                self._container.define(self._path, value, wait)
 
     @check_protected_paths
     def upload(self, value, wait: bool = False) -> None:
@@ -178,11 +178,11 @@ class Handler:
         """
         value = FileVal.create_from(value)
 
-        with self._run.lock():
-            attr = self._run.get_attribute(self._path)
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
             if not attr:
-                attr = File(self._run, parse_path(self._path))
-                self._run.set_attribute(self._path, attr)
+                attr = File(self._container, parse_path(self._path))
+                self._container.set_attribute(self._path, attr)
             attr.upload(value, wait)
 
     @check_protected_paths
@@ -194,11 +194,11 @@ class Handler:
         else:
             verify_type("value", value, str)
 
-        with self._run.lock():
-            attr = self._run.get_attribute(self._path)
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
             if not attr:
-                attr = FileSet(self._run, parse_path(self._path))
-                self._run.set_attribute(self._path, attr)
+                attr = FileSet(self._container, parse_path(self._path))
+                self._container.set_attribute(self._path, attr)
             attr.upload_files(value, wait)
 
     @check_protected_paths
@@ -237,8 +237,8 @@ class Handler:
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", timestamp, (int, float, type(None)))
 
-        with self._run.lock():
-            attr = self._run.get_attribute(self._path)
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
             if not attr:
                 if is_collection(value):
                     if value:
@@ -251,21 +251,21 @@ class Handler:
                     first_value = value
 
                 if is_float(first_value):
-                    attr = FloatSeries(self._run, parse_path(self._path))
+                    attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string(first_value):
-                    attr = StringSeries(self._run, parse_path(self._path))
+                    attr = StringSeries(self._container, parse_path(self._path))
                 elif FileVal.is_convertable(first_value):
-                    attr = FileSeries(self._run, parse_path(self._path))
+                    attr = FileSeries(self._container, parse_path(self._path))
                 elif is_float_like(first_value):
-                    attr = FloatSeries(self._run, parse_path(self._path))
+                    attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string_like(first_value):
-                    attr = StringSeries(self._run, parse_path(self._path))
+                    attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     raise TypeError(
                         "Value of unsupported type {}".format(type(first_value))
                     )
 
-                self._run.set_attribute(self._path, attr)
+                self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
     @check_protected_paths
@@ -286,20 +286,20 @@ class Handler:
            https://docs.neptune.ai/api-reference/field-types#.add
         """
         verify_type("values", values, (str, Iterable))
-        with self._run.lock():
-            attr = self._run.get_attribute(self._path)
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
             if not attr:
-                attr = StringSet(self._run, parse_path(self._path))
-                self._run.set_attribute(self._path, attr)
+                attr = StringSet(self._container, parse_path(self._path))
+                self._container.set_attribute(self._path, attr)
             attr.add(values, wait)
 
     @check_protected_paths
     def pop(self, path: str = None, wait: bool = False) -> None:
         if path:
             verify_type("path", path, str)
-            self._run.pop(join_paths(self._path, path), wait)
+            self._container.pop(join_paths(self._path, path), wait)
         else:
-            self._run.pop(self._path, wait)
+            self._container.pop(self._path, wait)
 
     @check_protected_paths
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
@@ -483,12 +483,12 @@ class Handler:
         You may also want to check `track_files docs page`_.
            https://docs.neptune.ai/api-reference/field-types#.track_files
         """
-        with self._run.lock():
-            attr = self._run.get_attribute(self._path)
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
             if not attr:
-                attr = Artifact(self._run, parse_path(self._path))
+                attr = Artifact(self._container, parse_path(self._path))
 
-            self._run.set_attribute(self._path, attr)
+            self._container.set_attribute(self._path, attr)
 
             attr.track_files(path=path, destination=destination, wait=wait)
 
