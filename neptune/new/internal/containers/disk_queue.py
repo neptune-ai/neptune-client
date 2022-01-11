@@ -43,7 +43,7 @@ class DiskQueue(StorageQueue[T]):
         to_dict: Callable[[T], dict],
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
-        container_type: ContainerType = None,
+        container_type: ContainerType = ContainerType.RUN,
         max_file_size: int = 64 * 1024 ** 2,
     ):
         self._dir_path = dir_path.resolve()
