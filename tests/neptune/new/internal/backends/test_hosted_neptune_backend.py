@@ -158,8 +158,6 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     }
                 )
 
-                print(upload_mock.call_args_list)
-
                 upload_mock.assert_has_calls(
                     [
                         call(
@@ -246,7 +244,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         ),
                     ],
                 )
-                print(upload_mock.call_args_list)
+
                 # then
                 upload_mock.assert_has_calls(
                     [
