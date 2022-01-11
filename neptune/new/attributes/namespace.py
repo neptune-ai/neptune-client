@@ -26,7 +26,7 @@ from neptune.new.internal.utils.paths import parse_path, path_to_str
 from neptune.new.types.namespace import Namespace as NamespaceVal
 
 if TYPE_CHECKING:
-    from neptune.new.attribute_container import AttributeContainer
+    from neptune.new.attributes_containers import AttributeContainer
 
 RunStructure = ContainerStructure  # backwards compatibility
 

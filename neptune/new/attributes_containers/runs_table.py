@@ -14,14 +14,8 @@
 # limitations under the License.
 #
 
-# backwards compatibility
-# pylint: disable=unused-import,wrong-import-order
-from neptune.new.internal.backends.api_model import AttributeType
-from neptune.new.attributes_containers.attributes_containers_table import (
-    LeaderboardEntry,
-    LeaderboardHandler,
-)
-from neptune.new.exceptions import MetadataInconsistency
+import logging
+from typing import List
 
 from neptune.new.attributes_containers.attributes_containers_table import (
     AttributesContainersTable,
@@ -33,4 +27,26 @@ from neptune.new.internal.backends.api_model import (
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 
-from neptune.new.attributes_containers.runs_table import RunsTable, RunsTableEntry
+logger = logging.getLogger(__name__)
+
+
+class RunsTableEntry(AttributesContainersTableEntry):
+    def __init__(
+        self,
+        backend: NeptuneBackend,
+        _id: str,
+        attributes: List[AttributeWithProperties],
+    ):
+        super().__init__(
+            backend=backend,
+            container_type=ContainerType.RUN,
+            _id=_id,
+            attributes=attributes,
+        )
+
+
+class RunsTable(AttributesContainersTable):
+    table_entry_cls = RunsTableEntry
+
+    def to_runs(self):
+        return self.to_table_entries()

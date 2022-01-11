@@ -27,7 +27,7 @@ from neptune.new.attributes.series.series import Series
 from neptune.utils import split_to_chunks
 
 if TYPE_CHECKING:
-    from neptune.new.attribute_container import AttributeContainer
+    from neptune.new.attributes_containers import AttributeContainer
 
 Val = StringSeriesVal
 Data = str

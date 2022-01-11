@@ -300,8 +300,6 @@ from neptune.new.handler import FileSet
 from neptune.new.handler import FileVal
 from neptune.new.handler import FloatSeries
 from neptune.new.handler import Handler
-from neptune.new.handler import Iterable
-from neptune.new.handler import List
 from neptune.new.handler import NeptuneException
 from neptune.new.handler import StringSeries
 from neptune.new.handler import StringSet
@@ -311,7 +309,6 @@ from neptune.new.integrations.python_logger import Run
 from neptune.new.integrations.python_logger import RunState
 from neptune.new.logging.logger import Logger
 from neptune.new.logging.logger import Run
-from neptune.new.project import Iterable
 from neptune.new.project import Project
 from neptune.new.project import RunsTable
 from neptune.new.run import Attribute
@@ -341,7 +338,6 @@ from neptune.new.runs_table import AttributeType
 from neptune.new.runs_table import AttributeWithProperties
 from neptune.new.runs_table import LeaderboardEntry
 from neptune.new.runs_table import LeaderboardHandler
-from neptune.new.runs_table import List
 from neptune.new.runs_table import MetadataInconsistency
 from neptune.new.runs_table import RunsTable
 from neptune.new.runs_table import RunsTableEntry

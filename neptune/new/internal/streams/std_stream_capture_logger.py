@@ -19,7 +19,7 @@ import threading
 
 from typing import TextIO
 
-from neptune.new.run import Run
+from neptune.new.attributes_containers import Run
 from neptune.new.logging import Logger as NeptuneLogger
 
 

@@ -26,9 +26,9 @@ from neptune.new.exceptions import (
     InactiveModelException,
     InactiveModelVersionException,
 )
-from neptune.new.model import Model
-from neptune.new.model_version import ModelVersion
-from neptune.new.project import Project
+from neptune.new.attributes_containers import Model
+from neptune.new.attributes_containers import ModelVersion
+from neptune.new.attributes_containers import Project
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.series import FloatSeries, StringSeries

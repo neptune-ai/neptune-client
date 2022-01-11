@@ -32,7 +32,7 @@ from neptune.new.exceptions import (
     NeptuneUninitializedException,
     NeptunePossibleLegacyUsageException,
 )
-from neptune.new.run import Run
+from neptune.new.attributes_containers import Run, Project, Model, ModelVersion
 from neptune.new.internal.init import (
     get_project,
     get_model,

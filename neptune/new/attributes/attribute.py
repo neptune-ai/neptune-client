@@ -21,7 +21,7 @@ from neptune.new.internal.operation import Operation
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
-    from neptune.new.attribute_container import AttributeContainer
+    from neptune.new.attributes_containers import AttributeContainer
     from neptune.new.internal.container_type import ContainerType
 
 

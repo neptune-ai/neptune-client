@@ -22,7 +22,7 @@ from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.attributes_containers import Run
 
 _logger = logging.getLogger(__name__)
 

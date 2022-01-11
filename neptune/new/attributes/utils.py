@@ -36,7 +36,7 @@ from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.backends.api_model import AttributeType
 
 if TYPE_CHECKING:
-    from neptune.new.attribute_container import AttributeContainer
+    from neptune.new.attributes_containers import AttributeContainer
     from neptune.new.attributes.attribute import Attribute
 
 _attribute_type_to_attr_class_map = {

@@ -24,7 +24,7 @@ from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.string import String as StringVal
 
 if typing.TYPE_CHECKING:
-    from neptune.new.attribute_container import AttributeContainer
+    from neptune.new.attributes_containers import AttributeContainer
     from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 
 

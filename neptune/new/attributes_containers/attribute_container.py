@@ -41,7 +41,7 @@ from neptune.new.exceptions import (
     InactiveModelException,
     InactiveModelVersionException,
 )
-from neptune.new.handler import Handler
+from neptune.new.attributes_containers.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob

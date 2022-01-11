@@ -16,7 +16,7 @@
 import logging
 from typing import List
 
-from neptune.new.attributes_containers_table import (
+from neptune.new.attributes_containers.attributes_containers_table import (
     AttributesContainersTable,
     AttributesContainersTableEntry,
 )
