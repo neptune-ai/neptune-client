@@ -35,25 +35,13 @@ class ContainerTypeFile:
     ) -> ContainerType:
         """Make sure that queue will serve requested `default_container_type`
         or analyze container_type based on information stored on disk."""
-        container_type_from_file = None
         if self._file.exists():
             with open(self._file, "r") as f:
-                container_type_from_file = ContainerType(f.read())
+                # Information about type is stored on disk
+                return ContainerType(f.read())
 
-        if container_type_from_file is None:
-            # No information about type stored on disk
-            return default_container_type
-        else:
-            # Information about type is stored on disk
-            if (
-                default_container_type is not None
-                and container_type_from_file != default_container_type
-            ):
-                raise NeptuneInternalException(
-                    f"Default container_type ({default_container_type.value})"
-                    f" doesn't match the one from file ({container_type_from_file.value})"
-                )
-            return container_type_from_file
+        # No information about type stored on disk
+        return default_container_type
 
     def save(self):
         """Saves information regarding container_type in queue directory"""
