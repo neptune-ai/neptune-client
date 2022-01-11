@@ -21,14 +21,11 @@ from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.types.mode import Mode
 
 _logger = logging.getLogger(__name__)
 
 
 class ReadOnlyOperationProcessor(OperationProcessor):
-    mode = Mode.READ_ONLY
-
     def __init__(self, container_id: str, backend: NeptuneBackend):
         self._container_id = container_id
         self._backend = backend

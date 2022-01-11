@@ -21,10 +21,12 @@ from neptune.new.exceptions import NeptuneOfflineModeChangeStageException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.operation_processors.offline_operation_processor import (
+    OfflineOperationProcessor,
+)
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.types.mode import Mode
 from neptune.new.types.model_version_stage import ModelVersionStage
 
 
@@ -74,7 +76,7 @@ class ModelVersion(MetadataContainer):
     def change_stage(self, stage: str):
         stage = ModelVersionStage(stage)
 
-        if self._op_processor.mode == Mode.OFFLINE:
+        if isinstance(self._op_processor, OfflineOperationProcessor):
             raise NeptuneOfflineModeChangeStageException()
 
         self.wait()

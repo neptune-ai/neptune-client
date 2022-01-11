@@ -52,9 +52,8 @@ def check_protected_paths(fun):
     @wraps(fun)
     def inner_fun(self: "Handler", *args, **kwargs):
         # pylint: disable=protected-access
-        for path in self.PROTECTED_PATHS:
-            if self._path == path:
-                raise NeptuneProtectedPathException(path)
+        if self._path in self._PROTECTED_PATHS:
+            raise NeptuneProtectedPathException(self._path)
         return fun(self, *args, **kwargs)
 
     return inner_fun
@@ -62,7 +61,7 @@ def check_protected_paths(fun):
 
 class Handler:
     # paths which can't be modified by client directly
-    PROTECTED_PATHS = [
+    _PROTECTED_PATHS = [
         SYSTEM_STAGE_ATTRIBUTE_PATH,
     ]
 
@@ -390,6 +389,7 @@ class Handler:
             function_name="fetch_values", include_timestamp=include_timestamp
         )
 
+    @check_protected_paths
     def delete_files(
         self, paths: Union[str, Iterable[str]], wait: bool = False
     ) -> None:

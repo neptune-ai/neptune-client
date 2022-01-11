@@ -17,14 +17,14 @@ import os
 import unittest
 from datetime import datetime
 
-from neptune.new import ANONYMOUS, Run, init, init_project, init_run, init_model
+from neptune.new import ANONYMOUS, Run, init, init_model, init_project, init_run
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
-    InactiveProjectException,
-    MetadataInconsistency,
-    InactiveRunException,
     InactiveModelException,
     InactiveModelVersionException,
+    InactiveProjectException,
+    InactiveRunException,
+    MetadataInconsistency,
     NeptuneProtectedPathException,
 )
 from neptune.new.metadata_containers import Model
@@ -32,7 +32,6 @@ from neptune.new.metadata_containers import ModelVersion
 from neptune.new.metadata_containers import Project
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
-from neptune.new.types.model_version_stage import ModelVersionStage
 from neptune.new.types.series import FloatSeries, StringSeries
 
 
@@ -224,8 +223,8 @@ class TestExperiment(unittest.TestCase):
         for exp in self.get_experiments():
             with self.subTest(msg=f"For type {exp.container_type}"):
                 with self.assertRaises(NeptuneProtectedPathException):
-                    exp["sys/stage"] = ModelVersionStage.PRODUCTION.value
+                    exp["sys/stage"] = "production"
 
-                exp["tmp/placeholder"] = ModelVersionStage.PRODUCTION.value
+                exp["tmp/placeholder"] = "production"
                 with self.assertRaises(NeptuneProtectedPathException):
                     exp["sys/stage"] = exp["tmp/placeholder"]
