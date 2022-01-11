@@ -1,4 +1,9 @@
-## [UNRELEASED] neptune-client 0.14.1
+## [UNRELEASED] neptune-client 0.14.2
+
+## Fixes
+- Fixed backward compatibility when syncing old offline data ([#810](https://github.com/neptune-ai/neptune-client/pull/810))
+
+## neptune-client 0.14.1
 
 ## Fixes
 - Fixed legacy url in NVML information ([#795](https://github.com/neptune-ai/neptune-client/pull/795))
