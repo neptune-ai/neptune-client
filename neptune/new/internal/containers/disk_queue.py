@@ -43,7 +43,7 @@ class DiskQueue(StorageQueue[T]):
         to_dict: Callable[[T], dict],
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
-        container_type: ContainerType = ContainerType.RUN,
+        container_type: ContainerType = None,
         max_file_size: int = 64 * 1024 ** 2,
     ):
         self._dir_path = dir_path.resolve()
@@ -58,7 +58,7 @@ class DiskQueue(StorageQueue[T]):
 
         # save information regarding container type in queue directory
         container_file_type = ContainerTypeFile(
-            dir_path, default_container_type=container_type
+            dir_path, expected_container_type=container_type
         )
         container_file_type.save()
 
