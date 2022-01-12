@@ -13,6 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import dataclasses
+
+
+@dataclasses.dataclass
+class MultipartConfig:
+    min_chunk_size: int
+    max_chunk_size: int
+    max_chunk_count: int
+    max_single_part_size: int
 
 
 class ClientConfig(object):
@@ -23,12 +32,14 @@ class ClientConfig(object):
         min_recommended_version,
         min_compatible_version,
         max_compatible_version,
+        multipart_config,
     ):
         self._api_url = api_url
         self._display_url = display_url
         self._min_recommended_version = min_recommended_version
         self._min_compatible_version = min_compatible_version
         self._max_compatible_version = max_compatible_version
+        self._multipart_config = multipart_config
 
     @property
     def api_url(self):
@@ -49,3 +60,7 @@ class ClientConfig(object):
     @property
     def max_compatible_version(self):
         return self._max_compatible_version
+
+    @property
+    def multipart_config(self):
+        return self._multipart_config

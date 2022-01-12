@@ -8,6 +8,7 @@
 ## Fixes
 - Fixed legacy url in NVML information ([#795](https://github.com/neptune-ai/neptune-client/pull/795))
 - Make init_project accepting kwargs only ([#805](https://github.com/neptune-ai/neptune-client/pull/805))
+- Use new file upload API ([#789](https://github.com/neptune-ai/neptune-client/pull/789))
 
 ## neptune-client 0.14.0
 
