@@ -193,28 +193,11 @@ class AttributeContainer(AbstractContextManager):
         self._state = ContainerState.STOPPED
 
     def get_structure(self) -> Dict[str, Any]:
-        """Returns a run's or project's metadata structure in form of a dictionary.
-
-        This method can be used to traverse the run's or project's metadata structure programmatically
-        when using Neptune in automated workflows.
-
-        .. danger::
-            The returned object is a deep copy of an internal run's structure.
-
-        Returns:
-            ``dict``: with the run's or project's metadata structure.
-
-        """
-
         # This is very weird pylint false-positive.
         # pylint: disable=no-member
         return self._structure.get_structure().to_dict()
 
     def print_structure(self) -> None:
-        """Pretty prints the structure of the run's or project's metadata.
-
-        Paths are ordered lexicographically and the whole structure is neatly colored.
-        """
         self._print_structure_impl(self.get_structure(), indent=0)
 
     def _print_structure_impl(self, struct: dict, indent: int) -> None:

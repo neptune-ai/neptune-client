@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import threading
-from typing import Union, Optional
+from typing import Union, Optional, Dict, Any
 
 import click
 
@@ -295,6 +295,28 @@ class Run(AttributeContainer):
             https://docs.neptune.ai/api-reference/run#.stop
         """
         AttributeContainer.stop(self, seconds=seconds)
+
+    def get_structure(self) -> Dict[str, Any]:
+        """Returns a run's metadata structure in form of a dictionary.
+
+        This method can be used to traverse the run's metadata structure programmatically
+        when using Neptune in automated workflows.
+
+        .. danger::
+            The returned object is a deep copy of an internal run's structure.
+
+        Returns:
+            ``dict``: with the run's metadata structure.
+
+        """
+        return AttributeContainer.get_structure(self)
+
+    def print_structure(self) -> None:
+        """Pretty prints the structure of the run's metadata.
+
+        Paths are ordered lexicographically and the whole structure is neatly colored.
+        """
+        AttributeContainer.print_structure(self)
 
     def pop(self, path: str, wait: bool = False) -> None:
         """Removes the field stored under the path completely and all data associated with it.

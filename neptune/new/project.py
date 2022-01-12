@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import threading
-from typing import Union, Optional, Iterable
+from typing import Union, Optional, Iterable, Dict, Any
 
 from neptune.new.attribute_container import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -275,6 +275,28 @@ class Project(AttributeContainer):
             https://docs.neptune.ai/api-reference/project#.stop
         """
         AttributeContainer.stop(self, seconds=seconds)
+
+    def get_structure(self) -> Dict[str, Any]:
+        """Returns a project's metadata structure in form of a dictionary.
+
+        This method can be used to traverse the project's metadata structure programmatically
+        when using Neptune in automated workflows.
+
+        .. danger::
+            The returned object is a deep copy of an internal project's structure.
+
+        Returns:
+            ``dict``: with the project's metadata structure.
+
+        """
+        return AttributeContainer.get_structure(self)
+
+    def print_structure(self) -> None:
+        """Pretty prints the structure of the project's metadata.
+
+        Paths are ordered lexicographically and the whole structure is neatly colored.
+        """
+        AttributeContainer.print_structure(self)
 
     def pop(self, path: str, wait: bool = False) -> None:
         """Removes the field stored under the path completely and all data associated with it.
