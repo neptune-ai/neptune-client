@@ -19,11 +19,10 @@ import os
 import threading
 from glob import glob
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple, TypeVar
+from typing import Callable, Generic, List, Optional, Tuple, TypeVar
 
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.containers.storage_queue import StorageQueue
 from neptune.new.internal.utils.container_type_file import ContainerTypeFile
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
@@ -33,7 +32,7 @@ T = TypeVar("T")
 _logger = logging.getLogger(__name__)
 
 
-class DiskQueue(StorageQueue[T]):
+class DiskQueue(Generic[T]):
 
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
 

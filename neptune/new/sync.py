@@ -44,7 +44,7 @@ from neptune.new.internal.backends.api_model import ApiExperiment, Project
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.containers.disk_queue import DiskQueue
+from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.container_type_file import ContainerTypeFile

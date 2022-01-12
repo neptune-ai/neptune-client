@@ -22,7 +22,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.containers.disk_queue import DiskQueue
+from neptune.new.internal.disk_queue import DiskQueue
 
 # pylint: disable=protected-access
 

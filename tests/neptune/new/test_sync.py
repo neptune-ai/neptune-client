@@ -27,7 +27,7 @@ from neptune.new.constants import OFFLINE_DIRECTORY
 from neptune.new.exceptions import ProjectNotFound
 from neptune.new.internal.backends.api_model import Project
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.containers.disk_queue import DiskQueue
+from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.new.sync import (
