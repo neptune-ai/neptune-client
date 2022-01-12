@@ -17,7 +17,7 @@ import threading
 
 import click
 
-from neptune.new.metadata_containers import AttributeContainer
+from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
@@ -26,7 +26,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
 )
 
 
-class Run(AttributeContainer):
+class Run(MetadataContainer):
     """A Run in Neptune is a representation of all metadata that you log to Neptune.
 
     Beginning when you start a tracked run with `neptune.init()` and ending when the script finishes

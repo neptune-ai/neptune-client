@@ -79,7 +79,7 @@ from neptune.new.types.value_copy import ValueCopy
 
 def ensure_not_stopped(fun):
     @wraps(fun)
-    def inner_fun(self: "AttributeContainer", *args, **kwargs):
+    def inner_fun(self: "MetadataContainer", *args, **kwargs):
         # pylint: disable=protected-access
         if self._state == ContainerState.STOPPED:
             if self.container_type == ContainerType.RUN:
@@ -97,7 +97,7 @@ def ensure_not_stopped(fun):
     return inner_fun
 
 
-class AttributeContainer(AbstractContextManager):
+class MetadataContainer(AbstractContextManager):
     container_type: ContainerType
 
     LEGACY_METHODS = set()

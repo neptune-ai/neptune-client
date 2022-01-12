@@ -17,9 +17,9 @@
 import logging
 from typing import List
 
-from neptune.new.metadata_containers.attributes_containers_table import (
-    AttributesContainersTable,
-    AttributesContainersTableEntry,
+from neptune.new.metadata_containers.metadata_containers_table import (
+    MetadataContainersTable,
+    MetadataContainersTableEntry,
 )
 from neptune.new.internal.backends.api_model import (
     AttributeWithProperties,
@@ -30,7 +30,7 @@ from neptune.new.internal.container_type import ContainerType
 logger = logging.getLogger(__name__)
 
 
-class RunsTableEntry(AttributesContainersTableEntry):
+class RunsTableEntry(MetadataContainersTableEntry):
     def __init__(
         self,
         backend: NeptuneBackend,
@@ -45,7 +45,7 @@ class RunsTableEntry(AttributesContainersTableEntry):
         )
 
 
-class RunsTable(AttributesContainersTable):
+class RunsTable(MetadataContainersTable):
     table_entry_cls = RunsTableEntry
 
     def to_runs(self):

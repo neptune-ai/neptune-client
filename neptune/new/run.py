@@ -17,7 +17,7 @@
 # backwards compatibility
 # pylint: disable=unused-import
 
-from neptune.new.metadata_containers import AttributeContainer, Run
+from neptune.new.metadata_containers import Run
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob

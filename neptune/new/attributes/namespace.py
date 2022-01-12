@@ -26,13 +26,13 @@ from neptune.new.internal.utils.paths import parse_path, path_to_str
 from neptune.new.types.namespace import Namespace as NamespaceVal
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import AttributeContainer
+    from neptune.new.metadata_containers import MetadataContainer
 
 RunStructure = ContainerStructure  # backwards compatibility
 
 
 class Namespace(Attribute, MutableMapping):
-    def __init__(self, container: "AttributeContainer", path: List[str]):
+    def __init__(self, container: "MetadataContainer", path: List[str]):
         Attribute.__init__(self, container, path)
         self._attributes = {}
         self._str_path = path_to_str(path)
@@ -94,7 +94,7 @@ class Namespace(Attribute, MutableMapping):
 
 
 class NamespaceBuilder:
-    def __init__(self, container: "AttributeContainer"):
+    def __init__(self, container: "MetadataContainer"):
         self._run = container
 
     def __call__(self, path: List[str]) -> Namespace:

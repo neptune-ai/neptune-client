@@ -21,14 +21,14 @@ from neptune.new.internal.operation import Operation
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import AttributeContainer
+    from neptune.new.metadata_containers import MetadataContainer
     from neptune.new.internal.container_type import ContainerType
 
 
 class Attribute:
     supports_copy = False
 
-    def __init__(self, container: "AttributeContainer", path: List[str]):
+    def __init__(self, container: "MetadataContainer", path: List[str]):
         super().__init__()
         self._container = container
         self._path = path

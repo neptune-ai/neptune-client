@@ -15,7 +15,7 @@
 #
 import threading
 
-from neptune.new.metadata_containers.attribute_container import AttributeContainer
+from neptune.new.metadata_containers.metadata_container import MetadataContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
@@ -26,7 +26,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
 from neptune.new.types.model_version_stage import ModelVersionStage
 
 
-class ModelVersion(AttributeContainer):
+class ModelVersion(MetadataContainer):
     """A class for managing a Neptune model version and retrieving information from it.
 
     You may also want to check `ModelVersion docs page`_.

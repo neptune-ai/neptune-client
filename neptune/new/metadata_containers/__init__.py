@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from neptune.new.metadata_containers.attribute_container import AttributeContainer
+from neptune.new.metadata_containers.metadata_container import MetadataContainer
 from neptune.new.metadata_containers.model import Model
 from neptune.new.metadata_containers.model_version import ModelVersion
 from neptune.new.metadata_containers.project import Project
