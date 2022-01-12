@@ -15,14 +15,14 @@
 #
 import threading
 
-from neptune.new.attributes_containers import AttributeContainer
+from neptune.new.metadata_containers import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.attributes_containers.model_versions_table import ModelVersionsTable
+from neptune.new.metadata_containers.model_versions_table import ModelVersionsTable
 
 
 class Model(AttributeContainer):

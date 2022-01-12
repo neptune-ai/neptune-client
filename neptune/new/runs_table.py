@@ -17,13 +17,13 @@
 # backwards compatibility
 # pylint: disable=unused-import,wrong-import-order
 from neptune.new.internal.backends.api_model import AttributeType
-from neptune.new.attributes_containers.attributes_containers_table import (
+from neptune.new.metadata_containers.attributes_containers_table import (
     LeaderboardEntry,
     LeaderboardHandler,
 )
 from neptune.new.exceptions import MetadataInconsistency
 
-from neptune.new.attributes_containers.attributes_containers_table import (
+from neptune.new.metadata_containers.attributes_containers_table import (
     AttributesContainersTable,
     AttributesContainersTableEntry,
 )
@@ -33,4 +33,4 @@ from neptune.new.internal.backends.api_model import (
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 
-from neptune.new.attributes_containers.runs_table import RunsTable, RunsTableEntry
+from neptune.new.metadata_containers.runs_table import RunsTable, RunsTableEntry

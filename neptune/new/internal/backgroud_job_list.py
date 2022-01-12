@@ -19,7 +19,7 @@ from typing import List, TYPE_CHECKING, Optional
 from neptune.new.internal.background_job import BackgroundJob
 
 if TYPE_CHECKING:
-    from neptune.new.attributes_containers import Run
+    from neptune.new.metadata_containers import Run
 
 
 class BackgroundJobList(BackgroundJob):

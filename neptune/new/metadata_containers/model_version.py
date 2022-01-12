@@ -15,7 +15,7 @@
 #
 import threading
 
-from neptune.new.attributes_containers.attribute_container import AttributeContainer
+from neptune.new.metadata_containers.attribute_container import AttributeContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType

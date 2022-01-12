@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,23 +14,8 @@
 # limitations under the License.
 #
 
-import abc
-
-from typing import TYPE_CHECKING, Optional
-
-if TYPE_CHECKING:
-    from neptune.new.metadata_containers import Run
-
-
-class BackgroundJob:
-    @abc.abstractmethod
-    def start(self, run: "Run"):
-        pass
-
-    @abc.abstractmethod
-    def stop(self):
-        pass
-
-    @abc.abstractmethod
-    def join(self, seconds: Optional[float] = None):
-        pass
+from neptune.new.metadata_containers.attribute_container import AttributeContainer
+from neptune.new.metadata_containers.model import Model
+from neptune.new.metadata_containers.model_version import ModelVersion
+from neptune.new.metadata_containers.project import Project
+from neptune.new.metadata_containers.run import Run

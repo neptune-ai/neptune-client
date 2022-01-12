@@ -26,7 +26,7 @@ from neptune.new.internal.utils.uncaught_exception_handler import (
 )
 
 if TYPE_CHECKING:
-    from neptune.new.attributes_containers import Run
+    from neptune.new.metadata_containers import Run
 
 _logger = logging.getLogger(__name__)
 

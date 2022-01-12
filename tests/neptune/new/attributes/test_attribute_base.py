@@ -33,7 +33,7 @@ from neptune.new.internal.operation_processors.sync_operation_processor import (
 
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 
-from neptune.new.attributes_containers import Run
+from neptune.new.metadata_containers import Run
 
 
 _now = time.time()

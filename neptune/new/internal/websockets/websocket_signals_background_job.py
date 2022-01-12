@@ -36,7 +36,7 @@ from neptune.new.internal.utils import process_killer
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 
 if TYPE_CHECKING:
-    from neptune.new.attributes_containers import Run
+    from neptune.new.metadata_containers import Run
 
 _logger = logging.getLogger(__name__)
 

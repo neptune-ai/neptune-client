@@ -27,7 +27,7 @@ from neptune.new.internal.streams.std_stream_capture_logger import (
 )
 
 if TYPE_CHECKING:
-    from neptune.new.attributes_containers import Run
+    from neptune.new.metadata_containers import Run
 
 
 class StdoutCaptureBackgroundJob(BackgroundJob):
