@@ -13,16 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import dataclasses
 
 
+@dataclasses.dataclass
 class MultipartConfig:
-    def __init__(
-        self, min_chunk_size, max_chunk_size, max_chunk_count, max_single_part_size
-    ):
-        self.min_chunk_size = min_chunk_size
-        self.max_chunk_size = max_chunk_size
-        self.max_chunk_count = max_chunk_count
-        self.max_single_part_size = max_single_part_size
+    min_chunk_size: int
+    max_chunk_size: int
+    max_chunk_count: int
+    max_single_part_size: int
 
 
 class ClientConfig(object):

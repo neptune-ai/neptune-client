@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import dataclasses
 import io
 import tarfile
 from typing import Union, BinaryIO, Any, Generator
@@ -28,14 +28,11 @@ from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.backends.api_model import MultipartConfig
 
 
-class FileChunk(object):
-    def __init__(self, data: bytes, start: int, end: int):
-        self.data: bytes = data
-        self.start: int = start
-        self.end: int = end
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
+@dataclasses.dataclass
+class FileChunk:
+    data: bytes
+    start: int
+    end: int
 
 
 class FileChunker:
@@ -71,7 +68,7 @@ class FileChunker:
                 if isinstance(chunk, str):
                     chunk = chunk.encode("utf-8")
                 new_offset = last_offset + len(chunk)
-                yield FileChunk(chunk, last_offset, new_offset)
+                yield FileChunk(data=chunk, start=last_offset, end=new_offset)
                 last_offset = new_offset
 
 
@@ -100,11 +97,11 @@ class FileChunkStream(object):
                 if isinstance(chunk, str):
                     chunk = chunk.encode("utf-8")
                 new_offset = last_offset + len(chunk)
-                yield FileChunk(chunk, last_offset, new_offset)
+                yield FileChunk(data=chunk, start=last_offset, end=new_offset)
                 last_offset = new_offset
             else:
                 if last_offset == 0:
-                    yield FileChunk(b"", 0, 0)
+                    yield FileChunk(data=b"", start=0, end=0)
                 break
 
     def close(self):
