@@ -58,7 +58,7 @@ class DiskQueue(StorageQueue[T]):
 
         # save information regarding container type in queue directory
         container_file_type = ContainerTypeFile(
-            dir_path, default_container_type=container_type
+            dir_path, expected_container_type=container_type
         )
         container_file_type.save()
 

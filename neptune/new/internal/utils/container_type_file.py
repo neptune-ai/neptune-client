@@ -22,16 +22,16 @@ from neptune.new.internal.exceptions import NeptuneInternalException
 class ContainerTypeFile:
     FILE_NAME = "container_type"
 
-    def __init__(self, dir_path: Path, default_container_type: ContainerType = None):
+    def __init__(self, dir_path: Path, expected_container_type: ContainerType = None):
         self._file = dir_path / self.FILE_NAME
-        self._container_type = self.check_container_type(default_container_type)
+        self._container_type = self.check_container_type(expected_container_type)
 
     @property
     def container_type(self) -> ContainerType:
         return self._container_type
 
     def check_container_type(
-        self, default_container_type: ContainerType
+        self, expected_container_type: ContainerType
     ) -> ContainerType:
         """Make sure that queue will serve requested `default_container_type`
         or analyze container_type based on information stored on disk."""
@@ -42,17 +42,21 @@ class ContainerTypeFile:
 
         if container_type_from_file is None:
             # No information about type stored on disk
-            if default_container_type is None:
-                raise NeptuneInternalException("Can't determine container_type")
-            return default_container_type
+            if expected_container_type is None:
+                # When working with legacy data
+                # container_type couldn't be determined
+                # and for backward compatibility
+                # it should be Run at default
+                return ContainerType.RUN
+            return expected_container_type
         else:
             # Information about type is stored on disk
             if (
-                default_container_type is not None
-                and container_type_from_file != default_container_type
+                expected_container_type is not None
+                and container_type_from_file != expected_container_type
             ):
                 raise NeptuneInternalException(
-                    f"Default container_type ({default_container_type.value})"
+                    f"Expected container_type ({expected_container_type.value})"
                     f" doesn't match the one from file ({container_type_from_file.value})"
                 )
             return container_type_from_file

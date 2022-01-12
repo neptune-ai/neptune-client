@@ -23,7 +23,7 @@ import mock
 import pandas as pd
 from mock import call, MagicMock
 from munch import Munch
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from neptune.experiments import Experiment
 from neptune.internal.channels.channels import ChannelType, ChannelValue

@@ -1,0 +1,37 @@
+name: Pull Request
+on:
+  push:
+    branches-ignore:
+      - master
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Lint
+        uses: ./.github/actions/lint
+
+  integration:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.6, 3.9] # minimum, maximum
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt -r requirements/test_requirements.txt
+
+      - name: Build and test
+        run : |
+          pytest ./tests
