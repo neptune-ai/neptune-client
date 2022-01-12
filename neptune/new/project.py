@@ -133,7 +133,7 @@ class Project(AttributeContainer):
         You may also want to check `fetch_runs_table docs page`_.
 
         .. _fetch_runs_table docs page:
-            https://docs.neptune.ai/api-reference/project#fetch_runs_table
+            https://docs.neptune.ai/api-reference/project#.fetch_runs_table
         """
         id = self._as_list("id", id)
         state = self._as_list("state", state)
@@ -157,3 +157,182 @@ class Project(AttributeContainer):
             return [value]
         verify_collection_type(name, value, str)
         return value
+
+    def assign(self, value, wait: bool = False) -> None:
+        """Assign values to multiple fields from a dictionary.
+        You can use this method to quickly log all projects's parameters.
+
+        Args:
+            value (dict): A dictionary with values to assign, where keys become the paths of the fields.
+                The dictionary can be nested - in such case the path will be a combination of all keys.
+            wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
+                This makes the call synchronous. Defaults to `True`.
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> project = neptune.init_project(name='MY_WORKSPACE/MY_PROJECT')
+
+            >>> # Assign multiple fields from a dictionary
+            ... params = {"max_epochs": 10, "optimizer": "Adam"}
+            >>> project["parameters"] = params
+
+            >>> # You can always log explicitely parameters one by one
+            ... project["parameters/max_epochs"] = 10
+            >>> project["parameters/optimizer"] = "Adam"
+
+            >>> # Dictionaries can be nested
+            ... params = {"train": {"max_epochs": 10}}
+            >>> project["parameters"] = params
+            >>> # This will log 10 under path "parameters/train/max_epochs"
+
+        You may also want to check `assign docs page`_.
+
+        .. _assign docs page:
+            https://docs.neptune.ai/api-reference/project#.assign
+        """
+        AttributeContainer.assign(self, value=value, wait=wait)
+
+    def fetch(self) -> dict:
+        """Fetch values of all non-File Atom fields as a dictionary.
+        The result will preserve the hierarchical structure of the projects's metadata,
+        but will contain only non-File Atom fields.
+        You can use this method to quickly retrieve projects's parameters.
+
+        Returns:
+            `dict` containing all non-File Atom fields values.
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> project = neptune.init_project(name='MY_WORKSPACE/MY_PROJECT')
+            >>> params = project['model/parameters'].fetch()
+
+            >>> project_data = project.fetch()
+
+            >>> print(project_data)
+            >>> # this will print out all Atom attributes stored in project as a dict
+
+        You may also want to check `fetch docs page`_.
+
+        .. _fetch docs page:
+            https://docs.neptune.ai/api-reference/project#.fetch
+        """
+        return AttributeContainer.fetch(self)
+
+    def stop(self, seconds: Optional[Union[float, int]] = None) -> None:
+        """Stops the connection to the project and kills the synchronization thread.
+
+        `.stop()` will be automatically called when a script that initialized the connection finishes
+        or on the destruction of Neptune context.
+
+        When using Neptune with Jupyter notebooks it's a good practice to stop the connection manually as it
+        will be stopped automatically only when the Jupyter kernel stops.
+
+        Args:
+            seconds (int or float, optional): Seconds to wait for all tracking calls to finish
+                before stopping the tracked run.
+                If `None` will wait for all tracking calls to finish. Defaults to `True`.
+
+        Examples:
+            If you are initializing the connection from a script you don't need to call `.stop()`:
+
+            >>> import neptune.new as neptune
+            >>> project = neptune.init_project(name='MY_WORKSPACE/MY_PROJECT')
+
+            >>> # Your training or monitoring code
+            ... pass
+            ... # If you are executing Python script .stop()
+            ... # is automatically called at the end for every Neptune object
+
+            If you are initializing multiple connection from one script it is a good practice
+            to .stop() the unneeded connections. You can also use Context Managers - Neptune
+            will automatically call .stop() on the destruction of Project context:
+
+            >>> import neptune.new as neptune
+
+            >>> # If you are initializing multiple connections from the same script
+            ... # stop the connection manually once not needed
+            ... for project_name in projects:
+            ...   project = neptune.init_project(name=project_name)
+            ...   # Your training or monitoring code
+            ...   pass
+            ...   project.stop()
+
+            >>> # You can also use with statement and context manager
+            ... for project_name in projects:
+            ...   with neptune.init_project(name=project_name) as project:
+            ...     # Your code
+            ...     pass
+            ...     # .stop() is automatically called
+            ...     # when code execution exits the with statement
+
+        .. warning::
+            If you are using Jupyter notebooks for connecting to a project you need to manually invoke `.stop()`
+            once the connection is not needed.
+
+        You may also want to check `stop docs page`_.
+
+        .. _stop docs page:
+            https://docs.neptune.ai/api-reference/project#.stop
+        """
+        AttributeContainer.stop(self, seconds=seconds)
+
+    def pop(self, path: str, wait: bool = False) -> None:
+        """Removes the field stored under the path completely and all data associated with it.
+
+        Args:
+            path (str): Path of the field to be removed.
+            wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
+                This makes the call synchronous. Defaults to `True`.
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> project = neptune.init_project(name='MY_WORKSPACE/MY_PROJECT')
+
+            >>> project['parameters/learninggg_rata'] = 0.3
+
+            >>> # Delete a field along with it's data
+            ... project.pop('parameters/learninggg_rata')
+
+            >>> project['parameters/learning_rate'] = 0.3
+
+            >>> # Training finished
+            ... project['trained_model'].upload('model.pt')
+            >>> # 'model_checkpoint' is a File field
+            ... project.pop('model_checkpoint')
+
+        You may also want to check `pop docs page`_.
+
+        .. _pop docs page:
+           https://docs.neptune.ai/api-reference/project#.pop
+        """
+        AttributeContainer.pop(self, path=path, wait=wait)
+
+    def wait(self, disk_only=False) -> None:
+        """Wait for all the tracking calls to finish.
+
+        Args:
+            disk_only (bool, optional, default is False): If `True` the process will only wait for data to be saved
+                locally from memory, but will not wait for them to reach Neptune servers.
+                Defaults to `False`.
+
+        You may also want to check `wait docs page`_.
+
+        .. _wait docs page:
+            https://docs.neptune.ai/api-reference/project#.wait
+        """
+        AttributeContainer.wait(self, disk_only=disk_only)
+
+    def sync(self, wait: bool = True) -> None:
+        """Synchronizes local representation of the project with Neptune servers.
+
+        Args:
+            wait (bool, optional, default is False): If `True` the process will only wait for data to be saved
+                locally from memory, but will not wait for them to reach Neptune servers.
+                Defaults to `True`.
+
+        You may also want to check `sync docs page`_.
+
+        .. _sync docs page:
+            https://docs.neptune.ai/api-reference/project#.sync
+        """
+        AttributeContainer.sync(self, wait=wait)
