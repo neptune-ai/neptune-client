@@ -25,7 +25,7 @@ from neptune.new.constants import (
     OFFLINE_DIRECTORY,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.containers.disk_queue import DiskQueue
+from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
 from neptune.new.types.mode import Mode
 from .async_operation_processor import AsyncOperationProcessor

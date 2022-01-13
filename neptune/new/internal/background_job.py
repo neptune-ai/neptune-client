@@ -19,7 +19,7 @@ import abc
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.metadata_containers import Run
 
 
 class BackgroundJob:

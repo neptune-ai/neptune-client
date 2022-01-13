@@ -24,7 +24,7 @@ from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.string import String as StringVal
 
 if typing.TYPE_CHECKING:
-    from neptune.new.attribute_container import AttributeContainer
+    from neptune.new.metadata_containers import MetadataContainer
     from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 
 
@@ -32,7 +32,7 @@ class String(CopiableAtom):
 
     MAX_VALUE_LENGTH = 16384
 
-    def __init__(self, container: "AttributeContainer", path: typing.List[str]):
+    def __init__(self, container: "MetadataContainer", path: typing.List[str]):
         super().__init__(container, path)
         self._value_truncation_occurred = False
 

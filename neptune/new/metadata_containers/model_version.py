@@ -15,26 +15,27 @@
 #
 import threading
 
-from neptune.new.attribute_container import AttributeContainer
+from neptune.new.metadata_containers.metadata_container import MetadataContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.operation import ChangeStage
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.model_versions_table import ModelVersionsTable
+from neptune.new.types.model_version_stage import ModelVersionStage
 
 
-class Model(AttributeContainer):
-    """A class for managing a Neptune model and retrieving information from it.
+class ModelVersion(MetadataContainer):
+    """A class for managing a Neptune model version and retrieving information from it.
 
-    You may also want to check `Model docs page`_.
+    You may also want to check `ModelVersion docs page`_.
 
-    .. _Model docs page:
-       https://docs.neptune.ai/api-reference/model
+    .. _ModelVersion docs page:
+       https://docs.neptune.ai/api-reference/model-version
     """
 
-    container_type = ContainerType.MODEL
+    container_type = ContainerType.MODEL_VERSION
 
     def __init__(
         self,
@@ -64,10 +65,7 @@ class Model(AttributeContainer):
     def _label(self) -> str:
         return self._sys_id
 
-    def fetch_model_versions_table(self) -> ModelVersionsTable:
-        """TODO: NPT-11349"""
-        leaderboard_entries = self._backend.search_leaderboard_entries(
-            project_id=self._project_id, parent_id=self._id, types=[self.container_type]
+    def change_stage(self, stage: str, wait=False):
+        self._op_processor.enqueue_operation(
+            ChangeStage(container_id=self._id, stage=ModelVersionStage(stage)), wait
         )
-
-        return ModelVersionsTable(backend=self._backend, entries=leaderboard_entries)

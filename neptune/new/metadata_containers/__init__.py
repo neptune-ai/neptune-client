@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,3 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from neptune.new.metadata_containers.metadata_container import MetadataContainer
+from neptune.new.metadata_containers.model import Model
+from neptune.new.metadata_containers.model_version import ModelVersion
+from neptune.new.metadata_containers.project import Project
+from neptune.new.metadata_containers.run import Run

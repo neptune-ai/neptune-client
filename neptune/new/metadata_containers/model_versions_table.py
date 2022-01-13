@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2020, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,15 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# backwards compatibility
-# pylint: disable=unused-import,wrong-import-order
-from neptune.new.internal.backends.api_model import AttributeType
-from neptune.new.metadata_containers.metadata_containers_table import (
-    LeaderboardEntry,
-    LeaderboardHandler,
-)
-from neptune.new.exceptions import MetadataInconsistency
+import logging
+from typing import List
 
 from neptune.new.metadata_containers.metadata_containers_table import (
     MetadataContainersTable,
@@ -33,4 +26,26 @@ from neptune.new.internal.backends.api_model import (
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 
-from neptune.new.metadata_containers.runs_table import RunsTable, RunsTableEntry
+logger = logging.getLogger(__name__)
+
+
+class ModelVersionsTableEntry(MetadataContainersTableEntry):
+    def __init__(
+        self,
+        backend: NeptuneBackend,
+        _id: str,
+        attributes: List[AttributeWithProperties],
+    ):
+        super().__init__(
+            backend=backend,
+            container_type=ContainerType.MODEL_VERSION,
+            _id=_id,
+            attributes=attributes,
+        )
+
+
+class ModelVersionsTable(MetadataContainersTable):
+    table_entry_cls = ModelVersionsTableEntry
+
+    def to_model_versions(self):
+        return self.to_table_entries()

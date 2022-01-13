@@ -58,7 +58,7 @@ from neptune.new.internal.utils.traceback_job import TracebackJob
 from neptune.new.internal.websockets.websocket_signals_background_job import (
     WebsocketSignalsBackgroundJob,
 )
-from neptune.new.run import Run
+from neptune.new.metadata_containers import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
 

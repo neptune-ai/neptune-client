@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from neptune.new.run import Run
+from neptune.new.metadata_containers import Run
 
 
 class Logger(object):

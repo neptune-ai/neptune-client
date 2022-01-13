@@ -90,7 +90,7 @@ from neptune.new.internal.run_structure import ContainerStructure
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
-from neptune.new.model import Model
+from neptune.new.metadata_containers import Model
 from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
