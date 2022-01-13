@@ -15,6 +15,11 @@
 #
 from typing import Optional, TYPE_CHECKING, Union, Iterable, List
 
+
+# backwards compatibility
+# pylint: disable=unused-import
+from neptune.new.exceptions import NeptuneException
+
 from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.file_set import FileSet
@@ -22,7 +27,7 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import NeptuneException
+from neptune.new.exceptions import MissingFieldException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     verify_type,
@@ -61,6 +66,13 @@ class Handler:
 
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
+
+    def _get_attribute(self):
+        """Returns Attribute defined in `self._path` or throws MissingFieldException"""
+        attr = self._run.get_attribute(self._path)
+        if attr is None:
+            raise MissingFieldException(self._path)
+        return attr
 
     def assign(self, value, wait: bool = False) -> None:
         """Assigns the provided value to the field.
@@ -433,11 +445,7 @@ class Handler:
         return self._pass_call_to_attr(function_name="fetch_files_list")
 
     def _pass_call_to_attr(self, function_name, **kwargs):
-        attr = self._run.get_attribute(self._path)
-        if attr:
-            return getattr(attr, function_name)(**kwargs)
-        else:
-            raise AttributeError(f"No such method '{function_name}'.")
+        return getattr(self._get_attribute(), function_name)(**kwargs)
 
     def track_files(
         self, path: str, destination: str = None, wait: bool = False

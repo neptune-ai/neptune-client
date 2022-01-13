@@ -20,6 +20,7 @@ from abc import abstractmethod
 
 from neptune.new.exceptions import (
     MetadataInconsistency,
+    MissingFieldException,
     NeptuneOfflineModeFetchException,
 )
 
@@ -71,6 +72,16 @@ class AbstractExperimentTestMixin:
                 "data-1.log",
                 os.listdir(".neptune/async/{}/{}".format(exp._id, execution_dir)),
             )
+
+    def test_missing_attribute(self):
+        exp = self.call_init(mode="debug")
+        with self.assertRaises(MissingFieldException):
+            exp["non/existing/path"].fetch()
+
+    def test_wrong_function(self):
+        exp = self.call_init(mode="debug")
+        with self.assertRaises(AttributeError):
+            exp["non/existing/path"].foo()
 
     @abstractmethod
     def test_read_only_mode(self):
