@@ -69,6 +69,8 @@ class TestUpload(BaseE2ETest):
                     file.write(contents)
 
             small_filenames = [filename for filename, _ in small_files]
+            # make sure there are no duplicates
+            assert len({large_filename, *small_filenames}) == len(small_files) + 1
 
             # when one file as fileset uploaded
             container[key].upload_files([large_filename])
