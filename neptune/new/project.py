@@ -60,6 +60,10 @@ class Project(AttributeContainer):
         )
 
     @property
+    def _docs_url(self) -> str:
+        return "https://docs.neptune.ai/api-reference/project#.stop"
+
+    @property
     def _label(self) -> str:
         return f"{self._workspace}/{self._project_name}"
 
