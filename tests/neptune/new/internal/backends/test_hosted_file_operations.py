@@ -15,6 +15,7 @@
 #
 import json
 import os
+import random
 import unittest
 import uuid
 from collections import namedtuple
@@ -43,6 +44,10 @@ def set_expected_result(endpoint: MagicMock, value: dict):
 
 
 class HostedFileOperationsHelper(unittest.TestCase):
+    @staticmethod
+    def get_random_bytes(count):
+        return bytes(random.randint(0, 255) for _ in range(count))
+
     @staticmethod
     def _get_swagger_mock():
         swagger_mock = MagicMock()
@@ -286,7 +291,7 @@ class TestOldUploadFileOperations(HostedFileOperationsHelper):
         # when
         with NamedTemporaryFile("w") as temp_file:
             with open(temp_file.name, "wb") as handler:
-                handler.write(os.getrandom(2 * chunk_size))
+                handler.write(self.get_random_bytes(2 * chunk_size))
 
             upload_file_set_attribute(
                 swagger_client=swagger_mock,
@@ -480,7 +485,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
                 "errors": [],
             }
         )
-        data = os.getrandom(8 * 2 ** 20)  # 8 MB
+        data = self.get_random_bytes(8 * 2 ** 20)  # 8 MB
         chunk_size = self.multipart_config.min_chunk_size
 
         # when
@@ -613,7 +618,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
                 "errors": [],
             }
         )
-        data = os.getrandom(8 * 2 ** 20)  # 8 MB
+        data = self.get_random_bytes(8 * 2 ** 20)  # 8 MB
         chunk_size = self.multipart_config.min_chunk_size
 
         # when

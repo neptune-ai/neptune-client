@@ -1,4 +1,5 @@
 import os
+import uuid
 from zipfile import ZipFile
 
 import pytest
@@ -57,7 +58,8 @@ class TestUpload(BaseE2ETest):
         large_filesize = 10 * 2 ** 20
         large_filename = fake.file_name()
         small_files = [
-            (fake.file_name(), fake.sentence().encode("utf-8")) for _ in range(100)
+            (f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8"))
+            for _ in range(100)
         ]
 
         with tmp_context():
