@@ -98,11 +98,12 @@ class TestInitProject(BaseE2ETest):
             "id",
             "modification_time",
             "monitoring_time",
-            "owner",
+            "name",
             "ping_time",
             "running_time",
             "size",
             "state",
             "tags",
+            "visibility",
         }
         assert read_only_project[key].fetch() == val
