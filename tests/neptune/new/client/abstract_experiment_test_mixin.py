@@ -47,8 +47,10 @@ class AbstractExperimentTestMixin:
         exp["some/variable"] = 13
         with self.assertRaises(NeptuneOfflineModeFetchException):
             exp["some/variable"].fetch()
-        self.assertIn(str(exp._id), os.listdir(".neptune/offline"))
-        self.assertIn("data-1.log", os.listdir(".neptune/offline/{}".format(exp._id)))
+
+        exp_dir = f"{exp.container_type.value}__{exp._id}"
+        self.assertIn(exp_dir, os.listdir(".neptune/offline"))
+        self.assertIn("data-1.log", os.listdir(f".neptune/offline/{exp_dir}"))
 
     def test_sync_mode(self):
         exp = self.call_init(mode="sync")
@@ -67,11 +69,13 @@ class AbstractExperimentTestMixin:
             exp.wait()
             self.assertEqual(13, exp["some/variable"].fetch())
             self.assertEqual(13, exp["copied/variable"].fetch())
-            self.assertIn(str(exp._id), os.listdir(".neptune/async"))
-            execution_dir = os.listdir(".neptune/async/{}".format(exp._id))[0]
+
+            exp_dir = f"{exp.container_type.value}__{exp._id}"
+            self.assertIn(exp_dir, os.listdir(".neptune/async"))
+            execution_dir = os.listdir(f".neptune/async/{exp_dir}")[0]
             self.assertIn(
                 "data-1.log",
-                os.listdir(".neptune/async/{}/{}".format(exp._id, execution_dir)),
+                os.listdir(f".neptune/async/{exp_dir}/{execution_dir}"),
             )
 
     def test_missing_attribute(self):

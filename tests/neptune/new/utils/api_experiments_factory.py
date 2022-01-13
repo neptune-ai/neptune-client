@@ -19,10 +19,9 @@ import string
 import uuid
 from random import randint
 
+from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.sync import (
-    ApiExperiment,
-)
+from neptune.new.internal.id_formats import SysId, UniqueId
 
 
 def api_run():
@@ -55,9 +54,9 @@ def api_project():
 
 def _api_experiment(sys_id: str, container_type: ContainerType):
     return ApiExperiment(
-        id=str(uuid.uuid4()),
+        id=UniqueId(str(uuid.uuid4())),
         type=container_type,
-        sys_id=sys_id,
+        sys_id=SysId(sys_id),
         workspace="workspace",
         project_name="sandbox",
         trashed=False,

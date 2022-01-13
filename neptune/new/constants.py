@@ -31,3 +31,7 @@ OFFLINE_DIRECTORY = "offline"
 ASYNC_DIRECTORY = "async"
 
 OFFLINE_NAME_PREFIX = "offline/"
+CONTAINER_DIR_REGEXP = (
+    r"^((run|project|model|model_version)__)?"
+    r"([0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12})$"
+)

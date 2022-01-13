@@ -343,11 +343,8 @@ from neptune.new.runs_table import RunsTable
 from neptune.new.runs_table import RunsTableEntry
 from neptune.new.sync import ApiExperiment
 from neptune.new.sync import CannotSynchronizeOfflineRunsWithoutProject
-from neptune.new.sync import Credentials
 from neptune.new.sync import DiskQueue
 from neptune.new.sync import HostedNeptuneBackend
-from neptune.new.sync import Iterable
-from neptune.new.sync import List
 from neptune.new.sync import NeptuneBackend
 from neptune.new.sync import NeptuneConnectionLostException
 from neptune.new.sync import NeptuneException
@@ -356,8 +353,6 @@ from neptune.new.sync import Path
 from neptune.new.sync import Project
 from neptune.new.sync import ProjectNotFound
 from neptune.new.sync import RunNotFound
-from neptune.new.sync import Sequence
-from neptune.new.sync import Tuple
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.artifact import Atom
 from neptune.new.types.atoms.artifact import FileHasher

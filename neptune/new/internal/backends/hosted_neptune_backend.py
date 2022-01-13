@@ -281,7 +281,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 .result
             )
 
-            if experiment.type != container_type:
+            if experiment.type != container_type.value:
                 raise MetadataContainerNotFound.of_container_type(
                     container_type=container_type, container_id=container_id
                 )
