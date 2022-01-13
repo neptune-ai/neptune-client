@@ -41,6 +41,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     @mock.patch("bravado.client.SwaggerClient.from_url")
     @mock.patch("neptune.__version__", "0.5.13")
+    @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible="0.5.13")
@@ -50,6 +51,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     @mock.patch("bravado.client.SwaggerClient.from_url")
     @mock.patch("neptune.__version__", "0.5.13")
+    @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible="0.5.14")
@@ -62,6 +64,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     @mock.patch("bravado.client.SwaggerClient.from_url")
     @mock.patch("neptune.__version__", "0.5.13")
+    @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible="0.5.13")
@@ -71,6 +74,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     @mock.patch("bravado.client.SwaggerClient.from_url")
     @mock.patch("neptune.__version__", "0.5.13")
+    @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible="0.5.12")
@@ -86,6 +90,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
     @mock.patch(
         "neptune.internal.api_clients.credentials.os.getenv", return_value=API_TOKEN
     )
+    @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_should_take_default_credentials_from_env(
         self, env, swagger_client_factory
     ):
@@ -99,6 +104,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self.assertEqual(API_TOKEN, backend.credentials.api_token)
 
     @mock.patch("bravado.client.SwaggerClient.from_url")
+    @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_should_accept_given_api_token(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
@@ -110,7 +116,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         self.assertEqual(API_TOKEN, session.credentials.api_token)
 
     @mock.patch("socket.gethostbyname")
-    def test_depracted_token(self, gethostname_mock):
+    def test_deprecated_token(self, gethostname_mock):
         # given
         token = (
             "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vdWkuc3RhZ2UubmVwdHVuZS5tbCIsImF"

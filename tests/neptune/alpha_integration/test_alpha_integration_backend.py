@@ -59,6 +59,7 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
         "neptune.new.internal.backends.hosted_client.NeptuneAuthenticator",
         new=MagicMock,
     )
+    @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def setUp(self, swagger_client_factory) -> None:
         # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)
