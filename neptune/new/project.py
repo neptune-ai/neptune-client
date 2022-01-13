@@ -160,30 +160,30 @@ class Project(AttributeContainer):
 
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.
-        You can use this method to quickly log all projects's parameters.
+        You can use this method to log multiple pieces of information with one command.
 
         Args:
             value (dict): A dictionary with values to assign, where keys become the paths of the fields.
                 The dictionary can be nested - in such case the path will be a combination of all keys.
             wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
-                This makes the call synchronous. Defaults to `True`.
+                This makes the call synchronous. Defaults to `False`.
 
         Examples:
             >>> import neptune.new as neptune
-            >>> project = neptune.init_project(name='MY_WORKSPACE/MY_PROJECT')
+            >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
 
             >>> # Assign multiple fields from a dictionary
-            ... params = {"max_epochs": 10, "optimizer": "Adam"}
-            >>> project["parameters"] = params
+            ... general_info = {"brief": URL_TO_PROJECT_BRIEF, "deadline": "2049-06-30"}
+            >>> project["general"] = general_info
 
-            >>> # You can always log explicitely parameters one by one
-            ... project["parameters/max_epochs"] = 10
-            >>> project["parameters/optimizer"] = "Adam"
+            >>> # You can always log explicitly parameters one by one
+            ... project["general/brief"] = URL_TO_PROJECT_BRIEF
+            >>> project["general/deadline"] = "2049-06-30"
 
             >>> # Dictionaries can be nested
-            ... params = {"train": {"max_epochs": 10}}
-            >>> project["parameters"] = params
-            >>> # This will log 10 under path "parameters/train/max_epochs"
+            ... general_info = {"brief": {"url": URL_TO_PROJECT_BRIEF}}
+            >>> project["general"] = general_info
+            >>> # This will log the url under path "general/brief/url"
 
         You may also want to check `assign docs page`_.
 
@@ -194,22 +194,18 @@ class Project(AttributeContainer):
 
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
-        The result will preserve the hierarchical structure of the projects's metadata,
+        The result will preserve the hierarchical structure of the projects's metadata
         but will contain only non-File Atom fields.
-        You can use this method to quickly retrieve projects's parameters.
 
         Returns:
             `dict` containing all non-File Atom fields values.
 
         Examples:
             >>> import neptune.new as neptune
-            >>> project = neptune.init_project(name='MY_WORKSPACE/MY_PROJECT')
-            >>> params = project['model/parameters'].fetch()
+            >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
 
-            >>> project_data = project.fetch()
-
-            >>> print(project_data)
-            >>> # this will print out all Atom attributes stored in project as a dict
+            >>> # Fetch all the project metrics
+            >>> project_metrics = project["metrics"].fetch()
 
         You may also want to check `fetch docs page`_.
 
@@ -236,9 +232,9 @@ class Project(AttributeContainer):
             If you are initializing the connection from a script you don't need to call `.stop()`:
 
             >>> import neptune.new as neptune
-            >>> project = neptune.init_project(name='MY_WORKSPACE/MY_PROJECT')
+            >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
 
-            >>> # Your training or monitoring code
+            >>> # Your code
             ... pass
             ... # If you are executing Python script .stop()
             ... # is automatically called at the end for every Neptune object
@@ -253,7 +249,7 @@ class Project(AttributeContainer):
             ... # stop the connection manually once not needed
             ... for project_name in projects:
             ...   project = neptune.init_project(name=project_name)
-            ...   # Your training or monitoring code
+            ...   # Your code
             ...   pass
             ...   project.stop()
 
@@ -283,7 +279,8 @@ class Project(AttributeContainer):
         when using Neptune in automated workflows.
 
         .. danger::
-            The returned object is a deep copy of an internal project's structure.
+            The returned object is a shallow copy of an internal structure.
+            Any modifications to it may result in tracking malfunction.
 
         Returns:
             ``dict``: with the project's metadata structure.
@@ -299,28 +296,33 @@ class Project(AttributeContainer):
         AttributeContainer.print_structure(self)
 
     def pop(self, path: str, wait: bool = False) -> None:
-        """Removes the field stored under the path completely and all data associated with it.
+        """Removes the field or whole namespace stored under the path completely and all data associated with them.
 
         Args:
-            path (str): Path of the field to be removed.
+            path (str): Path of the field or namespace to be removed.
             wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
-                This makes the call synchronous. Defaults to `True`.
+                This makes the call synchronous. Defaults to `False`.
 
         Examples:
             >>> import neptune.new as neptune
-            >>> project = neptune.init_project(name='MY_WORKSPACE/MY_PROJECT')
-
-            >>> project['parameters/learninggg_rata'] = 0.3
+            >>> project = neptune.init_project(name="MY_WORKSPACE/MY_PROJECT")
 
             >>> # Delete a field along with it's data
-            ... project.pop('parameters/learninggg_rata')
+            ... project.pop("datasets/v0.4")
+
+            >>> # .pop() can be invoked directly on fields and namespaces
 
             >>> project['parameters/learning_rate'] = 0.3
 
-            >>> # Training finished
-            ... project['trained_model'].upload('model.pt')
-            >>> # 'model_checkpoint' is a File field
-            ... project.pop('model_checkpoint')
+            >>> # Following line
+            ... project.pop("datasets/v0.4")
+            >>> # is equiavlent to this line
+            ... project["datasets/v0.4"].pop()
+            >>> # or this line
+            ... project["datasets"].pop("v0.4")
+
+            >>> # You can also delete in batch whole namespace
+            ... project["datasets"].pop()
 
         You may also want to check `pop docs page`_.
 
@@ -348,7 +350,7 @@ class Project(AttributeContainer):
         """Synchronizes local representation of the project with Neptune servers.
 
         Args:
-            wait (bool, optional, default is False): If `True` the process will only wait for data to be saved
+            wait (bool, optional, default is True): If `True` the process will only wait for data to be saved
                 locally from memory, but will not wait for them to reach Neptune servers.
                 Defaults to `True`.
 

@@ -185,7 +185,7 @@ class Run(AttributeContainer):
             value (dict): A dictionary with values to assign, where keys become the paths of the fields.
                 The dictionary can be nested - in such case the path will be a combination of all keys.
             wait (bool, optional): If `True` the client will first wait to send all tracked metadata to the server.
-                This makes the call synchronous. Defaults to `True`.
+                This makes the call synchronous. Defaults to `False`.
 
         Examples:
             >>> import neptune.new as neptune
@@ -195,7 +195,7 @@ class Run(AttributeContainer):
             ... params = {"max_epochs": 10, "optimizer": "Adam"}
             >>> run["parameters"] = params
 
-            >>> # You can always log explicitely parameters one by one
+            >>> # You can always log explicitly parameters one by one
             ... run["parameters/max_epochs"] = 10
             >>> run["parameters/optimizer"] = "Adam"
 
@@ -368,7 +368,7 @@ class Run(AttributeContainer):
         """Synchronizes local representation of the run with Neptune servers.
 
         Args:
-            wait (bool, optional, default is False): If `True` the process will only wait for data to be saved
+            wait (bool, optional, default is True): If `True` the process will only wait for data to be saved
                 locally from memory, but will not wait for them to reach Neptune servers.
                 Defaults to `True`.
 
