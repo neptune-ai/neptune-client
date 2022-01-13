@@ -327,13 +327,13 @@ class AttributeContainer(AbstractContextManager):
         self.start()
 
         if not debug_mode:
-            # if in_interactive() or in_notebook():
-            click.echo(
-                f"Remember to stop your {self.container_type.value} once you’ve finished logging your metadata"
-                f" ({self._docs_url})."
-                " It will be stopped automatically only when the notebook"
-                " kernel/interactive console is terminated."
-            )
+            if in_interactive() or in_notebook():
+                click.echo(
+                    f"Remember to stop your {self.container_type.value} once you’ve finished logging your metadata"
+                    f" ({self._docs_url})."
+                    " It will be stopped automatically only when the notebook"
+                    " kernel/interactive console is terminated."
+                )
 
         uncaught_exception_handler.activate()
 
