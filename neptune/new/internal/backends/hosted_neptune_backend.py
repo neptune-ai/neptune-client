@@ -209,14 +209,10 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             available_workspaces = self.get_available_workspaces()
 
-            workspace_exists = False
-            for remote_workspace in available_workspaces:
-                if workspace == remote_workspace.name:
-                    workspace_exists = True
-                    break
-
-            if workspace and not workspace_exists:
-                # Invalid workspace name, force to list all available projects
+            if workspace and not any(
+                filter(lambda aw: aw.name == workspace, available_workspaces)
+            ):
+                # Could not found specified workspace, forces listing all projects
                 workspace = None
             else:
                 available_workspaces = list()
