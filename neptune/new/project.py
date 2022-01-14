@@ -60,7 +60,7 @@ class Project(AttributeContainer):
         )
 
     @property
-    def _docs_url(self) -> str:
+    def _docs_url_stop(self) -> str:
         return "https://docs.neptune.ai/api-reference/project#.stop"
 
     @property

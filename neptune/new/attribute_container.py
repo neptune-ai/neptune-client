@@ -137,7 +137,7 @@ class AttributeContainer(AbstractContextManager):
 
     @property
     @abc.abstractmethod
-    def _docs_url(self) -> str:
+    def _docs_url_stop(self) -> str:
         raise NotImplementedError
 
     def _get_subpath_suggestions(
@@ -330,7 +330,7 @@ class AttributeContainer(AbstractContextManager):
             if in_interactive() or in_notebook():
                 click.echo(
                     f"Remember to stop your {self.container_type.value} once you’ve finished logging your metadata"
-                    f" ({self._docs_url})."
+                    f" ({self._docs_url_stop})."
                     " It will be stopped automatically only when the notebook"
                     " kernel/interactive console is terminated."
                 )

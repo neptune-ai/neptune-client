@@ -167,7 +167,7 @@ class Run(AttributeContainer):
         return self._short_id
 
     @property
-    def _docs_url(self) -> str:
+    def _docs_url_stop(self) -> str:
         return "https://docs.neptune.ai/api-reference/run#.stop"
 
     def get_run_url(self) -> str:
