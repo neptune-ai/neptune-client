@@ -209,19 +209,22 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             available_workspaces = self.get_available_workspaces()
 
-            if workspace and not any(
+            if workspace and not list(
                 filter(lambda aw: aw.name == workspace, available_workspaces)
             ):
                 # Could not found specified workspace, forces listing all projects
-                workspace = None
+                raise ProjectNotFound(
+                    project_id=project_id,
+                    available_projects=self.get_available_projects(),
+                    available_workspaces=available_workspaces,
+                )
             else:
-                available_workspaces = list()
-
-            raise ProjectNotFound(
-                project_id=project_id,
-                available_projects=self.get_available_projects(workspace_id=workspace),
-                available_workspaces=available_workspaces,
-            )
+                raise ProjectNotFound(
+                    project_id=project_id,
+                    available_projects=self.get_available_projects(
+                        workspace_id=workspace
+                    ),
+                )
 
     @with_api_exceptions_handler
     def get_available_projects(
