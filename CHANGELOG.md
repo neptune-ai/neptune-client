@@ -5,6 +5,7 @@
 
 ## Fixes
 - Fixed backward compatibility when syncing old offline data ([#810](https://github.com/neptune-ai/neptune-client/pull/810))
+- Unpin `jsonschema<4`, pin `swagger-spec-validator>=2.7.4` until bravado releases new version ([#XXX](https://github.com/neptune-ai/neptune-client/pull/XXX))
 
 ## neptune-client 0.14.1
 
