@@ -5,7 +5,11 @@
 
 ## Fixes
 - Fixed listing available workspaces when invalid name was provided ([#818](https://github.com/neptune-ai/neptune-client/pull/818))
+- Added proper docstrings for Project-Level Metadata ([#812](https://github.com/neptune-ai/neptune-client/pull/812))
 - Fixed backward compatibility when syncing old offline data ([#810](https://github.com/neptune-ai/neptune-client/pull/810))
+- Prevent original numpy array from modifying ([#821](https://github.com/neptune-ai/neptune-client/pull/821))
+- Unpin `jsonschema<4`, pin `swagger-spec-validator>=2.7.4` until bravado releases new version ([#820](https://github.com/neptune-ai/neptune-client/pull/820))
+
 
 ## neptune-client 0.14.1
 

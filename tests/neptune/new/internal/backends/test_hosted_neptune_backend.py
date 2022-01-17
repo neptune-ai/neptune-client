@@ -83,6 +83,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         self.container_types = [ContainerType.RUN, ContainerType.PROJECT]
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_execute_operations(self, upload_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -211,6 +212,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                 )
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
@@ -277,6 +279,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                 )
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_new_artifact")
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_track_to_new_artifact(
         self, track_to_new_artifact_mock, swagger_client_factory
     ):
@@ -371,6 +374,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
     @patch(
         "neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact"
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_track_to_existing_artifact(
         self, track_to_existing_artifact_mock, swagger_client_factory
     ):
@@ -472,6 +476,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible="0.5.13")
@@ -483,6 +488,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible="0.5.14")
@@ -497,6 +503,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible="0.5.12")
@@ -508,6 +515,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible="0.4.999")
@@ -527,6 +535,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         with self.assertRaises(CannotResolveHostname):
             HostedNeptuneBackend(credentials)
 
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_limit_exceed(self, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -552,6 +561,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         ],
                     )
 
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_limit_exceed_legacy(self, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)

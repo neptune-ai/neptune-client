@@ -191,7 +191,7 @@ class TestFetchRunsTable(BaseE2ETest):
             run["another/value"] = "testing"
 
         # wait for the elasticsearch cache to fill
-        time.sleep(1)
+        time.sleep(5)
 
         project = neptune.init_project(name=environment.project)
 

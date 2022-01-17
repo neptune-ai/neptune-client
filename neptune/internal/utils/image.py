@@ -77,6 +77,8 @@ def _get_pil_image_data(image):
 
 
 def _get_numpy_as_image(array):
+    array = array.copy()  # prevent original array from modifying
+
     array *= 255
     shape = array.shape
     if len(shape) == 2:

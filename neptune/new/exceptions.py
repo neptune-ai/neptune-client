@@ -539,7 +539,7 @@ What should I do?
     - Check if your computer is connected to the internet.
     - Check if your computer should use any proxy to access internet.
       If so, you may want to use {python}proxies{end} parameter of {python}neptune.init(){end} function.
-      See https://docs.neptune.ai/api-reference/neptune#init
+      See https://docs.neptune.ai/api-reference/neptune#.init
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
     - Check Neptune services status: https://status.neptune.ai/
 
