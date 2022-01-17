@@ -5,6 +5,7 @@
 
 ## Fixes
 - Fixed backward compatibility when syncing old offline data ([#810](https://github.com/neptune-ai/neptune-client/pull/810))
+- Prevent original numpy array from modifying ([#821](https://github.com/neptune-ai/neptune-client/pull/821))
 
 ## neptune-client 0.14.1
 
