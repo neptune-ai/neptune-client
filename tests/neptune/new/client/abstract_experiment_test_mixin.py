@@ -83,6 +83,12 @@ class AbstractExperimentTestMixin:
         with self.assertRaises(AttributeError):
             exp["non/existing/path"].foo()
 
+    def test_wrong_per_type_function(self):
+        exp = self.call_init(mode="debug")
+        exp["some/path"] = "foo"
+        with self.assertRaises(AttributeError):
+            exp["some/path"].download()
+
     @abstractmethod
     def test_read_only_mode(self):
         pass

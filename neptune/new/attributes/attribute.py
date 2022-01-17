@@ -15,8 +15,8 @@
 #
 from typing import List, TYPE_CHECKING
 
+from neptune.new.exceptions import TypeDoesNotSupportAttributeException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-
 from neptune.new.internal.operation import Operation
 from neptune.new.types.value_copy import ValueCopy
 
@@ -34,7 +34,7 @@ class Attribute:
         self._path = path
 
     def __getattr__(self, attr):
-        raise AttributeError("{} has no attribute {}.".format(type(self), attr))
+        raise TypeDoesNotSupportAttributeException(type_=type(self), attribute=attr)
 
     def _enqueue_operation(self, operation: Operation, wait: bool):
         # pylint: disable=protected-access
