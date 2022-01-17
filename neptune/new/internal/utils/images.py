@@ -167,6 +167,8 @@ def _image_content_to_html(content: bytes) -> str:
 
 
 def _get_numpy_as_image(array):
+    array = array.copy()  # prevent original array from modifying
+
     data_range_warnings = []
     array_min = array.min()
     array_max = array.max()
