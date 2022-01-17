@@ -14,5 +14,5 @@ boto3>=1.16.0
 packaging
 urllib3
 dataclasses>=0.6; python_version<"3.7"
-jsonschema<4  # pin until swagger_spec_validator (bravado's dep) gets over it
+swagger-spec-validator>=2.7.4
 psutil
