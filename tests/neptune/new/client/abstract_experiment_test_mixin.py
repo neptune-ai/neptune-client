@@ -22,6 +22,7 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     MissingFieldException,
     NeptuneOfflineModeFetchException,
+    TypeDoesNotSupportAttributeException,
 )
 
 
@@ -86,7 +87,7 @@ class AbstractExperimentTestMixin:
     def test_wrong_per_type_function(self):
         exp = self.call_init(mode="debug")
         exp["some/path"] = "foo"
-        with self.assertRaises(AttributeError):
+        with self.assertRaises(TypeDoesNotSupportAttributeException):
             exp["some/path"].download()
 
     @abstractmethod

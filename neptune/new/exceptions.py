@@ -68,12 +68,10 @@ There are two possible reasons:
 
 
 class TypeDoesNotSupportAttributeException(NeptuneException, AttributeError):
-    """Raised when get-like action is called on `Handler`, instead of on `Attribute`."""
-
     def __init__(self, type_, attribute):
         message = """
 {h1}
-----MissingFieldException-------------------------------------------------------
+----TypeDoesNotSupportAttributeException----------------------------------------
 {end}
 {type} has no attribute {attribute}.
 
