@@ -153,7 +153,7 @@ class Handler:
         You may also want to check `upload docs page`_.
 
         .. _upload docs page:
-           https://docs.neptune.ai/api-reference/field-types#upload
+           https://docs.neptune.ai/api-reference/field-types#.upload
 
         """
         value = FileVal.create_from(value)
@@ -260,7 +260,7 @@ class Handler:
         You may also want to check `add docs page`_.
 
         .. _add types docs page:
-           https://docs.neptune.ai/api-reference/field-types#add
+           https://docs.neptune.ai/api-reference/field-types#.add
         """
         verify_type("values", values, (str, Iterable))
         with self._run.lock():
@@ -303,7 +303,7 @@ class Handler:
         You may also want to check `remove docs page`_.
 
         .. _remove docs page:
-           https://docs.neptune.ai/api-reference/field-types#remove
+           https://docs.neptune.ai/api-reference/field-types#.remove
         """
         raise NeptuneException("Should be never called.")
 
@@ -318,7 +318,7 @@ class Handler:
         You may also want to check `clear docs page`_.
 
         .. _clear docs page:
-           https://docs.neptune.ai/api-reference/field-types#clear
+           https://docs.neptune.ai/api-reference/field-types#.clear
         """
         raise NeptuneException("Should be never called.")
 
@@ -393,7 +393,7 @@ class Handler:
         You may also want to check `delete_files docs page`_.
 
         .. _delete_files docs page:
-            https://docs.neptune.ai/api-reference/field-types#delete_files
+            https://docs.neptune.ai/api-reference/field-types#.delete_files
         """
         raise NeptuneException("Should be never called.")
 
@@ -433,7 +433,7 @@ class Handler:
         You may also want to check `download_last docs page`_.
 
         .. _download_last docs page:
-           https://docs.neptune.ai/api-reference/field-types#download_last
+           https://docs.neptune.ai/api-reference/field-types#.download_last
         """
         raise NeptuneException("Should be never called.")
 
@@ -441,7 +441,7 @@ class Handler:
         """Fetches the hash of an artifact.
 
         You may also want to check `fetch_hash docs page`_.
-           https://docs.neptune.ai/api-reference/field-types#fetch_hash
+           https://docs.neptune.ai/api-reference/field-types#.fetch_hash
         """
         raise NeptuneException("Should be never called.")
 
@@ -449,7 +449,7 @@ class Handler:
         """Fetches the list of files in an artifact and their metadata.
 
         You may also want to check `fetch_files_list docs page`_.
-           https://docs.neptune.ai/api-reference/field-types#fetch_files_list
+           https://docs.neptune.ai/api-reference/field-types#.fetch_files_list
         """
         raise NeptuneException("Should be never called.")
 
@@ -459,7 +459,7 @@ class Handler:
         """Creates an artifact tracking some files.
 
         You may also want to check `track_files docs page`_.
-           https://docs.neptune.ai/api-reference/field-types#track_files
+           https://docs.neptune.ai/api-reference/field-types#.track_files
         """
         with self._run.lock():
             attr = self._run.get_attribute(self._path)

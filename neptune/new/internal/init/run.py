@@ -190,7 +190,7 @@ def init_run(
     You may also want to check `init docs page`_.
 
     .. _init docs page:
-       https://docs.neptune.ai/api-reference/neptune#init
+       https://docs.neptune.ai/api-reference/neptune#.init
     """
     _check_for_extra_kwargs(init_run.__name__, kwargs)
     verify_type("project", project, (str, type(None)))

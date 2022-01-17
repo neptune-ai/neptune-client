@@ -13,12 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 import random
 import time
 import uuid
 from datetime import datetime, timezone
-from zipfile import ZipFile
 
 import pytest
 from faker import Faker
@@ -27,7 +25,6 @@ import neptune.new as neptune
 from neptune.new.attribute_container import AttributeContainer
 
 from e2e_tests.base import BaseE2ETest
-from e2e_tests.utils import tmp_context
 
 fake = Faker()
 
@@ -182,86 +179,6 @@ class TestStringSet(BaseE2ETest):
         }
 
 
-class TestFiles(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_file(self, container: AttributeContainer):
-        key = self.gen_key()
-        filename = fake.file_name()
-        downloaded_filename = fake.file_name()
-
-        with tmp_context():
-            # create 10MB file
-            with open(filename, "wb") as file:
-                file.write(b"\0" * 10 * 2 ** 20)
-            container[key].upload(filename)
-
-            container.sync()
-            container[key].download(downloaded_filename)
-
-            assert os.path.getsize(downloaded_filename) == 10 * 2 ** 20
-            with open(downloaded_filename, "rb") as file:
-                content = file.read()
-                assert len(content) == 10 * 2 ** 20
-                assert content == b"\0" * 10 * 2 ** 20
-
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_fileset(self, container: AttributeContainer):
-        key = self.gen_key()
-        filename1 = fake.file_name()
-        filename2 = fake.file_name()
-
-        with tmp_context():
-            # create two 10MB files
-            with open(filename1, "wb") as file1, open(filename2, "wb") as file2:
-                file1.write(b"\0" * 10 * 2 ** 20)
-                file2.write(b"\0" * 10 * 2 ** 20)
-
-            # when one file as fileset uploaded
-            container[key].upload_files([filename1])
-
-            # then check if will be downloaded
-            container.sync()
-            container[key].download("downloaded1.zip")
-
-            with ZipFile("downloaded1.zip") as zipped:
-                assert set(zipped.namelist()) == {filename1, "/"}
-                with zipped.open(filename1, "r") as file1:
-                    content1 = file1.read()
-                    assert len(content1) == 10 * 2 ** 20
-                    assert content1 == b"\0" * 10 * 2 ** 20
-
-            # when second file as fileset uploaded
-            container[key].upload_files([filename2])
-
-            # then check if both will be downloaded
-            container.sync()
-            container[key].download("downloaded2.zip")
-
-            with ZipFile("downloaded2.zip") as zipped:
-                assert set(zipped.namelist()) == {filename1, filename2, "/"}
-                with zipped.open(filename1, "r") as file1, zipped.open(
-                    filename2, "r"
-                ) as file2:
-                    content1 = file1.read()
-                    content2 = file2.read()
-                    assert len(content1) == len(content2) == 10 * 2 ** 20
-                    assert content1 == content2 == b"\0" * 10 * 2 ** 20
-
-            # when first file is removed
-            container[key].delete_files([filename1])
-
-            # then check if second will be downloaded
-            container.sync()
-            container[key].download("downloaded3.zip")
-
-            with ZipFile("downloaded3.zip") as zipped:
-                assert set(zipped.namelist()) == {filename2, "/"}
-                with zipped.open(filename2, "r") as file2:
-                    content2 = file2.read()
-                    assert len(content2) == 10 * 2 ** 20
-                    assert content2 == b"\0" * 10 * 2 ** 20
-
-
 class TestFetchRunsTable(BaseE2ETest):
     def test_fetch_table(self, environment):
         tag = str(uuid.uuid4())
@@ -274,7 +191,7 @@ class TestFetchRunsTable(BaseE2ETest):
             run["another/value"] = "testing"
 
         # wait for the elasticsearch cache to fill
-        time.sleep(1)
+        time.sleep(5)
 
         project = neptune.init_project(name=environment.project)
 

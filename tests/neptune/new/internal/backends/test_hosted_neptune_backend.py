@@ -53,7 +53,7 @@ from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 
 API_TOKEN = (
-    "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ"
+    "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUuYWkiLCJ"
     "hcGlfa2V5IjoiOTJhNzhiOWQtZTc3Ni00ODlhLWI5YzEtNzRkYmI1ZGVkMzAyIn0="
 )
 
@@ -83,6 +83,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         self.container_types = [ContainerType.RUN, ContainerType.PROJECT]
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_execute_operations(self, upload_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -93,7 +94,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         response_error.errorDescription = "error1"
         swagger_client.api.executeOperations().response().result = [response_error]
         swagger_client.api.executeOperations.reset_mock()
-        upload_mock.return_value = FileUploadError("file1", "error2")
+        upload_mock.return_value = [FileUploadError("file1", "error2")]
         some_text = "Some streamed text"
         some_binary = b"Some streamed binary"
 
@@ -166,6 +167,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/other/file.txt",
                             source="other/file/path.txt",
                             ext="txt",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -173,6 +175,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/files/some_file",
                             source="path_to_file",
                             ext="",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -180,6 +183,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/files/some_text_stream",
                             source=some_text.encode("utf-8"),
                             ext="txt",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -187,6 +191,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/files/some_binary_stream",
                             source=some_binary,
                             ext="bin",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                     ],
                     any_order=True,
@@ -207,6 +212,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                 )
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.upload_file_attribute")
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_upload_files_destination_path(self, upload_mock, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
@@ -250,6 +256,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/path/1/var",
                             source="/path/to/file",
                             ext="",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -257,6 +264,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/path/2/var",
                             source="/some.file/with.dots.txt",
                             ext="txt",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                         call(
                             swagger_client=backend.leaderboard_client,
@@ -264,12 +272,14 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             attribute="some/path/3/var",
                             source="/path/to/some_image.jpeg",
                             ext="jpeg",
+                            multipart_config=backend._client_config.multipart_config,
                         ),
                     ],
                     any_order=True,
                 )
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_new_artifact")
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_track_to_new_artifact(
         self, track_to_new_artifact_mock, swagger_client_factory
     ):
@@ -364,6 +374,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
     @patch(
         "neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact"
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_track_to_existing_artifact(
         self, track_to_existing_artifact_mock, swagger_client_factory
     ):
@@ -465,6 +476,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible="0.5.13")
@@ -476,6 +488,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_min_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, min_compatible="0.5.14")
@@ -490,6 +503,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_ok(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible="0.5.12")
@@ -501,6 +515,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
         Version("0.5.13"),
     )
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_max_compatible_version_fail(self, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory, max_compatible="0.4.999")
@@ -520,6 +535,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         with self.assertRaises(CannotResolveHostname):
             HostedNeptuneBackend(credentials)
 
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_limit_exceed(self, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
@@ -545,6 +561,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                         ],
                     )
 
+    @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_limit_exceed_legacy(self, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)

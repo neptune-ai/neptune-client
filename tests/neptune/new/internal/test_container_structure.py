@@ -131,8 +131,6 @@ class TestIterateSubpaths(unittest.TestCase):
             "attributes/node/three",
         ]
 
-        print(list(self.structure.iterate_subpaths(prefix)))
-
         self.assertListEqual(
             list(self.structure.iterate_subpaths(prefix)), expected_subpaths
         )

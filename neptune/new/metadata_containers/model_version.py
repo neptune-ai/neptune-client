@@ -62,6 +62,10 @@ class ModelVersion(MetadataContainer):
         self._sys_id = sys_id
 
     @property
+    def _docs_url_stop(self) -> str:
+        return "https://docs.neptune.ai/api-reference/model-version#.stop"
+
+    @property
     def _label(self) -> str:
         return self._sys_id
 
