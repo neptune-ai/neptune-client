@@ -100,6 +100,9 @@ class TestImage(unittest.TestCase):
             get_image_content(image_array), self._encode_pil_image(expected_image)
         )
 
+        # and make sure that original image's size was preserved
+        self.assertFalse((image_array * 255 - scaled_array).any())
+
     def test_get_image_content_from_rgba_array(self):
         # given
         image_array = self._random_image_array(d=4)
@@ -110,6 +113,9 @@ class TestImage(unittest.TestCase):
         self.assertEqual(
             get_image_content(image_array), self._encode_pil_image(expected_image)
         )
+
+        # and make sure that original image's size was preserved
+        self.assertFalse((image_array * 255 - scaled_array).any())
 
     def test_get_image_content_from_figure(self):
         # given
@@ -133,6 +139,9 @@ class TestImage(unittest.TestCase):
         self.assertEqual(
             get_image_content(image_tensor), self._encode_pil_image(expected_image)
         )
+
+        # and make sure that original image's size was preserved
+        self.assertFalse((image_tensor.numpy() * 255 - expected_array).any())
 
     def test_get_image_content_from_tensorflow_tensor(self):
         import tensorflow as tf  # pylint: disable=C0415
