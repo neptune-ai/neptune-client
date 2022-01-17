@@ -98,7 +98,7 @@ class File(Atom):
         You may also want to check `from_content docs page`_.
 
         .. _from_content docs page:
-           https://docs.neptune.ai/api-reference/field-types#from_content
+           https://docs.neptune.ai/api-reference/field-types#.from_content
         """
         if isinstance(content, str):
             ext = "txt"
@@ -134,7 +134,7 @@ class File(Atom):
         You may also want to check `from_stream docs page`_ and `IOBase documentation`_.
 
         .. _from_stream docs page:
-           https://docs.neptune.ai/api-reference/field-types#from_stream
+           https://docs.neptune.ai/api-reference/field-types#.from_stream
         .. _IOBase documentation:
             https://docs.python.org/3/library/io.html#io.IOBase
         """
@@ -177,7 +177,7 @@ class File(Atom):
         You may also want to check `as_image docs page`_.
 
         .. _as_image docs page:
-           https://docs.neptune.ai/api-reference/field-types#as_image
+           https://docs.neptune.ai/api-reference/field-types#.as_image
         """
         content_bytes = get_image_content(image)
         return File.from_content(
@@ -220,7 +220,7 @@ class File(Atom):
         You may also want to check `as_html docs page`_.
 
         .. _as_html docs page:
-           https://docs.neptune.ai/api-reference/field-types#as_html
+           https://docs.neptune.ai/api-reference/field-types#.as_html
         """
         content = get_html_content(chart)
         return File.from_content(
@@ -253,7 +253,7 @@ class File(Atom):
         You may also want to check `as_pickle docs page`_.
 
         .. _as_pickle docs page:
-           https://docs.neptune.ai/api-reference/field-types#as_pickle
+           https://docs.neptune.ai/api-reference/field-types#.as_pickle
         """
         content = get_pickle_content(obj)
         return File.from_content(

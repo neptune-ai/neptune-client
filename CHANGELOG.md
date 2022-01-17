@@ -4,6 +4,7 @@
 - Use new file upload API ([#789](https://github.com/neptune-ai/neptune-client/pull/789))
 
 ## Fixes
+- Added proper docstrings for Project-Level Metadata ([#812](https://github.com/neptune-ai/neptune-client/pull/812))
 - Fixed backward compatibility when syncing old offline data ([#810](https://github.com/neptune-ai/neptune-client/pull/810))
 - Unpin `jsonschema<4`, pin `swagger-spec-validator>=2.7.4` until bravado releases new version ([#820](https://github.com/neptune-ai/neptune-client/pull/820))
 
