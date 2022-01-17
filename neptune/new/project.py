@@ -194,7 +194,7 @@ class Project(AttributeContainer):
         .. _assign docs page:
             https://docs.neptune.ai/api-reference/project#.assign
         """
-        AttributeContainer.assign(self, value=value, wait=wait)
+        return AttributeContainer.assign(self, value=value, wait=wait)
 
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
@@ -274,7 +274,7 @@ class Project(AttributeContainer):
         .. _stop docs page:
             https://docs.neptune.ai/api-reference/project#.stop
         """
-        AttributeContainer.stop(self, seconds=seconds)
+        return AttributeContainer.stop(self, seconds=seconds)
 
     def get_structure(self) -> Dict[str, Any]:
         """Returns a project's metadata structure in form of a dictionary.
@@ -297,7 +297,7 @@ class Project(AttributeContainer):
 
         Paths are ordered lexicographically and the whole structure is neatly colored.
         """
-        AttributeContainer.print_structure(self)
+        return AttributeContainer.print_structure(self)
 
     def pop(self, path: str, wait: bool = False) -> None:
         """Removes the field or whole namespace stored under the path completely and all data associated with them.
@@ -333,7 +333,7 @@ class Project(AttributeContainer):
         .. _pop docs page:
            https://docs.neptune.ai/api-reference/project#.pop
         """
-        AttributeContainer.pop(self, path=path, wait=wait)
+        return AttributeContainer.pop(self, path=path, wait=wait)
 
     def wait(self, disk_only=False) -> None:
         """Wait for all the tracking calls to finish.
@@ -348,7 +348,7 @@ class Project(AttributeContainer):
         .. _wait docs page:
             https://docs.neptune.ai/api-reference/project#.wait
         """
-        AttributeContainer.wait(self, disk_only=disk_only)
+        return AttributeContainer.wait(self, disk_only=disk_only)
 
     def sync(self, wait: bool = True) -> None:
         """Synchronizes local representation of the project with Neptune servers.
@@ -363,4 +363,4 @@ class Project(AttributeContainer):
         .. _sync docs page:
             https://docs.neptune.ai/api-reference/project#.sync
         """
-        AttributeContainer.sync(self, wait=wait)
+        return AttributeContainer.sync(self, wait=wait)

@@ -213,7 +213,7 @@ class Run(AttributeContainer):
         .. _assign docs page:
             https://docs.neptune.ai/api-reference/run#.assign
         """
-        AttributeContainer.assign(self, value=value, wait=wait)
+        return AttributeContainer.assign(self, value=value, wait=wait)
 
     def fetch(self) -> dict:
         """Fetch values of all non-File Atom fields as a dictionary.
@@ -298,7 +298,7 @@ class Run(AttributeContainer):
         .. _stop docs page:
             https://docs.neptune.ai/api-reference/run#.stop
         """
-        AttributeContainer.stop(self, seconds=seconds)
+        return AttributeContainer.stop(self, seconds=seconds)
 
     def get_structure(self) -> Dict[str, Any]:
         """Returns a run's metadata structure in form of a dictionary.
@@ -320,7 +320,7 @@ class Run(AttributeContainer):
 
         Paths are ordered lexicographically and the whole structure is neatly colored.
         """
-        AttributeContainer.print_structure(self)
+        return AttributeContainer.print_structure(self)
 
     def pop(self, path: str, wait: bool = False) -> None:
         """Removes the field stored under the path completely and all data associated with it.
@@ -351,7 +351,7 @@ class Run(AttributeContainer):
         .. _pop docs page:
            https://docs.neptune.ai/api-reference/run#.pop
         """
-        AttributeContainer.pop(self, path=path, wait=wait)
+        return AttributeContainer.pop(self, path=path, wait=wait)
 
     def wait(self, disk_only=False) -> None:
         """Wait for all the tracking calls to finish.
@@ -366,7 +366,7 @@ class Run(AttributeContainer):
         .. _wait docs page:
             https://docs.neptune.ai/api-reference/run#.wait
         """
-        AttributeContainer.wait(self, disk_only=disk_only)
+        return AttributeContainer.wait(self, disk_only=disk_only)
 
     def sync(self, wait: bool = True) -> None:
         """Synchronizes local representation of the run with Neptune servers.
@@ -394,4 +394,4 @@ class Run(AttributeContainer):
         .. _sync docs page:
             https://docs.neptune.ai/api-reference/run#.sync
         """
-        AttributeContainer.sync(self, wait=wait)
+        return AttributeContainer.sync(self, wait=wait)
