@@ -17,14 +17,15 @@ import os
 import unittest
 from datetime import datetime
 
-from neptune.new import ANONYMOUS, Run, init, init_project, init_run, init_model
+from neptune.new import ANONYMOUS, Run, init, init_model, init_project, init_run
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
-    InactiveProjectException,
-    MetadataInconsistency,
-    InactiveRunException,
     InactiveModelException,
     InactiveModelVersionException,
+    InactiveProjectException,
+    InactiveRunException,
+    MetadataInconsistency,
+    NeptuneProtectedPathException,
 )
 from neptune.new.metadata_containers import Model
 from neptune.new.metadata_containers import ModelVersion
@@ -217,3 +218,13 @@ class TestExperiment(unittest.TestCase):
                     exp["attr2"] = 2
                 with self.assertRaises(expected_exception):
                     exp["series"].log(1)
+
+    def test_protected_paths(self):
+        for exp in self.get_experiments():
+            with self.subTest(msg=f"For type {exp.container_type}"):
+                with self.assertRaises(NeptuneProtectedPathException):
+                    exp["sys/stage"] = "production"
+
+                exp["tmp/placeholder"] = "production"
+                with self.assertRaises(NeptuneProtectedPathException):
+                    exp["sys/stage"] = exp["tmp/placeholder"]

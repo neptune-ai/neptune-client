@@ -15,11 +15,15 @@
 #
 import threading
 
-from neptune.new.metadata_containers.metadata_container import MetadataContainer
+from neptune.new.metadata_containers import MetadataContainer
+from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
+from neptune.new.exceptions import NeptuneOfflineModeChangeStageException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation import ChangeStage
+from neptune.new.internal.operation_processors.offline_operation_processor import (
+    OfflineOperationProcessor,
+)
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
@@ -69,7 +73,19 @@ class ModelVersion(MetadataContainer):
     def _label(self) -> str:
         return self._sys_id
 
-    def change_stage(self, stage: str, wait=False):
-        self._op_processor.enqueue_operation(
-            ChangeStage(container_id=self._id, stage=ModelVersionStage(stage)), wait
+    def change_stage(self, stage: str):
+        stage = ModelVersionStage(stage)
+
+        if isinstance(self._op_processor, OfflineOperationProcessor):
+            raise NeptuneOfflineModeChangeStageException()
+
+        self.wait()
+
+        # We are sure that such attribute exists, because
+        # SYSTEM_STAGE_ATTRIBUTE_PATH is set by default on ModelVersion creation
+        attr = self.get_attribute(SYSTEM_STAGE_ATTRIBUTE_PATH)
+
+        attr.process_assignment(
+            value=stage.value,
+            wait=True,
         )

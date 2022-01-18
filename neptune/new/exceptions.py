@@ -769,7 +769,11 @@ You have no permission to access given resource.
         super().__init__(message.format(**STYLES))
 
 
-class NeptuneOfflineModeFetchException(NeptuneException):
+class NeptuneOfflineModeException(NeptuneException):
+    pass
+
+
+class NeptuneOfflineModeFetchException(NeptuneOfflineModeException):
     def __init__(self):
         message = """
 {h1}
@@ -786,6 +790,23 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
+        super().__init__(message.format(**STYLES))
+
+
+class NeptuneOfflineModeChangeStageException(NeptuneOfflineModeException):
+    def __init__(self):
+        message = """
+        TODO: NPT-11349
+"""
+        super().__init__(message.format(**STYLES))
+
+
+class NeptuneProtectedPathException(NeptuneException):
+    def __init__(self, path: str):
+        message = """
+        TODO: NPT-11349
+"""
+        self._path = path
         super().__init__(message.format(**STYLES))
 
 

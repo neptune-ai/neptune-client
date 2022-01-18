@@ -17,7 +17,7 @@ from collections.abc import MutableMapping
 from typing import Any, Dict, TYPE_CHECKING, Iterator, List, Mapping, Union
 
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.internal.run_structure import ContainerStructure
+from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.utils.generic_attribute_mapper import (
     atomic_attribute_types_map,
     NoValue,

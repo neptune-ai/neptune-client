@@ -50,7 +50,7 @@ from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.internal.run_structure import ContainerStructure
+from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.state import ContainerState
 from neptune.new.internal.utils import (
     is_bool,

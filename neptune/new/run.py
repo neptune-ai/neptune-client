@@ -38,7 +38,7 @@ from neptune.new.exceptions import (
 )
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.operation import DeleteAttribute
-from neptune.new.internal.run_structure import ContainerStructure as RunStructure
+from neptune.new.internal.container_structure import ContainerStructure as RunStructure
 from neptune.new.internal.utils import (
     is_bool,
     is_float,
