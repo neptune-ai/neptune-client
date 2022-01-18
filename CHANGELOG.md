@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 0.14.2
+## neptune-client 0.14.2
 
 ### Features
 - Use new file upload API ([#789](https://github.com/neptune-ai/neptune-client/pull/789))
