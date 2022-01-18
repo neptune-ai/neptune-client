@@ -1046,20 +1046,60 @@ class HostedNeptuneBackend(NeptuneBackend):
         owner: Optional[Iterable[str]] = None,
         tags: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
+        def build_nql_query(
+            ids: Optional[Iterable[str]] = None,
+            states: Optional[Iterable[str]] = None,
+            owners: Optional[Iterable[str]] = None,
+            tags: Optional[Iterable[str]] = None,
+        ) -> str:
+            return "AND".join(
+                [
+                    "AND".join(
+                        [f'(`sys/tags`:stringSet CONTAINS "{tag}")' for tag in tags]
+                    ),
+                    "OR".join([f'(`sys/id`:string = "{sys_id}")' for sys_id in ids]),
+                    "OR".join(
+                        [f'((`sys/owner`:string = "{owner}"))' for owner in owners]
+                    ),
+                    "OR".join(
+                        [
+                            f'(`sys/state`:experimentState = "{state}"))"'
+                            for state in states
+                        ]
+                    ),
+                ]
+            )
+
         def get_portion(limit, offset):
             return (
-                self.leaderboard_client.api.getLeaderboard(
+                self.leaderboard_client.api.searchLeaderboardEntries(
                     projectIdentifier=project_id,
-                    shortId=_id,
-                    state=state,
-                    owner=owner,
-                    tags=tags,
-                    tagsMode="and",
-                    sortBy=["shortId"],
-                    sortFieldType=["string"],
-                    sortDirection=["ascending"],
-                    limit=limit,
-                    offset=offset,
+                    params={
+                        "grouping": {
+                            "groupBy": [
+                                {
+                                    "aggregationMode": "last",
+                                    "name": "string",
+                                    "type": "experimentState",
+                                }
+                            ],
+                            "openedGroups": ["string"],
+                        },
+                        "query": {
+                            "query": build_nql_query(
+                                ids=_id, states=state, owners=owner, tags=tags
+                            )
+                        },
+                        "pagination": {"limit": limit, "offset": offset},
+                        "sorting": {
+                            "dir": "ascending",
+                            "sortBy": {
+                                "aggregationMode": "last",
+                                "name": "string",
+                                "type": "shortId",
+                            },
+                        },
+                    },
                     **DEFAULT_REQUEST_KWARGS,
                 )
                 .response()
