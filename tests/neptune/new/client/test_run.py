@@ -23,7 +23,7 @@ from mock import patch
 from neptune.new import ANONYMOUS, Run, get_last_run, init_run
 from neptune.new.attributes.atoms import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneUninitializedException
+from neptune.new.exceptions import MissingFieldException, NeptuneUninitializedException
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -124,20 +124,20 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     @patch("neptune.new.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
         exp = init_run(mode="debug")
-        with self.assertRaises(AttributeError):
-            exp["source_code/entrypoint"].get()
+        with self.assertRaises(MissingFieldException):
+            exp["source_code/entrypoint"].fetch()
 
         exp = init_run(mode="debug", source_files=[])
-        with self.assertRaises(AttributeError):
-            exp["source_code/entrypoint"].get()
+        with self.assertRaises(MissingFieldException):
+            exp["source_code/entrypoint"].fetch()
 
         exp = init_run(mode="debug", source_files=["../*"])
-        with self.assertRaises(AttributeError):
-            exp["source_code/entrypoint"].get()
+        with self.assertRaises(MissingFieldException):
+            exp["source_code/entrypoint"].fetch()
 
         exp = init_run(mode="debug", source_files=["internal/*"])
-        with self.assertRaises(AttributeError):
-            exp["source_code/entrypoint"].get()
+        with self.assertRaises(MissingFieldException):
+            exp["source_code/entrypoint"].fetch()
 
     @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
     @patch("neptune.new.internal.utils.source_code.get_common_root", new=lambda _: None)

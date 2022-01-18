@@ -101,4 +101,5 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
 
     def test_name_parameter(self):
         with init_model(key="TRY", name="some_name") as exp:
+            exp.wait()
             self.assertEqual(exp["sys/name"].fetch(), "some_name")

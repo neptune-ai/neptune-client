@@ -66,6 +66,20 @@ There are two possible reasons:
         self._msg = message.format(field_path=field_path, **STYLES)
         super().__init__(self._msg)
 
+
+class TypeDoesNotSupportAttributeException(NeptuneException, AttributeError):
+    def __init__(self, type_, attribute):
+        message = """
+{h1}
+----TypeDoesNotSupportAttributeException----------------------------------------
+{end}
+{type} has no attribute {attribute}.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        self._msg = message.format(type=type_, attribute=attribute, **STYLES)
+        super().__init__(self._msg)
+
     def __str__(self):
         # required because of overriden `__str__` in `KeyError`
         return self._msg

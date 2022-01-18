@@ -15,6 +15,11 @@
 #
 from typing import Optional, TYPE_CHECKING, Union, Iterable, List
 
+
+# backwards compatibility
+# pylint: disable=unused-import
+from neptune.new.exceptions import NeptuneException
+
 from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.file_set import FileSet
@@ -22,7 +27,7 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import NeptuneException
+from neptune.new.exceptions import MissingFieldException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     verify_type,
@@ -62,18 +67,12 @@ class Handler:
     def __setitem__(self, key: str, value) -> None:
         self[key].assign(value)
 
-    def __getattr__(self, attribute_name):
+    def _get_attribute(self):
+        """Returns Attribute defined in `self._path` or throws MissingFieldException"""
         attr = self._run.get_attribute(self._path)
-        if attr:
-            return getattr(attr, attribute_name)
-        else:
-            raise AttributeError(f"No such method '{attribute_name}'.")
-
-    def __getattribute__(self, attribute_name):
-        _docstring_attrs = super().__getattribute__("DOCSTRING_ATTRIBUTES")
-        if attribute_name in _docstring_attrs:
-            raise AttributeError(f"No such method '{attribute_name}'.")
-        return super().__getattribute__(attribute_name)
+        if attr is None:
+            raise MissingFieldException(self._path)
+        return attr
 
     def assign(self, value, wait: bool = False) -> None:
         """Assigns the provided value to the field.
@@ -277,20 +276,6 @@ class Handler:
         else:
             self._run.pop(self._path, wait)
 
-    # Following attributes are implemented only for docstring hints and autocomplete
-    DOCSTRING_ATTRIBUTES = [
-        "remove",
-        "clear",
-        "fetch",
-        "fetch_last",
-        "fetch_values",
-        "delete_files",
-        "download",
-        "download_last",
-        "fetch_hash",
-        "fetch_files_list",
-    ]
-
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Removes the provided tag or tags from the set.
 
@@ -305,7 +290,7 @@ class Handler:
         .. _remove docs page:
            https://docs.neptune.ai/api-reference/field-types#.remove
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(function_name="remove", values=values, wait=wait)
 
     def clear(self, wait: bool = False):
         """Removes all tags from the `StringSet`.
@@ -320,7 +305,7 @@ class Handler:
         .. _clear docs page:
            https://docs.neptune.ai/api-reference/field-types#.clear
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(function_name="clear", wait=wait)
 
     def fetch(self):
         """Fetches fields value or in case of a namespace fetches values of all non-File Atom fields as a dictionary.
@@ -340,7 +325,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(function_name="fetch")
 
     def fetch_last(self):
         """Fetches last value stored in the series from Neptune servers.
@@ -355,7 +340,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(function_name="fetch_last")
 
     def fetch_values(self, include_timestamp: Optional[bool] = True):
         """Fetches all values stored in the series from Neptune servers.
@@ -374,7 +359,9 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(
+            function_name="fetch_values", include_timestamp=include_timestamp
+        )
 
     def delete_files(
         self, paths: Union[str, Iterable[str]], wait: bool = False
@@ -395,7 +382,9 @@ class Handler:
         .. _delete_files docs page:
             https://docs.neptune.ai/api-reference/field-types#.delete_files
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(
+            function_name="delete_files", paths=paths, wait=wait
+        )
 
     def download(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
@@ -417,7 +406,9 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(
+            function_name="download", destination=destination
+        )
 
     def download_last(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
@@ -435,7 +426,7 @@ class Handler:
         .. _download_last docs page:
            https://docs.neptune.ai/api-reference/field-types#.download_last
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(function_name="remove", destination=destination)
 
     def fetch_hash(self) -> str:
         """Fetches the hash of an artifact.
@@ -443,7 +434,7 @@ class Handler:
         You may also want to check `fetch_hash docs page`_.
            https://docs.neptune.ai/api-reference/field-types#.fetch_hash
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(function_name="fetch_hash")
 
     def fetch_files_list(self) -> List[ArtifactFileData]:
         """Fetches the list of files in an artifact and their metadata.
@@ -451,7 +442,10 @@ class Handler:
         You may also want to check `fetch_files_list docs page`_.
            https://docs.neptune.ai/api-reference/field-types#.fetch_files_list
         """
-        raise NeptuneException("Should be never called.")
+        return self._pass_call_to_attr(function_name="fetch_files_list")
+
+    def _pass_call_to_attr(self, function_name, **kwargs):
+        return getattr(self._get_attribute(), function_name)(**kwargs)
 
     def track_files(
         self, path: str, destination: str = None, wait: bool = False

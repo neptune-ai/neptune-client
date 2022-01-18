@@ -373,6 +373,7 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(ns["some/value"].fetch(), 3)
 
     def test_attribute_error(self):
+        # pylint: disable=no-member
         exp = init(mode="debug", flush_period=0.5)
         with self.assertRaises(AttributeError):
             exp["var"].something()
