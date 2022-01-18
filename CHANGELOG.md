@@ -1,4 +1,9 @@
-## [UNRELEASED] neptune-client 0.14.2
+## [UNRELEASED] neptune-client 0.15.0
+
+### Changes
+- Do not forward every attribute from Handler to Attribute ([#815](https://github.com/neptune-ai/neptune-client/pull/815))
+
+## neptune-client 0.14.2
 
 ### Features
 - Use new file upload API ([#789](https://github.com/neptune-ai/neptune-client/pull/789))
