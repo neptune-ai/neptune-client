@@ -29,7 +29,7 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import NeptuneException, NeptuneProtectedPathException, MissingFieldException
+from neptune.new.exceptions import NeptuneProtectedPathException, MissingFieldException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     verify_type,
@@ -45,7 +45,7 @@ from neptune.new.types.atoms.file import File as FileVal
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
-    from neptune.new.attribute_container import AttributeContainer
+    from neptune.new.metadata_containers import MetadataContainer
 
 
 def check_protected_paths(fun):
@@ -65,7 +65,7 @@ class Handler:
         SYSTEM_STAGE_ATTRIBUTE_PATH,
     ]
 
-    def __init__(self, container: "AttributeContainer", path: str):
+    def __init__(self, container: "MetadataContainer", path: str):
         super().__init__()
         self._container = container
         self._path = path

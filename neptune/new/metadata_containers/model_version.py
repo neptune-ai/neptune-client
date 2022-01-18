@@ -15,7 +15,7 @@
 #
 import threading
 
-from neptune.new.attribute_container import AttributeContainer
+from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
 from neptune.new.exceptions import NeptuneOfflineModeChangeStageException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
