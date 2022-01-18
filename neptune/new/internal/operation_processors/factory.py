@@ -34,11 +34,12 @@ from .operation_processor import OperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
 from ..container_type import ContainerType
+from ..id_formats import UniqueId
 
 
 def get_operation_processor(
     mode: Mode,
-    container_id: str,
+    container_id: UniqueId,
     container_type: ContainerType,
     backend: NeptuneBackend,
     lock: threading.RLock,

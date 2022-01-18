@@ -23,6 +23,7 @@ from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import Project, Workspace
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.utils import replace_patch_version
 
 
@@ -193,7 +194,7 @@ You can check all of your projects on the Projects page:
 class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
     def __init__(
         self,
-        project_id: str,
+        project_id: QualifiedName,
         available_projects: List[Project] = (),
         available_workspaces: List[Workspace] = (),
     ):
@@ -339,7 +340,9 @@ class ContainerUUIDNotFound(NeptuneException):
 
 
 def raise_container_not_found(
-    container_id: str, container_type: ContainerType, from_exception: Exception = None
+    container_id: UniqueId,
+    container_type: ContainerType,
+    from_exception: Exception = None,
 ):
     if container_type == ContainerType.RUN:
         error_class = RunUUIDNotFound
@@ -588,11 +591,11 @@ class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyM
         )
 
 
-class NeptuneWongInitParametersException(NeptuneException):
+class NeptuneWrongInitParametersException(NeptuneException):
     pass
 
 
-class NeptuneRunResumeAndCustomIdCollision(NeptuneWongInitParametersException):
+class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
     def __init__(self):
         message = """
 {h1}
@@ -816,7 +819,7 @@ class OperationNotSupported(NeptuneException):
 
 
 class NeptuneLegacyProjectException(NeptuneException):
-    def __init__(self, project: str):
+    def __init__(self, project: QualifiedName):
         message = """
 {h1}
 ----NeptuneLegacyProjectException---------------------------------------------------------
@@ -986,7 +989,7 @@ class PlotlyIncompatibilityException(Exception):
         )
 
 
-class NeptunePossibleLegacyUsageException(NeptuneWongInitParametersException):
+class NeptunePossibleLegacyUsageException(NeptuneWrongInitParametersException):
     def __init__(self):
         message = """
 {h1}

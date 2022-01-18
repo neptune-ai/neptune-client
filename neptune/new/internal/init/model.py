@@ -20,11 +20,13 @@ from typing import Optional
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
-    NeptuneWongInitParametersException,
+    NeptuneWrongInitParametersException,
 )
+from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
+from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.init.parameters import (
     DEFAULT_FLUSH_PERIOD,
     DEFAULT_NAME,
@@ -58,32 +60,39 @@ def init_model(
     verify_type("proxies", proxies, (dict, type(None)))
 
     # verify exclusive arguments
-    # pylint: disable=superfluous-parens
-    if not ((model is not None) ^ (key is not None)):
-        raise NeptuneWongInitParametersException("NPT-11349 exactly one of: model, key")
-    if model is not None and name is not None:
-        raise NeptuneWongInitParametersException("NPT-11349 name only with key")
-
-    # make mode proper Enum instead of string
-    mode = Mode(mode)
+    if model is not None and key is not None:
+        raise NeptuneWrongInitParametersException(
+            "NPT-11349 required one of: model or key"
+        )
 
     name = DEFAULT_NAME if model is None and name is None else name
 
+    # make mode proper Enum instead of string
+    mode = Mode(mode)
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
         project = OFFLINE_PROJECT_QUALIFIED_NAME
 
+    project = id_formats.conform_optional(project, QualifiedName)
     project_obj = project_name_lookup(backend=backend, name=project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
-    if model:
-        api_model = backend.get_model(model_id=project + "/" + model)
-    else:
+    if model is not None:
+        if name is not None:
+            raise NeptuneWrongInitParametersException("NPT-11349 name only with key")
+
+        model = QualifiedName(project + "/" + model)
+        api_model = backend.get_model(model_id=model)
+    elif key is not None:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelForReadOnlyMode()
 
         api_model = backend.create_model(project_id=project_obj.id, key=key)
+    else:
+        raise NeptuneWrongInitParametersException(
+            "NPT-11349 required one of: model or key"
+        )
 
     model_lock = threading.RLock()
 
@@ -101,7 +110,7 @@ def init_model(
         background_jobs.append(PingBackgroundJob())
 
     _model = Model(
-        _id=api_model.id,
+        id_=api_model.id,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),
@@ -123,18 +132,3 @@ def init_model(
     _model._startup(debug_mode=mode == Mode.DEBUG)
 
     return _model
-
-
-def get_model(
-    model: Optional[str] = None,
-    project: Optional[str] = None,
-    api_token: Optional[str] = None,
-    proxies: Optional[dict] = None,
-):
-    return init_model(
-        model=model,
-        project=project,
-        api_token=api_token,
-        mode=Mode.READ_ONLY.value,
-        proxies=proxies,
-    )

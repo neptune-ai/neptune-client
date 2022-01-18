@@ -16,6 +16,7 @@
 
 import os
 import threading
+import typing
 from platform import node as get_hostname
 from typing import List, Optional, Union
 
@@ -31,6 +32,7 @@ from neptune.new.exceptions import (
     NeptunePossibleLegacyUsageException,
     NeptuneRunResumeAndCustomIdCollision,
 )
+from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
@@ -38,6 +40,7 @@ from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.hardware.hardware_metric_reporting_job import (
     HardwareMetricReportingJob,
 )
+from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.init.parameters import (
     DEFAULT_FLUSH_PERIOD,
     DEFAULT_NAME,
@@ -237,11 +240,12 @@ def init_run(
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
         project = OFFLINE_PROJECT_QUALIFIED_NAME
 
+    project = id_formats.conform_optional(project, QualifiedName)
     project_obj = project_name_lookup(backend, project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
     if run:
-        api_run = backend.get_run(run_id=project + "/" + run)
+        api_run = backend.get_run(run_id=QualifiedName(project + "/" + run))
     else:
         if mode == Mode.READ_ONLY:
             raise NeedExistingRunForReadOnlyMode()
@@ -296,7 +300,7 @@ def init_run(
         background_jobs.append(PingBackgroundJob())
 
     _run = Run(
-        _id=api_run.id,
+        id_=api_run.id,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),
@@ -337,7 +341,9 @@ def init_run(
     return _run
 
 
-def _create_notebook_checkpoint(backend: NeptuneBackend) -> (str, str):
+def _create_notebook_checkpoint(
+    backend: NeptuneBackend,
+) -> typing.Tuple[typing.Optional[str], typing.Optional[str]]:
     notebook_id = None
     if os.getenv(NEPTUNE_NOTEBOOK_ID, None) is not None:
         notebook_id = os.environ[NEPTUNE_NOTEBOOK_ID]

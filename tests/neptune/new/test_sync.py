@@ -28,6 +28,7 @@ from neptune.new.exceptions import ProjectNotFound
 from neptune.new.internal.backends.api_model import Project
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
+from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.new.sync import (
@@ -221,7 +222,12 @@ def test_sync_all_runs(tmp_path, mocker, capsys):
     mocker.patch.object(
         neptune.new.sync.backend,
         "get_project",
-        lambda _: Project(str(uuid.uuid4()), "project", "workspace"),
+        lambda _: Project(
+            id=UniqueId(str(uuid.uuid4())),
+            name="project",
+            workspace="workspace",
+            sys_id=SysId("PROJ"),
+        ),
     )
     mocker.patch.object(
         neptune.new.sync,
@@ -291,7 +297,12 @@ def test_sync_selected_runs(tmp_path, mocker, capsys):
     mocker.patch.object(
         neptune.new.sync.backend,
         "get_project",
-        lambda _: Project(str(uuid.uuid4()), "project", "workspace"),
+        lambda _: Project(
+            id=UniqueId(str(uuid.uuid4())),
+            name="project",
+            workspace="workspace",
+            sys_id=SysId("PROJ"),
+        ),
     )
     mocker.patch.object(
         neptune.new.sync,

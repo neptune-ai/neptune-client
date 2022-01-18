@@ -16,7 +16,7 @@
 
 import unittest
 
-from neptune.new import get_model
+from neptune.new import init_model
 from neptune.new.internal.container_type import ContainerType
 from tests.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
@@ -25,8 +25,10 @@ class TestModelVersionTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.MODEL_VERSION
 
     def get_table(self):
-        return get_model(
-            model="organization/project", project="PRO-MOD"
+        return init_model(
+            model="organization/project",
+            project="PRO-MOD",
+            mode="read-only",
         ).fetch_model_versions_table()
 
     def get_table_entries(self, table):

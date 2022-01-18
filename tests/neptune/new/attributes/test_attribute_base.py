@@ -23,6 +23,7 @@ from typing import Optional
 from mock import MagicMock
 
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
@@ -44,19 +45,19 @@ class TestAttributeBase(unittest.TestCase):
     @staticmethod
     def _create_run(processor: Optional[OperationProcessor] = None):
         backend = NeptuneBackendMock()
-        exp = backend.create_run(str(uuid.uuid4()))
+        exp = backend.create_run(UniqueId(str(uuid.uuid4())))
         if processor is None:
             processor = SyncOperationProcessor(exp.id, ContainerType.RUN, backend)
         _run = Run(
-            exp.id,
-            backend,
-            processor,
-            MagicMock(),
-            threading.RLock(),
-            MagicMock(),
-            MagicMock(),
-            MagicMock(),
-            MagicMock(),
+            id_=exp.id,
+            backend=backend,
+            op_processor=processor,
+            background_job=MagicMock(),
+            lock=threading.RLock(),
+            workspace=MagicMock(),
+            project_id=MagicMock(),
+            project_name=MagicMock(),
+            sys_id=MagicMock(),
         )
         _run.sync()
         _run.start()

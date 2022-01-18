@@ -16,6 +16,7 @@
 import threading
 from typing import Iterable, Union, Optional, Dict, Any
 
+from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
@@ -40,23 +41,26 @@ class Project(MetadataContainer):
 
     def __init__(
         self,
-        _id: str,
+        *,
+        id_: UniqueId,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
         lock: threading.RLock,
         workspace: str,
         project_name: str,
+        sys_id: SysId,
     ):
         super().__init__(
-            _id,
-            backend,
-            op_processor,
-            background_job,
-            lock,
-            project_id=_id,
+            id_=id_,
+            backend=backend,
+            op_processor=op_processor,
+            background_job=background_job,
+            lock=lock,
+            project_id=id_,
             project_name=project_name,
             workspace=workspace,
+            sys_id=sys_id,
         )
 
     @property

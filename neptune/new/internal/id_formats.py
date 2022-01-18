@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,11 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.new.internal.init.project import get_project, init_project
-from neptune.new.internal.init.run import init_run
-from neptune.new.internal.init.model import init_model
-from neptune.new.internal.init.model_version import init_model_version
-from neptune.new.types.mode import Mode
+import typing
+from typing import NewType
 
-init = init_run
-RunMode = Mode
+UniqueId = NewType("UniqueId", str)
+
+SysId = NewType("SysId", str)
+
+QualifiedName = NewType("QualifiedName", str)
+
+
+def conform_optional(value: typing.Optional[str], cls):
+    return cls(value) if value is not None else None

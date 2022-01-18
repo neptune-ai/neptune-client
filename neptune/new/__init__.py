@@ -35,7 +35,6 @@ from neptune.new.exceptions import (
 from neptune.new.metadata_containers import Run
 from neptune.new.internal.init import (
     get_project,
-    get_model,
     init_model,
     init_model_version,
     init_project,
