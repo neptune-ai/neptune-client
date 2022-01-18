@@ -413,6 +413,7 @@ class Handler:
             function_name="delete_files", paths=paths, wait=wait
         )
 
+    @check_protected_paths
     def download(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
 
