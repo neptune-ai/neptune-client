@@ -16,5 +16,4 @@
 
 # backwards compatibility
 # pylint: disable=unused-import
-from neptune.new.metadata_containers.runs_table import RunsTable
 from neptune.new.metadata_containers import Project

@@ -32,5 +32,3 @@ from neptune.new.internal.backends.api_model import (
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
-
-from neptune.new.metadata_containers.runs_table import RunsTable, RunsTableEntry
