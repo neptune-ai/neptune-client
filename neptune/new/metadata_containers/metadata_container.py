@@ -22,7 +22,7 @@ import traceback
 from contextlib import AbstractContextManager
 from datetime import datetime
 from functools import wraps
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union, TYPE_CHECKING
 
 import click
 
@@ -76,6 +76,9 @@ from neptune.new.types.atoms.string import String
 from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
 from neptune.new.types.value_copy import ValueCopy
+
+if TYPE_CHECKING:
+    from neptune.new.metadata_containers.metadata_containers_table import Table
 
 
 def ensure_not_stopped(fun):
@@ -351,3 +354,14 @@ class MetadataContainer(AbstractContextManager):
 
     def _shutdown_hook(self):
         self.stop()
+
+    def _fetch_child_entries(self, child_type: ContainerType) -> "Table":
+        # TODO: NPT-11373
+        leaderboard_entries = self._backend.search_leaderboard_entries(
+            project_id=self._project_id,
+            parent_id=self._id,
+            types=[child_type],
+            filters=[],
+        )
+
+        return Table(backend=self._backend, entries=leaderboard_entries)

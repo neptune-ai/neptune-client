@@ -180,3 +180,15 @@ def is_ipython() -> bool:
         return ipython is not None
     except ImportError:
         return False
+
+
+def as_list(
+    name: str, value: Optional[Union[str, Iterable[str]]]
+) -> Optional[Iterable[str]]:
+    verify_type(name, value, (type(None), str, Iterable))
+    if value is None:
+        return None
+    if isinstance(value, str):
+        return [value]
+    verify_collection_type(name, value, str)
+    return value
