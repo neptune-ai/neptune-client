@@ -23,7 +23,7 @@ from mock import patch
 from neptune.new import ANONYMOUS, init_model
 from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneWongInitParametersException
+from neptune.new.exceptions import NeptuneWrongInitParametersException
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -92,11 +92,11 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertIsInstance(exp.get_structure()["test"], String)
 
     def test_wrong_parameters(self):
-        with self.assertRaises(NeptuneWongInitParametersException):
+        with self.assertRaises(NeptuneWrongInitParametersException):
             init_model(model=None, key=None)
-        with self.assertRaises(NeptuneWongInitParametersException):
+        with self.assertRaises(NeptuneWrongInitParametersException):
             init_model(model="whatever", key="whatever")
-        with self.assertRaises(NeptuneWongInitParametersException):
+        with self.assertRaises(NeptuneWrongInitParametersException):
             init_model(model="whatever", name="whatever")
 
     def test_name_parameter(self):

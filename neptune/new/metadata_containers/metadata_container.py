@@ -46,6 +46,7 @@ from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
@@ -104,16 +105,18 @@ class MetadataContainer(AbstractContextManager):
 
     def __init__(
         self,
-        _id: str,
+        *,
+        id_: UniqueId,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
         lock: threading.RLock,
-        project_id: str,
+        project_id: UniqueId,
         project_name: str,
         workspace: str,
+        sys_id: SysId,
     ):
-        self._id = _id
+        self._id = id_
         self._project_id = project_id
         self._project_name = project_name
         self._workspace = workspace
@@ -125,6 +128,7 @@ class MetadataContainer(AbstractContextManager):
         ] = ContainerStructure(NamespaceBuilder(self))
         self._lock = lock
         self._state = ContainerState.CREATED
+        self._sys_id = sys_id
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:

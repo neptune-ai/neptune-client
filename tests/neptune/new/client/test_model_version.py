@@ -25,7 +25,7 @@ from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     NeptuneOfflineModeChangeStageException,
-    NeptuneWongInitParametersException,
+    NeptuneWrongInitParametersException,
 )
 from neptune.new.internal.backends.api_model import (
     Attribute,
@@ -100,9 +100,9 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertIsInstance(exp.get_structure()["test"], String)
 
     def test_wrong_parameters(self):
-        with self.assertRaises(NeptuneWongInitParametersException):
+        with self.assertRaises(NeptuneWrongInitParametersException):
             init_model_version(version=None, model=None)
-        with self.assertRaises(NeptuneWongInitParametersException):
+        with self.assertRaises(NeptuneWrongInitParametersException):
             init_model_version(version="whatever", model="whatever")
 
     @patch(

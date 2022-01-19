@@ -40,6 +40,7 @@ from neptune.new.internal.backends.api_model import (
     Workspace,
 )
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
@@ -66,7 +67,7 @@ class NeptuneBackend:
         return None
 
     @abc.abstractmethod
-    def get_project(self, project_id: str) -> Project:
+    def get_project(self, project_id: QualifiedName) -> Project:
         pass
 
     @abc.abstractmethod
@@ -86,7 +87,7 @@ class NeptuneBackend:
     @abc.abstractmethod
     def create_run(
         self,
-        project_id: str,
+        project_id: UniqueId,
         git_ref: Optional[GitRef] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
@@ -95,26 +96,26 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_model(self, model_id: str) -> ApiExperiment:
+    def get_model(self, model_id: QualifiedName) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
     def create_model(
         self,
-        project_id: str,
+        project_id: UniqueId,
         key: str,
     ) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
-    def get_model_version(self, model_version_id: str) -> ApiExperiment:
+    def get_model_version(self, model_version_id: QualifiedName) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
     def create_model_version(
         self,
-        project_id: str,
-        model_id: str,
+        project_id: UniqueId,
+        model_id: UniqueId,
     ) -> ApiExperiment:
         pass
 
@@ -128,7 +129,7 @@ class NeptuneBackend:
     @abc.abstractmethod
     def execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> Tuple[int, List[NeptuneException]]:
@@ -296,7 +297,7 @@ class NeptuneBackend:
     @abc.abstractmethod
     def search_leaderboard_entries(
         self,
-        project_id: str,
+        project_id: UniqueId,
         parent_id: Optional[Iterable[str]],
         types: Optional[Iterable[ContainerType]],
     ) -> List[LeaderboardEntry]:

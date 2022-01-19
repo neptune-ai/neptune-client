@@ -15,7 +15,7 @@
 #
 import logging
 from datetime import datetime
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, List, Dict, Optional, Union, Type
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
@@ -160,7 +160,7 @@ class LeaderboardHandler:
 
 
 class MetadataContainersTable:
-    table_entry_cls: type(MetadataContainersTableEntry)
+    table_entry_cls: Type[MetadataContainersTableEntry]
 
     def __init__(self, backend: NeptuneBackend, entries: List[LeaderboardEntry]):
         self._backend = backend

@@ -27,7 +27,7 @@ from neptune.new.internal.streams.std_stream_capture_logger import (
 )
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import Run
+    from neptune.new.metadata_containers import MetadataContainer
 
 
 class StdoutCaptureBackgroundJob(BackgroundJob):
@@ -35,8 +35,8 @@ class StdoutCaptureBackgroundJob(BackgroundJob):
         self._attribute_name = attribute_name
         self._logger = None
 
-    def start(self, run: "Run"):
-        self._logger = StdoutCaptureLogger(run, self._attribute_name)
+    def start(self, container: "MetadataContainer"):
+        self._logger = StdoutCaptureLogger(container, self._attribute_name)
 
     def stop(self):
         self._logger.close()
@@ -50,8 +50,8 @@ class StderrCaptureBackgroundJob(BackgroundJob):
         self._attribute_name = attribute_name
         self._logger = None
 
-    def start(self, run: "Run"):
-        self._logger = StderrCaptureLogger(run, self._attribute_name)
+    def start(self, container: "MetadataContainer"):
+        self._logger = StderrCaptureLogger(container, self._attribute_name)
 
     def stop(self):
         self._logger.close()

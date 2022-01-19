@@ -21,26 +21,28 @@ from typing import Optional, List, Set, Any, FrozenSet
 from packaging import version
 
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import UniqueId, SysId
 
 
+@dataclass
 class Project:
-    def __init__(self, _id: str, name: str, workspace: str):
-        self.id = _id
-        self.name = name
-        self.workspace = workspace
+    id: UniqueId
+    name: str
+    workspace: str
+    sys_id: SysId
 
 
+@dataclass
 class Workspace:
-    def __init__(self, _id: str, name: str):
-        self.id = _id
-        self.name = name
+    id: UniqueId
+    name: str
 
 
 @dataclass
 class ApiExperiment:
-    id: str
+    id: UniqueId
     type: ContainerType
-    sys_id: str
+    sys_id: SysId
     workspace: str
     project_name: str
     trashed: bool = False

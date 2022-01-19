@@ -13,15 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import threading
-
 from neptune.new.metadata_containers import MetadataContainer
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.operation_processors.operation_processor import (
-    OperationProcessor,
-)
 from neptune.new.metadata_containers.model_versions_table import ModelVersionsTable
 
 
@@ -35,30 +28,6 @@ class Model(MetadataContainer):
     """
 
     container_type = ContainerType.MODEL
-
-    def __init__(
-        self,
-        _id: str,
-        backend: NeptuneBackend,
-        op_processor: OperationProcessor,
-        background_job: BackgroundJob,
-        lock: threading.RLock,
-        workspace: str,
-        project_name: str,
-        sys_id: str,
-        project_id: str,
-    ):
-        super().__init__(
-            _id,
-            backend,
-            op_processor,
-            background_job,
-            lock,
-            project_id,
-            project_name,
-            workspace,
-        )
-        self._sys_id = sys_id
 
     @property
     def _docs_url_stop(self) -> str:

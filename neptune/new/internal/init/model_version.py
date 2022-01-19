@@ -18,12 +18,14 @@ import threading
 from typing import Optional
 
 from neptune.new.exceptions import (
-    NeptuneWongInitParametersException,
+    NeptuneWrongInitParametersException,
     NeedExistingModelVersionForReadOnlyMode,
 )
+from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
+from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.init.parameters import (
     DEFAULT_FLUSH_PERIOD,
     OFFLINE_PROJECT_QUALIFIED_NAME,
@@ -39,7 +41,6 @@ def init_model_version(
     *,
     version: Optional[str] = None,
     model: Optional[str] = None,
-    key: Optional[str] = None,
     project: Optional[str] = None,
     api_token: Optional[str] = None,
     mode: str = Mode.ASYNC.value,
@@ -48,7 +49,6 @@ def init_model_version(
 ) -> ModelVersion:
     verify_type("version", version, (str, type(None)))
     verify_type("model", model, (str, type(None)))
-    verify_type("key", key, (str, type(None)))
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("mode", mode, str)
@@ -56,34 +56,37 @@ def init_model_version(
     verify_type("proxies", proxies, (dict, type(None)))
 
     # verify exclusive arguments
-    # pylint: disable=superfluous-parens
-    if not ((version is not None) ^ (model is not None)):
-        raise NeptuneWongInitParametersException(
-            "NPT-11349 exactly one of: version, model"
+    if version is not None and model is not None:
+        raise NeptuneWrongInitParametersException(
+            "NPT-11349 required one of: version or model"
         )
 
     # make mode proper Enum instead of string
     mode = Mode(mode)
-
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
         project = OFFLINE_PROJECT_QUALIFIED_NAME
 
+    project = id_formats.conform_optional(project, QualifiedName)
     project_obj = project_name_lookup(backend, project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
-    if version:
-        api_model_version = backend.get_model_version(
-            model_version_id=project + "/" + version
-        )
-    else:
+    if version is not None:
+        version = QualifiedName(project + "/" + version)
+        api_model_version = backend.get_model_version(model_version_id=version)
+    elif model is not None:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelVersionForReadOnlyMode()
 
-        api_model = backend.get_model(model_id=project + "/" + model)
+        model_id = QualifiedName(project + "/" + model)
+        api_model = backend.get_model(model_id=model_id)
         api_model_version = backend.create_model_version(
             project_id=project_obj.id, model_id=api_model.id
+        )
+    else:
+        raise NeptuneWrongInitParametersException(
+            "NPT-11349 required one of: version or model"
         )
 
     model_lock = threading.RLock()
@@ -102,7 +105,7 @@ def init_model_version(
         background_jobs.append(PingBackgroundJob())
 
     _model = ModelVersion(
-        _id=api_model_version.id,
+        id_=api_model_version.id,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),

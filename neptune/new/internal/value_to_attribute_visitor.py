@@ -46,58 +46,58 @@ from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value_visitor import ValueVisitor
 
 if TYPE_CHECKING:
-    from neptune.new import Run
+    from neptune.new import MetadataContainer
 
 
 class ValueToAttributeVisitor(ValueVisitor[Attribute]):
-    def __init__(self, run: "Run", path: List[str]):
-        self._run = run
+    def __init__(self, container: "MetadataContainer", path: List[str]):
+        self._container = container
         self._path = path
 
     def visit_float(self, _: Float) -> Attribute:
-        return FloatAttr(self._run, self._path)
+        return FloatAttr(self._container, self._path)
 
     def visit_integer(self, _: Integer) -> Attribute:
-        return IntegerAttr(self._run, self._path)
+        return IntegerAttr(self._container, self._path)
 
     def visit_boolean(self, _: Boolean) -> Attribute:
-        return BooleanAttr(self._run, self._path)
+        return BooleanAttr(self._container, self._path)
 
     def visit_string(self, _: String) -> Attribute:
-        return StringAttr(self._run, self._path)
+        return StringAttr(self._container, self._path)
 
     def visit_datetime(self, _: Datetime) -> Attribute:
-        return DatetimeAttr(self._run, self._path)
+        return DatetimeAttr(self._container, self._path)
 
     def visit_artifact(self, _: Artifact) -> Attribute:
-        return ArtifactAttr(self._run, self._path)
+        return ArtifactAttr(self._container, self._path)
 
     def visit_file(self, _: File) -> Attribute:
-        return FileAttr(self._run, self._path)
+        return FileAttr(self._container, self._path)
 
     def visit_file_set(self, _: FileSet) -> Attribute:
-        return FileSetAttr(self._run, self._path)
+        return FileSetAttr(self._container, self._path)
 
     def visit_float_series(self, _: FloatSeries) -> Attribute:
-        return FloatSeriesAttr(self._run, self._path)
+        return FloatSeriesAttr(self._container, self._path)
 
     def visit_string_series(self, _: StringSeries) -> Attribute:
-        return StringSeriesAttr(self._run, self._path)
+        return StringSeriesAttr(self._container, self._path)
 
     def visit_image_series(self, _: FileSeries) -> Attribute:
-        return ImageSeriesAttr(self._run, self._path)
+        return ImageSeriesAttr(self._container, self._path)
 
     def visit_string_set(self, _: StringSet) -> Attribute:
-        return StringSetAttr(self._run, self._path)
+        return StringSetAttr(self._container, self._path)
 
     def visit_git_ref(self, _: GitRef) -> Attribute:
         raise OperationNotSupported("Cannot create custom attribute of type GitRef")
 
     def visit_namespace(self, _: Namespace) -> Attribute:
-        return NamespaceAttr(self._run, self._path)
+        return NamespaceAttr(self._container, self._path)
 
     # pylint: disable=unused-argument
     def copy_value(
         self, source_type: Type[Attribute], source_path: List[str]
     ) -> Attribute:
-        return source_type(self._run, self._path)
+        return source_type(self._container, self._path)

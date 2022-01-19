@@ -46,6 +46,7 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.credentials import Credentials
+from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.container_type_file import ContainerTypeFile
 
@@ -80,7 +81,7 @@ project_name_missing_message = (
 )
 
 
-def project_not_found_message(project_name: str) -> str:
+def project_not_found_message(project_name: QualifiedName) -> str:
     return (
         "Project {} not found. Could not synchronize offline runs. ".format(
             project_name
@@ -98,6 +99,7 @@ def get_project(project_name_flag: Optional[str]) -> Optional[Project]:
         click.echo(textwrap.fill(project_name_missing_message), file=sys.stderr)
         return None
     try:
+        project_name = QualifiedName(project_name)
         return backend.get_project(project_name)
     except ProjectNotFound:
         click.echo(

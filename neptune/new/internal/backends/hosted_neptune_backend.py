@@ -95,6 +95,7 @@ from neptune.new.internal.backends.utils import (
 )
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
+from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import (
     Operation,
     TrackFilesToArtifact,
@@ -103,7 +104,7 @@ from neptune.new.internal.operation import (
     UploadFileSet,
     DeleteAttribute,
 )
-from neptune.new.internal.utils import base64_decode, verify_type
+from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import (
     map_attribute_result_to_value,
 )
@@ -168,9 +169,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
 
     @with_api_exceptions_handler
-    def get_project(self, project_id: str) -> Project:
-        verify_type("project_id", project_id, str)
-
+    def get_project(self, project_id: QualifiedName) -> Project:
         project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, project_id)
         workspace, name = project_spec["workspace"], project_spec["project"]
 
@@ -205,7 +204,12 @@ class HostedNeptuneBackend(NeptuneBackend):
             project_version = project.version if hasattr(project, "version") else 1
             if project_version < 2:
                 raise NeptuneLegacyProjectException(project_id)
-            return Project(project.id, project.name, project.organizationName)
+            return Project(
+                id=project.id,
+                name=project.name,
+                workspace=project.organizationName,
+                sys_id=project.projectKey,
+            )
         except HTTPNotFound:
             raise ProjectNotFound(
                 project_id,
@@ -233,7 +237,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return list(
                 map(
                     lambda project: Project(
-                        project.id, project.name, project.organizationName
+                        id=project.id,
+                        name=project.name,
+                        workspace=project.organizationName,
+                        sys_id=project.projectKey,
                     ),
                     projects,
                 )
@@ -258,25 +265,25 @@ class HostedNeptuneBackend(NeptuneBackend):
             return []
 
     @with_api_exceptions_handler
-    def get_run(self, run_id: str):
+    def get_run(self, run_id: QualifiedName):
         return self._get_experiment(
             container_id=run_id, container_type=ContainerType.RUN
         )
 
     @with_api_exceptions_handler
-    def get_model(self, model_id: str) -> ApiExperiment:
+    def get_model(self, model_id: QualifiedName) -> ApiExperiment:
         return self._get_experiment(
             container_id=model_id, container_type=ContainerType.MODEL
         )
 
     @with_api_exceptions_handler
-    def get_model_version(self, model_version_id: str) -> ApiExperiment:
+    def get_model_version(self, model_version_id: QualifiedName) -> ApiExperiment:
         return self._get_experiment(
             container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
         )
 
     def _get_experiment(
-        self, container_id: str, container_type: ContainerType
+        self, container_id: QualifiedName, container_type: ContainerType
     ) -> ApiExperiment:
         try:
             experiment = (
@@ -302,13 +309,12 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def create_run(
         self,
-        project_id: str,
+        project_id: UniqueId,
         git_ref: Optional[GitRef] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
     ) -> ApiExperiment:
-        verify_type("project_id", project_id, str)
 
         git_info = (
             {
@@ -347,7 +353,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             additional_params=additional_params,
         )
 
-    def create_model(self, project_id: str, key: str = "") -> ApiExperiment:
+    def create_model(self, project_id: UniqueId, key: str = "") -> ApiExperiment:
         additional_params = {
             "key": key,
         }
@@ -359,7 +365,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             additional_params=additional_params,
         )
 
-    def create_model_version(self, project_id: str, model_id: str) -> ApiExperiment:
+    def create_model_version(
+        self, project_id: UniqueId, model_id: UniqueId
+    ) -> ApiExperiment:
         return self._create_experiment(
             project_id=project_id,
             parent_id=model_id,
@@ -368,8 +376,8 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     def _create_experiment(
         self,
-        project_id: str,
-        parent_id: str,
+        project_id: UniqueId,
+        parent_id: UniqueId,
         container_type: ContainerType,
         additional_params: Optional[dict] = None,
     ):
@@ -1147,7 +1155,7 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     def search_leaderboard_entries(
         self,
-        project_id: str,
+        project_id: UniqueId,
         parent_id: Optional[Iterable[str]],
         types: Optional[Iterable[ContainerType]],
     ) -> List[LeaderboardEntry]:

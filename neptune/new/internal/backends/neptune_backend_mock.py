@@ -58,6 +58,7 @@ from neptune.new.internal.backends.hosted_file_operations import (
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import SysId, QualifiedName, UniqueId
 from neptune.new.internal.operation import (
     AddStrings,
     AssignArtifact,
@@ -113,13 +114,13 @@ Val = TypeVar("Val", bound=Value)
 class NeptuneBackendMock(NeptuneBackend):
     WORKSPACE_NAME = "offline"
     PROJECT_NAME = "project-placeholder"
-    PROJECT_KEY = "OFFLINE"
+    PROJECT_KEY = SysId("OFFLINE")
 
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
-        self._project_id: str = str(uuid.uuid4())
+        self._project_id: UniqueId = UniqueId(str(uuid.uuid4()))
         self._containers: Dict[
-            (str, ContainerType), ContainerStructure[Value, dict]
+            (UniqueId, ContainerType), ContainerStructure[Value, dict]
         ] = dict()
         self._next_run = 1  # counter for runs
         self._next_model_version = defaultdict(lambda: 1)  # counter for model versions
@@ -137,13 +138,20 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_available_projects(
         self, workspace_id: Optional[str] = None, search_term: Optional[str] = None
     ) -> List[Project]:
-        return [Project(str(uuid.uuid4()), self.PROJECT_NAME, self.WORKSPACE_NAME)]
+        return [
+            Project(
+                id=UniqueId(str(uuid.uuid4())),
+                name=self.PROJECT_NAME,
+                workspace=self.WORKSPACE_NAME,
+                sys_id=self.PROJECT_KEY,
+            )
+        ]
 
     def get_available_workspaces(self) -> List[Workspace]:
-        return [Workspace(str(uuid.uuid4()), self.WORKSPACE_NAME)]
+        return [Workspace(id=UniqueId(str(uuid.uuid4())), name=self.WORKSPACE_NAME)]
 
     def _create_container(
-        self, container_id: str, container_type: ContainerType, sys_id: str
+        self, container_id: UniqueId, container_type: ContainerType, sys_id: SysId
     ):
         container = self._containers.setdefault(
             (container_id, container_type), ContainerStructure[Value, dict]()
@@ -158,7 +166,7 @@ class NeptuneBackendMock(NeptuneBackend):
         container.set(["sys", "failed"], Boolean(False))
         return container
 
-    def _get_container(self, container_id: str, container_type: ContainerType):
+    def _get_container(self, container_id: UniqueId, container_type: ContainerType):
         key = (container_id, container_type)
         if key not in self._containers:
             raise_container_not_found(container_id, container_type)
@@ -167,15 +175,15 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def create_run(
         self,
-        project_id: str,
+        project_id: UniqueId,
         git_ref: Optional[GitRef] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
     ) -> ApiExperiment:
-        sys_id = f"{self.PROJECT_KEY}-{self._next_run}"
+        sys_id = SysId(f"{self.PROJECT_KEY}-{self._next_run}")
         self._next_run += 1
-        new_run_id = str(uuid.uuid4())
+        new_run_id = UniqueId(str(uuid.uuid4()))
         container = self._create_container(new_run_id, ContainerType.RUN, sys_id=sys_id)
         if git_ref:
             container.set(["source_code", "git"], git_ref)
@@ -189,8 +197,8 @@ class NeptuneBackendMock(NeptuneBackend):
         )
 
     def create_model(self, project_id: str, key: str) -> ApiExperiment:
-        sys_id = f"{self.PROJECT_KEY}-{key}"
-        new_run_id = str(uuid.uuid4())
+        sys_id = SysId(f"{self.PROJECT_KEY}-{key}")
+        new_run_id = UniqueId(str(uuid.uuid4()))
         self._create_container(new_run_id, ContainerType.MODEL, sys_id=sys_id)
         return ApiExperiment(
             id=new_run_id,
@@ -218,27 +226,32 @@ class NeptuneBackendMock(NeptuneBackend):
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         return None
 
-    def get_project(self, project_id: str) -> Project:
-        return Project(self._project_id, self.PROJECT_NAME, self.WORKSPACE_NAME)
+    def get_project(self, project_id: QualifiedName) -> Project:
+        return Project(
+            id=self._project_id,
+            name=self.PROJECT_NAME,
+            workspace=self.WORKSPACE_NAME,
+            sys_id=self.PROJECT_KEY,
+        )
 
     def get_run(self, run_id: str) -> ApiExperiment:
         raise RunNotFound(run_id)
 
-    def get_model(self, model_id: str) -> ApiExperiment:
+    def get_model(self, model_id: QualifiedName) -> ApiExperiment:
         return ApiExperiment(
-            id=model_id,
+            id=UniqueId(str(uuid.uuid4())),
             type=Model.container_type,
-            sys_id="",
+            sys_id=SysId(model_id.rsplit("/", 1)[-1]),
             workspace=self.WORKSPACE_NAME,
             project_name=self.PROJECT_NAME,
         )
 
-    def get_model_version(self, model_version_id: str) -> ApiExperiment:
+    def get_model_version(self, model_version_id: QualifiedName) -> ApiExperiment:
         raise ModelVersionNotFound(model_version_id)
 
     def execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> Tuple[int, List[NeptuneException]]:
@@ -251,7 +264,7 @@ class NeptuneBackendMock(NeptuneBackend):
         return len(operations), result
 
     def _execute_operation(
-        self, container_id: str, container_type: ContainerType, op: Operation
+        self, container_id: UniqueId, container_type: ContainerType, op: Operation
     ) -> None:
         run = self._get_container(container_id, container_type)
         val = run.get(op.path)
@@ -516,7 +529,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def search_leaderboard_entries(
         self,
-        project_id: str,
+        project_id: UniqueId,
         parent_id: Optional[Iterable[str]],
         types: Optional[Iterable[ContainerType]],
     ) -> List[LeaderboardEntry]:

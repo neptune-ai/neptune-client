@@ -18,6 +18,7 @@ from typing import Any, Dict, Optional, Union
 
 import click
 
+from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
@@ -98,28 +99,29 @@ class Run(MetadataContainer):
 
     def __init__(
         self,
-        _id: str,
+        *,
+        id_: UniqueId,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
         lock: threading.RLock,
         workspace: str,
         project_name: str,
-        sys_id: str,
-        project_id: str,
+        sys_id: SysId,
+        project_id: UniqueId,
         monitoring_namespace: str = "monitoring",
     ):
         super().__init__(
-            _id,
-            backend,
-            op_processor,
-            background_job,
-            lock,
-            project_id,
-            project_name,
-            workspace,
+            id_=id_,
+            backend=backend,
+            op_processor=op_processor,
+            background_job=background_job,
+            lock=lock,
+            project_id=project_id,
+            project_name=project_name,
+            workspace=workspace,
+            sys_id=sys_id,
         )
-        self._sys_id = sys_id
         self.monitoring_namespace = monitoring_namespace
 
         Run.last_run = self

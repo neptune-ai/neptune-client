@@ -19,16 +19,16 @@ from typing import List, TYPE_CHECKING, Optional
 from neptune.new.internal.background_job import BackgroundJob
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import Run
+    from neptune.new.metadata_containers import MetadataContainer
 
 
 class BackgroundJobList(BackgroundJob):
     def __init__(self, jobs: List[BackgroundJob]):
         self._jobs = jobs
 
-    def start(self, run: "Run"):
+    def start(self, container: "MetadataContainer"):
         for job in self._jobs:
-            job.start(run)
+            job.start(container)
 
     def stop(self):
         for job in self._jobs:
