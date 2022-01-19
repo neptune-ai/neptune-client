@@ -39,6 +39,7 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     Workspace,
 )
+from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
@@ -295,7 +296,7 @@ class NeptuneBackend:
         self,
         project_id: UniqueId,
         parent_id: Optional[Iterable[str]],
-        types: Optional[Iterable[ContainerType]],
-        filters,  # TODO: Add proper typing for NQL
+        type: Optional[ContainerType],
+        query: NQLQuery,
     ) -> List[LeaderboardEntry]:
         pass
