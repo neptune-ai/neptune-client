@@ -300,5 +300,6 @@ class NeptuneBackend:
         project_id: UniqueId,
         parent_id: Optional[Iterable[str]],
         types: Optional[Iterable[ContainerType]],
+        filters,  # TODO: Add proper typing for NQL
     ) -> List[LeaderboardEntry]:
         pass

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import threading
-from typing import Iterable, Union, Optional, Dict, Any
+from typing import Iterable, Union, Optional, Dict, Any, TYPE_CHECKING
 
 from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.metadata_containers import MetadataContainer
@@ -24,8 +24,10 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.internal.utils import verify_type, verify_collection_type
-from neptune.new.metadata_containers.runs_table import RunsTable
+from neptune.new.internal.utils import as_list
+
+if TYPE_CHECKING:
+    from neptune.new.metadata_containers.metadata_containers_table import Table
 
 
 class Project(MetadataContainer):
@@ -78,7 +80,7 @@ class Project(MetadataContainer):
         state: Optional[Union[str, Iterable[str]]] = None,
         owner: Optional[Union[str, Iterable[str]]] = None,
         tag: Optional[Union[str, Iterable[str]]] = None,
-    ) -> RunsTable:
+    ) -> "Table":
         """Retrieve runs matching the specified criteria.
 
         All parameters are optional, each of them specifies a single criterion.
@@ -143,28 +145,15 @@ class Project(MetadataContainer):
         .. _fetch_runs_table docs page:
             https://docs.neptune.ai/api-reference/project#fetch_runs_table
         """
-        id = self._as_list("id", id)
-        state = self._as_list("state", state)
-        owner = self._as_list("owner", owner)
-        tags = self._as_list("tag", tag)
+        id = as_list("id", id)
+        state = as_list("state", state)
+        owner = as_list("owner", owner)
+        tags = as_list("tag", tag)
 
-        leaderboard_entries = self._backend.get_leaderboard(
-            project_id=self._id, _id=id, state=state, owner=owner, tags=tags
+        # TODO: Add filters builder
+        return MetadataContainer._fetch_child_entries(
+            self, child_type=ContainerType.RUN
         )
-
-        return RunsTable(backend=self._backend, entries=leaderboard_entries)
-
-    @staticmethod
-    def _as_list(
-        name: str, value: Optional[Union[str, Iterable[str]]]
-    ) -> Optional[Iterable[str]]:
-        verify_type(name, value, (type(None), str, Iterable))
-        if value is None:
-            return None
-        if isinstance(value, str):
-            return [value]
-        verify_collection_type(name, value, str)
-        return value
 
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.

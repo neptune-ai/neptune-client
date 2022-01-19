@@ -30,7 +30,7 @@ from neptune.new.internal.utils.paths import join_paths, parse_path
 logger = logging.getLogger(__name__)
 
 
-class MetadataContainersTableEntry:
+class TableEntry:
     def __init__(
         self,
         backend: NeptuneBackend,
@@ -134,7 +134,7 @@ class MetadataContainersTableEntry:
 
 
 class LeaderboardHandler:
-    def __init__(self, table_entry: MetadataContainersTableEntry, path: str):
+    def __init__(self, table_entry: TableEntry, path: str):
         self._table_entry = table_entry
         self._path = path
 
@@ -159,14 +159,14 @@ class LeaderboardHandler:
         )
 
 
-class MetadataContainersTable:
-    table_entry_cls: Type[MetadataContainersTableEntry]
+class Table:
+    table_entry_cls: Type[TableEntry]
 
     def __init__(self, backend: NeptuneBackend, entries: List[LeaderboardEntry]):
         self._backend = backend
         self._entries = entries
 
-    def to_table_entries(self) -> List[MetadataContainersTableEntry]:
+    def to_rows(self) -> List[TableEntry]:
         return [
             self.table_entry_cls(
                 backend=self._backend, _id=e.id, attributes=e.attributes

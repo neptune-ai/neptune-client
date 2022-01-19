@@ -32,4 +32,4 @@ class TestModelVersionTables(AbstractTablesTestMixin, unittest.TestCase):
         ).fetch_model_versions_table()
 
     def get_table_entries(self, table):
-        return table.to_model_versions()
+        return table.to_rows()

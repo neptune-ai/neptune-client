@@ -196,7 +196,7 @@ class TestFetchRunsTable(BaseE2ETest):
         project = neptune.init_project(name=environment.project)
 
         runs_table = sorted(
-            project.fetch_runs_table(tag=tag).to_runs(),
+            project.fetch_runs_table(tag=tag).to_rows(),
             key=lambda r: r.get_attribute_value("sys/id"),
         )
         assert len(runs_table) == 2
