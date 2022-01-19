@@ -19,6 +19,13 @@ from typing import Iterable, Union, Optional, Dict, Any, TYPE_CHECKING
 from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.backends.nql import (
+    NQLAggregator,
+    NQLQueryAggregate,
+    NQLQueryAttribute,
+    NQLAttributeOperator,
+    NQLAttributeType,
+)
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.operation_processor import (
@@ -145,14 +152,67 @@ class Project(MetadataContainer):
         .. _fetch_runs_table docs page:
             https://docs.neptune.ai/api-reference/project#fetch_runs_table
         """
-        id = as_list("id", id)
-        state = as_list("state", state)
-        owner = as_list("owner", owner)
+        ids = as_list("id", id)
+        states = as_list("state", state)
+        owners = as_list("owner", owner)
         tags = as_list("tag", tag)
 
-        # TODO: Add filters builder
+        query = NQLQueryAggregate(
+            items=[
+                NQLQueryAggregate(
+                    items=[
+                        NQLQueryAttribute(
+                            name="sys/id",
+                            type=NQLAttributeType.STRING,
+                            operator=NQLAttributeOperator.EQUALS,
+                            value=api_id,
+                        )
+                        for api_id in ids
+                    ],
+                    aggregator=NQLAggregator.OR,
+                ),
+                NQLQueryAggregate(
+                    items=[
+                        NQLQueryAttribute(
+                            name="sys/state",
+                            type=NQLAttributeType.EXPERIMENT_STATE,
+                            operator=NQLAttributeOperator.EQUALS,
+                            value=state,
+                        )
+                        for state in states
+                    ],
+                    aggregator=NQLAggregator.OR,
+                ),
+                NQLQueryAggregate(
+                    items=[
+                        NQLQueryAttribute(
+                            name="sys/owner",
+                            type=NQLAttributeType.STRING,
+                            operator=NQLAttributeOperator.EQUALS,
+                            value=owner,
+                        )
+                        for owner in owners
+                    ],
+                    aggregator=NQLAggregator.OR,
+                ),
+                NQLQueryAggregate(
+                    items=[
+                        NQLQueryAttribute(
+                            name="sys/tags",
+                            type=NQLAttributeType.STRING_SET,
+                            operator=NQLAttributeOperator.CONTAINS,
+                            value=tag,
+                        )
+                        for tag in tags
+                    ],
+                    aggregator=NQLAggregator.OR,
+                ),
+            ],
+            aggregator=NQLAggregator.AND,
+        )
+
         return MetadataContainer._fetch_child_entries(
-            self, child_type=ContainerType.RUN
+            self, child_type=ContainerType.RUN, query=query
         )
 
     def assign(self, value, wait: bool = False) -> None:
