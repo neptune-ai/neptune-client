@@ -25,7 +25,9 @@ from neptune.new.constants import (
     OFFLINE_DIRECTORY,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
+from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.types.mode import Mode
 from .async_operation_processor import AsyncOperationProcessor
@@ -33,8 +35,6 @@ from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
-from ..container_type import ContainerType
-from ..id_formats import UniqueId
 
 
 def get_operation_processor(
