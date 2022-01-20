@@ -365,4 +365,8 @@ class MetadataContainer(AbstractContextManager):
             query=query,
         )
 
-        return Table(backend=self._backend, entries=leaderboard_entries)
+        return Table(
+            backend=self._backend,
+            container_type=child_type,
+            entries=leaderboard_entries,
+        )

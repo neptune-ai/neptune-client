@@ -160,16 +160,23 @@ class LeaderboardHandler:
 
 
 class Table:
-    table_entry_cls: Type[TableEntry]
-
-    def __init__(self, backend: NeptuneBackend, entries: List[LeaderboardEntry]):
+    def __init__(
+        self,
+        backend: NeptuneBackend,
+        container_type: ContainerType,
+        entries: List[LeaderboardEntry],
+    ):
         self._backend = backend
         self._entries = entries
+        self._container_type = container_type
 
     def to_rows(self) -> List[TableEntry]:
         return [
-            self.table_entry_cls(
-                backend=self._backend, _id=e.id, attributes=e.attributes
+            TableEntry(
+                backend=self._backend,
+                container_type=self._container_type,
+                _id=e.id,
+                attributes=e.attributes,
             )
             for e in self._entries
         ]

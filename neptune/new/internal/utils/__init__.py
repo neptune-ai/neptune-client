@@ -187,7 +187,7 @@ def as_list(
 ) -> Optional[Iterable[str]]:
     verify_type(name, value, (type(None), str, Iterable))
     if value is None:
-        return None
+        return []
     if isinstance(value, str):
         return [value]
     verify_collection_type(name, value, str)
