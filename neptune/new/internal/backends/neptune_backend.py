@@ -296,7 +296,7 @@ class NeptuneBackend:
         self,
         project_id: UniqueId,
         parent_id: Optional[Iterable[str]],
-        type: Optional[ContainerType],
-        query: NQLQuery,
+        child_type: Optional[ContainerType],
+        query: Optional[NQLQuery],
     ) -> List[LeaderboardEntry]:
         pass
