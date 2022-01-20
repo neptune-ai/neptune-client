@@ -5,7 +5,7 @@
 
 ## Fixes
 - Raise proper exception when invalid token were provided ([#825](https://github.com/neptune-ai/neptune-client/pull/825))
-- Make status error-handling in legacy client consistent with neptune.new ([#XXX](https://github.com/neptune-ai/neptune-client/pull/XXX))
+- Make status error-handling in legacy client consistent with neptune.new ([#829](https://github.com/neptune-ai/neptune-client/pull/829))
 
 ## neptune-client 0.14.2
 
