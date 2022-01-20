@@ -135,15 +135,15 @@ class TestImage(unittest.TestCase):
             get_image_content(image_tensor), _get_pil_image_data(expected_image)
         )
 
-    # def test_get_image_content_from_tensorflow_tensor(self):
-    #     import tensorflow as tf  # pylint: disable=C0415
-    #
-    #     # given
-    #     image_tensor = tf.random.uniform(shape=[200, 300, 3])
-    #     expected_array = image_tensor.numpy() * 255
-    #     expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
-    #
-    #     # expect
-    #     self.assertEqual(
-    #         get_image_content(image_tensor), _get_pil_image_data(expected_image)
-    #     )
+    def test_get_image_content_from_tensorflow_tensor(self):
+        import tensorflow as tf  # pylint: disable=C0415
+
+        # given
+        image_tensor = tf.random.uniform(shape=[200, 300, 3])
+        expected_array = image_tensor.numpy() * 255
+        expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
+
+        # expect
+        self.assertEqual(
+            get_image_content(image_tensor), _get_pil_image_data(expected_image)
+        )
