@@ -44,6 +44,7 @@ from bravado.exception import (
     HTTPUnauthorized,
     HTTPTooManyRequests,
 )
+from urllib3.exceptions import NewConnectionError
 
 from neptune import envs
 from neptune.api_exceptions import (
@@ -323,8 +324,12 @@ def with_api_exceptions_handler(func):
                 requests.exceptions.ConnectionError,
                 requests.exceptions.Timeout,
                 HTTPRequestTimeout,
+                HTTPServiceUnavailable,
                 HTTPGatewayTimeout,
                 HTTPBadGateway,
+                HTTPTooManyRequests,
+                HTTPServerError,
+                NewConnectionError,
             ):
                 if retry >= 6:
                     _logger.warning(
