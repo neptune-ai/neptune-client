@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import threading
-from typing import Iterable, Union, Optional, Dict, Any, TYPE_CHECKING
+from typing import Iterable, Union, Optional, Dict, Any
 
 from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.metadata_containers import MetadataContainer
@@ -32,9 +32,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
 from neptune.new.internal.utils import as_list
-
-if TYPE_CHECKING:
-    from neptune.new.metadata_containers.metadata_containers_table import Table
+from neptune.new.metadata_containers.metadata_containers_table import Table
 
 
 class Project(MetadataContainer):
@@ -87,7 +85,7 @@ class Project(MetadataContainer):
         state: Optional[Union[str, Iterable[str]]] = None,
         owner: Optional[Union[str, Iterable[str]]] = None,
         tag: Optional[Union[str, Iterable[str]]] = None,
-    ) -> "Table":
+    ) -> Table:
         """Retrieve runs matching the specified criteria.
 
         All parameters are optional, each of them specifies a single criterion.
