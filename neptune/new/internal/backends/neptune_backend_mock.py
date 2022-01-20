@@ -107,6 +107,7 @@ from neptune.new.types.series.string_series import StringSeries
 from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value import Value
 from neptune.new.types.value_visitor import ValueVisitor
+from neptune.new.internal.backends.nql import NQLQuery
 
 Val = TypeVar("Val", bound=Value)
 
@@ -531,7 +532,8 @@ class NeptuneBackendMock(NeptuneBackend):
         self,
         project_id: UniqueId,
         parent_id: Optional[Iterable[str]],
-        types: Optional[Iterable[ContainerType]],
+        child_type: Optional[ContainerType],
+        query: Optional[NQLQuery],
     ) -> List[LeaderboardEntry]:
         """Non relevant for mock"""
 
