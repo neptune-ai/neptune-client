@@ -324,7 +324,6 @@ def with_api_exceptions_handler(func):
                 requests.exceptions.ConnectionError,
                 requests.exceptions.Timeout,
                 HTTPRequestTimeout,
-                HTTPServiceUnavailable,
                 HTTPGatewayTimeout,
                 HTTPBadGateway,
                 HTTPTooManyRequests,
@@ -338,8 +337,6 @@ def with_api_exceptions_handler(func):
                 time.sleep(2 ** retry)
                 retry += 1
                 continue
-            except HTTPServerError:
-                raise ServerError()
             except HTTPUnauthorized:
                 raise Unauthorized()
             except HTTPForbidden:
