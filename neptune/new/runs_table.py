@@ -24,8 +24,8 @@ from neptune.new.metadata_containers.metadata_containers_table import (
 from neptune.new.exceptions import MetadataInconsistency
 
 from neptune.new.metadata_containers.metadata_containers_table import (
-    Table,
-    TableEntry,
+    Table as RunsTable,
+    TableEntry as RunsTableEntry,
 )
 from neptune.new.internal.backends.api_model import (
     AttributeWithProperties,
