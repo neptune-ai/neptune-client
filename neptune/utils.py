@@ -42,6 +42,7 @@ from bravado.exception import (
     HTTPServerError,
     HTTPServiceUnavailable,
     HTTPUnauthorized,
+    HTTPTooManyRequests,
 )
 
 from neptune import envs
@@ -357,9 +358,12 @@ def with_api_exceptions_handler(func):
                     time.sleep(2 ** retry)
                     continue
                 elif status_code in (
+                    HTTPRequestTimeout.status_code,
                     HTTPBadGateway.status_code,
                     HTTPServiceUnavailable.status_code,
                     HTTPGatewayTimeout.status_code,
+                    HTTPTooManyRequests.status_code,
+                    HTTPServerError.status_code,
                 ):
                     if retry >= 6:
                         _logger.warning(
