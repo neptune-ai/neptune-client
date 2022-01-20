@@ -46,6 +46,7 @@ class Credentials:
         if api_token is None:
             raise NeptuneMissingApiTokenException()
 
+        api_token = api_token.strip()
         token_dict = Credentials._api_token_to_dict(api_token)
         # TODO: Consider renaming 'api_address' (breaking backward compatibility)
         if "api_address" not in token_dict:
