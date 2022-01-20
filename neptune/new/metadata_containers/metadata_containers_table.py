@@ -15,7 +15,7 @@
 #
 import logging
 from datetime import datetime
-from typing import Any, List, Dict, Optional, Union, Type
+from typing import Any, List, Dict, Optional, Union
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
