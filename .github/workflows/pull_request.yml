@@ -39,7 +39,8 @@ jobs:
       - name: Notify
         uses: 8398a7/action-slack@v3
         with:
-          job_name: Test (${{ matrix.os }}, ${{ matrix.python-version }}) # named without `npm`
+          status: ${{ job.status }}
+          job_name: integration (${{ matrix.os }}, ${{ matrix.python-version }}) # named without `npm`
           fields: repo,message,commit,author,action,eventName,ref,workflow,job,took,pullRequest # selectable (default: repo,message)
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
