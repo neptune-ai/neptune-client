@@ -39,7 +39,6 @@ jobs:
   notify:
     needs: [lint, test]
     runs-on: ubuntu-latest
-    if: always()
     steps:
       - name: Notify
         uses: 8398a7/action-slack@v3

@@ -77,26 +77,6 @@ jobs:
         run: |
           pytest ./e2e_tests -m integrations
 
-  notify:
-    needs: [lint, test]
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Notify
-        uses: 8398a7/action-slack@v3
-        with:
-          status: custom
-          fields: workflow,job,commit,repo,ref,author,took
-          custom_payload: |
-            {
-              attachments: [{
-                color: '${{ test.status }}' === 'success' ? 'good' : '${{ test.status }}' === 'failure' ? 'danger' : 'warning',
-                text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
-              }]
-            }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
   publish:
     needs: [lint, test]
     runs-on: ubuntu-latest
