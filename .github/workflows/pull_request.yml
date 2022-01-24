@@ -30,7 +30,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt -r requirements/test_requirements.txt
+          pip install -r requirements.txt
 
       - name: Build and test
         run : |
