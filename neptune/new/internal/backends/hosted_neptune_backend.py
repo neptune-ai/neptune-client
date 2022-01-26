@@ -33,6 +33,7 @@ from neptune.new.exceptions import (
     ProjectNotFound,
     raise_container_not_found,
     MetadataContainerNotFound,
+    ProjectNotFoundWithSuggestions,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -190,7 +191,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         project_id=project_id, available_projects=available_projects
                     )
                 else:
-                    raise ProjectNotFound(
+                    raise ProjectNotFoundWithSuggestions(
                         project_id=project_id,
                         available_projects=self.get_available_projects(),
                         available_workspaces=self.get_available_workspaces(),
@@ -211,7 +212,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 sys_id=project.projectKey,
             )
         except HTTPNotFound:
-            raise ProjectNotFound(
+            raise ProjectNotFoundWithSuggestions(
                 project_id,
                 available_projects=self.get_available_projects(workspace_id=workspace),
                 available_workspaces=list()
