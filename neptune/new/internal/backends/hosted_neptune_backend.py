@@ -32,7 +32,7 @@ from neptune.new.exceptions import (
     ProjectNameCollision,
     ProjectNotFound,
     raise_container_not_found,
-    ExperimentNotFound,
+    MetadataContainerNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -296,13 +296,13 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
 
             if experiment.type != container_type:
-                raise ExperimentNotFound.of_container_type(
+                raise MetadataContainerNotFound.of_container_type(
                     container_type=container_type, container_id=container_id
                 )
 
             return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
-            raise ExperimentNotFound.of_container_type(
+            raise MetadataContainerNotFound.of_container_type(
                 container_type=container_type, container_id=container_id
             )
 

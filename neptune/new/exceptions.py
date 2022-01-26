@@ -285,7 +285,7 @@ You may also want to check the following docs pages:
         )
 
 
-class ExperimentNotFound(NeptuneException):
+class MetadataContainerNotFound(NeptuneException):
     container_id: str
     container_type: ContainerType
 
@@ -308,17 +308,17 @@ class ExperimentNotFound(NeptuneException):
             raise InternalClientError(f"Unexpected ContainerType: {container_type}")
 
 
-class RunNotFound(ExperimentNotFound):
+class RunNotFound(MetadataContainerNotFound):
     def __init__(self, run_id: str) -> None:
         super().__init__(container_id=run_id, container_type=ContainerType.RUN)
 
 
-class ModelNotFound(ExperimentNotFound):
+class ModelNotFound(MetadataContainerNotFound):
     def __init__(self, model_id: str) -> None:
         super().__init__(container_id=model_id, container_type=ContainerType.MODEL)
 
 
-class ModelVersionNotFound(ExperimentNotFound):
+class ModelVersionNotFound(MetadataContainerNotFound):
     def __init__(self, model_version_id: str) -> None:
         super().__init__(
             container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
