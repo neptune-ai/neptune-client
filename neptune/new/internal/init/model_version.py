@@ -33,7 +33,7 @@ from neptune.new.internal.init.parameters import (
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.new.metadata_containers import ModelVersion
+from neptune.new.metadata_containers import ModelVersion, Model
 from neptune.new.types.mode import Mode
 
 
@@ -74,13 +74,17 @@ def init_model_version(
 
     if version is not None:
         version = QualifiedName(project + "/" + version)
-        api_model_version = backend.get_model_version(model_version_id=version)
+        api_model_version = backend.get_metadata_container(
+            container_id=version, container_type=ModelVersion.container_type
+        )
     elif model is not None:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelVersionForReadOnlyMode()
 
         model_id = QualifiedName(project + "/" + model)
-        api_model = backend.get_model(model_id=model_id)
+        api_model = backend.get_metadata_container(
+            container_id=model_id, container_type=Model.container_type
+        )
         api_model_version = backend.create_model_version(
             project_id=project_obj.id, model_id=api_model.id
         )

@@ -63,7 +63,7 @@ retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 def get_run(run_id: str) -> Optional[ApiExperiment]:
     try:
-        return backend.get_run(run_id)
+        return backend.get_metadata_container(run_id, ContainerType.RUN)
     except RunNotFound:
         return None
     except NeptuneException as e:
@@ -333,7 +333,7 @@ def register_offline_run(
         else:
             # No need for registering project.
             # Project must've been registered before.
-            return backend.get_run(project.id), False
+            return backend.get_metadata_container(project.id, ContainerType.RUN), False
     except Exception as e:
         click.echo(
             "Exception occurred while trying to create a run "

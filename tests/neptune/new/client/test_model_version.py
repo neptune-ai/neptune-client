@@ -33,6 +33,7 @@ from neptune.new.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.new.internal.container_type import ContainerType
 from tests.neptune.new.client.abstract_experiment_test_mixin import (
     AbstractExperimentTestMixin,
 )
@@ -43,8 +44,10 @@ AN_API_MODEL_VERSION = api_model_version()
 
 
 @patch(
-    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_model",
-    new=lambda _, model_id: AN_API_MODEL,
+    "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
+    new=lambda _, container_id, container_type: AN_API_MODEL
+    if container_type == ContainerType.MODEL
+    else AN_API_MODEL_VERSION,
 )
 @patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)
 class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
@@ -57,10 +60,6 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_model_version",
-        new=lambda _, model_version_id: AN_API_MODEL_VERSION,
-    )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [Attribute("some/variable", AttributeType.INT)],
@@ -86,10 +85,6 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         self.assertEqual(42, exp["some/variable"].fetch())
         self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_model_version",
-        new=lambda _, model_version_id: AN_API_MODEL_VERSION,
-    )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
         new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
