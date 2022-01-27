@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import os
+import time
 
 from faker import Faker
 import boto3
@@ -43,6 +44,8 @@ def environment():
         workspace=workspace,
         api_token=admin_token,
     )
+
+    time.sleep(10)
 
     add_project_member(
         name=created_project_identifier,

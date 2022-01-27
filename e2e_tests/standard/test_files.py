@@ -7,14 +7,14 @@ import pytest
 from e2e_tests.base import BaseE2ETest
 from e2e_tests.standard.test_base import fake
 from e2e_tests.utils import tmp_context
-from neptune.new.attribute_container import AttributeContainer
+from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.api_model import OptionalFeatures, MultipartConfig
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 
 
 class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_using_new_api(self, container: AttributeContainer):
+    def test_using_new_api(self, container: MetadataContainer):
         # pylint: disable=protected-access
         assert isinstance(container._backend, HostedNeptuneBackend)
         assert container._backend._client_config.has_feature(
@@ -32,7 +32,7 @@ class TestUpload(BaseE2ETest):
             pytest.param(100 * 2 ** 10, id="small"),  # 100 kB, single upload
         ],
     )
-    def test_single_file(self, container: AttributeContainer, file_size: int):
+    def test_single_file(self, container: MetadataContainer, file_size: int):
         key = self.gen_key()
         filename = fake.file_name()
         downloaded_filename = fake.file_name()
@@ -53,7 +53,7 @@ class TestUpload(BaseE2ETest):
                 assert content == b"\0" * file_size
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_fileset(self, container: AttributeContainer):
+    def test_fileset(self, container: MetadataContainer):
         key = self.gen_key()
         large_filesize = 10 * 2 ** 20
         large_filename = fake.file_name()

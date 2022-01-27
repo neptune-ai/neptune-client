@@ -28,6 +28,7 @@ class TestInitRun(BaseE2ETest):
     # TODO: test all remaining init parameters
     def test_resuming_run(self, environment):
         exp = neptune.init(project=environment.project)
+        run_id = exp["sys/id"].fetch()
 
         key = self.gen_key()
         val = fake.word()
@@ -37,7 +38,7 @@ class TestInitRun(BaseE2ETest):
         exp.stop()
 
         # pylint: disable=protected-access
-        exp2 = neptune.init(run=exp._short_id, project=environment.project)
+        exp2 = neptune.init(run=run_id, project=environment.project)
         assert exp2[key].fetch() == val
 
     def test_custom_run_id(self, environment):
