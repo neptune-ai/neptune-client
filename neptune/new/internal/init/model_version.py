@@ -20,6 +20,7 @@ from typing import Optional
 from neptune.new.exceptions import (
     NeptuneWrongInitParametersException,
     NeedExistingModelVersionForReadOnlyMode,
+    NeptuneException,
 )
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
@@ -54,6 +55,11 @@ def init_model_version(
     verify_type("mode", mode, str)
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
+    # make mode proper Enum instead of string
+    mode = Mode(mode)
+
+    if mode == Mode.OFFLINE:
+        raise NeptuneException("Model can't be initialized in OFFLINE mode")
 
     # verify exclusive arguments
     if version is not None and model is not None:
@@ -61,8 +67,6 @@ def init_model_version(
             "NPT-11349 required one of: version or model"
         )
 
-    # make mode proper Enum instead of string
-    mode = Mode(mode)
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:

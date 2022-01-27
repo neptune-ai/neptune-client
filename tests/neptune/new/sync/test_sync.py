@@ -28,7 +28,6 @@ from tests.neptune.new.sync.utils import (
     execute_operations,
     prepare_deprecated_run,
 )
-from tests.neptune.new.utils.api_experiments_factory import api_run
 
 
 @pytest.fixture(name="backend")
@@ -271,7 +270,7 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
     )
 
 
-def test_sync_non_existent_container(tmp_path, capsys, backend, sync_runner):
+def test_sync_non_existent_container(tmp_path, capsys, sync_runner):
     # when
     sync_runner.sync_selected_runs(
         base_path=tmp_path, project_name="foo", runs_names=["bar"]
@@ -282,7 +281,7 @@ def test_sync_non_existent_container(tmp_path, capsys, backend, sync_runner):
     assert "Warning: Run 'bar' does not exist in location" in captured.err
 
 
-def test_sync_non_existent_offline_containers(tmp_path, capsys, backend, sync_runner):
+def test_sync_non_existent_offline_containers(tmp_path, sync_runner):
     # expect
     with pytest.raises(ValueError):
         sync_runner.sync_selected_runs(
