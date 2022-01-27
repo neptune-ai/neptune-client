@@ -109,7 +109,7 @@ def test_sync_all_offline_runs(tmp_path, mocker, capsys, backend, sync_runner):
     captured = capsys.readouterr()
     assert captured.err == ""
     assert (
-        "Offline run {} registered as {}".format(
+        "Offline run run__{} registered as {}".format(
             f"{offline_run.id}", get_qualified_name(offline_run)
         )
     ) in captured.out
@@ -155,7 +155,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
     sync_runner.sync_selected_runs(
         base_path=tmp_path,
         project_name="some-name",
-        runs_names=[get_qualified_name(sync_exp), "offline/" + offline_run.id],
+        runs_names=[get_qualified_name(sync_exp), "offline/run__" + offline_run.id],
     )
 
     # then
@@ -172,7 +172,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
 
     # expected output for offline container
     assert (
-        "Offline run {} registered as {}".format(
+        "Offline run run__{} registered as {}".format(
             f"{offline_run.id}", get_qualified_name(offline_run)
         )
     ) in captured.out
@@ -271,13 +271,26 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
     )
 
 
-def test_sync_non_existent_run(tmp_path, capsys, backend, sync_runner):
-    # given
-    backend.get_metadata_container.return_value = api_run()
-
+def test_sync_non_existent_container(tmp_path, capsys, backend, sync_runner):
     # when
-    sync_runner.sync_selected_runs(tmp_path, "foo", ["bar"])
+    sync_runner.sync_selected_runs(
+        base_path=tmp_path, project_name="foo", runs_names=["bar"]
+    )
 
     # then
     captured = capsys.readouterr()
     assert "Warning: Run 'bar' does not exist in location" in captured.err
+
+
+def test_sync_non_existent_offline_containers(tmp_path, capsys, backend, sync_runner):
+    # expect
+    with pytest.raises(ValueError):
+        sync_runner.sync_selected_runs(
+            base_path=tmp_path, project_name="foo", runs_names=["offline/foo__bar"]
+        )
+
+    # and
+    # with pytest.raises(ValueError):
+    sync_runner.sync_selected_runs(
+        base_path=tmp_path, project_name="foo", runs_names=["offline/model__bar"]
+    )

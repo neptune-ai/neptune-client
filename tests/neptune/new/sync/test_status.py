@@ -91,7 +91,7 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     captured = capsys.readouterr()
     assert captured.err == ""
     assert (
-        "Unsynchronized offline runs:\n- offline/{}".format(offline_run.id)
+        "Unsynchronized offline runs:\n- offline/run__{}".format(offline_run.id)
         in captured.out
     )
 

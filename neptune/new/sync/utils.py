@@ -20,14 +20,14 @@ __all__ = [
     "get_qualified_name",
     "is_valid_uuid",
     "is_run_synced",
-    "get_offline_runs_ids",
+    "get_offline_dirs",
     "is_offline_run_name",
-    "iterate_experiments",
+    "iterate_containers",
+    "split_dir_name",
 ]
 
 import logging
 import os
-import re
 import sys
 import textwrap
 import threading
@@ -40,7 +40,6 @@ import click
 from neptune.new.constants import (
     OFFLINE_DIRECTORY,
     OFFLINE_NAME_PREFIX,
-    CONTAINER_DIR_REGEXP,
 )
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import (
@@ -138,50 +137,42 @@ def _is_execution_synced(execution_path: Path) -> bool:
     return disk_queue.is_empty()
 
 
-def iterate_experiments(
+def split_dir_name(dir_name: str) -> Tuple[ContainerType, UniqueId]:
+    parts = dir_name.split("__")
+    if len(parts) == 2:
+        return ContainerType(parts[0]), UniqueId(parts[1])
+    elif len(parts) == 1:
+        return ContainerType.RUN, UniqueId(dir_name)
+    else:
+        raise ValueError(f"Wrong dir format: {dir_name}")
+
+
+def iterate_containers(
     base_path: Path,
 ) -> Iterator[Tuple[ContainerType, UniqueId, Path]]:
     if not base_path.is_dir():
         return
 
     for path in base_path.iterdir():
-        match_result = re.match(CONTAINER_DIR_REGEXP, path.name)
-        container_type_raw = match_result.group(2)
-        if container_type_raw is None:
-            container_type = ContainerType.RUN
-        else:
-            container_type = ContainerType(container_type_raw)
-        unique_id = UniqueId(match_result.group(3))
+        container_type, unique_id = split_dir_name(dir_name=path.name)
 
         yield container_type, unique_id, path
 
 
-def get_offline_runs_ids(base_path: Path) -> List[str]:
+def get_offline_dirs(base_path: Path) -> List[UniqueId]:
     result = []
     if not (base_path / OFFLINE_DIRECTORY).is_dir():
         return []
-    for run_path in (base_path / OFFLINE_DIRECTORY).iterdir():
-        dir_name = run_path.name
-        match = re.match(CONTAINER_DIR_REGEXP, dir_name)
-        if match is None:
-            raise ValueError(f"Wrong container directory name: {dir_name}")
-        run_id = match.group(3)
-        result.append(run_id)
+    for path_ in (base_path / OFFLINE_DIRECTORY).iterdir():
+        dir_name = path_.name
+        result.append(UniqueId(dir_name))
     return result
 
 
-def get_offline_run_dir_path(base_path: Path, run_id: UniqueId):
-    for dir_ in [
-        base_path / OFFLINE_DIRECTORY / run_id,
-        base_path / OFFLINE_DIRECTORY / f"run__{run_id}",
-    ]:
-        if dir_.is_dir():
-            return dir_
-
-    return None
-
-
 def is_offline_run_name(name: str) -> bool:
-    return name.startswith(OFFLINE_NAME_PREFIX) and is_valid_uuid(
-        name[len(OFFLINE_NAME_PREFIX) :]
-    )
+    if not name.startswith(OFFLINE_NAME_PREFIX):
+        return False
+
+    # just make sure that dir has accepted format or raise exception
+    split_dir_name(dir_name=name[len(OFFLINE_NAME_PREFIX) :])
+    return True

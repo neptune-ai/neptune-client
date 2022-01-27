@@ -31,11 +31,11 @@ from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
-    get_offline_runs_ids,
     get_qualified_name,
     is_run_synced,
-    iterate_experiments,
+    iterate_containers,
     get_metadata_container,
+    get_offline_dirs,
 )
 
 offline_run_explainer = """
@@ -57,7 +57,7 @@ class StatusRunner(AbstractBackendRunner):
         synced_runs = []
         unsynced_runs = []
         async_path = base_path / ASYNC_DIRECTORY
-        for container_type, container_id, path in iterate_experiments(async_path):
+        for container_type, container_id, path in iterate_containers(async_path):
             metadata_container = get_metadata_container(
                 container_id=container_id,
                 container_type=container_type,
@@ -82,9 +82,9 @@ class StatusRunner(AbstractBackendRunner):
         base_path: Path,
         synced_runs: Sequence[ApiExperiment],
         unsynced_runs: Sequence[ApiExperiment],
-        offline_runs_ids: Sequence[str],
+        offline_dirs: Sequence[str],
     ) -> None:
-        if not synced_runs and not unsynced_runs and not offline_runs_ids:
+        if not synced_runs and not unsynced_runs and not offline_dirs:
             click.echo("There are no Neptune runs in {}".format(base_path))
             sys.exit(1)
 
@@ -98,9 +98,9 @@ class StatusRunner(AbstractBackendRunner):
             for run in synced_runs:
                 click.echo("- {}".format(get_qualified_name(run)))
 
-        if offline_runs_ids:
+        if offline_dirs:
             click.echo("Unsynchronized offline runs:")
-            for run_id in offline_runs_ids:
+            for run_id in offline_dirs:
                 click.echo("- {}{}".format(OFFLINE_NAME_PREFIX, run_id))
             click.echo()
             click.echo(textwrap.fill(offline_run_explainer, width=90))
@@ -125,5 +125,5 @@ class StatusRunner(AbstractBackendRunner):
                 ),
                 sys.stderr,
             )
-        offline_runs_ids = get_offline_runs_ids(base_path)
-        self.list_runs(base_path, synced_runs, unsynced_runs, offline_runs_ids)
+        offline_dirs = get_offline_dirs(base_path)
+        self.list_runs(base_path, synced_runs, unsynced_runs, offline_dirs)
