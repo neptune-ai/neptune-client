@@ -89,8 +89,8 @@ class SyncRunner(AbstractBackendRunner):
             while True:
                 try:
                     processed_count, _ = self._backend.execute_operations(
-                        container_id,
-                        container_type,
+                        container_id=container_id,
+                        container_type=container_type,
                         operations=batch,
                     )
                     version_to_ack += processed_count

@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "api_metadata_container",
+    "api_run",
+    "api_model",
+    "api_project",
+    "api_model_version",
+]
 
 import random
 import string
@@ -24,35 +31,45 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import SysId, UniqueId
 
 
-def api_run():
-    return _api_experiment(
-        sys_id=f"{_random_key()}-{randint(42, 12342)}",
-        container_type=ContainerType.RUN,
+def api_metadata_container(container_type: ContainerType) -> ApiExperiment:
+    if container_type == ContainerType.PROJECT:
+        return api_project()
+    elif container_type == ContainerType.RUN:
+        return api_run()
+    elif container_type == ContainerType.MODEL:
+        return api_model()
+    elif container_type == ContainerType.MODEL_VERSION:
+        return api_model_version()
+    else:
+        raise ValueError(f"Unknown container_type: {container_type.value}")
+
+
+def api_project() -> ApiExperiment:
+    return _api_container_type(
+        sys_id=_random_key(), container_type=ContainerType.PROJECT
     )
 
 
-def api_model():
-    return _api_experiment(
-        sys_id=f"{_random_key()}-{_random_key()}",
-        container_type=ContainerType.MODEL,
+def api_run() -> ApiExperiment:
+    return _api_container_type(
+        sys_id=f"{_random_key()}-{randint(42, 12342)}", container_type=ContainerType.RUN
     )
 
 
-def api_model_version():
-    return _api_experiment(
+def api_model() -> ApiExperiment:
+    return _api_container_type(
+        sys_id=f"{_random_key()}-{_random_key()}", container_type=ContainerType.MODEL
+    )
+
+
+def api_model_version() -> ApiExperiment:
+    return _api_container_type(
         sys_id=f"{_random_key()}-{_random_key()}-{randint(42, 12342)}",
         container_type=ContainerType.MODEL_VERSION,
     )
 
 
-def api_project():
-    return _api_experiment(
-        sys_id=_random_key(),
-        container_type=ContainerType.PROJECT,
-    )
-
-
-def _api_experiment(sys_id: str, container_type: ContainerType):
+def _api_container_type(sys_id: str, container_type: ContainerType) -> ApiExperiment:
     return ApiExperiment(
         id=UniqueId(str(uuid.uuid4())),
         type=container_type,
@@ -63,5 +80,5 @@ def _api_experiment(sys_id: str, container_type: ContainerType):
     )
 
 
-def _random_key(n=3):
+def _random_key(n: int = 3) -> str:
     return "".join((random.choice(string.ascii_letters).upper() for _ in range(n)))
