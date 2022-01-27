@@ -50,8 +50,8 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_model",
-        new=lambda _, model_id: AN_API_MODEL,
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
+        new=lambda _, container_id, container_type: AN_API_MODEL,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
@@ -79,8 +79,8 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_model",
-        new=lambda _, model_id: AN_API_MODEL,
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
+        new=lambda _, container_id, container_type: AN_API_MODEL,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",

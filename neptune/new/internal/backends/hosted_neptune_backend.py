@@ -15,7 +15,7 @@
 #
 import logging
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union
 
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 
@@ -266,25 +266,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return []
 
     @with_api_exceptions_handler
-    def get_run(self, run_id: QualifiedName):
-        return self._get_experiment(
-            container_id=run_id, container_type=ContainerType.RUN
-        )
-
-    @with_api_exceptions_handler
-    def get_model(self, model_id: QualifiedName) -> ApiExperiment:
-        return self._get_experiment(
-            container_id=model_id, container_type=ContainerType.MODEL
-        )
-
-    @with_api_exceptions_handler
-    def get_model_version(self, model_version_id: QualifiedName) -> ApiExperiment:
-        return self._get_experiment(
-            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
-        )
-
-    def _get_experiment(
-        self, container_id: QualifiedName, container_type: ContainerType
+    def get_metadata_container(
+        self,
+        container_id: Union[UniqueId, QualifiedName],
+        container_type: ContainerType,
     ) -> ApiExperiment:
         try:
             experiment = (
