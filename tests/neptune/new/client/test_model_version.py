@@ -119,6 +119,9 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             exp.change_stage(stage="wrong_stage")
 
     def test_change_stage_of_offline_model_version(self):
-        exp = self.call_init(mode="offline")
-        with self.assertRaises(NeptuneOfflineModeChangeStageException):
-            exp.change_stage(stage="production")
+        # this test will be required when we decide that creating model versions
+        # in offline mode is allowed
+        with self.assertRaises(NeptuneException):
+            exp = self.call_init(mode="offline")
+            with self.assertRaises(NeptuneOfflineModeChangeStageException):
+                exp.change_stage(stage="production")
