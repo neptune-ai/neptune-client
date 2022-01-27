@@ -162,9 +162,23 @@ def get_offline_runs_ids(base_path: Path) -> List[str]:
         return []
     for run_path in (base_path / OFFLINE_DIRECTORY).iterdir():
         dir_name = run_path.name
-        run_id = dir_name[len("run__") :]
+        match = re.match(CONTAINER_DIR_REGEXP, dir_name)
+        if match is None:
+            raise ValueError(f"Wrong container directory name: {dir_name}")
+        run_id = match.group(3)
         result.append(run_id)
     return result
+
+
+def get_offline_run_dir_path(base_path: Path, run_id: UniqueId):
+    for dir_ in [
+        base_path / OFFLINE_DIRECTORY / run_id,
+        base_path / OFFLINE_DIRECTORY / f"run__{run_id}",
+    ]:
+        if dir_.is_dir():
+            return dir_
+
+    return None
 
 
 def is_offline_run_name(name: str) -> bool:

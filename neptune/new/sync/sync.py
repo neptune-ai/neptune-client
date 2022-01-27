@@ -39,7 +39,7 @@ from neptune.new.exceptions import (
 from neptune.new.internal.backends.api_model import ApiExperiment, Project
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.id_formats import QualifiedName
+from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
@@ -50,6 +50,7 @@ from neptune.new.sync.utils import (
     is_run_synced,
     iterate_experiments,
     get_metadata_container,
+    get_offline_run_dir_path,
 )
 
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
@@ -176,28 +177,28 @@ class SyncRunner(AbstractBackendRunner):
         )
 
     def register_offline_runs(
-        self, base_path: Path, project: Project, offline_dirs: Iterable[str]
+        self, base_path: Path, project: Project, offline_run_ids: Iterable[UniqueId]
     ) -> List[ApiExperiment]:
         result = []
-        for dir_ in offline_dirs:
-            dir_path = base_path / OFFLINE_DIRECTORY / dir_
-            if dir_path.is_dir():
+        for id_ in offline_run_ids:
+            dir_path = get_offline_run_dir_path(base_path=base_path, run_id=id_)
+            if dir_path is not None:
                 run, registered = self._register_offline_run(
                     project, container_type=ContainerType.RUN
                 )
                 if run:
                     self._move_offline_run(
                         base_path=base_path,
-                        offline_dir=dir_,
+                        offline_dir=dir_path,
                         server_id=run.id,
                         server_type=run.type,
                     )
                     verb = "registered as" if registered else "recognized as"
-                    click.echo(f"Offline run {dir_} {verb} {get_qualified_name(run)}")
+                    click.echo(f"Offline run {id_} {verb} {get_qualified_name(run)}")
                     result.append(run)
             else:
                 click.echo(
-                    f"Offline run {dir_} not found on disk.",
+                    f"Offline run {id_} not found on disk.",
                     err=True,
                 )
         return result
@@ -206,15 +207,14 @@ class SyncRunner(AbstractBackendRunner):
         self,
         base_path: Path,
         project_name: Optional[QualifiedName],
-        offline_run_ids: Sequence[str],
+        offline_run_ids: Sequence[UniqueId],
     ):
         if offline_run_ids:
             project = get_project(project_name, backend=self._backend)
             if not project:
                 raise CannotSynchronizeOfflineRunsWithoutProject
-            offline_run_dirs = [f"run__{run_id}" for run_id in offline_run_ids]
             registered_runs = self.register_offline_runs(
-                base_path, project, offline_run_dirs
+                base_path, project, offline_run_ids
             )
             offline_runs_names = [get_qualified_name(exp) for exp in registered_runs]
             self.sync_selected_registered_runs(base_path, offline_runs_names)
