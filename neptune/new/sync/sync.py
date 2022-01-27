@@ -46,10 +46,10 @@ from neptune.new.sync.utils import (
     get_offline_runs_ids,
     get_project,
     get_qualified_name,
-    get_run,
     is_offline_run_name,
     is_run_synced,
     iterate_experiments,
+    get_metadata_container,
 )
 
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
@@ -110,9 +110,13 @@ class SyncRunner(AbstractBackendRunner):
 
     def sync_all_registered_runs(self, base_path: Path) -> None:
         async_path = base_path / ASYNC_DIRECTORY
-        for _, unique_id, path in iterate_experiments(async_path):
+        for container_type, unique_id, path in iterate_experiments(async_path):
             if not is_run_synced(path):
-                run = get_run(unique_id, self._backend)
+                run = get_metadata_container(
+                    container_id=unique_id,
+                    container_type=container_type,
+                    backend=self._backend,
+                )
                 if run:
                     self.sync_run(run_path=path, run=run)
 
@@ -120,7 +124,11 @@ class SyncRunner(AbstractBackendRunner):
         self, base_path: Path, qualified_runs_names: Sequence[str]
     ) -> None:
         for name in qualified_runs_names:
-            run = get_run(name, self._backend)
+            run = get_metadata_container(
+                container_id=name,
+                container_type=ContainerType.RUN,
+                backend=self._backend,
+            )
             if run:
                 run_path = base_path / ASYNC_DIRECTORY / f"{run.type.value}__{run.id}"
                 run_path_deprecated = base_path / ASYNC_DIRECTORY / f"{run.id}"

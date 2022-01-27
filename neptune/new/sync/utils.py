@@ -15,7 +15,7 @@
 #
 
 __all__ = [
-    "get_run",
+    "get_metadata_container",
     "get_project",
     "get_qualified_name",
     "is_valid_uuid",
@@ -33,7 +33,7 @@ import textwrap
 import threading
 import uuid
 from pathlib import Path
-from typing import Any, Optional, Iterator, Tuple, List
+from typing import Any, Optional, Iterator, Tuple, List, Union
 
 import click
 
@@ -46,7 +46,7 @@ from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     NeptuneException,
     ProjectNotFound,
-    RunNotFound,
+    MetadataContainerNotFound,
 )
 from neptune.new.internal.backends.api_model import ApiExperiment, Project
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -56,17 +56,23 @@ from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
 
 
-def get_run(run_id: str, backend: NeptuneBackend) -> Optional[ApiExperiment]:
+def get_metadata_container(
+    container_id: Union[UniqueId, QualifiedName],
+    container_type: ContainerType,
+    backend: NeptuneBackend,
+) -> Optional[ApiExperiment]:
     try:
-        return backend.get_run(run_id)
-    except RunNotFound:
-        return None
+        return backend.get_metadata_container(container_id, container_type)
+    except MetadataContainerNotFound:
+        click.echo(f"Can't fetch {container_type} {container_id}. Skipping.")
     except NeptuneException as e:
         click.echo(
-            "Exception while fetching run {}. Skipping run.".format(run_id), err=True
+            f"Exception while fetching {container_type} {container_id}. Skipping.",
+            err=True,
         )
         logging.exception(e)
-        return None
+
+    return None
 
 
 _project_name_missing_message = (

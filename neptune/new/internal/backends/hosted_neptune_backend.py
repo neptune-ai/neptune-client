@@ -258,7 +258,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             workspaces = response.result
             return list(
                 map(
-                    lambda workspace: Workspace(_id=workspace.id, name=workspace.name),
+                    lambda workspace: Workspace(id=workspace.id, name=workspace.name),
                     workspaces,
                 )
             )

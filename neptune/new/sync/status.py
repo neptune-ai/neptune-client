@@ -33,9 +33,9 @@ from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
     get_offline_runs_ids,
     get_qualified_name,
-    get_run,
     is_run_synced,
     iterate_experiments,
+    get_metadata_container,
 )
 
 offline_run_explainer = """
@@ -50,25 +50,25 @@ flag. Alternatively, you can set the environment variable
 
 
 class StatusRunner(AbstractBackendRunner):
-    def partition_runs(
+    def partition_containers(
         self,
         base_path: Path,
     ) -> Tuple[List[ApiExperiment], List[ApiExperiment], int]:
-        synced_runs_ids = []
-        unsynced_runs_ids = []
+        synced_runs = []
+        unsynced_runs = []
         async_path = base_path / ASYNC_DIRECTORY
-        for _, run_id, path in iterate_experiments(async_path):
+        for container_type, container_id, path in iterate_experiments(async_path):
+            metadata_container = get_metadata_container(
+                container_id=container_id,
+                container_type=container_type,
+                backend=self._backend,
+            )
+
             if is_run_synced(path):
-                synced_runs_ids.append(run_id)
+                synced_runs.append(metadata_container)
             else:
-                unsynced_runs_ids.append(run_id)
-        synced_runs = [
-            run for run in map(lambda id_: get_run(id_, self._backend), synced_runs_ids)
-        ]
-        unsynced_runs = [
-            run
-            for run in map(lambda id_: get_run(id_, self._backend), unsynced_runs_ids)
-        ]
+                unsynced_runs.append(metadata_container)
+
         not_found = len(
             [exp for exp in synced_runs + unsynced_runs if not exp or exp.trashed]
         )
@@ -117,7 +117,7 @@ class StatusRunner(AbstractBackendRunner):
         click.echo("Please run with the `neptune sync --help` to see example commands.")
 
     def synchronization_status(self, base_path: Path) -> None:
-        synced_runs, unsynced_runs, not_found = self.partition_runs(base_path)
+        synced_runs, unsynced_runs, not_found = self.partition_containers(base_path)
         if not_found > 0:
             click.echo(
                 "WARNING: {} runs was skipped because they are in trash or do not exist anymore.".format(
