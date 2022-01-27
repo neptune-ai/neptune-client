@@ -15,7 +15,7 @@
 #
 import logging
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union
 
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 
@@ -31,8 +31,9 @@ from neptune.new.exceptions import (
     NeptuneLimitExceedException,
     ProjectNameCollision,
     ProjectNotFound,
-    raise_container_not_found,
-    ExperimentNotFound,
+    MetadataContainerNotFound,
+    ProjectNotFoundWithSuggestions,
+    ContainerUUIDNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -190,7 +191,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         project_id=project_id, available_projects=available_projects
                     )
                 else:
-                    raise ProjectNotFound(
+                    raise ProjectNotFoundWithSuggestions(
                         project_id=project_id,
                         available_projects=self.get_available_projects(),
                         available_workspaces=self.get_available_workspaces(),
@@ -211,7 +212,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 sys_id=project.projectKey,
             )
         except HTTPNotFound:
-            raise ProjectNotFound(
+            raise ProjectNotFoundWithSuggestions(
                 project_id,
                 available_projects=self.get_available_projects(workspace_id=workspace),
                 available_workspaces=list()
@@ -265,25 +266,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return []
 
     @with_api_exceptions_handler
-    def get_run(self, run_id: QualifiedName):
-        return self._get_experiment(
-            container_id=run_id, container_type=ContainerType.RUN
-        )
-
-    @with_api_exceptions_handler
-    def get_model(self, model_id: QualifiedName) -> ApiExperiment:
-        return self._get_experiment(
-            container_id=model_id, container_type=ContainerType.MODEL
-        )
-
-    @with_api_exceptions_handler
-    def get_model_version(self, model_version_id: QualifiedName) -> ApiExperiment:
-        return self._get_experiment(
-            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
-        )
-
-    def _get_experiment(
-        self, container_id: QualifiedName, container_type: ContainerType
+    def get_metadata_container(
+        self,
+        container_id: Union[UniqueId, QualifiedName],
+        container_type: ContainerType,
     ) -> ApiExperiment:
         try:
             experiment = (
@@ -296,13 +282,13 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
 
             if experiment.type != container_type.value:
-                raise ExperimentNotFound.of_container_type(
+                raise MetadataContainerNotFound.of_container_type(
                     container_type=container_type, container_id=container_id
                 )
 
             return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
-            raise ExperimentNotFound.of_container_type(
+            raise MetadataContainerNotFound.of_container_type(
                 container_type=container_type, container_id=container_id
             )
 
@@ -435,11 +421,11 @@ class HostedNeptuneBackend(NeptuneBackend):
                 **request_kwargs,
             ).response().result
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
 
     def execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> Tuple[int, List[NeptuneException]]:
@@ -622,7 +608,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def _execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> List[MetadataInconsistency]:
@@ -648,7 +634,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
             raise NeptuneLimitExceedException(
                 reason=e.response.json().get("title", "Unknown reason")
@@ -696,11 +682,10 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.type in attribute_type_names
             ]
         except HTTPNotFound as e:
-            raise_container_not_found(
+            raise ContainerUUIDNotFound(
                 container_id=container_id,
                 container_type=container_type,
-                from_exception=e,
-            )
+            ) from e
 
     def download_file_series_by_index(
         self,
@@ -1080,7 +1065,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.name.startswith(namespace_prefix)
             ]
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
 
     # pylint: disable=unused-argument
     @with_api_exceptions_handler
