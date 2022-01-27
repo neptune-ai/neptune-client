@@ -252,6 +252,7 @@ class ContainerUUIDNotFound(NeptuneException):
         )
 
 
+# for backward compability
 RunUUIDNotFound = ContainerUUIDNotFound
 
 
