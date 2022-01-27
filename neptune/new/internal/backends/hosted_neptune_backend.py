@@ -31,9 +31,9 @@ from neptune.new.exceptions import (
     NeptuneLimitExceedException,
     ProjectNameCollision,
     ProjectNotFound,
-    raise_container_not_found,
     MetadataContainerNotFound,
     ProjectNotFoundWithSuggestions,
+    ContainerUUIDNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -421,11 +421,11 @@ class HostedNeptuneBackend(NeptuneBackend):
                 **request_kwargs,
             ).response().result
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
 
     def execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> Tuple[int, List[NeptuneException]]:
@@ -608,7 +608,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def _execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> List[MetadataInconsistency]:
@@ -634,7 +634,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
             raise NeptuneLimitExceedException(
                 reason=e.response.json().get("title", "Unknown reason")
@@ -682,11 +682,10 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.type in attribute_type_names
             ]
         except HTTPNotFound as e:
-            raise_container_not_found(
+            raise ContainerUUIDNotFound(
                 container_id=container_id,
                 container_type=container_type,
-                from_exception=e,
-            )
+            ) from e
 
     def download_file_series_by_index(
         self,
@@ -1066,7 +1065,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.name.startswith(namespace_prefix)
             ]
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
 
     # pylint: disable=unused-argument
     @with_api_exceptions_handler

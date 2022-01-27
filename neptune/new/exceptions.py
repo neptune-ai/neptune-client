@@ -23,7 +23,7 @@ from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import Project, Workspace
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import QualifiedName, UniqueId
+from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.utils import replace_patch_version
 
 
@@ -252,46 +252,7 @@ class ContainerUUIDNotFound(NeptuneException):
         )
 
 
-def raise_container_not_found(
-    container_id: UniqueId,
-    container_type: ContainerType,
-    from_exception: Exception = None,
-):
-    if container_type == ContainerType.RUN:
-        error_class = RunUUIDNotFound
-    elif container_type == ContainerType.PROJECT:
-        error_class = ProjectUUIDNotFound
-    elif container_type == ContainerType.MODEL:
-        error_class = ModelUUIDNotFound
-    elif container_type == ContainerType.MODEL_VERSION:
-        error_class = ModelVersionUUIDNotFound
-    else:
-        raise InternalClientError(f"Unknown container_type: {container_type}")
-
-    if from_exception:
-        raise error_class(container_id) from from_exception
-    else:
-        raise error_class(container_id)
-
-
-class RunUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.RUN)
-
-
-class ProjectUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.PROJECT)
-
-
-class ModelUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.MODEL)
-
-
-class ModelVersionUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.MODEL_VERSION)
+RunUUIDNotFound = ContainerUUIDNotFound
 
 
 class ProjectNotFoundWithSuggestions(

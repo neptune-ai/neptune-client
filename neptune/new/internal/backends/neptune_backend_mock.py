@@ -26,9 +26,9 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneException,
     RunNotFound,
-    raise_container_not_found,
     ModelVersionNotFound,
     ProjectNotFound,
+    ContainerUUIDNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -170,7 +170,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def _get_container(self, container_id: UniqueId, container_type: ContainerType):
         key = (container_id, container_type)
         if key not in self._containers:
-            raise_container_not_found(container_id, container_type)
+            raise ContainerUUIDNotFound(container_id, container_type)
         container = self._containers[(container_id, container_type)]
         return container
 

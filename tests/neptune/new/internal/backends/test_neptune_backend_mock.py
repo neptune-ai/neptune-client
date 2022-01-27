@@ -19,13 +19,7 @@ import uuid
 from random import randint
 from time import time
 
-from neptune.new.exceptions import (
-    MetadataInconsistency,
-    ModelUUIDNotFound,
-    ModelVersionUUIDNotFound,
-    ProjectUUIDNotFound,
-    RunUUIDNotFound,
-)
+from neptune.new.exceptions import MetadataInconsistency, ContainerUUIDNotFound
 from neptune.new.internal.backends.api_model import (
     DatetimeAttribute,
     FloatAttribute,
@@ -398,30 +392,14 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
     def test_container_not_found(self):
         # given
-        ids_with_types_and_exceptions = [
-            (container_id, container_type, exception_type)
-            for (container_id, container_type), exception_type in zip(
-                self.ids_with_types,
-                [
-                    ProjectUUIDNotFound,
-                    RunUUIDNotFound,
-                    ModelUUIDNotFound,
-                    ModelVersionUUIDNotFound,
-                ],
-            )
-        ]
-        for (
-            container_id,
-            container_type,
-            exception_type,
-        ) in ids_with_types_and_exceptions:
+        for (container_id, container_type) in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 self.backend.execute_operations(
                     container_id, container_type, [AssignString(["x"], "abc")]
                 )
 
                 # then
-                with self.assertRaises(exception_type):
+                with self.assertRaises(ContainerUUIDNotFound):
                     self.backend.get_float_series_attribute(
                         str(uuid.uuid4()), container_type, ["x"]
                     )
