@@ -51,8 +51,8 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, run_id: AN_API_RUN,
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
+        new=lambda _, container_id, container_type: AN_API_RUN,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
@@ -80,8 +80,8 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         self.assertNotIn(str(exp._id), os.listdir(".neptune"))
 
     @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_run",
-        new=lambda _, run_id: AN_API_RUN,
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
+        new=lambda _, container_id, container_type: AN_API_RUN,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
