@@ -810,6 +810,3 @@ class NeptuneBackendMock(NeptuneBackend):
                     op_name, self._path, expected, type(self._current_value)
                 )
             )
-
-    class ContainerIndex:
-        """Datastructure for storing MetadataContainers"""

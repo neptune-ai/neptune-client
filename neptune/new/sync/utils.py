@@ -18,11 +18,10 @@ __all__ = [
     "get_metadata_container",
     "get_project",
     "get_qualified_name",
-    "is_valid_uuid",
     "is_run_synced",
     "get_offline_dirs",
-    "is_offline_run_name",
     "iterate_containers",
+    "create_dir_name",
     "split_dir_name",
 ]
 
@@ -31,16 +30,12 @@ import os
 import sys
 import textwrap
 import threading
-import uuid
 from pathlib import Path
-from typing import Any, Optional, Iterator, Tuple, List, Union
+from typing import Optional, Iterator, Tuple, List, Union
 
 import click
 
-from neptune.new.constants import (
-    OFFLINE_DIRECTORY,
-    OFFLINE_NAME_PREFIX,
-)
+from neptune.new.constants import OFFLINE_DIRECTORY
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     NeptuneException,
@@ -113,14 +108,6 @@ def get_qualified_name(run: ApiExperiment) -> str:
     return "{}/{}/{}".format(run.workspace, run.project_name, run.sys_id)
 
 
-def is_valid_uuid(val: Any) -> bool:
-    try:
-        uuid.UUID(val)
-        return True
-    except ValueError:
-        return False
-
-
 def is_run_synced(run_path: Path) -> bool:
     return all(
         _is_execution_synced(execution_path) for execution_path in run_path.iterdir()
@@ -135,6 +122,10 @@ def _is_execution_synced(execution_path: Path) -> bool:
         threading.RLock(),
     )
     return disk_queue.is_empty()
+
+
+def create_dir_name(container_type: ContainerType, container_id: UniqueId) -> str:
+    return f"{container_type.value}__{container_id}"
 
 
 def split_dir_name(dir_name: str) -> Tuple[ContainerType, UniqueId]:
@@ -167,12 +158,3 @@ def get_offline_dirs(base_path: Path) -> List[UniqueId]:
         dir_name = path_.name
         result.append(UniqueId(dir_name))
     return result
-
-
-def is_offline_run_name(name: str) -> bool:
-    if not name.startswith(OFFLINE_NAME_PREFIX):
-        return False
-
-    # just make sure that dir has accepted format or raise exception
-    split_dir_name(dir_name=name[len(OFFLINE_NAME_PREFIX) :])
-    return True

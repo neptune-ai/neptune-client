@@ -45,31 +45,33 @@ def api_metadata_container(container_type: ContainerType) -> ApiExperiment:
 
 
 def api_project() -> ApiExperiment:
-    return _api_container_type(
+    return _api_metadata_container(
         sys_id=_random_key(), container_type=ContainerType.PROJECT
     )
 
 
 def api_run() -> ApiExperiment:
-    return _api_container_type(
+    return _api_metadata_container(
         sys_id=f"{_random_key()}-{randint(42, 12342)}", container_type=ContainerType.RUN
     )
 
 
 def api_model() -> ApiExperiment:
-    return _api_container_type(
+    return _api_metadata_container(
         sys_id=f"{_random_key()}-{_random_key()}", container_type=ContainerType.MODEL
     )
 
 
 def api_model_version() -> ApiExperiment:
-    return _api_container_type(
+    return _api_metadata_container(
         sys_id=f"{_random_key()}-{_random_key()}-{randint(42, 12342)}",
         container_type=ContainerType.MODEL_VERSION,
     )
 
 
-def _api_container_type(sys_id: str, container_type: ContainerType) -> ApiExperiment:
+def _api_metadata_container(
+    sys_id: str, container_type: ContainerType
+) -> ApiExperiment:
     return ApiExperiment(
         id=UniqueId(str(uuid.uuid4())),
         type=container_type,
@@ -80,5 +82,7 @@ def _api_container_type(sys_id: str, container_type: ContainerType) -> ApiExperi
     )
 
 
-def _random_key(n: int = 3) -> str:
-    return "".join((random.choice(string.ascii_letters).upper() for _ in range(n)))
+def _random_key(key_length: int = 3) -> str:
+    return "".join(
+        (random.choice(string.ascii_letters).upper() for _ in range(key_length))
+    )

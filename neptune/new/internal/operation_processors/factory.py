@@ -38,6 +38,8 @@ from .sync_operation_processor import SyncOperationProcessor
 
 __all__ = ["get_operation_processor"]
 
+from ...sync.utils import create_dir_name
+
 
 def get_operation_processor(
     mode: Mode,
@@ -50,7 +52,7 @@ def get_operation_processor(
     if mode == Mode.ASYNC:
         data_path = (
             f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}"
-            f"/{container_type.value}__{container_id}"
+            f"/{create_dir_name(container_type, container_id)}"
         )
         try:
             execution_id = len(os.listdir(data_path))
@@ -79,7 +81,7 @@ def get_operation_processor(
         # the object was returned by mocked backend and has some random ID.
         data_path = (
             f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}"
-            f"/{container_type.value}__{container_id}"
+            f"/{create_dir_name(container_type, container_id)}"
         )
         storage_queue = DiskQueue(
             dir_path=Path(data_path),

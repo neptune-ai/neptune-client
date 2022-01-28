@@ -45,12 +45,12 @@ from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
     get_project,
     get_qualified_name,
-    is_offline_run_name,
     is_run_synced,
     iterate_containers,
     get_metadata_container,
     get_offline_dirs,
     split_dir_name,
+    create_dir_name,
 )
 
 retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
@@ -131,7 +131,9 @@ class SyncRunner(AbstractBackendRunner):
                 backend=self._backend,
             )
             if run:
-                run_path = base_path / ASYNC_DIRECTORY / f"{run.type.value}__{run.id}"
+                run_path = (
+                    base_path / ASYNC_DIRECTORY / f"{create_dir_name(run.type, run.id)}"
+                )
                 run_path_deprecated = base_path / ASYNC_DIRECTORY / f"{run.id}"
                 if run_path.exists():
                     self.sync_run(run_path=run_path, run=run)
@@ -164,9 +166,12 @@ class SyncRunner(AbstractBackendRunner):
 
     @staticmethod
     def _move_offline_run(
-        base_path: Path, offline_dir: str, server_id: str, server_type: ContainerType
+        base_path: Path,
+        offline_dir: str,
+        server_id: UniqueId,
+        server_type: ContainerType,
     ) -> None:
-        online_dir = f"{server_type.value}__{server_id}"
+        online_dir = create_dir_name(container_type=server_type, container_id=server_id)
         # create async directory for run
         (base_path / ASYNC_DIRECTORY / online_dir).mkdir(parents=True)
         # mv offline directory inside async one
@@ -224,14 +229,14 @@ class SyncRunner(AbstractBackendRunner):
         self, base_path: Path, project_name: Optional[str], runs_names: Sequence[str]
     ) -> None:
         other_runs_names = [
-            name for name in runs_names if not is_offline_run_name(name)
+            name for name in runs_names if not name.startswith(OFFLINE_NAME_PREFIX)
         ]
         self.sync_selected_registered_runs(base_path, other_runs_names)
 
         offline_dirs = [
             UniqueId(name[len(OFFLINE_NAME_PREFIX) :])
             for name in runs_names
-            if is_offline_run_name(name)
+            if name.startswith(OFFLINE_NAME_PREFIX)
         ]
         self.sync_offline_runs(base_path, project_name, offline_dirs)
 

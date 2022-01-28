@@ -281,15 +281,16 @@ def test_sync_non_existent_container(tmp_path, capsys, sync_runner):
     assert "Warning: Run 'bar' does not exist in location" in captured.err
 
 
-def test_sync_non_existent_offline_containers(tmp_path, sync_runner):
-    # expect
-    with pytest.raises(ValueError):
-        sync_runner.sync_selected_runs(
-            base_path=tmp_path, project_name="foo", runs_names=["offline/foo__bar"]
-        )
-
-    # and
-    # with pytest.raises(ValueError):
+def test_sync_non_existent_offline_containers(tmp_path, capsys, sync_runner):
+    # when
+    sync_runner.sync_selected_runs(
+        base_path=tmp_path, project_name="foo", runs_names=["offline/foo__bar"]
+    )
     sync_runner.sync_selected_runs(
         base_path=tmp_path, project_name="foo", runs_names=["offline/model__bar"]
     )
+
+    # then
+    captured = capsys.readouterr()
+    assert "Offline run foo__bar not found on disk." in captured.err
+    assert "Offline run model__bar not found on disk." in captured.err
