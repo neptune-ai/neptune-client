@@ -84,5 +84,5 @@ def _api_metadata_container(
 
 def _random_key(key_length: int = 3) -> str:
     return "".join(
-        (random.choice(string.ascii_letters).upper() for _ in range(key_length))
+        random.choice(string.ascii_letters).upper() for _ in range(key_length)
     )

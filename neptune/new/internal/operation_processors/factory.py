@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+__all__ = ["get_operation_processor"]
+
 import os
 import threading
 from datetime import datetime
@@ -29,16 +31,13 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
+from neptune.new.sync.utils import create_dir_name
 from neptune.new.types.mode import Mode
 from .async_operation_processor import AsyncOperationProcessor
 from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
-
-__all__ = ["get_operation_processor"]
-
-from ...sync.utils import create_dir_name
 
 
 def get_operation_processor(
