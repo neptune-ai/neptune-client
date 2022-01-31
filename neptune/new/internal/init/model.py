@@ -21,6 +21,7 @@ from neptune.new.attributes import constants as attr_consts
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
     NeptuneWrongInitParametersException,
+    NeptuneException,
 )
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
@@ -58,6 +59,11 @@ def init_model(
     verify_type("mode", mode, str)
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
+    # make mode proper Enum instead of string
+    mode = Mode(mode)
+
+    if mode == Mode.OFFLINE:
+        raise NeptuneException("Model can't be initialized in OFFLINE mode")
 
     # verify exclusive arguments
     if model is not None and key is not None:
@@ -67,8 +73,6 @@ def init_model(
 
     name = DEFAULT_NAME if model is None and name is None else name
 
-    # make mode proper Enum instead of string
-    mode = Mode(mode)
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:

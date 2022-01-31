@@ -21,8 +21,8 @@ from glob import glob
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
+
 
 # pylint: disable=protected-access
 
@@ -47,7 +47,6 @@ class TestDiskQueue(unittest.TestCase):
                 self._serializer,
                 self._deserializer,
                 threading.RLock(),
-                ContainerType.RUN,
             )
             obj = TestDiskQueue.Obj(5, "test")
             queue.put(obj)
@@ -62,7 +61,6 @@ class TestDiskQueue(unittest.TestCase):
                 self._serializer,
                 self._deserializer,
                 threading.RLock(),
-                ContainerType.RUN,
                 max_file_size=300,
             )
             for i in range(1, 101):
@@ -83,7 +81,6 @@ class TestDiskQueue(unittest.TestCase):
                 self._serializer,
                 self._deserializer,
                 threading.RLock(),
-                ContainerType.RUN,
                 max_file_size=100,
             )
             for i in range(1, 91):
@@ -115,7 +112,6 @@ class TestDiskQueue(unittest.TestCase):
                 self._serializer,
                 self._deserializer,
                 threading.RLock(),
-                ContainerType.RUN,
                 max_file_size=999,
             )
             for i in range(1, 501):
@@ -143,7 +139,6 @@ class TestDiskQueue(unittest.TestCase):
                 self._serializer,
                 self._deserializer,
                 threading.RLock(),
-                ContainerType.RUN,
                 max_file_size=200,
             )
             for i in range(version_to_ack + 1, 501):

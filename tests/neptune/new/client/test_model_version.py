@@ -26,6 +26,7 @@ from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     NeptuneOfflineModeChangeStageException,
     NeptuneWrongInitParametersException,
+    NeptuneException,
 )
 from neptune.new.internal.backends.api_model import (
     Attribute,
@@ -59,6 +60,10 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
+    def test_offline_mode(self):
+        with self.assertRaises(NeptuneException):
+            init_model_version(model="PRO-MOD", mode="offline")
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
@@ -114,6 +119,9 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             exp.change_stage(stage="wrong_stage")
 
     def test_change_stage_of_offline_model_version(self):
-        exp = self.call_init(mode="offline")
-        with self.assertRaises(NeptuneOfflineModeChangeStageException):
-            exp.change_stage(stage="production")
+        # this test will be required when we decide that creating model versions
+        # in offline mode is allowed
+        with self.assertRaises(NeptuneException):
+            exp = self.call_init(mode="offline")
+            with self.assertRaises(NeptuneOfflineModeChangeStageException):
+                exp.change_stage(stage="production")

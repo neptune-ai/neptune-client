@@ -42,6 +42,7 @@ def init_project(
     verify_type("mode", mode, str)
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
+    # make mode proper Enum instead of string
     mode = Mode(mode)
 
     if mode == Mode.OFFLINE:

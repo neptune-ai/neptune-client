@@ -210,10 +210,21 @@ class NeptuneBackendMock(NeptuneBackend):
             trashed=False,
         )
 
-    def create_model_version(self, project_id: str, model_id: str) -> ApiExperiment:
-        sys_id = f"{self.PROJECT_KEY}-{self._next_model_version[model_id]}"
+    def create_model_version(
+        self, project_id: str, model_id: UniqueId
+    ) -> ApiExperiment:
+        try:
+            model_key = self._get_container(
+                container_id=model_id, container_type=ContainerType.MODEL
+            ).get("sys/id")
+        except ContainerUUIDNotFound:
+            model_key = "MOD"
+
+        sys_id = SysId(
+            f"{self.PROJECT_KEY}-{model_key}-{self._next_model_version[model_id]}"
+        )
         self._next_model_version[model_id] += 1
-        new_run_id = str(uuid.uuid4())
+        new_run_id = UniqueId(str(uuid.uuid4()))
         self._create_container(new_run_id, ContainerType.MODEL_VERSION, sys_id=sys_id)
         return ApiExperiment(
             id=new_run_id,

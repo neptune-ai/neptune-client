@@ -23,7 +23,7 @@ from mock import patch
 from neptune.new import ANONYMOUS, init_model
 from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneWrongInitParametersException
+from neptune.new.exceptions import NeptuneWrongInitParametersException, NeptuneException
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -48,6 +48,10 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
+    def test_offline_mode(self):
+        with self.assertRaises(NeptuneException):
+            init_model(key="MOD", mode="offline")
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
