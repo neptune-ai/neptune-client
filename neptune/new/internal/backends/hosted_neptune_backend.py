@@ -295,7 +295,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 .result
             )
 
-            if experiment.type != container_type.value:
+            if experiment.type != container_type:
                 raise ExperimentNotFound.of_container_type(
                     container_type=container_type, container_id=container_id
                 )
