@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 0.14.3
+## neptune-client 0.14.3
 
 ## Features
 - Stripping whitespaces from Neptune API Token ([#825](https://github.com/neptune-ai/neptune-client/pull/825))
