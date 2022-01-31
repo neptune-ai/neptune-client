@@ -30,7 +30,7 @@ fake = Faker()
 
 
 class TestAtoms(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     @pytest.mark.parametrize(
         "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
     )
@@ -41,7 +41,7 @@ class TestAtoms(BaseE2ETest):
         container.sync()
         assert container[key].fetch() == value
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_simple_assign_datetime(self, container: MetadataContainer):
         key = self.gen_key()
         now = datetime.now()
@@ -55,13 +55,13 @@ class TestAtoms(BaseE2ETest):
         )
         assert container[key].fetch() == expected_now
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_fetch_non_existing_key(self, container: MetadataContainer):
         key = self.gen_key()
         with pytest.raises(AttributeError):
             container[key].fetch()
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_delete_atom(self, container: MetadataContainer):
         key = self.gen_key()
         value = fake.name()
@@ -77,7 +77,7 @@ class TestAtoms(BaseE2ETest):
 
 
 class TestNamespace(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_reassigning(self, container: MetadataContainer):
         namespace = self.gen_key()
         key = f"{fake.unique.word()}/{fake.unique.word()}"
@@ -103,7 +103,7 @@ class TestNamespace(BaseE2ETest):
 
         assert container[f"{namespace}/{key}"].fetch() == value
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_distinct_types(self, container: MetadataContainer):
         namespace = self.gen_key()
         key = f"{fake.unique.word()}/{fake.unique.word()}"
@@ -120,7 +120,7 @@ class TestNamespace(BaseE2ETest):
             container[namespace] = {f"{key}": new_value}
             container.sync()
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_delete_namespace(self, container: MetadataContainer):
         namespace = fake.unique.word()
         key1 = fake.unique.word()
@@ -145,7 +145,7 @@ class TestNamespace(BaseE2ETest):
 class TestStringSet(BaseE2ETest):
     neptune_tags_path = "sys/tags"
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_do_not_accept_non_tag_path(self, container: MetadataContainer):
         random_path = "some/path"
         container[random_path].add(fake.unique.word())
@@ -155,7 +155,7 @@ class TestStringSet(BaseE2ETest):
             # backends accepts `'sys/tags'` only
             container[random_path].fetch()
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_add_and_remove_tags(self, container: MetadataContainer):
         remaining_tag1 = fake.unique.word()
         remaining_tag2 = fake.unique.word()

@@ -47,7 +47,7 @@ class TestCopying(BaseE2ETest):
         assert container[destination].fetch() == value
         assert container[destination2].fetch() == value
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     @pytest.mark.parametrize(
         "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
     )

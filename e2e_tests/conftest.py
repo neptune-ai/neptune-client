@@ -77,6 +77,11 @@ def container(request, environment):
         yield exp
         exp.stop()
 
+    if request.param == "model":
+        model = neptune.init_model(project=environment.project)
+        yield model
+        model.stop()
+
 
 @pytest.fixture(scope="session")
 def bucket(environment):

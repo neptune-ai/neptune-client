@@ -13,7 +13,7 @@ from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBa
 
 
 class TestUpload(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_using_new_api(self, container: MetadataContainer):
         # pylint: disable=protected-access
         assert isinstance(container._backend, HostedNeptuneBackend)
@@ -24,7 +24,7 @@ class TestUpload(BaseE2ETest):
             container._backend._client_config.multipart_config, MultipartConfig
         )
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     @pytest.mark.parametrize(
         "file_size",
         [
@@ -52,7 +52,7 @@ class TestUpload(BaseE2ETest):
                 assert len(content) == file_size
                 assert content == b"\0" * file_size
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["project", "run", "model"], indirect=True)
     def test_fileset(self, container: MetadataContainer):
         key = self.gen_key()
         large_filesize = 10 * 2 ** 20
