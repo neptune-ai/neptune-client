@@ -168,7 +168,7 @@ class MetadataContainerNotFound(NeptuneException):
 
 class ProjectNotFound(MetadataContainerNotFound):
     def __init__(self, project_id: str) -> None:
-        super().__init__(container_id=project_id, container_type=ContainerType.RUN)
+        super().__init__(container_id=project_id, container_type=ContainerType.PROJECT)
 
 
 class RunNotFound(MetadataContainerNotFound):
