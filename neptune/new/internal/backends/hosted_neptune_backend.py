@@ -1097,33 +1097,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         query: Optional[NQLQuery] = NQLEmpty,
     ) -> List[LeaderboardEntry]:
         def get_portion(limit, offset):
+            q = str(query)
             return (
                 self.leaderboard_client.api.searchLeaderboardEntries(
                     projectIdentifier=project_id,
-                    type=types,
-                    limit=limit,
-                    offset=offset,
+                    type=list(map(lambda container_type: container_type.value, types)),
                     params={
-                        "grouping": {
-                            "groupBy": [
-                                {
-                                    "aggregationMode": "last",
-                                    "name": "string",
-                                    "type": "experimentState",
-                                }
-                            ],
-                            "openedGroups": ["string"],
-                        },
                         "query": {"query": str(query)},
                         "pagination": {"limit": limit, "offset": offset},
-                        "sorting": {
-                            "dir": "ascending",
-                            "sortBy": {
-                                "aggregationMode": "last",
-                                "name": "string",
-                                "type": "shortId",
-                            },
-                        },
                     },
                     **DEFAULT_REQUEST_KWARGS,
                 )
@@ -1142,7 +1123,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                             attr.name, AttributeType(attr.type), properties
                         )
                     )
-            return LeaderboardEntry(entry.id, attributes)
+            return LeaderboardEntry(entry.experimentId, attributes)
 
         try:
             return [

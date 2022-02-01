@@ -360,17 +360,17 @@ class MetadataContainer(AbstractContextManager):
     def _shutdown_hook(self):
         self.stop()
 
-    def _fetch_child_entries(
-        self, child_type: ContainerType, query: Optional[NQLQuery] = NQLEmpty
+    def _fetch_entries(
+        self, type: ContainerType, query: Optional[NQLQuery] = NQLEmpty
     ) -> Table:
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
-            types=[child_type],
+            types=[type],
             query=query,
         )
 
         return Table(
             backend=self._backend,
-            container_type=child_type,
+            container_type=type,
             entries=leaderboard_entries,
         )

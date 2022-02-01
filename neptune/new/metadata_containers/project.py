@@ -155,8 +155,10 @@ class Project(MetadataContainer):
         owners = as_list("owner", owner)
         tags = as_list("tag", tag)
 
-        query = NQLQueryAggregate(
-            items=[
+        query_items = []
+
+        if ids:
+            query_items.append(
                 NQLQueryAggregate(
                     items=[
                         NQLQueryAttribute(
@@ -168,7 +170,11 @@ class Project(MetadataContainer):
                         for api_id in ids
                     ],
                     aggregator=NQLAggregator.OR,
-                ),
+                )
+            )
+
+        if states:
+            query_items.append(
                 NQLQueryAggregate(
                     items=[
                         NQLQueryAttribute(
@@ -180,7 +186,11 @@ class Project(MetadataContainer):
                         for state in states
                     ],
                     aggregator=NQLAggregator.OR,
-                ),
+                )
+            )
+
+        if owners:
+            query_items.append(
                 NQLQueryAggregate(
                     items=[
                         NQLQueryAttribute(
@@ -192,7 +202,11 @@ class Project(MetadataContainer):
                         for owner in owners
                     ],
                     aggregator=NQLAggregator.OR,
-                ),
+                )
+            )
+
+        if tags:
+            query_items.append(
                 NQLQueryAggregate(
                     items=[
                         NQLQueryAttribute(
@@ -204,13 +218,13 @@ class Project(MetadataContainer):
                         for tag in tags
                     ],
                     aggregator=NQLAggregator.OR,
-                ),
-            ],
-            aggregator=NQLAggregator.AND,
-        )
+                )
+            )
 
-        return MetadataContainer._fetch_child_entries(
-            self, child_type=ContainerType.RUN, query=query
+        query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
+
+        return MetadataContainer._fetch_entries(
+            self, type=ContainerType.RUN, query=query
         )
 
     def assign(self, value, wait: bool = False) -> None:

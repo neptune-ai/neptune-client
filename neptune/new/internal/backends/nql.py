@@ -50,7 +50,9 @@ class NQLQueryAggregate(NQLQuery):
     aggregator: NQLAggregator
 
     def __repr__(self):
-        return "(" + f" {self.aggregator.value} ".join(map(str, self.items)) + ")"
+        if self.items:
+            return "(" + f" {self.aggregator.value} ".join(map(str, self.items)) + ")"
+        return ""
 
 
 class NQLAttributeOperator(str, Enum):
