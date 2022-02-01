@@ -224,7 +224,7 @@ class Project(MetadataContainer):
         query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
 
         return MetadataContainer._fetch_entries(
-            self, type=ContainerType.RUN, query=query
+            self, child_type=ContainerType.RUN, query=query
         )
 
     def assign(self, value, wait: bool = False) -> None:

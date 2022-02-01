@@ -46,7 +46,7 @@ class Model(MetadataContainer):
         """TODO: NPT-11349"""
         return MetadataContainer._fetch_entries(
             self,
-            type=ContainerType.MODEL_VERSION,
+            child_type=ContainerType.MODEL_VERSION,
             query=NQLQueryAttribute(
                 name="sys/model_id",
                 value=self._sys_id,

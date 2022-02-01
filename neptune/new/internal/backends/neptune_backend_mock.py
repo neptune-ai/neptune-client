@@ -538,16 +538,6 @@ class NeptuneBackendMock(NeptuneBackend):
             if full_path.startswith(namespace_prefix)
         ]
 
-    def get_leaderboard(
-        self,
-        project_id: str,
-        _id: Optional[Iterable[str]] = None,
-        state: Optional[Iterable[str]] = None,
-        owner: Optional[Iterable[str]] = None,
-        tags: Optional[Iterable[str]] = None,
-    ) -> List[LeaderboardEntry]:
-        """Non relevant for mock"""
-
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,

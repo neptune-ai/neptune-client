@@ -281,17 +281,6 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_leaderboard(
-        self,
-        project_id: str,
-        _id: Optional[Iterable[str]] = None,
-        state: Optional[Iterable[str]] = None,
-        owner: Optional[Iterable[str]] = None,
-        tags: Optional[Iterable[str]] = None,
-    ) -> List[LeaderboardEntry]:
-        pass
-
-    @abc.abstractmethod
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,

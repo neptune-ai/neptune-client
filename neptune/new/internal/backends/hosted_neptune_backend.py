@@ -1097,7 +1097,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         query: Optional[NQLQuery] = NQLEmpty,
     ) -> List[LeaderboardEntry]:
         def get_portion(limit, offset):
-            q = str(query)
             return (
                 self.leaderboard_client.api.searchLeaderboardEntries(
                     projectIdentifier=project_id,
