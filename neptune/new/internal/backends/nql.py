@@ -13,6 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "NQLQuery",
+    "NQLEmpty",
+    "NQLAggregator",
+    "NQLQueryAggregate",
+    "NQLAttributeOperator",
+    "NQLAttributeType",
+    "NQLQueryAttribute",
+]
+
 from enum import Enum
 from typing import Iterable
 from dataclasses import dataclass
@@ -23,7 +33,13 @@ class NQLQuery:
     pass
 
 
-class NQLAggregator(Enum):
+@dataclass
+class NQLEmpty:
+    def __repr__(self) -> str:
+        return ""
+
+
+class NQLAggregator(str, Enum):
     AND = "AND"
     OR = "OR"
 
@@ -37,12 +53,12 @@ class NQLQueryAggregate(NQLQuery):
         return "(" + f" {self.aggregator.value} ".join(map(str, self.items)) + ")"
 
 
-class NQLAttributeOperator(Enum):
+class NQLAttributeOperator(str, Enum):
     EQUALS = "="
     CONTAINS = "CONTAINS"
 
 
-class NQLAttributeType(Enum):
+class NQLAttributeType(str, Enum):
     STRING = "string"
     STRING_SET = "stringSet"
     EXPERIMENT_STATE = "experimentState"

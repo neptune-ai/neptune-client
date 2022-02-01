@@ -295,8 +295,7 @@ class NeptuneBackend:
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,
-        parent_id: Optional[Iterable[str]],
-        child_type: Optional[ContainerType],
-        query: Optional[NQLQuery],
+        types: Optional[Iterable[ContainerType]] = None,
+        query: Optional[NQLQuery] = None,
     ) -> List[LeaderboardEntry]:
         pass

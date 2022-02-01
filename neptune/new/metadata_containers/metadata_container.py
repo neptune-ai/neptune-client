@@ -44,7 +44,12 @@ from neptune.new.exceptions import (
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.backends.nql import NQLQuery
+from neptune.new.internal.backends.nql import (
+    NQLQuery,
+    NQLEmpty,
+    NQLQueryAggregate,
+    NQLQueryAttribute,
+)
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import UniqueId, SysId
@@ -356,12 +361,11 @@ class MetadataContainer(AbstractContextManager):
         self.stop()
 
     def _fetch_child_entries(
-        self, child_type: ContainerType, query: Optional[NQLQuery] = None
+        self, child_type: ContainerType, query: Optional[NQLQuery] = NQLEmpty
     ) -> Table:
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
-            parent_id=self._id,
-            child_type=child_type,
+            types=[child_type],
             query=query,
         )
 
