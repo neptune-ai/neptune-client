@@ -17,7 +17,7 @@
 import enum
 
 
-class ContainerType(enum.Enum):
+class ContainerType(str, enum.Enum):
     RUN = "run"
     PROJECT = "project"
     MODEL = "model"

@@ -454,7 +454,9 @@ class Handler:
         .. _download_last docs page:
            https://docs.neptune.ai/api-reference/field-types#.download_last
         """
-        return self._pass_call_to_attr(function_name="remove", destination=destination)
+        return self._pass_call_to_attr(
+            function_name="download_last", destination=destination
+        )
 
     def fetch_hash(self) -> str:
         """Fetches the hash of an artifact.

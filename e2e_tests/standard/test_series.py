@@ -19,7 +19,7 @@ import pytest
 from PIL import Image
 from faker import Faker
 
-from neptune.new.attribute_container import AttributeContainer
+from neptune.new.metadata_containers import MetadataContainer
 
 from e2e_tests.base import BaseE2ETest
 from e2e_tests.utils import generate_image, image_to_png, tmp_context
@@ -29,7 +29,7 @@ fake = Faker()
 
 class TestSeries(BaseE2ETest):
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_log_numbers(self, container: AttributeContainer):
+    def test_log_numbers(self, container: MetadataContainer):
         key = self.gen_key()
         values = [random.random() for _ in range(50)]
 
@@ -43,7 +43,7 @@ class TestSeries(BaseE2ETest):
         assert list(fetched_values["value"]) == values
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_log_strings(self, container: AttributeContainer):
+    def test_log_strings(self, container: MetadataContainer):
         key = self.gen_key()
         values = [fake.word() for _ in range(50)]
 
@@ -57,7 +57,7 @@ class TestSeries(BaseE2ETest):
         assert list(fetched_values["value"]) == values
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_log_images(self, container: AttributeContainer):
+    def test_log_images(self, container: MetadataContainer):
         key = self.gen_key()
         # images with size between 200KB - 12MB
         images = list(generate_image(size=2 ** n) for n in range(8, 12))

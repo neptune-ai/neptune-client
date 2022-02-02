@@ -36,11 +36,12 @@ class TestMultipleRuns(BaseE2ETest):
     def test_multiple_runs_single(self, container: neptune.Run, environment):
         # pylint: disable=protected-access,undefined-loop-variable
 
+        run_id = container["sys/id"].fetch()
         number_of_reinitialized = 5
         namespace = fake.unique.word()
 
         reinitialized_runs = [
-            neptune.init(run=container._short_id, project=environment.project)
+            neptune.init(run=run_id, project=environment.project)
             for _ in range(number_of_reinitialized)
         ]
 
@@ -73,7 +74,7 @@ class TestMultipleRuns(BaseE2ETest):
             futures = [
                 executor.submit(
                     store_in_run,
-                    container._short_id,
+                    container["sys/id"].fetch(),
                     environment.project,
                     f"{namespace}/{fake.unique.word()}",
                 )
@@ -99,7 +100,7 @@ class TestMultipleRuns(BaseE2ETest):
             futures = [
                 executor.submit(
                     store_in_run,
-                    container._short_id,
+                    container["sys/id"].fetch(),
                     environment.project,
                     f"{namespace}/{fake.unique.word()}",
                 )
