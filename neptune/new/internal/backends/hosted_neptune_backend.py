@@ -373,7 +373,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         params = {
             "projectIdentifier": project_id,
             "parentId": parent_id,
-            "type": container_type.value,
+            "type": container_type.to_api(),
             "cliVersion": str(neptune_client_version),
             **additional_params,
         }

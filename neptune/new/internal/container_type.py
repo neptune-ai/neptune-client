@@ -22,3 +22,16 @@ class ContainerType(str, enum.Enum):
     PROJECT = "project"
     MODEL = "model"
     MODEL_VERSION = "model_version"
+
+    def to_api(self) -> str:
+        if self == ContainerType.MODEL_VERSION:
+            return "modelVersion"
+        else:
+            return self.value
+
+    @staticmethod
+    def from_api(api_type: str) -> "ContainerType":
+        if api_type == "modelVersion":
+            return ContainerType.MODEL_VERSION
+        else:
+            return ContainerType(api_type)
