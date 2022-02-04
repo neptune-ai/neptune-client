@@ -28,6 +28,7 @@ from neptune.management.internal.types import (
 class ProjectVisibilityDTO(Enum):
     PRIVATE = "priv"
     PUBLIC = "pub"
+    WORKSPACE = "workspace"
 
     @classmethod
     def from_str(cls, visibility: str) -> "ProjectVisibilityDTO":
@@ -37,6 +38,7 @@ class ProjectVisibilityDTO(Enum):
             return {
                 ProjectVisibility.PRIVATE: ProjectVisibilityDTO.PRIVATE,
                 ProjectVisibility.PUBLIC: ProjectVisibilityDTO.PUBLIC,
+                ProjectVisibility.WORKSPACE: ProjectVisibilityDTO.WORKSPACE,
             }[visibility]
         except KeyError as e:
             raise UnsupportedValue(enum=cls.__name__, value=visibility) from e

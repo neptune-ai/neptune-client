@@ -301,7 +301,13 @@ def add_project_member(
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
     except HTTPConflict as e:
-        raise UserAlreadyHasAccess(user=username, project=project_identifier) from e
+        members = get_project_member_list(
+            name=name, workspace=workspace, api_token=api_token
+        )
+        user_role = members.get(username)
+        raise UserAlreadyHasAccess(
+            user=username, project=project_identifier, role=user_role
+        ) from e
 
 
 @with_api_exceptions_handler
