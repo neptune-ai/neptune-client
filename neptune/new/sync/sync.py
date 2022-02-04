@@ -187,9 +187,7 @@ class SyncRunner(AbstractBackendRunner):
             offline_path = base_path / OFFLINE_DIRECTORY / offline_dir
             if offline_path.is_dir():
                 container_type, _ = split_dir_name(dir_name=offline_dir)
-                run, registered = self._register_offline_run(
-                    project, container_type=container_type
-                )
+                run = self._register_offline_run(project, container_type=container_type)
                 if run:
                     self._move_offline_run(
                         base_path=base_path,
@@ -197,9 +195,8 @@ class SyncRunner(AbstractBackendRunner):
                         server_id=run.id,
                         server_type=run.type,
                     )
-                    verb = "registered as" if registered else "recognized as"
                     click.echo(
-                        f"Offline run {offline_dir} {verb} {get_qualified_name(run)}"
+                        f"Offline run {offline_dir} registered as {get_qualified_name(run)}"
                     )
                     result.append(run)
             else:
