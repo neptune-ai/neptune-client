@@ -97,7 +97,7 @@ def test_sync_all_offline_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(
         sync_runner,
         "_register_offline_run",
-        lambda project, container_type: (offline_run, True),
+        lambda project, container_type: offline_run,
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
@@ -146,7 +146,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(
         sync_runner,
         "_register_offline_run",
-        lambda project, container_type: (offline_run, True),
+        lambda project, container_type: offline_run,
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
@@ -215,7 +215,7 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(
         sync_runner,
         "_register_offline_run",
-        lambda project, container_type: (offline_old_run, True),
+        lambda project, container_type: offline_old_run,
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
