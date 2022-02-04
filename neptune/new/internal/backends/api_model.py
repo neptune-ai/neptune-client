@@ -51,7 +51,7 @@ class ApiExperiment:
     def from_experiment(cls, response_exp):
         return cls(
             id=response_exp.id,
-            type=ContainerType(response_exp.type),
+            type=ContainerType.from_api(response_exp.type),
             sys_id=response_exp.shortId,
             workspace=response_exp.organizationName,
             project_name=response_exp.projectName,
