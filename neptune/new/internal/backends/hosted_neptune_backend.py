@@ -1100,7 +1100,9 @@ class HostedNeptuneBackend(NeptuneBackend):
             return (
                 self.leaderboard_client.api.searchLeaderboardEntries(
                     projectIdentifier=project_id,
-                    type=list(map(lambda container_type: container_type.value, types)),
+                    type=list(
+                        map(lambda container_type: container_type.to_api(), types)
+                    ),
                     params={
                         "query": {"query": str(query)},
                         "pagination": {"limit": limit, "offset": offset},
