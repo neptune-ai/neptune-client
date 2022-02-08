@@ -33,9 +33,8 @@ class NQLQuery:
     pass
 
 
-@dataclass
-class NQLEmpty:
-    def __repr__(self) -> str:
+class NQLEmpty(NQLQuery):
+    def __str__(self) -> str:
         return ""
 
 
@@ -49,7 +48,7 @@ class NQLQueryAggregate(NQLQuery):
     items: Iterable[NQLQuery]
     aggregator: NQLAggregator
 
-    def __repr__(self):
+    def __str__(self) -> str:
         if self.items:
             return "(" + f" {self.aggregator.value} ".join(map(str, self.items)) + ")"
         return ""
@@ -73,5 +72,5 @@ class NQLQueryAttribute(NQLQuery):
     operator: NQLAttributeOperator
     value: str
 
-    def __repr__(self):
+    def __str__(self) -> str:
         return f'(`{self.name}`:{self.type.value} {self.operator.value} "{self.value}")'

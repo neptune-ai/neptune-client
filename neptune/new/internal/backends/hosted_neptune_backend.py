@@ -1094,8 +1094,12 @@ class HostedNeptuneBackend(NeptuneBackend):
         self,
         project_id: UniqueId,
         types: Optional[Iterable[ContainerType]] = None,
-        query: Optional[NQLQuery] = NQLEmpty,
+        query: Optional[NQLQuery] = None,
     ) -> List[LeaderboardEntry]:
+        query_params = {}
+        if query:
+            query_params = {"query": {"query": str(query)}}
+
         def get_portion(limit, offset):
             return (
                 self.leaderboard_client.api.searchLeaderboardEntries(
@@ -1104,7 +1108,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         map(lambda container_type: container_type.to_api(), types)
                     ),
                     params={
-                        "query": {"query": str(query)},
+                        **query_params,
                         "pagination": {"limit": limit, "offset": offset},
                     },
                     **DEFAULT_REQUEST_KWARGS,

@@ -27,7 +27,7 @@ from neptune.new.internal.backends.nql import (
 class TestNQL(unittest.TestCase):
     def test_attributes(self):
         self.assertEqual(
-            repr(
+            str(
                 NQLQueryAttribute(
                     name="sys/owner",
                     type=NQLAttributeType.STRING,
@@ -38,7 +38,7 @@ class TestNQL(unittest.TestCase):
             '(`sys/owner`:string = "user1")',
         )
         self.assertEqual(
-            repr(
+            str(
                 NQLQueryAttribute(
                     name="sys/tags",
                     type=NQLAttributeType.STRING_SET,
@@ -49,7 +49,7 @@ class TestNQL(unittest.TestCase):
             '(`sys/tags`:stringSet CONTAINS "tag1")',
         )
         self.assertEqual(
-            repr(
+            str(
                 NQLQueryAttribute(
                     name="sys/state",
                     type=NQLAttributeType.EXPERIMENT_STATE,
@@ -62,7 +62,7 @@ class TestNQL(unittest.TestCase):
 
     def test_multiple_attribute_values(self):
         self.assertEqual(
-            repr(
+            str(
                 NQLQueryAggregate(
                     items=[
                         NQLQueryAttribute(
@@ -81,7 +81,7 @@ class TestNQL(unittest.TestCase):
 
     def test_multiple_queries(self):
         self.assertEqual(
-            repr(
+            str(
                 NQLQueryAggregate(
                     items=[
                         NQLQueryAggregate(
