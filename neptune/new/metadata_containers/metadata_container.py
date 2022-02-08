@@ -44,7 +44,7 @@ from neptune.new.exceptions import (
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.backends.nql import NQLQuery, NQLEmpty
+from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import UniqueId, SysId

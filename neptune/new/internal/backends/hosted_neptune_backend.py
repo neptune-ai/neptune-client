@@ -114,7 +114,7 @@ from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.new.internal.backends.nql import NQLQuery, NQLEmpty
+from neptune.new.internal.backends.nql import NQLQuery
 
 if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
