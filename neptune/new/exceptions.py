@@ -23,7 +23,7 @@ from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import Project, Workspace
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import QualifiedName, UniqueId
+from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.utils import replace_patch_version
 
 
@@ -141,6 +141,53 @@ Verify the correctness of your call or contact Neptune support.
         super().__init__(message.format(status=status, response=response, **STYLES))
 
 
+class MetadataContainerNotFound(NeptuneException):
+    container_id: str
+    container_type: ContainerType
+
+    def __init__(self, container_id: str, container_type: ContainerType) -> None:
+        self.container_id = container_id
+        self.container_type = container_type
+        super().__init__(
+            "{} {} not found.".format(container_type.value.capitalize(), container_id)
+        )
+
+    @classmethod
+    def of_container_type(cls, container_type: ContainerType, container_id: str):
+        if container_type == ContainerType.PROJECT:
+            return ProjectNotFound(project_id=container_id)
+        elif container_type == ContainerType.RUN:
+            return RunNotFound(run_id=container_id)
+        elif container_type == ContainerType.MODEL:
+            return ModelNotFound(model_id=container_id)
+        elif container_type == ContainerType.MODEL_VERSION:
+            return ModelVersionNotFound(model_version_id=container_id)
+        else:
+            raise InternalClientError(f"Unexpected ContainerType: {container_type}")
+
+
+class ProjectNotFound(MetadataContainerNotFound):
+    def __init__(self, project_id: str) -> None:
+        super().__init__(container_id=project_id, container_type=ContainerType.RUN)
+
+
+class RunNotFound(MetadataContainerNotFound):
+    def __init__(self, run_id: str) -> None:
+        super().__init__(container_id=run_id, container_type=ContainerType.RUN)
+
+
+class ModelNotFound(MetadataContainerNotFound):
+    def __init__(self, model_id: str) -> None:
+        super().__init__(container_id=model_id, container_type=ContainerType.MODEL)
+
+
+class ModelVersionNotFound(MetadataContainerNotFound):
+    def __init__(self, model_version_id: str) -> None:
+        super().__init__(
+            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
+        )
+
+
 class ExceptionWithProjectsWorkspacesListing(NeptuneException):
     def __init__(
         self,
@@ -191,7 +238,27 @@ You can check all of your projects on the Projects page:
         )
 
 
-class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
+class ContainerUUIDNotFound(NeptuneException):
+    container_id: str
+    container_type: ContainerType
+
+    def __init__(self, container_id: str, container_type: ContainerType):
+        self.container_id = container_id
+        self.container_type = container_type
+        super().__init__(
+            "{} with ID {} not found. Could be deleted.".format(
+                container_type.value.capitalize(), container_id
+            )
+        )
+
+
+# for backward compatibility
+RunUUIDNotFound = ContainerUUIDNotFound
+
+
+class ProjectNotFoundWithSuggestions(
+    ExceptionWithProjectsWorkspacesListing, ProjectNotFound
+):
     def __init__(
         self,
         project_id: QualifiedName,
@@ -283,102 +350,6 @@ You may also want to check the following docs pages:
             available_workspaces=available_workspaces,
             env_project=envs.PROJECT_ENV_NAME,
         )
-
-
-class ExperimentNotFound(NeptuneException):
-    container_id: str
-    container_type: ContainerType
-
-    def __init__(self, container_id: str, container_type: ContainerType) -> None:
-        self.container_id = container_id
-        self.container_type = container_type
-        super().__init__(
-            "{} {} not found.".format(container_type.value.capitalize(), container_id)
-        )
-
-    @classmethod
-    def of_container_type(cls, container_type: ContainerType, container_id: str):
-        if container_type == ContainerType.RUN:
-            return RunNotFound(run_id=container_id)
-        elif container_type == ContainerType.MODEL:
-            return ModelNotFound(model_id=container_id)
-        elif container_type == ContainerType.MODEL_VERSION:
-            return ModelVersionNotFound(model_version_id=container_id)
-        else:
-            raise InternalClientError(f"Unexpected ContainerType: {container_type}")
-
-
-class RunNotFound(ExperimentNotFound):
-    def __init__(self, run_id: str) -> None:
-        super().__init__(container_id=run_id, container_type=ContainerType.RUN)
-
-
-class ModelNotFound(ExperimentNotFound):
-    def __init__(self, model_id: str) -> None:
-        super().__init__(container_id=model_id, container_type=ContainerType.MODEL)
-
-
-class ModelVersionNotFound(ExperimentNotFound):
-    def __init__(self, model_version_id: str) -> None:
-        super().__init__(
-            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
-        )
-
-
-class ContainerUUIDNotFound(NeptuneException):
-    container_id: str
-    container_type: ContainerType
-
-    def __init__(self, container_id: str, container_type: ContainerType):
-        self.container_id = container_id
-        self.container_type = container_type
-        super().__init__(
-            "{} with ID {} not found. Could be deleted.".format(
-                container_type.value.capitalize(), container_id
-            )
-        )
-
-
-def raise_container_not_found(
-    container_id: UniqueId,
-    container_type: ContainerType,
-    from_exception: Exception = None,
-):
-    if container_type == ContainerType.RUN:
-        error_class = RunUUIDNotFound
-    elif container_type == ContainerType.PROJECT:
-        error_class = ProjectUUIDNotFound
-    elif container_type == ContainerType.MODEL:
-        error_class = ModelUUIDNotFound
-    elif container_type == ContainerType.MODEL_VERSION:
-        error_class = ModelVersionUUIDNotFound
-    else:
-        raise InternalClientError(f"Unknown container_type: {container_type}")
-
-    if from_exception:
-        raise error_class(container_id) from from_exception
-    else:
-        raise error_class(container_id)
-
-
-class RunUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.RUN)
-
-
-class ProjectUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.PROJECT)
-
-
-class ModelUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.MODEL)
-
-
-class ModelVersionUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.MODEL_VERSION)
 
 
 class InactiveContainerException(NeptuneException):

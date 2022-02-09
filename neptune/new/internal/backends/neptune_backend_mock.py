@@ -18,7 +18,7 @@ import uuid
 from collections import defaultdict
 from datetime import datetime
 from shutil import copyfile
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, TypeVar
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
 from zipfile import ZipFile
 
 from neptune.new.exceptions import (
@@ -26,8 +26,9 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneException,
     RunNotFound,
-    raise_container_not_found,
     ModelVersionNotFound,
+    ProjectNotFound,
+    ContainerUUIDNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -169,7 +170,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def _get_container(self, container_id: UniqueId, container_type: ContainerType):
         key = (container_id, container_type)
         if key not in self._containers:
-            raise_container_not_found(container_id, container_type)
+            raise ContainerUUIDNotFound(container_id, container_type)
         container = self._containers[(container_id, container_type)]
         return container
 
@@ -234,20 +235,28 @@ class NeptuneBackendMock(NeptuneBackend):
             sys_id=self.PROJECT_KEY,
         )
 
-    def get_run(self, run_id: str) -> ApiExperiment:
-        raise RunNotFound(run_id)
+    def get_metadata_container(
+        self,
+        container_id: Union[UniqueId, QualifiedName],
+        container_type: ContainerType,
+    ) -> ApiExperiment:
+        if "/" not in container_id:
+            raise ValueError("Backend mock expect container_id as QualifiedName only")
 
-    def get_model(self, model_id: QualifiedName) -> ApiExperiment:
-        return ApiExperiment(
-            id=UniqueId(str(uuid.uuid4())),
-            type=Model.container_type,
-            sys_id=SysId(model_id.rsplit("/", 1)[-1]),
-            workspace=self.WORKSPACE_NAME,
-            project_name=self.PROJECT_NAME,
-        )
-
-    def get_model_version(self, model_version_id: QualifiedName) -> ApiExperiment:
-        raise ModelVersionNotFound(model_version_id)
+        if container_type == ContainerType.RUN:
+            raise RunNotFound(container_id)
+        elif container_type == ContainerType.MODEL:
+            return ApiExperiment(
+                id=UniqueId(str(uuid.uuid4())),
+                type=Model.container_type,
+                sys_id=SysId(container_id.rsplit("/", 1)[-1]),
+                workspace=self.WORKSPACE_NAME,
+                project_name=self.PROJECT_NAME,
+            )
+        elif container_type == ContainerType.MODEL_VERSION:
+            raise ModelVersionNotFound(container_id)
+        else:
+            raise ProjectNotFound(container_id)
 
     def execute_operations(
         self,

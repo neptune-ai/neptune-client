@@ -83,7 +83,9 @@ def init_model(
             raise NeptuneWrongInitParametersException("NPT-11349 name only with key")
 
         model = QualifiedName(project + "/" + model)
-        api_model = backend.get_model(model_id=model)
+        api_model = backend.get_metadata_container(
+            container_id=model, container_type=Model.container_type
+        )
     elif key is not None:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelForReadOnlyMode()

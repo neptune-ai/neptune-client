@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import abc
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple, Union
 
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -81,10 +81,6 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_run(self, run_id: str) -> ApiExperiment:
-        pass
-
-    @abc.abstractmethod
     def create_run(
         self,
         project_id: UniqueId,
@@ -96,10 +92,6 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_model(self, model_id: QualifiedName) -> ApiExperiment:
-        pass
-
-    @abc.abstractmethod
     def create_model(
         self,
         project_id: UniqueId,
@@ -108,14 +100,18 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_model_version(self, model_version_id: QualifiedName) -> ApiExperiment:
-        pass
-
-    @abc.abstractmethod
     def create_model_version(
         self,
         project_id: UniqueId,
         model_id: UniqueId,
+    ) -> ApiExperiment:
+        pass
+
+    @abc.abstractmethod
+    def get_metadata_container(
+        self,
+        container_id: Union[UniqueId, QualifiedName],
+        container_type: ContainerType,
     ) -> ApiExperiment:
         pass
 
