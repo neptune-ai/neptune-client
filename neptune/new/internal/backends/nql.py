@@ -15,7 +15,6 @@
 #
 __all__ = [
     "NQLQuery",
-    "NQLEmpty",
     "NQLAggregator",
     "NQLQueryAggregate",
     "NQLAttributeOperator",
@@ -31,11 +30,6 @@ from dataclasses import dataclass
 @dataclass
 class NQLQuery:
     pass
-
-
-class NQLEmpty(NQLQuery):
-    def __str__(self) -> str:
-        return ""
 
 
 class NQLAggregator(str, Enum):
