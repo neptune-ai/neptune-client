@@ -114,6 +114,7 @@ from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.new.internal.backends.nql import NQLQuery
 
 if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
@@ -1089,28 +1090,27 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_leaderboard(
+    def search_leaderboard_entries(
         self,
-        project_id: str,
-        _id: Optional[Iterable[str]] = None,
-        state: Optional[Iterable[str]] = None,
-        owner: Optional[Iterable[str]] = None,
-        tags: Optional[Iterable[str]] = None,
+        project_id: UniqueId,
+        types: Optional[Iterable[ContainerType]] = None,
+        query: Optional[NQLQuery] = None,
     ) -> List[LeaderboardEntry]:
+        query_params = {}
+        if query:
+            query_params = {"query": {"query": str(query)}}
+
         def get_portion(limit, offset):
             return (
-                self.leaderboard_client.api.getLeaderboard(
+                self.leaderboard_client.api.searchLeaderboardEntries(
                     projectIdentifier=project_id,
-                    shortId=_id,
-                    state=state,
-                    owner=owner,
-                    tags=tags,
-                    tagsMode="and",
-                    sortBy=["shortId"],
-                    sortFieldType=["string"],
-                    sortDirection=["ascending"],
-                    limit=limit,
-                    offset=offset,
+                    type=list(
+                        map(lambda container_type: container_type.to_api(), types)
+                    ),
+                    params={
+                        **query_params,
+                        "pagination": {"limit": limit, "offset": offset},
+                    },
                     **DEFAULT_REQUEST_KWARGS,
                 )
                 .response()
@@ -1128,7 +1128,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                             attr.name, AttributeType(attr.type), properties
                         )
                     )
-            return LeaderboardEntry(entry.id, attributes)
+            return LeaderboardEntry(entry.experimentId, attributes)
 
         try:
             return [
@@ -1137,14 +1137,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             ]
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
-
-    def search_leaderboard_entries(
-        self,
-        project_id: UniqueId,
-        parent_id: Optional[Iterable[str]],
-        types: Optional[Iterable[ContainerType]],
-    ) -> List[LeaderboardEntry]:
-        pass
 
     def get_run_url(
         self, run_id: str, workspace: str, project_name: str, sys_id: str

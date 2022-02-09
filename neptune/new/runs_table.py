@@ -24,13 +24,11 @@ from neptune.new.metadata_containers.metadata_containers_table import (
 from neptune.new.exceptions import MetadataInconsistency
 
 from neptune.new.metadata_containers.metadata_containers_table import (
-    MetadataContainersTable,
-    MetadataContainersTableEntry,
+    Table as RunsTable,
+    TableEntry as RunsTableEntry,
 )
 from neptune.new.internal.backends.api_model import (
     AttributeWithProperties,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
-
-from neptune.new.metadata_containers.runs_table import RunsTable, RunsTableEntry

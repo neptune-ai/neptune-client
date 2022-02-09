@@ -15,7 +15,12 @@
 #
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.metadata_containers.model_versions_table import ModelVersionsTable
+from neptune.new.metadata_containers.metadata_containers_table import Table
+from neptune.new.internal.backends.nql import (
+    NQLQueryAttribute,
+    NQLAttributeOperator,
+    NQLAttributeType,
+)
 
 
 class Model(MetadataContainer):
@@ -37,10 +42,15 @@ class Model(MetadataContainer):
     def _label(self) -> str:
         return self._sys_id
 
-    def fetch_model_versions_table(self) -> ModelVersionsTable:
+    def fetch_model_versions_table(self) -> Table:
         """TODO: NPT-11349"""
-        leaderboard_entries = self._backend.search_leaderboard_entries(
-            project_id=self._project_id, parent_id=self._id, types=[self.container_type]
+        return MetadataContainer._fetch_entries(
+            self,
+            child_type=ContainerType.MODEL_VERSION,
+            query=NQLQueryAttribute(
+                name="sys/model_id",
+                value=self._sys_id,
+                operator=NQLAttributeOperator.EQUALS,
+                type=NQLAttributeType.STRING,
+            ),
         )
-
-        return ModelVersionsTable(backend=self._backend, entries=leaderboard_entries)

@@ -28,4 +28,4 @@ class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
         return get_project("organization/project").fetch_runs_table()
 
     def get_table_entries(self, table):
-        return table.to_runs()
+        return table.to_rows()

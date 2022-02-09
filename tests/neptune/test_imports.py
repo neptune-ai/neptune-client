@@ -310,13 +310,9 @@ from neptune.new.integrations.python_logger import RunState
 from neptune.new.logging.logger import Logger
 from neptune.new.logging.logger import Run
 from neptune.new.project import Project
-from neptune.new.project import RunsTable
 from neptune.new.run import Attribute
-from neptune.new.run import AttributeType
-from neptune.new.run import BackgroundJob
 from neptune.new.run import Boolean
 from neptune.new.run import Datetime
-from neptune.new.run import DeleteAttribute
 from neptune.new.run import Float
 from neptune.new.run import Handler
 from neptune.new.run import InactiveRunException
@@ -325,15 +321,11 @@ from neptune.new.run import MetadataInconsistency
 from neptune.new.run import Namespace
 from neptune.new.run import NamespaceAttr
 from neptune.new.run import NamespaceBuilder
-from neptune.new.run import NeptuneBackend
 from neptune.new.run import NeptunePossibleLegacyUsageException
-from neptune.new.run import OperationProcessor
 from neptune.new.run import Run
 from neptune.new.run import RunState
-from neptune.new.run import RunStructure
 from neptune.new.run import String
 from neptune.new.run import Value
-from neptune.new.run import ValueToAttributeVisitor
 from neptune.new.runs_table import AttributeType
 from neptune.new.runs_table import AttributeWithProperties
 from neptune.new.runs_table import LeaderboardEntry
@@ -451,7 +443,6 @@ from neptune.projects import DefaultAbortImpl
 from neptune.projects import Experiment
 from neptune.projects import NeptuneNoExperimentContextException
 from neptune.projects import Project
-from neptune.sessions import HostedNeptuneBackendApiClient
 from neptune.sessions import OrderedDict
 from neptune.sessions import Project
 from neptune.sessions import Session

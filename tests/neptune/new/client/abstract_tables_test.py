@@ -112,9 +112,7 @@ class AbstractTablesTestMixin:
         return attributes
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
-    @patch.object(NeptuneBackendMock, "get_leaderboard")
-    def test_get_table_as_pandas(self, get_leaderboard, search_leaderboard_entries):
-        # TODO: get_leaderboard is deprecated and should be removed NPT-11373
+    def test_get_table_as_pandas(self, search_leaderboard_entries):
         # given
         now = datetime.now()
         attributes = self.build_attributes_leaderboard(now)
@@ -123,7 +121,6 @@ class AbstractTablesTestMixin:
         empty_entry = LeaderboardEntry(str(uuid.uuid4()), [])
         filled_entry = LeaderboardEntry(str(uuid.uuid4()), attributes)
         search_leaderboard_entries.return_value = [empty_entry, filled_entry]
-        get_leaderboard.return_value = [empty_entry, filled_entry]
 
         # when
         df = self.get_table().to_pandas()
@@ -146,17 +143,14 @@ class AbstractTablesTestMixin:
             self.assertTrue(df["image/series"])
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
-    @patch.object(NeptuneBackendMock, "get_leaderboard")
     @patch.object(NeptuneBackendMock, "download_file")
     @patch.object(NeptuneBackendMock, "download_file_set")
     def test_get_table_as_table_entries(
         self,
         download_file_set,
         download_file,
-        get_leaderboard,
         search_leaderboard_entries,
     ):
-        # TODO: get_leaderboard is deprecated and should be removed NPT-11373
         # given
         exp_id = str(uuid.uuid4())
         now = datetime.now()
@@ -164,7 +158,6 @@ class AbstractTablesTestMixin:
 
         # and
         search_leaderboard_entries.return_value = [LeaderboardEntry(exp_id, attributes)]
-        get_leaderboard.return_value = [LeaderboardEntry(exp_id, attributes)]
 
         # when
         table_entry = self.get_table_entries(table=self.get_table())[0]

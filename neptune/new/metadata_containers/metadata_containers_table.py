@@ -15,7 +15,7 @@
 #
 import logging
 from datetime import datetime
-from typing import Any, List, Dict, Optional, Union, Type
+from typing import Any, List, Dict, Optional, Union
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
@@ -30,7 +30,7 @@ from neptune.new.internal.utils.paths import join_paths, parse_path
 logger = logging.getLogger(__name__)
 
 
-class MetadataContainersTableEntry:
+class TableEntry:
     def __init__(
         self,
         backend: NeptuneBackend,
@@ -134,7 +134,7 @@ class MetadataContainersTableEntry:
 
 
 class LeaderboardHandler:
-    def __init__(self, table_entry: MetadataContainersTableEntry, path: str):
+    def __init__(self, table_entry: TableEntry, path: str):
         self._table_entry = table_entry
         self._path = path
 
@@ -159,17 +159,24 @@ class LeaderboardHandler:
         )
 
 
-class MetadataContainersTable:
-    table_entry_cls: Type[MetadataContainersTableEntry]
-
-    def __init__(self, backend: NeptuneBackend, entries: List[LeaderboardEntry]):
+class Table:
+    def __init__(
+        self,
+        backend: NeptuneBackend,
+        container_type: ContainerType,
+        entries: List[LeaderboardEntry],
+    ):
         self._backend = backend
         self._entries = entries
+        self._container_type = container_type
 
-    def to_table_entries(self) -> List[MetadataContainersTableEntry]:
+    def to_rows(self) -> List[TableEntry]:
         return [
-            self.table_entry_cls(
-                backend=self._backend, _id=e.id, attributes=e.attributes
+            TableEntry(
+                backend=self._backend,
+                container_type=self._container_type,
+                _id=e.id,
+                attributes=e.attributes,
             )
             for e in self._entries
         ]

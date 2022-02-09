@@ -108,6 +108,7 @@ from neptune.new.types.series.string_series import StringSeries
 from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value import Value
 from neptune.new.types.value_visitor import ValueVisitor
+from neptune.new.internal.backends.nql import NQLQuery
 
 Val = TypeVar("Val", bound=Value)
 
@@ -537,21 +538,11 @@ class NeptuneBackendMock(NeptuneBackend):
             if full_path.startswith(namespace_prefix)
         ]
 
-    def get_leaderboard(
-        self,
-        project_id: str,
-        _id: Optional[Iterable[str]] = None,
-        state: Optional[Iterable[str]] = None,
-        owner: Optional[Iterable[str]] = None,
-        tags: Optional[Iterable[str]] = None,
-    ) -> List[LeaderboardEntry]:
-        """Non relevant for mock"""
-
     def search_leaderboard_entries(
         self,
         project_id: UniqueId,
-        parent_id: Optional[Iterable[str]],
-        types: Optional[Iterable[ContainerType]],
+        types: Optional[Iterable[ContainerType]] = None,
+        query: Optional[NQLQuery] = None,
     ) -> List[LeaderboardEntry]:
         """Non relevant for mock"""
 
