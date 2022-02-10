@@ -13,7 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["with_check_if_file_appears", "tmp_context", "a_project_name", "Environment"]
+__all__ = [
+    "with_check_if_file_appears",
+    "tmp_context",
+    "a_project_name",
+    "a_key",
+    "Environment",
+    "reinitialize_container",
+]
 
 import io
 import os
@@ -22,6 +29,8 @@ import tempfile
 from datetime import datetime
 from collections import namedtuple
 from contextlib import contextmanager
+
+import neptune.new as neptune
 
 import numpy
 from PIL import Image
@@ -85,11 +94,13 @@ def image_to_png(*, image: Image) -> PngImageFile:
     return PngImageFile(png_buf)
 
 
+def a_key(name: str):
+    return "".join(random.choices(population=name.replace("-", ""), k=10)).upper()
+
+
 def a_project_name(project_slug: str):
     project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
-    project_key = "".join(
-        random.choices(population=project_slug.replace("-", ""), k=10)
-    ).upper()
+    project_key = a_key(project_name)
 
     return project_name, project_key
 
@@ -98,3 +109,16 @@ Environment = namedtuple(
     "Environment",
     ["workspace", "project", "user_token", "admin_token", "admin", "user"],
 )
+
+
+def reinitialize_container(sys_id: str, container_type: str, project: str):
+    if container_type == "run":
+        return neptune.init_run(run=sys_id, project=project)
+
+    if container_type == "model":
+        return neptune.init_model(model=sys_id, project=project)
+
+    if container_type == "model_version":
+        return neptune.init_model_version(version=sys_id, project=project)
+
+    raise NotImplementedError()

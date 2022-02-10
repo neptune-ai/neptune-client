@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from faker import Faker
 import pytest
 
 from neptune.management import (
@@ -26,10 +25,8 @@ from neptune.management import (
     remove_project_member,
 )
 from neptune.management.internal.utils import normalize_project_name
-from e2e_tests.base import BaseE2ETest
+from e2e_tests.base import BaseE2ETest, fake
 from e2e_tests.utils import a_project_name, Environment
-
-fake = Faker()
 
 
 @pytest.mark.management

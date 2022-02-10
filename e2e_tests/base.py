@@ -13,9 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "BaseE2ETest",
-]
+__all__ = ["BaseE2ETest", "AVAILABLE_CONTAINERS", "fake"]
 
 import uuid
 import inspect
@@ -23,6 +21,8 @@ import inspect
 from faker import Faker
 
 fake = Faker()
+
+AVAILABLE_CONTAINERS = ["project", "run", "model", "model_version"]
 
 
 class BaseE2ETest:

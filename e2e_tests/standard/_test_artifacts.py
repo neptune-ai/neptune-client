@@ -14,25 +14,20 @@
 # limitations under the License.
 #
 import os
-import uuid
-import tempfile
 import time
+import tempfile
 from pathlib import Path
 
 import pytest
-from faker import Faker
 
 from neptune.new.metadata_containers import MetadataContainer
 
-from e2e_tests.base import BaseE2ETest
+from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
 from e2e_tests.utils import tmp_context, with_check_if_file_appears
 
 
-fake = Faker()
-
-
 class TestArtifacts(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_creation(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
         filename = fake.unique.file_name()
@@ -51,7 +46,7 @@ class TestArtifacts(BaseE2ETest):
             container[first].fetch_files_list() == container[second].fetch_files_list()
         )
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_assignment(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
         filename = fake.unique.file_name()
@@ -70,7 +65,7 @@ class TestArtifacts(BaseE2ETest):
             container[first].fetch_files_list() == container[second].fetch_files_list()
         )
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_download(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
         filename, filepath = fake.unique.file_name(), fake.unique.file_path(
@@ -100,7 +95,7 @@ class TestArtifacts(BaseE2ETest):
                     container[second].download()
 
     @pytest.mark.s3
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_s3_creation(self, container: MetadataContainer, bucket, environment):
         first, second, prefix = (
             self.gen_key(),
@@ -130,7 +125,7 @@ class TestArtifacts(BaseE2ETest):
         )
 
     @pytest.mark.s3
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_s3_download(self, container: MetadataContainer, bucket, environment):
         first = self.gen_key()
         prefix = f"{environment.project}/{self.gen_key()}/{type(container).__name__}"
@@ -168,7 +163,7 @@ class TestArtifacts(BaseE2ETest):
                 container[first].download()
 
     @pytest.mark.s3
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_s3_existing(self, container: MetadataContainer, bucket, environment):
         first, second, prefix = (
             self.gen_key(),
@@ -214,7 +209,7 @@ class TestArtifacts(BaseE2ETest):
             container[first].fetch_files_list() == container[second].fetch_files_list()
         )
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_existing(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
         filename, filepath = fake.file_name(), fake.file_path(depth=3).lstrip("/")
@@ -246,7 +241,7 @@ class TestArtifacts(BaseE2ETest):
             container[first].fetch_files_list() == container[second].fetch_files_list()
         )
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_hash_cache(self, container: MetadataContainer):
         key = self.gen_key()
         filename = fake.file_name()

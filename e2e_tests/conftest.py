@@ -24,7 +24,7 @@ from neptune.management.internal.utils import normalize_project_name
 from neptune.management import create_project, add_project_member
 import neptune.new as neptune
 
-from e2e_tests.utils import a_project_name, Environment
+from e2e_tests.utils import a_project_name, a_key, Environment
 
 fake = Faker()
 
@@ -65,17 +65,49 @@ def environment():
     )
 
 
+def initialize_container(container_type, project):
+    if container_type == "project":
+        return neptune.init_project(name=project)
+
+    if container_type == "run":
+        return neptune.init_run(project=project)
+
+    if container_type == "model":
+        return neptune.init_model(key=a_key(fake.slug()), project=project)
+
+    if container_type == "model_version":
+        model = neptune.init_model(key=a_key(fake.slug()), project=project)
+        model_sys_id = model["sys/id"].fetch()
+        model.stop()
+
+        return neptune.init_model_version(model=model_sys_id, project=project)
+
+
 @pytest.fixture(scope="session")
 def container(request, environment):
-    if request.param == "project":
-        project = neptune.init_project(name=environment.project)
-        yield project
-        project.stop()
+    container = initialize_container(
+        container_type=request.param, project=environment.project
+    )
 
-    if request.param == "run":
-        exp = neptune.init_run(project=environment.project)
-        yield exp
-        exp.stop()
+    yield container
+
+    container.stop()
+
+
+@pytest.fixture(scope="session")
+def containers_pair(request, environment):
+    container_a_type, container_b_type = request.param.split("-")
+    container_a = initialize_container(
+        container_type=container_a_type, project=environment.project
+    )
+    container_b = initialize_container(
+        container_type=container_b_type, project=environment.project
+    )
+
+    yield container_a, container_b
+
+    container_b.stop()
+    container_a.stop()
 
 
 @pytest.fixture(scope="session")

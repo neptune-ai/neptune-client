@@ -15,53 +15,42 @@
 #
 import random
 import pytest
-from faker import Faker
+import itertools
+from neptune.new.metadata_containers import MetadataContainer
 
-import neptune.new as neptune
-from neptune.new.run import Run
-from neptune.new.project import Project
+from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
 
-from e2e_tests.base import BaseE2ETest
-
-fake = Faker()
+# List of every possible container type pair for instance: "run-run, run-model, model-model-version, ..."
+ALL_CONTAINERS_PAIRS = list(
+    map(
+        lambda containers_pair: "-".join(containers_pair),
+        itertools.product(AVAILABLE_CONTAINERS, AVAILABLE_CONTAINERS),
+    )
+)
 
 
 class TestCopying(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["run", "project"], indirect=True)
+    @pytest.mark.parametrize("containers_pair", ALL_CONTAINERS_PAIRS, indirect=True)
     @pytest.mark.parametrize(
         "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
     )
-    def test_copy_project_to_container(self, container: Run, value, environment):
-        project = neptune.init_project(name=environment.project)
+    def test_copy(
+        self,
+        containers_pair: (MetadataContainer, MetadataContainer),
+        value,
+        environment,
+    ):
+        container_a, container_b = containers_pair
 
         src, destination, destination2 = self.gen_key(), self.gen_key(), self.gen_key()
 
-        project[src] = value
-        project.sync()
+        container_a[src] = value
+        container_a.sync()
 
-        container[destination] = project[src]
-        container[destination2] = container[destination]
-        container.sync()
+        container_b[destination] = container_a[src]
+        container_b[destination2] = container_b[destination]
+        container_b.sync()
 
-        assert project[src].fetch() == value
-        assert container[destination].fetch() == value
-        assert container[destination2].fetch() == value
-
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    @pytest.mark.parametrize(
-        "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
-    )
-    def test_copy_run_to_container(self, container: Project, value, environment):
-        run = neptune.init_run(project=environment.project)
-        src, destination, destination2 = self.gen_key(), self.gen_key(), self.gen_key()
-
-        container[src] = value
-        container.sync()
-
-        run[destination] = container[src]
-        run[destination2] = run[destination]
-        run.sync()
-
-        assert container[src].fetch() == value
-        assert run[destination].fetch() == value
-        assert run[destination2].fetch() == value
+        assert container_a[src].fetch() == value
+        assert container_b[destination].fetch() == value
+        assert container_b[destination2].fetch() == value
