@@ -28,6 +28,7 @@ import neptune.new as neptune
 class RandomDataset(Dataset):
     def __init__(self, size, length):
         self.len = length
+        # pylint: disable=no-member
         self.data = torch.randn(length, size)
 
     def __getitem__(self, index):
@@ -38,24 +39,25 @@ class RandomDataset(Dataset):
 
 
 class BoringModel(LightningModule):
+    # pylint: disable=abstract-method
     def __init__(self):
         super().__init__()
         self.layer = torch.nn.Linear(32, 2)
 
-    def forward(self, x):
-        return self.layer(x)
+    def forward(self, *args, **kwargs):
+        return self.layer(*args, **kwargs)
 
-    def training_step(self, batch, batch_idx):
-        loss = self(batch).sum()
+    def training_step(self, *args, **kwargs):
+        loss = self(*args, **kwargs).sum()
         self.log("train/loss", loss)
         return {"loss": loss}
 
-    def validation_step(self, batch, batch_idx):
-        loss = self(batch).sum()
+    def validation_step(self, *args, **kwargs):
+        loss = self(*args, **kwargs).sum()
         self.log("valid/loss", loss)
 
-    def test_step(self, batch, batch_idx):
-        loss = self(batch).sum()
+    def test_step(self, *args, **kwargs):
+        loss = self(*args, **kwargs).sum()
         self.log("test/loss", loss)
 
     def configure_optimizers(self):

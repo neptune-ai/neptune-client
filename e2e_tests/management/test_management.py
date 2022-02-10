@@ -31,7 +31,7 @@ from e2e_tests.utils import a_project_name, Environment
 
 @pytest.mark.management
 class TestManagement(BaseE2ETest):
-    def test_standard_scenario(self, environment: "Environment"):
+    def test_standard_scenario(self, environment: Environment):
         project_name, project_key = a_project_name(project_slug=f"{fake.slug()}-mgmt")
         project_identifier = normalize_project_name(
             name=project_name, workspace=environment.workspace

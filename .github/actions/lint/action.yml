@@ -18,5 +18,5 @@ runs:
         shell: bash
 
       - name: Lint
-        run: python -m pylint -j 0 -f parseable neptune tests
+        run: python -m pylint -j 0 -f parseable neptune tests e2e_tests
         shell: bash

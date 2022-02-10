@@ -17,8 +17,9 @@ import re
 import json
 from pathlib import Path
 
-import neptune.new as neptune
 from click.testing import CliRunner
+
+import neptune.new as neptune
 from neptune.new.sync import sync
 
 from e2e_tests.base import BaseE2ETest, fake

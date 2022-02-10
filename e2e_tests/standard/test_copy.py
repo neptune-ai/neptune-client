@@ -14,18 +14,17 @@
 # limitations under the License.
 #
 import random
-import pytest
 import itertools
+
+import pytest
+
 from neptune.new.metadata_containers import MetadataContainer
 
 from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
 
-# List of every possible container type pair for instance: "run-run, run-model, model-model-version, ..."
+# List of every possible container type pair for instance: "run-run, run-model, model-model_version, ..."
 ALL_CONTAINERS_PAIRS = list(
-    map(
-        lambda containers_pair: "-".join(containers_pair),
-        itertools.product(AVAILABLE_CONTAINERS, AVAILABLE_CONTAINERS),
-    )
+    map("-".join, itertools.product(AVAILABLE_CONTAINERS, AVAILABLE_CONTAINERS))
 )
 
 
@@ -34,12 +33,7 @@ class TestCopying(BaseE2ETest):
     @pytest.mark.parametrize(
         "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
     )
-    def test_copy(
-        self,
-        containers_pair: (MetadataContainer, MetadataContainer),
-        value,
-        environment,
-    ):
+    def test_copy(self, containers_pair: (MetadataContainer, MetadataContainer), value):
         container_a, container_b = containers_pair
 
         src, destination, destination2 = self.gen_key(), self.gen_key(), self.gen_key()

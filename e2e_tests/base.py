@@ -15,7 +15,6 @@
 #
 __all__ = ["BaseE2ETest", "AVAILABLE_CONTAINERS", "fake"]
 
-import uuid
 import inspect
 
 from faker import Faker

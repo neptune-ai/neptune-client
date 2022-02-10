@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# pylint: disable=redefined-outer-name
 import os
 import time
 
@@ -85,13 +86,11 @@ def initialize_container(container_type, project):
 
 @pytest.fixture(scope="session")
 def container(request, environment):
-    container = initialize_container(
+    exp = initialize_container(
         container_type=request.param, project=environment.project
     )
-
-    yield container
-
-    container.stop()
+    yield exp
+    exp.stop()
 
 
 @pytest.fixture(scope="session")

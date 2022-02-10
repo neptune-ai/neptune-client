@@ -30,11 +30,11 @@ from datetime import datetime
 from collections import namedtuple
 from contextlib import contextmanager
 
-import neptune.new as neptune
-
 import numpy
 from PIL import Image
 from PIL.PngImagePlugin import PngImageFile
+
+import neptune.new as neptune
 
 
 def _remove_file_if_exists(filepath):
