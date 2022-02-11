@@ -96,27 +96,29 @@ class TestMultiple(BaseE2ETest):
 
         assert len(container[namespace].fetch()) == number_of_reinitialized + 1
 
-    # @pytest.mark.parametrize("container", ["run", "model", "model_version"], indirect=True)
-    # def test_multiple_threads(self, container: neptune.Run, environment):
-    #     number_of_reinitialized = 10
-    #     namespace = self.gen_key()
-    #
-    #     container[f"{namespace}/{fake.unique.word()}"] = fake.color()
-    #
-    #     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
-    #         futures = [
-    #             executor.submit(
-    #                 store_in_container,
-    #                 sys_id=container["sys/id"].fetch(),
-    #                 container_type=container.container_type.value,
-    #                 project=environment.project,
-    #                 destination=f"{namespace}/{fake.unique.word()}",
-    #             )
-    #             for _ in range(number_of_reinitialized)
-    #         ]
-    #         for future in concurrent.futures.as_completed(futures):
-    #             _ = future.result()
-    #
-    #     container.sync()
-    #
-    #     assert len(container[namespace].fetch()) == number_of_reinitialized + 1
+    @pytest.mark.parametrize(
+        "container", ["run", "model", "model_version"], indirect=True
+    )
+    def test_multiple_threads(self, container: neptune.Run, environment):
+        number_of_reinitialized = 10
+        namespace = self.gen_key()
+
+        container[f"{namespace}/{fake.unique.word()}"] = fake.color()
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as executor:
+            futures = [
+                executor.submit(
+                    store_in_container,
+                    sys_id=container["sys/id"].fetch(),
+                    container_type=container.container_type.value,
+                    project=environment.project,
+                    destination=f"{namespace}/{fake.unique.word()}",
+                )
+                for _ in range(number_of_reinitialized)
+            ]
+            for future in concurrent.futures.as_completed(futures):
+                _ = future.result()
+
+        container.sync()
+
+        assert len(container[namespace].fetch()) == number_of_reinitialized + 1
