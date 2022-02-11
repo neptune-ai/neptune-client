@@ -508,6 +508,26 @@ class NeptuneBackendMock(NeptuneBackend):
     ) -> str:
         return f"offline/{run_id}"
 
+    def get_project_url(
+        self, project_id: str, workspace: str, project_name: str
+    ) -> str:
+        return f"offline/{project_id}"
+
+    def get_model_url(
+        self, model_id: str, workspace: str, project_name: str, sys_id: str
+    ) -> str:
+        return f"offline/{model_id}"
+
+    def get_model_version_url(
+        self,
+        model_version_id: str,
+        model_id: str,
+        workspace: str,
+        project_name: str,
+        sys_id: str,
+    ) -> str:
+        return f"offline/{model_version_id}"
+
     def _get_attribute_values(self, value_dict, path_prefix: List[str]):
         assert isinstance(value_dict, dict)
         for k, value in value_dict.items():

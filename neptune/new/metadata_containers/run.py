@@ -16,8 +16,6 @@
 import threading
 from typing import Any, Dict, Optional, Union
 
-import click
-
 from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -136,14 +134,16 @@ class Run(MetadataContainer):
 
     def get_run_url(self) -> str:
         """Returns the URL the run can be accessed with in the browser"""
-        return self._backend.get_run_url(
-            self._id, self._workspace, self._project_name, self._sys_id
-        )
+        return self._url
 
-    def _startup(self, debug_mode):
-        if not debug_mode:
-            click.echo(self.get_run_url())
-        super()._startup(debug_mode)
+    @property
+    def _url(self) -> str:
+        return self._backend.get_run_url(
+            run_id=self._id,
+            workspace=self._workspace,
+            project_name=self._project_name,
+            sys_id=self._sys_id,
+        )
 
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.
