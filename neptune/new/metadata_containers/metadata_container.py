@@ -156,7 +156,7 @@ class MetadataContainer(AbstractContextManager):
         raise NotImplementedError
 
     @property
-    @abc.abstractmethod
+    # @abc.abstractmethod
     def _url(self) -> str:
         raise NotImplementedError
 
