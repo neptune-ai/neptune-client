@@ -548,7 +548,7 @@ What should I do?
         super().__init__(message.format(host=host, **STYLES))
 
 
-class SSLError(NeptuneException):
+class NeptuneSSLVerificationError(NeptuneException):
     def __init__(self):
         message = """
 {h1}
