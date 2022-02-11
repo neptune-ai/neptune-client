@@ -550,9 +550,54 @@ What should I do?
 
 class SSLError(NeptuneException):
     def __init__(self):
+        message = """
+{h1}
+----NeptuneSSLVerificationError-----------------------------------------------------------------------
+{end}
+
+Neptune client was unable to verify your SSL Certificate.
+ 
+{bold}What could go wrong?{end}
+    - You are behind a proxy that inspects traffic to Neptune servers.
+        - Contact your network administrator
+    - Your on-prem installation’s SSL/TLS certificate is not recognized due to a custom Certificate Authority (CA).
+        - To check run the following command in terminal:
+            {bash}curl https://<your_domain>/api/backend/echo {end}
+        - Where <your_domain> is the address that you use to access Neptune UI i.e. abc.com
+        - Contact your network administrator if you get the following output:
+            {fail}'curl: (60) server certificate verification failed...'{end}
+    - Your `machine software is not up-to-date. <https://docs.neptune.ai/api-reference/environment-variables#neptune_allow_self_signed_certificate>`
+        - Minimal OS requirements:
+            - Windows >= XP SP3 
+            - macOS >= 10.12.1
+            - Ubuntu >= 12.04
+            - Debian >= 8 
+ 
+{bold}What can I do?{end}
+You can manually configure Neptune to skip all SLL checks. To do that 
+set the NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE environment variable to 'TRUE'. 
+{bold}Note that might mean your connection is less secure{end}.
+ 
+Linux/Unix
+In your terminal run: 
+    {bash}export NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
+
+Windows
+In your terminal run: 
+    {bash}set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
+
+Jupyter notebook
+In your code cell:
+    {bash}%env NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
+
+You may also want to check the following docs pages:
+    - https://docs.neptune.ai/api-reference/environment-variables#neptune_allow_self_signed_certificate
+
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help 
+"""
         super().__init__(
-            "SSL certificate validation failed. Set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE "
-            "environment variable to accept self-signed certificates."
+            message.format(**STYLES)
         )
 
 
