@@ -10,7 +10,7 @@ runs:
           python-version: 3.9
 
       - name: Install dependencies
-        run: pip install -r requirements.txt -r requirements/test_requirements.txt
+        run: pip install -r requirements.txt -r requirements/e2e_requirements.txt
         shell: bash
 
       - name: Run pre-commit
