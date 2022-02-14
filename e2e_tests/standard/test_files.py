@@ -13,6 +13,7 @@ from e2e_tests.utils import tmp_context
 from neptune.new.attribute_container import AttributeContainer
 from neptune.new.internal.backends.api_model import MultipartConfig, OptionalFeatures
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.types import FileSet
 
 
 class TestUpload(BaseE2ETest):
@@ -176,6 +177,38 @@ class TestUpload(BaseE2ETest):
                         content = file.read()
                         assert len(content) == len(expected_content)
                         assert content == expected_content
+
+    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    def test_reset_fileset(self, container):
+        key = self.gen_key()
+        filename1 = fake.file_name()
+        filename2 = fake.file_name()
+        content1 = fake.sentence(nb_words=1024).encode()
+        content2 = fake.sentence(nb_words=1024).encode()
+        downloaded_filename = fake.file_name()
+
+        with tmp_context():
+            # create file1 and file2
+            with open(filename1, "wb") as file1, open(filename2, "wb") as file2:
+                file1.write(content1)
+                file2.write(content2)
+
+            # upload file1 to initial fileset
+            container[key].upload_files(filename1)
+
+            # then replace [file1] set with [file2] to the same key
+            container.sync()
+            container[key] = FileSet([filename2])
+
+            # check if there's content of SECOND uploaded file
+            container.sync()
+            container[key].download("downloaded1.zip")
+            with ZipFile("downloaded1.zip") as zipped:
+                assert set(zipped.namelist()) == {filename2, "/"}
+                with zipped.open(filename2, "r") as file:
+                    content = file.read()
+                    assert len(content) == len(content2)
+                    assert content == content2
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
