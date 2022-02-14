@@ -392,7 +392,10 @@ class InactiveRunException(InactiveContainerException):
 
 class InactiveModelException(InactiveContainerException):
     resume_info = """
-    TODO: NPT-11349"""
+    - Resume the {container_type} to continue logging to it.
+    - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
+    you can resume a {container_type} in read-only mode:
+    https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
 
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.MODEL)
@@ -400,7 +403,10 @@ class InactiveModelException(InactiveContainerException):
 
 class InactiveModelVersionException(InactiveContainerException):
     resume_info = """
-    TODO: NPT-11349"""
+    - Resume the {container_type} to continue logging to it.
+    - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
+    you can resume a {container_type} in read-only mode:
+    https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
 
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.MODEL_VERSION)
@@ -618,6 +624,30 @@ Please install neptune-client{required_version}
         )
 
 
+class NeptuneMissingRequiredInitParameter(NeptuneWrongInitParametersException):
+    def __init__(
+        self,
+        called_function: str,
+        parameter_name: str,
+    ):
+        message = """
+{h1}
+----NeptuneMissingRequiredInitParameter---------------------------------------
+{end}
+{python}neptune.{called_function}(){end} invocation was missing {parameter_name}.
+If you want to create a new object using {called_function}, {parameter_name} is required.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(
+            message.format(
+                called_function=called_function,
+                parameter_name=parameter_name,
+                **STYLES,
+            )
+        )
+
+
 class CannotResolveHostname(NeptuneException):
     def __init__(self, host):
         message = """
@@ -770,18 +800,41 @@ You may also want to check the following docs pages:
 class NeptuneOfflineModeChangeStageException(NeptuneOfflineModeException):
     def __init__(self):
         message = """
-        TODO: NPT-11349
+{h1}
+----NeptuneOfflineModeChangeStageException---------------------------------------
+{end}
+You cannot change the stage of the model version while in OFFLINE mode.
 """
         super().__init__(message.format(**STYLES))
 
 
 class NeptuneProtectedPathException(NeptuneException):
+    extra_info = ""
+
     def __init__(self, path: str):
         message = """
-        TODO: NPT-11349
+{h1}
+----NeptuneProtectedPathException----------------------------------------------
+{end}
+Field {path} cannot be changed directly.
+{extra_info}
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         self._path = path
-        super().__init__(message.format(**STYLES))
+        super().__init__(
+            message.format(
+                path=path,
+                extra_info=self.extra_info.format(**STYLES),
+                **STYLES,
+            )
+        )
+
+
+class NeptuneCannotChangeStageManually(NeptuneProtectedPathException):
+    extra_info = """
+If you want to change the stage of the model version,
+use the {python}.change_stage(){end} function."""
 
 
 class OperationNotSupported(NeptuneException):

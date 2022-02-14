@@ -102,8 +102,6 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
             init_model_version(version=None, model=None)
-        with self.assertRaises(NeptuneWrongInitParametersException):
-            init_model_version(version="whatever", model="whatever")
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
