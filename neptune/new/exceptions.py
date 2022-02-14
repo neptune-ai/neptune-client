@@ -361,10 +361,13 @@ class InactiveContainerException(NeptuneException):
 ----{cls}----------------------------------------
 {end}
 It seems you are trying to log (or fetch) metadata to a {container_type} that was stopped ({label}).
+
 What should I do?{resume_info}
+
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/api-reference/{container_type}#.stop
     - https://docs.neptune.ai/you-should-know/connection-modes
+
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(
@@ -392,7 +395,8 @@ class InactiveRunException(InactiveContainerException):
 
 class InactiveModelException(InactiveContainerException):
     resume_info = """
-    - Resume the {container_type} to continue logging to it.
+    - Resume the model to continue logging to it:
+    https://docs.neptune.ai/api-reference/neptune#.init_model
     - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
     you can resume a {container_type} in read-only mode:
     https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
@@ -403,7 +407,8 @@ class InactiveModelException(InactiveContainerException):
 
 class InactiveModelVersionException(InactiveContainerException):
     resume_info = """
-    - Resume the {container_type} to continue logging to it.
+    - Resume the model version to continue logging to it:
+    https://docs.neptune.ai/api-reference/neptune#.init_model_version
     - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
     you can resume a {container_type} in read-only mode:
     https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
@@ -834,7 +839,9 @@ Field {path} cannot be changed directly.
 class NeptuneCannotChangeStageManually(NeptuneProtectedPathException):
     extra_info = """
 If you want to change the stage of the model version,
-use the {python}.change_stage(){end} function."""
+use the {python}.change_stage(){end} function:
+    {python}model_version.change_stage("staging"){end}
+"""
 
 
 class OperationNotSupported(NeptuneException):
