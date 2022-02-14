@@ -634,8 +634,8 @@ class NeptuneMissingRequiredInitParameter(NeptuneWrongInitParametersException):
 {h1}
 ----NeptuneMissingRequiredInitParameter---------------------------------------
 {end}
-{python}neptune.{called_function}(){end} invocation was missing {parameter_name}.
-If you want to create a new object using {called_function}, {parameter_name} is required.
+{python}neptune.{called_function}(){end} invocation was missing {python}{parameter_name}{end}.
+If you want to create a new object using {python}{called_function}{end}, {python}{parameter_name}{end} is required.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
