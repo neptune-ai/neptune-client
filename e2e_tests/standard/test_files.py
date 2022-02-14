@@ -1,5 +1,8 @@
 import os
+import random
 import uuid
+from itertools import product
+from pathlib import Path
 from zipfile import ZipFile
 
 import pytest
@@ -8,7 +11,7 @@ from e2e_tests.base import BaseE2ETest
 from e2e_tests.standard.test_base import fake
 from e2e_tests.utils import tmp_context
 from neptune.new.attribute_container import AttributeContainer
-from neptune.new.internal.backends.api_model import OptionalFeatures, MultipartConfig
+from neptune.new.internal.backends.api_model import MultipartConfig, OptionalFeatures
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 
 
@@ -38,7 +41,7 @@ class TestUpload(BaseE2ETest):
         downloaded_filename = fake.file_name()
 
         with tmp_context():
-            # create 10MB file
+            # create file_size file
             with open(filename, "wb") as file:
                 file.write(b"\0" * file_size)
             container[key].upload(filename)
@@ -55,7 +58,7 @@ class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_fileset(self, container: AttributeContainer):
         key = self.gen_key()
-        large_filesize = 10 * 2 ** 20
+        large_filesize = 10 * 2 ** 20  # 10MB
         large_filename = fake.file_name()
         small_files = [
             (f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8"))
@@ -121,3 +124,137 @@ class TestUpload(BaseE2ETest):
                         content = file.read()
                         assert len(content) == len(expected_content)
                         assert content == expected_content
+
+    @staticmethod
+    def _gen_possible_paths():
+        dir_lvl1_names = [fake.word() for _ in range(3)]
+        dir_lvl2_names = [fake.word() for _ in range(3)]
+        dir_lvl3_names = [fake.word() for _ in range(3)]
+        return [
+            "/".join(prod)
+            for prod in product(dir_lvl1_names, dir_lvl2_names, dir_lvl3_names)
+        ]
+
+    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    def test_fileset_nested_structure(self, container: AttributeContainer):
+        key = self.gen_key()
+        possible_paths = self._gen_possible_paths()
+
+        small_files = [
+            (
+                f"{random.choice(possible_paths)}/{uuid.uuid4()}.{fake.file_extension()}",
+                fake.sentence().encode("utf-8"),
+            )
+            for _ in range(100)
+        ]
+
+        with tmp_context():
+            # create dirs
+            for dir_path in possible_paths:
+                path = Path(dir_path)
+                path.mkdir(parents=True)
+            # create  a lot of very small files in different directories
+            for filename, contents in small_files:
+                with open(filename, "wb") as file:
+                    file.write(contents)
+
+            small_filenames = [filename for filename, _ in small_files]
+            # make sure there are no duplicates
+            assert len({*small_filenames}) == len(small_files)
+
+            # when small files as fileset uploaded
+            container[key].upload_files(".")
+
+            # then check if everything will be downloaded
+            container.sync()
+            container[key].download("downloaded1.zip")
+
+            with ZipFile("downloaded1.zip") as zipped:
+                assert {"/", *small_filenames}.issubset(set(zipped.namelist()))
+                for filename, expected_content in small_files:
+                    with zipped.open(filename, "r") as file:
+                        content = file.read()
+                        assert len(content) == len(expected_content)
+                        assert content == expected_content
+
+    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("delete_attribute", [True, False])
+    def test_single_file_override(
+        self, container: AttributeContainer, delete_attribute: bool
+    ):
+        key = self.gen_key()
+        filename1 = fake.file_name()
+        filename2 = fake.file_name()
+        content1 = fake.sentence(nb_words=1024).encode()
+        content2 = fake.sentence(nb_words=1024).encode()
+        downloaded_filename = fake.file_name()
+
+        with tmp_context():
+            # create file1 and file2
+            with open(filename1, "wb") as file1, open(filename2, "wb") as file2:
+                file1.write(content1)
+                file2.write(content2)
+
+            # upload file1 to key
+            container[key].upload(filename1)
+
+            if delete_attribute:
+                # delete attribute
+                del container[key]
+                # make sure that attribute does not exist
+                container.sync()
+                with pytest.raises(AttributeError):
+                    container[key].download(downloaded_filename)
+
+            # then upload file2 to the same key
+            container[key].upload(filename2)
+
+            # check if there's content of SECOND uploaded file
+            container.sync()
+            container[key].download(downloaded_filename)
+            with open(downloaded_filename, "rb") as file:
+                content = file.read()
+                assert len(content) == len(content2)
+                assert content == content2
+
+    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("delete_attribute", [True, False])
+    def test_fileset_file_override(
+        self, container: AttributeContainer, delete_attribute: bool
+    ):
+        key = self.gen_key()
+        filename = fake.file_name()
+        content1 = fake.sentence(nb_words=1024).encode()
+        content2 = fake.sentence(nb_words=1024).encode()
+
+        with tmp_context():
+            # create file
+            with open(filename, "wb") as file1:
+                file1.write(content1)
+            # upload file1 to key
+            container[key].upload_files([filename])
+
+            if delete_attribute:
+                # delete attribute
+                del container[key]
+                # make sure that attribute does not exist
+                container.sync()
+                with pytest.raises(AttributeError):
+                    container[key].download("failed_download.zip")
+
+            # override file content
+            with open(filename, "wb") as file:
+                file.write(content2)
+            # then upload file2 to the same key
+            container[key].upload_files([filename])
+
+            # check if there's content of ONLY SECOND uploaded file
+            container.sync()
+            container[key].download("downloaded1.zip")
+
+            with ZipFile("downloaded1.zip") as zipped:
+                assert set(zipped.namelist()) == {filename, "/"}
+                with zipped.open(filename, "r") as file:
+                    content = file.read()
+                    assert len(content) == len(content2)
+                    assert content == content2
