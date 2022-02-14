@@ -185,7 +185,6 @@ class TestUpload(BaseE2ETest):
         filename2 = fake.file_name()
         content1 = fake.sentence(nb_words=1024).encode()
         content2 = fake.sentence(nb_words=1024).encode()
-        downloaded_filename = fake.file_name()
 
         with tmp_context():
             # create file1 and file2
