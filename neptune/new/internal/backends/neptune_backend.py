@@ -275,6 +275,29 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
+    def get_project_url(
+        self, project_id: str, workspace: str, project_name: str
+    ) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_model_url(
+        self, model_id: str, workspace: str, project_name: str, sys_id: str
+    ) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_model_version_url(
+        self,
+        model_version_id: str,
+        model_id: str,
+        workspace: str,
+        project_name: str,
+        sys_id: str,
+    ) -> str:
+        pass
+
+    @abc.abstractmethod
     def fetch_atom_attribute_values(
         self, container_id: str, container_type: ContainerType, path: List[str]
     ) -> List[Tuple[str, AttributeType, Any]]:

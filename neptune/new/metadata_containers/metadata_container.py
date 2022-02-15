@@ -155,6 +155,11 @@ class MetadataContainer(AbstractContextManager):
     def _docs_url_stop(self) -> str:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def _url(self) -> str:
+        raise NotImplementedError
+
     def _get_subpath_suggestions(
         self, path_prefix: str = None, limit: int = 1000
     ) -> List[str]:
@@ -338,7 +343,14 @@ class MetadataContainer(AbstractContextManager):
     def _get_root_handler(self):
         return Handler(self, "")
 
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
+        return self._url
+
     def _startup(self, debug_mode):
+        if not debug_mode:
+            click.echo(self.get_url())
+
         self.start()
 
         if not debug_mode:

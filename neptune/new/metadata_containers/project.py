@@ -78,6 +78,14 @@ class Project(MetadataContainer):
     def _label(self) -> str:
         return f"{self._workspace}/{self._project_name}"
 
+    @property
+    def _url(self) -> str:
+        return self._backend.get_project_url(
+            project_id=self._id,
+            workspace=self._workspace,
+            project_name=self._project_name,
+        )
+
     # pylint:disable=redefined-builtin
     def fetch_runs_table(
         self,
