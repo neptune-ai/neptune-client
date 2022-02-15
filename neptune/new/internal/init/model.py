@@ -22,8 +22,8 @@ from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
     NeptuneWrongInitParametersException,
     NeptuneException,
-    NeptuneExperimentCreationConflict,
-    NeptuneKeyAlreadyExistsError,
+    NeptuneObjectCreationConflict,
+    NeptuneModelKeyAlreadyExistsError,
 )
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
@@ -98,9 +98,9 @@ def init_model(
 
         try:
             api_model = backend.create_model(project_id=project_obj.id, key=key)
-        except NeptuneExperimentCreationConflict as e:
+        except NeptuneObjectCreationConflict as e:
             base_url = backend.get_display_address()
-            raise NeptuneKeyAlreadyExistsError(
+            raise NeptuneModelKeyAlreadyExistsError(
                 model_key=key,
                 models_tab_url=f"{base_url}/{project_obj.workspace}/{project_obj.name}/models",
             ) from e

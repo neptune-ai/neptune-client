@@ -39,7 +39,7 @@ from neptune.new.exceptions import (
     MetadataContainerNotFound,
     ProjectNotFoundWithSuggestions,
     ContainerUUIDNotFound,
-    NeptuneExperimentCreationConflict,
+    NeptuneObjectCreationConflict,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -399,7 +399,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_id)
         except HTTPConflict as e:
-            raise NeptuneExperimentCreationConflict() from e
+            raise NeptuneObjectCreationConflict() from e
 
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:

@@ -1133,15 +1133,15 @@ or the Neptune support directly (support@neptune.ai) about the upcoming updates.
         super().__init__(message)
 
 
-class NeptuneExperimentCreationConflict(NeptuneException):
+class NeptuneObjectCreationConflict(NeptuneException):
     pass
 
 
-class NeptuneKeyAlreadyExistsError(NeptuneExperimentCreationConflict):
+class NeptuneModelKeyAlreadyExistsError(NeptuneObjectCreationConflict):
     def __init__(self, model_key, models_tab_url):
         message = """
 {h1}
-----NeptuneKeyAlreadyExistsError---------------------------------------------------
+----NeptuneModelKeyAlreadyExistsError---------------------------------------------------
 {end}
 A model with the provided key ({model_key}) already exists in this project. A model key has to be unique
 within the project.
