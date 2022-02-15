@@ -1152,6 +1152,29 @@ class HostedNeptuneBackend(NeptuneBackend):
         base_url = self.get_display_address()
         return f"{base_url}/{workspace}/{project_name}/e/{sys_id}"
 
+    def get_project_url(
+        self, project_id: str, workspace: str, project_name: str
+    ) -> str:
+        base_url = self.get_display_address()
+        return f"{base_url}/{workspace}/{project_name}/"
+
+    def get_model_url(
+        self, model_id: str, workspace: str, project_name: str, sys_id: str
+    ) -> str:
+        base_url = self.get_display_address()
+        return f"{base_url}/{workspace}/{project_name}/m/{sys_id}"
+
+    def get_model_version_url(
+        self,
+        model_version_id: str,
+        model_id: str,
+        workspace: str,
+        project_name: str,
+        sys_id: str,
+    ) -> str:
+        base_url = self.get_display_address()
+        return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
+
     @staticmethod
     def _get_all_items(get_portion, step):
         items = []

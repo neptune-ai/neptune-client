@@ -18,9 +18,9 @@ import threading
 from typing import Optional
 
 from neptune.new.exceptions import (
-    NeptuneWrongInitParametersException,
     NeedExistingModelVersionForReadOnlyMode,
     NeptuneException,
+    NeptuneMissingRequiredInitParameter,
 )
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
@@ -61,12 +61,6 @@ def init_model_version(
     if mode == Mode.OFFLINE:
         raise NeptuneException("Model can't be initialized in OFFLINE mode")
 
-    # verify exclusive arguments
-    if version is not None and model is not None:
-        raise NeptuneWrongInitParametersException(
-            "NPT-11349 required one of: version or model"
-        )
-
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
@@ -77,6 +71,7 @@ def init_model_version(
     project = f"{project_obj.workspace}/{project_obj.name}"
 
     if version is not None:
+        # version (resume existing model_version) has priority over model (creating a new model_version)
         version = QualifiedName(project + "/" + version)
         api_model_version = backend.get_metadata_container(
             container_id=version, container_type=ModelVersion.container_type
@@ -93,8 +88,9 @@ def init_model_version(
             project_id=project_obj.id, model_id=api_model.id
         )
     else:
-        raise NeptuneWrongInitParametersException(
-            "NPT-11349 required one of: version or model"
+        raise NeptuneMissingRequiredInitParameter(
+            parameter_name="model",
+            called_function="init_model_version",
         )
 
     model_lock = threading.RLock()

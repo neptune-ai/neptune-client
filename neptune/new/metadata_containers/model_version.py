@@ -42,6 +42,16 @@ class ModelVersion(MetadataContainer):
     def _label(self) -> str:
         return self._sys_id
 
+    @property
+    def _url(self) -> str:
+        return self._backend.get_model_version_url(
+            model_version_id=self._id,
+            workspace=self._workspace,
+            project_name=self._project_name,
+            sys_id=self._sys_id,
+            model_id=self["sys/model_id"].fetch(),
+        )
+
     def change_stage(self, stage: str):
         mapped_stage = ModelVersionStage(stage)
 

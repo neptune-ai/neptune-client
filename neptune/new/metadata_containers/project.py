@@ -78,6 +78,14 @@ class Project(MetadataContainer):
     def _label(self) -> str:
         return f"{self._workspace}/{self._project_name}"
 
+    @property
+    def _url(self) -> str:
+        return self._backend.get_project_url(
+            project_id=self._id,
+            workspace=self._workspace,
+            project_name=self._project_name,
+        )
+
     # pylint:disable=redefined-builtin
     def fetch_runs_table(
         self,
@@ -112,7 +120,7 @@ class Project(MetadataContainer):
                 Only experiments that have all specified tags will match this criterion.
 
         Returns:
-            ``RunsTable``: object containing experiments matching the specified criteria.
+            ``Table``: object containing experiments matching the specified criteria.
 
             Use `.to_pandas()` to convert it to Pandas `DataFrame`.
 

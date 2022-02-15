@@ -42,8 +42,23 @@ class Model(MetadataContainer):
     def _label(self) -> str:
         return self._sys_id
 
+    @property
+    def _url(self) -> str:
+        return self._backend.get_model_url(
+            model_id=self._id,
+            workspace=self._workspace,
+            project_name=self._project_name,
+            sys_id=self._sys_id,
+        )
+
     def fetch_model_versions_table(self) -> Table:
-        """TODO: NPT-11349"""
+        """Retrieve all model versions of the given model.
+
+        Returns:
+            ``Table``: object containing experiments matching the specified criteria.
+
+            Use `.to_pandas()` to convert it to Pandas `DataFrame`.
+        """
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,

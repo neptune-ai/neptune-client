@@ -98,10 +98,6 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
             init_model(model=None, key=None)
-        with self.assertRaises(NeptuneWrongInitParametersException):
-            init_model(model="whatever", key="whatever")
-        with self.assertRaises(NeptuneWrongInitParametersException):
-            init_model(model="whatever", name="whatever")
 
     def test_name_parameter(self):
         with init_model(key="TRY", name="some_name") as exp:

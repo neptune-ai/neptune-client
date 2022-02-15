@@ -32,6 +32,7 @@ from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
     IntAttribute,
+    StringAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.container_type import ContainerType
@@ -67,11 +68,18 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("some/variable", AttributeType.INT)],
+        new=lambda _, _uuid, _type: [
+            Attribute("some/variable", AttributeType.INT),
+            Attribute("sys/model_id", AttributeType.STRING),
+        ],
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_int_attribute",
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
+    )
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
+        new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
     )
     def test_read_only_mode(self):
         exp = init_model_version(mode="read-only", version="whatever")
@@ -92,25 +100,59 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
+        new=lambda _, _uuid, _type: [
+            Attribute("test", AttributeType.STRING),
+            Attribute("sys/model_id", AttributeType.STRING),
+        ],
+    )
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
+        new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
     )
     def test_resume(self):
         with init_model_version(flush_period=0.5, version="whatever") as exp:
             self.assertEqual(exp._id, AN_API_MODEL_VERSION.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 
-    def test_wrong_parameters(self):
-        with self.assertRaises(NeptuneWrongInitParametersException):
-            init_model_version(version=None, model=None)
-        with self.assertRaises(NeptuneWrongInitParametersException):
-            init_model_version(version="whatever", model="whatever")
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+        new=lambda _, _uuid, _type: [Attribute("sys/model_id", AttributeType.STRING)],
+    )
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
+        new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
+    )
+    def test_sync_mode(self):
+        AbstractExperimentTestMixin.test_sync_mode(self)
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("sys/stage", AttributeType.STRING)],
+        new=lambda _, _uuid, _type: [Attribute("sys/model_id", AttributeType.STRING)],
+    )
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
+        new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
+    )
+    def test_async_mode(self):
+        AbstractExperimentTestMixin.test_async_mode(self)
+
+    def test_wrong_parameters(self):
+        with self.assertRaises(NeptuneWrongInitParametersException):
+            init_model_version(version=None, model=None)
+
+    @patch(
+        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
+        new=lambda _, _uuid, _type: [
+            Attribute("sys/stage", AttributeType.STRING),
+            Attribute("sys/model_id", AttributeType.STRING),
+        ],
     )
     def test_change_stage(self):
-        exp = self.call_init()
+        with patch(
+            "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
+            new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
+        ):
+            exp = self.call_init()
         exp.change_stage(stage="production")
 
         self.assertEqual("production", exp["sys/stage"].fetch())
