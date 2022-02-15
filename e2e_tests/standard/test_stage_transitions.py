@@ -41,3 +41,9 @@ class TestStageTransitions(BaseE2ETest):
         container.sync()
 
         assert container["sys/stage"].fetch() == "none"
+
+    @pytest.mark.parametrize("container", ["model_version"], indirect=True)
+    def test_fail_on_unknown_stage_value(self, container: ModelVersion):
+        with pytest.raises(ValueError):
+            container.change_stage("unknown")
+            container.sync()

@@ -108,7 +108,6 @@ class TestReinitialization(BaseE2ETest):
         container.sync()
         container.stop()
 
-        # pylint: disable=protected-access
         reinitialized = reinitialize_container(
             sys_id=sys_id,
             container_type=container.container_type.value,

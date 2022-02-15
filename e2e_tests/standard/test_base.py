@@ -222,5 +222,8 @@ class TestFetchTable(BaseE2ETest):
             key=lambda r: r.get_attribute_value("sys/id"),
         )
         assert len(versions_table) == versions_to_initialize
-        assert versions_table[0].get_attribute_value("sys/id") == f"{model_sys_id}-1"
-        assert versions_table[1].get_attribute_value("sys/id") == f"{model_sys_id}-2"
+        for index in range(versions_to_initialize):
+            assert (
+                versions_table[index].get_attribute_value("sys/id")
+                == f"{model_sys_id}-{index + 1}"
+            )

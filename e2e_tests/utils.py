@@ -19,11 +19,13 @@ __all__ = [
     "a_project_name",
     "a_key",
     "Environment",
+    "initialize_container",
     "reinitialize_container",
 ]
 
 import io
 import os
+import string
 import random
 import tempfile
 from datetime import datetime
@@ -94,13 +96,13 @@ def image_to_png(*, image: Image) -> PngImageFile:
     return PngImageFile(png_buf)
 
 
-def a_key(name: str):
-    return "".join(random.choices(population=name.replace("-", ""), k=10)).upper()
+def a_key():
+    return "".join(random.choices(string.ascii_uppercase, k=10))
 
 
 def a_project_name(project_slug: str):
     project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
-    project_key = a_key(project_name)
+    project_key = a_key()
 
     return project_name, project_key
 
@@ -109,6 +111,26 @@ Environment = namedtuple(
     "Environment",
     ["workspace", "project", "user_token", "admin_token", "admin", "user"],
 )
+
+
+def initialize_container(container_type, project):
+    if container_type == "project":
+        return neptune.init_project(name=project)
+
+    if container_type == "run":
+        return neptune.init_run(project=project)
+
+    if container_type == "model":
+        return neptune.init_model(key=a_key(), project=project)
+
+    if container_type == "model_version":
+        model = neptune.init_model(key=a_key(), project=project)
+        model_sys_id = model["sys/id"].fetch()
+        model.stop()
+
+        return neptune.init_model_version(model=model_sys_id, project=project)
+
+    raise NotImplementedError(container_type)
 
 
 def reinitialize_container(sys_id: str, container_type: str, project: str):

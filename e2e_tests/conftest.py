@@ -23,9 +23,8 @@ import pytest
 
 from neptune.management.internal.utils import normalize_project_name
 from neptune.management import create_project, add_project_member
-import neptune.new as neptune
 
-from e2e_tests.utils import a_project_name, a_key, Environment
+from e2e_tests.utils import initialize_container, a_project_name, Environment
 
 fake = Faker()
 
@@ -64,24 +63,6 @@ def environment():
         admin=os.getenv("ADMIN_USERNAME"),
         user=user,
     )
-
-
-def initialize_container(container_type, project):
-    if container_type == "project":
-        return neptune.init_project(name=project)
-
-    if container_type == "run":
-        return neptune.init_run(project=project)
-
-    if container_type == "model":
-        return neptune.init_model(key=a_key(fake.slug()), project=project)
-
-    if container_type == "model_version":
-        model = neptune.init_model(key=a_key(fake.slug()), project=project)
-        model_sys_id = model["sys/id"].fetch()
-        model.stop()
-
-        return neptune.init_model_version(model=model_sys_id, project=project)
 
 
 @pytest.fixture(scope="session")
