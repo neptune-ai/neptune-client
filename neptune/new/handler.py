@@ -29,7 +29,10 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.exceptions import NeptuneProtectedPathException, MissingFieldException
+from neptune.new.exceptions import (
+    MissingFieldException,
+    NeptuneCannotChangeStageManually,
+)
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     verify_type,
@@ -52,8 +55,9 @@ def check_protected_paths(fun):
     @wraps(fun)
     def inner_fun(self: "Handler", *args, **kwargs):
         # pylint: disable=protected-access
-        if self._path in self._PROTECTED_PATHS:
-            raise NeptuneProtectedPathException(self._path)
+        path_protection_exception = self._PROTECTED_PATHS.get(self._path)
+        if path_protection_exception:
+            raise path_protection_exception(self._path)
         return fun(self, *args, **kwargs)
 
     return inner_fun
@@ -61,9 +65,9 @@ def check_protected_paths(fun):
 
 class Handler:
     # paths which can't be modified by client directly
-    _PROTECTED_PATHS = [
-        SYSTEM_STAGE_ATTRIBUTE_PATH,
-    ]
+    _PROTECTED_PATHS = {
+        SYSTEM_STAGE_ATTRIBUTE_PATH: NeptuneCannotChangeStageManually,
+    }
 
     def __init__(self, container: "MetadataContainer", path: str):
         super().__init__()

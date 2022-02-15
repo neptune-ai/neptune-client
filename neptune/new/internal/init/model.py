@@ -20,8 +20,8 @@ from typing import Optional
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
-    NeptuneWrongInitParametersException,
     NeptuneException,
+    NeptuneMissingRequiredInitParameter,
 )
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
@@ -65,12 +65,6 @@ def init_model(
     if mode == Mode.OFFLINE:
         raise NeptuneException("Model can't be initialized in OFFLINE mode")
 
-    # verify exclusive arguments
-    if model is not None and key is not None:
-        raise NeptuneWrongInitParametersException(
-            "NPT-11349 required one of: model or key"
-        )
-
     name = DEFAULT_NAME if model is None and name is None else name
 
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
@@ -83,9 +77,8 @@ def init_model(
     project = f"{project_obj.workspace}/{project_obj.name}"
 
     if model is not None:
-        if name is not None:
-            raise NeptuneWrongInitParametersException("NPT-11349 name only with key")
-
+        # model (resume existing model) has priority over key (creating a new model)
+        #  additional creation parameters (e.g. name) are simply ignored in this scenario
         model = QualifiedName(project + "/" + model)
         api_model = backend.get_metadata_container(
             container_id=model, container_type=Model.container_type
@@ -96,8 +89,9 @@ def init_model(
 
         api_model = backend.create_model(project_id=project_obj.id, key=key)
     else:
-        raise NeptuneWrongInitParametersException(
-            "NPT-11349 required one of: model or key"
+        raise NeptuneMissingRequiredInitParameter(
+            parameter_name="key",
+            called_function="init_model",
         )
 
     model_lock = threading.RLock()

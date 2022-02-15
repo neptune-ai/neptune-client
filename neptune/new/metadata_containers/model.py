@@ -52,7 +52,13 @@ class Model(MetadataContainer):
         )
 
     def fetch_model_versions_table(self) -> Table:
-        """TODO: NPT-11349"""
+        """Retrieve all model versions of the given model.
+
+        Returns:
+            ``Table``: object containing experiments matching the specified criteria.
+
+            Use `.to_pandas()` to convert it to Pandas `DataFrame`.
+        """
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,

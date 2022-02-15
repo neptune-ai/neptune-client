@@ -120,7 +120,7 @@ class Project(MetadataContainer):
                 Only experiments that have all specified tags will match this criterion.
 
         Returns:
-            ``RunsTable``: object containing experiments matching the specified criteria.
+            ``Table``: object containing experiments matching the specified criteria.
 
             Use `.to_pandas()` to convert it to Pandas `DataFrame`.
 
