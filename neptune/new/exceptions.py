@@ -385,8 +385,8 @@ class InactiveRunException(InactiveContainerException):
     resume_info = """
     - Resume the run to continue logging to it:
     https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
-    - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
-    you can resume a {container_type} in read-only mode:
+    - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only,
+    you can resume a run in read-only mode:
     https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
 
     def __init__(self, label: str):
@@ -397,8 +397,8 @@ class InactiveModelException(InactiveContainerException):
     resume_info = """
     - Resume the model to continue logging to it:
     https://docs.neptune.ai/api-reference/neptune#.init_model
-    - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
-    you can resume a {container_type} in read-only mode:
+    - Don't invoke `stop()` on a model that you want to access. If you want to stop monitoring only,
+    you can resume a model in read-only mode:
     https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
 
     def __init__(self, label: str):
@@ -409,8 +409,8 @@ class InactiveModelVersionException(InactiveContainerException):
     resume_info = """
     - Resume the model version to continue logging to it:
     https://docs.neptune.ai/api-reference/neptune#.init_model_version
-    - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
-    you can resume a {container_type} in read-only mode:
+    - Don't invoke `stop()` on a model version that you want to access. If you want to stop monitoring only,
+    you can resume a model version in read-only mode:
     https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
 
     def __init__(self, label: str):
@@ -421,7 +421,7 @@ class InactiveProjectException(InactiveContainerException):
     resume_info = """
     - Initialize connection to the project again to continue logging to it:
     https://docs.neptune.ai/api-reference/neptune#.init_project
-    - Don't invoke `stop()` on a {container_type} that you want to access."""
+    - Don't invoke `stop()` on a project that you want to access."""
 
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.PROJECT)
@@ -640,7 +640,8 @@ class NeptuneMissingRequiredInitParameter(NeptuneWrongInitParametersException):
 ----NeptuneMissingRequiredInitParameter---------------------------------------
 {end}
 {python}neptune.{called_function}(){end} invocation was missing {python}{parameter_name}{end}.
-If you want to create a new object using {python}{called_function}{end}, {python}{parameter_name}{end} is required.
+If you want to create a new object using {python}{called_function}{end}, {python}{parameter_name}{end} is required:
+https://docs.neptune.ai/api-reference/neptune#.{called_function}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -840,8 +841,7 @@ class NeptuneCannotChangeStageManually(NeptuneProtectedPathException):
     extra_info = """
 If you want to change the stage of the model version,
 use the {python}.change_stage(){end} function:
-    {python}model_version.change_stage("staging"){end}
-"""
+    {python}model_version.change_stage("staging"){end}"""
 
 
 class OperationNotSupported(NeptuneException):
