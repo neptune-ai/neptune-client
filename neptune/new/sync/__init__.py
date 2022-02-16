@@ -69,27 +69,27 @@ path_option = click.option(
     default=Path.cwd(),
     callback=get_neptune_path,
     metavar="<location>",
-    help="path to a directory containing a '.neptune' folder with stored runs",
+    help="path to a directory containing a '.neptune' folder with stored objects",
 )
 
 
 @click.command()
 @path_option
 def status(path: Path) -> None:
-    """List synchronized and unsynchronized runs in the given directory. Trashed runs are not listed.
+    """List synchronized and unsynchronized objects in the given directory. Trashed objects are not listed.
 
-    Neptune stores run data on disk in '.neptune' directories. In case a run executes offline
-    or network is unavailable as the run executes, run data can be synchronized
+    Neptune stores object data on disk in '.neptune' directories. In case an object executes offline
+    or network is unavailable as the object executes, object data can be synchronized
     with the server with this command line utility.
 
     Examples:
 
     \b
-    # List synchronized and unsynchronized runs in the current directory
+    # List synchronized and unsynchronized objects in the current directory
     neptune status
 
     \b
-    # List synchronized and unsynchronized runs in directory "foo/bar" without actually syncing
+    # List synchronized and unsynchronized objects in directory "foo/bar" without actually syncing
     neptune status --path foo/bar
     """
 
@@ -105,7 +105,14 @@ def status(path: Path) -> None:
     "runs_names",
     multiple=True,
     metavar="<run-name>",
-    help="run name (workspace/project/short-id or UUID for offline runs) to synchronize.",
+    help="[deprecated] run name (workspace/project/short-id or UUID for offline runs) to synchronize.",
+)
+@click.option(
+    "--object",
+    "object_names",
+    multiple=True,
+    metavar="<object-name>",
+    help="object name (workspace/project/short-id or UUID for offline runs) to synchronize.",
 )
 @click.option(
     "-p",
@@ -115,11 +122,16 @@ def status(path: Path) -> None:
     metavar="project-name",
     help="project name (workspace/project) where offline runs will be sent",
 )
-def sync(path: Path, runs_names: List[str], project_name: Optional[str]):
-    """Synchronizes runs with unsent data with the server.
+def sync(
+    path: Path,
+    runs_names: List[str],
+    object_names: List[str],
+    project_name: Optional[str],
+):
+    """Synchronizes objects with unsent data with the server.
 
-    Neptune stores run data on disk in '.neptune' directories. In case a run executes offline
-    or network is unavailable as the run executes, run data can be synchronized
+    Neptune stores object data on disk in '.neptune' directories. In case a object executes offline
+    or network is unavailable as the run executes, object data can be synchronized
     with the server with this command line utility.
 
     You can list unsynchronized runs with `neptune status`
@@ -127,30 +139,39 @@ def sync(path: Path, runs_names: List[str], project_name: Optional[str]):
     Examples:
 
     \b
-    # Synchronize all runs in the current directory
+    # Synchronize all objects in the current directory
     neptune sync
 
     \b
-    # Synchronize all runs in the given path
+    # Synchronize all objects in the given path
     neptune sync --path foo/bar
 
     \b
     # Synchronize only runs "NPT-42" and "NPT-43" in "workspace/project" in the current directory
-    neptune sync --run workspace/project/NPT-42 --run workspace/project/NPT-43
+    neptune sync --object workspace/project/NPT-42 --object workspace/project/NPT-43
 
     \b
-    # Synchronise all runs in the current directory, sending offline runs to project "workspace/project"
+    # Synchronise all objects in the current directory, sending offline runs to project "workspace/project"
     neptune sync --project workspace/project
 
     \b
     # Synchronize only the offline run with UUID offline/a1561719-b425-4000-a65a-b5efb044d6bb
     # to project "workspace/project"
-    neptune sync --project workspace/project --run offline/a1561719-b425-4000-a65a-b5efb044d6bb
+    neptune sync --project workspace/project --object offline/a1561719-b425-4000-a65a-b5efb044d6bb
     """
 
     sync_runner = SyncRunner(backend=HostedNeptuneBackend(Credentials.from_token()))
 
     if runs_names:
-        sync_runner.sync_selected_runs(path, project_name, runs_names)
+        print("DAUPDUAPIDPOSDDSA")
+        click.echo(
+            "WARNING: --run parameter is deprecated and will be removed in the future, please start using --object"
+        )
+        # prefer object_names, obviously
+        if not object_names:
+            object_names = runs_names
+
+    if object_names:
+        sync_runner.sync_selected_containers(path, project_name, object_names)
     else:
-        sync_runner.sync_all_runs(path, project_name)
+        sync_runner.sync_all_containers(path, project_name)

@@ -45,7 +45,7 @@ from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
     get_project,
     get_qualified_name,
-    is_run_synced,
+    is_container_synced,
     iterate_containers,
     get_metadata_container,
     get_offline_dirs,
@@ -71,7 +71,10 @@ class SyncRunner(AbstractBackendRunner):
         )
 
     def sync_execution(
-        self, execution_path: Path, container_id: str, container_type: ContainerType
+        self,
+        execution_path: Path,
+        container_id: UniqueId,
+        container_type: ContainerType,
     ) -> None:
         disk_queue = DiskQueue(
             dir_path=execution_path,
@@ -109,26 +112,25 @@ class SyncRunner(AbstractBackendRunner):
                         sys.stderr,
                     )
 
-    def sync_all_registered_runs(self, base_path: Path) -> None:
+    def sync_all_registered_containers(self, base_path: Path) -> None:
         async_path = base_path / ASYNC_DIRECTORY
         for container_type, unique_id, path in iterate_containers(async_path):
-            if not is_run_synced(path):
+            if not is_container_synced(path):
                 run = get_metadata_container(
+                    backend=self._backend,
                     container_id=unique_id,
                     container_type=container_type,
-                    backend=self._backend,
                 )
                 if run:
                     self.sync_run(run_path=path, run=run)
 
-    def sync_selected_registered_runs(
-        self, base_path: Path, qualified_runs_names: Sequence[QualifiedName]
+    def sync_selected_registered_containers(
+        self, base_path: Path, qualified_container_names: Sequence[QualifiedName]
     ) -> None:
-        for name in qualified_runs_names:
+        for name in qualified_container_names:
             run = get_metadata_container(
-                container_id=name,
-                container_type=ContainerType.RUN,
                 backend=self._backend,
+                container_id=name,
             )
             if run:
                 run_path = (
@@ -220,25 +222,30 @@ class SyncRunner(AbstractBackendRunner):
                 base_path, project, offline_dirs
             )
             offline_runs_names = [get_qualified_name(exp) for exp in registered_runs]
-            self.sync_selected_registered_runs(base_path, offline_runs_names)
+            self.sync_selected_registered_containers(base_path, offline_runs_names)
 
-    def sync_selected_runs(
-        self, base_path: Path, project_name: Optional[str], runs_names: Sequence[str]
+    def sync_selected_containers(
+        self,
+        base_path: Path,
+        project_name: Optional[str],
+        container_names: Sequence[str],
     ) -> None:
-        other_runs_names = [
-            name for name in runs_names if not name.startswith(OFFLINE_NAME_PREFIX)
+        non_offline_container_names = [
+            QualifiedName(name)
+            for name in container_names
+            if not name.startswith(OFFLINE_NAME_PREFIX)
         ]
-        self.sync_selected_registered_runs(base_path, other_runs_names)
+        self.sync_selected_registered_containers(base_path, non_offline_container_names)
 
         offline_dirs = [
             UniqueId(name[len(OFFLINE_NAME_PREFIX) :])
-            for name in runs_names
+            for name in container_names
             if name.startswith(OFFLINE_NAME_PREFIX)
         ]
         self.sync_offline_runs(base_path, project_name, offline_dirs)
 
-    def sync_all_runs(self, base_path: Path, project_name: Optional[str]) -> None:
-        self.sync_all_registered_runs(base_path)
+    def sync_all_containers(self, base_path: Path, project_name: Optional[str]) -> None:
+        self.sync_all_registered_containers(base_path)
 
         offline_dirs = get_offline_dirs(base_path)
         self.sync_offline_runs(base_path, project_name, offline_dirs)

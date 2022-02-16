@@ -18,7 +18,7 @@ __all__ = [
     "get_metadata_container",
     "get_project",
     "get_qualified_name",
-    "is_run_synced",
+    "is_container_synced",
     "get_offline_dirs",
     "iterate_containers",
     "create_dir_name",
@@ -51,17 +51,20 @@ from neptune.new.internal.operation import Operation
 
 
 def get_metadata_container(
-    container_id: Union[UniqueId, QualifiedName],
-    container_type: ContainerType,
     backend: NeptuneBackend,
+    container_id: Union[UniqueId, QualifiedName],
+    container_type: Optional[ContainerType] = None,
 ) -> Optional[ApiExperiment]:
+    public_container_type = container_type or "object"
     try:
-        return backend.get_metadata_container(container_id, container_type)
+        return backend.get_metadata_container(
+            container_id, expected_container_type=container_type
+        )
     except MetadataContainerNotFound:
-        click.echo(f"Can't fetch {container_type} {container_id}. Skipping.")
+        click.echo(f"Can't fetch {public_container_type} {container_id}. Skipping.")
     except NeptuneException as e:
         click.echo(
-            f"Exception while fetching {container_type} {container_id}. Skipping.",
+            f"Exception while fetching {public_container_type} {container_id}. Skipping.",
             err=True,
         )
         logging.exception(e)
@@ -104,11 +107,11 @@ def get_project(
         return None
 
 
-def get_qualified_name(run: ApiExperiment) -> str:
-    return "{}/{}/{}".format(run.workspace, run.project_name, run.sys_id)
+def get_qualified_name(run: ApiExperiment) -> QualifiedName:
+    return QualifiedName("{}/{}/{}".format(run.workspace, run.project_name, run.sys_id))
 
 
-def is_run_synced(run_path: Path) -> bool:
+def is_container_synced(run_path: Path) -> bool:
     return all(
         _is_execution_synced(execution_path) for execution_path in run_path.iterdir()
     )
