@@ -19,7 +19,6 @@ import pytest
 import pytorch_lightning as pl
 
 from e2e_tests.base import BaseE2ETest
-from e2e_tests.integrations.common import does_series_converge
 
 
 @pytest.mark.integrations
@@ -36,20 +35,16 @@ class TestPytorchLightning(BaseE2ETest):
         assert sorted(logged_epochs) == logged_epochs
         assert set(logged_epochs) == {0, 1, 2}
 
-        # does train_loss converge?
-        training_loss = list(
-            pytorch_run["custom_prefix/train/loss"].fetch_values()["value"]
-        )
-        assert does_series_converge(training_loss)
+        assert pytorch_run.exists("custom_prefix/valid/loss")
+        assert len(pytorch_run["custom_prefix/valid/loss"].fetch_values()) == 3
 
     def test_saving_models(self, pytorch_run):
         best_model_path = pytorch_run["custom_prefix/model/best_model_path"].fetch()
         assert re.match(
-            r".*my_model/checkpoints/epoch=.*-val/loss/dataloader_idx_1=.*\.ckpt$",
+            r".*my_model/checkpoints/epoch=.*-valid/loss=.*\.ckpt$",
             best_model_path,
         )
-        best_model_score = pytorch_run["custom_prefix/model/best_model_score"].fetch()
-        assert 0 < best_model_score < 1
+        assert pytorch_run["custom_prefix/model/best_model_score"].fetch() is not None
 
         # make sure that exactly `save_top_k` checkpoints
         # NOTE: when `max_epochs` is close to `save_top_k` there may be less than `save_top_k` saved models

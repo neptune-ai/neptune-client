@@ -17,15 +17,14 @@ import re
 import json
 from pathlib import Path
 
-import neptune.new as neptune
 from click.testing import CliRunner
-from faker import Faker
+
+import neptune.new as neptune
 from neptune.new.sync import sync
 
-from e2e_tests.base import BaseE2ETest
+from e2e_tests.base import BaseE2ETest, fake
 from e2e_tests.utils import DISABLE_SYSLOG_KWARGS, tmp_context
 
-fake = Faker()
 runner = CliRunner()
 
 

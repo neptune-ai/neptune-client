@@ -1,11 +1,25 @@
+#
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
 import os
 import uuid
 from zipfile import ZipFile
 
 import pytest
 
-from e2e_tests.base import BaseE2ETest
-from e2e_tests.standard.test_base import fake
+from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
 from e2e_tests.utils import tmp_context
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.api_model import OptionalFeatures, MultipartConfig
@@ -13,7 +27,7 @@ from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBa
 
 
 class TestUpload(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_using_new_api(self, container: MetadataContainer):
         # pylint: disable=protected-access
         assert isinstance(container._backend, HostedNeptuneBackend)
@@ -24,7 +38,7 @@ class TestUpload(BaseE2ETest):
             container._backend._client_config.multipart_config, MultipartConfig
         )
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     @pytest.mark.parametrize(
         "file_size",
         [
@@ -52,7 +66,7 @@ class TestUpload(BaseE2ETest):
                 assert len(content) == file_size
                 assert content == b"\0" * file_size
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_fileset(self, container: MetadataContainer):
         key = self.gen_key()
         large_filesize = 10 * 2 ** 20
