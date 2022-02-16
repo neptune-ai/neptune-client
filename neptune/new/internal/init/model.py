@@ -23,7 +23,7 @@ from neptune.new.exceptions import (
     NeptuneException,
     NeptuneMissingRequiredInitParameter,
     NeptuneObjectCreationConflict,
-    NeptuneModelKeyAlreadyExistsError
+    NeptuneModelKeyAlreadyExistsError,
 )
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
