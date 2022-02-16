@@ -18,6 +18,8 @@ from neptune.new.metadata_containers import MetadataContainer
 
 import neptune.new as neptune
 from neptune.new.project import Project
+from neptune.new.metadata_containers import Model
+from neptune.new.exceptions import NeptuneModelKeyAlreadyExistsError
 
 from e2e_tests.base import BaseE2ETest, fake
 from e2e_tests.utils import with_check_if_file_appears, reinitialize_container
@@ -93,6 +95,14 @@ class TestInitProject(BaseE2ETest):
             "visibility",
         }
         assert read_only_project[key].fetch() == val
+
+
+class TestInitModel(BaseE2ETest):
+    @pytest.mark.parametrize("container", ["model"], indirect=True)
+    def test_fail_reused_model_key(self, container: Model, environment):
+        with pytest.raises(NeptuneModelKeyAlreadyExistsError):
+            model_key = container["sys/id"].fetch().split("-")[1]
+            neptune.init_model(key=model_key, project=environment.project)
 
 
 class TestReinitialization(BaseE2ETest):
