@@ -52,7 +52,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
-        new=lambda _, container_id, container_type: AN_API_RUN,
+        new=lambda _, container_id, expected_container_type: AN_API_RUN,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
@@ -81,7 +81,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
 
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
-        new=lambda _, container_id, container_type: AN_API_RUN,
+        new=lambda _, container_id, expected_container_type: AN_API_RUN,
     )
     @patch(
         "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",

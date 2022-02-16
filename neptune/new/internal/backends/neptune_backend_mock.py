@@ -250,14 +250,14 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_metadata_container(
         self,
         container_id: Union[UniqueId, QualifiedName],
-        container_type: ContainerType,
+        expected_container_type: ContainerType,
     ) -> ApiExperiment:
         if "/" not in container_id:
             raise ValueError("Backend mock expect container_id as QualifiedName only")
 
-        if container_type == ContainerType.RUN:
+        if expected_container_type == ContainerType.RUN:
             raise RunNotFound(container_id)
-        elif container_type == ContainerType.MODEL:
+        elif expected_container_type == ContainerType.MODEL:
             return ApiExperiment(
                 id=UniqueId(str(uuid.uuid4())),
                 type=Model.container_type,
@@ -265,7 +265,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 workspace=self.WORKSPACE_NAME,
                 project_name=self.PROJECT_NAME,
             )
-        elif container_type == ContainerType.MODEL_VERSION:
+        elif expected_container_type == ContainerType.MODEL_VERSION:
             raise ModelVersionNotFound(container_id)
         else:
             raise ProjectNotFound(container_id)

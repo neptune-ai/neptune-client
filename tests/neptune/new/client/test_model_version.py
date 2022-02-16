@@ -47,8 +47,8 @@ AN_API_MODEL_VERSION = api_model_version()
 
 @patch(
     "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_metadata_container",
-    new=lambda _, container_id, container_type: AN_API_MODEL
-    if container_type == ContainerType.MODEL
+    new=lambda _, container_id, expected_container_type: AN_API_MODEL
+    if expected_container_type == ContainerType.MODEL
     else AN_API_MODEL_VERSION,
 )
 @patch("neptune.new.internal.backends.factory.HostedNeptuneBackend", NeptuneBackendMock)

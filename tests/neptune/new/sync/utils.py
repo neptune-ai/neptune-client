@@ -32,14 +32,14 @@ from tests.neptune.new.utils.api_experiments_factory import (
 
 
 def generate_get_metadata_container(registered_containers):
-    def get_metadata_container(container_id, container_type: ContainerType):
+    def get_metadata_container(container_id, expected_container_type: ContainerType):
         """This function will return run as well as projects. Will be cleaned in ModelRegistry"""
         for exp in registered_containers:
             if container_id in (str(exp.id), get_qualified_name(exp)):
                 return exp
 
         raise MetadataContainerNotFound.of_container_type(
-            container_type=container_type, container_id=container_id
+            container_type=expected_container_type, container_id=container_id
         )
 
     return get_metadata_container
