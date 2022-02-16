@@ -16,6 +16,7 @@
 import pytest
 
 from neptune.new.metadata_containers import ModelVersion
+from neptune.new.exceptions import NeptuneCannotChangeStageManually
 
 from e2e_tests.base import BaseE2ETest
 
@@ -46,4 +47,10 @@ class TestStageTransitions(BaseE2ETest):
     def test_fail_on_unknown_stage_value(self, container: ModelVersion):
         with pytest.raises(ValueError):
             container.change_stage("unknown")
+            container.sync()
+
+    @pytest.mark.parametrize("container", ["model_version"], indirect=True)
+    def test_fail_on_manual(self, container: ModelVersion):
+        with pytest.raises(NeptuneCannotChangeStageManually):
+            container["sys/stage"] = "staging"
             container.sync()
