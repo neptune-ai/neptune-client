@@ -17,7 +17,12 @@ import logging
 import re
 from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union
 
-from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
+from bravado.exception import (
+    HTTPNotFound,
+    HTTPPaymentRequired,
+    HTTPUnprocessableEntity,
+    HTTPConflict,
+)
 
 from neptune.new.exceptions import (
     ArtifactNotFoundException,
@@ -34,6 +39,7 @@ from neptune.new.exceptions import (
     MetadataContainerNotFound,
     ProjectNotFoundWithSuggestions,
     ContainerUUIDNotFound,
+    NeptuneObjectCreationConflict,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -392,6 +398,8 @@ class HostedNeptuneBackend(NeptuneBackend):
             return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_id)
+        except HTTPConflict as e:
+            raise NeptuneObjectCreationConflict() from e
 
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
