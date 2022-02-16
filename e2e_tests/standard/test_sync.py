@@ -17,134 +17,103 @@ import re
 import json
 from pathlib import Path
 
+import pytest
 from click.testing import CliRunner
 
 import neptune.new as neptune
 from neptune.new.sync import sync
 
-from e2e_tests.base import BaseE2ETest, fake
-from e2e_tests.utils import DISABLE_SYSLOG_KWARGS, tmp_context
+from e2e_tests.base import BaseE2ETest, fake, AVAILABLE_CONTAINERS
+from e2e_tests.utils import (
+    DISABLE_SYSLOG_KWARGS,
+    initialize_container,
+    reinitialize_container,
+    tmp_context,
+)
 
 runner = CliRunner()
 
 
 class TestSync(BaseE2ETest):
-    SYNCHRONIZED_SYSID_RE = r"\w+/[\w-]+/([\w-]+)"
+    SYNCHRONIZED_SYSID_RE = r"[\w-]+/[\w-]+/([\w-]+)"
 
-    def test_sync_run(self, environment):
-        custom_run_id = "-".join((fake.word() for _ in range(3)))
-
+    @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+    def test_sync_container(self, container_type, environment):
         with tmp_context() as tmp:
-            # with test values
             key = self.gen_key()
             original_value = fake.word()
             updated_value = fake.word()
+            assert original_value != updated_value, "Faker broke"
 
-            # init run
-            run = neptune.init(
-                custom_run_id=custom_run_id,
-                project=environment.project,
-                **DISABLE_SYSLOG_KWARGS,
-            )
+            with initialize_container(
+                container_type=container_type, project=environment.project
+            ) as container:
+                # assign original value
+                container[key] = original_value
+                container.wait()
+                # pylint: disable=protected-access
+                container_id = container._id
+                container_sys_id = container._sys_id
 
-            def get_next_run():
-                return neptune.init(
-                    custom_run_id=custom_run_id,
-                    project=environment.project,
-                    **DISABLE_SYSLOG_KWARGS,
+            # manually add operations to queue
+            queue_dir = list(
+                Path(f"./.neptune/async/{container_type}__{container_id}/").glob(
+                    "exec-*"
                 )
+            )[0]
+            with open(
+                queue_dir / "last_put_version", encoding="utf-8"
+            ) as last_put_version_f:
+                last_put_version = int(last_put_version_f.read())
+                with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
+                    queue_f.write(
+                        json.dumps(
+                            {
+                                "obj": {
+                                    "type": "AssignString",
+                                    "path": key.split("/"),
+                                    "value": updated_value,
+                                },
+                                "version": last_put_version + 1,
+                            }
+                        )
+                    )
+                    queue_f.write(
+                        json.dumps(
+                            {
+                                "obj": {
+                                    "type": "CopyAttribute",
+                                    "path": ["copy"] + key.split("/"),
+                                    "container_id": container_id,
+                                    "container_type": container_type,
+                                    "source_path": key.split("/"),
+                                    "source_attr_name": "String",
+                                },
+                                "version": last_put_version + 2,
+                            }
+                        )
+                    )
+                with open(
+                    queue_dir / "last_put_version", "w", encoding="utf-8"
+                ) as last_put_version_f:
+                    last_put_version_f.write(str(last_put_version + 2))
 
-            self._test_sync(
-                exp=run,
-                get_next_exp=get_next_run,
-                path=tmp,
-                key=key,
-                original_value=original_value,
-                updated_value=updated_value,
-            )
+            with reinitialize_container(
+                container_sys_id, container_type, project=environment.project
+            ) as container:
+                # server should have the original value
+                assert container[key].fetch() == original_value
 
-    def test_sync_project(self, environment):
-        with tmp_context() as tmp:
-            # with test values
-            key = f"{self.gen_key()}-" + "-".join((fake.word() for _ in range(3)))
-            original_value = fake.word()
-            updated_value = fake.word()
+            # run neptune sync
+            result = runner.invoke(sync, ["--path", tmp])
+            assert result.exit_code == 0
 
-            # init run
-            project = neptune.init_project(name=environment.project)
-
-            def get_next_project():
-                return neptune.init_project(name=environment.project)
-
-            self._test_sync(
-                exp=project,
-                get_next_exp=get_next_project,
-                path=tmp,
-                key=key,
-                original_value=original_value,
-                updated_value=updated_value,
-            )
-
-    @staticmethod
-    def _test_sync(exp, get_next_exp, path, key, original_value, updated_value):
-        # assign original value
-        exp[key] = original_value
-        exp.sync()
-
-        # stop run
-        exp.stop()
-
-        # pylint: disable=protected-access
-        queue_dir = list(Path(f"./.neptune/async/{exp._id}/").glob("exec-*"))[0]
-        with open(
-            queue_dir / "last_put_version", encoding="utf-8"
-        ) as last_put_version_f:
-            last_put_version = int(last_put_version_f.read())
-        with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
-            queue_f.write(
-                json.dumps(
-                    {
-                        "obj": {
-                            "type": "AssignString",
-                            "path": key.split("/"),
-                            "value": updated_value,
-                        },
-                        "version": last_put_version + 1,
-                    }
-                )
-            )
-            queue_f.write(
-                json.dumps(
-                    {
-                        "obj": {
-                            "type": "CopyAttribute",
-                            "path": ["copy"] + key.split("/"),
-                            "container_id": exp._id,
-                            "container_type": exp.container_type.value,
-                            "source_path": key.split("/"),
-                            "source_attr_name": "String",
-                        },
-                        "version": last_put_version + 2,
-                    }
-                )
-            )
-        with open(
-            queue_dir / "last_put_version", "w", encoding="utf-8"
-        ) as last_put_version_f:
-            last_put_version_f.write(str(last_put_version + 2))
-
-        # other exp should see only original value from server
-        exp2 = get_next_exp()
-        assert exp2[key].fetch() == original_value
-
-        # run neptune sync
-        result = runner.invoke(sync, ["--path", path])
-        assert result.exit_code == 0
-
-        # other exp should see updated value from server
-        exp3 = get_next_exp()
-        assert exp3[key].fetch() == updated_value
-        assert exp3["copy/" + key].fetch() == updated_value
+            with reinitialize_container(
+                container_sys_id, container_type, project=environment.project
+            ) as container:
+                # and we should get the updated value from server
+                assert container[key].fetch() == updated_value
+                assert container["copy/" + key].fetch() == updated_value
 
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
@@ -167,9 +136,10 @@ class TestSync(BaseE2ETest):
             assert result.exit_code == 0
 
             # offline mode doesn't support custom_run_id, we'll have to parse sync output to determine short_id
+            print(result.stdout)
             sys_id_found = re.search(self.SYNCHRONIZED_SYSID_RE, result.stdout)
             assert len(sys_id_found.groups()) == 1
             sys_id = sys_id_found.group(1)
 
-            run2 = neptune.init(run=sys_id, project=environment.project)
+            run2 = neptune.init_run(run=sys_id, project=environment.project)
             assert run2[key].fetch() == val
