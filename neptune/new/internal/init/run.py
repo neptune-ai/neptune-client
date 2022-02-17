@@ -247,7 +247,7 @@ def init_run(
     if run:
         api_run = backend.get_metadata_container(
             container_id=QualifiedName(project + "/" + run),
-            container_type=Run.container_type,
+            expected_container_type=Run.container_type,
         )
     else:
         if mode == Mode.READ_ONLY:

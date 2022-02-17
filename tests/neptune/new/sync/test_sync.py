@@ -60,7 +60,7 @@ def test_sync_all_runs(tmp_path, mocker, capsys, backend, sync_runner, container
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
     # when
-    sync_runner.sync_all_runs(tmp_path, "foo")
+    sync_runner.sync_all_containers(tmp_path, "foo")
 
     # then
     captured = capsys.readouterr()
@@ -102,7 +102,7 @@ def test_sync_all_offline_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
     # when
-    sync_runner.sync_all_runs(tmp_path, "foo")
+    sync_runner.sync_all_containers(tmp_path, "foo")
 
     # then
     captured = capsys.readouterr()
@@ -151,10 +151,13 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
     # when
-    sync_runner.sync_selected_runs(
+    sync_runner.sync_selected_containers(
         base_path=tmp_path,
         project_name="some-name",
-        runs_names=[get_qualified_name(sync_exp), "offline/run__" + offline_run.id],
+        container_names=[
+            get_qualified_name(sync_exp),
+            "offline/run__" + offline_run.id,
+        ],
     )
 
     # then
@@ -220,7 +223,7 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(Operation, "from_dict", lambda x: x)
 
     # when
-    sync_runner.sync_all_runs(tmp_path, "foo")
+    sync_runner.sync_all_containers(tmp_path, "foo")
 
     # then
     captured = capsys.readouterr()
@@ -272,8 +275,8 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
 
 def test_sync_non_existent_container(tmp_path, capsys, sync_runner):
     # when
-    sync_runner.sync_selected_runs(
-        base_path=tmp_path, project_name="foo", runs_names=["bar"]
+    sync_runner.sync_selected_containers(
+        base_path=tmp_path, project_name="foo", container_names=["bar"]
     )
 
     # then
@@ -283,11 +286,11 @@ def test_sync_non_existent_container(tmp_path, capsys, sync_runner):
 
 def test_sync_non_existent_offline_containers(tmp_path, capsys, sync_runner):
     # when
-    sync_runner.sync_selected_runs(
-        base_path=tmp_path, project_name="foo", runs_names=["offline/foo__bar"]
+    sync_runner.sync_selected_containers(
+        base_path=tmp_path, project_name="foo", container_names=["offline/foo__bar"]
     )
-    sync_runner.sync_selected_runs(
-        base_path=tmp_path, project_name="foo", runs_names=["offline/model__bar"]
+    sync_runner.sync_selected_containers(
+        base_path=tmp_path, project_name="foo", container_names=["offline/model__bar"]
     )
 
     # then

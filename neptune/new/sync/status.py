@@ -32,7 +32,7 @@ from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
     get_qualified_name,
-    is_run_synced,
+    is_container_synced,
     iterate_containers,
     get_metadata_container,
     get_offline_dirs,
@@ -54,76 +54,86 @@ class StatusRunner(AbstractBackendRunner):
         self,
         base_path: Path,
     ) -> Tuple[List[ApiExperiment], List[ApiExperiment], int]:
-        synced_runs = []
-        unsynced_runs = []
+        synced_containers = []
+        unsynced_containers = []
         async_path = base_path / ASYNC_DIRECTORY
         for container_type, container_id, path in iterate_containers(async_path):
             metadata_container = get_metadata_container(
+                backend=self._backend,
                 container_id=container_id,
                 container_type=container_type,
-                backend=self._backend,
             )
 
-            if is_run_synced(path):
-                synced_runs.append(metadata_container)
+            if is_container_synced(path):
+                synced_containers.append(metadata_container)
             else:
-                unsynced_runs.append(metadata_container)
+                unsynced_containers.append(metadata_container)
 
         not_found = len(
-            [exp for exp in synced_runs + unsynced_runs if not exp or exp.trashed]
+            [
+                exp
+                for exp in synced_containers + unsynced_containers
+                if not exp or exp.trashed
+            ]
         )
-        synced_runs = [exp for exp in synced_runs if exp and not exp.trashed]
-        unsynced_runs = [exp for exp in unsynced_runs if exp and not exp.trashed]
+        synced_containers = [
+            obj for obj in synced_containers if obj and not obj.trashed
+        ]
+        unsynced_containers = [
+            obj for obj in unsynced_containers if obj and not obj.trashed
+        ]
 
-        return synced_runs, unsynced_runs, not_found
+        return synced_containers, unsynced_containers, not_found
 
     @staticmethod
-    def list_runs(
+    def list_containers(
         base_path: Path,
-        synced_runs: Sequence[ApiExperiment],
-        unsynced_runs: Sequence[ApiExperiment],
+        synced_containers: Sequence[ApiExperiment],
+        unsynced_containers: Sequence[ApiExperiment],
         offline_dirs: Sequence[str],
     ) -> None:
-        if not synced_runs and not unsynced_runs and not offline_dirs:
-            click.echo("There are no Neptune runs in {}".format(base_path))
+        if not synced_containers and not unsynced_containers and not offline_dirs:
+            click.echo("There are no Neptune objects in {}".format(base_path))
             sys.exit(1)
 
-        if unsynced_runs:
-            click.echo("Unsynchronized runs:")
-            for run in unsynced_runs:
-                click.echo("- {}".format(get_qualified_name(run)))
+        if unsynced_containers:
+            click.echo("Unsynchronized objects:")
+            for container in unsynced_containers:
+                click.echo("- {}".format(get_qualified_name(container)))
 
-        if synced_runs:
-            click.echo("Synchronized runs:")
-            for run in synced_runs:
-                click.echo("- {}".format(get_qualified_name(run)))
+        if synced_containers:
+            click.echo("Synchronized objects:")
+            for container in synced_containers:
+                click.echo("- {}".format(get_qualified_name(container)))
 
         if offline_dirs:
-            click.echo("Unsynchronized offline runs:")
+            click.echo("Unsynchronized offline objects:")
             for run_id in offline_dirs:
                 click.echo("- {}{}".format(OFFLINE_NAME_PREFIX, run_id))
             click.echo()
             click.echo(textwrap.fill(offline_run_explainer, width=90))
 
-        if not unsynced_runs:
+        if not unsynced_containers:
             click.echo()
-            click.echo("There are no unsynchronized runs in {}".format(base_path))
+            click.echo("There are no unsynchronized objects in {}".format(base_path))
 
-        if not synced_runs:
+        if not synced_containers:
             click.echo()
-            click.echo("There are no synchronized runs in {}".format(base_path))
+            click.echo("There are no synchronized objects in {}".format(base_path))
 
         click.echo()
         click.echo("Please run with the `neptune sync --help` to see example commands.")
 
     def synchronization_status(self, base_path: Path) -> None:
-        synced_runs, unsynced_runs, not_found = self.partition_containers(base_path)
+        synced_containers, unsynced_containers, not_found = self.partition_containers(
+            base_path
+        )
         if not_found > 0:
             click.echo(
-                "WARNING: {} runs was skipped because they are in trash or do not exist anymore.".format(
-                    not_found
-                ),
+                f"WARNING: {not_found} objects was skipped because they are in trash or do not exist anymore.",
                 sys.stderr,
             )
         offline_dirs = get_offline_dirs(base_path)
-        self.list_runs(base_path, synced_runs, unsynced_runs, offline_dirs)
+        self.list_containers(
+            base_path, synced_containers, unsynced_containers, offline_dirs
+        )

@@ -41,7 +41,6 @@ def status_runner_fixture(backend):
 def test_list_containers(
     tmp_path, mocker, capsys, backend, status_runner, container_type
 ):
-    """TODO: we're mentioning everything as runs, will be improved with ModelRegistry NPT-11345"""
     # given
     unsynced_container = prepare_metadata_container(
         container_type=container_type, path=tmp_path, last_ack_version=1
@@ -64,11 +63,11 @@ def test_list_containers(
     captured = capsys.readouterr()
     assert captured.err == ""
     assert (
-        "Synchronized runs:\n- {}".format(get_qualified_name(synced_container))
+        "Synchronized objects:\n- {}".format(get_qualified_name(synced_container))
         in captured.out
     )
     assert (
-        "Unsynchronized runs:\n- {}".format(get_qualified_name(unsynced_container))
+        "Unsynchronized objects:\n- {}".format(get_qualified_name(unsynced_container))
         in captured.out
     )
 
@@ -91,7 +90,7 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     captured = capsys.readouterr()
     assert captured.err == ""
     assert (
-        "Unsynchronized offline runs:\n- offline/run__{}".format(offline_run.id)
+        "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id)
         in captured.out
     )
 
@@ -105,4 +104,4 @@ def test_list_runs_when_no_run(tmp_path, capsys, status_runner):
     # then
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert "There are no Neptune runs" in captured.out
+    assert "There are no Neptune objects" in captured.out

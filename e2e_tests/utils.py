@@ -113,27 +113,33 @@ Environment = namedtuple(
 )
 
 
-def initialize_container(container_type, project):
+def initialize_container(container_type, project, **extra_args):
     if container_type == "project":
-        return neptune.init_project(name=project)
+        return neptune.init_project(name=project, **extra_args)
 
     if container_type == "run":
-        return neptune.init_run(project=project)
+        return neptune.init_run(project=project, **extra_args)
 
     if container_type == "model":
-        return neptune.init_model(key=a_key(), project=project)
+        return neptune.init_model(key=a_key(), project=project, **extra_args)
 
     if container_type == "model_version":
-        model = neptune.init_model(key=a_key(), project=project)
+        model = neptune.init_model(key=a_key(), project=project, **extra_args)
         model_sys_id = model["sys/id"].fetch()
         model.stop()
 
-        return neptune.init_model_version(model=model_sys_id, project=project)
+        return neptune.init_model_version(
+            model=model_sys_id, project=project, **extra_args
+        )
 
     raise NotImplementedError(container_type)
 
 
 def reinitialize_container(sys_id: str, container_type: str, project: str):
+    if container_type == "project":
+        # exactly same as initialize_container(project), for convenience
+        return neptune.init_project(name=project)
+
     if container_type == "run":
         return neptune.init_run(run=sys_id, project=project)
 

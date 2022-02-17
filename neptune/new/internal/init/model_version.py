@@ -74,7 +74,7 @@ def init_model_version(
         # version (resume existing model_version) has priority over model (creating a new model_version)
         version = QualifiedName(project + "/" + version)
         api_model_version = backend.get_metadata_container(
-            container_id=version, container_type=ModelVersion.container_type
+            container_id=version, expected_container_type=ModelVersion.container_type
         )
     elif model is not None:
         if mode == Mode.READ_ONLY:
@@ -82,7 +82,7 @@ def init_model_version(
 
         model_id = QualifiedName(project + "/" + model)
         api_model = backend.get_metadata_container(
-            container_id=model_id, container_type=Model.container_type
+            container_id=model_id, expected_container_type=Model.container_type
         )
         api_model_version = backend.create_model_version(
             project_id=project_obj.id, model_id=api_model.id

@@ -83,7 +83,7 @@ def init_model(
         #  additional creation parameters (e.g. name) are simply ignored in this scenario
         model = QualifiedName(project + "/" + model)
         api_model = backend.get_metadata_container(
-            container_id=model, container_type=Model.container_type
+            container_id=model, expected_container_type=Model.container_type
         )
     elif key is not None:
         if mode == Mode.READ_ONLY:

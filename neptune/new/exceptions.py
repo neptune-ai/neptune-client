@@ -145,16 +145,23 @@ class MetadataContainerNotFound(NeptuneException):
     container_id: str
     container_type: ContainerType
 
-    def __init__(self, container_id: str, container_type: ContainerType) -> None:
+    def __init__(self, container_id: str, container_type: Optional[ContainerType]):
         self.container_id = container_id
         self.container_type = container_type
-        super().__init__(
-            "{} {} not found.".format(container_type.value.capitalize(), container_id)
+        container_type_str = (
+            container_type.value.capitalize() if container_type else "object"
         )
+        super().__init__("{} {} not found.".format(container_type_str, container_id))
 
     @classmethod
-    def of_container_type(cls, container_type: ContainerType, container_id: str):
-        if container_type == ContainerType.PROJECT:
+    def of_container_type(
+        cls, container_type: Optional[ContainerType], container_id: str
+    ):
+        if container_type is None:
+            return MetadataContainerNotFound(
+                container_id=container_id, container_type=None
+            )
+        elif container_type == ContainerType.PROJECT:
             return ProjectNotFound(project_id=container_id)
         elif container_type == ContainerType.RUN:
             return RunNotFound(run_id=container_id)
@@ -167,22 +174,22 @@ class MetadataContainerNotFound(NeptuneException):
 
 
 class ProjectNotFound(MetadataContainerNotFound):
-    def __init__(self, project_id: str) -> None:
+    def __init__(self, project_id: str):
         super().__init__(container_id=project_id, container_type=ContainerType.PROJECT)
 
 
 class RunNotFound(MetadataContainerNotFound):
-    def __init__(self, run_id: str) -> None:
+    def __init__(self, run_id: str):
         super().__init__(container_id=run_id, container_type=ContainerType.RUN)
 
 
 class ModelNotFound(MetadataContainerNotFound):
-    def __init__(self, model_id: str) -> None:
+    def __init__(self, model_id: str):
         super().__init__(container_id=model_id, container_type=ContainerType.MODEL)
 
 
 class ModelVersionNotFound(MetadataContainerNotFound):
-    def __init__(self, model_version_id: str) -> None:
+    def __init__(self, model_version_id: str):
         super().__init__(
             container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
         )

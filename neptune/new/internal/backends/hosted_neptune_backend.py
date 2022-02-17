@@ -15,6 +15,7 @@
 #
 import logging
 import re
+import typing
 from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union
 
 from bravado.exception import (
@@ -276,7 +277,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     def get_metadata_container(
         self,
         container_id: Union[UniqueId, QualifiedName],
-        container_type: ContainerType,
+        expected_container_type: typing.Optional[ContainerType],
     ) -> ApiExperiment:
         try:
             experiment = (
@@ -288,15 +289,18 @@ class HostedNeptuneBackend(NeptuneBackend):
                 .result
             )
 
-            if ContainerType.from_api(experiment.type) != container_type:
+            if (
+                expected_container_type is not None
+                and ContainerType.from_api(experiment.type) != expected_container_type
+            ):
                 raise MetadataContainerNotFound.of_container_type(
-                    container_type=container_type, container_id=container_id
+                    container_type=expected_container_type, container_id=container_id
                 )
 
             return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
             raise MetadataContainerNotFound.of_container_type(
-                container_type=container_type, container_id=container_id
+                container_type=expected_container_type, container_id=container_id
             )
 
     @with_api_exceptions_handler

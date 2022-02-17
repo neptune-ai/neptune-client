@@ -112,7 +112,7 @@ class NeptuneBackend:
     def get_metadata_container(
         self,
         container_id: Union[UniqueId, QualifiedName],
-        container_type: ContainerType,
+        expected_container_type: ContainerType,
     ) -> ApiExperiment:
         pass
 
