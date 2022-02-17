@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/neptune-logo-less-margin-e1611939742683.png" width="300" /><br><br>
+    <img src="https://neptune.ai/wp-content/uploads/neptune-logo-less-margin-e1611939742683.png" width="300" /><br><br>
 </div>
 
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
@@ -8,7 +8,7 @@
 [![twitter](https://img.shields.io/twitter/follow/neptune_ai.svg?label=Follow)](https://twitter.com/neptune_ai)
 [![youtube](https://img.shields.io/youtube/views/9iX6DxcijO8?style=social)](https://www.youtube.com/channel/UCvOJU-ubyUqxGSDRN7xK4Ng)
 
-## Flexible metadata store for MLOps, built for research and production teams that run a lot of experiments. 
+## Flexible metadata store for MLOps, built for research and production teams that run a lot of experiments.
 Neptune is a lightweight solution designed for:
 * **Experiment tracking:** log, display, organize, and compare ML experiments in a single place.
 * **Model registry:** version, store, manage, and query trained models, and model-building metadata.
@@ -69,7 +69,6 @@ Neptune [supports log and display](https://docs.neptune.ai/you-should-know/what-
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Log-and-display.gif" width="600">
-  </a>
 </div>
 &nbsp;
 
@@ -86,7 +85,6 @@ You can [compare model-building runs](https://docs.neptune.ai/you-should-know/co
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Compare.gif" width="600">
-  </a>
 </div>
 &nbsp;
 
@@ -97,7 +95,6 @@ As well as filter, sort, and group model training runs using [highly configurabl
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Filter-and-organize-3688604602-1644927778194.png" width="600">
-  </a>
 </div>
 &nbsp;
 
@@ -107,39 +104,38 @@ And improve [team management and collaboration](https://docs.neptune.ai/you-shou
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Collaboration.gif" width="600">
-  </a>
 </div>
 &nbsp;
 
-### Integrate with your favourite ML libraries 
+### Integrate with your favourite ML libraries
 Neptune comes with **25+ integrations with Python libraries** popular in machine learning, deep learning and reinforcement learning.
 Integrations available:
 * PyTorch and PyTorch Lightning
 * TensorFlow / Keras and TensorBoard
 * Scikit-Learn, LightGBM, and XGBoost
-* Optuna, Scikit Optiimize, and Keras Tuner
+* Optuna, Scikit Optimize, and Keras Tuner
 * Bokeh, Altair, Plotly, and Matplotlib
 * and [more](https://docs.neptune.ai/integrations-and-supported-tools/intro)
 
 #### PyTorch Lightning
 
   <img src="https://neptune.ai/wp-content/uploads/PyTorch-Lightning.png" width="350" /><br><br>
-  
+
 Example:
 ```python
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import NeptuneLogger
- 
+
 # create NeptuneLogger
 neptune_logger = NeptuneLogger(
     api_key="ANONYMOUS",  # replace with your own
     project="common/pytorch-lightning-integration",  # "<WORKSPACE/PROJECT>"
     tags=["training", "resnet"],  # optional
 )
- 
+
 # pass it to the Trainer
 trainer = Trainer(max_epochs=10, logger=neptune_logger)
- 
+
 # run training
 trainer.fit(my_model, my_dataloader)
 
@@ -156,7 +152,7 @@ trainer.fit(my_model, my_dataloader)
 #### TensorFow/Keras
 
   <img src="https://neptune.ai/wp-content/uploads/TensorFowKeras.png" width="400" /><br><br>
-  
+
 Example:
 ```python
 import tensorflow as tf
