@@ -135,7 +135,7 @@ class TestSync(BaseE2ETest):
             result = runner.invoke(sync, ["--path", tmp, "-p", environment.project])
             assert result.exit_code == 0
 
-            # offline mode doesn't support custom_run_id, we'll have to parse sync output to determine short_id
+            # we'll have to parse sync output to determine short_id
             sys_id_found = re.search(self.SYNCHRONIZED_SYSID_RE, result.stdout)
             assert len(sys_id_found.groups()) == 1
             sys_id = sys_id_found.group(1)
