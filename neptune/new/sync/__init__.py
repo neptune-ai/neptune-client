@@ -163,14 +163,14 @@ def sync(
     sync_runner = SyncRunner(backend=HostedNeptuneBackend(Credentials.from_token()))
 
     if runs_names:
-        print("DAUPDUAPIDPOSDDSA")
         click.echo(
             "WARNING: --run parameter is deprecated and will be removed in the future, please start using --object"
         )
         # prefer object_names, obviously
-        if not object_names:
-            object_names = runs_names
+        object_names = set(object_names)
+        object_names.update(runs_names)
 
+    print(object_names)
     if object_names:
         sync_runner.sync_selected_containers(path, project_name, object_names)
     else:

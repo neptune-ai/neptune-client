@@ -77,10 +77,10 @@ class StatusRunner(AbstractBackendRunner):
             ]
         )
         synced_containers = [
-            exp for exp in synced_containers if exp and not exp.trashed
+            obj for obj in synced_containers if obj and not obj.trashed
         ]
         unsynced_containers = [
-            exp for exp in unsynced_containers if exp and not exp.trashed
+            obj for obj in unsynced_containers if obj and not obj.trashed
         ]
 
         return synced_containers, unsynced_containers, not_found

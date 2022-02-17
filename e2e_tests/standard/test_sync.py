@@ -41,9 +41,8 @@ class TestSync(BaseE2ETest):
     def test_sync_container(self, container_type, environment):
         with tmp_context() as tmp:
             key = self.gen_key()
-            original_value = fake.word()
-            updated_value = fake.word()
-            assert original_value != updated_value, "Faker broke"
+            original_value = fake.unique.word()
+            updated_value = fake.unique.word()
 
             with initialize_container(
                 container_type=container_type, project=environment.project
@@ -136,7 +135,6 @@ class TestSync(BaseE2ETest):
             assert result.exit_code == 0
 
             # offline mode doesn't support custom_run_id, we'll have to parse sync output to determine short_id
-            print(result.stdout)
             sys_id_found = re.search(self.SYNCHRONIZED_SYSID_RE, result.stdout)
             assert len(sys_id_found.groups()) == 1
             sys_id = sys_id_found.group(1)
