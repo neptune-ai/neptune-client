@@ -21,8 +21,12 @@ from neptune.new.project import Project
 from neptune.new.metadata_containers import Model
 from neptune.new.exceptions import NeptuneModelKeyAlreadyExistsError
 
-from e2e_tests.base import BaseE2ETest, fake
-from e2e_tests.utils import with_check_if_file_appears, reinitialize_container
+from e2e_tests.base import BaseE2ETest, fake, AVAILABLE_CONTAINERS
+from e2e_tests.utils import (
+    with_check_if_file_appears,
+    initialize_container,
+    reinitialize_container,
+)
 
 
 class TestInitRun(BaseE2ETest):
@@ -106,10 +110,11 @@ class TestInitModel(BaseE2ETest):
 
 
 class TestReinitialization(BaseE2ETest):
-    @pytest.mark.parametrize(
-        "container", ["run", "model", "model_version"], indirect=True
-    )
-    def test_resuming_model_version(self, container: MetadataContainer, environment):
+    @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+    def test_resuming_model_version(self, container_type, environment):
+        container = initialize_container(
+            container_type=container_type, project=environment.project
+        )
         sys_id = container["sys/id"].fetch()
 
         key = self.gen_key()
