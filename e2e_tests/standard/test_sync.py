@@ -21,6 +21,7 @@ import pytest
 from click.testing import CliRunner
 
 import neptune.new as neptune
+from neptune.new.exceptions import NeptuneException
 from neptune.new.sync import sync
 
 from e2e_tests.base import BaseE2ETest, fake, AVAILABLE_CONTAINERS
@@ -141,3 +142,13 @@ class TestSync(BaseE2ETest):
 
             run2 = neptune.init_run(run=sys_id, project=environment.project)
             assert run2[key].fetch() == val
+
+    @pytest.mark.parametrize("container_type", ["model", "model_version", "project"])
+    def test_cannot_offline_non_runs(self, environment, container_type):
+        with pytest.raises(NeptuneException) as e:
+            initialize_container(
+                container_type=container_type,
+                project=environment.project,
+                mode="offline",
+            )
+        assert "can't be initialized in OFFLINE mode" in str(e.value)
