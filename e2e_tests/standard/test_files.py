@@ -3,6 +3,7 @@ import random
 import uuid
 from itertools import product
 from pathlib import Path
+from typing import Set
 from zipfile import ZipFile
 
 import pytest
@@ -126,34 +127,37 @@ class TestUpload(BaseE2ETest):
                         assert len(content) == len(expected_content)
                         assert content == expected_content
 
-    @staticmethod
-    def _gen_possible_paths():
-        dir_lvl1_names = [fake.word() for _ in range(3)]
-        dir_lvl2_names = [fake.word() for _ in range(3)]
-        dir_lvl3_names = [fake.word() for _ in range(3)]
-        return [
-            "/".join(prod)
-            for prod in product(dir_lvl1_names, dir_lvl2_names, dir_lvl3_names)
-        ]
+    @classmethod
+    def _gen_tree_paths(cls, depth, width=3) -> Set:
+        """Generates all subdirectories of some random tree directory structure"""
+        this_level_dirs = (fake.word() + "/" for _ in range(width))
+        if depth == 1:
+            return set(this_level_dirs)
+        else:
+            subpaths = cls._gen_tree_paths(depth=depth - 1, width=width)
+            new_paths = set(
+                "".join(prod) for prod in product(subpaths, this_level_dirs)
+            )
+            subpaths.update(new_paths)
+            return subpaths
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     def test_fileset_nested_structure(self, container: AttributeContainer):
         key = self.gen_key()
-        possible_paths = self._gen_possible_paths()
+        possible_paths = self._gen_tree_paths(depth=3)
 
         small_files = [
             (
-                f"{random.choice(possible_paths)}/{uuid.uuid4()}.{fake.file_extension()}",
-                fake.sentence().encode("utf-8"),
+                f"{path}{uuid.uuid4()}.{fake.file_extension()}",
+                os.urandom(random.randint(10 ** 3, 10 ** 6)),
             )
-            for _ in range(100)
+            for path in possible_paths
         ]
 
         with tmp_context():
             # create dirs
             for dir_path in possible_paths:
-                path = Path(dir_path)
-                path.mkdir(parents=True)
+                os.makedirs(dir_path, exist_ok=True)
             # create  a lot of very small files in different directories
             for filename, contents in small_files:
                 with open(filename, "wb") as file:
@@ -168,10 +172,14 @@ class TestUpload(BaseE2ETest):
 
             # then check if everything will be downloaded
             container.sync()
-            container[key].download("downloaded1.zip")
+            container[key].download("downloaded.zip")
 
-            with ZipFile("downloaded1.zip") as zipped:
-                assert {"/", *small_filenames}.issubset(set(zipped.namelist()))
+            with ZipFile("downloaded.zip") as zipped:
+                assert set(zipped.namelist()) == {
+                    "/",
+                    *possible_paths,
+                    *small_filenames,
+                }
                 for filename, expected_content in small_files:
                     with zipped.open(filename, "r") as file:
                         content = file.read()
@@ -183,8 +191,8 @@ class TestUpload(BaseE2ETest):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = fake.sentence(nb_words=1024).encode()
-        content2 = fake.sentence(nb_words=1024).encode()
+        content1 = os.urandom(random.randint(10 ** 3, 10 ** 6))
+        content2 = os.urandom(random.randint(10 ** 3, 10 ** 6))
 
         with tmp_context():
             # create file1 and file2
@@ -201,8 +209,8 @@ class TestUpload(BaseE2ETest):
 
             # check if there's content of SECOND uploaded file
             container.sync()
-            container[key].download("downloaded1.zip")
-            with ZipFile("downloaded1.zip") as zipped:
+            container[key].download("downloaded.zip")
+            with ZipFile("downloaded.zip") as zipped:
                 assert set(zipped.namelist()) == {filename2, "/"}
                 with zipped.open(filename2, "r") as file:
                     content = file.read()
@@ -217,8 +225,8 @@ class TestUpload(BaseE2ETest):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = fake.sentence(nb_words=1024).encode()
-        content2 = fake.sentence(nb_words=1024).encode()
+        content1 = os.urandom(random.randint(10 ** 3, 10 ** 6))
+        content2 = os.urandom(random.randint(10 ** 3, 10 ** 6))
         downloaded_filename = fake.file_name()
 
         with tmp_context():
@@ -256,8 +264,8 @@ class TestUpload(BaseE2ETest):
     ):
         key = self.gen_key()
         filename = fake.file_name()
-        content1 = fake.sentence(nb_words=1024).encode()
-        content2 = fake.sentence(nb_words=1024).encode()
+        content1 = os.urandom(random.randint(10 ** 3, 10 ** 6))
+        content2 = os.urandom(random.randint(10 ** 3, 10 ** 6))
 
         with tmp_context():
             # create file
@@ -282,9 +290,9 @@ class TestUpload(BaseE2ETest):
 
             # check if there's content of ONLY SECOND uploaded file
             container.sync()
-            container[key].download("downloaded1.zip")
+            container[key].download("downloaded.zip")
 
-            with ZipFile("downloaded1.zip") as zipped:
+            with ZipFile("downloaded.zip") as zipped:
                 assert set(zipped.namelist()) == {filename, "/"}
                 with zipped.open(filename, "r") as file:
                     content = file.read()
