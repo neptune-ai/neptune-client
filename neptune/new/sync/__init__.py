@@ -170,7 +170,6 @@ def sync(
         object_names = set(object_names)
         object_names.update(runs_names)
 
-    print(object_names)
     if object_names:
         sync_runner.sync_selected_containers(path, project_name, object_names)
     else:
