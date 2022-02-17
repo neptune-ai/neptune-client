@@ -110,7 +110,7 @@ class TestInitModel(BaseE2ETest):
 
 class TestReinitialization(BaseE2ETest):
     @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
-    def test_resuming_model_version(self, container_type, environment):
+    def test_resuming_container(self, container_type, environment):
         container = initialize_container(
             container_type=container_type, project=environment.project
         )
