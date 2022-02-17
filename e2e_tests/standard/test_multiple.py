@@ -68,6 +68,9 @@ class TestMultiple(BaseE2ETest):
 
         assert len(container[namespace].fetch()) == number_of_reinitialized + 1
 
+        for r in reinitialized:
+            r.stop()
+
     @pytest.mark.skip(reason="no way of currently testing this")
     @pytest.mark.parametrize(
         "container", ["run", "model", "model_version"], indirect=True
