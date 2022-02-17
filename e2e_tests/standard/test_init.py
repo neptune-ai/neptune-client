@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import pytest
-from neptune.new.metadata_containers import MetadataContainer
 
 import neptune.new as neptune
 from neptune.new.project import Project
