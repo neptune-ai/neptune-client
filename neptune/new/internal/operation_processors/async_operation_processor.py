@@ -195,7 +195,7 @@ class AsyncOperationProcessor(OperationProcessor):
             sleep_time: float,
             batch_size: int,
         ):
-            super().__init__(sleep_time=sleep_time)
+            super().__init__(sleep_time=sleep_time, name="NeptuneAsyncOpProcessor")
             self._processor = processor
             self._batch_size = batch_size
             self._last_flush = 0
