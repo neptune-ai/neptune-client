@@ -67,7 +67,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
 
     class _ListenerThread(Daemon):
         def __init__(self, run: "Run", ws_client: ReconnectingWebsocket):
-            super().__init__(sleep_time=0)
+            super().__init__(sleep_time=0, name="NeptuneWebhooks")
             self._run = run
             self._ws_client = ws_client
 
