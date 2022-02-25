@@ -556,7 +556,7 @@ class NeptuneSSLVerificationError(NeptuneException):
 {end}
 
 Neptune client was unable to verify your SSL Certificate.
- 
+
 {bold}What could go wrong?{end}
     - You are behind a proxy that inspects traffic to Neptune servers.
         - Contact your network administrator
@@ -568,22 +568,22 @@ Neptune client was unable to verify your SSL Certificate.
             {fail}"curl: (60) server certificate verification failed..."{end}
     - Your machine software is not up-to-date.
         - Minimal OS requirements:
-            - Windows >= XP SP3 
+            - Windows >= XP SP3
             - macOS >= 10.12.1
             - Ubuntu >= 12.04
-            - Debian >= 8 
- 
+            - Debian >= 8
+
 {bold}What can I do?{end}
-You can manually configure Neptune to skip all SLL checks. To do that 
-set the NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE environment variable to 'TRUE'. 
+You can manually configure Neptune to skip all SLL checks. To do that
+set the NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE environment variable to 'TRUE'.
 {bold}Note that might mean your connection is less secure{end}.
- 
+
 Linux/Unix
-In your terminal run: 
+In your terminal run:
     {bash}export NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
 
 Windows
-In your terminal run: 
+In your terminal run:
     {bash}set NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
 
 Jupyter notebook
@@ -594,7 +594,7 @@ You may also want to check the following docs pages:
     - https://docs.neptune.ai/api-reference/environment-variables#neptune_allow_self_signed_certificate
 
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help 
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(**STYLES))
 
