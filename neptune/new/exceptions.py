@@ -560,7 +560,7 @@ Neptune client was unable to verify your SSL Certificate.
 {bold}What could go wrong?{end}
     - You are behind a proxy that inspects traffic to Neptune servers.
         - Contact your network administrator
-    - Your on-prem installation’s SSL/TLS certificate is not recognized due to a custom Certificate Authority (CA).
+    - Your on-prem installation's SSL/TLS certificate is not recognized due to a custom Certificate Authority (CA).
         - To check run the following command in terminal:
             {bash}curl https://<your_domain>/api/backend/echo {end}
         - Where <your_domain> is the address that you use to access Neptune UI i.e. abc.com
