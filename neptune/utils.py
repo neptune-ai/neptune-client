@@ -297,7 +297,7 @@ def with_api_exceptions_handler(func):
             try:
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
-                raise SSLError()
+                raise NeptuneSSLVerificationError()
             except HTTPBadRequest as e:
                 if parse_error_type(e) == MIGRATION_FINISHED:
                     raise ProjectMigratedToNewStructure()
