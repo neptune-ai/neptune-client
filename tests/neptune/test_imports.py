@@ -35,7 +35,7 @@ from neptune.api_exceptions import NotebookNotFound
 from neptune.api_exceptions import PathInExperimentNotFound
 from neptune.api_exceptions import PathInProjectNotFound
 from neptune.api_exceptions import ProjectNotFound
-from neptune.api_exceptions import SSLError
+from neptune.api_exceptions import NeptuneSSLVerificationError
 from neptune.api_exceptions import ServerError
 from neptune.api_exceptions import StorageLimitReached
 from neptune.api_exceptions import Unauthorized
@@ -489,7 +489,7 @@ from neptune.utils import NoopObject
 from neptune.utils import NotADirectory
 from neptune.utils import NotAFile
 from neptune.utils import ProjectMigratedToNewStructure
-from neptune.utils import SSLError
+from neptune.utils import NeptuneSSLVerificationError
 from neptune.utils import ServerError
 from neptune.utils import Unauthorized
 
