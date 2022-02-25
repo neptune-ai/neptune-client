@@ -63,7 +63,7 @@ from neptune.new.envs import (
     NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE,
 )
 from neptune.new.exceptions import (
-    SSLError,
+    NeptuneSSLVerificationError,
     NeptuneConnectionLostException,
     Unauthorized,
     Forbidden,
@@ -105,7 +105,7 @@ def with_api_exceptions_handler(func):
                     raise NeptuneInvalidApiTokenException()
                 raise
             except requests.exceptions.SSLError as e:
-                raise SSLError() from e
+                raise NeptuneSSLVerificationError() from e
             except (
                 BravadoConnectionError,
                 BravadoTimeoutError,
