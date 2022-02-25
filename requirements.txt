@@ -16,3 +16,6 @@ urllib3
 dataclasses>=0.6; python_version<"3.7"
 swagger-spec-validator>=2.7.4
 psutil
+# pinned to < 4.0.0 because bravado-core has invalid blacklist of schamas tha shouldn't be resolved
+# This causes bravado to resolve jsonschema url breaking neptune-client in offline environments
+jsonschema<4.0.0
