@@ -50,7 +50,7 @@ from neptune import envs
 from neptune.api_exceptions import (
     ConnectionLost,
     Forbidden,
-    SSLError,
+    NeptuneSSLVerificationError,
     ServerError,
     Unauthorized,
 )
