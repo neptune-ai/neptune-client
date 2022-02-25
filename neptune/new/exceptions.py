@@ -565,8 +565,8 @@ Neptune client was unable to verify your SSL Certificate.
             {bash}curl https://<your_domain>/api/backend/echo {end}
         - Where <your_domain> is the address that you use to access Neptune UI i.e. abc.com
         - Contact your network administrator if you get the following output:
-            {fail}'curl: (60) server certificate verification failed...'{end}
-    - Your `machine software is not up-to-date. <https://docs.neptune.ai/api-reference/environment-variables#neptune_allow_self_signed_certificate>`
+            {fail}"curl: (60) server certificate verification failed..."{end}
+    - Your machine software is not up-to-date.
         - Minimal OS requirements:
             - Windows >= XP SP3 
             - macOS >= 10.12.1
@@ -596,9 +596,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help 
 """
-        super().__init__(
-            message.format(**STYLES)
-        )
+        super().__init__(message.format(**STYLES))
 
 
 class NeptuneConnectionLostException(NeptuneException):
