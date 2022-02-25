@@ -287,7 +287,7 @@ from neptune.new.exceptions import ProjectNameCollision
 from neptune.new.exceptions import ProjectNotFound
 from neptune.new.exceptions import RunNotFound
 from neptune.new.exceptions import RunUUIDNotFound
-from neptune.new.exceptions import SSLError
+from neptune.new.exceptions import NeptuneSSLVerificationError
 from neptune.new.exceptions import Unauthorized
 from neptune.new.exceptions import UnsupportedClientVersion
 from neptune.new.exceptions import Version
