@@ -117,6 +117,7 @@ class NeptuneBackendMock(NeptuneBackend):
     WORKSPACE_NAME = "offline"
     PROJECT_NAME = "project-placeholder"
     PROJECT_KEY = SysId("OFFLINE")
+    MODEL_SYS_ID = SysId("OFFLINE-MOD")
 
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
@@ -166,6 +167,9 @@ class NeptuneBackendMock(NeptuneBackend):
         container.set(["sys", "creation_time"], Datetime(datetime.now()))
         container.set(["sys", "modification_time"], Datetime(datetime.now()))
         container.set(["sys", "failed"], Boolean(False))
+        if container_type == ContainerType.MODEL_VERSION:
+            container.set(["sys", "model_id"], String(self.MODEL_SYS_ID))
+            container.set(["sys", "stage"], String("none"))
         return container
 
     def _get_container(self, container_id: UniqueId, container_type: ContainerType):

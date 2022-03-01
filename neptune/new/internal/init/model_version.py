@@ -17,6 +17,7 @@
 import threading
 from typing import Optional
 
+from neptune.new.attributes import constants as attr_consts
 from neptune.new.exceptions import (
     NeedExistingModelVersionForReadOnlyMode,
     NeptuneException,
@@ -29,6 +30,7 @@ from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.init.parameters import (
     DEFAULT_FLUSH_PERIOD,
+    DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
 from neptune.new.internal.operation_processors.factory import get_operation_processor
@@ -41,6 +43,7 @@ from neptune.new.types.mode import Mode
 def init_model_version(
     *,
     version: Optional[str] = None,
+    name: Optional[str] = None,
     model: Optional[str] = None,
     project: Optional[str] = None,
     api_token: Optional[str] = None,
@@ -49,6 +52,7 @@ def init_model_version(
     proxies: Optional[dict] = None,
 ) -> ModelVersion:
     verify_type("version", version, (str, type(None)))
+    verify_type("name", name, (str, type(None)))
     verify_type("model", model, (str, type(None)))
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
@@ -60,6 +64,8 @@ def init_model_version(
 
     if mode == Mode.OFFLINE:
         raise NeptuneException("Model can't be initialized in OFFLINE mode")
+
+    name = DEFAULT_NAME if model is None and name is None else name
 
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
@@ -108,7 +114,7 @@ def init_model_version(
     if mode != Mode.READ_ONLY:
         background_jobs.append(PingBackgroundJob())
 
-    _model = ModelVersion(
+    _model_version = ModelVersion(
         id_=api_model_version.id,
         backend=backend,
         op_processor=operation_processor,
@@ -120,9 +126,13 @@ def init_model_version(
         project_id=project_obj.id,
     )
     if mode != Mode.OFFLINE:
-        _model.sync(wait=False)
+        _model_version.sync(wait=False)
+
+    if mode != Mode.READ_ONLY:
+        if name is not None:
+            _model_version[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
 
     # pylint: disable=protected-access
-    _model._startup(debug_mode=mode == Mode.DEBUG)
+    _model_version._startup(debug_mode=mode == Mode.DEBUG)
 
-    return _model
+    return _model_version
