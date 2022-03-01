@@ -17,7 +17,6 @@ import os
 import random
 import uuid
 from itertools import product
-from pathlib import Path
 from typing import Set
 from zipfile import ZipFile
 
@@ -156,7 +155,7 @@ class TestUpload(BaseE2ETest):
             return subpaths
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_fileset_nested_structure(self, container: AttributeContainer):
+    def test_fileset_nested_structure(self, container: MetadataContainer):
         key = self.gen_key()
         possible_paths = self._gen_tree_paths(depth=3)
 
@@ -201,7 +200,7 @@ class TestUpload(BaseE2ETest):
                         assert content == expected_content
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_reset_fileset(self, container):
+    def test_reset_fileset(self, container: MetadataContainer):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
@@ -234,7 +233,7 @@ class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
     def test_single_file_override(
-        self, container: AttributeContainer, delete_attribute: bool
+        self, container: MetadataContainer, delete_attribute: bool
     ):
         key = self.gen_key()
         filename1 = fake.file_name()
@@ -274,7 +273,7 @@ class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
     def test_fileset_file_override(
-        self, container: AttributeContainer, delete_attribute: bool
+        self, container: MetadataContainer, delete_attribute: bool
     ):
         key = self.gen_key()
         filename = fake.file_name()
