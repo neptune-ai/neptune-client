@@ -47,7 +47,7 @@ Neptune client was unable to verify your SSL Certificate.
             - Debian >= 8
 
 {bold}What can I do?{end}
-You can manually configure Neptune to skip all SLL checks. To do that
+You can manually configure Neptune to skip all SSL checks. To do that
 set the NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE environment variable to 'TRUE'.
 {bold}Note that might mean your connection is less secure{end}.
 
