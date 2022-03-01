@@ -72,6 +72,7 @@ from neptune.new.exceptions import (
     ClientHttpError,
     NeptuneFeatureNotAvailableException,
     MetadataInconsistency,
+    NeptuneInvalidApiTokenException,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.operation import Operation, CopyAttribute
@@ -99,6 +100,10 @@ def with_api_exceptions_handler(func):
 
             try:
                 return func(*args, **kwargs)
+            except requests.exceptions.InvalidHeader as e:
+                if "X-Neptune-Api-Token" in e.args[0]:
+                    raise NeptuneInvalidApiTokenException()
+                raise
             except requests.exceptions.SSLError as e:
                 raise SSLError() from e
             except (

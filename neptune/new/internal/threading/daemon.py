@@ -25,8 +25,8 @@ from neptune.new.exceptions import NeptuneConnectionLostException
 
 
 class Daemon(threading.Thread):
-    def __init__(self, sleep_time: float):
-        super().__init__(daemon=True)
+    def __init__(self, sleep_time: float, name):
+        super().__init__(daemon=True, name=name)
         self._sleep_time = sleep_time
         self._interrupted = False
         self._event = threading.Event()

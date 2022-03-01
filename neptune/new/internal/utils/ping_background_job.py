@@ -50,7 +50,7 @@ class PingBackgroundJob(BackgroundJob):
 
     class ReportingThread(Daemon):
         def __init__(self, period: float, container: "MetadataContainer"):
-            super().__init__(sleep_time=period)
+            super().__init__(sleep_time=period, name="NeptunePing")
             self._container = container
 
         @Daemon.ConnectionRetryWrapper(

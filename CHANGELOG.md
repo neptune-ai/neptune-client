@@ -3,12 +3,22 @@
 ### Changes
 - Do not forward every attribute from Handler to Attribute ([#815](https://github.com/neptune-ai/neptune-client/pull/815))
 
+## neptune-client 0.14.3
+
+## Features
+- Stripping whitespaces from Neptune API Token ([#825](https://github.com/neptune-ai/neptune-client/pull/825))
+
+## Fixes
+- Raise proper exception when invalid token were provided ([#825](https://github.com/neptune-ai/neptune-client/pull/825))
+- Make status error-handling in legacy client consistent with neptune.new ([#829](https://github.com/neptune-ai/neptune-client/pull/829))
+
 ## neptune-client 0.14.2
 
 ### Features
 - Use new file upload API ([#789](https://github.com/neptune-ai/neptune-client/pull/789))
 
 ## Fixes
+- Fixed listing available workspaces when invalid name was provided ([#818](https://github.com/neptune-ai/neptune-client/pull/818))
 - Added proper docstrings for Project-Level Metadata ([#812](https://github.com/neptune-ai/neptune-client/pull/812))
 - Fixed backward compatibility when syncing old offline data ([#810](https://github.com/neptune-ai/neptune-client/pull/810))
 - Prevent original numpy array from modifying ([#821](https://github.com/neptune-ai/neptune-client/pull/821))

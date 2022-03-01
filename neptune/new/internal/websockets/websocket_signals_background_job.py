@@ -69,7 +69,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         def __init__(
             self, container: "MetadataContainer", ws_client: ReconnectingWebsocket
         ):
-            super().__init__(sleep_time=0)
+            super().__init__(sleep_time=0, name="NeptuneWebhooks")
             self._container = container
             self._ws_client = ws_client
 

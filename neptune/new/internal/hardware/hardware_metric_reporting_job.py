@@ -113,7 +113,7 @@ class HardwareMetricReportingJob(BackgroundJob):
             container: "MetadataContainer",
             metric_reporter: MetricReporter,
         ):
-            super().__init__(sleep_time=period)
+            super().__init__(sleep_time=period, name="NeptuneReporting")
             self._outer = outer
             self._container = container
             self._metric_reporter = metric_reporter
