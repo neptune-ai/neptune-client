@@ -114,25 +114,9 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertEqual(exp._id, AN_API_MODEL_VERSION.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("sys/model_id", AttributeType.STRING)],
-    )
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
-        new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
-    )
     def test_sync_mode(self):
         AbstractExperimentTestMixin.test_sync_mode(self)
 
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [Attribute("sys/model_id", AttributeType.STRING)],
-    )
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
-        new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
-    )
     def test_async_mode(self):
         AbstractExperimentTestMixin.test_async_mode(self)
 
@@ -140,19 +124,8 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         with self.assertRaises(NeptuneWrongInitParametersException):
             init_model_version(version=None, model=None)
 
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_attributes",
-        new=lambda _, _uuid, _type: [
-            Attribute("sys/stage", AttributeType.STRING),
-            Attribute("sys/model_id", AttributeType.STRING),
-        ],
-    )
     def test_change_stage(self):
-        with patch(
-            "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.get_string_attribute",
-            new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
-        ):
-            exp = self.call_init()
+        exp = self.call_init()
         exp.change_stage(stage="production")
 
         self.assertEqual("production", exp["sys/stage"].fetch())
@@ -167,3 +140,8 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
             exp = self.call_init(mode="offline")
             with self.assertRaises(NeptuneOfflineModeChangeStageException):
                 exp.change_stage(stage="production")
+
+    def test_name_parameter(self):
+        with self.call_init(name="some_name") as exp:
+            exp.wait()
+            self.assertEqual(exp["sys/name"].fetch(), "some_name")
