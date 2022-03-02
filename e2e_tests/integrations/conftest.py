@@ -47,16 +47,19 @@ class BoringModel(LightningModule):
     def forward(self, *args, **kwargs):
         return self.layer(*args, **kwargs)
 
-    def training_step(self, batch: torch.Tensor, batch_index: int, **kwargs):
-        loss = self(batch, **kwargs).sum()
+    def training_step(self, *args, **kwargs):
+        batch, *_ = args
+        loss = self(batch).sum()
         self.log("train/loss", loss)
         return {"loss": loss}
 
-    def validation_step(self, batch: torch.Tensor, batch_index: int, **kwargs):
+    def validation_step(self, *args, **kwargs):
+        batch, *_ = args
         loss = self(batch, **kwargs).sum()
         self.log("valid/loss", loss)
 
-    def test_step(self, batch: torch.Tensor, batch_index: int, **kwargs):
+    def test_step(self, *args, **kwargs):
+        batch, *_ = args
         loss = self(batch, **kwargs).sum()
         self.log("test/loss", loss)
 
