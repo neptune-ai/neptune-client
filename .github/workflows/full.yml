@@ -85,7 +85,7 @@ jobs:
           fields: repo,message,commit,author,eventName,workflow,job,took
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        if: always()
+        if: job.status != 'success'
 
   publish:
     needs: [lint, test]
