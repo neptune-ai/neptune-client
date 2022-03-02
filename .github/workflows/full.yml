@@ -21,6 +21,7 @@ jobs:
   # Both integration tests and E2E
   test:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       max-parallel: 4
       matrix:
@@ -85,7 +86,7 @@ jobs:
           fields: repo,message,commit,author,eventName,workflow,job,took
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        if: always()
+        if: job.status != 'success'
 
   publish:
     needs: [lint, test]

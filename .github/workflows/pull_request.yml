@@ -15,6 +15,7 @@ jobs:
 
   integration:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
     strategy:
       matrix:
         os: [ubuntu-latest]
