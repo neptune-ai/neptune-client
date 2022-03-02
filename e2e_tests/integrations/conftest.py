@@ -48,16 +48,19 @@ class BoringModel(LightningModule):
         return self.layer(*args, **kwargs)
 
     def training_step(self, *args, **kwargs):
-        loss = self(*args, **kwargs).sum()
+        batch, *_ = args
+        loss = self(batch).sum()
         self.log("train/loss", loss)
         return {"loss": loss}
 
     def validation_step(self, *args, **kwargs):
-        loss = self(*args, **kwargs).sum()
+        batch, *_ = args
+        loss = self(batch, **kwargs).sum()
         self.log("valid/loss", loss)
 
     def test_step(self, *args, **kwargs):
-        loss = self(*args, **kwargs).sum()
+        batch, *_ = args
+        loss = self(batch, **kwargs).sum()
         self.log("test/loss", loss)
 
     def configure_optimizers(self):
