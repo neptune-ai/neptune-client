@@ -298,24 +298,14 @@ class MetadataContainer(AbstractContextManager):
         verify_type("path", path, str)
         return self.get_attribute(path) is not None
 
+    @ensure_not_stopped
     def pop(self, path: str, wait: bool = False) -> None:
         verify_type("path", path, str)
-        with self._lock:
-            self._pop_impl(parse_path(path), wait)
+        self._get_root_handler().pop(path, wait)
 
     def _pop_impl(self, parsed_path: List[str], wait: bool):
-        attribute = self._structure.get(parsed_path)
-        if isinstance(attribute, NamespaceAttr):
-            self._pop_namespace(attribute, wait)
-        else:
-            self._structure.pop(parsed_path)
-            self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
-
-    def _pop_namespace(self, namespace: NamespaceAttr, wait: bool):
-        children = list(namespace)
-        for key in children:
-            sub_attr_path = namespace._path + [key]  # pylint: disable=protected-access
-            self._pop_impl(sub_attr_path, wait)
+        self._structure.pop(parsed_path)
+        self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
 
     def lock(self) -> threading.RLock:
         return self._lock

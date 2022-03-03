@@ -25,6 +25,7 @@ from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
 from neptune.new.attributes.file_set import FileSet
+from neptune.new.attributes.namespace import Namespace
 from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
@@ -51,13 +52,18 @@ if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer
 
 
+def validate_path_not_protected(target_path: str, handler: "Handler"):
+    # pylint: disable=protected-access
+    path_protection_exception = handler._PROTECTED_PATHS.get(target_path)
+    if path_protection_exception:
+        raise path_protection_exception(target_path)
+
+
 def check_protected_paths(fun):
     @wraps(fun)
     def inner_fun(self: "Handler", *args, **kwargs):
         # pylint: disable=protected-access
-        path_protection_exception = self._PROTECTED_PATHS.get(self._path)
-        if path_protection_exception:
-            raise path_protection_exception(self._path)
+        validate_path_not_protected(self._path, self)
         return fun(self, *args, **kwargs)
 
     return inner_fun
@@ -298,11 +304,24 @@ class Handler:
 
     @check_protected_paths
     def pop(self, path: str = None, wait: bool = False) -> None:
-        if path:
-            verify_type("path", path, str)
-            self._container.pop(join_paths(self._path, path), wait)
-        else:
-            self._container.pop(self._path, wait)
+        # pylint: disable=protected-access
+        with self._container.lock():
+            handler = self
+            if path:
+                verify_type("path", path, str)
+                handler = self[path]
+                path = join_paths(self._path, path)
+                # extra check: check_protected_paths decorator does not catch flow with non-null path
+                validate_path_not_protected(path, self)
+            else:
+                path = self._path
+
+            attribute = self._container.get_attribute(path)
+            if isinstance(attribute, Namespace):
+                for child_path in list(attribute):
+                    handler.pop(child_path, wait)
+            else:
+                self._container._pop_impl(parse_path(path), wait)
 
     @check_protected_paths
     def remove(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
