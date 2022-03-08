@@ -14,13 +14,17 @@
 # limitations under the License.
 #
 
-from neptune.new.run import Run
+from neptune.new.metadata_containers import MetadataContainer
+
+# backwards compatibility
+# pylint: disable=unused-import
+from neptune.new.metadata_containers import Run
 
 
 class Logger(object):
-    def __init__(self, run: Run, attribute_name: str):
-        self._run = run
+    def __init__(self, container: MetadataContainer, attribute_name: str):
+        self._container = container
         self._attribute_name = attribute_name
 
     def log(self, msg: str):
-        self._run[self._attribute_name].log(msg)
+        self._container[self._attribute_name].log(msg)

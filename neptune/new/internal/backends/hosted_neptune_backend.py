@@ -15,9 +15,15 @@
 #
 import logging
 import re
-from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING
+import typing
+from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union
 
-from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
+from bravado.exception import (
+    HTTPNotFound,
+    HTTPPaymentRequired,
+    HTTPUnprocessableEntity,
+    HTTPConflict,
+)
 
 from neptune.new.exceptions import (
     ArtifactNotFoundException,
@@ -31,12 +37,14 @@ from neptune.new.exceptions import (
     NeptuneLimitExceedException,
     ProjectNameCollision,
     ProjectNotFound,
-    RunNotFound,
-    raise_container_not_found,
+    MetadataContainerNotFound,
+    ProjectNotFoundWithSuggestions,
+    ContainerUUIDNotFound,
+    NeptuneObjectCreationConflict,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
-    ApiRun,
+    ApiExperiment,
     ArtifactAttribute,
     Attribute,
     AttributeType,
@@ -95,6 +103,7 @@ from neptune.new.internal.backends.utils import (
 )
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
+from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import (
     Operation,
     TrackFilesToArtifact,
@@ -103,7 +112,7 @@ from neptune.new.internal.operation import (
     UploadFileSet,
     DeleteAttribute,
 )
-from neptune.new.internal.utils import base64_decode, verify_type
+from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import (
     map_attribute_result_to_value,
 )
@@ -112,6 +121,7 @@ from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.new.internal.backends.nql import NQLQuery
 
 if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
@@ -168,9 +178,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
 
     @with_api_exceptions_handler
-    def get_project(self, project_id: str) -> Project:
-        verify_type("project_id", project_id, str)
-
+    def get_project(self, project_id: QualifiedName) -> Project:
         project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, project_id)
         workspace, name = project_spec["workspace"], project_spec["project"]
 
@@ -191,7 +199,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                         project_id=project_id, available_projects=available_projects
                     )
                 else:
-                    raise ProjectNotFound(
+                    raise ProjectNotFoundWithSuggestions(
                         project_id=project_id,
                         available_projects=self.get_available_projects(),
                         available_workspaces=self.get_available_workspaces(),
@@ -205,7 +213,12 @@ class HostedNeptuneBackend(NeptuneBackend):
             project_version = project.version if hasattr(project, "version") else 1
             if project_version < 2:
                 raise NeptuneLegacyProjectException(project_id)
-            return Project(project.id, project.name, project.organizationName)
+            return Project(
+                id=project.id,
+                name=project.name,
+                workspace=project.organizationName,
+                sys_id=project.projectKey,
+            )
         except HTTPNotFound:
             available_workspaces = self.get_available_workspaces()
 
@@ -213,13 +226,13 @@ class HostedNeptuneBackend(NeptuneBackend):
                 filter(lambda aw: aw.name == workspace, available_workspaces)
             ):
                 # Could not found specified workspace, forces listing all projects
-                raise ProjectNotFound(
+                raise ProjectNotFoundWithSuggestions(
                     project_id=project_id,
                     available_projects=self.get_available_projects(),
                     available_workspaces=available_workspaces,
                 )
             else:
-                raise ProjectNotFound(
+                raise ProjectNotFoundWithSuggestions(
                     project_id=project_id,
                     available_projects=self.get_available_projects(
                         workspace_id=workspace
@@ -244,7 +257,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return list(
                 map(
                     lambda project: Project(
-                        project.id, project.name, project.organizationName
+                        id=project.id,
+                        name=project.name,
+                        workspace=project.organizationName,
+                        sys_id=project.projectKey,
                     ),
                     projects,
                 )
@@ -261,7 +277,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             workspaces = response.result
             return list(
                 map(
-                    lambda workspace: Workspace(_id=workspace.id, name=workspace.name),
+                    lambda workspace: Workspace(id=workspace.id, name=workspace.name),
                     workspaces,
                 )
             )
@@ -269,32 +285,44 @@ class HostedNeptuneBackend(NeptuneBackend):
             return []
 
     @with_api_exceptions_handler
-    def get_run(self, run_id: str):
+    def get_metadata_container(
+        self,
+        container_id: Union[UniqueId, QualifiedName],
+        expected_container_type: typing.Optional[ContainerType],
+    ) -> ApiExperiment:
         try:
-            run = (
+            experiment = (
                 self.leaderboard_client.api.getExperiment(
-                    experimentId=run_id,
+                    experimentId=container_id,
                     **DEFAULT_REQUEST_KWARGS,
                 )
                 .response()
                 .result
             )
-            return ApiRun(
-                run.id, run.shortId, run.organizationName, run.projectName, run.trashed
-            )
+
+            if (
+                expected_container_type is not None
+                and ContainerType.from_api(experiment.type) != expected_container_type
+            ):
+                raise MetadataContainerNotFound.of_container_type(
+                    container_type=expected_container_type, container_id=container_id
+                )
+
+            return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
-            raise RunNotFound(run_id)
+            raise MetadataContainerNotFound.of_container_type(
+                container_type=expected_container_type, container_id=container_id
+            )
 
     @with_api_exceptions_handler
     def create_run(
         self,
-        project_id: str,
+        project_id: UniqueId,
         git_ref: Optional[GitRef] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
-    ) -> ApiRun:
-        verify_type("project_id", project_id, str)
+    ) -> ApiExperiment:
 
         git_info = (
             {
@@ -313,18 +341,64 @@ class HostedNeptuneBackend(NeptuneBackend):
             else None
         )
 
-        params = {
-            "projectIdentifier": project_id,
-            "cliVersion": str(neptune_client_version),
+        additional_params = {
             "gitInfo": git_info,
             "customId": custom_run_id,
         }
 
         if notebook_id is not None and checkpoint_id is not None:
-            params["notebookId"] = notebook_id if notebook_id is not None else None
-            params["checkpointId"] = (
+            additional_params["notebookId"] = (
+                notebook_id if notebook_id is not None else None
+            )
+            additional_params["checkpointId"] = (
                 checkpoint_id if checkpoint_id is not None else None
             )
+
+        return self._create_experiment(
+            project_id=project_id,
+            parent_id=project_id,
+            container_type=ContainerType.RUN,
+            additional_params=additional_params,
+        )
+
+    def create_model(self, project_id: UniqueId, key: str = "") -> ApiExperiment:
+        additional_params = {
+            "key": key,
+        }
+
+        return self._create_experiment(
+            project_id=project_id,
+            parent_id=project_id,
+            container_type=ContainerType.MODEL,
+            additional_params=additional_params,
+        )
+
+    def create_model_version(
+        self, project_id: UniqueId, model_id: UniqueId
+    ) -> ApiExperiment:
+        return self._create_experiment(
+            project_id=project_id,
+            parent_id=model_id,
+            container_type=ContainerType.MODEL_VERSION,
+        )
+
+    def _create_experiment(
+        self,
+        project_id: UniqueId,
+        parent_id: UniqueId,
+        container_type: ContainerType,
+        additional_params: Optional[dict] = None,
+    ):
+        if additional_params is None:
+            additional_params = dict()
+
+        params = {
+            "projectIdentifier": project_id,
+            "parentId": parent_id,
+            "type": container_type.to_api(),
+            "cliVersion": str(neptune_client_version),
+            **additional_params,
+        }
 
         kwargs = {
             "experimentCreationParams": params,
@@ -333,14 +407,14 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            run = (
+            experiment = (
                 self.leaderboard_client.api.createExperiment(**kwargs).response().result
             )
-            return ApiRun(
-                run.id, run.shortId, run.organizationName, run.projectName, run.trashed
-            )
+            return ApiExperiment.from_experiment(experiment)
         except HTTPNotFound:
             raise ProjectNotFound(project_id=project_id)
+        except HTTPConflict as e:
+            raise NeptuneObjectCreationConflict() from e
 
     @with_api_exceptions_handler
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
@@ -371,11 +445,11 @@ class HostedNeptuneBackend(NeptuneBackend):
                 **request_kwargs,
             ).response().result
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
 
     def execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> Tuple[int, List[NeptuneException]]:
@@ -558,7 +632,7 @@ class HostedNeptuneBackend(NeptuneBackend):
     @with_api_exceptions_handler
     def _execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> List[MetadataInconsistency]:
@@ -584,7 +658,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             )
             return [MetadataInconsistency(err.errorDescription) for err in result]
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
             raise NeptuneLimitExceedException(
                 reason=e.response.json().get("title", "Unknown reason")
@@ -602,7 +676,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
-            run = (
+            experiment = (
                 self.leaderboard_client.api.getExperimentAttributes(**params)
                 .response()
                 .result
@@ -610,11 +684,13 @@ class HostedNeptuneBackend(NeptuneBackend):
 
             attribute_type_names = [at.value for at in AttributeType]
             accepted_attributes = [
-                attr for attr in run.attributes if attr.type in attribute_type_names
+                attr
+                for attr in experiment.attributes
+                if attr.type in attribute_type_names
             ]
 
             # Notify about ignored attrs
-            ignored_attributes = set(attr.type for attr in run.attributes) - set(
+            ignored_attributes = set(attr.type for attr in experiment.attributes) - set(
                 attr.type for attr in accepted_attributes
             )
             if ignored_attributes:
@@ -630,11 +706,10 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.type in attribute_type_names
             ]
         except HTTPNotFound as e:
-            raise_container_not_found(
+            raise ContainerUUIDNotFound(
                 container_id=container_id,
                 container_type=container_type,
-                from_exception=e,
-            )
+            ) from e
 
     def download_file_series_by_index(
         self,
@@ -1014,7 +1089,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 if attr.name.startswith(namespace_prefix)
             ]
         except HTTPNotFound as e:
-            raise_container_not_found(container_id, container_type, from_exception=e)
+            raise ContainerUUIDNotFound(container_id, container_type) from e
 
     # pylint: disable=unused-argument
     @with_api_exceptions_handler
@@ -1038,28 +1113,27 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise FetchAttributeNotFoundException(path_to_str(path))
 
     @with_api_exceptions_handler
-    def get_leaderboard(
+    def search_leaderboard_entries(
         self,
-        project_id: str,
-        _id: Optional[Iterable[str]] = None,
-        state: Optional[Iterable[str]] = None,
-        owner: Optional[Iterable[str]] = None,
-        tags: Optional[Iterable[str]] = None,
+        project_id: UniqueId,
+        types: Optional[Iterable[ContainerType]] = None,
+        query: Optional[NQLQuery] = None,
     ) -> List[LeaderboardEntry]:
+        query_params = {}
+        if query:
+            query_params = {"query": {"query": str(query)}}
+
         def get_portion(limit, offset):
             return (
-                self.leaderboard_client.api.getLeaderboard(
+                self.leaderboard_client.api.searchLeaderboardEntries(
                     projectIdentifier=project_id,
-                    shortId=_id,
-                    state=state,
-                    owner=owner,
-                    tags=tags,
-                    tagsMode="and",
-                    sortBy=["shortId"],
-                    sortFieldType=["string"],
-                    sortDirection=["ascending"],
-                    limit=limit,
-                    offset=offset,
+                    type=list(
+                        map(lambda container_type: container_type.to_api(), types)
+                    ),
+                    params={
+                        **query_params,
+                        "pagination": {"limit": limit, "offset": offset},
+                    },
                     **DEFAULT_REQUEST_KWARGS,
                 )
                 .response()
@@ -1077,7 +1151,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                             attr.name, AttributeType(attr.type), properties
                         )
                     )
-            return LeaderboardEntry(entry.id, attributes)
+            return LeaderboardEntry(entry.experimentId, attributes)
 
         try:
             return [
@@ -1088,10 +1162,33 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise ProjectNotFound(project_id)
 
     def get_run_url(
-        self, run_id: str, workspace: str, project_name: str, short_id: str
+        self, run_id: str, workspace: str, project_name: str, sys_id: str
     ) -> str:
         base_url = self.get_display_address()
-        return f"{base_url}/{workspace}/{project_name}/e/{short_id}"
+        return f"{base_url}/{workspace}/{project_name}/e/{sys_id}"
+
+    def get_project_url(
+        self, project_id: str, workspace: str, project_name: str
+    ) -> str:
+        base_url = self.get_display_address()
+        return f"{base_url}/{workspace}/{project_name}/"
+
+    def get_model_url(
+        self, model_id: str, workspace: str, project_name: str, sys_id: str
+    ) -> str:
+        base_url = self.get_display_address()
+        return f"{base_url}/{workspace}/{project_name}/m/{sys_id}"
+
+    def get_model_version_url(
+        self,
+        model_version_id: str,
+        model_id: str,
+        workspace: str,
+        project_name: str,
+        sys_id: str,
+    ) -> str:
+        base_url = self.get_display_address()
+        return f"{base_url}/{workspace}/{project_name}/m/{model_id}/v/{sys_id}"
 
     @staticmethod
     def _get_all_items(get_portion, step):

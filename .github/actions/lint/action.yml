@@ -10,7 +10,7 @@ runs:
           python-version: 3.9
 
       - name: Install dependencies
-        run: pip install -r requirements.txt -r requirements/test_requirements.txt
+        run: pip install -r requirements.txt -r requirements/e2e_requirements.txt
         shell: bash
 
       - name: Run pre-commit
@@ -18,5 +18,5 @@ runs:
         shell: bash
 
       - name: Lint
-        run: python -m pylint -j 0 -f parseable neptune tests
+        run: python -m pylint -j 0 -f parseable neptune tests e2e_tests
         shell: bash

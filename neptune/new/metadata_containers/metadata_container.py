@@ -38,17 +38,21 @@ from neptune.new.exceptions import (
     InactiveProjectException,
     InactiveRunException,
     NeptunePossibleLegacyUsageException,
+    InactiveModelException,
+    InactiveModelVersionException,
 )
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import UniqueId, SysId
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.internal.run_structure import ContainerStructure
+from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.state import ContainerState
 from neptune.new.internal.utils import (
     is_bool,
@@ -74,38 +78,48 @@ from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
 from neptune.new.types.value_copy import ValueCopy
 
+from neptune.new.metadata_containers.metadata_containers_table import Table
+
 
 def ensure_not_stopped(fun):
     @wraps(fun)
-    def inner_fun(self: "AttributeContainer", *args, **kwargs):
+    def inner_fun(self: "MetadataContainer", *args, **kwargs):
         # pylint: disable=protected-access
         if self._state == ContainerState.STOPPED:
             if self.container_type == ContainerType.RUN:
                 raise InactiveRunException(label=self._label)
             elif self.container_type == ContainerType.PROJECT:
                 raise InactiveProjectException(label=self._label)
+            elif self.container_type == ContainerType.MODEL:
+                raise InactiveModelException(label=self._label)
+            elif self.container_type == ContainerType.MODEL_VERSION:
+                raise InactiveModelVersionException(label=self._label)
+            else:
+                raise ValueError(f"Unknown container type: {self.container_type}")
         return fun(self, *args, **kwargs)
 
     return inner_fun
 
 
-class AttributeContainer(AbstractContextManager):
+class MetadataContainer(AbstractContextManager):
     container_type: ContainerType
 
     LEGACY_METHODS = set()
 
     def __init__(
         self,
-        _id: str,
+        *,
+        id_: UniqueId,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
         lock: threading.RLock,
-        project_id: str,
+        project_id: UniqueId,
         project_name: str,
         workspace: str,
+        sys_id: SysId,
     ):
-        self._id = _id
+        self._id = id_
         self._project_id = project_id
         self._project_name = project_name
         self._workspace = workspace
@@ -117,6 +131,7 @@ class AttributeContainer(AbstractContextManager):
         ] = ContainerStructure(NamespaceBuilder(self))
         self._lock = lock
         self._state = ContainerState.CREATED
+        self._sys_id = sys_id
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:
@@ -138,6 +153,11 @@ class AttributeContainer(AbstractContextManager):
     @property
     @abc.abstractmethod
     def _docs_url_stop(self) -> str:
+        raise NotImplementedError
+
+    @property
+    @abc.abstractmethod
+    def _url(self) -> str:
         raise NotImplementedError
 
     def _get_subpath_suggestions(
@@ -278,24 +298,14 @@ class AttributeContainer(AbstractContextManager):
         verify_type("path", path, str)
         return self.get_attribute(path) is not None
 
+    @ensure_not_stopped
     def pop(self, path: str, wait: bool = False) -> None:
         verify_type("path", path, str)
-        with self._lock:
-            self._pop_impl(parse_path(path), wait)
+        self._get_root_handler().pop(path, wait)
 
     def _pop_impl(self, parsed_path: List[str], wait: bool):
-        attribute = self._structure.get(parsed_path)
-        if isinstance(attribute, NamespaceAttr):
-            self._pop_namespace(attribute, wait)
-        else:
-            self._structure.pop(parsed_path)
-            self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
-
-    def _pop_namespace(self, namespace: NamespaceAttr, wait: bool):
-        children = list(namespace)
-        for key in children:
-            sub_attr_path = namespace._path + [key]  # pylint: disable=protected-access
-            self._pop_impl(sub_attr_path, wait)
+        self._structure.pop(parsed_path)
+        self._op_processor.enqueue_operation(DeleteAttribute(parsed_path), wait)
 
     def lock(self) -> threading.RLock:
         return self._lock
@@ -323,7 +333,14 @@ class AttributeContainer(AbstractContextManager):
     def _get_root_handler(self):
         return Handler(self, "")
 
+    def get_url(self) -> str:
+        """Returns the URL that can be accessed within the browser"""
+        return self._url
+
     def _startup(self, debug_mode):
+        if not debug_mode:
+            click.echo(self.get_url())
+
         self.start()
 
         if not debug_mode:
@@ -339,3 +356,16 @@ class AttributeContainer(AbstractContextManager):
 
     def _shutdown_hook(self):
         self.stop()
+
+    def _fetch_entries(self, child_type: ContainerType, query: NQLQuery) -> Table:
+        leaderboard_entries = self._backend.search_leaderboard_entries(
+            project_id=self._project_id,
+            types=[child_type],
+            query=query,
+        )
+
+        return Table(
+            backend=self._backend,
+            container_type=child_type,
+            entries=leaderboard_entries,
+        )

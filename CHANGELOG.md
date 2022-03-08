@@ -1,3 +1,14 @@
+## [UNRELEASED] neptune-client 0.15.0
+
+## Features
+- Methods for creating and manipulating Model Registry objects ([#794](https://github.com/neptune-ai/neptune-client/pull/794))
+
+### Changes
+- Renamed --run parameter to --object in `neptune sync` (previous kept as deprecated, [#849](https://github.com/neptune-ai/neptune-client/pull/849))
+- More helpful error message on SSL validation problem ([#853](https://github.com/neptune-ai/neptune-client/pull/853))
+- Added names to daemon worker threads ([#851](https://github.com/neptune-ai/neptune-client/pull/851))
+- Stopped forwarding every attribute from Handler to Attribute ([#815](https://github.com/neptune-ai/neptune-client/pull/815))
+
 ## neptune-client 0.14.3
 
 ## Features

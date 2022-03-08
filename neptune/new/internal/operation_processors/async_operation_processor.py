@@ -23,8 +23,9 @@ from typing import Optional, List
 import click
 
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.containers.storage_queue import StorageQueue
+from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
@@ -42,9 +43,9 @@ class AsyncOperationProcessor(OperationProcessor):
 
     def __init__(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
-        queue: StorageQueue[Operation],
+        queue: DiskQueue[Operation],
         backend: NeptuneBackend,
         lock: threading.RLock,
         sleep_time: float = 5,

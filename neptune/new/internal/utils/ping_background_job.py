@@ -22,7 +22,7 @@ from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.metadata_containers import MetadataContainer
 
 _logger = logging.getLogger(__name__)
 
@@ -33,8 +33,8 @@ class PingBackgroundJob(BackgroundJob):
         self._thread = None
         self._started = False
 
-    def start(self, run: "Run"):
-        self._thread = self.ReportingThread(self._period, run)
+    def start(self, container: "MetadataContainer"):
+        self._thread = self.ReportingThread(self._period, container)
         self._thread.start()
         self._started = True
 
@@ -49,9 +49,9 @@ class PingBackgroundJob(BackgroundJob):
         self._thread.join(seconds)
 
     class ReportingThread(Daemon):
-        def __init__(self, period: float, run: "Run"):
+        def __init__(self, period: float, container: "MetadataContainer"):
             super().__init__(sleep_time=period, name="NeptunePing")
-            self._run = run
+            self._container = container
 
         @Daemon.ConnectionRetryWrapper(
             kill_message=(
@@ -60,4 +60,4 @@ class PingBackgroundJob(BackgroundJob):
             )
         )
         def work(self) -> None:
-            self._run.ping()
+            self._container.ping()

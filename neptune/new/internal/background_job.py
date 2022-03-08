@@ -19,12 +19,12 @@ import abc
 from typing import TYPE_CHECKING, Optional
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.metadata_containers import MetadataContainer
 
 
 class BackgroundJob:
     @abc.abstractmethod
-    def start(self, run: "Run"):
+    def start(self, container: "MetadataContainer"):
         pass
 
     @abc.abstractmethod

@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, Neptune Labs Sp. z o.o.
+# Copyright (c) 2020, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.new.internal.init_project import get_project, init_project
-from neptune.new.internal.init_run import __version__, init_run
-from neptune.new.types.mode import Mode
 
-init = init_run
-RunMode = Mode
-__all__ = ["__version__", "get_project", "init_project", "init_run", "init", "RunMode"]
+__all__ = ["AbstractBackendRunner"]
+
+import abc
+
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+
+
+class AbstractBackendRunner(abc.ABC):
+    _backend: NeptuneBackend
+
+    def __init__(self, backend: NeptuneBackend):
+        self._backend = backend

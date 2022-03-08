@@ -20,27 +20,43 @@ from typing import Optional, List, Set, Any, FrozenSet
 
 from packaging import version
 
-
-class Project:
-    def __init__(self, _id: str, name: str, workspace: str):
-        self.id = _id
-        self.name = name
-        self.workspace = workspace
-
-
-class Workspace:
-    def __init__(self, _id: str, name: str):
-        self.id = _id
-        self.name = name
+from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import UniqueId, SysId
 
 
 @dataclass
-class ApiRun:
-    id: str
-    short_id: str
+class Project:
+    id: UniqueId
+    name: str
+    workspace: str
+    sys_id: SysId
+
+
+@dataclass
+class Workspace:
+    id: UniqueId
+    name: str
+
+
+@dataclass
+class ApiExperiment:
+    id: UniqueId
+    type: ContainerType
+    sys_id: SysId
     workspace: str
     project_name: str
-    trashed: bool
+    trashed: bool = False
+
+    @classmethod
+    def from_experiment(cls, response_exp):
+        return cls(
+            id=response_exp.id,
+            type=ContainerType.from_api(response_exp.type),
+            sys_id=response_exp.shortId,
+            workspace=response_exp.organizationName,
+            project_name=response_exp.projectName,
+            trashed=response_exp.trashed,
+        )
 
 
 class OptionalFeatures:

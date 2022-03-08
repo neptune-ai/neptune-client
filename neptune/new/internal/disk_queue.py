@@ -19,21 +19,20 @@ import os
 import threading
 from glob import glob
 from pathlib import Path
-from typing import Callable, List, Optional, Tuple, TypeVar
+from typing import Callable, Generic, List, Optional, Tuple, TypeVar
 
 from neptune.new.exceptions import MalformedOperation
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.containers.storage_queue import StorageQueue
-from neptune.new.internal.utils.container_type_file import ContainerTypeFile
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
+
+__all__ = ["DiskQueue"]
 
 T = TypeVar("T")
 
 _logger = logging.getLogger(__name__)
 
 
-class DiskQueue(StorageQueue[T]):
+class DiskQueue(Generic[T]):
 
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
 
@@ -43,7 +42,6 @@ class DiskQueue(StorageQueue[T]):
         to_dict: Callable[[T], dict],
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
-        container_type: ContainerType = None,
         max_file_size: int = 64 * 1024 ** 2,
     ):
         self._dir_path = dir_path.resolve()
@@ -55,12 +53,6 @@ class DiskQueue(StorageQueue[T]):
             os.makedirs(self._dir_path)
         except FileExistsError:
             pass
-
-        # save information regarding container type in queue directory
-        container_file_type = ContainerTypeFile(
-            dir_path, expected_container_type=container_type
-        )
-        container_file_type.save()
 
         self._last_ack_file = SyncOffsetFile(dir_path / "last_ack_version", default=0)
         self._last_put_file = SyncOffsetFile(dir_path / "last_put_version", default=0)

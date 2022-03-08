@@ -15,26 +15,26 @@
 #
 from typing import List, TYPE_CHECKING
 
+from neptune.new.exceptions import TypeDoesNotSupportAttributeException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-
 from neptune.new.internal.operation import Operation
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
-    from neptune.new.attribute_container import AttributeContainer
+    from neptune.new.metadata_containers import MetadataContainer
     from neptune.new.internal.container_type import ContainerType
 
 
 class Attribute:
     supports_copy = False
 
-    def __init__(self, container: "AttributeContainer", path: List[str]):
+    def __init__(self, container: "MetadataContainer", path: List[str]):
         super().__init__()
         self._container = container
         self._path = path
 
     def __getattr__(self, attr):
-        raise AttributeError("{} has no attribute {}.".format(type(self), attr))
+        raise TypeDoesNotSupportAttributeException(type_=type(self), attribute=attr)
 
     def _enqueue_operation(self, operation: Operation, wait: bool):
         # pylint: disable=protected-access

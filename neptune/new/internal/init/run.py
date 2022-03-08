@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
-import logging
 import os
 import threading
+import typing
 from platform import node as get_hostname
 from typing import List, Optional, Union
 
@@ -32,12 +32,19 @@ from neptune.new.exceptions import (
     NeptunePossibleLegacyUsageException,
     NeptuneRunResumeAndCustomIdCollision,
 )
+from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.hardware.hardware_metric_reporting_job import (
     HardwareMetricReportingJob,
+)
+from neptune.new.internal.id_formats import QualifiedName
+from neptune.new.internal.init.parameters import (
+    DEFAULT_FLUSH_PERIOD,
+    DEFAULT_NAME,
+    OFFLINE_PROJECT_QUALIFIED_NAME,
 )
 from neptune.new.internal.notebooks.notebooks import create_checkpoint
 from neptune.new.internal.operation_processors.factory import get_operation_processor
@@ -54,14 +61,9 @@ from neptune.new.internal.utils.traceback_job import TracebackJob
 from neptune.new.internal.websockets.websocket_signals_background_job import (
     WebsocketSignalsBackgroundJob,
 )
-from neptune.new.run import Run
+from neptune.new.metadata_containers import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
-from neptune.new.version import version as parsed_version
-
-__version__ = str(parsed_version)
-
-_logger = logging.getLogger(__name__)
 
 
 LEGACY_KWARGS = ("project_qualified_name", "backend")
@@ -93,7 +95,7 @@ def init_run(
     capture_hardware_metrics: bool = True,
     fail_on_exception: bool = True,
     monitoring_namespace: Optional[str] = None,
-    flush_period: float = 5,
+    flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
     capture_traceback: bool = True,
     **kwargs,
@@ -219,7 +221,10 @@ def init_run(
         else:
             verify_collection_type("source_files", source_files, str)
 
-    name = "Untitled" if run is None and name is None else name
+    # for backward compatibility imports
+    mode = Mode(mode)
+
+    name = DEFAULT_NAME if run is None and name is None else name
     description = "" if run is None and description is None else description
     hostname = get_hostname() if run is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
@@ -230,16 +235,20 @@ def init_run(
     if run and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
 
-    backend = get_backend(mode, api_token=api_token, proxies=proxies)
+    backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
     if mode == Mode.OFFLINE or mode == Mode.DEBUG:
-        project = "offline/project-placeholder"
+        project = OFFLINE_PROJECT_QUALIFIED_NAME
 
+    project = id_formats.conform_optional(project, QualifiedName)
     project_obj = project_name_lookup(backend, project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
     if run:
-        api_run = backend.get_run(project + "/" + run)
+        api_run = backend.get_metadata_container(
+            container_id=QualifiedName(project + "/" + run),
+            expected_container_type=Run.container_type,
+        )
     else:
         if mode == Mode.READ_ONLY:
             raise NeedExistingRunForReadOnlyMode()
@@ -250,13 +259,17 @@ def init_run(
         notebook_id, checkpoint_id = _create_notebook_checkpoint(backend)
 
         api_run = backend.create_run(
-            project_obj.id, git_ref, custom_run_id, notebook_id, checkpoint_id
+            project_id=project_obj.id,
+            git_ref=git_ref,
+            custom_run_id=custom_run_id,
+            notebook_id=notebook_id,
+            checkpoint_id=checkpoint_id,
         )
 
     run_lock = threading.RLock()
 
     operation_processor = get_operation_processor(
-        mode,
+        mode=mode,
         container_id=api_run.id,
         container_type=Run.container_type,
         backend=backend,
@@ -290,16 +303,16 @@ def init_run(
         background_jobs.append(PingBackgroundJob())
 
     _run = Run(
-        api_run.id,
-        backend,
-        operation_processor,
-        BackgroundJobList(background_jobs),
-        run_lock,
-        api_run.workspace,
-        api_run.project_name,
-        api_run.short_id,
-        project_obj.id,
-        monitoring_namespace,
+        id_=api_run.id,
+        backend=backend,
+        op_processor=operation_processor,
+        background_job=BackgroundJobList(background_jobs),
+        lock=run_lock,
+        workspace=api_run.workspace,
+        project_name=api_run.project_name,
+        sys_id=api_run.sys_id,
+        project_id=project_obj.id,
+        monitoring_namespace=monitoring_namespace,
     )
     if mode != Mode.OFFLINE:
         _run.sync(wait=False)
@@ -331,7 +344,9 @@ def init_run(
     return _run
 
 
-def _create_notebook_checkpoint(backend: NeptuneBackend) -> (str, str):
+def _create_notebook_checkpoint(
+    backend: NeptuneBackend,
+) -> typing.Tuple[typing.Optional[str], typing.Optional[str]]:
     notebook_id = None
     if os.getenv(NEPTUNE_NOTEBOOK_ID, None) is not None:
         notebook_id = os.environ[NEPTUNE_NOTEBOOK_ID]

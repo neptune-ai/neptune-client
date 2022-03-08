@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# pylint: disable=redefined-outer-name
 import os
+import time
 
 from faker import Faker
 import boto3
@@ -21,9 +23,8 @@ import pytest
 
 from neptune.management.internal.utils import normalize_project_name
 from neptune.management import create_project, add_project_member
-import neptune.new as neptune
 
-from e2e_tests.utils import a_project_name, Environment
+from e2e_tests.utils import initialize_container, a_project_name, Environment
 
 fake = Faker()
 
@@ -43,6 +44,8 @@ def environment():
         workspace=workspace,
         api_token=admin_token,
     )
+
+    time.sleep(10)
 
     add_project_member(
         name=created_project_identifier,
@@ -64,15 +67,27 @@ def environment():
 
 @pytest.fixture(scope="session")
 def container(request, environment):
-    if request.param == "project":
-        project = neptune.init_project(name=environment.project)
-        yield project
-        project.stop()
+    exp = initialize_container(
+        container_type=request.param, project=environment.project
+    )
+    yield exp
+    exp.stop()
 
-    if request.param == "run":
-        exp = neptune.init_run(project=environment.project)
-        yield exp
-        exp.stop()
+
+@pytest.fixture(scope="session")
+def containers_pair(request, environment):
+    container_a_type, container_b_type = request.param.split("-")
+    container_a = initialize_container(
+        container_type=container_a_type, project=environment.project
+    )
+    container_b = initialize_container(
+        container_type=container_b_type, project=environment.project
+    )
+
+    yield container_a, container_b
+
+    container_b.stop()
+    container_a.stop()
 
 
 @pytest.fixture(scope="session")

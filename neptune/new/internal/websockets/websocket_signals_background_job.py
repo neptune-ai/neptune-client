@@ -36,7 +36,7 @@ from neptune.new.internal.utils import process_killer
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 
 if TYPE_CHECKING:
-    from neptune.new.run import Run
+    from neptune.new.metadata_containers import MetadataContainer
 
 _logger = logging.getLogger(__name__)
 
@@ -47,8 +47,8 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         self._thread: "Optional[WebsocketSignalsBackgroundJob._ListenerThread]" = None
         self._started = False
 
-    def start(self, run: "Run"):
-        self._thread = self._ListenerThread(run, self._ws_factory.create())
+    def start(self, container: "MetadataContainer"):
+        self._thread = self._ListenerThread(container, self._ws_factory.create())
         self._thread.start()
         self._started = True
 
@@ -66,9 +66,11 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         self._thread.shutdown_ws_client()
 
     class _ListenerThread(Daemon):
-        def __init__(self, run: "Run", ws_client: ReconnectingWebsocket):
+        def __init__(
+            self, container: "MetadataContainer", ws_client: ReconnectingWebsocket
+        ):
             super().__init__(sleep_time=0, name="NeptuneWebhooks")
-            self._run = run
+            self._container = container
             self._ws_client = ws_client
 
         def work(self) -> None:
@@ -112,10 +114,10 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                     err=True,
                 )
                 return
-            run_id = self._run["sys/id"].fetch()
+            run_id = self._container["sys/id"].fetch()
             click.echo(f"Run {run_id} received stop signal. Exiting", err=True)
             seconds = msg_body.get("seconds")
-            self._run.stop(seconds=seconds)
+            self._container.stop(seconds=seconds)
             process_killer.kill_me()
 
         def _handle_abort(self, msg_body):
@@ -126,11 +128,11 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                     err=True,
                 )
                 return
-            run_id = self._run["sys/id"].fetch()
+            run_id = self._container["sys/id"].fetch()
             click.echo(f"Run {run_id} received abort signal. Exiting", err=True)
             seconds = msg_body.get("seconds")
-            self._run[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
-            self._run.stop(seconds=seconds)
+            self._container[SYSTEM_FAILED_ATTRIBUTE_PATH] = True
+            self._container.stop(seconds=seconds)
             process_killer.kill_me()
 
         def shutdown_ws_client(self):

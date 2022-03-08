@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 import abc
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Optional, Tuple, Union
 
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
-    ApiRun,
+    ApiExperiment,
     ArtifactAttribute,
     Attribute,
     AttributeType,
@@ -39,7 +39,9 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     Workspace,
 )
+from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
@@ -66,7 +68,7 @@ class NeptuneBackend:
         return None
 
     @abc.abstractmethod
-    def get_project(self, project_id: str) -> Project:
+    def get_project(self, project_id: QualifiedName) -> Project:
         pass
 
     @abc.abstractmethod
@@ -80,18 +82,38 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_run(self, run_id: str) -> ApiRun:
-        pass
-
-    @abc.abstractmethod
     def create_run(
         self,
-        project_id: str,
+        project_id: UniqueId,
         git_ref: Optional[GitRef] = None,
         custom_run_id: Optional[str] = None,
         notebook_id: Optional[str] = None,
         checkpoint_id: Optional[str] = None,
-    ) -> ApiRun:
+    ) -> ApiExperiment:
+        pass
+
+    @abc.abstractmethod
+    def create_model(
+        self,
+        project_id: UniqueId,
+        key: str,
+    ) -> ApiExperiment:
+        pass
+
+    @abc.abstractmethod
+    def create_model_version(
+        self,
+        project_id: UniqueId,
+        model_id: UniqueId,
+    ) -> ApiExperiment:
+        pass
+
+    @abc.abstractmethod
+    def get_metadata_container(
+        self,
+        container_id: Union[UniqueId, QualifiedName],
+        expected_container_type: ContainerType,
+    ) -> ApiExperiment:
         pass
 
     @abc.abstractmethod
@@ -104,7 +126,7 @@ class NeptuneBackend:
     @abc.abstractmethod
     def execute_operations(
         self,
-        container_id: str,
+        container_id: UniqueId,
         container_type: ContainerType,
         operations: List[Operation],
     ) -> Tuple[int, List[NeptuneException]]:
@@ -248,7 +270,30 @@ class NeptuneBackend:
 
     @abc.abstractmethod
     def get_run_url(
-        self, run_id: str, workspace: str, project_name: str, short_id: str
+        self, run_id: str, workspace: str, project_name: str, sys_id: str
+    ) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_project_url(
+        self, project_id: str, workspace: str, project_name: str
+    ) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_model_url(
+        self, model_id: str, workspace: str, project_name: str, sys_id: str
+    ) -> str:
+        pass
+
+    @abc.abstractmethod
+    def get_model_version_url(
+        self,
+        model_version_id: str,
+        model_id: str,
+        workspace: str,
+        project_name: str,
+        sys_id: str,
     ) -> str:
         pass
 
@@ -259,12 +304,10 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_leaderboard(
+    def search_leaderboard_entries(
         self,
-        project_id: str,
-        _id: Optional[Iterable[str]] = None,
-        state: Optional[Iterable[str]] = None,
-        owner: Optional[Iterable[str]] = None,
-        tags: Optional[Iterable[str]] = None,
+        project_id: UniqueId,
+        types: Optional[Iterable[ContainerType]] = None,
+        query: Optional[NQLQuery] = None,
     ) -> List[LeaderboardEntry]:
         pass

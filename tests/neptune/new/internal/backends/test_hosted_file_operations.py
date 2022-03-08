@@ -34,7 +34,7 @@ from neptune.new.internal.backends.hosted_file_operations import (
 )
 from neptune.utils import IS_WINDOWS
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
-from tests.neptune.new.helpers import create_file
+from tests.neptune.new.utils.file_helpers import create_file
 
 
 def set_expected_result(endpoint: MagicMock, value: dict):

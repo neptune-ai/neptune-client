@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+__all__ = ["get_operation_processor"]
+
 import os
 import threading
 from datetime import datetime
@@ -25,29 +27,31 @@ from neptune.new.constants import (
     OFFLINE_DIRECTORY,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.containers.disk_queue import DiskQueue
+from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.disk_queue import DiskQueue
+from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
+from neptune.new.sync.utils import create_dir_name
 from neptune.new.types.mode import Mode
 from .async_operation_processor import AsyncOperationProcessor
 from .offline_operation_processor import OfflineOperationProcessor
 from .operation_processor import OperationProcessor
 from .read_only_operation_processor import ReadOnlyOperationProcessor
 from .sync_operation_processor import SyncOperationProcessor
-from ..container_type import ContainerType
 
 
 def get_operation_processor(
     mode: Mode,
-    container_id: str,
+    container_id: UniqueId,
     container_type: ContainerType,
     backend: NeptuneBackend,
     lock: threading.RLock,
     flush_period: float,
 ) -> OperationProcessor:
-
     if mode == Mode.ASYNC:
-        data_path = "{}/{}/{}".format(
-            NEPTUNE_DATA_DIRECTORY, ASYNC_DIRECTORY, container_id
+        data_path = (
+            f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}"
+            f"/{create_dir_name(container_type, container_id)}"
         )
         try:
             execution_id = len(os.listdir(data_path))
@@ -59,11 +63,10 @@ def get_operation_processor(
             container_id,
             container_type,
             DiskQueue(
-                Path(execution_path),
-                lambda x: x.to_dict(),
-                Operation.from_dict,
-                lock,
-                container_type,
+                dir_path=Path(execution_path),
+                to_dict=lambda x: x.to_dict(),
+                from_dict=Operation.from_dict,
+                lock=lock,
             ),
             backend,
             lock,
@@ -75,15 +78,15 @@ def get_operation_processor(
         return SyncOperationProcessor(container_id, container_type, backend)
     elif mode == Mode.OFFLINE:
         # the object was returned by mocked backend and has some random ID.
-        data_path = "{}/{}/{}".format(
-            NEPTUNE_DATA_DIRECTORY, OFFLINE_DIRECTORY, container_id
+        data_path = (
+            f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}"
+            f"/{create_dir_name(container_type, container_id)}"
         )
         storage_queue = DiskQueue(
-            Path(data_path),
-            lambda x: x.to_dict(),
-            Operation.from_dict,
-            lock,
-            container_type,
+            dir_path=Path(data_path),
+            to_dict=lambda x: x.to_dict(),
+            from_dict=Operation.from_dict,
+            lock=lock,
         )
         return OfflineOperationProcessor(storage_queue)
     elif mode == Mode.READ_ONLY:

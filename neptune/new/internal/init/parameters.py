@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2021, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Sequence
 
-
-def does_series_converge(seq: Sequence):
-    # very naive implementation, but ok for us
-    third = int(len(seq) / 3)
-    return sum(seq[:third]) > sum(seq[-third:])
+DEFAULT_FLUSH_PERIOD = 5
+DEFAULT_NAME = "Untitled"
+OFFLINE_PROJECT_QUALIFIED_NAME = "offline/project-placeholder"

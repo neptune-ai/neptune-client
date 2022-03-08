@@ -19,30 +19,27 @@ import uuid
 from datetime import datetime, timezone
 
 import pytest
-from faker import Faker
 
 import neptune.new as neptune
-from neptune.new.attribute_container import AttributeContainer
+from neptune.new.metadata_containers import Model, MetadataContainer
 
-from e2e_tests.base import BaseE2ETest
-
-fake = Faker()
+from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
 
 
 class TestAtoms(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     @pytest.mark.parametrize(
         "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
     )
-    def test_simple_assign_and_fetch(self, container: AttributeContainer, value):
+    def test_simple_assign_and_fetch(self, container: MetadataContainer, value):
         key = self.gen_key()
 
         container[key] = value
         container.sync()
         assert container[key].fetch() == value
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_simple_assign_datetime(self, container: AttributeContainer):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_simple_assign_datetime(self, container: MetadataContainer):
         key = self.gen_key()
         now = datetime.now()
 
@@ -55,14 +52,14 @@ class TestAtoms(BaseE2ETest):
         )
         assert container[key].fetch() == expected_now
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_fetch_non_existing_key(self, container: AttributeContainer):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_fetch_non_existing_key(self, container: MetadataContainer):
         key = self.gen_key()
         with pytest.raises(AttributeError):
             container[key].fetch()
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_delete_atom(self, container: AttributeContainer):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_delete_atom(self, container: MetadataContainer):
         key = self.gen_key()
         value = fake.name()
 
@@ -77,8 +74,8 @@ class TestAtoms(BaseE2ETest):
 
 
 class TestNamespace(BaseE2ETest):
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_reassigning(self, container: AttributeContainer):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_reassigning(self, container: MetadataContainer):
         namespace = self.gen_key()
         key = f"{fake.unique.word()}/{fake.unique.word()}"
         value = fake.name()
@@ -103,8 +100,8 @@ class TestNamespace(BaseE2ETest):
 
         assert container[f"{namespace}/{key}"].fetch() == value
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_distinct_types(self, container: AttributeContainer):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_distinct_types(self, container: MetadataContainer):
         namespace = self.gen_key()
         key = f"{fake.unique.word()}/{fake.unique.word()}"
         value = random.randint(0, 100)
@@ -120,8 +117,8 @@ class TestNamespace(BaseE2ETest):
             container[namespace] = {f"{key}": new_value}
             container.sync()
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_delete_namespace(self, container: AttributeContainer):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_delete_namespace(self, container: MetadataContainer):
         namespace = fake.unique.word()
         key1 = fake.unique.word()
         key2 = fake.unique.word()
@@ -145,8 +142,8 @@ class TestNamespace(BaseE2ETest):
 class TestStringSet(BaseE2ETest):
     neptune_tags_path = "sys/tags"
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_do_not_accept_non_tag_path(self, container: AttributeContainer):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_do_not_accept_non_tag_path(self, container: MetadataContainer):
         random_path = "some/path"
         container[random_path].add(fake.unique.word())
         container.sync()
@@ -155,8 +152,8 @@ class TestStringSet(BaseE2ETest):
             # backends accepts `'sys/tags'` only
             container[random_path].fetch()
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
-    def test_add_and_remove_tags(self, container: AttributeContainer):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_add_and_remove_tags(self, container: MetadataContainer):
         remaining_tag1 = fake.unique.word()
         remaining_tag2 = fake.unique.word()
         to_remove_tag1 = fake.unique.word()
@@ -179,26 +176,54 @@ class TestStringSet(BaseE2ETest):
         }
 
 
-class TestFetchRunsTable(BaseE2ETest):
-    def test_fetch_table(self, environment):
+class TestFetchTable(BaseE2ETest):
+    def test_fetch_runs_table(self, environment):
         tag = str(uuid.uuid4())
-        with neptune.init(project=environment.project) as run:
+
+        with neptune.init_run(project=environment.project) as run:
             run["sys/tags"].add(tag)
             run["value"] = 12
+            run.sync()
 
-        with neptune.init(project=environment.project) as run:
+        with neptune.init_run(project=environment.project) as run:
             run["sys/tags"].add(tag)
             run["another/value"] = "testing"
+            run.sync()
 
         # wait for the elasticsearch cache to fill
         time.sleep(5)
 
-        project = neptune.init_project(name=environment.project)
+        project = neptune.get_project(name=environment.project)
 
         runs_table = sorted(
-            project.fetch_runs_table(tag=tag).to_runs(),
+            project.fetch_runs_table(tag=tag).to_rows(),
             key=lambda r: r.get_attribute_value("sys/id"),
         )
         assert len(runs_table) == 2
         assert runs_table[0].get_attribute_value("value") == 12
         assert runs_table[1].get_attribute_value("another/value") == "testing"
+
+    @pytest.mark.parametrize("container", ["model"], indirect=True)
+    def test_fetch_model_versions_table(self, container: Model, environment):
+        model_sys_id = container["sys/id"].fetch()
+        versions_to_initialize = 5
+
+        for _ in range(versions_to_initialize):
+            with neptune.init_model_version(
+                model=model_sys_id, project=environment.project
+            ):
+                pass
+
+        # wait for the elasticsearch cache to fill
+        time.sleep(5)
+
+        versions_table = sorted(
+            container.fetch_model_versions_table().to_rows(),
+            key=lambda r: r.get_attribute_value("sys/id"),
+        )
+        assert len(versions_table) == versions_to_initialize
+        for index in range(versions_to_initialize):
+            assert (
+                versions_table[index].get_attribute_value("sys/id")
+                == f"{model_sys_id}-{index + 1}"
+            )

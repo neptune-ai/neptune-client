@@ -13,10 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ["with_check_if_file_appears", "tmp_context", "a_project_name", "Environment"]
+__all__ = [
+    "with_check_if_file_appears",
+    "tmp_context",
+    "a_project_name",
+    "a_key",
+    "Environment",
+    "initialize_container",
+    "reinitialize_container",
+]
 
 import io
 import os
+import string
 import random
 import tempfile
 from datetime import datetime
@@ -26,6 +35,8 @@ from contextlib import contextmanager
 import numpy
 from PIL import Image
 from PIL.PngImagePlugin import PngImageFile
+
+import neptune.new as neptune
 
 
 def _remove_file_if_exists(filepath):
@@ -85,11 +96,13 @@ def image_to_png(*, image: Image) -> PngImageFile:
     return PngImageFile(png_buf)
 
 
+def a_key():
+    return "".join(random.choices(string.ascii_uppercase, k=10))
+
+
 def a_project_name(project_slug: str):
     project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
-    project_key = "".join(
-        random.choices(population=project_slug.replace("-", ""), k=10)
-    ).upper()
+    project_key = a_key()
 
     return project_name, project_key
 
@@ -98,3 +111,42 @@ Environment = namedtuple(
     "Environment",
     ["workspace", "project", "user_token", "admin_token", "admin", "user"],
 )
+
+
+def initialize_container(container_type, project, **extra_args):
+    if container_type == "project":
+        return neptune.init_project(name=project, **extra_args)
+
+    if container_type == "run":
+        return neptune.init_run(project=project, **extra_args)
+
+    if container_type == "model":
+        return neptune.init_model(key=a_key(), project=project, **extra_args)
+
+    if container_type == "model_version":
+        model = neptune.init_model(key=a_key(), project=project, **extra_args)
+        model_sys_id = model["sys/id"].fetch()
+        model.stop()
+
+        return neptune.init_model_version(
+            model=model_sys_id, project=project, **extra_args
+        )
+
+    raise NotImplementedError(container_type)
+
+
+def reinitialize_container(sys_id: str, container_type: str, project: str):
+    if container_type == "project":
+        # exactly same as initialize_container(project), for convenience
+        return neptune.init_project(name=project)
+
+    if container_type == "run":
+        return neptune.init_run(run=sys_id, project=project)
+
+    if container_type == "model":
+        return neptune.init_model(model=sys_id, project=project)
+
+    if container_type == "model_version":
+        return neptune.init_model_version(version=sys_id, project=project)
+
+    raise NotImplementedError()

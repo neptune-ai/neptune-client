@@ -13,36 +13,25 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from faker import Faker
+import pytest
 
 import neptune.new as neptune
 from neptune.new.project import Project
+from neptune.new.metadata_containers import Model
+from neptune.new.exceptions import NeptuneModelKeyAlreadyExistsError
 
-from e2e_tests.base import BaseE2ETest
-from e2e_tests.utils import with_check_if_file_appears
-
-fake = Faker()
+from e2e_tests.base import BaseE2ETest, fake, AVAILABLE_CONTAINERS
+from e2e_tests.utils import (
+    with_check_if_file_appears,
+    initialize_container,
+    reinitialize_container,
+)
 
 
 class TestInitRun(BaseE2ETest):
-    # TODO: test all remaining init parameters
-    def test_resuming_run(self, environment):
-        exp = neptune.init(project=environment.project)
-
-        key = self.gen_key()
-        val = fake.word()
-        exp[key] = val
-        exp.sync()
-
-        exp.stop()
-
-        # pylint: disable=protected-access
-        exp2 = neptune.init(run=exp._short_id, project=environment.project)
-        assert exp2[key].fetch() == val
-
     def test_custom_run_id(self, environment):
         custom_run_id = "-".join((fake.word() for _ in range(3)))
-        run = neptune.init(custom_run_id=custom_run_id, project=environment.project)
+        run = neptune.init_run(custom_run_id=custom_run_id, project=environment.project)
 
         key = self.gen_key()
         val = fake.word()
@@ -51,11 +40,13 @@ class TestInitRun(BaseE2ETest):
 
         run.stop()
 
-        exp2 = neptune.init(custom_run_id=custom_run_id, project=environment.project)
+        exp2 = neptune.init_run(
+            custom_run_id=custom_run_id, project=environment.project
+        )
         assert exp2[key].fetch() == val
 
     def test_send_source_code(self, environment):
-        exp = neptune.init(
+        exp = neptune.init_run(
             source_files="**/*.py",
             name="E2e init source code",
             project=environment.project,
@@ -107,3 +98,33 @@ class TestInitProject(BaseE2ETest):
             "visibility",
         }
         assert read_only_project[key].fetch() == val
+
+
+class TestInitModel(BaseE2ETest):
+    @pytest.mark.parametrize("container", ["model"], indirect=True)
+    def test_fail_reused_model_key(self, container: Model, environment):
+        with pytest.raises(NeptuneModelKeyAlreadyExistsError):
+            model_key = container["sys/id"].fetch().split("-")[1]
+            neptune.init_model(key=model_key, project=environment.project)
+
+
+class TestReinitialization(BaseE2ETest):
+    @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+    def test_resuming_container(self, container_type, environment):
+        container = initialize_container(
+            container_type=container_type, project=environment.project
+        )
+        sys_id = container["sys/id"].fetch()
+
+        key = self.gen_key()
+        val = fake.word()
+        container[key] = val
+        container.sync()
+        container.stop()
+
+        reinitialized = reinitialize_container(
+            sys_id=sys_id,
+            container_type=container.container_type.value,
+            project=environment.project,
+        )
+        assert reinitialized[key].fetch() == val

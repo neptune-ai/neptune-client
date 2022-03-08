@@ -23,6 +23,7 @@ from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import Project, Workspace
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.utils import replace_patch_version
 
 
@@ -64,6 +65,24 @@ There are two possible reasons:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         self._msg = message.format(field_path=field_path, **STYLES)
+        super().__init__(self._msg)
+
+    def __str__(self):
+        # required because of overriden `__str__` in `KeyError`
+        return self._msg
+
+
+class TypeDoesNotSupportAttributeException(NeptuneException, AttributeError):
+    def __init__(self, type_, attribute):
+        message = """
+{h1}
+----TypeDoesNotSupportAttributeException----------------------------------------
+{end}
+{type} has no attribute {attribute}.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        self._msg = message.format(type=type_, attribute=attribute, **STYLES)
         super().__init__(self._msg)
 
     def __str__(self):
@@ -126,6 +145,60 @@ Verify the correctness of your call or contact Neptune support.
         super().__init__(message.format(status=status, response=response, **STYLES))
 
 
+class MetadataContainerNotFound(NeptuneException):
+    container_id: str
+    container_type: ContainerType
+
+    def __init__(self, container_id: str, container_type: Optional[ContainerType]):
+        self.container_id = container_id
+        self.container_type = container_type
+        container_type_str = (
+            container_type.value.capitalize() if container_type else "object"
+        )
+        super().__init__("{} {} not found.".format(container_type_str, container_id))
+
+    @classmethod
+    def of_container_type(
+        cls, container_type: Optional[ContainerType], container_id: str
+    ):
+        if container_type is None:
+            return MetadataContainerNotFound(
+                container_id=container_id, container_type=None
+            )
+        elif container_type == ContainerType.PROJECT:
+            return ProjectNotFound(project_id=container_id)
+        elif container_type == ContainerType.RUN:
+            return RunNotFound(run_id=container_id)
+        elif container_type == ContainerType.MODEL:
+            return ModelNotFound(model_id=container_id)
+        elif container_type == ContainerType.MODEL_VERSION:
+            return ModelVersionNotFound(model_version_id=container_id)
+        else:
+            raise InternalClientError(f"Unexpected ContainerType: {container_type}")
+
+
+class ProjectNotFound(MetadataContainerNotFound):
+    def __init__(self, project_id: str):
+        super().__init__(container_id=project_id, container_type=ContainerType.PROJECT)
+
+
+class RunNotFound(MetadataContainerNotFound):
+    def __init__(self, run_id: str):
+        super().__init__(container_id=run_id, container_type=ContainerType.RUN)
+
+
+class ModelNotFound(MetadataContainerNotFound):
+    def __init__(self, model_id: str):
+        super().__init__(container_id=model_id, container_type=ContainerType.MODEL)
+
+
+class ModelVersionNotFound(MetadataContainerNotFound):
+    def __init__(self, model_version_id: str):
+        super().__init__(
+            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
+        )
+
+
 class ExceptionWithProjectsWorkspacesListing(NeptuneException):
     def __init__(
         self,
@@ -176,10 +249,30 @@ You can check all of your projects on the Projects page:
         )
 
 
-class ProjectNotFound(ExceptionWithProjectsWorkspacesListing):
+class ContainerUUIDNotFound(NeptuneException):
+    container_id: str
+    container_type: ContainerType
+
+    def __init__(self, container_id: str, container_type: ContainerType):
+        self.container_id = container_id
+        self.container_type = container_type
+        super().__init__(
+            "{} with ID {} not found. Could be deleted.".format(
+                container_type.value.capitalize(), container_id
+            )
+        )
+
+
+# for backward compatibility
+RunUUIDNotFound = ContainerUUIDNotFound
+
+
+class ProjectNotFoundWithSuggestions(
+    ExceptionWithProjectsWorkspacesListing, ProjectNotFound
+):
     def __init__(
         self,
-        project_id: str,
+        project_id: QualifiedName,
         available_projects: List[Project] = (),
         available_workspaces: List[Workspace] = (),
     ):
@@ -270,51 +363,6 @@ You may also want to check the following docs pages:
         )
 
 
-class RunNotFound(NeptuneException):
-    def __init__(self, run_id: str) -> None:
-        super().__init__("Run {} not found.".format(run_id))
-
-
-class ContainerUUIDNotFound(NeptuneException):
-    container_id: str
-    container_type: ContainerType
-
-    def __init__(self, container_id: str, container_type: ContainerType):
-        self.container_id = container_id
-        self.container_type = container_type
-        super().__init__(
-            "{} with ID {} not found. Could be deleted.".format(
-                container_type.value.capitalize(), container_id
-            )
-        )
-
-
-def raise_container_not_found(
-    container_id: str, container_type: ContainerType, from_exception: Exception = None
-):
-    if container_type == ContainerType.RUN:
-        error_class = RunUUIDNotFound
-    elif container_type == ContainerType.PROJECT:
-        error_class = ProjectUUIDNotFound
-    else:
-        raise InternalClientError(f"Unknown container_type: {container_type}")
-
-    if from_exception:
-        raise error_class(container_id) from from_exception
-    else:
-        raise error_class(container_id)
-
-
-class RunUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.RUN)
-
-
-class ProjectUUIDNotFound(ContainerUUIDNotFound):
-    def __init__(self, container_id: str):
-        super().__init__(container_id, container_type=ContainerType.PROJECT)
-
-
 class InactiveContainerException(NeptuneException):
     resume_info: str
 
@@ -324,10 +372,13 @@ class InactiveContainerException(NeptuneException):
 ----{cls}----------------------------------------
 {end}
 It seems you are trying to log (or fetch) metadata to a {container_type} that was stopped ({label}).
+
 What should I do?{resume_info}
+
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/api-reference/{container_type}#.stop
     - https://docs.neptune.ai/you-should-know/connection-modes
+
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(
@@ -345,19 +396,43 @@ class InactiveRunException(InactiveContainerException):
     resume_info = """
     - Resume the run to continue logging to it:
     https://docs.neptune.ai/how-to-guides/neptune-api/resume-run#how-to-resume-run
-    - Don't invoke `stop()` on a {container_type} that you want to access. If you want to stop monitoring only,
-    you can resume a {container_type} in read-only mode:
+    - Don't invoke `stop()` on a run that you want to access. If you want to stop monitoring only,
+    you can resume a run in read-only mode:
     https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
 
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.RUN)
 
 
+class InactiveModelException(InactiveContainerException):
+    resume_info = """
+    - Resume the model to continue logging to it:
+    https://docs.neptune.ai/api-reference/neptune#.init_model
+    - Don't invoke `stop()` on a model that you want to access. If you want to stop monitoring only,
+    you can resume a model in read-only mode:
+    https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
+
+    def __init__(self, label: str):
+        super().__init__(label=label, container_type=ContainerType.MODEL)
+
+
+class InactiveModelVersionException(InactiveContainerException):
+    resume_info = """
+    - Resume the model version to continue logging to it:
+    https://docs.neptune.ai/api-reference/neptune#.init_model_version
+    - Don't invoke `stop()` on a model version that you want to access. If you want to stop monitoring only,
+    you can resume a model version in read-only mode:
+    https://docs.neptune.ai/you-should-know/connection-modes#read-only"""
+
+    def __init__(self, label: str):
+        super().__init__(label=label, container_type=ContainerType.MODEL_VERSION)
+
+
 class InactiveProjectException(InactiveContainerException):
     resume_info = """
     - Initialize connection to the project again to continue logging to it:
     https://docs.neptune.ai/api-reference/neptune#.init_project
-    - Don't invoke `stop()` on a {container_type} that you want to access."""
+    - Don't invoke `stop()` on a project that you want to access."""
 
     def __init__(self, label: str):
         super().__init__(label=label, container_type=ContainerType.PROJECT)
@@ -455,15 +530,18 @@ class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
         super().__init__("Cannot synchronize offline runs without a project.")
 
 
-class NeedExistingRunForReadOnlyMode(NeptuneException):
-    def __init__(self):
+class NeedExistingExperimentForReadOnlyMode(NeptuneException):
+    container_type: ContainerType
+    callback_name: str
+
+    def __init__(self, container_type: ContainerType, callback_name: str):
         message = """
 {h1}
-----NeedExistingRunForReadOnlyMode-----------------------------------------
+----{class_name}-----------------------------------------
 {end}
-Read-only mode can be used only with an existing run.
+Read-only mode can be used only with an existing {container_type}.
 
-Parameter {python}run{end} of {python}neptune.init(){end} must be provided and reference
+Parameter {python}{container_type}{end} of {python}{callback_name}{end} must be provided and reference
 an existing run when using {python}mode="read-only"{end}.
 
 You may also want to check the following docs pages:
@@ -472,10 +550,45 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(**STYLES))
+        self.container_type = container_type
+        self.callback_name = callback_name
+        super().__init__(
+            message.format(
+                class_name=type(self).__name__,
+                container_type=self.container_type.value,
+                callback_name=self.callback_name,
+                **STYLES,
+            )
+        )
 
 
-class NeptuneRunResumeAndCustomIdCollision(NeptuneException):
+class NeedExistingRunForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
+    def __init__(self):
+        super().__init__(
+            container_type=ContainerType.RUN, callback_name="neptune.init_run"
+        )
+
+
+class NeedExistingModelForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
+    def __init__(self):
+        super().__init__(
+            container_type=ContainerType.MODEL, callback_name="neptune.init_model"
+        )
+
+
+class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
+    def __init__(self):
+        super().__init__(
+            container_type=ContainerType.MODEL_VERSION,
+            callback_name="neptune.init_model_version",
+        )
+
+
+class NeptuneWrongInitParametersException(NeptuneException):
+    pass
+
+
+class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
     def __init__(self):
         message = """
 {h1}
@@ -522,6 +635,31 @@ Please install neptune-client{required_version}
             message.format(
                 current_version=current_version,
                 required_version=required_version,
+                **STYLES,
+            )
+        )
+
+
+class NeptuneMissingRequiredInitParameter(NeptuneWrongInitParametersException):
+    def __init__(
+        self,
+        called_function: str,
+        parameter_name: str,
+    ):
+        message = """
+{h1}
+----NeptuneMissingRequiredInitParameter---------------------------------------
+{end}
+{python}neptune.{called_function}(){end} invocation was missing {python}{parameter_name}{end}.
+If you want to create a new object using {python}{called_function}{end}, {python}{parameter_name}{end} is required:
+https://docs.neptune.ai/api-reference/neptune#.{called_function}
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(
+            message.format(
+                called_function=called_function,
+                parameter_name=parameter_name,
                 **STYLES,
             )
         )
@@ -695,7 +833,11 @@ You have no permission to access given resource.
         super().__init__(message.format(**STYLES))
 
 
-class NeptuneOfflineModeFetchException(NeptuneException):
+class NeptuneOfflineModeException(NeptuneException):
+    pass
+
+
+class NeptuneOfflineModeFetchException(NeptuneOfflineModeException):
     def __init__(self):
         message = """
 {h1}
@@ -715,13 +857,54 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**STYLES))
 
 
+class NeptuneOfflineModeChangeStageException(NeptuneOfflineModeException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneOfflineModeChangeStageException---------------------------------------
+{end}
+You cannot change the stage of the model version while in OFFLINE mode.
+"""
+        super().__init__(message.format(**STYLES))
+
+
+class NeptuneProtectedPathException(NeptuneException):
+    extra_info = ""
+
+    def __init__(self, path: str):
+        message = """
+{h1}
+----NeptuneProtectedPathException----------------------------------------------
+{end}
+Field {path} cannot be changed directly.
+{extra_info}
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        self._path = path
+        super().__init__(
+            message.format(
+                path=path,
+                extra_info=self.extra_info.format(**STYLES),
+                **STYLES,
+            )
+        )
+
+
+class NeptuneCannotChangeStageManually(NeptuneProtectedPathException):
+    extra_info = """
+If you want to change the stage of the model version,
+use the {python}.change_stage(){end} function:
+    {python}model_version.change_stage("staging"){end}"""
+
+
 class OperationNotSupported(NeptuneException):
     def __init__(self, message: str):
         super().__init__(f"Operation not supported: {message}")
 
 
 class NeptuneLegacyProjectException(NeptuneException):
-    def __init__(self, project: str):
+    def __init__(self, project: QualifiedName):
         message = """
 {h1}
 ----NeptuneLegacyProjectException---------------------------------------------------------
@@ -891,7 +1074,7 @@ class PlotlyIncompatibilityException(Exception):
         )
 
 
-class NeptunePossibleLegacyUsageException(NeptuneException):
+class NeptunePossibleLegacyUsageException(NeptuneWrongInitParametersException):
     def __init__(self):
         message = """
 {h1}
@@ -1062,3 +1245,26 @@ or the Neptune support directly (support@neptune.ai) about the upcoming updates.
 """
         self.message = message.format(missing_feature=missing_feature, **STYLES)
         super().__init__(message)
+
+
+class NeptuneObjectCreationConflict(NeptuneException):
+    pass
+
+
+class NeptuneModelKeyAlreadyExistsError(NeptuneObjectCreationConflict):
+    def __init__(self, model_key, models_tab_url):
+        message = """
+{h1}
+----NeptuneModelKeyAlreadyExistsError---------------------------------------------------
+{end}
+A model with the provided key ({model_key}) already exists in this project. A model key has to be unique
+within the project.
+
+You can check all of your models in the project on the Models page:
+{models_tab_url}
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(
+            message.format(model_key=model_key, models_tab_url=models_tab_url, **STYLES)
+        )
