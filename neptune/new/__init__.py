@@ -41,6 +41,10 @@ from neptune.new.internal.init import (
     init_run,
     init,
 )
+from neptune.new.version import version
+
+
+__version__ = str(version)
 
 
 def _raise_legacy_client_expected(*args, **kwargs):
