@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 0.15.0
+## neptune-client 0.15.0
 
 ## Features
 - Methods for creating and manipulating Model Registry objects ([#794](https://github.com/neptune-ai/neptune-client/pull/794))
