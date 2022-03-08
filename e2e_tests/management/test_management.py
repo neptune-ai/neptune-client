@@ -24,7 +24,10 @@ from neptune.management import (
     delete_project,
     remove_project_member,
 )
-from neptune.management.exceptions import UserAlreadyHasAccess
+from neptune.management.exceptions import (
+    UserAlreadyHasAccess,
+    UserNotExistsOrWithoutAccess,
+)
 from neptune.management.internal.utils import normalize_project_name
 from e2e_tests.base import BaseE2ETest, fake
 from e2e_tests.utils import a_project_name, Environment
@@ -107,7 +110,7 @@ class TestManagement(BaseE2ETest):
 
     def test_visibility_workspace(self, environment: "Environment"):
         project_name, project_key = a_project_name(
-            project_slug=f"{fake.slug()}-mgmt-workspace"
+            project_slug=f"{fake.slug()}-workspace"
         )
         project_identifier = normalize_project_name(
             name=project_name, workspace=environment.workspace
@@ -160,15 +163,12 @@ class TestManagement(BaseE2ETest):
             api_token=environment.user_token
         )
 
-        remove_project_member(
-            name=created_project_identifier,
-            username=environment.user,
-            api_token=environment.admin_token,
-        )
-
-        assert environment.user not in get_project_member_list(
-            name=created_project_identifier, api_token=environment.admin_token
-        )
+        with pytest.raises(UserNotExistsOrWithoutAccess):
+            remove_project_member(
+                name=created_project_identifier,
+                username=environment.user,
+                api_token=environment.admin_token,
+            )
 
         delete_project(
             name=created_project_identifier, api_token=environment.admin_token
