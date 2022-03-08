@@ -1,3 +1,8 @@
+## neptune-client 0.15.1
+
+## Fixes
+- Restore __version__ in neptune.new ([#860](https://github.com/neptune-ai/neptune-client/pull/860))
+
 ## neptune-client 0.15.0
 
 ## Features
