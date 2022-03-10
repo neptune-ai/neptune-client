@@ -45,8 +45,7 @@ jobs:
           path: neptune_fastai_integration
 
       - name: Test Fast.ai integration
-        uses: neptune-ai/neptune-fastai.git/e2e
-#        working-directory: neptune_fastai_integration
+        uses: neptune-ai/neptune-fastai.git/.github/actions/e2e
         env:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
           NEPTUNE_PROJECT: e2e-tests/e2e
