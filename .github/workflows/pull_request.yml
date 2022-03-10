@@ -41,8 +41,9 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: neptune-ai/neptune-fastai.git
-#          ref: master
-#
+          ref: master
+          path: tttt
+
 #      - name: Test Fast.ai integration
 #        uses: git@github.com:neptune-ai/neptune-fastai.git/e2e
 #        working-directory: neptune_fastai_integration
