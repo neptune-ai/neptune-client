@@ -46,7 +46,7 @@ jobs:
           NEPTUNE_PROJECT: e2e-tests/e2e
 
       - name: Test Kedro integration
-        uses: neptune-ai/kedro-neptune/.github/actions/e2e@master
+        uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
         with:
           working_directory: neptune_kedro
         env:
