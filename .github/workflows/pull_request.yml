@@ -40,8 +40,8 @@ jobs:
       - name: Fetch Fast.ai repository
         uses: actions/checkout@v2
         with:
-          repository: https://github.com/neptune-ai/neptune-fastai.git
-          ref: master
+          repository: neptune-ai/neptune-fastai.git
+#          ref: master
 #
 #      - name: Test Fast.ai integration
 #        uses: git@github.com:neptune-ai/neptune-fastai.git/e2e
