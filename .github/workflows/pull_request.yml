@@ -44,8 +44,8 @@ jobs:
           ref: master
           path: neptune_fastai_integration
 
-#      - name: Test Fast.ai integration
-#        uses: neptune-ai/neptune-fastai.git/.github/workflows/ci@master
+      - name: Test Fast.ai integration
+        uses: neptune-ai/neptune-fastai/.github/workflows/ci.yml@master
 #        env:
 #          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
 #          NEPTUNE_PROJECT: e2e-tests/e2e
