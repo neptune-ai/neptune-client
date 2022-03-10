@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: [3.6] #, 3.9] # minimum, maximum
+        python-version: [3.6, 3.9] # minimum, maximum
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -33,22 +33,6 @@ jobs:
         run: |
           pip install -r requirements.txt -r requirements/test_requirements.txt
 
-#      - name: Build and test
-#        run : |
-#          pytest ./tests
-
-      - name: Test Fast.ai integration
-        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
-        with:
-          working_directory: neptune_fastai
-        env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
-          NEPTUNE_PROJECT: e2e-tests/e2e
-
-      - name: Test Kedro integration
-        uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
-        with:
-          working_directory: neptune_kedro
-        env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
-          NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
+      - name: Build and test
+        run : |
+          pytest ./tests
