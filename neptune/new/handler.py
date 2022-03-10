@@ -102,6 +102,11 @@ class Handler:
             raise MissingFieldException(self._path)
         return attr
 
+    @property
+    def container(self) -> "MetadataContainer":
+        """Returns the container that the attribute is attached to"""
+        return self._container
+
     @check_protected_paths
     def assign(self, value, wait: bool = False) -> None:
         """Assigns the provided value to the field.
