@@ -28,11 +28,11 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt -r requirements/test_requirements.txt
-
+#
+#      - name: Install dependencies
+#        run: |
+#          pip install -r requirements.txt -r requirements/test_requirements.txt
+#
 #      - name: Build and test
 #        run : |
 #          pytest ./tests
