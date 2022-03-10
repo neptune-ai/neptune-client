@@ -28,21 +28,14 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python-version }}
-#
-#      - name: Install dependencies
-#        run: |
-#          pip install -r requirements.txt -r requirements/test_requirements.txt
-#
-#      - name: Build and test
-#        run : |
-#          pytest ./tests
 
-      - name: Fetch Fast.ai integration repository
-        uses: actions/checkout@v2
-        with:
-          repository: neptune-ai/neptune-fastai
-          ref: master
-          path: neptune_fastai
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt -r requirements/test_requirements.txt
+
+      - name: Build and test
+        run : |
+          pytest ./tests
 
       - name: Test Fast.ai integration
         uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
