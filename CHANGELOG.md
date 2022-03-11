@@ -1,3 +1,8 @@
+## neptune-client 0.15.2 [UNRELEASED]
+
+## Features
+- Exposed container with a property of Handler ([#864](https://github.com/neptune-ai/neptune-client/pull/864))
+
 ## neptune-client 0.15.1
 
 ## Fixes
