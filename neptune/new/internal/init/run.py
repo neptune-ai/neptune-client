@@ -53,7 +53,7 @@ from neptune.new.internal.streams.std_capture_background_job import (
     StdoutCaptureBackgroundJob,
 )
 from neptune.new.internal.utils import verify_collection_type, verify_type
-from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
+from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info, GitRef
 from neptune.new.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.internal.utils.source_code import upload_source_code
@@ -98,6 +98,7 @@ def init_run(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
     capture_traceback: bool = True,
+    git_info: Optional[GitRef] = None,
     **kwargs,
 ) -> Run:
     """Starts a new tracked run, and append it to the top of the Runs table view.
@@ -149,6 +150,16 @@ def init_run(
         capture_traceback (bool, optional):  Whether to send run’s traceback in case of an exception.
             Defaults to `True`.
             Tracked metadata will be stored inside `monitoring/traceback`.
+        git_info (:class:`~neptune.git_info.GitInfo`, optional, default is ``None``):
+                | Instance of the class :class:`~neptune.git_info.GitInfo` that provides information about
+                  the git repository from which experiment was started.
+                | If ``None`` is passed,
+                  system attempts to automatically extract information about git repository in the following way:
+                      * System looks for `.git` file in the current directory and, if not found,
+                        goes up recursively until `.git` file will be found
+                        (see: :meth:`~neptune.utils.get_git_info`).
+                      * If there is no git repository,
+                        then no information about git is displayed in experiment details in Neptune web application.
 
     Returns:
         ``Run``: object that is used to manage the tracked run and log metadata to it.
@@ -252,7 +263,8 @@ def init_run(
     else:
         if mode == Mode.READ_ONLY:
             raise NeedExistingRunForReadOnlyMode()
-        git_ref = get_git_info(discover_git_repo_location())
+        if git_info is None:
+            git_info = get_git_info(discover_git_repo_location())
         if custom_run_id_exceeds_length(custom_run_id):
             custom_run_id = None
 
@@ -260,7 +272,7 @@ def init_run(
 
         api_run = backend.create_run(
             project_id=project_obj.id,
-            git_ref=git_ref,
+            git_ref=git_info,
             custom_run_id=custom_run_id,
             notebook_id=notebook_id,
             checkpoint_id=checkpoint_id,
