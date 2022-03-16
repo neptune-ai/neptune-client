@@ -16,6 +16,7 @@
 class ProjectVisibility:
     PRIVATE = "priv"
     PUBLIC = "pub"
+    WORKSPACE = "workspace"
 
 
 class ProjectMemberRole:

@@ -91,12 +91,15 @@ class AccessRevokedOnMemberRemoval(ManagementOperationFailure):
 
 class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
     code = 9
-    description = 'User "{user}" not exists or has no access to project "{project}".'
+    description = (
+        'User "{user}" does not exist or has no access to project "{project}". '
+        "If the project visibility is set to workspace, a user cannot be added or removed."
+    )
 
 
 class UserAlreadyHasAccess(ManagementOperationFailure):
     code = 10
-    description = 'User "{user}" already has access to project "{project}".'
+    description = 'User "{user}" already has access to the project "{project}". Role already set to "{role}".'
 
 
 class ProjectsLimitReached(ManagementOperationFailure):
