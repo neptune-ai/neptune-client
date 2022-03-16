@@ -1,4 +1,4 @@
-## neptune-client 0.15.2 [UNRELEASED]
+## neptune-client 0.15.2
 
 ## Features
 - Added support for workspace visibility in Management API ([#843](https://github.com/neptune-ai/neptune-client/pull/843))
