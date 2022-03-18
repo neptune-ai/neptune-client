@@ -1,10 +1,9 @@
 name: Pull Request
 on:
   push:
-    branches:
+    branches-ignore:
       - master
-    tags:
-      - '*'
+  workflow_dispatch:
 jobs:
   lint:
     runs-on: ubuntu-latest

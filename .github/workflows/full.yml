@@ -1,16 +1,12 @@
 name: All
 on:
-#  push:
-#    branches:
-#      - master
-#    tags:
-#      - '*'
   push:
-    branches-ignore:
+    branches:
       - master
-  workflow_dispatch:
-#  schedule:
-#    - cron: '0 6 * * *' # Run every day at arbitrary time (6:00 AM UTC)
+    tags:
+      - '*'
+  schedule:
+    - cron: '0 6 * * *' # Run every day at arbitrary time (6:00 AM UTC)
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -67,19 +63,19 @@ jobs:
         run: |
           pip install -r requirements.txt -r requirements/e2e_requirements.txt
 
-#      - name: Integration tests
-#        run: |
-#          pytest ./tests
-#
-#      - name: E2E - Client
-#        if: matrix.os != 'windows-latest'
-#        run: |
-#          pytest ./e2e_tests -m "not integrations"
-#
-#      - name: E2E - Integrations
-#        if: matrix.os != 'windows-latest'
-#        run: |
-#          pytest ./e2e_tests -m integrations
+      - name: Integration tests
+        run: |
+          pytest ./tests
+
+      - name: E2E - Client
+        if: matrix.os != 'windows-latest'
+        run: |
+          pytest ./e2e_tests -m "not integrations"
+
+      - name: E2E - Integrations
+        if: matrix.os != 'windows-latest'
+        run: |
+          pytest ./e2e_tests -m integrations
 
       - name: Test Fast.ai integration
         if: matrix.os != 'windows-latest'
@@ -99,15 +95,15 @@ jobs:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
           NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
 
-#      - name: Notify
-#        uses: 8398a7/action-slack@v3
-#        with:
-#          status: ${{ job.status }}
-#          job_name: test (${{ matrix.os }}, ${{ matrix.python-version }})
-#          fields: repo,message,commit,author,eventName,workflow,job,took
-#        env:
-#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-#        if: always()
+      - name: Notify
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          job_name: test (${{ matrix.os }}, ${{ matrix.python-version }})
+          fields: repo,message,commit,author,eventName,workflow,job,took
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
 
   publish:
     needs: [lint, test]
