@@ -21,7 +21,7 @@ jobs:
   # Both integration tests and E2E
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 30
+    timeout-minutes: 60
     strategy:
       max-parallel: 4
       matrix:
