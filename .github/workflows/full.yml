@@ -5,6 +5,7 @@ on:
       - master
     tags:
       - '*'
+  workflow_dispatch:
   schedule:
     - cron: '0 6 * * *' # Run every day at arbitrary time (6:00 AM UTC)
 jobs:
