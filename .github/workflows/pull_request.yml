@@ -43,7 +43,7 @@ jobs:
     if: always()
     steps:
       - name: show github
-        run: "echo ${{ github }}"
+        run: "echo ${{ toJson(github) }}"
       - name: Notify
         uses: 8398a7/action-slack@v3
         with:
