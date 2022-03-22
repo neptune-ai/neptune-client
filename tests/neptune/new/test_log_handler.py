@@ -15,6 +15,7 @@
 #
 import logging
 import os
+import sys
 import unittest
 
 from neptune.new import ANONYMOUS, init
@@ -34,6 +35,7 @@ class TestLogHandler(unittest.TestCase):
         logger.warning("test %s", "message")
 
     def test_no_run(self):
+        assert sys.version_info.minor > 6
         with self.assertRaises(TypeError):
             NeptuneHandler(run="PET-1")
 
