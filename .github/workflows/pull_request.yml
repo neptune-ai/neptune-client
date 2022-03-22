@@ -45,7 +45,7 @@ jobs:
       - name: Notify
         uses: 8398a7/action-slack@v3
         with:
-          status: ${{ job.status }}
+          status: ${{ github.action_status }}
           fields: repo,message,commit,author,eventName,workflow,job,took
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
