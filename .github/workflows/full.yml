@@ -96,15 +96,28 @@ jobs:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
           NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
 
-      - name: Notify
+  notify:
+    needs: [lint, test]
+    runs-on: ubuntu-latest
+    if: always()
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v2
+
+      - name: Notify about failure
         uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION != 'success'
         with:
-          status: ${{ job.status }}
-          job_name: test (${{ matrix.os }}, ${{ matrix.python-version }})
-          fields: repo,message,commit,author,eventName,workflow,job,took
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        if: always()
+          status: failure
+          fields: repo,message,author,workflow,eventName,took
+
+      - name: Notify about success
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION == 'success'
+        with:
+          status: success
+          fields: repo,message,author,workflow,eventName,took
 
   publish:
     needs: [lint, test]
