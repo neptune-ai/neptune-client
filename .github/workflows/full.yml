@@ -110,14 +110,14 @@ jobs:
         if: env.WORKFLOW_CONCLUSION != 'success'
         with:
           status: failure
-          fields: repo,message,author,eventName,took
+          fields: repo,message,author,workflow,eventName,took
 
       - name: Notify about success
         uses: 8398a7/action-slack@v3
         if: env.WORKFLOW_CONCLUSION == 'success'
         with:
           status: success
-          fields: repo,message,author,eventName,took
+          fields: repo,message,author,workflow,eventName,took
 
   publish:
     needs: [lint, test]
