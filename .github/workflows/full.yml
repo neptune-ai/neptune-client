@@ -108,15 +108,9 @@ jobs:
       - uses: technote-space/workflow-conclusion-action@v2
       - name: Notify
         uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION != 'success'
         with:
-          status: custom
-          custom_payload: |
-            {
-              attachments: [{
-                color: '${{ env.WORKFLOW_CONCLUSION }}' === 'success' ? 'good' : '${{ env.WORKFLOW_CONCLUSION }}' === 'failure' ? 'danger' : 'warning',
-                text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ env.WORKFLOW_CONCLUSION }} in ${process.env.AS_TOOK}`,
-              }]
-            }
+          status: failure
           fields: repo,message,commit,author,eventName,workflow,job,took
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
