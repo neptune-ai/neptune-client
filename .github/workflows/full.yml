@@ -109,16 +109,24 @@ jobs:
     needs: [test]
     runs-on: ubuntu-latest
     if: always()
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
-      - name: Notify
+
+      - name: Notify about failure
         uses: 8398a7/action-slack@v3
         if: env.WORKFLOW_CONCLUSION != 'success'
         with:
           status: failure
-          fields: repo,message,commit,author,eventName,workflow,job,took
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          fields: repo,message,author,eventName,took
+
+      - name: Notify about success
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION == 'success'
+        with:
+          status: success
+          fields: repo,message,author,eventName,took
 
 #  publish:
 #    needs: [lint, test]
