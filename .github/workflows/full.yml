@@ -62,10 +62,6 @@ jobs:
 
       - name: Install dependencies
         run: |
-          false
-
-      - name: Install dependencies
-        run: |
           pip install -r requirements.txt -r requirements/e2e_requirements.txt
 
       - name: Integration tests
