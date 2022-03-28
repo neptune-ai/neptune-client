@@ -79,7 +79,7 @@ jobs:
           pytest ./e2e_tests -m integrations
 
       - name: Test Fast.ai integration
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-latest' && matrix.python-version != '3.6'
         uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
         with:
           working_directory: neptune_fastai
