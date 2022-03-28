@@ -88,7 +88,7 @@ jobs:
           NEPTUNE_PROJECT: e2e-tests/e2e
 
       - name: Test Kedro integration
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version != '3.9'
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version != '3.6' && matrix.python-version != '3.9'
         uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
         with:
           working_directory: neptune_kedro
