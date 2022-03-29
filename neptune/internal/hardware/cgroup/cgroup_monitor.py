@@ -52,7 +52,7 @@ class CGroupMonitor(object):
             return float(cpu_quota_micros) / float(cpu_period_micros)
 
     def get_cpu_usage_percentage(self):
-        current_timestamp_nanos = time.time() * 10 ** 9
+        current_timestamp_nanos = time.time() * 10**9
         cpu_cumulative_usage_nanos = (
             self.__cgroup_filesystem_reader.get_cpuacct_usage_nanos()
         )

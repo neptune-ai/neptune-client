@@ -308,14 +308,14 @@ def with_api_exceptions_handler(func):
                     retry = min(retry + 1, 8)
                     if not migration_reported:
                         print_migration_in_progress_message()
-                    time.sleep(2 ** retry)
+                    time.sleep(2**retry)
                     continue
                 else:
                     if retry >= 6:
                         _logger.warning(
                             "Experiencing connection interruptions. Reestablishing communication with Neptune."
                         )
-                    time.sleep(2 ** retry)
+                    time.sleep(2**retry)
                     retry += 1
                     continue
             except (
@@ -334,7 +334,7 @@ def with_api_exceptions_handler(func):
                     _logger.warning(
                         "Experiencing connection interruptions. Reestablishing communication with Neptune."
                     )
-                time.sleep(2 ** retry)
+                time.sleep(2**retry)
                 retry += 1
                 continue
             except HTTPUnauthorized:
@@ -357,7 +357,7 @@ def with_api_exceptions_handler(func):
                     retry = min(retry + 1, 8)
                     if not migration_reported:
                         print_migration_in_progress_message()
-                    time.sleep(2 ** retry)
+                    time.sleep(2**retry)
                     continue
                 elif status_code in (
                     HTTPRequestTimeout.status_code,
@@ -371,7 +371,7 @@ def with_api_exceptions_handler(func):
                         _logger.warning(
                             "Experiencing connection interruptions. Reestablishing communication with Neptune."
                         )
-                    time.sleep(2 ** retry)
+                    time.sleep(2**retry)
                     retry += 1
                     continue
                 elif status_code >= HTTPInternalServerError.status_code:

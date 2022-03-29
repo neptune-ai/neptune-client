@@ -92,8 +92,8 @@ class Metric(object):
 
 
 class MetricResourceType(object):
-    CPU = u"CPU"
-    RAM = u"MEMORY"
-    GPU = u"GPU"
-    GPU_RAM = u"GPU_MEMORY"
-    OTHER = u"OTHER"
+    CPU = "CPU"
+    RAM = "MEMORY"
+    GPU = "GPU"
+    GPU_RAM = "GPU_MEMORY"
+    OTHER = "OTHER"

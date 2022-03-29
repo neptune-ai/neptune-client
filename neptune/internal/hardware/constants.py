@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-BYTES_IN_ONE_MB = 2 ** 20
-BYTES_IN_ONE_GB = 2 ** 30
+BYTES_IN_ONE_MB = 2**20
+BYTES_IN_ONE_GB = 2**30

@@ -71,10 +71,10 @@ class TestMetricServiceIntegration(unittest.TestCase):
                     experiment,
                     Metric(
                         internal_id=cpu_metric_id,
-                        name=u"CPU - usage",
-                        description=u"average of all cores",
+                        name="CPU - usage",
+                        description="average of all cores",
                         resource_type=MetricResourceType.CPU,
-                        unit=u"%",
+                        unit="%",
                         min_value=0.0,
                         max_value=100.0,
                         gauges=[SystemCpuUsageGauge()],
@@ -84,10 +84,10 @@ class TestMetricServiceIntegration(unittest.TestCase):
                     experiment,
                     Metric(
                         internal_id=ram_metric_id,
-                        name=u"RAM",
-                        description=u"",
+                        name="RAM",
+                        description="",
                         resource_type=MetricResourceType.RAM,
-                        unit=u"GB",
+                        unit="GB",
                         min_value=0.0,
                         max_value=memory_amount_gb,
                         gauges=[SystemMemoryUsageGauge()],
@@ -127,7 +127,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
                         MetricValue(
                             timestamp=second_after_start,
                             running_time=1.0,
-                            gauge_name=u"cpu",
+                            gauge_name="cpu",
                             value=ANY,
                         )
                     ],
@@ -138,7 +138,7 @@ class TestMetricServiceIntegration(unittest.TestCase):
                         MetricValue(
                             timestamp=second_after_start,
                             running_time=1.0,
-                            gauge_name=u"ram",
+                            gauge_name="ram",
                             value=ANY,
                         )
                     ],

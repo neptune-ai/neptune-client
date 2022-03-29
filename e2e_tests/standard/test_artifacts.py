@@ -249,7 +249,7 @@ class TestArtifacts(BaseE2ETest):
         with tmp_context():
             # create 2GB file
             with open(filename, "wb") as handler:
-                handler.write(b"\0" * 2 * 2 ** 30)
+                handler.write(b"\0" * 2 * 2**30)
 
             # track it
             start = time.time()

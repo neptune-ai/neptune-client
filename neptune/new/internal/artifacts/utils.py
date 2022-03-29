@@ -18,7 +18,7 @@ import pathlib
 import hashlib
 
 
-def sha1(fname: typing.Union[str, pathlib.Path], block_size: int = 2 ** 16) -> str:
+def sha1(fname: typing.Union[str, pathlib.Path], block_size: int = 2**16) -> str:
     sha1sum = hashlib.sha1()
 
     with open(fname, "rb") as source:

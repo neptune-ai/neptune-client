@@ -44,7 +44,7 @@ class Message(object):
                 message_body
             )
         else:
-            raise ValueError(u"Unknown message type '{}'!".format(message_type))
+            raise ValueError("Unknown message type '{}'!".format(message_type))
 
     @classmethod
     def get_type(cls):

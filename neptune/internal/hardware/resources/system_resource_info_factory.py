@@ -27,7 +27,7 @@ class SystemResourceInfoFactory(object):
         self.__system_monitor = system_monitor
         self.__gpu_monitor = gpu_monitor
         self.__gpu_card_indices_provider = GPUCardIndicesProvider(
-            cuda_visible_devices=os_environ.get(u"CUDA_VISIBLE_DEVICES"),
+            cuda_visible_devices=os_environ.get("CUDA_VISIBLE_DEVICES"),
             gpu_card_count=self.__gpu_monitor.get_card_count(),
         )
 
@@ -37,7 +37,7 @@ class SystemResourceInfoFactory(object):
         elif gauge_mode == GaugeMode.CGROUP:
             return self.__create_cgroup_resource_info()
         else:
-            raise ValueError(str(u"Unknown gauge mode: {}".format(gauge_mode)))
+            raise ValueError(str("Unknown gauge mode: {}".format(gauge_mode)))
 
     def __create_whole_system_resource_info(self):
         return SystemResourceInfo(

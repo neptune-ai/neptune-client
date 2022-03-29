@@ -63,7 +63,7 @@ class TestFileChunkStream(unittest.TestCase):
 
     def test_generate_chunks_from_stream(self):
         # given
-        text = u"ABCDEFGHIJKLMNOPRSTUWXYZ"
+        text = "ABCDEFGHIJKLMNOPRSTUWXYZ"
 
         # when
         stream = FileChunkStream(

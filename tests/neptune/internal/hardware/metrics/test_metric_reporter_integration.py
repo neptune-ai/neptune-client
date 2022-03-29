@@ -69,7 +69,7 @@ class TestMetricReporterIntegration(unittest.TestCase):
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u"cpu",
+                        gauge_name="cpu",
                         value=self.fixture.cpu_gauge_value,
                     )
                 ],
@@ -80,7 +80,7 @@ class TestMetricReporterIntegration(unittest.TestCase):
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u"ram",
+                        gauge_name="ram",
                         value=self.fixture.memory_gauge_value,
                     )
                 ],
@@ -91,13 +91,13 @@ class TestMetricReporterIntegration(unittest.TestCase):
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u"0",
+                        gauge_name="0",
                         value=self.fixture.gpu0_usage_gauge_value,
                     ),
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u"2",
+                        gauge_name="2",
                         value=self.fixture.gpu1_usage_gauge_value,
                     ),
                 ],
@@ -108,13 +108,13 @@ class TestMetricReporterIntegration(unittest.TestCase):
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u"0",
+                        gauge_name="0",
                         value=self.fixture.gpu0_memory_gauge_value,
                     ),
                     MetricValue(
                         timestamp=measurement_timestamp,
                         running_time=expected_time,
-                        gauge_name=u"2",
+                        gauge_name="2",
                         value=self.fixture.gpu1_memory_gauge_value,
                     ),
                 ],

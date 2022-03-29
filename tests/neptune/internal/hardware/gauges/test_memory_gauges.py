@@ -26,7 +26,7 @@ from neptune.utils import IS_WINDOWS, IS_MACOS
 
 class TestMemoryGauges(unittest.TestCase):
     def setUp(self):
-        self.system_memory_gb = psutil.virtual_memory().total / float(2 ** 30)
+        self.system_memory_gb = psutil.virtual_memory().total / float(2**30)
 
     def test_system_memory_gauge(self):
         # given

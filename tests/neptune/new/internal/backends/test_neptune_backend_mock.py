@@ -70,7 +70,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
         for container_id, container_type in self.ids_with_types:
             with self.subTest(f"For containerType: {container_type}"):
                 # given
-                digit = randint(1, 10 ** 4)
+                digit = randint(1, 10**4)
                 self.backend.execute_operations(
                     container_id, container_type, operations=[AssignFloat(["x"], digit)]
                 )

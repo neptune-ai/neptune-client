@@ -57,7 +57,7 @@ class TestSeries(BaseE2ETest):
     def test_log_images(self, container: MetadataContainer):
         key = self.gen_key()
         # images with size between 200KB - 12MB
-        images = list(generate_image(size=2 ** n) for n in range(8, 12))
+        images = list(generate_image(size=2**n) for n in range(8, 12))
 
         container[key].log(images[0])
         container[key].log(images[1:])

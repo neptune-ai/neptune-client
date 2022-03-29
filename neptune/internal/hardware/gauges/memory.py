@@ -25,7 +25,7 @@ class SystemMemoryUsageGauge(Gauge):
         self.__system_monitor = SystemMonitor()
 
     def name(self):
-        return u"ram"
+        return "ram"
 
     def value(self):
         virtual_mem = self.__system_monitor.virtual_memory()
@@ -35,7 +35,7 @@ class SystemMemoryUsageGauge(Gauge):
         return self.__class__ == other.__class__
 
     def __repr__(self):
-        return str(u"SystemMemoryUsageGauge")
+        return str("SystemMemoryUsageGauge")
 
 
 class CGroupMemoryUsageGauge(Gauge):
@@ -43,7 +43,7 @@ class CGroupMemoryUsageGauge(Gauge):
         self.__cgroup_monitor = CGroupMonitor.create()
 
     def name(self):
-        return u"ram"
+        return "ram"
 
     def value(self):
         return self.__cgroup_monitor.get_memory_usage_in_bytes() / float(
@@ -54,4 +54,4 @@ class CGroupMemoryUsageGauge(Gauge):
         return self.__class__ == other.__class__
 
     def __repr__(self):
-        return str(u"CGroupMemoryUsageGauge")
+        return str("CGroupMemoryUsageGauge")
