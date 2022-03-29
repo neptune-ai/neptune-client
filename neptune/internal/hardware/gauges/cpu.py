@@ -24,7 +24,7 @@ class SystemCpuUsageGauge(Gauge):
         self.__system_monitor = SystemMonitor()
 
     def name(self):
-        return u"cpu"
+        return "cpu"
 
     def value(self):
         return self.__system_monitor.cpu_percent()
@@ -33,7 +33,7 @@ class SystemCpuUsageGauge(Gauge):
         return self.__class__ == other.__class__
 
     def __repr__(self):
-        return str(u"SystemCpuUsageGauge")
+        return str("SystemCpuUsageGauge")
 
 
 class CGroupCpuUsageGauge(Gauge):
@@ -41,7 +41,7 @@ class CGroupCpuUsageGauge(Gauge):
         self.__cgroup_monitor = CGroupMonitor.create()
 
     def name(self):
-        return u"cpu"
+        return "cpu"
 
     def value(self):
         return self.__cgroup_monitor.get_cpu_usage_percentage()
@@ -50,4 +50,4 @@ class CGroupCpuUsageGauge(Gauge):
         return self.__class__ == other.__class__
 
     def __repr__(self):
-        return str(u"CGroupCpuUsageGauge")
+        return str("CGroupCpuUsageGauge")

@@ -40,10 +40,10 @@ class MetricsFactory(object):
 
     def __create_cpu_usage_metric(self):
         return Metric(
-            name=u"CPU - usage",
-            description=u"average of all cores",
+            name="CPU - usage",
+            description="average of all cores",
             resource_type=MetricResourceType.CPU,
-            unit=u"%",
+            unit="%",
             min_value=0.0,
             max_value=100.0,
             gauges=[self.__gauge_factory.create_cpu_usage_gauge()],
@@ -51,10 +51,10 @@ class MetricsFactory(object):
 
     def __create_memory_metric(self):
         return Metric(
-            name=u"RAM",
-            description=u"",
+            name="RAM",
+            description="",
             resource_type=MetricResourceType.RAM,
-            unit=u"GB",
+            unit="GB",
             min_value=0.0,
             max_value=self.__system_resource_info.memory_amount_bytes
             / float(BYTES_IN_ONE_GB),
@@ -63,10 +63,10 @@ class MetricsFactory(object):
 
     def __create_gpu_usage_metric(self):
         return Metric(
-            name=u"GPU - usage",
-            description=u"{} cards".format(self.__system_resource_info.gpu_card_count),
+            name="GPU - usage",
+            description="{} cards".format(self.__system_resource_info.gpu_card_count),
             resource_type=MetricResourceType.GPU,
-            unit=u"%",
+            unit="%",
             min_value=0.0,
             max_value=100.0,
             gauges=[
@@ -77,10 +77,10 @@ class MetricsFactory(object):
 
     def __create_gpu_memory_metric(self):
         return Metric(
-            name=u"GPU - memory",
-            description=u"{} cards".format(self.__system_resource_info.gpu_card_count),
+            name="GPU - memory",
+            description="{} cards".format(self.__system_resource_info.gpu_card_count),
             resource_type=MetricResourceType.GPU_RAM,
-            unit=u"GB",
+            unit="GB",
             min_value=0.0,
             max_value=self.__system_resource_info.gpu_memory_amount_bytes
             / float(BYTES_IN_ONE_GB),

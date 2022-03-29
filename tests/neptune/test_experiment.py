@@ -157,7 +157,7 @@ class TestExperiment(unittest.TestCase):
         # when
         backend = MagicMock()
         backend.get_channel_points_csv.return_value = StringIO(
-            u"\n".join(["0.3,2.5", "1,2"])
+            "\n".join(["0.3,2.5", "1,2"])
         )
 
         experiment = MagicMock()

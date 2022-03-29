@@ -42,7 +42,7 @@ class DiskQueue(Generic[T]):
         to_dict: Callable[[T], dict],
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
-        max_file_size: int = 64 * 1024 ** 2,
+        max_file_size: int = 64 * 1024**2,
     ):
         self._dir_path = dir_path.resolve()
         self._to_dict = to_dict

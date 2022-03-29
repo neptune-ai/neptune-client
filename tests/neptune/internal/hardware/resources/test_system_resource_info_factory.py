@@ -90,7 +90,7 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         system_resource_info_factory = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(),
             gpu_monitor=gpu_monitor,
-            os_environ={u"CUDA_VISIBLE_DEVICES": u"1,3"},
+            os_environ={"CUDA_VISIBLE_DEVICES": "1,3"},
         )
 
         # when
@@ -107,7 +107,7 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         system_resource_info_factory = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(),
             gpu_monitor=gpu_monitor,
-            os_environ={u"CUDA_VISIBLE_DEVICES": u"-1"},
+            os_environ={"CUDA_VISIBLE_DEVICES": "-1"},
         )
 
         # when
@@ -124,7 +124,7 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         system_resource_info_factory = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(),
             gpu_monitor=gpu_monitor,
-            os_environ={u"CUDA_VISIBLE_DEVICES": u"1,3,5,2"},
+            os_environ={"CUDA_VISIBLE_DEVICES": "1,3,5,2"},
         )
 
         # when
@@ -141,7 +141,7 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         system_resource_info_factory = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(),
             gpu_monitor=gpu_monitor,
-            os_environ={u"CUDA_VISIBLE_DEVICES": u""},
+            os_environ={"CUDA_VISIBLE_DEVICES": ""},
         )
 
         # when
@@ -158,7 +158,7 @@ class TestSystemResourceInfoFactory(unittest.TestCase):
         system_resource_info_factory = SystemResourceInfoFactory(
             system_monitor=SystemMonitor(),
             gpu_monitor=gpu_monitor,
-            os_environ={u"CUDA_VISIBLE_DEVICES": u"1,3,abc"},
+            os_environ={"CUDA_VISIBLE_DEVICES": "1,3,abc"},
         )
 
         # when

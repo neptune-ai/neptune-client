@@ -48,10 +48,10 @@ class TestMetricsFactory(unittest.TestCase):
         # then
         self.assertEqual(
             Metric(
-                name=u"CPU - usage",
-                description=u"average of all cores",
+                name="CPU - usage",
+                description="average of all cores",
                 resource_type=MetricResourceType.CPU,
-                unit=u"%",
+                unit="%",
                 min_value=0.0,
                 max_value=100.0,
                 gauges=[SystemCpuUsageGauge()],
@@ -61,10 +61,10 @@ class TestMetricsFactory(unittest.TestCase):
         # and
         self.assertEqual(
             Metric(
-                name=u"RAM",
-                description=u"",
+                name="RAM",
+                description="",
                 resource_type=MetricResourceType.RAM,
-                unit=u"GB",
+                unit="GB",
                 min_value=0.0,
                 max_value=16.0,
                 gauges=[SystemMemoryUsageGauge()],
@@ -74,10 +74,10 @@ class TestMetricsFactory(unittest.TestCase):
         # and
         self.assertEqual(
             Metric(
-                name=u"GPU - usage",
-                description=u"2 cards",
+                name="GPU - usage",
+                description="2 cards",
                 resource_type=MetricResourceType.GPU,
-                unit=u"%",
+                unit="%",
                 min_value=0.0,
                 max_value=100.0,
                 gauges=[GpuUsageGauge(card_index=0), GpuUsageGauge(card_index=1)],
@@ -87,10 +87,10 @@ class TestMetricsFactory(unittest.TestCase):
         # and
         self.assertEqual(
             Metric(
-                name=u"GPU - memory",
-                description=u"2 cards",
+                name="GPU - memory",
+                description="2 cards",
                 resource_type=MetricResourceType.GPU_RAM,
-                unit=u"GB",
+                unit="GB",
                 min_value=0.0,
                 max_value=8.0,
                 gauges=[GpuMemoryGauge(card_index=0), GpuMemoryGauge(card_index=1)],
@@ -141,10 +141,10 @@ class TestMetricsFactory(unittest.TestCase):
         # then
         self.assertEqual(
             Metric(
-                name=u"CPU - usage",
-                description=u"average of all cores",
+                name="CPU - usage",
+                description="average of all cores",
                 resource_type=MetricResourceType.CPU,
-                unit=u"%",
+                unit="%",
                 min_value=0.0,
                 max_value=100.0,
                 gauges=[SystemCpuUsageGauge()],

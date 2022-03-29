@@ -16,5 +16,5 @@
 
 
 class GaugeMode(object):
-    SYSTEM = u"system"
-    CGROUP = u"cgroup"
+    SYSTEM = "system"
+    CGROUP = "cgroup"

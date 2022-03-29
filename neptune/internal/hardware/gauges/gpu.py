@@ -33,7 +33,7 @@ class GpuUsageGauge(Gauge):
         return self.__class__ == other.__class__ and self.card_index == other.card_index
 
     def __repr__(self):
-        return str(u"GpuUsageGauge")
+        return str("GpuUsageGauge")
 
 
 class GpuMemoryGauge(Gauge):
@@ -53,4 +53,4 @@ class GpuMemoryGauge(Gauge):
         return self.__class__ == other.__class__ and self.card_index == other.card_index
 
     def __repr__(self):
-        return str(u"GpuMemoryGauge")
+        return str("GpuMemoryGauge")

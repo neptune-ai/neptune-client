@@ -46,8 +46,8 @@ class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize(
         "file_size",
         [
-            pytest.param(10 * 2 ** 20, id="big"),  # 10 MB, multipart
-            pytest.param(100 * 2 ** 10, id="small"),  # 100 kB, single upload
+            pytest.param(10 * 2**20, id="big"),  # 10 MB, multipart
+            pytest.param(100 * 2**10, id="small"),  # 100 kB, single upload
         ],
     )
     def test_single_file(self, container: MetadataContainer, file_size: int):
@@ -73,7 +73,7 @@ class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_fileset(self, container: MetadataContainer):
         key = self.gen_key()
-        large_filesize = 10 * 2 ** 20  # 10MB
+        large_filesize = 10 * 2**20  # 10MB
         large_filename = fake.file_name()
         small_files = [
             (f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8"))
@@ -162,7 +162,7 @@ class TestUpload(BaseE2ETest):
         small_files = [
             (
                 f"{path}{uuid.uuid4()}.{fake.file_extension()}",
-                os.urandom(random.randint(10 ** 3, 10 ** 6)),
+                os.urandom(random.randint(10**3, 10**6)),
             )
             for path in possible_paths
         ]
@@ -204,8 +204,8 @@ class TestUpload(BaseE2ETest):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = os.urandom(random.randint(10 ** 3, 10 ** 6))
-        content2 = os.urandom(random.randint(10 ** 3, 10 ** 6))
+        content1 = os.urandom(random.randint(10**3, 10**6))
+        content2 = os.urandom(random.randint(10**3, 10**6))
 
         with tmp_context():
             # create file1 and file2
@@ -238,8 +238,8 @@ class TestUpload(BaseE2ETest):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = os.urandom(random.randint(10 ** 3, 10 ** 6))
-        content2 = os.urandom(random.randint(10 ** 3, 10 ** 6))
+        content1 = os.urandom(random.randint(10**3, 10**6))
+        content2 = os.urandom(random.randint(10**3, 10**6))
         downloaded_filename = fake.file_name()
 
         with tmp_context():
@@ -277,8 +277,8 @@ class TestUpload(BaseE2ETest):
     ):
         key = self.gen_key()
         filename = fake.file_name()
-        content1 = os.urandom(random.randint(10 ** 3, 10 ** 6))
-        content2 = os.urandom(random.randint(10 ** 3, 10 ** 6))
+        content1 = os.urandom(random.randint(10**3, 10**6))
+        content2 = os.urandom(random.randint(10**3, 10**6))
 
         with tmp_context():
             # create file

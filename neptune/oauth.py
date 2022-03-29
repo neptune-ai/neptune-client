@@ -88,7 +88,7 @@ class NeptuneAuth(AuthBase):
             decoded_json_token = jwt.decode(
                 self.session.token.get("access_token"), options=_decoding_options
             )
-            self.token_expires_at = decoded_json_token.get(u"exp")
+            self.token_expires_at = decoded_json_token.get("exp")
 
 
 class NeptuneAuthenticator(Authenticator):
@@ -109,15 +109,15 @@ class NeptuneAuthenticator(Authenticator):
             decoded_json_token = jwt.decode(
                 auth_tokens.accessToken, options=_decoding_options
             )
-            expires_at = decoded_json_token.get(u"exp")
-            client_name = decoded_json_token.get(u"azp")
-            refresh_url = u"{realm_url}/protocol/openid-connect/token".format(
-                realm_url=decoded_json_token.get(u"iss")
+            expires_at = decoded_json_token.get("exp")
+            client_name = decoded_json_token.get("azp")
+            refresh_url = "{realm_url}/protocol/openid-connect/token".format(
+                realm_url=decoded_json_token.get("iss")
             )
             token = {
-                u"access_token": auth_tokens.accessToken,
-                u"refresh_token": auth_tokens.refreshToken,
-                u"expires_in": expires_at - time.time(),
+                "access_token": auth_tokens.accessToken,
+                "refresh_token": auth_tokens.refreshToken,
+                "expires_in": expires_at - time.time(),
             }
 
             session = OAuth2Session(
