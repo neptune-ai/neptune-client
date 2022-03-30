@@ -30,11 +30,6 @@ class TestPytorchLightning(BaseE2ETest):
         ].fetch()
         assert logged_version == pl.__version__  # pylint: disable=E1101
 
-        # epoch are logged in steps [1, 1, ...., 2, 2, ..., 3, 3 ...]
-        logged_epochs = list(pytorch_run["custom_prefix/epoch"].fetch_values()["value"])
-        assert sorted(logged_epochs) == logged_epochs
-        assert set(logged_epochs) == {0, 1, 2, 3}
-
         assert pytorch_run.exists("custom_prefix/valid/loss")
         assert len(pytorch_run["custom_prefix/valid/loss"].fetch_values()) == 3
 
