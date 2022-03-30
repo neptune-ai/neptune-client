@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import re
-from packaging import version
 
 import pytest
 import pytorch_lightning as pl
@@ -30,16 +29,6 @@ class TestPytorchLightning(BaseE2ETest):
             "source_code/integrations/pytorch-lightning"
         ].fetch()
         assert logged_version == pl.__version__  # pylint: disable=E1101
-
-        # epoch are logged in steps [1, 1, ...., 2, 2, ..., 3, 3 ...]
-        logged_epochs = list(pytorch_run["custom_prefix/epoch"].fetch_values()["value"])
-        assert sorted(logged_epochs) == logged_epochs
-        # this changes in 1.6 (which dropped 3.6 support; you can delete this if we drop it too)
-        if version.parse(pl.__version__).release >= (1, 6, 0):  # pylint: disable=E1101
-            expected_epochs = {0, 1, 2, 3}
-        else:
-            expected_epochs = {0, 1, 2}
-        assert set(logged_epochs) == expected_epochs
 
         assert pytorch_run.exists("custom_prefix/valid/loss")
         assert len(pytorch_run["custom_prefix/valid/loss"].fetch_values()) == 3
