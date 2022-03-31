@@ -16,18 +16,21 @@
 import logging
 import os
 import sys
-from typing import List, Optional
+from typing import TYPE_CHECKING, List, Optional
 
 from neptune.internal.storage.storage_utils import normalize_file_name
-from neptune.new import Run
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.utils import is_ipython
 
+if TYPE_CHECKING:
+    from neptune.new import Run
+
+
 _logger = logging.getLogger(__name__)
 
 
-def upload_source_code(source_files: Optional[List[str]], run: Run) -> None:
+def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
     if not is_ipython() and os.path.isfile(sys.argv[0]):
         if source_files is None:
             entrypoint = os.path.basename(sys.argv[0])

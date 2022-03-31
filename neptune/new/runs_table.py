@@ -14,10 +14,9 @@
 # limitations under the License.
 #
 
-from neptune.new.exceptions import MetadataInconsistency
-
 # backwards compatibility
 # pylint: disable=unused-import,wrong-import-order
+from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
     AttributeType,
     AttributeWithProperties,
