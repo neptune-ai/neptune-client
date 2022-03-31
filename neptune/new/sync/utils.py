@@ -31,16 +31,16 @@ import sys
 import textwrap
 import threading
 from pathlib import Path
-from typing import Optional, Iterator, Tuple, List, Union
+from typing import Iterator, List, Optional, Tuple, Union
 
 import click
 
 from neptune.new.constants import OFFLINE_DIRECTORY
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import (
+    MetadataContainerNotFound,
     NeptuneException,
     ProjectNotFound,
-    MetadataContainerNotFound,
 )
 from neptune.new.internal.backends.api_model import ApiExperiment, Project
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend

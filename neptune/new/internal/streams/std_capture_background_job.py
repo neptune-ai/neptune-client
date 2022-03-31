@@ -17,13 +17,13 @@
 from typing import TYPE_CHECKING, Optional
 
 from neptune.new.attributes.constants import (
-    MONITORING_STDOUT_ATTRIBUTE_PATH,
     MONITORING_STDERR_ATTRIBUTE_PATH,
+    MONITORING_STDOUT_ATTRIBUTE_PATH,
 )
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.streams.std_stream_capture_logger import (
-    StdoutCaptureLogger,
     StderrCaptureLogger,
+    StdoutCaptureLogger,
 )
 
 if TYPE_CHECKING:

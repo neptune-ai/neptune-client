@@ -29,20 +29,19 @@ from typing import Optional
 from neptune.new import types
 from neptune.new.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
 from neptune.new.exceptions import (
-    NeptuneUninitializedException,
     NeptunePossibleLegacyUsageException,
+    NeptuneUninitializedException,
 )
-from neptune.new.metadata_containers import Run
 from neptune.new.internal.init import (
     get_project,
+    init,
     init_model,
     init_model_version,
     init_project,
     init_run,
-    init,
 )
+from neptune.new.metadata_containers import Run
 from neptune.new.version import version
-
 
 __version__ = str(version)
 

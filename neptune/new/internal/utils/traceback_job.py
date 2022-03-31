@@ -16,8 +16,7 @@
 
 import logging
 import uuid
-
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, List, Optional
 
 from neptune.new.attributes.constants import SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.new.internal.background_job import BackgroundJob

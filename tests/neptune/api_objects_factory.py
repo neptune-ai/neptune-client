@@ -17,7 +17,7 @@ from random import randint, uniform
 
 from mock import MagicMock
 
-from tests.neptune.random_utils import a_string, a_uuid_string, a_timestamp
+from tests.neptune.random_utils import a_string, a_timestamp, a_uuid_string
 
 
 def a_project():

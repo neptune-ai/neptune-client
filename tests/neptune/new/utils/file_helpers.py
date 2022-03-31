@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 import contextlib
-from tempfile import NamedTemporaryFile
 import os
+from tempfile import NamedTemporaryFile
 
 
 @contextlib.contextmanager

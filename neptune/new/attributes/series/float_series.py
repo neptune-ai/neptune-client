@@ -13,23 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, Union, Optional, Iterable
+from typing import Iterable, List, Optional, Union
 
 import click
 
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
+from neptune.new.attributes.series.series import Series
 from neptune.new.internal.backends.api_model import FloatSeriesValues
-from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
-
-from neptune.new.internal.utils import verify_type
-
 from neptune.new.internal.operation import (
     ClearFloatLog,
+    ConfigFloatSeries,
     LogFloats,
     Operation,
-    ConfigFloatSeries,
 )
-from neptune.new.attributes.series.series import Series
+from neptune.new.internal.utils import verify_type
+from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.utils import split_to_chunks
 
 Val = FloatSeriesVal

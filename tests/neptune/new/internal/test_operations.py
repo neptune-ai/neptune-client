@@ -20,7 +20,6 @@ import uuid
 from neptune.new.attributes import Integer
 from neptune.new.internal.operation import *
 
-
 # pylint: disable=protected-access
 
 

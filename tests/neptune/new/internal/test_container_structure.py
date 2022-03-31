@@ -18,8 +18,8 @@ import uuid
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.container_structure import ContainerStructure
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.types.value import Value
 
 

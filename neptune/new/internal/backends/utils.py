@@ -20,71 +20,61 @@ import socket
 import sys
 import time
 from functools import lru_cache, wraps
-from typing import (
-    Optional,
-    Dict,
-    TYPE_CHECKING,
-    Mapping,
-    Text,
-    Any,
-    List,
-    Iterable,
-)
-from urllib.parse import urlparse, urljoin
-
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Text
+from urllib.parse import urljoin, urlparse
 
 import click
 import requests
 import urllib3
-from bravado.requests_client import RequestsResponseAdapter
-from urllib3.exceptions import NewConnectionError
 from bravado.client import SwaggerClient
 from bravado.exception import (
     BravadoConnectionError,
     BravadoTimeoutError,
-    HTTPForbidden,
-    HTTPServerError,
-    HTTPUnauthorized,
-    HTTPServiceUnavailable,
-    HTTPRequestTimeout,
-    HTTPGatewayTimeout,
     HTTPBadGateway,
     HTTPClientError,
-    HTTPTooManyRequests,
     HTTPError,
+    HTTPForbidden,
+    HTTPGatewayTimeout,
+    HTTPRequestTimeout,
+    HTTPServerError,
+    HTTPServiceUnavailable,
+    HTTPTooManyRequests,
+    HTTPUnauthorized,
 )
 from bravado.http_client import HttpClient
+from bravado.requests_client import RequestsResponseAdapter
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
-from requests import Session, Response
+from requests import Response, Session
+from urllib3.exceptions import NewConnectionError
 
 from neptune.new.envs import (
-    NEPTUNE_RETRIES_TIMEOUT_ENV,
     NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE,
+    NEPTUNE_RETRIES_TIMEOUT_ENV,
 )
 from neptune.new.exceptions import (
-    NeptuneSSLVerificationError,
-    NeptuneConnectionLostException,
-    Unauthorized,
-    Forbidden,
     CannotResolveHostname,
-    UnsupportedClientVersion,
     ClientHttpError,
-    NeptuneFeatureNotAvailableException,
+    Forbidden,
     MetadataInconsistency,
+    NeptuneConnectionLostException,
+    NeptuneFeatureNotAvailableException,
     NeptuneInvalidApiTokenException,
+    NeptuneSSLVerificationError,
+    Unauthorized,
+    UnsupportedClientVersion,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
-from neptune.new.internal.operation import Operation, CopyAttribute
+from neptune.new.internal.operation import CopyAttribute, Operation
 from neptune.new.internal.utils import replace_patch_version
 
 _logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
     from neptune.new.internal.backends.hosted_neptune_backend import (
         HostedNeptuneBackend,
     )
+    from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 
 MAX_RETRY_TIME = 30
 retries_timeout = int(os.getenv(NEPTUNE_RETRIES_TIMEOUT_ENV, "60"))

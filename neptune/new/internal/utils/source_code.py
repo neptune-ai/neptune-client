@@ -16,12 +16,12 @@
 import logging
 import os
 import sys
-from typing import Optional, List
+from typing import List, Optional
 
+from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.new import Run
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
-from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.utils import is_ipython
 
 _logger = logging.getLogger(__name__)

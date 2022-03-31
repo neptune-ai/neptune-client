@@ -15,14 +15,14 @@
 #
 
 import unittest
-
 from io import BytesIO
+
 from mock import patch
 
-from neptune.internal.storage.datastream import FileChunkStream, FileChunk
+from neptune.internal.storage.datastream import FileChunk, FileChunkStream
 from neptune.internal.storage.storage_utils import (
-    UploadEntry,
     AttributeUploadConfiguration,
+    UploadEntry,
 )
 
 

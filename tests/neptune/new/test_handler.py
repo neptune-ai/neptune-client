@@ -19,23 +19,22 @@ import unittest
 # pylint: disable=protected-access
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from io import StringIO, BytesIO
+from io import BytesIO, StringIO
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import PIL
 
+from neptune.new import ANONYMOUS, init
 from neptune.new.attributes.atoms.boolean import Boolean
-from neptune.new.attributes.atoms.integer import Integer
-from neptune.new.attributes.series import FileSeries
-
-from neptune.new import init, ANONYMOUS
 from neptune.new.attributes.atoms.datetime import Datetime
 from neptune.new.attributes.atoms.file import File
 from neptune.new.attributes.atoms.float import Float
+from neptune.new.attributes.atoms.integer import Integer
 from neptune.new.attributes.atoms.string import String
+from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.envs import PROJECT_ENV_NAME, API_TOKEN_ENV_NAME
+from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import FileNotFound
 from neptune.new.types import File as FileVal
 from neptune.new.types.atoms.artifact import Artifact

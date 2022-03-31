@@ -24,8 +24,8 @@ from pandas.errors import EmptyDataError
 from neptune.api_exceptions import ChannelDoesNotExist, ExperimentAlreadyFinished
 from neptune.exceptions import (
     InvalidChannelValue,
-    NoChannelValue,
     NeptuneIncorrectImportException,
+    NoChannelValue,
 )
 from neptune.internal.channels.channels import (
     ChannelNamespace,

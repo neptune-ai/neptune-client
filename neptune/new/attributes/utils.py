@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING, List
 
 from neptune.new.attributes import (
     Artifact,
@@ -36,8 +36,8 @@ from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.backends.api_model import AttributeType
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import MetadataContainer
     from neptune.new.attributes.attribute import Attribute
+    from neptune.new.metadata_containers import MetadataContainer
 
 _attribute_type_to_attr_class_map = {
     AttributeType.FLOAT: Float,

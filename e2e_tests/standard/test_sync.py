@@ -13,24 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import re
 import json
+import re
 from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
 
 import neptune.new as neptune
-from neptune.new.exceptions import NeptuneException
-from neptune.new.sync import sync
-
-from e2e_tests.base import BaseE2ETest, fake, AVAILABLE_CONTAINERS
+from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
 from e2e_tests.utils import (
     DISABLE_SYSLOG_KWARGS,
     initialize_container,
     reinitialize_container,
     tmp_context,
 )
+from neptune.new.exceptions import NeptuneException
+from neptune.new.sync import sync
 
 runner = CliRunner()
 

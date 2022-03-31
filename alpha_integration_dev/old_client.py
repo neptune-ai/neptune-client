@@ -27,8 +27,8 @@ import neptune
 from alpha_integration_dev.common_client_code import ClientFeatures
 from neptune.exceptions import (
     DeleteArtifactUnsupportedInAlphaException,
-    DownloadArtifactUnsupportedException,
     DownloadArtifactsUnsupportedException,
+    DownloadArtifactUnsupportedException,
     DownloadSourcesException,
     FileNotFound,
 )

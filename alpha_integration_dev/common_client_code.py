@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import abc
 import os
 from contextlib import contextmanager
 from datetime import datetime
-import abc
 
 
 class ClientFeatures(abc.ABC):

@@ -13,48 +13,50 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import uuid
 import unittest
+import uuid
 
-from mock import patch, MagicMock, Mock
 from bravado.exception import (
-    HTTPNotFound,
-    HTTPForbidden,
-    HTTPConflict,
     HTTPBadRequest,
+    HTTPConflict,
+    HTTPForbidden,
+    HTTPNotFound,
     HTTPUnprocessableEntity,
 )
 from bravado.testing.response_mocks import BravadoResponseMock
+from mock import MagicMock, Mock, patch
 
 from neptune.management import (
-    get_project_list,
-    get_workspace_member_list,
-    get_project_member_list,
-    delete_project,
-    create_project,
-    add_project_member,
-    remove_project_member,
     MemberRole,
+    add_project_member,
+    create_project,
+    delete_project,
+    get_project_list,
+    get_project_member_list,
+    get_workspace_member_list,
+    remove_project_member,
 )
 from neptune.management.exceptions import (
-    WorkspaceNotFound,
-    ProjectNotFound,
     AccessRevokedOnDeletion,
-    ProjectAlreadyExists,
-    UserNotExistsOrWithoutAccess,
-    UserAlreadyHasAccess,
     AccessRevokedOnMemberRemoval,
+    ProjectAlreadyExists,
+    ProjectNotFound,
     UnsupportedValue,
+    UserAlreadyHasAccess,
+    UserNotExistsOrWithoutAccess,
+    WorkspaceNotFound,
 )
-from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.backends.hosted_client import (
     _get_token_client,  # pylint:disable=protected-access
-    get_client_config,
-    create_http_client_with_auth,
-    create_backend_client,
-    create_leaderboard_client,
-    create_artifacts_client,
 )
+from neptune.new.internal.backends.hosted_client import (
+    create_artifacts_client,
+    create_backend_client,
+    create_http_client_with_auth,
+    create_leaderboard_client,
+    get_client_config,
+)
+from neptune.new.internal.backends.utils import verify_host_resolution
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 
 API_TOKEN = (

@@ -14,21 +14,21 @@
 # limitations under the License.
 #
 
-# backwards compatibility
-# pylint: disable=unused-import,wrong-import-order
-from neptune.new.internal.backends.api_model import AttributeType
-from neptune.new.metadata_containers.metadata_containers_table import (
-    LeaderboardEntry,
-    LeaderboardHandler,
-)
 from neptune.new.exceptions import MetadataInconsistency
 
-from neptune.new.metadata_containers.metadata_containers_table import (
-    Table as RunsTable,
-    TableEntry as RunsTableEntry,
-)
+# backwards compatibility
+# pylint: disable=unused-import,wrong-import-order
 from neptune.new.internal.backends.api_model import (
+    AttributeType,
     AttributeWithProperties,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.metadata_containers.metadata_containers_table import (
+    LeaderboardEntry,
+    LeaderboardHandler,
+)
+from neptune.new.metadata_containers.metadata_containers_table import Table as RunsTable
+from neptune.new.metadata_containers.metadata_containers_table import (
+    TableEntry as RunsTableEntry,
+)

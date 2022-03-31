@@ -36,7 +36,7 @@ from neptune.new.internal.init.parameters import (
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.new.metadata_containers import ModelVersion, Model
+from neptune.new.metadata_containers import Model, ModelVersion
 from neptune.new.types.mode import Mode
 
 

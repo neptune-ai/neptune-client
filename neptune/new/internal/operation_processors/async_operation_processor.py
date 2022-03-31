@@ -17,14 +17,14 @@ import logging
 import os
 import sys
 import threading
-from time import time, monotonic
-from typing import Optional, List
+from time import monotonic, time
+from typing import List, Optional
 
 import click
 
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import (

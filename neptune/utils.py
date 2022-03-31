@@ -41,8 +41,8 @@ from bravado.exception import (
     HTTPRequestTimeout,
     HTTPServerError,
     HTTPServiceUnavailable,
-    HTTPUnauthorized,
     HTTPTooManyRequests,
+    HTTPUnauthorized,
 )
 from urllib3.exceptions import NewConnectionError
 

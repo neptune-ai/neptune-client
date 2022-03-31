@@ -16,7 +16,7 @@
 
 import unittest
 
-from neptune.new.internal.utils import verify_type, verify_collection_type
+from neptune.new.internal.utils import verify_collection_type, verify_type
 
 
 class TestUtils(unittest.TestCase):

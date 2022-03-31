@@ -16,8 +16,8 @@
 
 import abc
 import enum
-import typing
 import pathlib
+import typing
 from dataclasses import dataclass
 
 from neptune.new.exceptions import (

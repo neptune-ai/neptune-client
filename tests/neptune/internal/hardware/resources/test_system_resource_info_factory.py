@@ -25,7 +25,7 @@ from neptune.internal.hardware.resources.system_resource_info_factory import (
     SystemResourceInfoFactory,
 )
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
-from neptune.utils import IS_WINDOWS, IS_MACOS
+from neptune.utils import IS_MACOS, IS_WINDOWS
 from tests.neptune.utils.assertions import AssertionExtensions
 
 

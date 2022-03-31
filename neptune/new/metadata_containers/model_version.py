@@ -13,13 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
 from neptune.new.exceptions import NeptuneOfflineModeChangeStageException
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.offline_operation_processor import (
     OfflineOperationProcessor,
 )
+from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types.model_version_stage import ModelVersionStage
 
 

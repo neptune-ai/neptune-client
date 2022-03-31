@@ -16,13 +16,13 @@
 
 from __future__ import unicode_literals
 
-from datetime import datetime
 import re
+from datetime import datetime
 
 from neptune.internal.channels.channels import (
     ChannelNamespace,
-    ChannelValue,
     ChannelType,
+    ChannelValue,
 )
 
 

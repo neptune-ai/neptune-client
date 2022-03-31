@@ -21,9 +21,8 @@ from datetime import datetime, timezone
 import pytest
 
 import neptune.new as neptune
-from neptune.new.metadata_containers import Model, MetadataContainer
-
-from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
+from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
+from neptune.new.metadata_containers import MetadataContainer, Model
 
 
 class TestAtoms(BaseE2ETest):

@@ -19,7 +19,7 @@ import uuid
 from random import randint
 from time import time
 
-from neptune.new.exceptions import MetadataInconsistency, ContainerUUIDNotFound
+from neptune.new.exceptions import ContainerUUIDNotFound, MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
     DatetimeAttribute,
     FloatAttribute,

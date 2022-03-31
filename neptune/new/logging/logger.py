@@ -14,11 +14,9 @@
 # limitations under the License.
 #
 
-from neptune.new.metadata_containers import MetadataContainer
-
 # backwards compatibility
 # pylint: disable=unused-import
-from neptune.new.metadata_containers import Run
+from neptune.new.metadata_containers import MetadataContainer, Run
 
 
 class Logger(object):

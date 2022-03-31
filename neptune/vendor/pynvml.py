@@ -30,12 +30,12 @@
 Python bindings for the NVML library.
 """
 
+import os
+import string
+import sys
+import threading
 from ctypes import *
 from ctypes.util import find_library
-import sys
-import os
-import threading
-import string
 
 ## ========================================================================== ##
 ##                                                                            ##

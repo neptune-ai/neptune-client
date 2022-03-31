@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from dataclasses import dataclass
-from typing import TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.types.value import Value

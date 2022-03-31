@@ -13,14 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.new.metadata_containers import MetadataContainer
-from neptune.new.internal.container_type import ContainerType
-from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.internal.backends.nql import (
-    NQLQueryAttribute,
     NQLAttributeOperator,
     NQLAttributeType,
+    NQLQueryAttribute,
 )
+from neptune.new.internal.container_type import ContainerType
+from neptune.new.metadata_containers import MetadataContainer
+from neptune.new.metadata_containers.metadata_containers_table import Table
 
 
 class Model(MetadataContainer):

@@ -29,8 +29,8 @@ from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_ap
 from neptune.internal.channels.channels import (
     ChannelIdWithValues,
     ChannelNamespace,
-    ChannelValue,
     ChannelType,
+    ChannelValue,
 )
 from tests.neptune.new.backend_test_mixin import (
     BackendTestMixin as AlphaBackendTestMixin,

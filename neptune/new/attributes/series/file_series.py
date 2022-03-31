@@ -16,22 +16,19 @@
 import imghdr
 import os
 import pathlib
+from typing import Iterable, List, Optional
 
-from typing import List, Optional, Iterable
-
-from neptune.new.internal.utils import base64_encode
-
+from neptune.new.attributes.series.series import Series
 from neptune.new.exceptions import FileNotFound, OperationNotSupported
-
-from neptune.new.types import File
-from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.new.internal.operation import (
+    ClearImageLog,
     ImageValue,
     LogImages,
-    ClearImageLog,
     Operation,
 )
-from neptune.new.attributes.series.series import Series
+from neptune.new.internal.utils import base64_encode
+from neptune.new.types import File
+from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.utils import split_to_chunks
 
 Val = FileSeriesVal

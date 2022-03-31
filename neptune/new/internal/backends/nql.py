@@ -22,9 +22,9 @@ __all__ = [
     "NQLQueryAttribute",
 ]
 
+from dataclasses import dataclass
 from enum import Enum
 from typing import Iterable
-from dataclasses import dataclass
 
 
 @dataclass

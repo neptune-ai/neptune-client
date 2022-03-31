@@ -14,15 +14,14 @@
 # limitations under the License.
 #
 from .internal.api import (
-    get_project_list,
+    add_project_member,
     create_project,
     delete_project,
+    get_project_list,
     get_project_member_list,
-    add_project_member,
-    remove_project_member,
     get_workspace_member_list,
+    remove_project_member,
 )
-
 from .internal.types import MemberRole, ProjectVisibility
 
 __all__ = [

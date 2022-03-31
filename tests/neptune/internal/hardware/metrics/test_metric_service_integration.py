@@ -19,8 +19,8 @@ import time
 import unittest
 import uuid
 
-from mock import ANY, MagicMock, call
 import psutil
+from mock import ANY, MagicMock, call
 
 from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
 from neptune.internal.hardware.gauges.cpu import SystemCpuUsageGauge

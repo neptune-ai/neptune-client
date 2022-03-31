@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import abc
-from typing import TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from neptune.new.types.value import Value
 

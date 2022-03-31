@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from .float import Float
 from .file import File
-from .string import String
+from .float import Float
 from .git_ref import GitRef
+from .string import String

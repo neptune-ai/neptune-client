@@ -22,15 +22,15 @@ from collections import namedtuple
 from tempfile import NamedTemporaryFile, TemporaryDirectory
 
 import mock
-from mock import MagicMock, patch, call
+from mock import MagicMock, call, patch
 
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.hosted_file_operations import (
+    _get_content_disposition_filename,
+    download_file_attribute,
+    download_file_set_attribute,
     upload_file_attribute,
     upload_file_set_attribute,
-    download_file_attribute,
-    _get_content_disposition_filename,
-    download_file_set_attribute,
 )
 from neptune.utils import IS_WINDOWS
 from tests.neptune.new.backend_test_mixin import BackendTestMixin

@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import typing
-import pathlib
 import hashlib
+import pathlib
+import typing
 
 
 def sha1(fname: typing.Union[str, pathlib.Path], block_size: int = 2**16) -> str:

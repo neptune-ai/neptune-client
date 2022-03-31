@@ -21,11 +21,11 @@ import pandas as pd
 from pandas.testing import assert_frame_equal
 
 from neptune.utils import (
+    align_channels_on_x,
+    as_list,
+    get_channel_name_stems,
     map_keys,
     map_values,
-    as_list,
-    align_channels_on_x,
-    get_channel_name_stems,
     merge_dataframes,
 )
 from tests.neptune.random_utils import sort_df_by_columns

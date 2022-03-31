@@ -27,15 +27,9 @@ from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
 from packaging import version
 
-from neptune.api_exceptions import (
-    WorkspaceNotFound,
-    ProjectNotFound,
-)
+from neptune.api_exceptions import ProjectNotFound, WorkspaceNotFound
 from neptune.backend import BackendApiClient, LeaderboardApiClient
-from neptune.exceptions import (
-    STYLES,
-    UnsupportedClientVersion,
-)
+from neptune.exceptions import STYLES, UnsupportedClientVersion
 from neptune.internal.api_clients.credentials import Credentials
 from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import (
     HostedAlphaLeaderboardApiClient,
@@ -46,8 +40,8 @@ from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
 from neptune.utils import (
     NoopObject,
-    with_api_exceptions_handler,
     update_session_proxies,
+    with_api_exceptions_handler,
 )
 
 _logger = logging.getLogger(__name__)

@@ -14,13 +14,12 @@
 # limitations under the License.
 #
 import os
-from typing import Union, Iterable, Optional
+from typing import Iterable, Optional, Union
 
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.internal.operation import UploadFileSet, DeleteFiles
-from neptune.new.internal.utils import verify_type, verify_collection_type
+from neptune.new.internal.operation import DeleteFiles, UploadFileSet
+from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.types.file_set import FileSet as FileSetVal
-
 
 # pylint: disable=protected-access
 

@@ -14,14 +14,13 @@
 # limitations under the License.
 #
 import base64
-from io import IOBase, BytesIO
 import logging
 import os
 from glob import glob
-from typing import Union, TypeVar, Iterable, List, Set, Optional, Mapping
+from io import BytesIO, IOBase
+from typing import Iterable, List, Mapping, Optional, Set, TypeVar, Union
 
 from neptune.new.internal.utils import limits
-
 
 T = TypeVar("T")
 

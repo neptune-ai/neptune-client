@@ -15,9 +15,8 @@
 #
 import os
 import sqlite3 as sql
-from pathlib import Path
-
 from dataclasses import dataclass
+from pathlib import Path
 
 
 class LocalFileHashStorage:

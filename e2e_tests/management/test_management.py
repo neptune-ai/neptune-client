@@ -15,13 +15,15 @@
 #
 import pytest
 
+from e2e_tests.base import BaseE2ETest, fake
+from e2e_tests.utils import Environment, a_project_name
 from neptune.management import (
-    get_project_list,
-    get_project_member_list,
-    get_workspace_member_list,
     add_project_member,
     create_project,
     delete_project,
+    get_project_list,
+    get_project_member_list,
+    get_workspace_member_list,
     remove_project_member,
 )
 from neptune.management.exceptions import (
@@ -29,8 +31,6 @@ from neptune.management.exceptions import (
     UserNotExistsOrWithoutAccess,
 )
 from neptune.management.internal.utils import normalize_project_name
-from e2e_tests.base import BaseE2ETest, fake
-from e2e_tests.utils import a_project_name, Environment
 
 
 @pytest.mark.management

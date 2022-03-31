@@ -15,22 +15,18 @@
 #
 
 from .atoms.artifact import Artifact
-from .atoms.float import Float
-from .atoms.string import String
+from .atoms.boolean import Boolean
 from .atoms.datetime import Datetime
 from .atoms.file import File
+from .atoms.float import Float
 from .atoms.git_ref import GitRef
-from .atoms.boolean import Boolean
 from .atoms.integer import Integer
-from .atoms.run_state import RunState
 from .atoms.notebook_ref import NotebookRef
-
+from .atoms.run_state import RunState
+from .atoms.string import String
+from .file_set import FileSet
+from .series.file_series import FileSeries
 from .series.float_series import FloatSeries
 from .series.string_series import StringSeries
-from .series.file_series import FileSeries
-
 from .sets.string_set import StringSet
-
-from .file_set import FileSet
-
 from .utils import create_attribute_from_type

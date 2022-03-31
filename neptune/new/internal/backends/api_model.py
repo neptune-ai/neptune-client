@@ -16,12 +16,12 @@
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
-from typing import Optional, List, Set, Any, FrozenSet
+from typing import Any, FrozenSet, List, Optional, Set
 
 from packaging import version
 
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import UniqueId, SysId
+from neptune.new.internal.id_formats import SysId, UniqueId
 
 
 @dataclass

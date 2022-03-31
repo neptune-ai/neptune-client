@@ -19,10 +19,10 @@ from typing import Optional
 
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import NeptuneMissingProjectNameException
+from neptune.new.internal.backends.api_model import Project
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.utils import verify_type
-from neptune.new.internal.backends.api_model import Project
 
 _logger = logging.getLogger(__name__)
 

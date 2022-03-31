@@ -16,11 +16,10 @@
 
 import sys
 import threading
-
 from typing import TextIO
 
-from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.logging import Logger as NeptuneLogger
+from neptune.new.metadata_containers import MetadataContainer
 
 
 class StdStreamCaptureLogger:

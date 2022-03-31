@@ -24,9 +24,7 @@ from mock import Mock, patch
 
 from neptune.new import ANONYMOUS
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import (
-    MetadataInconsistency,
-)
+from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,

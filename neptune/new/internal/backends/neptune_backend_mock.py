@@ -22,13 +22,13 @@ from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Un
 from zipfile import ZipFile
 
 from neptune.new.exceptions import (
+    ContainerUUIDNotFound,
     InternalClientError,
     MetadataInconsistency,
-    NeptuneException,
-    RunNotFound,
     ModelVersionNotFound,
+    NeptuneException,
     ProjectNotFound,
-    ContainerUUIDNotFound,
+    RunNotFound,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -58,8 +58,10 @@ from neptune.new.internal.backends.hosted_file_operations import (
     get_unique_upload_entries,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.backends.nql import NQLQuery
+from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import SysId, QualifiedName, UniqueId
+from neptune.new.internal.id_formats import QualifiedName, SysId, UniqueId
 from neptune.new.internal.operation import (
     AddStrings,
     AssignArtifact,
@@ -88,7 +90,6 @@ from neptune.new.internal.operation import (
     UploadFileSet,
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
-from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
@@ -108,7 +109,6 @@ from neptune.new.types.series.string_series import StringSeries
 from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value import Value
 from neptune.new.types.value_visitor import ValueVisitor
-from neptune.new.internal.backends.nql import NQLQuery
 
 Val = TypeVar("Val", bound=Value)
 

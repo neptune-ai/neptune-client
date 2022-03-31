@@ -15,12 +15,12 @@
 #
 import unittest
 
-from neptune.management.internal.utils import normalize_project_name
 from neptune.management.exceptions import (
-    InvalidProjectName,
     ConflictingWorkspaceName,
+    InvalidProjectName,
     MissingWorkspaceName,
 )
+from neptune.management.internal.utils import normalize_project_name
 
 
 class TestManagementUtils(unittest.TestCase):

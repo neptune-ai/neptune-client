@@ -17,9 +17,8 @@
 # pylint: disable=protected-access
 from mock import MagicMock, call
 
-from neptune.new.internal.operation import ClearStringSet, AddStrings, RemoveStrings
 from neptune.new.attributes.sets.string_set import StringSet, StringSetVal
-
+from neptune.new.internal.operation import AddStrings, ClearStringSet, RemoveStrings
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

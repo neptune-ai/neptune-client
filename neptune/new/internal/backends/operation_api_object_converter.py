@@ -16,8 +16,8 @@
 
 from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.operation import (
-    AssignArtifact,
     AddStrings,
+    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,

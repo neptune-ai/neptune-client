@@ -23,7 +23,7 @@ from mock import patch
 from neptune.new import ANONYMOUS, init_model
 from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneWrongInitParametersException, NeptuneException
+from neptune.new.exceptions import NeptuneException, NeptuneWrongInitParametersException
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
