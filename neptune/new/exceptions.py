@@ -99,6 +99,13 @@ class FileNotFound(NeptuneException):
         super().__init__("File not found: {}".format(file))
 
 
+class UploadedFileChanged(NeptuneException):
+    def __init__(self, filename: str):
+        super().__init__(
+            "File {} changed during upload, restarting upload.".format(filename)
+        )
+
+
 class FileUploadError(NeptuneException):
     def __init__(self, filename: str, msg: str):
         super().__init__("Cannot upload file {}: {}".format(filename, msg))

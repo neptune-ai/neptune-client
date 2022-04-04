@@ -22,6 +22,7 @@ from io import BytesIO
 from typing import List, Optional, Dict, Iterable, Set, Union, AnyStr
 from urllib.parse import urlencode
 
+import click
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPUnprocessableEntity, HTTPPaymentRequired
 from bravado.requests_client import RequestsClient
@@ -34,6 +35,7 @@ from neptune.new.exceptions import (
     InternalClientError,
     NeptuneException,
     NeptuneLimitExceedException,
+    UploadedFileChanged,
 )
 from neptune.new.internal.backends.api_model import MultipartConfig
 from neptune.new.internal.backends.utils import (
@@ -308,64 +310,72 @@ def _multichunk_upload(
     target: FileUploadTarget,
 ):
     urlset = _build_multipart_urlset(swagger_client, target)
-    file_stream = upload_entry.get_stream()
-    entry_length = upload_entry.length()
-    try:
-        if entry_length <= multipart_config.max_single_part_size:
-            # single upload
-            data = file_stream.read()
-            result = upload_raw_data(
-                http_client=swagger_client.swagger_spec.http_client,
-                url=urlset.single,
-                data=data,
-                query_params=query_params,
-            )
-            _attribute_upload_response_handler(result)
-        else:
-            # chunked upload
-            result = (
-                urlset.start_chunked(**query_params, totalLength=entry_length)
-                .response()
-                .result
-            )
-            if result.errors:
-                raise MetadataInconsistency(
-                    [err.errorDescription for err in result.errors]
-                )
+    while True:
+        try:
+            file_stream = upload_entry.get_stream()
+            entry_length = upload_entry.length()
+            try:
+                if entry_length <= multipart_config.max_single_part_size:
+                    # single upload
+                    data = file_stream.read()
+                    result = upload_raw_data(
+                        http_client=swagger_client.swagger_spec.http_client,
+                        url=urlset.single,
+                        data=data,
+                        query_params=query_params,
+                    )
+                    _attribute_upload_response_handler(result)
+                else:
+                    # chunked upload
+                    result = (
+                        urlset.start_chunked(**query_params, totalLength=entry_length)
+                        .response()
+                        .result
+                    )
+                    if result.errors:
+                        raise MetadataInconsistency(
+                            [err.errorDescription for err in result.errors]
+                        )
 
-            if "ext" in query_params:
-                del query_params["ext"]
+                    no_ext_query_params = query_params.copy()
+                    if "ext" in no_ext_query_params:
+                        del no_ext_query_params["ext"]
 
-            upload_id = result.uploadId
-            chunker = FileChunker(
-                upload_entry.source_path, file_stream, entry_length, multipart_config
-            )
-            for idx, chunk in enumerate(chunker.generate()):
-                result = upload_raw_data(
-                    http_client=swagger_client.swagger_spec.http_client,
-                    url=urlset.send_chunk,
-                    data=chunk.data,
-                    headers={"X-Range": _build_x_range(chunk, entry_length)},
-                    query_params={
-                        "uploadId": upload_id,
-                        "uploadPartIdx": idx,
-                        **query_params,
-                    },
-                )
-                _attribute_upload_response_handler(result)
+                    upload_id = result.uploadId
+                    chunker = FileChunker(
+                        upload_entry.source_path,
+                        file_stream,
+                        entry_length,
+                        multipart_config,
+                    )
+                    for idx, chunk in enumerate(chunker.generate()):
+                        result = upload_raw_data(
+                            http_client=swagger_client.swagger_spec.http_client,
+                            url=urlset.send_chunk,
+                            data=chunk.data,
+                            headers={"X-Range": _build_x_range(chunk, entry_length)},
+                            query_params={
+                                "uploadId": upload_id,
+                                "uploadPartIdx": idx,
+                                **no_ext_query_params,
+                            },
+                        )
+                        _attribute_upload_response_handler(result)
 
-            result = (
-                urlset.finish_chunked(**query_params, uploadId=upload_id)
-                .response()
-                .result
-            )
-            if result.errors:
-                raise MetadataInconsistency(
-                    [err.errorDescription for err in result.errors]
-                )
-        return []
-    finally:
-        file_stream.close()
+                    result = (
+                        urlset.finish_chunked(**no_ext_query_params, uploadId=upload_id)
+                        .response()
+                        .result
+                    )
+                    if result.errors:
+                        raise MetadataInconsistency(
+                            [err.errorDescription for err in result.errors]
+                        )
+                return []
+            finally:
+                file_stream.close()
+        except UploadedFileChanged as e:
+            click.echo(e)
 
 
 def _upload_loop(file_chunk_stream: FileChunkStream, query_params: dict, **kwargs):

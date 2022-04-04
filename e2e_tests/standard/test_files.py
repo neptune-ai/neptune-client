@@ -101,7 +101,7 @@ class TestUpload(BaseE2ETest):
                     if self.upload_part_iteration == 0:
                         with open(filename, "wb") as file:
                             file.write(b"\0" * intermediate_size)
-                    # after uploading second part it's back at file_size
+                    # after that it's back at file_size
                     elif self.upload_part_iteration == 1:
                         with open(filename, "wb") as file:
                             file.write(b"\0" * file_size)
@@ -125,6 +125,8 @@ class TestUpload(BaseE2ETest):
                 content = file.read()
                 assert len(content) == file_size
                 assert content == b"\0" * file_size
+            # handling restart + 3 for actual upload
+            assert hacked_upload_raw_data.upload_part_iteration == 5
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_fileset(self, container: MetadataContainer):

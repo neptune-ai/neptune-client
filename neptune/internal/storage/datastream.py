@@ -24,7 +24,7 @@ from neptune.internal.storage.storage_utils import (
     UploadEntry,
     AttributeUploadConfiguration,
 )
-from neptune.new.exceptions import InternalClientError
+from neptune.new.exceptions import InternalClientError, UploadedFileChanged
 from neptune.new.internal.backends.api_model import MultipartConfig
 
 
@@ -65,6 +65,8 @@ class FileChunker:
         while last_offset < self._total_size:
             chunk = self._fobj.read(chunk_size)
             if chunk:
+                if len(chunk) != min(chunk_size, self._total_size - last_offset):
+                    raise UploadedFileChanged(self._filename)
                 if isinstance(chunk, str):
                     chunk = chunk.encode("utf-8")
                 new_offset = last_offset + len(chunk)
