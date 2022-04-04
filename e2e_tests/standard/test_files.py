@@ -18,12 +18,14 @@ import random
 import uuid
 from itertools import product
 from typing import Set
+from unittest.mock import Mock
 from zipfile import ZipFile
 
 import pytest
 
 from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
-from e2e_tests.utils import tmp_context
+from e2e_tests.utils import tmp_context, initialize_container
+from neptune.new.internal.backends import hosted_file_operations
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.api_model import MultipartConfig, OptionalFeatures
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
@@ -63,6 +65,60 @@ class TestUpload(BaseE2ETest):
 
             container.sync()
             container[key].download(downloaded_filename)
+
+            assert os.path.getsize(downloaded_filename) == file_size
+            with open(downloaded_filename, "rb") as file:
+                content = file.read()
+                assert len(content) == file_size
+                assert content == b"\0" * file_size
+
+    def test_single_file_changed_during_upload(self, environment, monkeypatch):
+        key = self.gen_key()
+        file_size = 11 * 2**20  # 11 MB, multipart with 3 parts
+        intermediate_size = 6 * 2**20  # 6 MB, second part < 5MB
+        filename = fake.file_name()
+        downloaded_filename = fake.file_name()
+
+        _upload_raw_data = hosted_file_operations.upload_raw_data
+
+        run = initialize_container(
+            container_type="run",
+            project=environment.project,
+            mode="sync",
+        )
+
+        with tmp_context():
+            # create file_size file
+            with open(filename, "wb") as file:
+                file.write(b"\0" * file_size)
+
+            class UploadedFileChanger:
+                def __init__(self):
+                    self.upload_part_iteration = 0
+
+                def __call__(self, *args, **kwargs):
+                    # file starts to change and after uploading first part it's at intermediate_size
+                    if self.upload_part_iteration == 0:
+                        with open(filename, "wb") as file:
+                            file.write(b"\0" * intermediate_size)
+                    # after uploading second part it's back at file_size
+                    elif self.upload_part_iteration == 1:
+                        with open(filename, "wb") as file:
+                            file.write(b"\0" * file_size)
+                    self.upload_part_iteration += 1
+
+                    return _upload_raw_data(*args, **kwargs)
+
+            hacked_upload_raw_data = UploadedFileChanger()
+            monkeypatch.setattr(
+                hosted_file_operations,
+                "upload_raw_data",
+                Mock(wraps=hacked_upload_raw_data),
+            )
+
+            run[key].upload(filename)
+
+            run[key].download(downloaded_filename)
 
             assert os.path.getsize(downloaded_filename) == file_size
             with open(downloaded_filename, "rb") as file:
