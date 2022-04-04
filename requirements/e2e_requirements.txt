@@ -7,6 +7,7 @@ pytest-tap
 pytorch-lightning
 torchvision
 sklearn
+kedro<0.18.0
 
 # bugfixes
 pillow==8.2.0  # https://forums.fast.ai/t/runtimeerror-could-not-infer-dtype-of-pilimage/89697, https://stackoverflow.com/a/68239032/1565454
