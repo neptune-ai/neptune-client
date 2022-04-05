@@ -15,6 +15,7 @@
 #
 import dataclasses
 import io
+import os
 import tarfile
 from typing import Union, BinaryIO, Any, Generator
 
@@ -62,10 +63,11 @@ class FileChunker:
     def generate(self) -> Generator[FileChunk, Any, None]:
         chunk_size = self._get_chunk_size()
         last_offset = 0
+        last_change = os.stat(self._filename).st_mtime
         while last_offset < self._total_size:
             chunk = self._fobj.read(chunk_size)
             if chunk:
-                if len(chunk) != min(chunk_size, self._total_size - last_offset):
+                if last_change < os.stat(self._filename).st_mtime:
                     raise UploadedFileChanged(self._filename)
                 if isinstance(chunk, str):
                     chunk = chunk.encode("utf-8")
