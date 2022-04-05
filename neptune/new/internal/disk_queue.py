@@ -170,7 +170,7 @@ class DiskQueue(Generic[T]):
 
         with self._empty_cond:
             if self.is_empty():
-                self._empty_cond.notifyAll()
+                self._empty_cond.notify_all()
 
     def is_empty(self) -> bool:
         return self.size() == 0
