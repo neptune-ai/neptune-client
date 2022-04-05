@@ -15,6 +15,7 @@
 #
 import dataclasses
 import io
+import os
 import tarfile
 from typing import Union, BinaryIO, Any, Generator
 
@@ -24,7 +25,7 @@ from neptune.internal.storage.storage_utils import (
     UploadEntry,
     AttributeUploadConfiguration,
 )
-from neptune.new.exceptions import InternalClientError
+from neptune.new.exceptions import InternalClientError, UploadedFileChanged
 from neptune.new.internal.backends.api_model import MultipartConfig
 
 
@@ -62,9 +63,12 @@ class FileChunker:
     def generate(self) -> Generator[FileChunk, Any, None]:
         chunk_size = self._get_chunk_size()
         last_offset = 0
+        last_change = os.stat(self._filename).st_mtime
         while last_offset < self._total_size:
             chunk = self._fobj.read(chunk_size)
             if chunk:
+                if last_change < os.stat(self._filename).st_mtime:
+                    raise UploadedFileChanged(self._filename)
                 if isinstance(chunk, str):
                     chunk = chunk.encode("utf-8")
                 new_offset = last_offset + len(chunk)

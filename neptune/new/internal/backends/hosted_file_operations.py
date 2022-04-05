@@ -22,6 +22,7 @@ from io import BytesIO
 from typing import List, Optional, Dict, Iterable, Set, Union, AnyStr
 from urllib.parse import urlencode
 
+import click
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPUnprocessableEntity, HTTPPaymentRequired
 from bravado.requests_client import RequestsClient
@@ -34,6 +35,7 @@ from neptune.new.exceptions import (
     InternalClientError,
     NeptuneException,
     NeptuneLimitExceedException,
+    UploadedFileChanged,
 )
 from neptune.new.internal.backends.api_model import MultipartConfig
 from neptune.new.internal.backends.utils import (
@@ -103,7 +105,7 @@ def upload_file_attribute(
                 },
             )
         else:
-            _multichunk_upload(
+            _multichunk_upload_with_retry(
                 upload_entry,
                 query_params={
                     "experimentIdentifier": container_id,
@@ -190,7 +192,7 @@ def upload_file_set_attribute(
                         },
                     )
                 else:
-                    _multichunk_upload(
+                    _multichunk_upload_with_retry(
                         upload_entry,
                         query_params={
                             "experimentIdentifier": container_id,
@@ -287,8 +289,12 @@ def _build_multipart_urlset(
 ) -> MultipartUrlSet:
     urlnameset = MULTIPART_URLS[target]
     return MultipartUrlSet(
-        start_chunked=getattr(swagger_client.api, urlnameset.start_chunked),
-        finish_chunked=getattr(swagger_client.api, urlnameset.finish_chunked),
+        start_chunked=with_api_exceptions_handler(
+            getattr(swagger_client.api, urlnameset.start_chunked)
+        ),
+        finish_chunked=with_api_exceptions_handler(
+            getattr(swagger_client.api, urlnameset.finish_chunked)
+        ),
         send_chunk=build_operation_url(
             swagger_client.swagger_spec.api_url,
             getattr(swagger_client.api, urlnameset.send_chunk).operation.path_name,
@@ -300,7 +306,7 @@ def _build_multipart_urlset(
     )
 
 
-def _multichunk_upload(
+def _multichunk_upload_with_retry(
     upload_entry: UploadEntry,
     swagger_client: SwaggerClient,
     query_params: dict,
@@ -308,6 +314,22 @@ def _multichunk_upload(
     target: FileUploadTarget,
 ):
     urlset = _build_multipart_urlset(swagger_client, target)
+    while True:
+        try:
+            return _multichunk_upload(
+                upload_entry, swagger_client, query_params, multipart_config, urlset
+            )
+        except UploadedFileChanged as e:
+            click.echo(e)
+
+
+def _multichunk_upload(
+    upload_entry: UploadEntry,
+    swagger_client: SwaggerClient,
+    query_params: dict,
+    multipart_config: MultipartConfig,
+    urlset: MultipartUrlSet,
+):
     file_stream = upload_entry.get_stream()
     entry_length = upload_entry.length()
     try:
@@ -333,12 +355,16 @@ def _multichunk_upload(
                     [err.errorDescription for err in result.errors]
                 )
 
-            if "ext" in query_params:
-                del query_params["ext"]
+            no_ext_query_params = query_params.copy()
+            if "ext" in no_ext_query_params:
+                del no_ext_query_params["ext"]
 
             upload_id = result.uploadId
             chunker = FileChunker(
-                upload_entry.source_path, file_stream, entry_length, multipart_config
+                upload_entry.source_path,
+                file_stream,
+                entry_length,
+                multipart_config,
             )
             for idx, chunk in enumerate(chunker.generate()):
                 result = upload_raw_data(
@@ -349,13 +375,13 @@ def _multichunk_upload(
                     query_params={
                         "uploadId": upload_id,
                         "uploadPartIdx": idx,
-                        **query_params,
+                        **no_ext_query_params,
                     },
                 )
                 _attribute_upload_response_handler(result)
 
             result = (
-                urlset.finish_chunked(**query_params, uploadId=upload_id)
+                urlset.finish_chunked(**no_ext_query_params, uploadId=upload_id)
                 .response()
                 .result
             )
