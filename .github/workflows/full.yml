@@ -26,12 +26,7 @@ jobs:
       max-parallel: 4
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: [3.6, 3.7, 3.8]
-        include:
-          - os: ubuntu-latest
-            python-version: 3.9
-          - os: macos-latest
-            python-version: 3.9
+        python-version: [3.7, 3.8, 3.9, 3.10]
     env:
       WORKSPACE_NAME: e2e-tests
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
@@ -79,7 +74,7 @@ jobs:
           pytest ./e2e_tests -m integrations
 
       - name: Test Fast.ai integration
-        if: matrix.os != 'windows-latest' && matrix.python-version != '3.6'
+        if: matrix.os != 'windows-latest'
         uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
         with:
           working_directory: neptune_fastai
@@ -88,7 +83,7 @@ jobs:
           NEPTUNE_PROJECT: e2e-tests/e2e
 
       - name: Test Kedro integration
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version != '3.6' && matrix.python-version != '3.9'
+        if: matrix.os == 'ubuntu-latest'
         uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
         with:
           working_directory: neptune_kedro
@@ -130,7 +125,7 @@ jobs:
       - name: Install Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: 3.10
 
       - name: Build and test
         run: |
