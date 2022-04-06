@@ -147,7 +147,9 @@ def _matplotlib_to_plotly(chart):
     # Plotly can only import path collections linked to 'data' coordinates"
     plotly_version = plotly.__version__
     matplotlib_version = matplotlib.__version__
-    if version.parse(matplotlib_version) >= version.parse("3.3.0"):
+    if version.parse(matplotlib_version) >= version.parse("3.3.0") and version.parse(
+        plotly_version
+    ) < version.parse("5.0.0"):
         raise PlotlyIncompatibilityException(matplotlib_version, plotly_version)
 
     with warnings.catch_warnings():
