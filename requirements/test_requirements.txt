@@ -19,4 +19,4 @@ pre-commit
 
 # Installing Torch on Windows increases the test duration by ~10 minutes
 # torch seems to be unavailable for 3.10 on Mac (as of 2022-04-06)
-torch; platform_system != 'Windows' or (platform_system != 'Darwin' and python_version == "3.10")
+torch; platform_system != 'Windows' and (platform_system != 'Darwin' or python_version < "3.10")
