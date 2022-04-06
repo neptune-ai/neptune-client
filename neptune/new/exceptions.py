@@ -1075,7 +1075,7 @@ class PlotlyIncompatibilityException(Exception):
             "Unable to convert plotly figure to matplotlib format. "
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
             "See https://stackoverflow.com/q/63120058 for details. "
-            "Downgrade matplotlib to version 3.2 or use as_image to log static chart.".format(
+            "Downgrade matplotlib to version 3.2, upgrade plotly to 5.0+ or use as_image to log static chart.".format(
                 matplotlib_version, plotly_version
             )
         )

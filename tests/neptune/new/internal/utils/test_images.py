@@ -18,6 +18,7 @@
 import contextlib
 import io
 import os
+import sys
 import unittest
 from typing import Optional
 from unittest import mock
@@ -37,7 +38,7 @@ from PIL import Image
 import numpy
 
 from neptune.new.internal.utils.images import get_image_content, get_html_content
-from neptune.utils import IS_WINDOWS
+from neptune.utils import IS_WINDOWS, IS_MACOS
 
 matplotlib.use("agg")
 
@@ -127,6 +128,10 @@ class TestImage(unittest.TestCase):
         self.assertEqual(get_image_content(fig), self._encode_figure(fig))
 
     @unittest.skipIf(IS_WINDOWS, "Installing Torch on Windows takes too long")
+    @unittest.skipIf(
+        IS_MACOS and sys.version_info.major == 3 and sys.version_info.minor == 10,
+        "No torch for 3.10 on Mac",
+    )
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
 

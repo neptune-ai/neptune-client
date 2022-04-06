@@ -21,7 +21,7 @@ import six
 class NeptuneThread(threading.Thread):
     def __init__(self, is_daemon):
         super(NeptuneThread, self).__init__(target=self.run)
-        self.setDaemon(is_daemon)
+        self.daemon = is_daemon
         self._interrupted = threading.Event()
 
     def should_continue_running(self):

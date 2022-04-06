@@ -18,7 +18,7 @@ def main():
         requirements = [r.strip() for r in f]
         setup(
             name="neptune-client",
-            python_requires=">=3.6.0",
+            python_requires=">=3.7.0",
             version=versioneer.get_version(),
             description="Neptune Client",
             author="neptune.ai",
