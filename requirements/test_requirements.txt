@@ -8,7 +8,7 @@ pytest-cov
 pytest-xdist
 tensorflow
 pytest-timeout
-matplotlib==3.2
+matplotlib
 pytest-mock
 moto[s3]
 plotly
