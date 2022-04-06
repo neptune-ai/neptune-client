@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 import os
+import sys
 import unittest
 
 import matplotlib
 
-from neptune.utils import IS_WINDOWS
+from neptune.utils import IS_WINDOWS, IS_MACOS
 
 matplotlib.use("agg")
 from matplotlib import pyplot
@@ -122,6 +123,10 @@ class TestImage(unittest.TestCase):
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))
 
     @unittest.skipIf(IS_WINDOWS, "Installing Torch on Windows takes too long")
+    @unittest.skipIf(
+        IS_MACOS and sys.version_info.major == 3 and sys.version_info.minor == 10,
+        "No torch for 3.10 on Mac",
+    )
     def test_get_image_content_from_torch_tensor(self):
         import torch  # pylint: disable=C0415
 
