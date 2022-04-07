@@ -52,17 +52,26 @@ T = TypeVar("T")
 class OperationsPreprocessor:
     def __init__(self):
         self._accumulators = dict()
+        self.processed_ops_count = 0
 
     def process(self, operations: List[Operation]):
         for op in operations:
-            path_str = path_to_str(op.path)
-            self._accumulators.setdefault(
-                path_str, _OperationsAccumulator(op.path)
-            ).visit(op)
-        result = []
-        for acc in self._accumulators.values():
-            result.extend(acc.get_operations())
-        return result
+            acc: "_OperationsAccumulator" = self._process_op(op)
+            self.processed_ops_count += 1
+            # pylint: disable=protected-access
+            if acc.has_file_ops and len(acc._delete_ops) > 0:
+                self.processed_ops_count -= len(acc._modify_ops) + len(acc._config_ops)
+                acc._modify_ops = []
+                acc._config_ops = []
+                return
+
+    def _process_op(self, op: Operation) -> "_OperationsAccumulator":
+        path_str = path_to_str(op.path)
+        target_acc = self._accumulators.setdefault(
+            path_str, _OperationsAccumulator(op.path)
+        )
+        target_acc.visit(op)
+        return target_acc
 
     def get_operations(self) -> List[Operation]:
         result = []
@@ -91,6 +100,9 @@ class _DataType(Enum):
     STRING_SET = "String Set"
     ARTIFACT = "Artifact"
 
+    def is_file_op(self) -> bool:
+        return self in (self.FILE, self.FILE_SET)
+
 
 class _OperationsAccumulator(OperationVisitor[None]):
     def __init__(self, path: List[str]):
@@ -100,6 +112,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._modify_ops = []
         self._config_ops = []
         self._errors = []
+        self.has_file_ops = False
 
     def get_operations(self) -> List[Operation]:
         return self._delete_ops + self._modify_ops + self._config_ops
@@ -130,6 +143,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
         else:
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
+            self.has_file_ops = self.has_file_ops or self._type.is_file_op()
 
     def _process_config_op(self, expected_type: _DataType, op: Operation) -> None:
 
@@ -244,6 +258,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 self._modify_ops = []
                 self._config_ops = []
                 self._type = None
+                self.has_file_ops = False
             else:
                 # This case is tricky. There was no delete operation, but some modifications was performed.
                 # We do not know if this attribute exists on server side and we do not want a delete op to fail.
@@ -252,6 +267,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 self._modify_ops = []
                 self._config_ops = []
                 self._type = None
+                # does not change has_file_ops
         else:
             if self._delete_ops:
                 # Do nothing if there already is a delete operation

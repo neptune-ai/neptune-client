@@ -274,9 +274,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         processor.process(
             [
                 UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
-                DeleteAttribute(["a"]),
                 UploadFileSet(["a"], ["hhh", "gij"], reset=False),
-                DeleteAttribute(["b"]),
                 UploadFileSet(["b"], ["abc", "defgh"], reset=True),
                 UploadFileSet(["c"], ["hhh", "gij"], reset=False),
                 UploadFileSet(["c"], ["abc", "defgh"], reset=True),
@@ -292,9 +290,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
             processor.get_operations(),
             [
                 UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
-                DeleteAttribute(["a"]),
                 UploadFileSet(["a"], ["hhh", "gij"], reset=False),
-                DeleteAttribute(["b"]),
                 UploadFileSet(["b"], ["abc", "defgh"], reset=True),
                 UploadFileSet(["c"], ["abc", "defgh"], reset=True),
                 UploadFileSet(["c"], ["qqq"], reset=False),
@@ -310,6 +306,38 @@ class TestOperationsPreprocessor(TestAttributeBase):
                 )
             ],
         )
+
+    def test_file_ops_delete(self):
+        # given
+        processor = OperationsPreprocessor()
+
+        # when
+        processor.process(
+            [
+                UploadFileSet(["b"], ["abc", "defgh"], reset=True),
+                UploadFileSet(["c"], ["hhh", "gij"], reset=False),
+                UploadFileSet(["c"], ["abc", "defgh"], reset=True),
+                UploadFileSet(["c"], ["qqq"], reset=False),
+                UploadFileSet(["d"], ["hhh", "gij"], reset=False),
+                DeleteAttribute(["a"]),
+                UploadFileSet(["a"], ["xx", "y", "abc"], reset=False),
+                UploadFileSet(["a"], ["hhh", "gij"], reset=False),
+                DeleteAttribute(["b"]),
+            ]
+        )
+
+        # then: there's a cutoff after DeleteAttribute(["a"])
+        self.assertEqual(
+            processor.get_operations(),
+            [
+                DeleteAttribute(["a"]),
+                UploadFileSet(["b"], ["abc", "defgh"], reset=True),
+                UploadFileSet(["c"], ["abc", "defgh"], reset=True),
+                UploadFileSet(["c"], ["qqq"], reset=False),
+                UploadFileSet(["d"], ["hhh", "gij"], reset=False),
+            ],
+        )
+        self.assertEqual(processor.get_errors(), [])
 
     def test_artifacts(self):
         # given

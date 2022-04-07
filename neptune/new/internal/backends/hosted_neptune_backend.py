@@ -506,7 +506,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
 
         return (
-            len(operations_batch.operations)
+            operations_preprocessor.processed_ops_count
             + operations_batch.dropped_operations_count,
             errors,
         )
