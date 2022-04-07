@@ -24,9 +24,9 @@ import pytest
 
 from neptune.internal.channels.channels import (
     ChannelIdWithValues,
-    ChannelValue,
-    ChannelType,
     ChannelNamespace,
+    ChannelType,
+    ChannelValue,
 )
 from neptune.internal.channels.channels_values_sender import (
     ChannelsValuesSender,

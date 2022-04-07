@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import TypeVar, Iterable, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable, TypeVar
 
 from neptune.new.types.sets.set import Set
 

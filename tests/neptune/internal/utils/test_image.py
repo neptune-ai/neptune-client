@@ -19,18 +19,19 @@ import unittest
 
 import matplotlib
 
-from neptune.utils import IS_WINDOWS, IS_MACOS
+from neptune.utils import IS_MACOS, IS_WINDOWS
 
 matplotlib.use("agg")
+from uuid import uuid4
+
+import numpy
 from matplotlib import pyplot
 from PIL import Image
-from uuid import uuid4
-import numpy
 
 from neptune.internal.utils.image import (
-    get_image_content,
-    _get_pil_image_data,
     _get_figure_as_image,
+    _get_pil_image_data,
+    get_image_content,
 )
 
 

@@ -16,8 +16,7 @@
 import abc
 from dataclasses import dataclass
 from datetime import datetime
-from typing import List, TypeVar, Generic, Optional, Set, Tuple, Type
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Generic, List, Optional, Set, Tuple, Type, TypeVar
 
 from neptune.new.exceptions import InternalClientError, MalformedOperation
 from neptune.new.internal.container_type import ContainerType

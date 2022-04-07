@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-from .float_series import FloatSeries
 from .file_series import FileSeries
+from .float_series import FloatSeries
 from .string_series import StringSeries

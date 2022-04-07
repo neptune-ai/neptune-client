@@ -15,8 +15,8 @@
 #
 import sys
 import unittest
-from io import StringIO
 from contextlib import redirect_stdout
+from io import StringIO
 from unittest.mock import MagicMock
 
 from neptune.new.internal.streams.std_stream_capture_logger import StdoutCaptureLogger

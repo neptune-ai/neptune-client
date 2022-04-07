@@ -17,8 +17,8 @@ import re
 from typing import Optional
 
 from neptune.management.exceptions import (
-    InvalidProjectName,
     ConflictingWorkspaceName,
+    InvalidProjectName,
     MissingWorkspaceName,
 )
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN

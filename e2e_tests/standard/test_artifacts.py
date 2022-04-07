@@ -14,16 +14,15 @@
 # limitations under the License.
 #
 import os
-import time
 import tempfile
+import time
 from pathlib import Path
 
 import pytest
 
-from neptune.new.metadata_containers import MetadataContainer
-
-from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
+from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
 from e2e_tests.utils import tmp_context, with_check_if_file_appears
+from neptune.new.metadata_containers import MetadataContainer
 
 
 class TestArtifacts(BaseE2ETest):

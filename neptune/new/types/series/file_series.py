@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 
-from typing import TypeVar, TYPE_CHECKING, List
+from typing import TYPE_CHECKING, List, TypeVar
 
 import click
 
-from neptune.new.types import File
-
 from neptune.new.internal.utils import is_collection
-
+from neptune.new.types import File
 from neptune.new.types.series.series import Series
 
 if TYPE_CHECKING:

@@ -21,8 +21,8 @@ from neptune import constants, envs
 from neptune._version import get_versions
 from neptune.exceptions import (
     InvalidNeptuneBackend,
-    NeptuneUninitializedException,
     NeptuneIncorrectImportException,
+    NeptuneUninitializedException,
 )
 from neptune.internal.api_clients import backend_factory
 from neptune.internal.api_clients.offline_backend import OfflineBackend

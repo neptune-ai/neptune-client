@@ -14,6 +14,6 @@
 # limitations under the License.
 #
 
-from .float import Float
 from .file import File
+from .float import Float
 from .string import String

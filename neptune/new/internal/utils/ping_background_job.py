@@ -15,7 +15,6 @@
 #
 
 import logging
-
 from typing import TYPE_CHECKING, Optional
 
 from neptune.new.internal.background_job import BackgroundJob

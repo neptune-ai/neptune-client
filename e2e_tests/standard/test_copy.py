@@ -13,14 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import random
 import itertools
+import random
 
 import pytest
 
+from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
 from neptune.new.metadata_containers import MetadataContainer
-
-from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
 
 # List of every possible container type pair for instance: "run-run, run-model, model-model_version, ..."
 ALL_CONTAINERS_PAIRS = list(

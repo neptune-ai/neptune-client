@@ -18,6 +18,7 @@ from typing import Optional
 
 from neptune.new.internal.credentials import Credentials
 from neptune.new.types.mode import Mode
+
 from .hosted_neptune_backend import HostedNeptuneBackend
 from .neptune_backend import NeptuneBackend
 from .neptune_backend_mock import NeptuneBackendMock

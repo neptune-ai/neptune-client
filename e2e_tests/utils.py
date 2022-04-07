@@ -25,12 +25,12 @@ __all__ = [
 
 import io
 import os
-import string
 import random
+import string
 import tempfile
-from datetime import datetime
 from collections import namedtuple
 from contextlib import contextmanager
+from datetime import datetime
 
 import numpy
 from PIL import Image

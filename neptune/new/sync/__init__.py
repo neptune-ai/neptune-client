@@ -21,23 +21,7 @@ from typing import List, Optional
 
 import click
 
-from neptune.new.constants import (
-    NEPTUNE_DATA_DIRECTORY,
-)
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.new.internal.credentials import Credentials
-
-from neptune.new.sync.status import StatusRunner
-from neptune.new.sync.sync import SyncRunner
-
-
-# backwards compatibility
-# pylint: disable=unused-import,wrong-import-order
-
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.operation import Operation
-from neptune.new.internal.backends.api_model import ApiExperiment, Project
+from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.exceptions import (
     CannotSynchronizeOfflineRunsWithoutProject,
     NeptuneConnectionLostException,
@@ -45,6 +29,17 @@ from neptune.new.exceptions import (
     ProjectNotFound,
     RunNotFound,
 )
+from neptune.new.internal.backends.api_model import ApiExperiment, Project
+from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.credentials import Credentials
+from neptune.new.internal.disk_queue import DiskQueue
+from neptune.new.internal.operation import Operation
+from neptune.new.sync.status import StatusRunner
+from neptune.new.sync.sync import SyncRunner
+
+# backwards compatibility
+# pylint: disable=unused-import,wrong-import-order
 
 
 # pylint: disable=unused-argument

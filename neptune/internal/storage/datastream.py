@@ -17,13 +17,13 @@ import dataclasses
 import io
 import os
 import tarfile
-from typing import Union, BinaryIO, Any, Generator
+from typing import Any, BinaryIO, Generator, Union
 
 from future.builtins import object
 
 from neptune.internal.storage.storage_utils import (
-    UploadEntry,
     AttributeUploadConfiguration,
+    UploadEntry,
 )
 from neptune.new.exceptions import InternalClientError, UploadedFileChanged
 from neptune.new.internal.backends.api_model import MultipartConfig

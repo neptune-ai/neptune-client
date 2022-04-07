@@ -14,48 +14,43 @@
 # limitations under the License.
 #
 
+import json
 import logging
+import math
 import os
 import re
 import sys
 import time
-import math
-import json
 from collections import namedtuple
 from http.client import NOT_FOUND
 from io import StringIO
 from itertools import groupby
 from pathlib import Path
-from typing import Dict, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Dict, List
 
 import requests
 import six
 from bravado.exception import HTTPNotFound
 
-from neptune.backend import LeaderboardApiClient
-from neptune.checkpoint import Checkpoint
-from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
-from neptune.internal.websockets.reconnecting_websocket_factory import (
-    ReconnectingWebsocketFactory,
-)
-
-from neptune.api_exceptions import NotebookNotFound
-
 from neptune.api_exceptions import (
     ExperimentNotFound,
     ExperimentOperationErrors,
+    NotebookNotFound,
     PathInExperimentNotFound,
     ProjectNotFound,
 )
+from neptune.backend import LeaderboardApiClient
+from neptune.checkpoint import Checkpoint
 from neptune.exceptions import (
     DeleteArtifactUnsupportedInAlphaException,
-    DownloadArtifactUnsupportedException,
     DownloadArtifactsUnsupportedException,
+    DownloadArtifactUnsupportedException,
     DownloadSourcesException,
     FileNotFound,
     NeptuneException,
 )
 from neptune.experiments import Experiment
+from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.internal.channels.channels import (
     ChannelNamespace,
     ChannelType,
@@ -71,6 +66,9 @@ from neptune.internal.utils.alpha_integration import (
     channel_type_to_operation,
     channel_value_type_to_operation,
     deprecated_img_to_alpha_image,
+)
+from neptune.internal.websockets.reconnecting_websocket_factory import (
+    ReconnectingWebsocketFactory,
 )
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
 from neptune.new import exceptions as alpha_exceptions
@@ -91,27 +89,22 @@ from neptune.new.internal.backends.operation_api_name_visitor import (
 from neptune.new.internal.backends.operation_api_object_converter import (
     OperationApiObjectConverter as AlphaOperationApiObjectConverter,
 )
-from neptune.new.internal.backends.utils import (
-    handle_server_raw_response_messages,
-)
+from neptune.new.internal.backends.utils import handle_server_raw_response_messages
 from neptune.new.internal.operation import (
+    AssignBool,
     AssignString,
     ConfigFloatSeries,
     LogFloats,
-    AssignBool,
     LogStrings,
 )
-from neptune.new.internal.utils import (
-    base64_decode,
-    base64_encode,
-    paths as alpha_path_utils,
-)
+from neptune.new.internal.utils import base64_decode, base64_encode
+from neptune.new.internal.utils import paths as alpha_path_utils
 from neptune.new.internal.utils.paths import parse_path
 from neptune.notebook import Notebook
 from neptune.utils import (
+    NoopObject,
     assure_directory_exists,
     with_api_exceptions_handler,
-    NoopObject,
 )
 
 _logger = logging.getLogger(__name__)

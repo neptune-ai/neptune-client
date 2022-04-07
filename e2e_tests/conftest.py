@@ -17,14 +17,13 @@
 import os
 import time
 
-from faker import Faker
 import boto3
 import pytest
+from faker import Faker
 
+from e2e_tests.utils import Environment, a_project_name, initialize_container
+from neptune.management import add_project_member, create_project
 from neptune.management.internal.utils import normalize_project_name
-from neptune.management import create_project, add_project_member
-
-from e2e_tests.utils import initialize_container, a_project_name, Environment
 
 fake = Faker()
 

@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 
+import ntpath
 import os.path
 import sys
 import unittest
 from random import randint
-import ntpath
 
 import pandas as pd
 from mock import MagicMock, patch

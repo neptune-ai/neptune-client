@@ -15,23 +15,21 @@
 #
 import os
 from io import IOBase
-from typing import TypeVar, TYPE_CHECKING, Optional, Union
+from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
+from neptune.new.internal.utils import get_stream_content, limits, verify_type
 from neptune.new.internal.utils.images import (
-    get_image_content,
     get_html_content,
+    get_image_content,
     get_pickle_content,
-    is_pil_image,
-    is_matplotlib_figure,
-    is_plotly_figure,
     is_altair_chart,
     is_bokeh_figure,
+    is_matplotlib_figure,
     is_numpy_array,
     is_pandas_dataframe,
+    is_pil_image,
+    is_plotly_figure,
 )
-
-
-from neptune.new.internal.utils import limits, verify_type, get_stream_content
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:

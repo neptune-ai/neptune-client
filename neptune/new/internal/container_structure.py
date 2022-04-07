@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from collections import deque
-from typing import Optional, List, TypeVar, Generic, Callable, Union
+from typing import Callable, Generic, List, Optional, TypeVar, Union
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.utils.paths import path_to_str

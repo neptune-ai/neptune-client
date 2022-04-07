@@ -15,15 +15,12 @@
 #
 import abc
 import time
-from typing import List, Optional, TypeVar, Generic, Union, Iterable
-
-from neptune.new.internal.operation import Operation
-
-from neptune.new.internal.utils import verify_type, is_collection
-
-from neptune.new.types.series.series import Series as SeriesVal
+from typing import Generic, Iterable, List, Optional, TypeVar, Union
 
 from neptune.new.attributes.attribute import Attribute
+from neptune.new.internal.operation import Operation
+from neptune.new.internal.utils import is_collection, verify_type
+from neptune.new.types.series.series import Series as SeriesVal
 
 Val = TypeVar("Val", bound=SeriesVal)
 Data = TypeVar("Data")

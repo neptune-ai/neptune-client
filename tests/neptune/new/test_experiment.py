@@ -22,9 +22,9 @@ from neptune.new import (
     Run,
     init,
     init_model,
+    init_model_version,
     init_project,
     init_run,
-    init_model_version,
 )
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
@@ -35,9 +35,7 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneProtectedPathException,
 )
-from neptune.new.metadata_containers import Model
-from neptune.new.metadata_containers import ModelVersion
-from neptune.new.metadata_containers import Project
+from neptune.new.metadata_containers import Model, ModelVersion, Project
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.series import FloatSeries, StringSeries

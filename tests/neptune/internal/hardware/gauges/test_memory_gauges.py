@@ -21,7 +21,7 @@ from neptune.internal.hardware.gauges.memory import (
     CGroupMemoryUsageGauge,
     SystemMemoryUsageGauge,
 )
-from neptune.utils import IS_WINDOWS, IS_MACOS
+from neptune.utils import IS_MACOS, IS_WINDOWS
 
 
 class TestMemoryGauges(unittest.TestCase):

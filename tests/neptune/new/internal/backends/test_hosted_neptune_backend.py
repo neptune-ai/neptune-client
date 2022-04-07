@@ -29,7 +29,7 @@ from neptune.new.exceptions import (
     NeptuneLimitExceedException,
     UnsupportedClientVersion,
 )
-from neptune.new.internal.backends.hosted_client import (
+from neptune.new.internal.backends.hosted_client import (  # pylint:disable=protected-access
     DEFAULT_REQUEST_KWARGS,
     _get_token_client,
     create_artifacts_client,
@@ -37,7 +37,7 @@ from neptune.new.internal.backends.hosted_client import (
     create_http_client_with_auth,
     create_leaderboard_client,
     get_client_config,
-)  # pylint:disable=protected-access
+)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.container_type import ContainerType

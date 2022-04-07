@@ -19,9 +19,8 @@ from datetime import datetime
 
 from mock import MagicMock
 
-from neptune.new.internal.operation import AssignDatetime
 from neptune.new.attributes.atoms.datetime import Datetime, DatetimeVal
-
+from neptune.new.internal.operation import AssignDatetime
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

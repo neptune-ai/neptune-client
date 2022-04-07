@@ -17,7 +17,6 @@ import json
 import logging
 import threading
 from json.decoder import JSONDecodeError
-
 from typing import TYPE_CHECKING, Optional
 
 import click
@@ -29,7 +28,6 @@ from neptune.new.attributes.constants import (
     SIGNAL_TYPE_STOP,
     SYSTEM_FAILED_ATTRIBUTE_PATH,
 )
-
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
 from neptune.new.internal.utils import process_killer

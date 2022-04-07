@@ -14,11 +14,11 @@
 # limitations under the License.
 #
 import abc
-from typing import TypeVar, Generic
+from typing import Generic, TypeVar
 
 from neptune.new.internal.operation import (
-    AssignArtifact,
     AddStrings,
+    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,

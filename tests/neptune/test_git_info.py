@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
+import datetime
 import unittest
 
-import datetime
 import mock
 
 from neptune.git_info import GitInfo

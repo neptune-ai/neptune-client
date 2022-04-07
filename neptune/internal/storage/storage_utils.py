@@ -18,11 +18,11 @@ import logging
 import os
 import stat
 import time
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass
 from io import BytesIO
 from pprint import pformat
-from abc import ABCMeta, abstractmethod
-from typing import Union, Generator, Set, List, BinaryIO
+from typing import BinaryIO, Generator, List, Set, Union
 
 import six
 

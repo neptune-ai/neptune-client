@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+# isort: skip_file
 from neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client import (
     HostedNeptuneBackendApiClient,
 )

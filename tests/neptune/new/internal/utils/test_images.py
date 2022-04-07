@@ -24,21 +24,19 @@ from typing import Optional
 from unittest import mock
 from uuid import uuid4
 
+import altair as alt
 import matplotlib
+import numpy
 import pandas
+import plotly.express as px
+from bokeh.plotting import figure
 from matplotlib import pyplot
 from matplotlib.figure import Figure
-
-import plotly.express as px
-import altair as alt
-from vega_datasets import data
-from bokeh.plotting import figure
-
 from PIL import Image
-import numpy
+from vega_datasets import data
 
-from neptune.new.internal.utils.images import get_image_content, get_html_content
-from neptune.utils import IS_WINDOWS, IS_MACOS
+from neptune.new.internal.utils.images import get_html_content, get_image_content
+from neptune.utils import IS_MACOS, IS_WINDOWS
 
 matplotlib.use("agg")
 

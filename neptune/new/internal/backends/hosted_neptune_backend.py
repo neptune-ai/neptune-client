@@ -16,31 +16,31 @@
 import logging
 import re
 import typing
-from typing import Any, Dict, Iterable, List, Optional, Tuple, TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
 
 from bravado.exception import (
+    HTTPConflict,
     HTTPNotFound,
     HTTPPaymentRequired,
     HTTPUnprocessableEntity,
-    HTTPConflict,
 )
 
 from neptune.new.exceptions import (
     ArtifactNotFoundException,
     ClientHttpError,
+    ContainerUUIDNotFound,
     FetchAttributeNotFoundException,
     InternalClientError,
+    MetadataContainerNotFound,
     MetadataInconsistency,
     NeptuneException,
     NeptuneFeatureNotAvailableException,
     NeptuneLegacyProjectException,
     NeptuneLimitExceedException,
+    NeptuneObjectCreationConflict,
     ProjectNameCollision,
     ProjectNotFound,
-    MetadataContainerNotFound,
     ProjectNotFoundWithSuggestions,
-    ContainerUUIDNotFound,
-    NeptuneObjectCreationConflict,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
@@ -59,6 +59,7 @@ from neptune.new.internal.backends.api_model import (
     ImageSeriesValues,
     IntAttribute,
     LeaderboardEntry,
+    OptionalFeatures,
     Project,
     StringAttribute,
     StringPointValue,
@@ -66,7 +67,6 @@ from neptune.new.internal.backends.api_model import (
     StringSeriesValues,
     StringSetAttribute,
     Workspace,
-    OptionalFeatures,
 )
 from neptune.new.internal.backends.hosted_artifact_operations import (
     track_to_existing_artifact,
@@ -87,6 +87,7 @@ from neptune.new.internal.backends.hosted_file_operations import (
     upload_file_set_attribute,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.backends.operation_api_name_visitor import (
     OperationApiNameVisitor,
 )
@@ -105,12 +106,12 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import (
+    DeleteAttribute,
     Operation,
     TrackFilesToArtifact,
     UploadFile,
     UploadFileContent,
     UploadFileSet,
-    DeleteAttribute,
 )
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import (
@@ -121,10 +122,10 @@ from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.new.internal.backends.nql import NQLQuery
 
 if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
+
     from neptune.new.internal.backends.api_model import ClientConfig
 
 

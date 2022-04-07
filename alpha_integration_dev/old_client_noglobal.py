@@ -22,8 +22,9 @@ import os
 import sys
 from datetime import datetime
 
-from neptune import Session, envs
 from common_client_code import ClientFeatures
+
+from neptune import Session, envs
 
 
 class OldClientNonglobalFeatures(ClientFeatures):

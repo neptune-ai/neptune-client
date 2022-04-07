@@ -13,23 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import typing
 import pathlib
+import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
 import boto3
 from botocore.exceptions import NoCredentialsError
 
-from neptune.new.internal.artifacts.types import (
-    ArtifactDriver,
-    ArtifactFileData,
-    ArtifactFileType,
-)
 from neptune.new.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,
     NeptuneUnsupportedArtifactFunctionalityException,
+)
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriver,
+    ArtifactFileData,
+    ArtifactFileType,
 )
 
 

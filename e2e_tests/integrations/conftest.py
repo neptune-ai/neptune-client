@@ -14,13 +14,11 @@
 # limitations under the License.
 #
 import pytest
-
 import torch
-from torch.utils.data import Dataset, DataLoader
-
 from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning.loggers.neptune import NeptuneLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers.neptune import NeptuneLogger
+from torch.utils.data import DataLoader, Dataset
 
 import neptune.new as neptune
 

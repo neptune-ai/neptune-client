@@ -20,8 +20,8 @@ from unittest.mock import Mock
 from neptune.new.attributes import Integer, String
 from neptune.new.internal import operation
 from neptune.new.internal.backends.utils import (
-    build_operation_url,
     ExecuteOperationsBatchingManager,
+    build_operation_url,
 )
 from neptune.new.internal.container_type import ContainerType
 

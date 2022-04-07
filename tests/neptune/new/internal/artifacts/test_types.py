@@ -13,18 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import unittest
 import pathlib
+import unittest
 from urllib.parse import urlparse
 
-from neptune.new.internal.artifacts.types import (
-    ArtifactDriversMap,
-    ArtifactDriver,
-    ArtifactFileData,
-)
 from neptune.new.exceptions import (
     NeptuneUnhandledArtifactSchemeException,
     NeptuneUnhandledArtifactTypeException,
+)
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriver,
+    ArtifactDriversMap,
+    ArtifactFileData,
 )
 
 

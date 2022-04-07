@@ -22,8 +22,8 @@ from neptune.new.internal.operation import Operation
 from neptune.new.sync import StatusRunner
 from neptune.new.sync.utils import get_qualified_name
 from tests.neptune.new.sync.utils import (
-    prepare_metadata_container,
     generate_get_metadata_container,
+    prepare_metadata_container,
 )
 
 

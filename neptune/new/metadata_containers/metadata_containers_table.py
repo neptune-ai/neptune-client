@@ -15,13 +15,13 @@
 #
 import logging
 from datetime import datetime
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (
-    LeaderboardEntry,
-    AttributeWithProperties,
     AttributeType,
+    AttributeWithProperties,
+    LeaderboardEntry,
 )
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType

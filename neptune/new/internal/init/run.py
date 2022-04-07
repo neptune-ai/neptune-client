@@ -65,7 +65,6 @@ from neptune.new.metadata_containers import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
 
-
 LEGACY_KWARGS = ("project_qualified_name", "backend")
 
 

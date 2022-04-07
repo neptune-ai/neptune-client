@@ -7,9 +7,9 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 #
-import pkgutil
-import inspect
 import importlib
+import inspect
+import pkgutil
 
 EXCLUDED_MODULES = [
     "neptune.internal",

@@ -19,8 +19,8 @@ import sys
 import threading
 import traceback
 import uuid
-from typing import TYPE_CHECKING, Callable, List
 from platform import node as get_hostname
+from typing import TYPE_CHECKING, Callable, List
 
 if TYPE_CHECKING:
     pass

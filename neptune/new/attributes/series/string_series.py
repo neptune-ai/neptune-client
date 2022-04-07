@@ -13,17 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Optional, Iterable, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable, List, Optional
 
 import click
 
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
+from neptune.new.attributes.series.series import Series
 from neptune.new.internal.backends.api_model import StringSeriesValues
+from neptune.new.internal.operation import ClearStringLog, LogStrings, Operation
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
-
-from neptune.new.internal.operation import LogStrings, ClearStringLog, Operation
-from neptune.new.attributes.series.series import Series
 from neptune.utils import split_to_chunks
 
 if TYPE_CHECKING:

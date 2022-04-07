@@ -31,7 +31,7 @@ from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
 from neptune.internal.utils.source_code import get_source_code_to_upload
-from neptune.utils import as_list, map_keys, get_git_info, discover_git_repo_location
+from neptune.utils import as_list, discover_git_repo_location, get_git_info, map_keys
 
 _logger = logging.getLogger(__name__)
 

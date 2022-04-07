@@ -19,8 +19,8 @@ from neptune.new.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
-    NQLQueryAttribute,
     NQLQueryAggregate,
+    NQLQueryAttribute,
 )
 
 

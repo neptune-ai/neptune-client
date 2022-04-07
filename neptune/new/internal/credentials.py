@@ -17,12 +17,10 @@
 import base64
 import json
 import os
-from typing import Optional, Dict
-
 from dataclasses import dataclass
+from typing import Dict, Optional
 
-from neptune.new import envs
-from neptune.new import ANONYMOUS, ANONYMOUS_API_TOKEN
+from neptune.new import ANONYMOUS, ANONYMOUS_API_TOKEN, envs
 from neptune.new.exceptions import (
     NeptuneInvalidApiTokenException,
     NeptuneMissingApiTokenException,

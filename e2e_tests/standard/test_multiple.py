@@ -13,12 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import random
 import concurrent.futures
+import random
 
 import pytest
-import neptune.new as neptune
 
+import neptune.new as neptune
 from e2e_tests.base import BaseE2ETest, fake
 from e2e_tests.utils import reinitialize_container
 

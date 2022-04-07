@@ -17,9 +17,9 @@
 # pylint: disable=protected-access
 
 from mock import MagicMock
-from neptune.new.internal.operation import AssignFloat
-from neptune.new.attributes.atoms.float import Float, FloatVal
 
+from neptune.new.attributes.atoms.float import Float, FloatVal
+from neptune.new.internal.operation import AssignFloat
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

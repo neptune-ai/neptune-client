@@ -17,9 +17,8 @@
 import os
 import ssl
 
-from six.moves import urllib
-
 from future.utils import PY3
+from six.moves import urllib
 from websocket import ABNF, create_connection
 
 

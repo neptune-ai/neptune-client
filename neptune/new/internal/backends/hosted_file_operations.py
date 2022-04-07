@@ -19,20 +19,33 @@ import json
 import os
 import time
 from io import BytesIO
-from typing import List, Optional, Dict, Iterable, Set, Union, AnyStr
+from typing import AnyStr, Dict, Iterable, List, Optional, Set, Union
 from urllib.parse import urlencode
 
 import click
 from bravado.client import SwaggerClient
-from bravado.exception import HTTPUnprocessableEntity, HTTPPaymentRequired
+from bravado.exception import HTTPPaymentRequired, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
 
 from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
+from neptune.internal.storage.datastream import (
+    FileChunk,
+    FileChunker,
+    FileChunkStream,
+    compress_to_tar_gz_in_memory,
+)
+from neptune.internal.storage.storage_utils import (
+    AttributeUploadConfiguration,
+    UploadEntry,
+    normalize_file_name,
+    scan_unique_upload_entries,
+    split_upload_files,
+)
 from neptune.new.exceptions import (
     FileUploadError,
-    MetadataInconsistency,
     InternalClientError,
+    MetadataInconsistency,
     NeptuneException,
     NeptuneLimitExceedException,
     UploadedFileChanged,
@@ -40,23 +53,10 @@ from neptune.new.exceptions import (
 from neptune.new.internal.backends.api_model import MultipartConfig
 from neptune.new.internal.backends.utils import (
     build_operation_url,
-    with_api_exceptions_handler,
     handle_server_raw_response_messages,
+    with_api_exceptions_handler,
 )
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
-from neptune.internal.storage.datastream import (
-    compress_to_tar_gz_in_memory,
-    FileChunkStream,
-    FileChunk,
-    FileChunker,
-)
-from neptune.internal.storage.storage_utils import (
-    scan_unique_upload_entries,
-    split_upload_files,
-    UploadEntry,
-    normalize_file_name,
-    AttributeUploadConfiguration,
-)
 
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)

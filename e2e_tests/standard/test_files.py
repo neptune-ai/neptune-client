@@ -23,12 +23,12 @@ from zipfile import ZipFile
 
 import pytest
 
-from e2e_tests.base import BaseE2ETest, AVAILABLE_CONTAINERS, fake
-from e2e_tests.utils import tmp_context, initialize_container
+from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
+from e2e_tests.utils import initialize_container, tmp_context
 from neptune.new.internal.backends import hosted_file_operations
-from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.internal.backends.api_model import MultipartConfig, OptionalFeatures
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types import FileSet
 
 

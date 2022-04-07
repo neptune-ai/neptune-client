@@ -23,14 +23,14 @@ from bravado.requests_client import RequestsClient
 from neptune.new.exceptions import UnsupportedClientVersion
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.utils import (
-    with_api_exceptions_handler,
-    build_operation_url,
-    update_session_proxies,
-    verify_host_resolution,
-    create_swagger_client,
-    verify_client_version,
-    cache,
     NeptuneResponseAdapter,
+    build_operation_url,
+    cache,
+    create_swagger_client,
+    update_session_proxies,
+    verify_client_version,
+    verify_host_resolution,
+    with_api_exceptions_handler,
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.version import version as neptune_client_version

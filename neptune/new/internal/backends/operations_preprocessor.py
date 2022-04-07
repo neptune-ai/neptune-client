@@ -14,12 +14,12 @@
 # limitations under the License.
 #
 from enum import Enum
-from typing import List, TypeVar, Callable
+from typing import Callable, List, TypeVar
 
-from neptune.new.exceptions import MetadataInconsistency, InternalClientError
+from neptune.new.exceptions import InternalClientError, MetadataInconsistency
 from neptune.new.internal.operation import (
-    AssignArtifact,
     AddStrings,
+    AssignArtifact,
     AssignBool,
     AssignDatetime,
     AssignFloat,

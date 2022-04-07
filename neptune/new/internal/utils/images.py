@@ -18,7 +18,7 @@ import io
 import logging
 import pickle
 import warnings
-from io import StringIO, BytesIO
+from io import BytesIO, StringIO
 from typing import Optional
 
 import click
@@ -31,18 +31,17 @@ from neptune.new.internal.utils import limits
 _logger = logging.getLogger(__name__)
 
 try:
-    from numpy import (
-        ndarray as numpy_ndarray,
-        array as numpy_array,
-        uint8 as numpy_uint8,
-    )
+    from numpy import array as numpy_array
+    from numpy import ndarray as numpy_ndarray
+    from numpy import uint8 as numpy_uint8
 except ImportError:
     numpy_ndarray = None
     numpy_array = None
     numpy_uint8 = None
 
 try:
-    from PIL.Image import Image as PILImage, fromarray as pilimage_fromarray
+    from PIL.Image import Image as PILImage
+    from PIL.Image import fromarray as pilimage_fromarray
 except ImportError:
     PILImage = None
 
@@ -136,8 +135,8 @@ def _to_html(chart) -> str:
 
 def _matplotlib_to_plotly(chart):
     # pylint: disable=import-outside-toplevel
-    import plotly
     import matplotlib
+    import plotly
 
     # When Plotly cannot accurately convert a matplotlib plot, it emits a warning.
     # Then we want to fallback on logging the plot as an image.
@@ -296,8 +295,8 @@ def _export_altair_chart(chart):
 
 
 def _export_bokeh_figure(chart):
-    from bokeh.resources import CDN
     from bokeh.embed import file_html
+    from bokeh.resources import CDN
 
     html = file_html(chart, CDN)
     buffer = StringIO(html)

@@ -13,16 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import time
 import hashlib
-import unittest
 import tempfile
+import time
+import unittest
 from pathlib import Path
 
-from mock import patch, Mock
+from mock import Mock, patch
 
-from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.artifacts.file_hasher import FileHasher
+from neptune.new.internal.artifacts.types import ArtifactFileData
 
 
 class TestFileHasher(unittest.TestCase):

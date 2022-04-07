@@ -20,8 +20,8 @@ import mock
 from mock import MagicMock
 
 from neptune.exceptions import (
-    DeprecatedApiToken,
     CannotResolveHostname,
+    DeprecatedApiToken,
     UnsupportedClientVersion,
 )
 from neptune.internal.api_clients import HostedNeptuneBackendApiClient

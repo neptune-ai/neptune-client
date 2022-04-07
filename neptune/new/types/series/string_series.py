@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from typing import TypeVar, TYPE_CHECKING
+from typing import TYPE_CHECKING, TypeVar
 
 from neptune.new.internal.utils import is_collection
 from neptune.new.types.series.series import Series

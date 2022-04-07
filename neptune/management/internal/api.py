@@ -13,51 +13,51 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import re
 import os
-from typing import Optional, List, Dict
+import re
+from typing import Dict, List, Optional
 
 from bravado.client import SwaggerClient
 from bravado.exception import (
-    HTTPNotFound,
     HTTPBadRequest,
     HTTPConflict,
     HTTPForbidden,
+    HTTPNotFound,
     HTTPUnprocessableEntity,
 )
 
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.new.envs import API_TOKEN_ENV_NAME
-from neptune.new.internal.utils import verify_type
-from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.backends.hosted_client import (
-    create_backend_client,
-    create_http_client_with_auth,
-    DEFAULT_REQUEST_KWARGS,
-)
-from neptune.new.internal.backends.utils import (
-    with_api_exceptions_handler,
-    ssl_verify,
-    parse_validation_errors,
-)
-from neptune.management.internal.utils import normalize_project_name
-from neptune.management.internal.types import *
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
+    BadRequestException,
     ProjectAlreadyExists,
     ProjectNotFound,
+    ProjectsLimitReached,
+    UserAlreadyHasAccess,
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
-    UserAlreadyHasAccess,
-    BadRequestException,
-    ProjectsLimitReached,
 )
 from neptune.management.internal.dto import (
-    ProjectVisibilityDTO,
     ProjectMemberRoleDTO,
+    ProjectVisibilityDTO,
     WorkspaceMemberRoleDTO,
 )
+from neptune.management.internal.types import *
+from neptune.management.internal.utils import normalize_project_name
+from neptune.new.envs import API_TOKEN_ENV_NAME
+from neptune.new.internal.backends.hosted_client import (
+    DEFAULT_REQUEST_KWARGS,
+    create_backend_client,
+    create_http_client_with_auth,
+)
+from neptune.new.internal.backends.utils import (
+    parse_validation_errors,
+    ssl_verify,
+    with_api_exceptions_handler,
+)
+from neptune.new.internal.credentials import Credentials
+from neptune.new.internal.utils import verify_type
+from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 
 def _get_token(api_token: Optional[str] = None) -> str:
