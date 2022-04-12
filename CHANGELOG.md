@@ -1,3 +1,12 @@
+## neptune-client 0.16.0
+
+## Features
+- Added python 3.10 support ([#879](https://github.com/neptune-ai/neptune-client/pull/879))
+- Dropped official support for python 3.6 ([#879](https://github.com/neptune-ai/neptune-client/pull/879))
+
+## Fixes
+- restart upload when file changes during ([#877](https://github.com/neptune-ai/neptune-client/pull/877))
+
 ## neptune-client 0.15.2
 
 ## Features
