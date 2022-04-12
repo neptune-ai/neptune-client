@@ -149,6 +149,10 @@ class Run(MetadataContainer):
         )
 
     @property
+    def _metadata_url(self) -> str:
+        return self._url
+
+    @property
     def _short_id(self) -> str:
         return self._sys_id
 

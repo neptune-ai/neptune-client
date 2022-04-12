@@ -89,6 +89,10 @@ class Project(MetadataContainer):
             project_name=self._project_name,
         )
 
+    @property
+    def _metadata_url(self) -> str:
+        return self._url.rstrip("/") + "/metadata"
+
     # pylint:disable=redefined-builtin
     def fetch_runs_table(
         self,

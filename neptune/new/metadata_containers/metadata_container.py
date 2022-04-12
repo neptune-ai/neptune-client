@@ -160,6 +160,11 @@ class MetadataContainer(AbstractContextManager):
     def _url(self) -> str:
         raise NotImplementedError
 
+    @property
+    @abc.abstractmethod
+    def _metadata_url(self) -> str:
+        raise NotImplementedError
+
     def _get_subpath_suggestions(
         self, path_prefix: str = None, limit: int = 1000
     ) -> List[str]:
@@ -214,6 +219,9 @@ class MetadataContainer(AbstractContextManager):
         with self._lock:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
+        if self._mode != Mode.OFFLINE:
+            click.echo("Explore the metadata in Neptune UI:")
+            click.echo(self._metadata_url)
         self._backend.close()
         self._state = ContainerState.STOPPED
 
