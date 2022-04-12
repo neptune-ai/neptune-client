@@ -33,6 +33,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
 from neptune.new.internal.utils import as_list
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.metadata_containers.metadata_containers_table import Table
+from neptune.new.types.mode import Mode
 
 
 class Project(MetadataContainer):
@@ -50,6 +51,7 @@ class Project(MetadataContainer):
         self,
         *,
         id_: UniqueId,
+        mode: Mode,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
@@ -60,6 +62,7 @@ class Project(MetadataContainer):
     ):
         super().__init__(
             id_=id_,
+            mode=mode,
             backend=backend,
             op_processor=op_processor,
             background_job=background_job,

@@ -73,6 +73,7 @@ from neptune.new.types import Boolean, Integer
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
+from neptune.new.types.mode import Mode
 from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
 from neptune.new.types.value_copy import ValueCopy
@@ -107,6 +108,7 @@ class MetadataContainer(AbstractContextManager):
         self,
         *,
         id_: UniqueId,
+        mode: Mode,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
@@ -117,6 +119,7 @@ class MetadataContainer(AbstractContextManager):
         sys_id: SysId,
     ):
         self._id = id_
+        self._mode = mode
         self._project_id = project_id
         self._project_name = project_name
         self._workspace = workspace

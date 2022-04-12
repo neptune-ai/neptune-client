@@ -32,6 +32,7 @@ from neptune.new.internal.operation_processors.sync_operation_processor import (
     SyncOperationProcessor,
 )
 from neptune.new.metadata_containers import Run
+from neptune.new.types.mode import Mode
 
 _now = time.time()
 
@@ -46,6 +47,7 @@ class TestAttributeBase(unittest.TestCase):
             processor = SyncOperationProcessor(exp.id, ContainerType.RUN, backend)
         _run = Run(
             id_=exp.id,
+            mode=Mode.SYNC,
             backend=backend,
             op_processor=processor,
             background_job=MagicMock(),

@@ -67,6 +67,7 @@ def init_project(
 
     project = Project(
         id_=project_obj.id,
+        mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),
