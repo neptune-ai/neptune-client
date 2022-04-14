@@ -303,6 +303,7 @@ def init_run(
 
     _run = Run(
         id_=api_run.id,
+        mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),

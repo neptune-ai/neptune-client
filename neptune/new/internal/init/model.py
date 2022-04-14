@@ -121,6 +121,7 @@ def init_model(
 
     _model = Model(
         id_=api_model.id,
+        mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),

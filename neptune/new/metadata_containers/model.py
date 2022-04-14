@@ -51,6 +51,10 @@ class Model(MetadataContainer):
             sys_id=self._sys_id,
         )
 
+    @property
+    def _metadata_url(self) -> str:
+        return self._url.rstrip("/") + "/metadata"
+
     def fetch_model_versions_table(self) -> Table:
         """Retrieve all model versions of the given model.
 

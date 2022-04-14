@@ -24,6 +24,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
 from neptune.new.metadata_containers import MetadataContainer
+from neptune.new.types.mode import Mode
 
 
 class Run(MetadataContainer):
@@ -99,6 +100,7 @@ class Run(MetadataContainer):
         self,
         *,
         id_: UniqueId,
+        mode: Mode,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
@@ -111,6 +113,7 @@ class Run(MetadataContainer):
     ):
         super().__init__(
             id_=id_,
+            mode=mode,
             backend=backend,
             op_processor=op_processor,
             background_job=background_job,
@@ -144,6 +147,10 @@ class Run(MetadataContainer):
             project_name=self._project_name,
             sys_id=self._sys_id,
         )
+
+    @property
+    def _metadata_url(self) -> str:
+        return self._url
 
     @property
     def _short_id(self) -> str:

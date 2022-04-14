@@ -116,6 +116,7 @@ def init_model_version(
 
     _model_version = ModelVersion(
         id_=api_model_version.id,
+        mode=mode,
         backend=backend,
         op_processor=operation_processor,
         background_job=BackgroundJobList(background_jobs),
