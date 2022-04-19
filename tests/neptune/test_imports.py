@@ -458,7 +458,6 @@ from neptune.utils import HTTPForbidden
 from neptune.utils import HTTPGatewayTimeout
 from neptune.utils import HTTPInternalServerError
 from neptune.utils import HTTPRequestTimeout
-from neptune.utils import HTTPServerError
 from neptune.utils import HTTPServiceUnavailable
 from neptune.utils import HTTPUnauthorized
 from neptune.utils import InvalidNotebookPath

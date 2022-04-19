@@ -39,7 +39,6 @@ from bravado.exception import (
     HTTPGatewayTimeout,
     HTTPInternalServerError,
     HTTPRequestTimeout,
-    HTTPServerError,
     HTTPServiceUnavailable,
     HTTPTooManyRequests,
     HTTPUnauthorized,
@@ -327,7 +326,7 @@ def with_api_exceptions_handler(func):
                 HTTPGatewayTimeout,
                 HTTPBadGateway,
                 HTTPTooManyRequests,
-                HTTPServerError,
+                HTTPInternalServerError,
                 NewConnectionError,
             ):
                 if retry >= 6:
@@ -365,7 +364,7 @@ def with_api_exceptions_handler(func):
                     HTTPServiceUnavailable.status_code,
                     HTTPGatewayTimeout.status_code,
                     HTTPTooManyRequests.status_code,
-                    HTTPServerError.status_code,
+                    HTTPInternalServerError.status_code,
                 ):
                     if retry >= 6:
                         _logger.warning(
