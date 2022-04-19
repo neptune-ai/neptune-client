@@ -35,8 +35,8 @@ from bravado.exception import (
     HTTPError,
     HTTPForbidden,
     HTTPGatewayTimeout,
+    HTTPInternalServerError,
     HTTPRequestTimeout,
-    HTTPServerError,
     HTTPServiceUnavailable,
     HTTPTooManyRequests,
     HTTPUnauthorized,
@@ -106,7 +106,7 @@ def with_api_exceptions_handler(func):
                 HTTPGatewayTimeout,
                 HTTPBadGateway,
                 HTTPTooManyRequests,
-                HTTPServerError,
+                HTTPInternalServerError,
                 NewConnectionError,
             ) as e:
                 time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
@@ -128,7 +128,7 @@ def with_api_exceptions_handler(func):
                     HTTPServiceUnavailable.status_code,
                     HTTPGatewayTimeout.status_code,
                     HTTPTooManyRequests.status_code,
-                    HTTPServerError.status_code,
+                    HTTPInternalServerError.status_code,
                 ):
                     time.sleep(min(2 ** min(10, retry), MAX_RETRY_TIME))
                     last_exception = e
