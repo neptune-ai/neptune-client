@@ -1,3 +1,11 @@
+## neptune-client 0.16.1
+
+## Features
+- Print metadata url on stop ([#883](https://github.com/neptune-ai/neptune-client/pull/883))
+
+## Fixes
+- Fix handling Internal Server Error ([#885](https://github.com/neptune-ai/neptune-client/pull/885))
+
 ## neptune-client 0.16.0
 
 ## Features
