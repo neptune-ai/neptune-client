@@ -220,7 +220,7 @@ class MetadataContainer(AbstractContextManager):
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
         if self._mode != Mode.OFFLINE:
-            click.echo("Explore the metadata in Neptune UI:")
+            click.echo("Explore the metadata in the Neptune app:")
             click.echo(self._metadata_url)
         self._backend.close()
         self._state = ContainerState.STOPPED
