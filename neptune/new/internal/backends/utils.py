@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import dataclasses
 import itertools
 import logging
 import os
@@ -321,26 +322,32 @@ def parse_validation_errors(error: HTTPError) -> Dict[str, str]:
     }
 
 
+@dataclasses.dataclass
+class OperationsBatch:
+    operations: List[Operation] = dataclasses.field(default_factory=list)
+    errors: List[MetadataInconsistency] = dataclasses.field(default_factory=list)
+    dropped_operations_count: int = 0
+
+
 class ExecuteOperationsBatchingManager:
     def __init__(self, backend: "NeptuneBackend"):
         self._backend = backend
 
-    def get_batch(
-        self, ops: Iterable[Operation], errors: List[MetadataInconsistency]
-    ) -> List[Operation]:
-        batch = []
+    def get_batch(self, ops: Iterable[Operation]) -> OperationsBatch:
+        result = OperationsBatch()
         for op in ops:
             if isinstance(op, CopyAttribute):
-                if not batch:
+                if not result.operations:
                     try:
                         # CopyAttribute can be at the start of a batch
-                        batch.append(op.resolve(self._backend))
+                        result.operations.append(op.resolve(self._backend))
                     except MetadataInconsistency as e:
-                        errors.append(e)
+                        result.errors.append(e)
+                        result.dropped_operations_count += 1
                 else:
                     # cannot have CopyAttribute after any other op in a batch
                     break
             else:
-                batch.append(op)
+                result.operations.append(op)
 
-        return batch
+        return result

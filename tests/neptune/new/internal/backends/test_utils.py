@@ -18,7 +18,9 @@ import uuid
 from unittest.mock import Mock
 
 from neptune.new.attributes import Integer, String
+from neptune.new.exceptions import FetchAttributeNotFoundException
 from neptune.new.internal import operation
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.utils import (
     ExecuteOperationsBatchingManager,
     build_operation_url,
@@ -65,7 +67,7 @@ class TestNeptuneBackendMock(unittest.TestCase):
 
 class TestExecuteOperationsBatchingManager(unittest.TestCase):
     def test_cut_batch_on_copy(self):
-        backend = Mock()
+        backend = Mock(spec=NeptuneBackend)
         manager = ExecuteOperationsBatchingManager(backend)
 
         operations = [
@@ -81,11 +83,13 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             ),
         ]
 
-        batch = manager.get_batch(operations, [])
-        self.assertEqual(operations[0:2], batch)
+        batch = manager.get_batch(operations)
+        self.assertEqual(operations[0:2], batch.operations)
+        self.assertEqual([], batch.errors)
+        self.assertEqual(0, batch.dropped_operations_count)
 
     def test_get_nonempty_batch_with_copy_first(self):
-        backend = Mock()
+        backend = Mock(spec=NeptuneBackend)
         manager = ExecuteOperationsBatchingManager(backend)
 
         operations = [
@@ -99,16 +103,18 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             ),
         ]
 
-        batch = manager.get_batch(operations, [])
+        batch = manager.get_batch(operations)
         expected_batch = [
             operation.AssignInt(
                 operations[0].path, backend.get_int_attribute.return_value.value
             )
         ] + operations[1:3]
-        self.assertEqual(expected_batch, batch)
+        self.assertEqual(expected_batch, batch.operations)
+        self.assertEqual([], batch.errors)
+        self.assertEqual(0, batch.dropped_operations_count)
 
     def test_no_copies_is_ok(self):
-        backend = Mock()
+        backend = Mock(spec=NeptuneBackend)
         manager = ExecuteOperationsBatchingManager(backend)
 
         operations = [
@@ -118,18 +124,22 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             operation.AssignInt(["pp"], 12),
         ]
 
-        batch = manager.get_batch(operations, [])
-        self.assertEqual(operations, batch)
+        batch = manager.get_batch(operations)
+        self.assertEqual(operations, batch.operations)
+        self.assertEqual([], batch.errors)
+        self.assertEqual(0, batch.dropped_operations_count)
 
     def test_no_ops_is_ok(self):
-        backend = Mock()
+        backend = Mock(spec=NeptuneBackend)
         manager = ExecuteOperationsBatchingManager(backend)
 
-        batch = manager.get_batch([], [])
-        self.assertEqual([], batch)
+        batch = manager.get_batch([])
+        self.assertEqual([], batch.operations)
+        self.assertEqual([], batch.errors)
+        self.assertEqual(0, batch.dropped_operations_count)
 
     def test_subsequent_copies_is_ok(self):
-        backend = Mock()
+        backend = Mock(spec=NeptuneBackend)
         manager = ExecuteOperationsBatchingManager(backend)
 
         operations = [
@@ -144,10 +154,32 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
             ),
         ]
 
-        batch = manager.get_batch(operations, [])
+        batch = manager.get_batch(operations)
         expected_batch = [
             operation.AssignInt(
                 operations[0].path, backend.get_int_attribute.return_value.value
             )
         ]
-        self.assertEqual(expected_batch, batch)
+        self.assertEqual(expected_batch, batch.operations)
+        self.assertEqual([], batch.errors)
+        self.assertEqual(0, batch.dropped_operations_count)
+
+    def test_handle_failed_copy(self):
+        backend = Mock(spec=NeptuneBackend)
+        backend.get_int_attribute.side_effect = FetchAttributeNotFoundException("b")
+        manager = ExecuteOperationsBatchingManager(backend)
+
+        operations = [
+            operation.CopyAttribute(
+                ["q/d"], str(uuid.uuid4()), ContainerType.RUN, ["b"], Integer
+            ),
+            operation.AssignInt(["a"], 12),
+            operation.AssignString(["b/c"], "test"),
+            operation.AssignInt(["pp"], 12),
+        ]
+
+        batch = manager.get_batch(operations)
+        # skipped erroneous CopyAttribute
+        self.assertEqual(operations[1:], batch.operations)
+        self.assertEqual([backend.get_int_attribute.side_effect], batch.errors)
+        self.assertEqual(1, batch.dropped_operations_count)
