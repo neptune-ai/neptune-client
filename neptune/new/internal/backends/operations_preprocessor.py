@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import dataclasses
+import typing
 from enum import Enum
 from typing import Callable, List, TypeVar
 
@@ -49,20 +51,32 @@ from neptune.new.internal.utils.paths import path_to_str
 T = TypeVar("T")
 
 
+class RequiresPreviousCompleted(Exception):
+    """indicates that previous operations must be synchronized with server before preprocessing current one"""
+
+
+@dataclasses.dataclass
+class AccumulatedOperations:
+    upload_operations: List[Operation] = dataclasses.field(default_factory=list)
+    artifact_operations: List[TrackFilesToArtifact] = dataclasses.field(
+        default_factory=list
+    )
+    other_operations: List[Operation] = dataclasses.field(default_factory=list)
+
+    errors: List[MetadataInconsistency] = dataclasses.field(default_factory=list)
+
+
 class OperationsPreprocessor:
     def __init__(self):
-        self._accumulators = dict()
+        self._accumulators: typing.Dict[str, "_OperationsAccumulator"] = dict()
         self.processed_ops_count = 0
 
     def process(self, operations: List[Operation]):
         for op in operations:
-            acc: "_OperationsAccumulator" = self._process_op(op)
-            self.processed_ops_count += 1
-            # pylint: disable=protected-access
-            if acc.has_file_ops and len(acc._delete_ops) > 0:
-                self.processed_ops_count -= len(acc._modify_ops) + len(acc._config_ops)
-                acc._modify_ops = []
-                acc._config_ops = []
+            try:
+                self._process_op(op)
+                self.processed_ops_count += 1
+            except RequiresPreviousCompleted:
                 return
 
     def _process_op(self, op: Operation) -> "_OperationsAccumulator":
@@ -73,16 +87,27 @@ class OperationsPreprocessor:
         target_acc.visit(op)
         return target_acc
 
-    def get_operations(self) -> List[Operation]:
-        result = []
-        for _, acc in sorted(self._accumulators.items()):
-            result.extend(acc.get_operations())
-        return result
+    @staticmethod
+    def is_file_op(op: Operation):
+        return isinstance(op, (UploadFile, UploadFileContent, UploadFileSet))
 
-    def get_errors(self) -> List[MetadataInconsistency]:
-        result = []
+    @staticmethod
+    def is_artifact_op(op: Operation):
+        return isinstance(op, TrackFilesToArtifact)
+
+    def get_operations(self) -> AccumulatedOperations:
+        result = AccumulatedOperations()
         for _, acc in sorted(self._accumulators.items()):
-            result.extend(acc.get_errors())
+            acc: "_OperationsAccumulator"
+            for op in acc.get_operations():
+                if self.is_artifact_op(op):
+                    result.artifact_operations.append(op)
+                elif self.is_file_op(op):
+                    result.upload_operations.append(op)
+                else:
+                    result.other_operations.append(op)
+            result.errors.extend(acc.get_errors())
+
         return result
 
 
@@ -103,11 +128,14 @@ class _DataType(Enum):
     def is_file_op(self) -> bool:
         return self in (self.FILE, self.FILE_SET)
 
+    def is_artifact_op(self) -> bool:
+        return self in (self.ARTIFACT,)
+
 
 class _OperationsAccumulator(OperationVisitor[None]):
     def __init__(self, path: List[str]):
         self._path = path
-        self._type = None
+        self._type: typing.Optional[_DataType] = None
         self._delete_ops = []
         self._modify_ops = []
         self._config_ops = []
@@ -119,6 +147,13 @@ class _OperationsAccumulator(OperationVisitor[None]):
 
     def get_errors(self) -> List[MetadataInconsistency]:
         return self._errors
+
+    def _check_prerequisites(self, op: Operation):
+        if (
+            OperationsPreprocessor.is_file_op(op)
+            or OperationsPreprocessor.is_artifact_op(op)
+        ) and len(self._delete_ops) > 0:
+            raise RequiresPreviousCompleted()
 
     def _process_modify_op(
         self,
@@ -141,6 +176,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 )
             )
         else:
+            self._check_prerequisites(op)
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
             self.has_file_ops = self.has_file_ops or self._type.is_file_op()
@@ -161,6 +197,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 )
             )
         else:
+            self._check_prerequisites(op)
             self._type = expected_type
             self._config_ops = [op]
 
@@ -258,7 +295,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 self._modify_ops = []
                 self._config_ops = []
                 self._type = None
-                self.has_file_ops = False
             else:
                 # This case is tricky. There was no delete operation, but some modifications was performed.
                 # We do not know if this attribute exists on server side and we do not want a delete op to fail.
@@ -267,7 +303,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
                 self._modify_ops = []
                 self._config_ops = []
                 self._type = None
-                # does not change has_file_ops
         else:
             if self._delete_ops:
                 # Do nothing if there already is a delete operation
