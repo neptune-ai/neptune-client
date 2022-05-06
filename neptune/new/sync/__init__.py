@@ -165,6 +165,14 @@ def sync(
     # Synchronize only the offline run with UUID offline/a1561719-b425-4000-a65a-b5efb044d6bb
     # to project "workspace/project"
     neptune sync --project workspace/project --object offline/a1561719-b425-4000-a65a-b5efb044d6bb
+
+    \b
+    # Synchronize only the offline runs
+    neptune sync --offline-only
+
+    \b
+    # Synchronize only the offline runs to project "workspace/project"
+    neptune sync --project workspace/project --offline-only
     """
 
     sync_runner = SyncRunner(backend=HostedNeptuneBackend(Credentials.from_token()))
