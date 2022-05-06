@@ -16,6 +16,7 @@
 
 __all__ = []
 
+from email.policy import default
 from pathlib import Path
 from typing import List, Optional
 
@@ -117,11 +118,22 @@ def status(path: Path) -> None:
     metavar="project-name",
     help="project name (workspace/project) where offline runs will be sent",
 )
+
+@click.option(
+    "--offline-only",
+    "offline_only",
+    is_flag=True,
+    default=False,
+    metavar="offline-only",
+    help="synchronize all offline runs inside '.neptune' directory",
+)
+
 def sync(
     path: Path,
     runs_names: List[str],
     object_names: List[str],
     project_name: Optional[str],
+    offline_only: Optional[bool],
 ):
     """Synchronizes objects with unsent data with the server.
 
@@ -167,5 +179,7 @@ def sync(
 
     if object_names:
         sync_runner.sync_selected_containers(path, project_name, object_names)
+    elif offline_only:
+        sync_runner.sync_all_offline_containers(path, project_name)
     else:
         sync_runner.sync_all_containers(path, project_name)
