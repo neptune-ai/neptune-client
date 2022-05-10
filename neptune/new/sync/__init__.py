@@ -123,7 +123,6 @@ def status(path: Path) -> None:
     "offline_only",
     is_flag=True,
     default=False,
-    metavar="offline-only",
     help="synchronize only the offline runs inside '.neptune' directory",
 )
 
