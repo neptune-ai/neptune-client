@@ -117,7 +117,6 @@ def status(path: Path) -> None:
     metavar="project-name",
     help="project name (workspace/project) where offline runs will be sent",
 )
-
 @click.option(
     "--offline-only",
     "offline_only",
@@ -125,7 +124,6 @@ def status(path: Path) -> None:
     default=False,
     help="synchronize only the offline runs inside '.neptune' directory",
 )
-
 def sync(
     path: Path,
     runs_names: List[str],
@@ -183,9 +181,15 @@ def sync(
         object_names = set(object_names)
         object_names.update(runs_names)
 
-    if object_names:
-        sync_runner.sync_selected_containers(path, project_name, object_names)
-    elif offline_only:
+    if offline_only:
+        if object_names:
+            raise click.BadParameter(
+                "--object and --offline-only are mutually exclusive"
+            )
+
         sync_runner.sync_all_offline_containers(path, project_name)
+
+    elif object_names:
+        sync_runner.sync_selected_containers(path, project_name, object_names)
     else:
         sync_runner.sync_all_containers(path, project_name)
