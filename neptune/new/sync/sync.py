@@ -224,11 +224,8 @@ class SyncRunner(AbstractBackendRunner):
             offline_runs_names = [get_qualified_name(exp) for exp in registered_runs]
             self.sync_selected_registered_containers(base_path, offline_runs_names)
 
-
     def sync_all_offline_containers(
-        self,
-        base_path: Path,
-        project_name: QualifiedName
+        self, base_path: Path, project_name: QualifiedName
     ) -> None:
 
         offline_dirs = get_offline_dirs(base_path)
