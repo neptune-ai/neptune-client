@@ -16,7 +16,6 @@
 
 __all__ = []
 
-from email.policy import default
 from pathlib import Path
 from typing import List, Optional
 
