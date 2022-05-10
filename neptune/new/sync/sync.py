@@ -253,6 +253,4 @@ class SyncRunner(AbstractBackendRunner):
 
     def sync_all_containers(self, base_path: Path, project_name: Optional[str]) -> None:
         self.sync_all_registered_containers(base_path)
-
-        offline_dirs = get_offline_dirs(base_path)
-        self.sync_offline_runs(base_path, project_name, offline_dirs)
+        self.sync_all_offline_containers(base_path, project_name)
