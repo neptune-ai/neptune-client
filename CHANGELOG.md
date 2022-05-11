@@ -1,4 +1,4 @@
-## neptune-client 0.16.2
+## [UNRELEASED] neptune-client 0.16.2
 
 ## Features
  - Sync only offline runs inside '.neptune' directory CLI flag ([#894](https://github.com/neptune-ai/neptune-client/pull/894))
