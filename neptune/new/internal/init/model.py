@@ -65,6 +65,8 @@ def init_model(
     # make mode proper Enum instead of string
     mode = Mode(mode)
 
+    # TODO: Do not duplicate validation logic from server.
+    # Instead, design server-side Validation Errors that can be pretty printed in client.
     if key:
         if len(key) > 10:
             raise ValueError("Model key cannot be longer than 10 characters")
