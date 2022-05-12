@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import re
 import threading
 from typing import Optional
 
