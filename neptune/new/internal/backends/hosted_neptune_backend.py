@@ -362,6 +362,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             additional_params=additional_params,
         )
 
+    @with_api_exceptions_handler
     def create_model(self, project_id: UniqueId, key: str = "") -> ApiExperiment:
         additional_params = {
             "key": key,
@@ -374,6 +375,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             additional_params=additional_params,
         )
 
+    @with_api_exceptions_handler
     def create_model_version(
         self, project_id: UniqueId, model_id: UniqueId
     ) -> ApiExperiment:
