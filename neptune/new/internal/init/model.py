@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import re
 import threading
 from typing import Optional
 
@@ -63,6 +64,15 @@ def init_model(
     verify_type("proxies", proxies, (dict, type(None)))
     # make mode proper Enum instead of string
     mode = Mode(mode)
+
+    if len(key) > 10:
+        raise ValueError("Model key cannot be longer than 10 characters")
+    if key != key.upper():
+        raise ValueError("Model key cannot contain lowercase letters")
+    if not re.match(r"^[A-Z0-9]{1,10}$", key):
+        raise ValueError("Model key should contain only capital letters and digits")
+    if re.match(r"^[0-9]*$", key):
+        raise ValueError("Model key cannot consist of digits only")
 
     if mode == Mode.OFFLINE:
         raise NeptuneException("Model can't be initialized in OFFLINE mode")
