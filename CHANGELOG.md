@@ -1,5 +1,7 @@
 ## [UNRELEASED] neptune-client 0.16.3
 
+## Fixes
+- Fix computing of a multipart upload chunk size ([#897](https://github.com/neptune-ai/neptune-client/pull/897))
 
 ## neptune-client 0.16.2
 

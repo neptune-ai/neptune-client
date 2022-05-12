@@ -14,16 +14,20 @@
 # limitations under the License.
 #
 
+# pylint: disable=protected-access
 import unittest
 from io import BytesIO
 
-from mock import patch
+import pytest
+from mock import Mock, patch
 
-from neptune.internal.storage.datastream import FileChunk, FileChunkStream
+from neptune.internal.api_clients.client_config import MultipartConfig
+from neptune.internal.storage.datastream import FileChunk, FileChunker, FileChunkStream
 from neptune.internal.storage.storage_utils import (
     AttributeUploadConfiguration,
     UploadEntry,
 )
+from neptune.new.exceptions import InternalClientError
 
 
 class TestFileChunkStream(unittest.TestCase):
@@ -84,6 +88,59 @@ class TestFileChunkStream(unittest.TestCase):
                 FileChunk(b"WXYZ", 20, 24),
             ],
         )
+
+
+class TestFileChunker:
+    multipart_config = MultipartConfig(
+        min_chunk_size=5_242_880,  # 5 MB
+        max_chunk_size=1_073_741_824,  # 1 GB
+        max_chunk_count=1_000,
+        max_single_part_size=5_242_880,  # 1 GB
+    )
+
+    def get_chunk_count(self, file_size, chunk_size):
+        chunk_idx = 0
+        while file_size > chunk_size:
+            chunk_idx += 1
+            file_size -= chunk_size
+        return chunk_idx + 1
+
+    @pytest.mark.parametrize(
+        "file_size, expected_chunk_size, expected_chunk_count",
+        (
+            (1_000_000, 5_242_880, 1),
+            (6_000_000, 5_242_880, 2),
+            (5_242_880_000, 5_242_880, 1_000),
+            (5_242_880_001, 5_242_881, 1_000),
+            (5_242_891_001, 5_242_892, 1_000),
+            (1_073_741_824_000, 1_073_741_824, 1_000),
+        ),
+    )
+    def test_chunk_size_for_small_file(
+        self, file_size, expected_chunk_size, expected_chunk_count
+    ):
+        chunker = FileChunker(
+            Mock(), Mock(), total_size=file_size, multipart_config=self.multipart_config
+        )
+
+        chunk_size = chunker._get_chunk_size()
+
+        chunk_count = self.get_chunk_count(file_size, chunk_size)
+        assert chunk_count == expected_chunk_count
+        assert chunk_size == expected_chunk_size
+        assert chunk_count <= self.multipart_config.max_chunk_count
+        assert chunk_size <= self.multipart_config.max_chunk_size
+        assert chunk_size >= self.multipart_config.min_chunk_size
+
+    def test_too_large_file(self):
+        file_size = 1_073_741_824_001
+
+        chunker = FileChunker(
+            Mock(), Mock(), total_size=file_size, multipart_config=self.multipart_config
+        )
+
+        with pytest.raises(InternalClientError):
+            chunker._get_chunk_size()
 
 
 if __name__ == "__main__":

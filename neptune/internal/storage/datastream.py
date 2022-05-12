@@ -15,6 +15,7 @@
 #
 import dataclasses
 import io
+import math
 import os
 import tarfile
 from typing import Any, BinaryIO, Generator, Union
@@ -53,12 +54,12 @@ class FileChunker:
                 f"File {self._filename} is too big to upload:"
                 f" {self._total_size} bytes exceeds max size {max_size}"
             )
-        if self._total_size < self._max_chunk_count * self._min_chunk_size:
+        if self._total_size <= self._max_chunk_count * self._min_chunk_size:
             # can be done as minimal size chunks -- go for it!
             return self._min_chunk_size
         else:
             # need larger chunks -- split more or less equally
-            return self._total_size // (self._max_chunk_count + 1)
+            return math.ceil(self._total_size / self._max_chunk_count)
 
     def generate(self) -> Generator[FileChunk, Any, None]:
         chunk_size = self._get_chunk_size()
