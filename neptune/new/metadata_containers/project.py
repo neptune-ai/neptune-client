@@ -232,7 +232,7 @@ class Project(MetadataContainer):
                         )
                         for tag in tags
                     ],
-                    aggregator=NQLAggregator.OR,
+                    aggregator=NQLAggregator.AND,
                 )
             )
 
