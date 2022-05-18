@@ -140,7 +140,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._modify_ops = []
         self._config_ops = []
         self._errors = []
-        self.has_file_ops = False
 
     def get_operations(self) -> List[Operation]:
         return self._delete_ops + self._modify_ops + self._config_ops
@@ -179,7 +178,6 @@ class _OperationsAccumulator(OperationVisitor[None]):
             self._check_prerequisites(op)
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
-            self.has_file_ops = self.has_file_ops or self._type.is_file_op()
 
     def _process_config_op(self, expected_type: _DataType, op: Operation) -> None:
 
