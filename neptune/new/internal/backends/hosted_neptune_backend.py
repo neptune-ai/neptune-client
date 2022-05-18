@@ -461,21 +461,15 @@ class HostedNeptuneBackend(NeptuneBackend):
         batching_mgr = ExecuteOperationsBatchingManager(self)
         operations_batch = batching_mgr.get_batch(operations)
         errors.extend(operations_batch.errors)
+        dropped_count = operations_batch.dropped_operations_count
 
         operations_preprocessor = OperationsPreprocessor()
         operations_preprocessor.process(operations_batch.operations)
-        errors.extend(operations_preprocessor.get_errors())
 
-        upload_operations, artifact_operations, other_operations = [], [], []
-        for op in operations_preprocessor.get_operations():
-            if isinstance(op, (UploadFile, UploadFileContent, UploadFileSet)):
-                upload_operations.append(op)
-            elif isinstance(op, TrackFilesToArtifact):
-                artifact_operations.append(op)
-            else:
-                other_operations.append(op)
+        preprocessed_operations = operations_preprocessor.get_operations()
+        errors.extend(preprocessed_operations.errors)
 
-        if artifact_operations:
+        if preprocessed_operations.artifact_operations:
             self.verify_feature_available(OptionalFeatures.ARTIFACTS)
 
         # Upload operations should be done first since they are idempotent
@@ -483,7 +477,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             self._execute_upload_operations_with_400_retry(
                 container_id=container_id,
                 container_type=container_type,
-                upload_operations=upload_operations,
+                upload_operations=preprocessed_operations.upload_operations,
             )
         )
 
@@ -493,21 +487,22 @@ class HostedNeptuneBackend(NeptuneBackend):
         ) = self._execute_artifact_operations(
             container_id=container_id,
             container_type=container_type,
-            artifact_operations=artifact_operations,
+            artifact_operations=preprocessed_operations.artifact_operations,
         )
 
         errors.extend(artifact_operations_errors)
-        other_operations.extend(assign_artifact_operations)
+        preprocessed_operations.other_operations.extend(assign_artifact_operations)
 
         errors.extend(
             self._execute_operations(
-                container_id, container_type, operations=other_operations
+                container_id,
+                container_type,
+                operations=preprocessed_operations.other_operations,
             )
         )
 
         return (
-            len(operations_batch.operations)
-            + operations_batch.dropped_operations_count,
+            operations_preprocessor.processed_ops_count + dropped_count,
             errors,
         )
 

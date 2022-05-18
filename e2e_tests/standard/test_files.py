@@ -128,6 +128,37 @@ class TestUpload(BaseE2ETest):
             # handling restart + 3 for actual upload
             assert hacked_upload_raw_data.upload_part_iteration == 5
 
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_replace_float_attribute_with_uploaded_file(
+        self, container: MetadataContainer
+    ):
+        key = self.gen_key()
+        file_size = 100 * 2**10  # 100 kB
+        filename = fake.file_name()
+        downloaded_filename = fake.file_name()
+
+        with tmp_context():
+            # create file_size file
+            with open(filename, "wb") as file:
+                file.write(b"\0" * file_size)
+
+            # set key to a float and sync it separately
+            container[key] = 42.0
+            container.sync()
+
+            # delete and upload in the same queue flush
+            container[key].pop()
+            container[key].upload(filename)
+
+            container.sync()
+            container[key].download(downloaded_filename)
+
+            assert os.path.getsize(downloaded_filename) == file_size
+            with open(downloaded_filename, "rb") as file:
+                content = file.read()
+                assert len(content) == file_size
+                assert content == b"\0" * file_size
+
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_fileset(self, container: MetadataContainer):
         key = self.gen_key()
