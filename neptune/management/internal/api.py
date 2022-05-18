@@ -17,7 +17,6 @@ import os
 import re
 from typing import Dict, List, Optional
 
-from bravado.client import SwaggerClient
 from bravado.exception import (
     HTTPBadRequest,
     HTTPConflict,
@@ -50,6 +49,7 @@ from neptune.new.internal.backends.hosted_client import (
     create_backend_client,
     create_http_client_with_auth,
 )
+from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import (
     parse_validation_errors,
     ssl_verify,
@@ -64,7 +64,7 @@ def _get_token(api_token: Optional[str] = None) -> str:
     return api_token or os.getenv(API_TOKEN_ENV_NAME)
 
 
-def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClient:
+def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClientWrapper:
     credentials = Credentials.from_token(api_token=_get_token(api_token=api_token))
     http_client, client_config = create_http_client_with_auth(
         credentials=credentials, ssl_verify=ssl_verify(), proxies={}

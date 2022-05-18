@@ -15,7 +15,6 @@
 #
 from typing import Dict, List, Optional, Tuple, Type
 
-from bravado.client import SwaggerClient
 from bravado.exception import HTTPNotFound
 
 from neptune.new.exceptions import (
@@ -30,6 +29,7 @@ from neptune.new.internal.artifacts.types import (
     ArtifactFileData,
 )
 from neptune.new.internal.backends.api_model import ArtifactModel
+from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
 from neptune.new.internal.operation import AssignArtifact, Operation
 
@@ -45,7 +45,7 @@ def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):
 
 
 def track_to_new_artifact(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     project_id: str,
     path: List[str],
     parent_identifier: str,
@@ -80,7 +80,7 @@ def track_to_new_artifact(
 
 
 def track_to_existing_artifact(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     project_id: str,
     path: List[str],
     artifact_hash: str,
@@ -128,7 +128,7 @@ def _extract_file_list(
 
 @with_api_exceptions_handler
 def create_new_artifact(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     project_id: str,
     artifact_hash: str,
     parent_identifier: str,
@@ -155,7 +155,7 @@ def create_new_artifact(
 
 @with_api_exceptions_handler
 def upload_artifact_files_metadata(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     project_id: str,
     artifact_hash: str,
     files: List[ArtifactFileData],
@@ -180,7 +180,7 @@ def upload_artifact_files_metadata(
 
 @with_api_exceptions_handler
 def create_artifact_version(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     project_id: str,
     artifact_hash: str,
     parent_identifier: str,

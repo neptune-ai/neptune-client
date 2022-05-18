@@ -22,6 +22,7 @@ from bravado.requests_client import RequestsClient
 
 from neptune.new.exceptions import UnsupportedClientVersion
 from neptune.new.internal.backends.api_model import ClientConfig
+from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import (
     NeptuneResponseAdapter,
     build_operation_url,
@@ -149,24 +150,36 @@ def create_http_client_with_auth(
 
 
 @cache
-def create_backend_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
-    return create_swagger_client(
-        build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH), http_client
+def create_backend_client(
+    client_config: ClientConfig, http_client: HttpClient
+) -> SwaggerClientWrapper:
+    return SwaggerClientWrapper(
+        create_swagger_client(
+            build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH),
+            http_client,
+        )
     )
 
 
 @cache
 def create_leaderboard_client(
     client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClient:
-    return create_swagger_client(
-        build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
-        http_client,
+) -> SwaggerClientWrapper:
+    return SwaggerClientWrapper(
+        create_swagger_client(
+            build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
+            http_client,
+        )
     )
 
 
 @cache
-def create_artifacts_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
-    return create_swagger_client(
-        build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH), http_client
+def create_artifacts_client(
+    client_config: ClientConfig, http_client: HttpClient
+) -> SwaggerClientWrapper:
+    return SwaggerClientWrapper(
+        create_swagger_client(
+            build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH),
+            http_client,
+        )
     )

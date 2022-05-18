@@ -468,7 +468,3 @@ You may also want to check the following docs pages:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(**STYLES))
-
-
-class ProjectMigratedToNewStructure(NeptuneException):
-    pass

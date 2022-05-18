@@ -24,6 +24,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 from bravado.testing.response_mocks import BravadoResponseMock
+from bravado_core.response import IncomingResponse
 from mock import MagicMock, Mock, patch
 
 from neptune.management import (
@@ -58,6 +59,7 @@ from neptune.new.internal.backends.hosted_client import (
 )
 from neptune.new.internal.backends.utils import verify_host_resolution
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
+from tests.neptune.new.utils import response_mock
 
 API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ"
@@ -151,7 +153,9 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.listOrganizationMembers.side_effect = HTTPNotFound(response=MagicMock())
+        swagger_client.api.listOrganizationMembers.side_effect = HTTPNotFound(
+            response=response_mock()
+        )
 
         # then:
         with self.assertRaises(WorkspaceNotFound):
@@ -198,7 +202,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.listProjectMembers.side_effect = HTTPNotFound(response=MagicMock())
+        swagger_client.api.listProjectMembers.side_effect = HTTPNotFound(response=response_mock())
 
         # then:
         with self.assertRaises(ProjectNotFound):
@@ -208,7 +212,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.deleteProject.side_effect = HTTPNotFound(response=MagicMock())
+        swagger_client.api.deleteProject.side_effect = HTTPNotFound(response=response_mock())
 
         # then:
         with self.assertRaises(ProjectNotFound):
@@ -218,7 +222,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.deleteProject.side_effect = HTTPForbidden(response=MagicMock())
+        swagger_client.api.deleteProject.side_effect = HTTPForbidden(response=response_mock())
 
         # then:
         with self.assertRaises(AccessRevokedOnDeletion):
@@ -237,7 +241,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
             result=organizations,
         )
         swagger_client.api.createProject.side_effect = HTTPBadRequest(
-            response=MagicMock(),
+            response=response_mock(),
             swagger_result=MagicMock(
                 code=None,
                 errorType={"name": "validationError"},
@@ -324,7 +328,9 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.addProjectMember.side_effect = HTTPNotFound(response=MagicMock())
+        swagger_client.api.addProjectMember.side_effect = HTTPNotFound(
+            response=response_mock(),
+        )
 
         # then:
         with self.assertRaises(ProjectNotFound):
@@ -351,7 +357,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.addProjectMember.side_effect = HTTPConflict(response=MagicMock())
+        swagger_client.api.addProjectMember.side_effect = HTTPConflict(response=response_mock())
 
         # then:
         with self.assertRaises(UserAlreadyHasAccess):
@@ -366,7 +372,9 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.deleteProjectMember.side_effect = HTTPNotFound(response=MagicMock())
+        swagger_client.api.deleteProjectMember.side_effect = HTTPNotFound(
+            response=response_mock(),
+        )
 
         # then:
         with self.assertRaises(ProjectNotFound):
@@ -377,7 +385,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # when:
         swagger_client.api.deleteProjectMember.side_effect = HTTPUnprocessableEntity(
-            response=MagicMock()
+            response=response_mock(),
         )
 
         # then:
@@ -388,7 +396,9 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.deleteProjectMember.side_effect = HTTPForbidden(response=MagicMock())
+        swagger_client.api.deleteProjectMember.side_effect = HTTPForbidden(
+            response=response_mock(),
+        )
 
         # then:
         with self.assertRaises(AccessRevokedOnMemberRemoval):

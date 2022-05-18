@@ -68,7 +68,6 @@ from neptune.exceptions import NeptuneUninitializedException
 from neptune.exceptions import NoChannelValue
 from neptune.exceptions import NotADirectory
 from neptune.exceptions import NotAFile
-from neptune.exceptions import ProjectMigratedToNewStructure
 from neptune.exceptions import UnsupportedClientVersion
 from neptune.exceptions import UnsupportedInAlphaException
 from neptune.experiments import ChannelDoesNotExist
@@ -467,7 +466,6 @@ from neptune.utils import NeptuneMissingProjectQualifiedNameException
 from neptune.utils import NoopObject
 from neptune.utils import NotADirectory
 from neptune.utils import NotAFile
-from neptune.utils import ProjectMigratedToNewStructure
 from neptune.utils import NeptuneSSLVerificationError
 from neptune.utils import ServerError
 from neptune.utils import Unauthorized
