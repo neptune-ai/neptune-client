@@ -142,9 +142,7 @@ class TestFile(TestAttributeBase):
         # then
         self.assertEqual(file.extension, "html")
         self.assertTrue(
-            file.content.startswith(
-                '\n\n\n\n<!DOCTYPE html>\n<html lang="en">'.encode("utf-8")
-            )
+            file.content.startswith('<!DOCTYPE html>\n<html lang="en">'.encode("utf-8"))
         )
 
     def test_as_pickle(self):
