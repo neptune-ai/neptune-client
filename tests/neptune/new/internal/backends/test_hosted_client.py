@@ -24,7 +24,6 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 from bravado.testing.response_mocks import BravadoResponseMock
-from bravado_core.response import IncomingResponse
 from mock import MagicMock, Mock, patch
 
 from neptune.management import (

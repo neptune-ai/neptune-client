@@ -31,7 +31,6 @@ from bravado.exception import (
     BravadoConnectionError,
     BravadoTimeoutError,
     HTTPBadGateway,
-    HTTPBadRequest,
     HTTPForbidden,
     HTTPGatewayTimeout,
     HTTPInternalServerError,
