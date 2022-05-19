@@ -38,14 +38,10 @@ class HardwareMetricReportingThread(NeptuneThread):
                 try:
                     self.__metric_service.report_and_send(timestamp=time.time())
                 except (NeptuneException, HTTPError):
-                    _logger.exception(
-                        "Unexpected HTTP error in hardware metric reporting thread."
-                    )
+                    _logger.exception("Unexpected HTTP error in hardware metric reporting thread.")
 
                 reporting_duration = time.time() - before
 
-                time.sleep(
-                    max(0, self.__metric_sending_interval_seconds - reporting_duration)
-                )
+                time.sleep(max(0, self.__metric_sending_interval_seconds - reporting_duration))
         except Exception as e:
             _logger.debug("Unexpected error in hardware metric reporting thread: %s", e)

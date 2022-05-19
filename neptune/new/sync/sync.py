@@ -66,9 +66,7 @@ class SyncRunner(AbstractBackendRunner):
                 container_id=run.id,
                 container_type=run.type,
             )
-        click.echo(
-            f"Synchronization of {run.type.value} {qualified_run_name} completed."
-        )
+        click.echo(f"Synchronization of {run.type.value} {qualified_run_name} completed.")
 
     def sync_execution(
         self,
@@ -133,9 +131,7 @@ class SyncRunner(AbstractBackendRunner):
                 container_id=name,
             )
             if run:
-                run_path = (
-                    base_path / ASYNC_DIRECTORY / f"{create_dir_name(run.type, run.id)}"
-                )
+                run_path = base_path / ASYNC_DIRECTORY / f"{create_dir_name(run.type, run.id)}"
                 run_path_deprecated = base_path / ASYNC_DIRECTORY / f"{run.id}"
                 if run_path.exists():
                     self.sync_run(run_path=run_path, run=run)
@@ -143,9 +139,7 @@ class SyncRunner(AbstractBackendRunner):
                     self.sync_run(run_path=run_path_deprecated, run=run)
                 else:
                     click.echo(
-                        "Warning: Run '{}' does not exist in location {}".format(
-                            name, base_path
-                        ),
+                        "Warning: Run '{}' does not exist in location {}".format(name, base_path),
                         file=sys.stderr,
                     )
 
@@ -197,9 +191,7 @@ class SyncRunner(AbstractBackendRunner):
                         server_id=run.id,
                         server_type=run.type,
                     )
-                    click.echo(
-                        f"Offline run {offline_dir} registered as {get_qualified_name(run)}"
-                    )
+                    click.echo(f"Offline run {offline_dir} registered as {get_qualified_name(run)}")
                     result.append(run)
             else:
                 click.echo(
@@ -218,15 +210,11 @@ class SyncRunner(AbstractBackendRunner):
             project = get_project(project_name, backend=self._backend)
             if not project:
                 raise CannotSynchronizeOfflineRunsWithoutProject
-            registered_runs = self.register_offline_runs(
-                base_path, project, offline_dirs
-            )
+            registered_runs = self.register_offline_runs(base_path, project, offline_dirs)
             offline_runs_names = [get_qualified_name(exp) for exp in registered_runs]
             self.sync_selected_registered_containers(base_path, offline_runs_names)
 
-    def sync_all_offline_containers(
-        self, base_path: Path, project_name: QualifiedName
-    ) -> None:
+    def sync_all_offline_containers(self, base_path: Path, project_name: QualifiedName) -> None:
 
         offline_dirs = get_offline_dirs(base_path)
         self.sync_offline_runs(base_path, project_name, offline_dirs)

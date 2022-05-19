@@ -61,9 +61,7 @@ credentials = Credentials.from_token(API_TOKEN)
 
 
 @patch("neptune.new.internal.backends.hosted_client.RequestsClient", new=MagicMock())
-@patch(
-    "neptune.new.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock()
-)
+@patch("neptune.new.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock())
 @patch("bravado.client.SwaggerClient.from_url")
 @patch("platform.platform", new=lambda: "testPlatform")
 @patch("platform.python_version", new=lambda: "3.9.test")
@@ -280,9 +278,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_new_artifact")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_track_to_new_artifact(
-        self, track_to_new_artifact_mock, swagger_client_factory
-    ):
+    def test_track_to_new_artifact(self, track_to_new_artifact_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
@@ -294,9 +290,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         swagger_client.api.executeOperations.return_value.response.return_value.result = [
             response_error
         ]
-        swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(
-            response=MagicMock()
-        )
+        swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(response=MagicMock())
 
         for container_type in self.container_types:
             with self.subTest(msg=f"For type {container_type.value}"):
@@ -371,9 +365,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     any_order=True,
                 )
 
-    @patch(
-        "neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact"
-    )
+    @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_track_to_existing_artifact(
         self, track_to_existing_artifact_mock, swagger_client_factory
@@ -545,9 +537,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # when:
         error = MagicMock()
         error.json.return_value = {"title": "Maximum storage limit reached"}
-        swagger_client.api.executeOperations.side_effect = HTTPPaymentRequired(
-            response=error
-        )
+        swagger_client.api.executeOperations.side_effect = HTTPPaymentRequired(response=error)
 
         # then:
         for container_type in self.container_types:
@@ -571,9 +561,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         # when:
         error = MagicMock()
         error.json.return_value = {"title": "Monitoring hours not left"}
-        swagger_client.api.executeOperations.side_effect = HTTPUnprocessableEntity(
-            response=error
-        )
+        swagger_client.api.executeOperations.side_effect = HTTPUnprocessableEntity(response=error)
 
         # then:
         for container_type in self.container_types:

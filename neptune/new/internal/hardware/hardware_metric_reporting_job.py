@@ -78,9 +78,7 @@ class HardwareMetricReportingJob(BackgroundJob):
                         [], min=metric.min_value, max=metric.max_value, unit=metric.unit
                     )
 
-        self._thread = self.ReportingThread(
-            self, self._period, container, metric_reporter
-        )
+        self._thread = self.ReportingThread(self, self._period, container, metric_reporter)
         self._thread.start()
         self._started = True
 
@@ -97,9 +95,7 @@ class HardwareMetricReportingJob(BackgroundJob):
     def get_attribute_name(self, resource_type, gauge_name) -> str:
         gauges_count = self._gauges_in_resource.get(resource_type, None)
         if gauges_count is None or gauges_count != 1:
-            return "{}/{}_{}".format(
-                self._attribute_namespace, resource_type, gauge_name
-            ).lower()
+            return "{}/{}_{}".format(self._attribute_namespace, resource_type, gauge_name).lower()
         return "{}/{}".format(self._attribute_namespace, resource_type).lower()
 
     class ReportingThread(Daemon):
@@ -122,12 +118,8 @@ class HardwareMetricReportingJob(BackgroundJob):
                     report.values, lambda value: value.gauge_name
                 ):
                     attr = self._container[
-                        self._outer.get_attribute_name(
-                            report.metric.resource_type, gauge_name
-                        )
+                        self._outer.get_attribute_name(report.metric.resource_type, gauge_name)
                     ]
                     # TODO: Avoid loop
                     for metric_value in metric_values:
-                        attr.log(
-                            value=metric_value.value, timestamp=metric_value.timestamp
-                        )
+                        attr.log(value=metric_value.value, timestamp=metric_value.timestamp)

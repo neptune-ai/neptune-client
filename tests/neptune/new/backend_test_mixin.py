@@ -48,9 +48,7 @@ class BackendTestMixin:
         setattr(client_config, "applicationUrl", "ui.neptune.ai")
 
         swagger_client = MagicMock()
-        swagger_client.api.getClientConfig.return_value.response.return_value.result = (
-            client_config
-        )
+        swagger_client.api.getClientConfig.return_value.response.return_value.result = client_config
         swagger_client_factory.return_value = swagger_client
 
         return swagger_client

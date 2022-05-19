@@ -29,9 +29,7 @@ class TestOperations(unittest.TestCase):
         for obj in self._list_objects():
             if obj.__class__.__name__ in classes:
                 classes.remove(obj.__class__.__name__)
-            deserialized_obj = Operation.from_dict(
-                json.loads(json.dumps(obj.to_dict()))
-            )
+            deserialized_obj = Operation.from_dict(json.loads(json.dumps(obj.to_dict())))
             self.assertEqual(obj.__dict__, deserialized_obj.__dict__)
         self.assertEqual(classes, set())
 
@@ -53,9 +51,7 @@ class TestOperations(unittest.TestCase):
                 "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
             ),
             UploadFile(TestOperations._random_path(), "f.txt", "file/path/f.txt"),
-            UploadFileContent(
-                TestOperations._random_path(), "stream.txt", "some base64"
-            ),
+            UploadFileContent(TestOperations._random_path(), "stream.txt", "some base64"),
             UploadFileSet(
                 TestOperations._random_path(),
                 ["file/path/*.txt", "another/file/path/*.txt"],
@@ -66,9 +62,7 @@ class TestOperations(unittest.TestCase):
                 ["file/path/*.txt", "another/file/path/*.txt"],
                 False,
             ),
-            DeleteFiles(
-                TestOperations._random_path(), {"file/path/*.txt", "dir/path/"}
-            ),
+            DeleteFiles(TestOperations._random_path(), {"file/path/*.txt", "dir/path/"}),
             LogFloats(
                 TestOperations._random_path(),
                 [
@@ -100,9 +94,7 @@ class TestOperations(unittest.TestCase):
             ClearFloatLog(TestOperations._random_path()),
             ClearStringLog(TestOperations._random_path()),
             ClearImageLog(TestOperations._random_path()),
-            ConfigFloatSeries(
-                TestOperations._random_path(), min=11, max=600, unit="kg/h"
-            ),
+            ConfigFloatSeries(TestOperations._random_path(), min=11, max=600, unit="kg/h"),
             AddStrings(TestOperations._random_path(), {"asef", "asrge4"}),
             RemoveStrings(TestOperations._random_path(), {"a\ne", "aeg\t4ger", "agrg"}),
             ClearStringSet(TestOperations._random_path()),

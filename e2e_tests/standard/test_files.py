@@ -37,12 +37,8 @@ class TestUpload(BaseE2ETest):
     def test_using_new_api(self, container: MetadataContainer):
         # pylint: disable=protected-access
         assert isinstance(container._backend, HostedNeptuneBackend)
-        assert container._backend._client_config.has_feature(
-            OptionalFeatures.MULTIPART_UPLOAD
-        )
-        assert isinstance(
-            container._backend._client_config.multipart_config, MultipartConfig
-        )
+        assert container._backend._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD)
+        assert isinstance(container._backend._client_config.multipart_config, MultipartConfig)
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     @pytest.mark.parametrize(
@@ -129,9 +125,7 @@ class TestUpload(BaseE2ETest):
             assert hacked_upload_raw_data.upload_part_iteration == 5
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
-    def test_replace_float_attribute_with_uploaded_file(
-        self, container: MetadataContainer
-    ):
+    def test_replace_float_attribute_with_uploaded_file(self, container: MetadataContainer):
         key = self.gen_key()
         file_size = 100 * 2**10  # 100 kB
         filename = fake.file_name()
@@ -237,9 +231,7 @@ class TestUpload(BaseE2ETest):
             return set(this_level_dirs)
         else:
             subpaths = cls._gen_tree_paths(depth=depth - 1, width=width)
-            new_paths = set(
-                "".join(prod) for prod in product(subpaths, this_level_dirs)
-            )
+            new_paths = set("".join(prod) for prod in product(subpaths, this_level_dirs))
             subpaths.update(new_paths)
             return subpaths
 
@@ -321,9 +313,7 @@ class TestUpload(BaseE2ETest):
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
-    def test_single_file_override(
-        self, container: MetadataContainer, delete_attribute: bool
-    ):
+    def test_single_file_override(self, container: MetadataContainer, delete_attribute: bool):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
@@ -361,9 +351,7 @@ class TestUpload(BaseE2ETest):
 
     @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
-    def test_fileset_file_override(
-        self, container: MetadataContainer, delete_attribute: bool
-    ):
+    def test_fileset_file_override(self, container: MetadataContainer, delete_attribute: bool):
         key = self.gen_key()
         filename = fake.file_name()
         content1 = os.urandom(random.randint(10**3, 10**6))

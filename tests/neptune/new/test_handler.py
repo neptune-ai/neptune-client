@@ -156,9 +156,7 @@ class TestHandler(unittest.TestCase):
             with patch(
                 "neptune.new.internal.backends.neptune_backend_mock.os.path.abspath"
             ) as abspath_mock:
-                abspath_mock.side_effect = lambda path: os.path.normpath(
-                    temp_dir + "/" + path
-                )
+                abspath_mock.side_effect = lambda path: os.path.normpath(temp_dir + "/" + path)
                 exp["some/num/attr_name"].download()
             with open(temp_dir + "/attr_name.bin", "rb") as file:
                 self.assertEqual(file.read(), data)
@@ -177,9 +175,7 @@ class TestHandler(unittest.TestCase):
             exp["some/artifacts"].download(temp_dir)
             exp["some/artifacts"].download(temp_dir)
 
-        zip_write_mock.assert_any_call(
-            os.path.abspath("path/to/file.txt"), "path/to/file.txt"
-        )
+        zip_write_mock.assert_any_call(os.path.abspath("path/to/file.txt"), "path/to/file.txt")
         zip_write_mock.assert_any_call(
             os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt"
         )
@@ -189,18 +185,14 @@ class TestHandler(unittest.TestCase):
         exp["some/num/val"].assign(FloatSeriesVal([1, 2, 0, 10]))
         exp["some/str/val"].assign(StringSeriesVal(["text1", "text2"]), wait=True)
         exp["some/img/val"].assign(
-            FileSeriesVal(
-                [FileVal.as_image(PIL.Image.new("RGB", (10, 15), color="red"))]
-            )
+            FileSeriesVal([FileVal.as_image(PIL.Image.new("RGB", (10, 15), color="red"))])
         )
         self.assertEqual(exp["some"]["num"]["val"].fetch_last(), 10)
         self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "text2")
         self.assertIsInstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
         exp["some/num/val"].assign(FloatSeriesVal([122, 543, 2, 5]))
-        exp["some/str/val"].assign(
-            StringSeriesVal(["other 1", "other 2", "other 3"]), wait=True
-        )
+        exp["some/str/val"].assign(StringSeriesVal(["other 1", "other 2", "other 3"]), wait=True)
         self.assertEqual(exp["some"]["num"]["val"].fetch_last(), 5)
         self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "other 3")
 
@@ -208,9 +200,7 @@ class TestHandler(unittest.TestCase):
         exp = init(mode="debug", flush_period=0.5)
         exp["some/num/val"].log(5)
         exp["some/str/val"].log("some text")
-        exp["some/img/val"].log(
-            FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red"))
-        )
+        exp["some/img/val"].log(FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")))
         exp["some/img/val"].log(PIL.Image.new("RGB", (60, 30), color="red"))
         self.assertEqual(exp["some"]["num"]["val"].fetch_last(), 5)
         self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "some text")
@@ -268,9 +258,7 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(exp["some/str/val"].fetch(), {"tag1", "tag2"})
         self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], StringSet)
 
-        exp["some/str/val"].assign(
-            StringSetVal(["other_1", "other_2", "other_3"]), wait=True
-        )
+        exp["some/str/val"].assign(StringSetVal(["other_1", "other_2", "other_3"]), wait=True)
         self.assertEqual(exp["some/str/val"].fetch(), {"other_1", "other_2", "other_3"})
         self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], StringSet)
 
@@ -285,9 +273,7 @@ class TestHandler(unittest.TestCase):
             )
         )
         self.assertEqual(exp["some/namespace/sub-namespace/val1"].fetch(), 1.0)
-        self.assertEqual(
-            exp["some/namespace/sub-namespace/val2"].fetch(), {"tag1", "tag2"}
-        )
+        self.assertEqual(exp["some/namespace/sub-namespace/val2"].fetch(), {"tag1", "tag2"})
         self.assertIsInstance(
             exp.get_structure()["some"]["namespace"]["sub-namespace"]["val1"], Float
         )
@@ -297,9 +283,7 @@ class TestHandler(unittest.TestCase):
 
         exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": 2.0}))
         self.assertEqual(exp["some/namespace/sub-namespace/val1"].fetch(), 2.0)
-        self.assertEqual(
-            exp["some/namespace/sub-namespace/val2"].fetch(), {"tag1", "tag2"}
-        )
+        self.assertEqual(exp["some/namespace/sub-namespace/val2"].fetch(), {"tag1", "tag2"})
         self.assertIsInstance(
             exp.get_structure()["some"]["namespace"]["sub-namespace"]["val1"], Float
         )
@@ -308,9 +292,7 @@ class TestHandler(unittest.TestCase):
         )
 
         with self.assertRaises(TypeError):
-            exp["some"].assign(
-                NamespaceVal({"namespace/sub-namespace/val1": {"tagA", "tagB"}})
-            )
+            exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": {"tagA", "tagB"}}))
 
     def test_assign_distinct_types(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -319,9 +301,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], Float)
 
         with self.assertRaises(TypeError):
-            exp["some/str/val"].assign(
-                StringSetVal(["other_1", "other_2", "other_3"]), wait=True
-            )
+            exp["some/str/val"].assign(StringSetVal(["other_1", "other_2", "other_3"]), wait=True)
 
     def test_add(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -330,9 +310,7 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(exp["some/str/val"].fetch(), {"some text", "something else"})
 
         exp["some/str/val"].add("one more", wait=True)
-        self.assertEqual(
-            exp["some/str/val"].fetch(), {"some text", "something else", "one more"}
-        )
+        self.assertEqual(exp["some/str/val"].fetch(), {"some text", "something else", "one more"})
 
         self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], StringSet)
 
@@ -428,21 +406,15 @@ class TestHandler(unittest.TestCase):
 
     def test_artifacts(self):
         exp = init(mode="debug", flush_period=0.5)
-        exp["art1"].track_files(
-            "s3://path/to/tracking/file", destination="/some/destination"
-        )
+        exp["art1"].track_files("s3://path/to/tracking/file", destination="/some/destination")
         exp["art2"].track_files("s3://path/to/tracking/file2")
         self.assertEqual(
             exp["art1"].fetch(),
-            Artifact(
-                value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-            ),
+            Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
         )
         self.assertEqual(
             exp["art2"].fetch(),
-            Artifact(
-                value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-            ),
+            Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
         )
 
     def test_fetch_dict(self):
@@ -513,9 +485,7 @@ class TestHandler(unittest.TestCase):
         self.assertEqual('<Integer field at "params/int">', repr(exp["params/int"]))
         self.assertEqual('<Float field at "params/float">', repr(exp["params/float"]))
         self.assertEqual('<Boolean field at "params/bool">', repr(exp["params/bool"]))
-        self.assertEqual(
-            '<Datetime field at "params/datetime">', repr(exp["params/datetime"])
-        )
+        self.assertEqual('<Datetime field at "params/datetime">', repr(exp["params/datetime"]))
         self.assertEqual(
             '<Unassigned field at "params/unassigned">', repr(exp["params/unassigned"])
         )

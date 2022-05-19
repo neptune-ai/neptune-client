@@ -38,9 +38,7 @@ class FileSeries(Series):
         self.description = kwargs.pop("description", None)
         if kwargs:
             click.echo(
-                "Warning: unexpected arguments ({kwargs}) in FileSeries".format(
-                    kwargs=kwargs
-                ),
+                "Warning: unexpected arguments ({kwargs}) in FileSeries".format(kwargs=kwargs),
                 err=True,
             )
 

@@ -65,14 +65,10 @@ class OperationApiNameVisitor(OperationVisitor[str]):
         return "assignDatetime"
 
     def visit_upload_file(self, _: UploadFile) -> str:
-        raise InternalClientError(
-            "Specialized endpoint should be used to upload file attribute"
-        )
+        raise InternalClientError("Specialized endpoint should be used to upload file attribute")
 
     def visit_upload_file_content(self, _: UploadFileContent) -> str:
-        raise InternalClientError(
-            "Specialized endpoint should be used to upload file attribute"
-        )
+        raise InternalClientError("Specialized endpoint should be used to upload file attribute")
 
     def visit_upload_file_set(self, op: UploadFileSet) -> Ret:
         raise InternalClientError(
@@ -119,9 +115,7 @@ class OperationApiNameVisitor(OperationVisitor[str]):
         return "assignArtifact"
 
     def visit_track_files_to_artifact(self, _: TrackFilesToArtifact) -> Ret:
-        raise InternalClientError(
-            "Specialized endpoint should be used to track artifact files"
-        )
+        raise InternalClientError("Specialized endpoint should be used to track artifact files")
 
     def visit_clear_artifact(self, _: ClearArtifact) -> Ret:
         return "clearArtifact"

@@ -59,13 +59,9 @@ class TestFileHasher(unittest.TestCase):
             ),
         ]
 
-        expected_hash = (
-            "56e64245b1d4915ff27b306c8077cd4f9ce1b31233c690a93ebc38a1b737a9ea"
-        )
+        expected_hash = "56e64245b1d4915ff27b306c8077cd4f9ce1b31233c690a93ebc38a1b737a9ea"
         self.assertEqual(expected_hash, FileHasher.get_artifact_hash(artifacts))
-        self.assertEqual(
-            expected_hash, FileHasher.get_artifact_hash(reversed(artifacts))
-        )
+        self.assertEqual(expected_hash, FileHasher.get_artifact_hash(reversed(artifacts)))
 
     @patch("pathlib.Path.home")
     def test_local_file_hash(self, home):

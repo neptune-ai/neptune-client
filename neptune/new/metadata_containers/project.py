@@ -238,9 +238,7 @@ class Project(MetadataContainer):
 
         query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
 
-        return MetadataContainer._fetch_entries(
-            self, child_type=ContainerType.RUN, query=query
-        )
+        return MetadataContainer._fetch_entries(self, child_type=ContainerType.RUN, query=query)
 
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.

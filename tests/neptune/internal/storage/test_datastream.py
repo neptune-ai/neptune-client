@@ -116,9 +116,7 @@ class TestFileChunker:
             (1_073_741_824_000, 1_073_741_824, 1_000),
         ),
     )
-    def test_chunk_size_for_small_file(
-        self, file_size, expected_chunk_size, expected_chunk_count
-    ):
+    def test_chunk_size_for_small_file(self, file_size, expected_chunk_size, expected_chunk_count):
         chunker = FileChunker(
             Mock(), Mock(), total_size=file_size, multipart_config=self.multipart_config
         )

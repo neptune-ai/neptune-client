@@ -119,6 +119,4 @@ def get_project(
     .. _get_project docs page:
        https://docs.neptune.ai/api-reference/neptune#.get_project
     """
-    return init_project(
-        name=name, api_token=api_token, mode=Mode.READ_ONLY.value, proxies=proxies
-    )
+    return init_project(name=name, api_token=api_token, mode=Mode.READ_ONLY.value, proxies=proxies)

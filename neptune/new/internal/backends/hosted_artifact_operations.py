@@ -116,14 +116,10 @@ def _extract_file_list(
 
     for entry_path, entry_destination in entries:
         driver: Type[ArtifactDriver] = ArtifactDriversMap.match_path(entry_path)
-        artifact_files = driver.get_tracked_files(
-            path=entry_path, destination=entry_destination
-        )
+        artifact_files = driver.get_tracked_files(path=entry_path, destination=entry_destination)
 
         if len(artifact_files) == 0:
-            raise NeptuneEmptyLocationException(
-                location=entry_path, namespace="/".join(path)
-            )
+            raise NeptuneEmptyLocationException(location=entry_path, namespace="/".join(path))
 
         files.extend(artifact_files)
 
@@ -172,9 +168,7 @@ def upload_artifact_files_metadata(
         **default_request_params,
     }
     try:
-        result = (
-            swagger_client.api.uploadArtifactFilesMetadata(**params).response().result
-        )
+        result = swagger_client.api.uploadArtifactFilesMetadata(**params).response().result
         return ArtifactModel(
             hash=result.artifactHash,
             size=result.size,

@@ -77,9 +77,7 @@ class Daemon(threading.Thread):
                         result = func(self_, *args, **kwargs)
                         if self_.last_backoff_time > 0:
                             self_.last_backoff_time = 0
-                            click.echo(
-                                "Communication with Neptune restored!", sys.stderr
-                            )
+                            click.echo("Communication with Neptune restored!", sys.stderr)
                         return result
                     except NeptuneConnectionLostException as e:
                         if self_.last_backoff_time == 0:

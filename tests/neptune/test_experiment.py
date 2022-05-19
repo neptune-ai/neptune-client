@@ -37,9 +37,7 @@ from tests.neptune.random_utils import (
 
 
 class TestExperiment(unittest.TestCase):
-    @mock.patch(
-        "neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock()
-    )
+    @mock.patch("neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
     @mock.patch("neptune.experiments.ExecutionContext", new=mock.MagicMock)
     def test_send_metric(self, ChannelsValuesSender):
         # given
@@ -63,16 +61,12 @@ class TestExperiment(unittest.TestCase):
             "loss", ChannelType.NUMERIC.value, channel_value
         )
 
-    @mock.patch(
-        "neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock()
-    )
+    @mock.patch("neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
     @mock.patch("neptune.experiments.ExecutionContext", new=mock.MagicMock)
     def test_send_text(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(
-            mock.MagicMock(), a_project(), an_experiment_id(), a_uuid_string()
-        )
+        experiment = Experiment(mock.MagicMock(), a_project(), an_experiment_id(), a_uuid_string())
         channel_value = ChannelValue(
             x=random.randint(0, 100), y=dict(text_value=a_string()), ts=time.time()
         )
@@ -88,16 +82,12 @@ class TestExperiment(unittest.TestCase):
         )
 
     @mock.patch("neptune.experiments.get_image_content", return_value=b"content")
-    @mock.patch(
-        "neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock()
-    )
+    @mock.patch("neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
     @mock.patch("neptune.experiments.ExecutionContext", new=mock.MagicMock)
     def test_send_image(self, ChannelsValuesSender, content):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(
-            mock.MagicMock(), a_project(), an_experiment_id(), a_uuid_string()
-        )
+        experiment = Experiment(mock.MagicMock(), a_project(), an_experiment_id(), a_uuid_string())
         image_value = dict(
             name=a_string(),
             description=a_string(),
@@ -125,9 +115,7 @@ class TestExperiment(unittest.TestCase):
     def test_append_tags(self):
         # given
         backend = mock.MagicMock()
-        experiment = Experiment(
-            backend, a_project(), an_experiment_id(), a_uuid_string()
-        )
+        experiment = Experiment(backend, a_project(), an_experiment_id(), a_uuid_string())
 
         # and
         def build_call(tags_list):
@@ -156,9 +144,7 @@ class TestExperiment(unittest.TestCase):
     def test_get_numeric_channels_values(self):
         # when
         backend = MagicMock()
-        backend.get_channel_points_csv.return_value = StringIO(
-            "\n".join(["0.3,2.5", "1,2"])
-        )
+        backend.get_channel_points_csv.return_value = StringIO("\n".join(["0.3,2.5", "1,2"]))
 
         experiment = MagicMock()
         experiment.id = a_string()
@@ -177,9 +163,7 @@ class TestExperiment(unittest.TestCase):
         )
         result = experiment.get_numeric_channels_values("epoch_loss")
 
-        expected_result = pd.DataFrame(
-            {"x": [0.3, 1.0], "epoch_loss": [2.5, 2.0]}, dtype=float
-        )
+        expected_result = pd.DataFrame({"x": [0.3, 1.0], "epoch_loss": [2.5, 2.0]}, dtype=float)
 
         expected_result = sort_df_by_columns(expected_result)
         result = sort_df_by_columns(result)

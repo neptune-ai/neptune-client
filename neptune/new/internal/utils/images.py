@@ -128,9 +128,7 @@ def _to_html(chart) -> str:
         return _export_bokeh_figure(chart)
 
     else:
-        raise ValueError(
-            "Currently supported are matplotlib, plotly, altair, and bokeh figures"
-        )
+        raise ValueError("Currently supported are matplotlib, plotly, altair, and bokeh figures")
 
 
 def _matplotlib_to_plotly(chart):
@@ -178,9 +176,7 @@ def _get_numpy_as_image(array):
     if array_max > 1:
         data_range_warnings.append(f"the largest value in the array is {array_max}")
     if data_range_warnings:
-        data_range_warning_message = (
-            " and ".join(data_range_warnings) + ". "
-        ).capitalize()
+        data_range_warning_message = (" and ".join(data_range_warnings) + ". ").capitalize()
         click.echo(
             f"{data_range_warning_message}"
             f"To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
@@ -250,24 +246,15 @@ def is_matplotlib_figure(image):
 
 
 def is_plotly_figure(chart):
-    return (
-        chart.__class__.__module__.startswith("plotly.")
-        and chart.__class__.__name__ == "Figure"
-    )
+    return chart.__class__.__module__.startswith("plotly.") and chart.__class__.__name__ == "Figure"
 
 
 def is_altair_chart(chart):
-    return (
-        chart.__class__.__module__.startswith("altair.")
-        and "Chart" in chart.__class__.__name__
-    )
+    return chart.__class__.__module__.startswith("altair.") and "Chart" in chart.__class__.__name__
 
 
 def is_bokeh_figure(chart):
-    return (
-        chart.__class__.__module__.startswith("bokeh.")
-        and chart.__class__.__name__ == "Figure"
-    )
+    return chart.__class__.__module__.startswith("bokeh.") and chart.__class__.__name__ == "Figure"
 
 
 def is_pandas_dataframe(table):

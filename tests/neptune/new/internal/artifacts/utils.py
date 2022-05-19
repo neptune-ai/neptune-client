@@ -30,11 +30,7 @@ def md5(fname):
     return hash_md5.hexdigest()
 
 
-def append_non_relative_path(
-    base_path: pathlib.Path, path_to_append: str
-) -> pathlib.Path:
+def append_non_relative_path(base_path: pathlib.Path, path_to_append: str) -> pathlib.Path:
     # By default when second path starts with '/', it replaces the path we're appending to
-    relative_path = (
-        path_to_append[1:] if path_to_append.startswith("/") else path_to_append
-    )
+    relative_path = path_to_append[1:] if path_to_append.startswith("/") else path_to_append
     return base_path / relative_path

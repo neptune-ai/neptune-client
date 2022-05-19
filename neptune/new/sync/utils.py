@@ -57,9 +57,7 @@ def get_metadata_container(
 ) -> Optional[ApiExperiment]:
     public_container_type = container_type or "object"
     try:
-        return backend.get_metadata_container(
-            container_id, expected_container_type=container_type
-        )
+        return backend.get_metadata_container(container_id, expected_container_type=container_type)
     except MetadataContainerNotFound:
         click.echo(f"Can't fetch {public_container_type} {container_id}. Skipping.")
     except NeptuneException as e:
@@ -81,9 +79,7 @@ _project_name_missing_message = (
 
 def _project_not_found_message(project_name: QualifiedName) -> str:
     return (
-        "Project {} not found. Could not synchronize offline runs. ".format(
-            project_name
-        )
+        "Project {} not found. Could not synchronize offline runs. ".format(project_name)
         + "Please ensure you specified the correct project name with the --project flag "
         + "or with the {} environment variable, or contact Neptune for support.".format(
             PROJECT_ENV_NAME
@@ -101,9 +97,7 @@ def get_project(
     try:
         return backend.get_project(project_name)
     except ProjectNotFound:
-        click.echo(
-            textwrap.fill(_project_not_found_message(project_name)), file=sys.stderr
-        )
+        click.echo(textwrap.fill(_project_not_found_message(project_name)), file=sys.stderr)
         return None
 
 
@@ -112,9 +106,7 @@ def get_qualified_name(run: ApiExperiment) -> QualifiedName:
 
 
 def is_container_synced(run_path: Path) -> bool:
-    return all(
-        _is_execution_synced(execution_path) for execution_path in run_path.iterdir()
-    )
+    return all(_is_execution_synced(execution_path) for execution_path in run_path.iterdir())
 
 
 def _is_execution_synced(execution_path: Path) -> bool:

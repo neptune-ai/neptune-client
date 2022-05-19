@@ -31,9 +31,7 @@ class TestUploadStorageUtils(unittest.TestCase):
 
     @patch("os.path.isdir", new=lambda _: False)
     @patch("os.path.getsize")
-    def test_split_upload_files_should_generate_upload_files_list_for_only_one_file(
-        self, getsize
-    ):
+    def test_split_upload_files_should_generate_upload_files_list_for_only_one_file(self, getsize):
         # GIVEN
         entry = UploadEntry("/tmp/test.gz", "test.gz")
         size = 10 * self.MAX_PACKAGE_SIZE
@@ -44,9 +42,7 @@ class TestUploadStorageUtils(unittest.TestCase):
         expected = UploadPackage()
         expected.update(entry, size)
         self.assertEqual(
-            list(
-                split_upload_files(upload_entries={entry}, upload_configuration=config)
-            ),
+            list(split_upload_files(upload_entries={entry}, upload_configuration=config)),
             [expected],
         )
 

@@ -83,9 +83,7 @@ def upload_file_attribute(
         target += "." + ext
 
     try:
-        upload_entry = UploadEntry(
-            source if isinstance(source, str) else BytesIO(source), target
-        )
+        upload_entry = UploadEntry(source if isinstance(source, str) else BytesIO(source), target)
         if multipart_config is None:
             # the legacy upload procedure
             url = build_operation_url(
@@ -146,11 +144,7 @@ def upload_file_set_attribute(
                 and os.path.isdir(package.items[0].source_path)
             )
 
-            if (
-                uploading_multiple_entries
-                or creating_a_single_empty_dir
-                or package.is_empty()
-            ):
+            if uploading_multiple_entries or creating_a_single_empty_dir or package.is_empty():
                 data = compress_to_tar_gz_in_memory(upload_entries=package.items)
                 url = build_operation_url(
                     swagger_client.swagger_spec.api_url,
@@ -227,9 +221,7 @@ def get_unique_upload_entries(file_globs: Iterable[str]) -> Set[UploadEntry]:
             )
     else:
         for absolute_path in absolute_paths:
-            upload_entries.append(
-                UploadEntry(absolute_path, normalize_file_name(absolute_path))
-            )
+            upload_entries.append(UploadEntry(absolute_path, normalize_file_name(absolute_path)))
 
     return scan_unique_upload_entries(upload_entries)
 
@@ -346,14 +338,10 @@ def _multichunk_upload(
         else:
             # chunked upload
             result = (
-                urlset.start_chunked(**query_params, totalLength=entry_length)
-                .response()
-                .result
+                urlset.start_chunked(**query_params, totalLength=entry_length).response().result
             )
             if result.errors:
-                raise MetadataInconsistency(
-                    [err.errorDescription for err in result.errors]
-                )
+                raise MetadataInconsistency([err.errorDescription for err in result.errors])
 
             no_ext_query_params = query_params.copy()
             if "ext" in no_ext_query_params:
@@ -381,14 +369,10 @@ def _multichunk_upload(
                 _attribute_upload_response_handler(result)
 
             result = (
-                urlset.finish_chunked(**no_ext_query_params, uploadId=upload_id)
-                .response()
-                .result
+                urlset.finish_chunked(**no_ext_query_params, uploadId=upload_id).response().result
             )
             if result.errors:
-                raise MetadataInconsistency(
-                    [err.errorDescription for err in result.errors]
-                )
+                raise MetadataInconsistency([err.errorDescription for err in result.errors])
         return []
     finally:
         file_stream.close()
@@ -425,9 +409,7 @@ def _upload_loop_chunk(
     }
     if file_chunk_stream.permissions is not None:
         headers["X-File-Permissions"] = file_chunk_stream.permissions
-    return upload_raw_data(
-        data=chunk.data, headers=headers, query_params=query_params, **kwargs
-    )
+    return upload_raw_data(data=chunk.data, headers=headers, query_params=query_params, **kwargs)
 
 
 @with_api_exceptions_handler
@@ -445,16 +427,12 @@ def upload_raw_data(
     request = http_client.authenticator.apply(
         Request(method="POST", url=url, data=data, headers=headers)
     )
-    response = handle_server_raw_response_messages(
-        session.send(session.prepare_request(request))
-    )
+    response = handle_server_raw_response_messages(session.send(session.prepare_request(request)))
     if response.status_code in (
         HTTPUnprocessableEntity.status_code,
         HTTPPaymentRequired.status_code,
     ):
-        raise NeptuneLimitExceedException(
-            reason=response.json().get("title", "Unknown reason")
-        )
+        raise NeptuneLimitExceedException(reason=response.json().get("title", "Unknown reason"))
     response.raise_for_status()
     return response.content
 
@@ -528,9 +506,7 @@ def download_file_set_attribute(
 
 def _get_download_url(swagger_client: SwaggerClient, download_id: str):
     params = {"id": download_id}
-    download_request = (
-        swagger_client.api.getDownloadPrepareRequest(**params).response().result
-    )
+    download_request = swagger_client.api.getDownloadPrepareRequest(**params).response().result
     return download_request.downloadUrl
 
 
@@ -538,9 +514,7 @@ def _store_response_as_file(response: Response, destination: Optional[str] = Non
     if destination is None:
         target_file = _get_content_disposition_filename(response)
     elif os.path.isdir(destination):
-        target_file = os.path.join(
-            destination, _get_content_disposition_filename(response)
-        )
+        target_file = os.path.join(destination, _get_content_disposition_filename(response))
     else:
         target_file = destination
     with response:
@@ -566,9 +540,7 @@ def _download_raw_data(
     url = _generate_url(url=url, path_params=path_params, query_params=query_params)
 
     session = http_client.session
-    request = http_client.authenticator.apply(
-        Request(method="GET", url=url, headers=headers)
-    )
+    request = http_client.authenticator.apply(Request(method="GET", url=url, headers=headers))
 
     response = handle_server_raw_response_messages(
         session.send(session.prepare_request(request), stream=True)

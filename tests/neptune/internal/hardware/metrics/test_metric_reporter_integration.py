@@ -49,9 +49,7 @@ class TestMetricReporterIntegration(unittest.TestCase):
         metric_reporter_factory = MetricReporterFactory(
             reference_timestamp=self.reference_timestamp
         )
-        self.metric_reporter = metric_reporter_factory.create(
-            self.metrics_container.metrics()
-        )
+        self.metric_reporter = metric_reporter_factory.create(self.metrics_container.metrics())
 
     def test_report_metrics(self):
         # given

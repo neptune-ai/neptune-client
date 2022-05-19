@@ -56,13 +56,9 @@ class TestSync(BaseE2ETest):
 
             # manually add operations to queue
             queue_dir = list(
-                Path(f"./.neptune/async/{container_type}__{container_id}/").glob(
-                    "exec-*"
-                )
+                Path(f"./.neptune/async/{container_type}__{container_id}/").glob("exec-*")
             )[0]
-            with open(
-                queue_dir / "last_put_version", encoding="utf-8"
-            ) as last_put_version_f:
+            with open(queue_dir / "last_put_version", encoding="utf-8") as last_put_version_f:
                 last_put_version = int(last_put_version_f.read())
                 with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
                     queue_f.write(

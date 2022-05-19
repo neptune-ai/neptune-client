@@ -48,9 +48,7 @@ def get_git_info(repo_path=None):
         try:
             active_branch = repo.active_branch.name
         except TypeError as e:
-            if str(e.args[0]).startswith(
-                "HEAD is a detached symbolic reference as it points to"
-            ):
+            if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
                 active_branch = "Detached HEAD"
 
         remote_urls = [remote.url for remote in repo.remotes]

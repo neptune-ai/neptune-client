@@ -95,9 +95,7 @@ class ChannelValue(object):
 
 
 class ChannelIdWithValues:
-    def __init__(
-        self, channel_id, channel_name, channel_type, channel_namespace, channel_values
-    ):
+    def __init__(self, channel_id, channel_name, channel_type, channel_namespace, channel_values):
         self._channel_id = channel_id
         self._channel_name = channel_name
         self._channel_type = channel_type
@@ -132,10 +130,7 @@ class ChannelIdWithValues:
         return self._channel_namespace
 
     def __eq__(self, other):
-        return (
-            self.channel_id == other.channel_id
-            and self.channel_values == other.channel_values
-        )
+        return self.channel_id == other.channel_id and self.channel_values == other.channel_values
 
     def __gt__(self, other):
         return hash(self.channel_id) < hash(other.channel_id)

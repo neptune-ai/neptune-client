@@ -27,9 +27,7 @@ class TestAttributeUtils(unittest.TestCase):
         # ... and this reflection is class based on `Attribute`
         self.assertTrue(
             all(
-                isinstance(
-                    create_attribute_from_type(attr_type, MagicMock(), ""), Attribute
-                )
+                isinstance(create_attribute_from_type(attr_type, MagicMock(), ""), Attribute)
                 for attr_type in AttributeType
             )
         )

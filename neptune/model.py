@@ -97,14 +97,11 @@ class LeaderboardEntry(object):
     @property
     def channels(self):
         return [
-            ChannelWithLastValue(ch)
-            for ch in self.project_leaderboard_entry_dto.channelsLastValues
+            ChannelWithLastValue(ch) for ch in self.project_leaderboard_entry_dto.channelsLastValues
         ]
 
     def add_channel(self, channel):
-        self.project_leaderboard_entry_dto.channelsLastValues.append(
-            channel.channel_with_value_dto
-        )
+        self.project_leaderboard_entry_dto.channelsLastValues.append(channel.channel_with_value_dto)
 
     @property
     def channels_dict_by_name(self):
@@ -112,15 +109,11 @@ class LeaderboardEntry(object):
 
     @property
     def parameters(self):
-        return dict(
-            (p.name, p.value) for p in self.project_leaderboard_entry_dto.parameters
-        )
+        return dict((p.name, p.value) for p in self.project_leaderboard_entry_dto.parameters)
 
     @property
     def properties(self):
-        return dict(
-            (p.key, p.value) for p in self.project_leaderboard_entry_dto.properties
-        )
+        return dict((p.key, p.value) for p in self.project_leaderboard_entry_dto.properties)
 
     @property
     def tags(self):

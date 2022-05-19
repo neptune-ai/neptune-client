@@ -314,9 +314,7 @@ def ssl_verify():
 
 def parse_validation_errors(error: HTTPError) -> Dict[str, str]:
     return {
-        f"{error_description.get('errorCode').get('name')}": error_description.get(
-            "context", ""
-        )
+        f"{error_description.get('errorCode').get('name')}": error_description.get("context", "")
         for validation_error in error.swagger_result.validationErrors
         for error_description in validation_error.get("errors")
     }

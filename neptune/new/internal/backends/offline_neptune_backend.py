@@ -39,9 +39,7 @@ from neptune.new.internal.container_type import ContainerType
 
 
 class OfflineNeptuneBackend(NeptuneBackendMock):
-    def get_attributes(
-        self, container_id: str, container_type: ContainerType
-    ) -> List[Attribute]:
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
         raise NeptuneOfflineModeFetchException
 
     def get_float_attribute(
@@ -79,9 +77,7 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     ) -> ArtifactAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def list_artifact_files(
-        self, project_id: str, artifact_hash: str
-    ) -> List[ArtifactFileData]:
+    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         raise NeptuneOfflineModeFetchException
 
     def get_float_series_attribute(

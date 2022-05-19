@@ -78,12 +78,7 @@ def prepare_metadata_container(
         exp_path = path / OFFLINE_DIRECTORY / f"{container.type.value}__{container.id}"
     else:
         execution_id = "exec-0"
-        exp_path = (
-            path
-            / ASYNC_DIRECTORY
-            / f"{container.type.value}__{container.id}"
-            / execution_id
-        )
+        exp_path = path / ASYNC_DIRECTORY / f"{container.type.value}__{container.id}" / execution_id
 
     _prepare_disk_queue(
         exp_path=exp_path,

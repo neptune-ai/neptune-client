@@ -38,9 +38,7 @@ def status_runner_fixture(backend):
 
 
 @pytest.mark.parametrize("container_type", list(ContainerType))
-def test_list_containers(
-    tmp_path, mocker, capsys, backend, status_runner, container_type
-):
+def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
     # given
     unsynced_container = prepare_metadata_container(
         container_type=container_type, path=tmp_path, last_ack_version=1
@@ -63,8 +61,7 @@ def test_list_containers(
     captured = capsys.readouterr()
     assert captured.err == ""
     assert (
-        "Synchronized objects:\n- {}".format(get_qualified_name(synced_container))
-        in captured.out
+        "Synchronized objects:\n- {}".format(get_qualified_name(synced_container)) in captured.out
     )
     assert (
         "Unsynchronized objects:\n- {}".format(get_qualified_name(unsynced_container))
@@ -90,8 +87,7 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     captured = capsys.readouterr()
     assert captured.err == ""
     assert (
-        "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id)
-        in captured.out
+        "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id) in captured.out
     )
 
 

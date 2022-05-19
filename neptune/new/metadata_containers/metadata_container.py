@@ -126,9 +126,9 @@ class MetadataContainer(AbstractContextManager):
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
-        self._structure: ContainerStructure[
-            Attribute, NamespaceAttr
-        ] = ContainerStructure(NamespaceBuilder(self))
+        self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(
+            NamespaceBuilder(self)
+        )
         self._lock = lock
         self._state = ContainerState.CREATED
         self._sys_id = sys_id
@@ -141,9 +141,7 @@ class MetadataContainer(AbstractContextManager):
     def __getattr__(self, item):
         if item in self.LEGACY_METHODS:
             raise NeptunePossibleLegacyUsageException()
-        raise AttributeError(
-            f"'{self.__class__.__name__}' object has no attribute '{item}'"
-        )
+        raise AttributeError(f"'{self.__class__.__name__}' object has no attribute '{item}'")
 
     @property
     @abc.abstractmethod
@@ -165,13 +163,9 @@ class MetadataContainer(AbstractContextManager):
     def _metadata_url(self) -> str:
         raise NotImplementedError
 
-    def _get_subpath_suggestions(
-        self, path_prefix: str = None, limit: int = 1000
-    ) -> List[str]:
+    def _get_subpath_suggestions(self, path_prefix: str = None, limit: int = 1000) -> List[str]:
         parsed_path = parse_path(path_prefix or "")
-        return list(
-            itertools.islice(self._structure.iterate_subpaths(parsed_path), limit)
-        )
+        return list(itertools.islice(self._structure.iterate_subpaths(parsed_path), limit))
 
     def _ipython_key_completions_(self):
         return self._get_subpath_suggestions()

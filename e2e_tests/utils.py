@@ -128,9 +128,7 @@ def initialize_container(container_type, project, **extra_args):
         model_sys_id = model["sys/id"].fetch()
         model.stop()
 
-        return neptune.init_model_version(
-            model=model_sys_id, project=project, **extra_args
-        )
+        return neptune.init_model_version(model=model_sys_id, project=project, **extra_args)
 
     raise NotImplementedError(container_type)
 

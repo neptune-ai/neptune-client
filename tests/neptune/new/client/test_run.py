@@ -152,14 +152,10 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     def test_entrypoint_without_common_root(self):
         exp = init_run(mode="debug", source_files=["../*"])
-        self.assertEqual(
-            exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py"
-        )
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
         exp = init_run(mode="debug", source_files=["internal/*"])
-        self.assertEqual(
-            exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py"
-        )
+        self.assertEqual(exp["source_code/entrypoint"].fetch(), "/home/user/main_dir/main.py")
 
     def test_last_exp_is_raising_exception_when_non_initialized(self):
         # given uninitialized run

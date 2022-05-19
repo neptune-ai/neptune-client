@@ -63,25 +63,17 @@ class AbstractTablesTestMixin:
     def build_attributes_leaderboard(now: datetime):
         attributes = []
         attributes.append(
-            AttributeWithProperties(
-                "run/state", AttributeType.RUN_STATE, Mock(value="idle")
-            )
+            AttributeWithProperties("run/state", AttributeType.RUN_STATE, Mock(value="idle"))
         )
+        attributes.append(AttributeWithProperties("float", AttributeType.FLOAT, Mock(value=12.5)))
         attributes.append(
-            AttributeWithProperties("float", AttributeType.FLOAT, Mock(value=12.5))
-        )
-        attributes.append(
-            AttributeWithProperties(
-                "string", AttributeType.STRING, Mock(value="some text")
-            )
+            AttributeWithProperties("string", AttributeType.STRING, Mock(value="some text"))
         )
         attributes.append(
             AttributeWithProperties("datetime", AttributeType.DATETIME, Mock(value=now))
         )
         attributes.append(
-            AttributeWithProperties(
-                "float/series", AttributeType.FLOAT_SERIES, Mock(last=8.7)
-            )
+            AttributeWithProperties("float/series", AttributeType.FLOAT_SERIES, Mock(last=8.7))
         )
         attributes.append(
             AttributeWithProperties(
@@ -89,9 +81,7 @@ class AbstractTablesTestMixin:
             )
         )
         attributes.append(
-            AttributeWithProperties(
-                "string/set", AttributeType.STRING_SET, Mock(values=["a", "b"])
-            )
+            AttributeWithProperties("string/set", AttributeType.STRING_SET, Mock(values=["a", "b"]))
         )
         attributes.append(
             AttributeWithProperties(
@@ -101,12 +91,8 @@ class AbstractTablesTestMixin:
             )
         )
         attributes.append(AttributeWithProperties("file", AttributeType.FILE, None))
-        attributes.append(
-            AttributeWithProperties("file/set", AttributeType.FILE_SET, None)
-        )
-        attributes.append(
-            AttributeWithProperties("image/series", AttributeType.IMAGE_SERIES, None)
-        )
+        attributes.append(AttributeWithProperties("file/set", AttributeType.FILE_SET, None))
+        attributes.append(AttributeWithProperties("image/series", AttributeType.IMAGE_SERIES, None))
         return attributes
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")

@@ -67,12 +67,9 @@ def handle_quota_limits(f):
                     experiment_short_id=experiment.id,
                     project_qualified_name=experiment._project.full_id,
                 )
-            if (
-                e.response.status_code == UNPROCESSABLE_ENTITY
-                and extract_response_field(e.response, "title").startswith(
-                    "Storage limit reached in organization: "
-                )
-            ):
+            if e.response.status_code == UNPROCESSABLE_ENTITY and extract_response_field(
+                e.response, "title"
+            ).startswith("Storage limit reached in organization: "):
                 raise StorageLimitReached()
             raise
 

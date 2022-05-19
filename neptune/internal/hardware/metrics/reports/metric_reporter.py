@@ -35,8 +35,7 @@ class MetricReporter(object):
                 values=[
                     x
                     for x in [
-                        self.__metric_value_for_gauge(gauge, timestamp)
-                        for gauge in metric.gauges
+                        self.__metric_value_for_gauge(gauge, timestamp) for gauge in metric.gauges
                     ]
                     if x
                 ],

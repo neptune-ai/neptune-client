@@ -66,9 +66,7 @@ def environment():
 
 @pytest.fixture(scope="session")
 def container(request, environment):
-    exp = initialize_container(
-        container_type=request.param, project=environment.project
-    )
+    exp = initialize_container(container_type=request.param, project=environment.project)
     yield exp
     exp.stop()
 
@@ -76,12 +74,8 @@ def container(request, environment):
 @pytest.fixture(scope="session")
 def containers_pair(request, environment):
     container_a_type, container_b_type = request.param.split("-")
-    container_a = initialize_container(
-        container_type=container_a_type, project=environment.project
-    )
-    container_b = initialize_container(
-        container_type=container_b_type, project=environment.project
-    )
+    container_a = initialize_container(container_type=container_a_type, project=environment.project)
+    container_b = initialize_container(container_type=container_b_type, project=environment.project)
 
     yield container_a, container_b
 

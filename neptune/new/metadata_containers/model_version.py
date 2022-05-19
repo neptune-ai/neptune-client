@@ -68,9 +68,7 @@ class ModelVersion(MetadataContainer):
             attr = self.get_attribute(SYSTEM_STAGE_ATTRIBUTE_PATH)
             # We are sure that such attribute exists, because
             # SYSTEM_STAGE_ATTRIBUTE_PATH is set by default on ModelVersion creation
-            assert (
-                attr is not None
-            ), f"No {SYSTEM_STAGE_ATTRIBUTE_PATH} found in model version"
+            assert attr is not None, f"No {SYSTEM_STAGE_ATTRIBUTE_PATH} found in model version"
             attr.process_assignment(
                 value=mapped_stage.value,
                 wait=True,

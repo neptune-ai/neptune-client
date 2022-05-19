@@ -188,9 +188,7 @@ Workspace {python}{workspace}{end} not found.
 
 Workspace is your username or a name of your team organization.
 """
-        super(WorkspaceNotFound, self).__init__(
-            message.format(workspace=namespace_name, **STYLES)
-        )
+        super(WorkspaceNotFound, self).__init__(message.format(workspace=namespace_name, **STYLES))
 
 
 class ProjectNotFound(NeptuneApiException):
@@ -203,9 +201,7 @@ Project {python}{project}{end} not found.
 
 Verify if your project's name was not misspelled. You can find proper name after logging into Neptune UI.
 """
-        super(ProjectNotFound, self).__init__(
-            message.format(project=project_identifier, **STYLES)
-        )
+        super(ProjectNotFound, self).__init__(message.format(project=project_identifier, **STYLES))
 
 
 class PathInProjectNotFound(NeptuneApiException):
@@ -227,9 +223,7 @@ class NotebookNotFound(NeptuneApiException):
                 "Notebook '{}' not found in project '{}'.".format(notebook_id, project)
             )
         else:
-            super(NotebookNotFound, self).__init__(
-                "Notebook '{}' not found.".format(notebook_id)
-            )
+            super(NotebookNotFound, self).__init__("Notebook '{}' not found.".format(notebook_id))
 
 
 class ExperimentNotFound(NeptuneApiException):
@@ -243,9 +237,7 @@ class ExperimentNotFound(NeptuneApiException):
 
 class ChannelNotFound(NeptuneApiException):
     def __init__(self, channel_id):
-        super(ChannelNotFound, self).__init__(
-            "Channel '{id}' not found.".format(id=channel_id)
-        )
+        super(ChannelNotFound, self).__init__("Channel '{id}' not found.".format(id=channel_id))
 
 
 class ExperimentAlreadyFinished(NeptuneApiException):

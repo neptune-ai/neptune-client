@@ -40,9 +40,9 @@ class FileHasher:
         local_storage = LocalFileHashStorage()
 
         absolute = Path(file_path).resolve()
-        modification_date = datetime.datetime.fromtimestamp(
-            absolute.stat().st_mtime
-        ).strftime("%Y%m%d_%H%M%S%f")
+        modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime(
+            "%Y%m%d_%H%M%S%f"
+        )
 
         stored_file_hash = local_storage.fetch_one(absolute)
 
@@ -65,9 +65,7 @@ class FileHasher:
         return int_value.to_bytes(bytes_cnt, cls.SERVER_BYTE_ORDER)
 
     @classmethod
-    def get_artifact_hash(
-        cls, artifact_files: typing.Iterable[ArtifactFileData]
-    ) -> str:
+    def get_artifact_hash(cls, artifact_files: typing.Iterable[ArtifactFileData]) -> str:
         artifact_hash = hashlib.sha256()
 
         for artifact_file in sorted(artifact_files, key=lambda file: file.file_path):
@@ -89,16 +87,12 @@ class FileHasher:
             )
             artifact_hash.update(artifact_file.type.encode(cls.ENCODING))
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
-            for metadata_key_value in ArtifactMetadataSerializer.serialize(
-                artifact_file.metadata
-            ):
+            for metadata_key_value in ArtifactMetadataSerializer.serialize(artifact_file.metadata):
                 metadata_name, metadata_value = metadata_key_value.get(
                     "key"
                 ), metadata_key_value.get("value")
                 artifact_hash.update(cls.META_ELEMENT_DIVISOR)
-                artifact_hash.update(
-                    cls._number_to_bytes(len(metadata_name), cls.SERVER_INT_BYTES)
-                )
+                artifact_hash.update(cls._number_to_bytes(len(metadata_name), cls.SERVER_INT_BYTES))
                 artifact_hash.update(metadata_name.encode(cls.ENCODING))
                 artifact_hash.update(cls.META_ELEMENT_DIVISOR)
                 artifact_hash.update(

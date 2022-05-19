@@ -125,9 +125,7 @@ class ClientConfig:
             min_chunk_size = getattr(multipart_upload_config_obj, "minChunkSize")
             max_chunk_size = getattr(multipart_upload_config_obj, "maxChunkSize")
             max_chunk_count = getattr(multipart_upload_config_obj, "maxChunkCount")
-            max_single_part_size = getattr(
-                multipart_upload_config_obj, "maxSinglePartSize"
-            )
+            max_single_part_size = getattr(multipart_upload_config_obj, "maxSinglePartSize")
             multipart_upload_config = MultipartConfig(
                 min_chunk_size, max_chunk_size, max_chunk_count, max_single_part_size
             )
@@ -141,9 +139,7 @@ class ClientConfig:
             api_url=config.apiUrl,
             display_url=config.applicationUrl,
             _missing_features=frozenset(missing_features),
-            version_info=VersionInfo.build(
-                min_recommended, min_compatible, max_compatible
-            ),
+            version_info=VersionInfo.build(min_recommended, min_compatible, max_compatible),
             multipart_config=multipart_upload_config,
         )
 

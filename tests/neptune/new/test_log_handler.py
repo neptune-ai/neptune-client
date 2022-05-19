@@ -106,9 +106,7 @@ class TestLogHandler(unittest.TestCase):
         self._log_messages(logger)
 
         log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(
-            log_entries, ["error message", "debug message", "test message"]
-        )
+        self.assertListEqual(log_entries, ["error message", "debug message", "test message"])
 
         self._log_messages(logger)
 
@@ -129,6 +127,4 @@ class TestLogHandler(unittest.TestCase):
         self._log_messages(logger)
 
         log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(
-            log_entries, ["error message", "test message", "error message"]
-        )
+        self.assertListEqual(log_entries, ["error message", "test message", "error message"])

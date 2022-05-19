@@ -23,9 +23,7 @@ from e2e_tests.base import BaseE2ETest, fake
 from e2e_tests.utils import reinitialize_container
 
 
-def store_in_container(
-    sys_id: str, project: str, container_type: str, destination: str
-):
+def store_in_container(sys_id: str, project: str, container_type: str, destination: str):
     container = reinitialize_container(
         sys_id=sys_id, container_type=container_type, project=project
     )
@@ -34,9 +32,7 @@ def store_in_container(
 
 
 class TestMultiple(BaseE2ETest):
-    @pytest.mark.parametrize(
-        "container", ["run", "model", "model_version"], indirect=True
-    )
+    @pytest.mark.parametrize("container", ["run", "model", "model_version"], indirect=True)
     def test_single_thread(
         self, container: neptune.metadata_containers.MetadataContainer, environment
     ):
@@ -72,9 +68,7 @@ class TestMultiple(BaseE2ETest):
             r.stop()
 
     @pytest.mark.skip(reason="no way of currently testing this")
-    @pytest.mark.parametrize(
-        "container", ["run", "model", "model_version"], indirect=True
-    )
+    @pytest.mark.parametrize("container", ["run", "model", "model_version"], indirect=True)
     def test_multiple_processes(self, container: neptune.Run, environment):
         number_of_reinitialized = 10
         namespace = self.gen_key()
@@ -99,9 +93,7 @@ class TestMultiple(BaseE2ETest):
 
         assert len(container[namespace].fetch()) == number_of_reinitialized + 1
 
-    @pytest.mark.parametrize(
-        "container", ["run", "model", "model_version"], indirect=True
-    )
+    @pytest.mark.parametrize("container", ["run", "model", "model_version"], indirect=True)
     def test_multiple_threads(self, container: neptune.Run, environment):
         number_of_reinitialized = 10
         namespace = self.gen_key()

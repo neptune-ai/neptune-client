@@ -52,9 +52,7 @@ def get_neptune_path(ctx, param, path: str) -> Path:
         return path
     else:
         raise click.BadParameter(
-            "Path {} does not contain a '{}' folder.".format(
-                path, NEPTUNE_DATA_DIRECTORY
-            )
+            "Path {} does not contain a '{}' folder.".format(path, NEPTUNE_DATA_DIRECTORY)
         )
 
 
@@ -183,9 +181,7 @@ def sync(
 
     if offline_only:
         if object_names:
-            raise click.BadParameter(
-                "--object and --offline-only are mutually exclusive"
-            )
+            raise click.BadParameter("--object and --offline-only are mutually exclusive")
 
         sync_runner.sync_all_offline_containers(path, project_name)
 

@@ -64,9 +64,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         self._thread.shutdown_ws_client()
 
     class _ListenerThread(Daemon):
-        def __init__(
-            self, container: "MetadataContainer", ws_client: ReconnectingWebsocket
-        ):
+        def __init__(self, container: "MetadataContainer", ws_client: ReconnectingWebsocket):
             super().__init__(sleep_time=0, name="NeptuneWebhooks")
             self._container = container
             self._ws_client = ws_client
@@ -100,9 +98,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                 elif msg_type.lower() == SIGNAL_TYPE_ABORT:
                     self._handle_abort(msg_body)
             except JSONDecodeError as ex:
-                click.echo(
-                    f"Malformed websocket signal: {ex}, message: {msg}", err=True
-                )
+                click.echo(f"Malformed websocket signal: {ex}, message: {msg}", err=True)
 
         def _handle_stop(self, msg_body):
             msg_body = msg_body or dict()
