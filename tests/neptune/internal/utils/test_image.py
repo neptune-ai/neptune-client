@@ -51,9 +51,7 @@ class TestImage(unittest.TestCase):
         expected_image.save(filename)
 
         # expect
-        self.assertEqual(
-            get_image_content(filename), _get_pil_image_data(expected_image)
-        )
+        self.assertEqual(get_image_content(filename), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_pil_image(self):
         # given
@@ -62,9 +60,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(expected_image), _get_pil_image_data(expected_image)
-        )
+        self.assertEqual(get_image_content(expected_image), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_2d_grayscale_array(self):
         # given
@@ -73,9 +69,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_array), _get_pil_image_data(expected_image)
-        )
+        self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_3d_grayscale_array(self):
         # given
@@ -84,9 +78,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_array), _get_pil_image_data(expected_image)
-        )
+        self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_rgb_array(self):
         # given
@@ -95,9 +87,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_array), _get_pil_image_data(expected_image)
-        )
+        self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_rgba_array(self):
         # given
@@ -106,9 +96,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_array), _get_pil_image_data(expected_image)
-        )
+        self.assertEqual(get_image_content(image_array), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_figure(self):
         # given
@@ -137,9 +125,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_tensor), _get_pil_image_data(expected_image)
-        )
+        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_tensorflow_tensor(self):
         import tensorflow as tf  # pylint: disable=C0415
@@ -150,6 +136,4 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_tensor), _get_pil_image_data(expected_image)
-        )
+        self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))

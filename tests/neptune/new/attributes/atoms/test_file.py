@@ -41,9 +41,7 @@ class TestFile(TestAttributeBase):
             ),
             (
                 FileVal.from_stream(StringIO(a_text)),
-                lambda _: UploadFileContent(
-                    _, "txt", base64_encode(a_text.encode("utf-8"))
-                ),
+                lambda _: UploadFileContent(_, "txt", base64_encode(a_text.encode("utf-8"))),
             ),
             (
                 FileVal.from_stream(BytesIO(a_binary)),
@@ -60,9 +58,7 @@ class TestFile(TestAttributeBase):
             )
             var = File(exp, path)
             var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(
-                operation_factory(path), wait
-            )
+            processor.enqueue_operation.assert_called_once_with(operation_factory(path), wait)
 
     def test_assign_type_error(self):
         values = [55, None, []]

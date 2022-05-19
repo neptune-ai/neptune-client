@@ -105,9 +105,7 @@ class TestSeries(TestAttributeBase):
             )
             var = FloatSeries(exp, path)
             var.log(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(
-                LogFloats(path, expected), wait
-            )
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, expected), wait)
 
     def test_log_with_step(self):
         value_step_and_expected = [
@@ -127,9 +125,7 @@ class TestSeries(TestAttributeBase):
             )
             var = FloatSeries(exp, path)
             var.log(value, step=step, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(
-                LogFloats(path, [expected]), wait
-            )
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
 
     def test_log_with_timestamp(self):
         value_step_and_expected = [
@@ -146,9 +142,7 @@ class TestSeries(TestAttributeBase):
             )
             var = FloatSeries(exp, path)
             var.log(value, timestamp=ts, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(
-                LogFloats(path, [expected]), wait
-            )
+            processor.enqueue_operation.assert_called_once_with(LogFloats(path, [expected]), wait)
 
     def test_log_value_errors(self):
         processor = MagicMock()

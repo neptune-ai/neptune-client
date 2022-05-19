@@ -64,9 +64,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
         if kwargs:
             click.echo(
-                "Warning: unexpected arguments ({kwargs}) in StringSeries".format(
-                    kwargs=kwargs
-                ),
+                "Warning: unexpected arguments ({kwargs}) in StringSeries".format(kwargs=kwargs),
                 err=True,
             )
         return StringSeriesVal(values)

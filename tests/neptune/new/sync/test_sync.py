@@ -168,8 +168,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
     # expected output for mentioned async exp
     assert "Synchronising {}".format(get_qualified_name(sync_exp)) in captured.out
     assert (
-        "Synchronization of run {} completed.".format(get_qualified_name(sync_exp))
-        in captured.out
+        "Synchronization of run {} completed.".format(get_qualified_name(sync_exp)) in captured.out
     )
 
     # expected output for offline container
@@ -235,23 +234,14 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
         )
     ) in captured.out
 
+    assert "Synchronising {}".format(get_qualified_name(deprecated_unsynced_run)) in captured.out
     assert (
-        "Synchronising {}".format(get_qualified_name(deprecated_unsynced_run))
+        "Synchronization of run {} completed.".format(get_qualified_name(deprecated_unsynced_run))
         in captured.out
     )
+    assert "Synchronising {}".format(get_qualified_name(offline_old_run)) in captured.out
     assert (
-        "Synchronization of run {} completed.".format(
-            get_qualified_name(deprecated_unsynced_run)
-        )
-        in captured.out
-    )
-    assert (
-        "Synchronising {}".format(get_qualified_name(offline_old_run)) in captured.out
-    )
-    assert (
-        "Synchronization of run {} completed.".format(
-            get_qualified_name(offline_old_run)
-        )
+        "Synchronization of run {} completed.".format(get_qualified_name(offline_old_run))
         in captured.out
     )
 

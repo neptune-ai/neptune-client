@@ -87,9 +87,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self.flush()
         waiting_for_version = self._last_version
         self._consumer.wake_up()
-        self._waiting_cond.wait_for(
-            lambda: self._consumed_version >= waiting_for_version
-        )
+        self._waiting_cond.wait_for(lambda: self._consumed_version >= waiting_for_version)
 
     def flush(self):
         self._queue.flush()
@@ -101,9 +99,7 @@ class AsyncOperationProcessor(OperationProcessor):
         waiting_start = monotonic()
         time_elapsed = 0
         max_reconnect_wait_time = (
-            self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS
-            if seconds is None
-            else seconds
+            self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
         )
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:
@@ -137,21 +133,14 @@ class AsyncOperationProcessor(OperationProcessor):
             size_remaining = self._queue.size()
             already_synced = initial_queue_size - size_remaining
             already_synced_proc = (
-                (already_synced / initial_queue_size) * 100
-                if initial_queue_size
-                else 100
+                (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             )
             if size_remaining == 0:
-                click.echo(
-                    f"All {initial_queue_size} operations synced, thanks for waiting!"
-                )
+                click.echo(f"All {initial_queue_size} operations synced, thanks for waiting!")
                 return
 
             time_elapsed = monotonic() - waiting_start
-            if (
-                self._consumer.last_backoff_time > 0
-                and time_elapsed >= max_reconnect_wait_time
-            ):
+            if self._consumer.last_backoff_time > 0 and time_elapsed >= max_reconnect_wait_time:
                 click.echo(
                     f"Failed to reconnect with Neptune in {max_reconnect_wait_time} seconds."
                     f" You have {size_remaining} operations saved on disk that can be manually synced"
@@ -181,9 +170,7 @@ class AsyncOperationProcessor(OperationProcessor):
         if self._consumer.is_running():
             self._consumer.disable_sleep()
             self._consumer.wake_up()
-            self._wait_for_queue_empty(
-                initial_queue_size=self._queue.size(), seconds=seconds
-            )
+            self._wait_for_queue_empty(initial_queue_size=self._queue.size(), seconds=seconds)
             self._consumer.interrupt()
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)

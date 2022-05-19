@@ -121,8 +121,7 @@ class OldClientFeatures(ClientFeatures):
         assert properties["prop_list"] == "[1, 2, 3]"
         assert "prop_to_del" not in properties
         assert (
-            properties["prop_IO"]
-            == "<_io.TextIOWrapper name='alpha_integration_dev/data/text.txt'"
+            properties["prop_IO"] == "<_io.TextIOWrapper name='alpha_integration_dev/data/text.txt'"
             " mode='r' encoding='UTF-8'>"
         )
         print(f"Properties: {properties}")

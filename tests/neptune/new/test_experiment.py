@@ -63,9 +63,7 @@ class TestExperiment(unittest.TestCase):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):
                 exp.define("some/path/value", Float(5), wait=True)
-                self.assertEqual(
-                    exp.get_structure()["some"]["path"]["value"].fetch(), 5
-                )
+                self.assertEqual(exp.get_structure()["some"]["path"]["value"].fetch(), 5)
 
     def test_define_string(self):
         for exp in self.get_experiments(flush_period=0.5):
@@ -81,9 +79,7 @@ class TestExperiment(unittest.TestCase):
                 exp.define("some/path/num", Float(3))
                 exp.define("some/path/text", String("Some text"), wait=True)
                 self.assertEqual(exp.get_structure()["some"]["path"]["num"].fetch(), 3)
-                self.assertEqual(
-                    exp.get_structure()["some"]["path"]["text"].fetch(), "Some text"
-                )
+                self.assertEqual(exp.get_structure()["some"]["path"]["text"].fetch(), "Some text")
 
     def test_define_conflict(self):
         for exp in self.get_experiments(flush_period=0.5):

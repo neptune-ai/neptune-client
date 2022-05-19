@@ -79,9 +79,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.add("ccc", wait=wait)
-        processor.enqueue_operation.assert_called_once_with(
-            AddStrings(path, {"ccc"}), wait
-        )
+        processor.enqueue_operation.assert_called_once_with(AddStrings(path, {"ccc"}), wait)
 
     def test_remove(self):
         processor = MagicMock()
@@ -105,9 +103,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.remove("bb", wait=wait)
-        processor.enqueue_operation.assert_called_once_with(
-            RemoveStrings(path, {"bb"}), wait
-        )
+        processor.enqueue_operation.assert_called_once_with(RemoveStrings(path, {"bb"}), wait)
 
     def test_clear(self):
         processor = MagicMock()

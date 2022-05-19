@@ -180,9 +180,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
                 LogStrings(["a"], [FLog("111", 3, 4)]),
                 DeleteAttribute(["b"]),
                 LogStrings(["b"], [SLog("222", None, 6)]),
-                LogFloats(
-                    ["c"], [FLog(1, 2, 3), FLog(10, 20, 30), FLog(100, 200, 300)]
-                ),
+                LogFloats(["c"], [FLog(1, 2, 3), FLog(10, 20, 30), FLog(100, 200, 300)]),
                 LogStrings(["d"], [SLog("4", 111, 222)]),
                 ClearFloatLog(["e"]),
                 ClearImageLog(["f"]),

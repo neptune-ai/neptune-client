@@ -164,9 +164,7 @@ def create_project(
 
     try:
         workspaces = (
-            backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS)
-            .response()
-            .result
+            backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS).response().result
         )
         workspace_name_to_id = {f"{f.name}": f.id for f in workspaces}
     except HTTPNotFound:
@@ -201,9 +199,7 @@ def create_project(
 
 
 @with_api_exceptions_handler
-def delete_project(
-    name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
-):
+def delete_project(name: str, workspace: Optional[str] = None, api_token: Optional[str] = None):
     """Deletes a project from your Neptune workspace.
     Args:
         name(str): The name of the project in Neptune in the format 'WORKSPACE/PROJECT'.
@@ -301,13 +297,9 @@ def add_project_member(
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
     except HTTPConflict as e:
-        members = get_project_member_list(
-            name=name, workspace=workspace, api_token=api_token
-        )
+        members = get_project_member_list(name=name, workspace=workspace, api_token=api_token)
         user_role = members.get(username)
-        raise UserAlreadyHasAccess(
-            user=username, project=project_identifier, role=user_role
-        ) from e
+        raise UserAlreadyHasAccess(user=username, project=project_identifier, role=user_role) from e
 
 
 @with_api_exceptions_handler
@@ -402,19 +394,13 @@ def remove_project_member(
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
     except HTTPUnprocessableEntity as e:
-        raise UserNotExistsOrWithoutAccess(
-            user=username, project=project_identifier
-        ) from e
+        raise UserNotExistsOrWithoutAccess(user=username, project=project_identifier) from e
     except HTTPForbidden as e:
-        raise AccessRevokedOnMemberRemoval(
-            user=username, project=project_identifier
-        ) from e
+        raise AccessRevokedOnMemberRemoval(user=username, project=project_identifier) from e
 
 
 @with_api_exceptions_handler
-def get_workspace_member_list(
-    name: str, api_token: Optional[str] = None
-) -> Dict[str, str]:
+def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Get a list of members of a workspace.
     Args:
         name(str, optional): Name of your Neptune workspace.
@@ -442,9 +428,7 @@ def get_workspace_member_list(
     try:
         result = backend_client.api.listOrganizationMembers(**params).response().result
         return {
-            f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(
-                m.role
-            )
+            f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role)
             for m in result
         }
     except HTTPNotFound as e:

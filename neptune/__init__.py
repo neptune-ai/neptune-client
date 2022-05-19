@@ -77,14 +77,10 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
             raise NeptuneIncorrectImportException()
     if kwargs:
         first_key = next(iter(kwargs.keys()))
-        raise TypeError(
-            f"{caller_name}() got an unexpected keyword argument '{first_key}'"
-        )
+        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
-def init(
-    project_qualified_name=None, api_token=None, proxies=None, backend=None, **kwargs
-):
+def init(project_qualified_name=None, api_token=None, proxies=None, backend=None, **kwargs):
     """Initialize `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with
     specific project.
 
@@ -375,9 +371,7 @@ def log_image(log_name, x, y=None, image_name=None, description=None, timestamp=
 
     Alias for :meth:`~neptune.experiments.Experiment.log_image`
     """
-    return get_experiment().send_image(
-        log_name, x, y, image_name, description, timestamp
-    )
+    return get_experiment().send_image(log_name, x, y, image_name, description, timestamp)
 
 
 def send_artifact(artifact, destination=None):

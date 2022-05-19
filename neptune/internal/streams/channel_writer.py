@@ -29,16 +29,12 @@ from neptune.internal.channels.channels import (
 class ChannelWriter(object):
     __SPLIT_PATTERN = re.compile(r"[\n\r]{1,2}")
 
-    def __init__(
-        self, experiment, channel_name, channel_namespace=ChannelNamespace.USER
-    ):
+    def __init__(self, experiment, channel_name, channel_namespace=ChannelNamespace.USER):
         self._experiment = experiment
         self._channel_name = channel_name
         self._channel_namespace = channel_namespace
         self._data = None
-        self._x_offset = TimeOffsetGenerator(
-            self._experiment.get_system_properties()["created"]
-        )
+        self._x_offset = TimeOffsetGenerator(self._experiment.get_system_properties()["created"])
 
     def write(self, data):
         if self._data is None:
@@ -47,9 +43,7 @@ class ChannelWriter(object):
             self._data += data
         lines = self.__SPLIT_PATTERN.split(self._data)
         for line in lines[:-1]:
-            value = ChannelValue(
-                x=self._x_offset.next(), y=dict(text_value=str(line)), ts=None
-            )
+            value = ChannelValue(x=self._x_offset.next(), y=dict(text_value=str(line)), ts=None)
             # pylint: disable=protected-access
             self._experiment._channels_values_sender.send(
                 channel_name=self._channel_name,
@@ -82,9 +76,7 @@ class TimeOffsetGenerator(object):
             and self._previous_millis_from_start >= millis_from_start
         ):
             microsecond = 0.001
-            self._previous_millis_from_start = (
-                self._previous_millis_from_start + microsecond
-            )
+            self._previous_millis_from_start = self._previous_millis_from_start + microsecond
         else:
             self._previous_millis_from_start = millis_from_start
 

@@ -199,9 +199,7 @@ class Handler:
             attr.upload(value, wait)
 
     @check_protected_paths
-    def upload_files(
-        self, value: Union[str, Iterable[str]], wait: bool = False
-    ) -> None:
+    def upload_files(self, value: Union[str, Iterable[str]], wait: bool = False) -> None:
         if is_collection(value):
             verify_collection_type("value", value, str)
         else:
@@ -257,9 +255,7 @@ class Handler:
                     if value:
                         first_value = next(iter(value))
                     else:
-                        raise ValueError(
-                            "Cannot deduce value type: `value` cannot be empty"
-                        )
+                        raise ValueError("Cannot deduce value type: `value` cannot be empty")
                 else:
                     first_value = value
 
@@ -274,9 +270,7 @@ class Handler:
                 elif is_string_like(first_value):
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
-                    raise TypeError(
-                        "Value of unsupported type {}".format(type(first_value))
-                    )
+                    raise TypeError("Value of unsupported type {}".format(type(first_value)))
 
                 self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
@@ -417,9 +411,7 @@ class Handler:
         )
 
     @check_protected_paths
-    def delete_files(
-        self, paths: Union[str, Iterable[str]], wait: bool = False
-    ) -> None:
+    def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:
         """Delete the file or files specified by paths from the `FileSet` stored on the Neptune servers.
 
         Args:
@@ -436,9 +428,7 @@ class Handler:
         .. _delete_files docs page:
             https://docs.neptune.ai/api-reference/field-types#.delete_files
         """
-        return self._pass_call_to_attr(
-            function_name="delete_files", paths=paths, wait=wait
-        )
+        return self._pass_call_to_attr(function_name="delete_files", paths=paths, wait=wait)
 
     @check_protected_paths
     def download(self, destination: str = None) -> None:
@@ -461,9 +451,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        return self._pass_call_to_attr(
-            function_name="download", destination=destination
-        )
+        return self._pass_call_to_attr(function_name="download", destination=destination)
 
     def download_last(self, destination: str = None) -> None:
         """Downloads the stored file or files to the working directory or specified destination.
@@ -481,9 +469,7 @@ class Handler:
         .. _download_last docs page:
            https://docs.neptune.ai/api-reference/field-types#.download_last
         """
-        return self._pass_call_to_attr(
-            function_name="download_last", destination=destination
-        )
+        return self._pass_call_to_attr(function_name="download_last", destination=destination)
 
     def fetch_hash(self) -> str:
         """Fetches the hash of an artifact.
@@ -505,9 +491,7 @@ class Handler:
         return getattr(self._get_attribute(), function_name)(**kwargs)
 
     @check_protected_paths
-    def track_files(
-        self, path: str, destination: str = None, wait: bool = False
-    ) -> None:
+    def track_files(self, path: str, destination: str = None, wait: bool = False) -> None:
         """Creates an artifact tracking some files.
 
         You may also want to check `track_files docs page`_.

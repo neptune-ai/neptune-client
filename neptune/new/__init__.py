@@ -74,9 +74,7 @@ create_experiment = (
     send_image
 ) = (
     log_image
-) = (
-    send_artifact
-) = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
+) = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
 
 
 def get_last_run() -> Optional[Run]:

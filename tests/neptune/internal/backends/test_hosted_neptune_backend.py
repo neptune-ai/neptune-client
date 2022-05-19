@@ -87,13 +87,9 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     # pylint: disable=unused-argument
     @mock.patch("bravado.client.SwaggerClient.from_url")
-    @mock.patch(
-        "neptune.internal.api_clients.credentials.os.getenv", return_value=API_TOKEN
-    )
+    @mock.patch("neptune.internal.api_clients.credentials.os.getenv", return_value=API_TOKEN)
     @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_should_take_default_credentials_from_env(
-        self, env, swagger_client_factory
-    ):
+    def test_should_take_default_credentials_from_env(self, env, swagger_client_factory):
         # given
         self._get_swagger_client_mock(swagger_client_factory)
 
@@ -173,9 +169,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
         setattr(client_config, "applicationUrl", None)
 
         swagger_client = MagicMock()
-        swagger_client.api.getClientConfig.return_value.response.return_value.result = (
-            client_config
-        )
+        swagger_client.api.getClientConfig.return_value.response.return_value.result = client_config
         swagger_client_factory.return_value = swagger_client
 
         return swagger_client

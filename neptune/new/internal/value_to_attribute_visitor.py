@@ -97,7 +97,5 @@ class ValueToAttributeVisitor(ValueVisitor[Attribute]):
         return NamespaceAttr(self._container, self._path)
 
     # pylint: disable=unused-argument
-    def copy_value(
-        self, source_type: Type[Attribute], source_path: List[str]
-    ) -> Attribute:
+    def copy_value(self, source_type: Type[Attribute], source_path: List[str]) -> Attribute:
         return source_type(self._container, self._path)

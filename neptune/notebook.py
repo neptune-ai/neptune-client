@@ -71,9 +71,7 @@ class Notebook(object):
         validate_notebook_path(file_path)
 
         with open(file_path) as f:
-            return self._backend.create_checkpoint(
-                self.id, os.path.abspath(file_path), f
-            )
+            return self._backend.create_checkpoint(self.id, os.path.abspath(file_path), f)
 
     def get_path(self):
         """Returns the path used to upload the current checkpoint of this notebook

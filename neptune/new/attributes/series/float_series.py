@@ -53,9 +53,7 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
     ) -> List[Operation]:
-        values = [
-            LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values
-        ]
+        values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
         return [LogFloats(self._path, chunk) for chunk in split_to_chunks(values, 100)]
 
     def _get_clear_operation(self) -> Operation:
@@ -67,9 +65,7 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
         if kwargs:
             click.echo(
-                "Warning: unexpected arguments ({kwargs}) in FloatSeries".format(
-                    kwargs=kwargs
-                ),
+                "Warning: unexpected arguments ({kwargs}) in FloatSeries".format(kwargs=kwargs),
                 err=True,
             )
         return FloatSeriesVal(values)

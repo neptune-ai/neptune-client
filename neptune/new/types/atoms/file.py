@@ -76,9 +76,7 @@ class File(Atom):
             return "File(content=...)"
 
     @staticmethod
-    def from_content(
-        content: Union[str, bytes], extension: Optional[str] = None
-    ) -> "File":
+    def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> "File":
         """Factory method for creating File value objects directly from binary and text content.
 
         In the case of text content, UTF-8 encoding will be used.
@@ -221,9 +219,7 @@ class File(Atom):
            https://docs.neptune.ai/api-reference/field-types#.as_html
         """
         content = get_html_content(chart)
-        return File.from_content(
-            content if content is not None else "", extension="html"
-        )
+        return File.from_content(content if content is not None else "", extension="html")
 
     @staticmethod
     def as_pickle(obj) -> "File":
@@ -254,9 +250,7 @@ class File(Atom):
            https://docs.neptune.ai/api-reference/field-types#.as_pickle
         """
         content = get_pickle_content(obj)
-        return File.from_content(
-            content if content is not None else b"", extension="pkl"
-        )
+        return File.from_content(content if content is not None else b"", extension="pkl")
 
     @staticmethod
     def create_from(value) -> "File":
@@ -264,21 +258,15 @@ class File(Atom):
             return File(path=value)
         elif is_pil_image(value) or is_matplotlib_figure(value):
             return File.as_image(value)
-        elif (
-            is_plotly_figure(value) or is_altair_chart(value) or is_bokeh_figure(value)
-        ):
+        elif is_plotly_figure(value) or is_altair_chart(value) or is_bokeh_figure(value):
             return File.as_html(value)
         elif is_numpy_array(value):
             raise TypeError(
-                "Value of type {} is not supported. Please use File.as_image().".format(
-                    type(value)
-                )
+                "Value of type {} is not supported. Please use File.as_image().".format(type(value))
             )
         elif is_pandas_dataframe(value):
             raise TypeError(
-                "Value of type {} is not supported. Please use File.as_html().".format(
-                    type(value)
-                )
+                "Value of type {} is not supported. Please use File.as_html().".format(type(value))
             )
         elif isinstance(value, File):
             return value

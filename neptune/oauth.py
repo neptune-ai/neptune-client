@@ -78,13 +78,8 @@ class NeptuneAuth(AuthBase):
                 self._refresh_session_token()
 
     def _refresh_session_token(self):
-        self.session.refresh_token(
-            self.session.auto_refresh_url, verify=self.session.verify
-        )
-        if (
-            self.session.token is not None
-            and self.session.token.get("access_token") is not None
-        ):
+        self.session.refresh_token(self.session.auto_refresh_url, verify=self.session.verify)
+        if self.session.token is not None and self.session.token.get("access_token") is not None:
             decoded_json_token = jwt.decode(
                 self.session.token.get("access_token"), options=_decoding_options
             )
@@ -106,9 +101,7 @@ class NeptuneAuthenticator(Authenticator):
             except HTTPUnauthorized:
                 raise NeptuneInvalidApiTokenException()
 
-            decoded_json_token = jwt.decode(
-                auth_tokens.accessToken, options=_decoding_options
-            )
+            decoded_json_token = jwt.decode(auth_tokens.accessToken, options=_decoding_options)
             expires_at = decoded_json_token.get("exp")
             client_name = decoded_json_token.get("azp")
             refresh_url = "{realm_url}/protocol/openid-connect/token".format(

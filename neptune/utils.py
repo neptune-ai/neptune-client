@@ -233,9 +233,7 @@ def get_git_info(repo_path=None):
         try:
             active_branch = repo.active_branch.name
         except TypeError as e:
-            if str(e.args[0]).startswith(
-                "HEAD is a detached symbolic reference as it points to"
-            ):
+            if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
                 active_branch = "Detached HEAD"
 
         remote_urls = [remote.url for remote in repo.remotes]
@@ -388,9 +386,7 @@ def with_api_exceptions_handler(func):
 
 def glob(pathname):
     # pylint: disable=unexpected-keyword-arg
-    if sys.version_info.major < 3 or (
-        sys.version_info.major == 3 and sys.version_info.minor < 5
-    ):
+    if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
         return globlib.glob(pathname)
     else:
         return globlib.glob(pathname, recursive=True)

@@ -45,29 +45,21 @@ class S3ArtifactDriver(ArtifactDriver):
         return urlparse(path).scheme == "s3"
 
     @classmethod
-    def _serialize_metadata(
-        cls, metadata: typing.Dict[str, typing.Any]
-    ) -> typing.Dict[str, str]:
+    def _serialize_metadata(cls, metadata: typing.Dict[str, typing.Any]) -> typing.Dict[str, str]:
         return {
             "location": metadata["location"],
             "last_modified": metadata["last_modified"].strftime(cls.DATETIME_FORMAT),
         }
 
     @classmethod
-    def _deserialize_metadata(
-        cls, metadata: typing.Dict[str, str]
-    ) -> typing.Dict[str, typing.Any]:
+    def _deserialize_metadata(cls, metadata: typing.Dict[str, str]) -> typing.Dict[str, typing.Any]:
         return {
             "location": metadata["location"],
-            "last_modified": datetime.strptime(
-                metadata["last_modified"], cls.DATETIME_FORMAT
-            ),
+            "last_modified": datetime.strptime(metadata["last_modified"], cls.DATETIME_FORMAT),
         }
 
     @classmethod
-    def get_tracked_files(
-        cls, path: str, destination: str = None
-    ) -> typing.List[ArtifactFileData]:
+    def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         url = urlparse(path)
         bucket_name, prefix = url.netloc, url.path.lstrip("/")
 
@@ -118,9 +110,7 @@ class S3ArtifactDriver(ArtifactDriver):
         return stored_files
 
     @classmethod
-    def download_file(
-        cls, destination: pathlib.Path, file_definition: ArtifactFileData
-    ):
+    def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
         location = file_definition.metadata.get("location")
         url = urlparse(location)
         bucket_name, path = url.netloc, url.path.lstrip("/")

@@ -149,9 +149,7 @@ class LeaderboardApiClient(ApiClient, ABC):
         pass
 
     @abstractmethod
-    def create_system_channel(
-        self, experiment, name, channel_type
-    ) -> ChannelWithLastValue:
+    def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         pass
 
     @abstractmethod

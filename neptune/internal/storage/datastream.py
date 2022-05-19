@@ -118,9 +118,7 @@ def compress_to_tar_gz_in_memory(upload_entries) -> bytes:
 
     with tarfile.TarFile.open(fileobj=f, mode="w|gz", dereference=True) as archive:
         for entry in upload_entries:
-            archive.add(
-                name=entry.source_path, arcname=entry.target_path, recursive=True
-            )
+            archive.add(name=entry.source_path, arcname=entry.target_path, recursive=True)
 
     f.seek(0)
     data = f.read()

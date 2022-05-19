@@ -70,8 +70,7 @@ class OldClientNonglobalFeatures(ClientFeatures):
         assert properties["nested/prop"] == "42"
         assert "prop_to_del" not in properties
         assert (
-            properties["prop_IO"]
-            == "<_io.TextIOWrapper name='alpha_integration_dev/data/text.txt'"
+            properties["prop_IO"] == "<_io.TextIOWrapper name='alpha_integration_dev/data/text.txt'"
             " mode='r' encoding='UTF-8'>"
         )
         print(f"Properties: {properties}")
@@ -97,9 +96,7 @@ class OldClientNonglobalFeatures(ClientFeatures):
 
         # images
         # `image_name` and `description` will be lost
-        self.experiment.log_image(
-            "g_img", self.img_path, image_name="name", description="desc"
-        )
+        self.experiment.log_image("g_img", self.img_path, image_name="name", description="desc")
         self.experiment.log_image("g_img", self.img_path)
 
         # see what we've logged
@@ -109,16 +106,12 @@ class OldClientNonglobalFeatures(ClientFeatures):
     def handle_files_and_images(self):
         # image
         # `image_name` and `description` will be lost (`send_image` the same as `log_image`)
-        self.experiment.send_image(
-            "image", self.img_path, name="name", description="desc"
-        )
+        self.experiment.send_image("image", self.img_path, name="name", description="desc")
 
         # artifact
         # (`log_artifact` the same as `log_artifact`)
         self.experiment.send_artifact(self.text_file_path)
-        self.experiment.log_artifact(
-            self.text_file_path, destination="dir/text file artifact"
-        )
+        self.experiment.log_artifact(self.text_file_path, destination="dir/text file artifact")
         with open(self.text_file_path, mode="r") as f:
             self.experiment.send_artifact(f, destination="file stream.txt")
         self.experiment.log_artifact(self.img_path, destination="dir to delete/art1")

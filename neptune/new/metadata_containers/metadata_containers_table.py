@@ -66,10 +66,7 @@ class TableEntry:
                     AttributeType.DATETIME,
                 ):
                     return attr.properties.value
-                if (
-                    _type == AttributeType.FLOAT_SERIES
-                    or _type == AttributeType.STRING_SERIES
-                ):
+                if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
                     return attr.properties.last
                 if _type == AttributeType.IMAGE_SERIES:
                     raise MetadataInconsistency("Cannot get value for image series.")
@@ -126,9 +123,7 @@ class TableEntry:
                     )
                     return
                 raise MetadataInconsistency(
-                    "Cannot download ZIP archive from attribute of type {}".format(
-                        _type
-                    )
+                    "Cannot download ZIP archive from attribute of type {}".format(_type)
                 )
         raise ValueError("Could not find {} attribute".format(path))
 
@@ -139,9 +134,7 @@ class LeaderboardHandler:
         self._path = path
 
     def __getitem__(self, path: str) -> "LeaderboardHandler":
-        return LeaderboardHandler(
-            table_entry=self._table_entry, path=join_paths(self._path, path)
-        )
+        return LeaderboardHandler(table_entry=self._table_entry, path=join_paths(self._path, path))
 
     def get(self):
         return self._table_entry.get_attribute_value(path=self._path)
@@ -200,10 +193,7 @@ class Table:
                 AttributeType.DATETIME,
             ):
                 return _properties.value
-            if (
-                _type == AttributeType.FLOAT_SERIES
-                or _type == AttributeType.STRING_SERIES
-            ):
+            if _type == AttributeType.FLOAT_SERIES or _type == AttributeType.STRING_SERIES:
                 return _properties.last
             if _type == AttributeType.IMAGE_SERIES:
                 return None

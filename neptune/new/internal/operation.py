@@ -55,9 +55,7 @@ class Operation:
             raise ValueError("Malformed operation {} - type is missing".format(data))
         sub_classes = {cls.__name__: cls for cls in all_subclasses(Operation)}
         if not data["type"] in sub_classes:
-            raise ValueError(
-                "Malformed operation {} - unknown type {}".format(data, data["type"])
-            )
+            raise ValueError("Malformed operation {} - unknown type {}".format(data, data["type"]))
         return sub_classes[data["type"]].from_dict(data)
 
 
@@ -148,9 +146,7 @@ class AssignDatetime(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> "AssignDatetime":
-        return AssignDatetime(
-            data["path"], datetime.fromtimestamp(data["value"] / 1000)
-        )
+        return AssignDatetime(data["path"], datetime.fromtimestamp(data["value"] / 1000))
 
 
 @dataclass
@@ -228,9 +224,7 @@ class UploadFileSet(Operation):
 
     @staticmethod
     def from_dict(data: dict) -> "UploadFileSet":
-        return UploadFileSet(
-            data["path"], data["file_globs"], data["reset"] != str(False)
-        )
+        return UploadFileSet(data["path"], data["file_globs"], data["reset"] != str(False))
 
 
 @dataclass
@@ -313,9 +307,7 @@ class ImageValue:
         if isinstance(obj, str):
             return ImageValue(data=obj, name=None, description=None)
         if isinstance(obj, dict):
-            return ImageValue(
-                data=obj["data"], name=obj["name"], description=obj["description"]
-            )
+            return ImageValue(data=obj["data"], name=obj["name"], description=obj["description"])
         else:
             raise InternalClientError(
                 "Run data on disk is malformed or was saved by newer version of Neptune Library"
@@ -548,7 +540,5 @@ class CopyAttribute(Operation):
         # repack CopyAttribute op into target attribute assignment
         getter = self.source_attr_cls.getter
         create_assignment_operation = self.source_attr_cls.create_assignment_operation
-        value = getter(
-            backend, self.container_id, self.container_type, self.source_path
-        )
+        value = getter(backend, self.container_id, self.container_type, self.source_path)
         return create_assignment_operation(self.path, value)

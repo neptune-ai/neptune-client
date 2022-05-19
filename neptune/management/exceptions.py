@@ -30,9 +30,7 @@ class ManagementOperationFailure(Exception):
 
     def __init_subclass__(cls):
         previous = REGISTERED_CODES.get(cls.code)
-        assert (
-            previous is None
-        ), f"{cls} cannot have code {cls.code} already used by {previous}"
+        assert previous is None, f"{cls} cannot have code {cls.code} already used by {previous}"
         REGISTERED_CODES[cls.code] = cls
 
     @property
@@ -50,16 +48,12 @@ class InvalidProjectName(ManagementOperationFailure):
 
 class MissingWorkspaceName(ManagementOperationFailure):
     code = 2
-    description = (
-        'Cannot resolve project "{name}", you have to provide a workspace name.'
-    )
+    description = 'Cannot resolve project "{name}", you have to provide a workspace name.'
 
 
 class ConflictingWorkspaceName(ManagementOperationFailure):
     code = 3
-    description = (
-        'Project name "{name}" conflicts with provided workspace "{workspace}".'
-    )
+    description = 'Project name "{name}" conflicts with provided workspace "{workspace}".'
 
 
 class ProjectNotFound(ManagementOperationFailure):
@@ -84,9 +78,7 @@ class AccessRevokedOnDeletion(ManagementOperationFailure):
 
 class AccessRevokedOnMemberRemoval(ManagementOperationFailure):
     code = 8
-    description = (
-        'Not enough permissions to remove user "{user}" from project "{project}".'
-    )
+    description = 'Not enough permissions to remove user "{user}" from project "{project}".'
 
 
 class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
@@ -99,7 +91,9 @@ class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
 
 class UserAlreadyHasAccess(ManagementOperationFailure):
     code = 10
-    description = 'User "{user}" already has access to the project "{project}". Role already set to "{role}".'
+    description = (
+        'User "{user}" already has access to the project "{project}". Role already set to "{role}".'
+    )
 
 
 class ProjectsLimitReached(ManagementOperationFailure):
@@ -114,6 +108,4 @@ class UnsupportedValue(ManagementOperationFailure):
 
 class BadRequestException(ManagementOperationFailure):
     code = 400
-    description = (
-        "Your request has encountered following validation errors: {validation_errors}"
-    )
+    description = "Your request has encountered following validation errors: {validation_errors}"

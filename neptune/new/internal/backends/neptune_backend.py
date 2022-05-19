@@ -62,9 +62,7 @@ class NeptuneBackend:
         """
 
     # pylint: disable=unused-argument
-    def websockets_factory(
-        self, project_id: str, run_id: str
-    ) -> Optional[WebsocketsFactory]:
+    def websockets_factory(self, project_id: str, run_id: str) -> Optional[WebsocketsFactory]:
         return None
 
     @abc.abstractmethod
@@ -133,9 +131,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_attributes(
-        self, container_id: str, container_type: ContainerType
-    ) -> List[Attribute]:
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
         pass
 
     @abc.abstractmethod
@@ -201,9 +197,7 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def list_artifact_files(
-        self, project_id: str, artifact_hash: str
-    ) -> List[ArtifactFileData]:
+    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         pass
 
     @abc.abstractmethod
@@ -269,21 +263,15 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
-    def get_run_url(
-        self, run_id: str, workspace: str, project_name: str, sys_id: str
-    ) -> str:
+    def get_run_url(self, run_id: str, workspace: str, project_name: str, sys_id: str) -> str:
         pass
 
     @abc.abstractmethod
-    def get_project_url(
-        self, project_id: str, workspace: str, project_name: str
-    ) -> str:
+    def get_project_url(self, project_id: str, workspace: str, project_name: str) -> str:
         pass
 
     @abc.abstractmethod
-    def get_model_url(
-        self, model_id: str, workspace: str, project_name: str, sys_id: str
-    ) -> str:
+    def get_model_url(self, model_id: str, workspace: str, project_name: str, sys_id: str) -> str:
         pass
 
     @abc.abstractmethod

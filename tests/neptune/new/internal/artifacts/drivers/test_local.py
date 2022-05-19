@@ -39,9 +39,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
     def setUp(self):
         self.test_sources_dir = Path(str(tempfile.mktemp()))
         self.test_dir = Path(str(tempfile.mktemp()))
-        test_source_data = (
-            Path(__file__).parents[5] / "data" / "local_artifact_drivers_data"
-        )
+        test_source_data = Path(__file__).parents[5] / "data" / "local_artifact_drivers_data"
         test_data = self.test_dir / "data"
 
         # copy source data to temp dir (to prevent e.g. inter-fs symlinks)
@@ -57,9 +55,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
             src=str(self.test_sources_dir / "file_to_link.txt"),
             dst=str(test_data / "hardlinked_file.txt"),
         )
-        (test_data / "symlinked_file.txt").symlink_to(
-            self.test_sources_dir / "file_to_link.txt"
-        )
+        (test_data / "symlinked_file.txt").symlink_to(self.test_sources_dir / "file_to_link.txt")
 
         # symlink dir - content of this file won't be discovered
         (test_data / "symlinked_dir").symlink_to(
@@ -72,12 +68,8 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         shutil.rmtree(self.test_sources_dir, ignore_errors=True)
 
     def test_match_by_path(self):
-        self.assertEqual(
-            ArtifactDriversMap.match_path("file:///path/to/"), LocalArtifactDriver
-        )
-        self.assertEqual(
-            ArtifactDriversMap.match_path("/path/to/"), LocalArtifactDriver
-        )
+        self.assertEqual(ArtifactDriversMap.match_path("file:///path/to/"), LocalArtifactDriver)
+        self.assertEqual(ArtifactDriversMap.match_path("/path/to/"), LocalArtifactDriver)
 
     def test_match_by_type(self):
         self.assertEqual(ArtifactDriversMap.match_type("Local"), LocalArtifactDriver)
@@ -116,9 +108,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
             )
 
     def test_single_retrieval(self):
-        files = LocalArtifactDriver.get_tracked_files(
-            str(self.test_dir / "data/file1.txt")
-        )
+        files = LocalArtifactDriver.get_tracked_files(str(self.test_dir / "data/file1.txt"))
 
         self.assertEqual(1, len(files))
         self.assertIsInstance(files[0], ArtifactFileData)
@@ -195,9 +185,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
             files[1].metadata["file_path"],
         )
 
-        self.assertEqual(
-            "my/custom_path/sub_dir/file_in_subdir.txt", files[2].file_path
-        )
+        self.assertEqual("my/custom_path/sub_dir/file_in_subdir.txt", files[2].file_path)
         self.assertEqual("98181b1a4c880a462fcfa96b92c84b8e945ac335", files[2].file_hash)
         self.assertEqual(24, files[2].size)
         self.assertEqual(

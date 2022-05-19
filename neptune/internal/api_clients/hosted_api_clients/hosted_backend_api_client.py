@@ -75,12 +75,10 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
         )
 
-        user_agent = (
-            "neptune-client/{lib_version} ({system}, python {python_version})".format(
-                lib_version=self.client_lib_version,
-                system=platform.platform(),
-                python_version=platform.python_version(),
-            )
+        user_agent = "neptune-client/{lib_version} ({system}, python {python_version})".format(
+            lib_version=self.client_lib_version,
+            system=platform.platform(),
+            python_version=platform.python_version(),
         )
         self.http_client.session.headers.update({"User-Agent": user_agent})
         self._http_client_for_token.session.headers.update({"User-Agent": user_agent})
@@ -88,14 +86,10 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
         update_session_proxies(self.http_client.session, proxies)
         update_session_proxies(self._http_client_for_token.session, proxies)
 
-        config_api_url = (
-            self.credentials.api_url_opt or self.credentials.token_origin_address
-        )
+        config_api_url = self.credentials.api_url_opt or self.credentials.token_origin_address
         # We don't need to be able to resolve Neptune host if we use proxy
         if proxies is None:
-            self._verify_host_resolution(
-                config_api_url, self.credentials.token_origin_address
-            )
+            self._verify_host_resolution(config_api_url, self.credentials.token_origin_address)
 
         # this backend client is used only for initial configuration and session re-creation
         self.backend_client = self._get_swagger_client(
@@ -182,9 +176,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
 
     def get_new_leaderboard_client(self) -> HostedAlphaLeaderboardApiClient:
         if self._new_leaderboard_client is None:
-            self._new_leaderboard_client = HostedAlphaLeaderboardApiClient(
-                backend_api_client=self
-            )
+            self._new_leaderboard_client = HostedAlphaLeaderboardApiClient(backend_api_client=self)
         return self._new_leaderboard_client
 
     @with_api_exceptions_handler

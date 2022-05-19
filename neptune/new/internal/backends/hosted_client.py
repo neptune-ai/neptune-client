@@ -62,12 +62,10 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
 
     update_session_proxies(http_client.session, proxies)
 
-    user_agent = (
-        "neptune-client/{lib_version} ({system}, python {python_version})".format(
-            lib_version=neptune_client_version,
-            system=platform.platform(),
-            python_version=platform.python_version(),
-        )
+    user_agent = "neptune-client/{lib_version} ({system}, python {python_version})".format(
+        lib_version=neptune_client_version,
+        system=platform.platform(),
+        python_version=platform.python_version(),
     )
     http_client.session.headers.update({"User-Agent": user_agent})
 
@@ -151,9 +149,7 @@ def create_http_client_with_auth(
 
 
 @cache
-def create_backend_client(
-    client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClient:
+def create_backend_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
     return create_swagger_client(
         build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH), http_client
     )
@@ -170,9 +166,7 @@ def create_leaderboard_client(
 
 
 @cache
-def create_artifacts_client(
-    client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClient:
+def create_artifacts_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClient:
     return create_swagger_client(
         build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH), http_client
     )

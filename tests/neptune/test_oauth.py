@@ -129,9 +129,7 @@ class TestNeptuneAuthenticator(unittest.TestCase):
         session.token = dict()
 
         # and
-        neptune_authenticator = NeptuneAuthenticator(
-            api_token, backend_client, False, None
-        )
+        neptune_authenticator = NeptuneAuthenticator(api_token, backend_client, False, None)
         request = a_request()
 
         # when

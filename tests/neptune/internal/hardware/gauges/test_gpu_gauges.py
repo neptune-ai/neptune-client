@@ -27,14 +27,10 @@ class TestGPUGauges(unittest.TestCase):
         self.card_index = 2
         self.gpu_card_handle = MagicMock()
 
-        patcher = patch(
-            "neptune.internal.hardware.gpu.gpu_monitor.nvmlDeviceGetHandleByIndex"
-        )
+        patcher = patch("neptune.internal.hardware.gpu.gpu_monitor.nvmlDeviceGetHandleByIndex")
         nvmlDeviceGetHandleByIndex = patcher.start()
         nvmlDeviceGetHandleByIndex.side_effect = (
-            lambda card_index: self.gpu_card_handle
-            if card_index == self.card_index
-            else None
+            lambda card_index: self.gpu_card_handle if card_index == self.card_index else None
         )
         self.addCleanup(patcher.stop)
 
