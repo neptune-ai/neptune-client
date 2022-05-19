@@ -16,7 +16,6 @@
 import platform
 from typing import Dict, Tuple
 
-from bravado.client import SwaggerClient
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
 
@@ -79,16 +78,18 @@ def _get_token_client(
     ssl_verify: bool,
     proxies: Dict[str, str],
     endpoint_url: str = None,
-) -> SwaggerClient:
+) -> SwaggerClientWrapper:
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
     if proxies is None:
         verify_host_resolution(config_api_url)
 
     token_http_client = create_http_client(ssl_verify, proxies)
 
-    return create_swagger_client(
-        build_operation_url(endpoint_url or config_api_url, BACKEND_SWAGGER_PATH),
-        token_http_client,
+    return SwaggerClientWrapper(
+        create_swagger_client(
+            build_operation_url(endpoint_url or config_api_url, BACKEND_SWAGGER_PATH),
+            token_http_client,
+        )
     )
 
 
