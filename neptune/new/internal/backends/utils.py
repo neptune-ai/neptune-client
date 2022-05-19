@@ -66,15 +66,13 @@ from neptune.new.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
+from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.operation import CopyAttribute, Operation
 from neptune.new.internal.utils import replace_patch_version
 
 _logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
-    from neptune.new.internal.backends.hosted_neptune_backend import (
-        HostedNeptuneBackend,
-    )
     from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 
 MAX_RETRY_TIME = 30
@@ -272,7 +270,7 @@ class NeptuneResponseAdapter(RequestsResponseAdapter):
             pass
 
 
-class MissingApiClient(SwaggerClient):
+class MissingApiClient(SwaggerClientWrapper):
     """catch-all class to gracefully handle calls to unavailable API"""
 
     def __init__(self, feature_name: str):  # pylint: disable=super-init-not-called

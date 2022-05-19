@@ -68,7 +68,6 @@ from neptune.exceptions import NeptuneUninitializedException
 from neptune.exceptions import NoChannelValue
 from neptune.exceptions import NotADirectory
 from neptune.exceptions import NotAFile
-from neptune.exceptions import ProjectMigratedToNewStructure
 from neptune.exceptions import UnsupportedClientVersion
 from neptune.exceptions import UnsupportedInAlphaException
 from neptune.experiments import ChannelDoesNotExist
@@ -453,7 +452,6 @@ from neptune.utils import FileNotFound
 from neptune.utils import Forbidden
 from neptune.utils import GitInfo
 from neptune.utils import HTTPBadGateway
-from neptune.utils import HTTPBadRequest
 from neptune.utils import HTTPForbidden
 from neptune.utils import HTTPGatewayTimeout
 from neptune.utils import HTTPInternalServerError
@@ -461,13 +459,11 @@ from neptune.utils import HTTPRequestTimeout
 from neptune.utils import HTTPServiceUnavailable
 from neptune.utils import HTTPUnauthorized
 from neptune.utils import InvalidNotebookPath
-from neptune.utils import JSONDecodeError
 from neptune.utils import NeptuneIncorrectProjectQualifiedNameException
 from neptune.utils import NeptuneMissingProjectQualifiedNameException
 from neptune.utils import NoopObject
 from neptune.utils import NotADirectory
 from neptune.utils import NotAFile
-from neptune.utils import ProjectMigratedToNewStructure
 from neptune.utils import NeptuneSSLVerificationError
 from neptune.utils import ServerError
 from neptune.utils import Unauthorized

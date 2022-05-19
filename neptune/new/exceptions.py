@@ -977,6 +977,34 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**STYLES, reason=reason))
 
 
+# TODO Do not hardcode limit in error message (NPT-11935)
+class NeptuneFieldCountLimitExceedException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneFieldCountLimitExceedException---------------------------------------------------------------------------------------
+{end}
+There are too many fields (more than 9000).
+We have stopped the synchronization to the Neptune server and stored the data locally.
+
+To continue uploading the metadata:
+
+    1. Delete some excess fields.
+
+       You can delete fields or namespaces with the "del" command.
+       For example, to delete the "training/checkpoints" namespace:
+
+       {python}del run["training/checkpoints"]{end}
+
+    2. Once you're done, synchronize the data manually with the following command:
+
+       {bash}neptune sync -p project_name{end}
+
+For more details, see https://docs.neptune.ai/you-should-know/best-practices
+"""
+        super().__init__(message.format(**STYLES))
+
+
 class NeptuneStorageLimitException(NeptuneException):
     def __init__(self):
         message = """

@@ -23,7 +23,6 @@ from typing import AnyStr, Dict, Iterable, List, Optional, Set, Union
 from urllib.parse import urlencode
 
 import click
-from bravado.client import SwaggerClient
 from bravado.exception import HTTPPaymentRequired, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
@@ -51,6 +50,10 @@ from neptune.new.exceptions import (
     UploadedFileChanged,
 )
 from neptune.new.internal.backends.api_model import MultipartConfig
+from neptune.new.internal.backends.swagger_client_wrapper import (
+    ApiMethodWrapper,
+    SwaggerClientWrapper,
+)
 from neptune.new.internal.backends.utils import (
     build_operation_url,
     handle_server_raw_response_messages,
@@ -68,7 +71,7 @@ class FileUploadTarget(enum.Enum):
 
 
 def upload_file_attribute(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     container_id: str,
     attribute: str,
     source: Union[str, bytes],
@@ -119,7 +122,7 @@ def upload_file_attribute(
 
 
 def upload_file_set_attribute(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     container_id: str,
     attribute: str,
     file_globs: Iterable[str],
@@ -277,7 +280,7 @@ MULTIPART_URLS = {
 
 
 def _build_multipart_urlset(
-    swagger_client: SwaggerClient, target: FileUploadTarget
+    swagger_client: SwaggerClientWrapper, target: FileUploadTarget
 ) -> MultipartUrlSet:
     urlnameset = MULTIPART_URLS[target]
     return MultipartUrlSet(
@@ -300,7 +303,7 @@ def _build_multipart_urlset(
 
 def _multichunk_upload_with_retry(
     upload_entry: UploadEntry,
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     query_params: dict,
     multipart_config: MultipartConfig,
     target: FileUploadTarget,
@@ -317,7 +320,7 @@ def _multichunk_upload_with_retry(
 
 def _multichunk_upload(
     upload_entry: UploadEntry,
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     query_params: dict,
     multipart_config: MultipartConfig,
     urlset: MultipartUrlSet,
@@ -428,6 +431,8 @@ def upload_raw_data(
         Request(method="POST", url=url, data=data, headers=headers)
     )
     response = handle_server_raw_response_messages(session.send(session.prepare_request(request)))
+
+    ApiMethodWrapper.handle_neptune_http_errors(response)
     if response.status_code in (
         HTTPUnprocessableEntity.status_code,
         HTTPPaymentRequired.status_code,
@@ -438,7 +443,7 @@ def upload_raw_data(
 
 
 def download_image_series_element(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     container_id: str,
     attribute: str,
     index: int,
@@ -468,7 +473,7 @@ def download_image_series_element(
 
 
 def download_file_attribute(
-    swagger_client: SwaggerClient,
+    swagger_client: SwaggerClientWrapper,
     container_id: str,
     attribute: str,
     destination: Optional[str] = None,
@@ -487,7 +492,9 @@ def download_file_attribute(
 
 
 def download_file_set_attribute(
-    swagger_client: SwaggerClient, download_id: str, destination: Optional[str] = None
+    swagger_client: SwaggerClientWrapper,
+    download_id: str,
+    destination: Optional[str] = None,
 ):
     download_url: Optional[str] = _get_download_url(swagger_client, download_id)
     next_sleep = 0.5
@@ -504,7 +511,7 @@ def download_file_set_attribute(
     _store_response_as_file(response, destination)
 
 
-def _get_download_url(swagger_client: SwaggerClient, download_id: str):
+def _get_download_url(swagger_client: SwaggerClientWrapper, download_id: str):
     params = {"id": download_id}
     download_request = swagger_client.api.getDownloadPrepareRequest(**params).response().result
     return download_request.downloadUrl
