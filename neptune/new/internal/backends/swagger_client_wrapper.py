@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-import json
-from json.decoder import JSONDecodeError
 from typing import Optional
 
 from bravado.client import SwaggerClient
@@ -35,22 +33,22 @@ class ApiMethodWrapper:
         self._api_method = api_method
 
     @staticmethod
-    def _parse_error_type(response) -> Optional[str]:
-        try:
-            error_data = json.loads(response.text)
-            return error_data.get("errorType") if error_data is not None else None
-        except JSONDecodeError:
-            return None
-
-    @staticmethod
     def handle_neptune_http_errors(response, exception: Optional[HTTPError] = None):
-        error_type: Optional[str] = ApiMethodWrapper._parse_error_type(response)
+        try:
+            _json = response.json()
+        except Exception:
+            _json = {}
+
+        error_type: Optional[str] = _json.get("errorType")
         if error_type == ApiMethodWrapper.ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED:
-            # TODO We need to do something about this "lack of identifiers" in error messages.
-            raise NeptuneFieldCountLimitExceedException()
+            raise NeptuneFieldCountLimitExceedException(
+                limit=_json.get("limit", "<unknown limit>"),
+                container_type=_json.get("experimentType", "object"),
+                identifier=_json.get("experimentQualifiedName", "<unknown identifier>"),
+            )
         elif error_type == ApiMethodWrapper.WORKSPACE_IN_READ_ONLY_MODE:
             raise NeptuneLimitExceedException(
-                reason=response.json().get("title", "Unknown reason")
+                reason=_json.get("title", "Unknown reason")
             ) from exception
         elif exception:
             raise exception
