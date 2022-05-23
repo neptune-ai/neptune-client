@@ -58,8 +58,7 @@ class ApiMethodWrapper:
     def __call__(self, *args, **kwargs):
         try:
             future = self._api_method(*args, **kwargs)
-            future.response()  # wait synchronously
-            return future
+            return FinishedApiResponseFuture(future.response())  # wait synchronously
         except HTTPError as e:
             self.handle_neptune_http_errors(e.response, exception=e)
 
@@ -73,6 +72,14 @@ class ApiWrapper:
 
     def __getattr__(self, item):
         return ApiMethodWrapper(getattr(self._api_obj, item))
+
+
+class FinishedApiResponseFuture:
+    def __init__(self, response):
+        self._response = response
+
+    def response(self):
+        return self._response
 
 
 class SwaggerClientWrapper:
