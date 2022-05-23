@@ -112,9 +112,7 @@ class ChannelsValuesSender(object):
 
     def _start(self):
         self._values_queue = Queue()
-        self._sending_thread = ChannelsValuesSendingThread(
-            self._experiment, self._values_queue
-        )
+        self._sending_thread = ChannelsValuesSendingThread(self._experiment, self._values_queue)
         self._sending_thread.start()
 
 
@@ -134,9 +132,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
         while self.should_continue_running() or not self._values_queue.empty():
             try:
                 sleep_start = time.time()
-                self._values_batch.append(
-                    self._values_queue.get(timeout=max(self._sleep_time, 0))
-                )
+                self._values_batch.append(self._values_queue.get(timeout=max(self._sleep_time, 0)))
                 self._values_queue.task_done()
                 self._sleep_time -= time.time() - sleep_start
             except Empty:
@@ -195,9 +191,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
                         y=queued_value.channel_value.y,
                     )
                 )
-            channels_with_values.append(
-                ChannelIdWithValues(*channel_metadata, channel_values)
-            )
+            channels_with_values.append(ChannelIdWithValues(*channel_metadata, channel_values))
 
         try:
             # pylint:disable=protected-access

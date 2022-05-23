@@ -75,10 +75,7 @@ class Namespace(Attribute, MutableMapping):
                 result[k] = self._collect_atom_values(v)
             else:
                 attr_type, attr_value = v
-                if (
-                    attr_type in atomic_attribute_types_map
-                    and attr_value is not NoValue
-                ):
+                if attr_type in atomic_attribute_types_map and attr_value is not NoValue:
                     result[k] = v[1]
         return result
 

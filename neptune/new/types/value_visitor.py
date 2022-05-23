@@ -98,7 +98,5 @@ class ValueVisitor(Generic[Ret]):
         pass
 
     @abc.abstractmethod
-    def copy_value(
-        self, source_type: typing.Type[Attribute], source_path: typing.List[str]
-    ) -> Ret:
+    def copy_value(self, source_type: typing.Type[Attribute], source_path: typing.List[str]) -> Ret:
         pass

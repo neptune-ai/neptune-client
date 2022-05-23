@@ -40,9 +40,7 @@ class Message(object):
             message_type = MessageType.ABORT
 
         if message_type in MessageClassRegistry.MESSAGE_CLASSES:
-            return MessageClassRegistry.MESSAGE_CLASSES[message_type].from_json(
-                message_body
-            )
+            return MessageClassRegistry.MESSAGE_CLASSES[message_type].from_json(message_body)
         else:
             raise ValueError("Unknown message type '{}'!".format(message_type))
 

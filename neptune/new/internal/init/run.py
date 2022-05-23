@@ -74,9 +74,7 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
             raise NeptunePossibleLegacyUsageException()
     if kwargs:
         first_key = next(iter(kwargs.keys()))
-        raise TypeError(
-            f"{caller_name}() got an unexpected keyword argument '{first_key}'"
-        )
+        raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
 def init_run(
@@ -227,9 +225,7 @@ def init_run(
     description = "" if run is None and description is None else description
     hostname = get_hostname() if run is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
-    monitoring_namespace = (
-        monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or "monitoring"
-    )
+    monitoring_namespace = monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or "monitoring"
 
     if run and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
@@ -283,13 +279,9 @@ def init_run(
     background_jobs = []
     if mode != Mode.READ_ONLY:
         if capture_stdout:
-            background_jobs.append(
-                StdoutCaptureBackgroundJob(attribute_name=stdout_path)
-            )
+            background_jobs.append(StdoutCaptureBackgroundJob(attribute_name=stdout_path))
         if capture_stderr:
-            background_jobs.append(
-                StderrCaptureBackgroundJob(attribute_name=stderr_path)
-            )
+            background_jobs.append(StderrCaptureBackgroundJob(attribute_name=stderr_path))
         if capture_hardware_metrics:
             background_jobs.append(
                 HardwareMetricReportingJob(attribute_namespace=monitoring_namespace)

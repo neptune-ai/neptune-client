@@ -72,12 +72,8 @@ class ExecutionContext(object):
 
         if logger:
             # pylint: disable=protected-access
-            channel = self._experiment._get_channel(
-                "logger", "text", ChannelNamespace.SYSTEM
-            )
-            channel_writer = ChannelWriter(
-                self._experiment, channel.name, ChannelNamespace.SYSTEM
-            )
+            channel = self._experiment._get_channel("logger", "text", ChannelNamespace.SYSTEM)
+            channel_writer = ChannelWriter(self._experiment, channel.name, ChannelNamespace.SYSTEM)
             self._logger_handler = StreamHandler(channel_writer)
             self._logger = logger
             logger.addHandler(self._logger_handler)
@@ -88,9 +84,7 @@ class ExecutionContext(object):
         if upload_stderr and not is_notebook():
             self._stderr_uploader = StdErrWithUpload(self._experiment)
 
-        abortable = (
-            abort_callback is not None or DefaultAbortImpl.requirements_installed()
-        )
+        abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
         if abortable:
             self._run_aborting_thread(abort_callback)
         else:
@@ -130,9 +124,7 @@ class ExecutionContext(object):
 
     def _set_uncaught_exception_handler(self):
         def exception_handler(exc_type, exc_val, exc_tb):
-            self._experiment.stop(
-                "\n".join(traceback.format_tb(exc_tb)) + "\n" + repr(exc_val)
-            )
+            self._experiment.stop("\n".join(traceback.format_tb(exc_tb)) + "\n" + repr(exc_val))
 
             sys.__excepthook__(exc_type, exc_val, exc_tb)
 
@@ -165,9 +157,7 @@ class ExecutionContext(object):
         self._aborting_thread.start()
 
     def _run_monitoring_thread(self):
-        self._ping_thread = PingThread(
-            backend=self._backend, experiment=self._experiment
-        )
+        self._ping_thread = PingThread(backend=self._backend, experiment=self._experiment)
         self._ping_thread.start()
 
     def _run_hardware_metrics_reporting_thread(self):

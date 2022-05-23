@@ -16,17 +16,14 @@
 
 import functools
 import glob as globlib
-import json
 import logging
 import math
 import os
 import re
 import sys
 import time
-from json.decoder import JSONDecodeError
 from typing import Collection
 
-import click
 import numpy as np
 import pandas as pd
 import requests
@@ -34,7 +31,6 @@ from bravado.exception import (
     BravadoConnectionError,
     BravadoTimeoutError,
     HTTPBadGateway,
-    HTTPBadRequest,
     HTTPForbidden,
     HTTPGatewayTimeout,
     HTTPInternalServerError,
@@ -60,7 +56,6 @@ from neptune.exceptions import (
     NeptuneMissingProjectQualifiedNameException,
     NotADirectory,
     NotAFile,
-    ProjectMigratedToNewStructure,
 )
 from neptune.git_info import GitInfo
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
@@ -69,9 +64,6 @@ _logger = logging.getLogger(__name__)
 
 IS_WINDOWS = sys.platform == "win32"
 IS_MACOS = sys.platform == "darwin"
-
-MIGRATION_IN_PROGRESS = "PROJECT_MIGRATION_IN_PROGRESS"
-MIGRATION_FINISHED = "NEW_PROJECT_VERSION"
 
 
 def map_values(f_value, dictionary):
@@ -233,9 +225,7 @@ def get_git_info(repo_path=None):
         try:
             active_branch = repo.active_branch.name
         except TypeError as e:
-            if str(e.args[0]).startswith(
-                "HEAD is a detached symbolic reference as it points to"
-            ):
+            if str(e.args[0]).startswith("HEAD is a detached symbolic reference as it points to"):
                 active_branch = "Detached HEAD"
 
         remote_urls = [remote.url for remote in repo.remotes]
@@ -254,42 +244,9 @@ def get_git_info(repo_path=None):
         return None
 
 
-def parse_error_type(ex):
-    try:
-        error_data = json.loads(ex.response.text)
-        return error_data.get("errorType")
-    except JSONDecodeError:
-        return None
-
-
-migration_reported = False
-
-
-def print_migration_in_progress_message():
-    # pylint: disable=global-statement
-    global migration_reported
-    migration_reported = True
-    click.echo(
-        click.style(
-            """
-NOTICE: Attention needed
-Your Neptune project is currently being migrated to the new structure.
-The execution of the script is paused until migration is finished.
-It will automatically resume once it's finished.
-Depending on the number of runs (experiments) in the project
-the migration process can take from few minutes to up to few hours.
-If you think this operation takes too long please contact Neptune support:
-    - https://neptune.ai/?chat-with-us
-""",
-            fg="yellow",
-        )
-    )
-
-
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
         # pylint: disable=global-statement
-        global migration_reported
         retries = 11
         retry = 0
         while retry < retries:
@@ -297,26 +254,14 @@ def with_api_exceptions_handler(func):
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
                 raise NeptuneSSLVerificationError()
-            except HTTPBadRequest as e:
-                if parse_error_type(e) == MIGRATION_FINISHED:
-                    raise ProjectMigratedToNewStructure()
-                else:
-                    raise
             except HTTPServiceUnavailable as e:
-                if parse_error_type(e) == MIGRATION_IN_PROGRESS:
-                    retry = min(retry + 1, 8)
-                    if not migration_reported:
-                        print_migration_in_progress_message()
-                    time.sleep(2**retry)
-                    continue
-                else:
-                    if retry >= 6:
-                        _logger.warning(
-                            "Experiencing connection interruptions. Reestablishing communication with Neptune."
-                        )
-                    time.sleep(2**retry)
-                    retry += 1
-                    continue
+                if retry >= 6:
+                    _logger.warning(
+                        "Experiencing connection interruptions. Reestablishing communication with Neptune."
+                    )
+                time.sleep(2**retry)
+                retry += 1
+                continue
             except (
                 BravadoConnectionError,
                 BravadoTimeoutError,
@@ -344,21 +289,7 @@ def with_api_exceptions_handler(func):
                 if e.response is None:
                     raise
                 status_code = e.response.status_code
-                if (
-                    status_code == HTTPBadRequest.status_code
-                    and parse_error_type(e) == MIGRATION_FINISHED
-                ):
-                    raise ProjectMigratedToNewStructure()
-                elif (
-                    status_code == HTTPServiceUnavailable.status_code
-                    and parse_error_type(e) == MIGRATION_IN_PROGRESS
-                ):
-                    retry = min(retry + 1, 8)
-                    if not migration_reported:
-                        print_migration_in_progress_message()
-                    time.sleep(2**retry)
-                    continue
-                elif status_code in (
+                if status_code in (
                     HTTPRequestTimeout.status_code,
                     HTTPBadGateway.status_code,
                     HTTPServiceUnavailable.status_code,
@@ -388,9 +319,7 @@ def with_api_exceptions_handler(func):
 
 def glob(pathname):
     # pylint: disable=unexpected-keyword-arg
-    if sys.version_info.major < 3 or (
-        sys.version_info.major == 3 and sys.version_info.minor < 5
-    ):
+    if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
         return globlib.glob(pathname)
     else:
         return globlib.glob(pathname, recursive=True)

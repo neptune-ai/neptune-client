@@ -101,9 +101,7 @@ class FileNotFound(NeptuneException):
 
 class UploadedFileChanged(NeptuneException):
     def __init__(self, filename: str):
-        super().__init__(
-            "File {} changed during upload, restarting upload.".format(filename)
-        )
+        super().__init__("File {} changed during upload, restarting upload.".format(filename))
 
 
 class FileUploadError(NeptuneException):
@@ -159,19 +157,13 @@ class MetadataContainerNotFound(NeptuneException):
     def __init__(self, container_id: str, container_type: Optional[ContainerType]):
         self.container_id = container_id
         self.container_type = container_type
-        container_type_str = (
-            container_type.value.capitalize() if container_type else "object"
-        )
+        container_type_str = container_type.value.capitalize() if container_type else "object"
         super().__init__("{} {} not found.".format(container_type_str, container_id))
 
     @classmethod
-    def of_container_type(
-        cls, container_type: Optional[ContainerType], container_id: str
-    ):
+    def of_container_type(cls, container_type: Optional[ContainerType], container_id: str):
         if container_type is None:
-            return MetadataContainerNotFound(
-                container_id=container_id, container_type=None
-            )
+            return MetadataContainerNotFound(container_id=container_id, container_type=None)
         elif container_type == ContainerType.PROJECT:
             return ProjectNotFound(project_id=container_id)
         elif container_type == ContainerType.RUN:
@@ -201,9 +193,7 @@ class ModelNotFound(MetadataContainerNotFound):
 
 class ModelVersionNotFound(MetadataContainerNotFound):
     def __init__(self, model_version_id: str):
-        super().__init__(
-            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
-        )
+        super().__init__(container_id=model_version_id, container_type=ContainerType.MODEL_VERSION)
 
 
 class ExceptionWithProjectsWorkspacesListing(NeptuneException):
@@ -274,9 +264,7 @@ class ContainerUUIDNotFound(NeptuneException):
 RunUUIDNotFound = ContainerUUIDNotFound
 
 
-class ProjectNotFoundWithSuggestions(
-    ExceptionWithProjectsWorkspacesListing, ProjectNotFound
-):
+class ProjectNotFoundWithSuggestions(ExceptionWithProjectsWorkspacesListing, ProjectNotFound):
     def __init__(
         self,
         project_id: QualifiedName,
@@ -317,9 +305,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(
-            message=message, available_projects=available_projects, project=project_id
-        )
+        super().__init__(message=message, available_projects=available_projects, project=project_id)
 
 
 class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing):
@@ -483,9 +469,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(
-            message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
-        )
+        super().__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
 
 
 class NeptuneInvalidApiTokenException(NeptuneException):
@@ -527,9 +511,7 @@ You may also want to check the following docs page:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(
-            message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
-        )
+        super().__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
 
 
 class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
@@ -571,16 +553,12 @@ You may also want to check the following docs pages:
 
 class NeedExistingRunForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
     def __init__(self):
-        super().__init__(
-            container_type=ContainerType.RUN, callback_name="neptune.init_run"
-        )
+        super().__init__(container_type=ContainerType.RUN, callback_name="neptune.init_run")
 
 
 class NeedExistingModelForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
     def __init__(self):
-        super().__init__(
-            container_type=ContainerType.MODEL, callback_name="neptune.init_model"
-        )
+        super().__init__(container_type=ContainerType.MODEL, callback_name="neptune.init_model")
 
 
 class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
@@ -999,6 +977,34 @@ You may also want to check the following docs page:
         super().__init__(message.format(**STYLES, reason=reason))
 
 
+# TODO Do not hardcode limit in error message (NPT-11935)
+class NeptuneFieldCountLimitExceedException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneFieldCountLimitExceedException---------------------------------------------------------------------------------------
+{end}
+There are too many fields (more than 9000).
+We have stopped the synchronization to the Neptune server and stored the data locally.
+
+To continue uploading the metadata:
+
+    1. Delete some excess fields.
+
+       You can delete fields or namespaces with the "del" command.
+       For example, to delete the "training/checkpoints" namespace:
+
+       {python}del run["training/checkpoints"]{end}
+
+    2. Once you're done, synchronize the data manually with the following command:
+
+       {bash}neptune sync -p project_name{end}
+
+For more details, see https://docs.neptune.ai/you-should-know/best-practices
+"""
+        super().__init__(message.format(**STYLES))
+
+
 class NeptuneStorageLimitException(NeptuneException):
     def __init__(self):
         message = """
@@ -1167,9 +1173,7 @@ Neptune had a problem processing "{path}". It expects it to be {expected_descrip
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(
-            message.format(
-                path=path, expected_description=expected_description, **STYLES
-            )
+            message.format(path=path, expected_description=expected_description, **STYLES)
         )
 
 
@@ -1216,9 +1220,7 @@ It seems you are using Neptune Artifacts functionality that is currently not sup
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(
-            message.format(functionality_info=functionality_info, **STYLES)
-        )
+        super().__init__(message.format(functionality_info=functionality_info, **STYLES))
 
 
 class NeptuneEmptyLocationException(NeptuneException):
@@ -1231,9 +1233,7 @@ Neptune could not find files in the requested location ({location}) during the c
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(
-            message.format(location=location, namespace=namespace, **STYLES)
-        )
+        super().__init__(message.format(location=location, namespace=namespace, **STYLES))
 
 
 class NeptuneFeatureNotAvailableException(NeptuneException):

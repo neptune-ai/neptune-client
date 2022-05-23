@@ -16,12 +16,12 @@
 import platform
 from typing import Dict, Tuple
 
-from bravado.client import SwaggerClient
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
 
 from neptune.new.exceptions import UnsupportedClientVersion
 from neptune.new.internal.backends.api_model import ClientConfig
+from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import (
     NeptuneResponseAdapter,
     build_operation_url,
@@ -62,12 +62,10 @@ def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsCli
 
     update_session_proxies(http_client.session, proxies)
 
-    user_agent = (
-        "neptune-client/{lib_version} ({system}, python {python_version})".format(
-            lib_version=neptune_client_version,
-            system=platform.platform(),
-            python_version=platform.python_version(),
-        )
+    user_agent = "neptune-client/{lib_version} ({system}, python {python_version})".format(
+        lib_version=neptune_client_version,
+        system=platform.platform(),
+        python_version=platform.python_version(),
     )
     http_client.session.headers.update({"User-Agent": user_agent})
 
@@ -80,16 +78,18 @@ def _get_token_client(
     ssl_verify: bool,
     proxies: Dict[str, str],
     endpoint_url: str = None,
-) -> SwaggerClient:
+) -> SwaggerClientWrapper:
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
     if proxies is None:
         verify_host_resolution(config_api_url)
 
     token_http_client = create_http_client(ssl_verify, proxies)
 
-    return create_swagger_client(
-        build_operation_url(endpoint_url or config_api_url, BACKEND_SWAGGER_PATH),
-        token_http_client,
+    return SwaggerClientWrapper(
+        create_swagger_client(
+            build_operation_url(endpoint_url or config_api_url, BACKEND_SWAGGER_PATH),
+            token_http_client,
+        )
     )
 
 
@@ -153,26 +153,34 @@ def create_http_client_with_auth(
 @cache
 def create_backend_client(
     client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClient:
-    return create_swagger_client(
-        build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH), http_client
+) -> SwaggerClientWrapper:
+    return SwaggerClientWrapper(
+        create_swagger_client(
+            build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH),
+            http_client,
+        )
     )
 
 
 @cache
 def create_leaderboard_client(
     client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClient:
-    return create_swagger_client(
-        build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
-        http_client,
+) -> SwaggerClientWrapper:
+    return SwaggerClientWrapper(
+        create_swagger_client(
+            build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
+            http_client,
+        )
     )
 
 
 @cache
 def create_artifacts_client(
     client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClient:
-    return create_swagger_client(
-        build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH), http_client
+) -> SwaggerClientWrapper:
+    return SwaggerClientWrapper(
+        create_swagger_client(
+            build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH),
+            http_client,
+        )
     )

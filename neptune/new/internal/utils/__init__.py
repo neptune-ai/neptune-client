@@ -42,14 +42,10 @@ def verify_type(var_name: str, var, expected_type: Union[type, tuple]):
         raise TypeError("Incorrect type of {}".format(var_name)) from e
 
     if not isinstance(var, expected_type):
-        raise TypeError(
-            "{} must be a {} (was {})".format(var_name, type_name, type(var))
-        )
+        raise TypeError("{} must be a {} (was {})".format(var_name, type_name, type(var)))
 
     if isinstance(var, IOBase) and not hasattr(var, "read"):
-        raise TypeError(
-            "{} is a stream, which does not implement read method".format(var_name)
-        )
+        raise TypeError("{} is a stream, which does not implement read method".format(var_name))
 
 
 def is_stream(var):
@@ -99,9 +95,7 @@ def get_type_name(_type: Union[type, tuple]):
 def verify_collection_type(var_name: str, var, expected_type: Union[type, tuple]):
     verify_type(var_name, var, (list, set, tuple))
     for value in var:
-        verify_type(
-            "elements of collection '{}'".format(var_name), value, expected_type
-        )
+        verify_type("elements of collection '{}'".format(var_name), value, expected_type)
 
 
 def is_collection(var) -> bool:
@@ -135,9 +129,7 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
         return None
 
 
-def get_stream_content(
-    stream: IOBase, seek: Optional[int] = None
-) -> (Optional[str], str):
+def get_stream_content(stream: IOBase, seek: Optional[int] = None) -> (Optional[str], str):
     if seek is not None and stream.seekable():
         stream.seek(seek)
 
@@ -181,9 +173,7 @@ def is_ipython() -> bool:
         return False
 
 
-def as_list(
-    name: str, value: Optional[Union[str, Iterable[str]]]
-) -> Optional[Iterable[str]]:
+def as_list(name: str, value: Optional[Union[str, Iterable[str]]]) -> Optional[Iterable[str]]:
     verify_type(name, value, (type(None), str, Iterable))
     if value is None:
         return []

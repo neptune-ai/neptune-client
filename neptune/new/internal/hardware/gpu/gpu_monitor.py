@@ -39,11 +39,7 @@ class GPUMonitor(object):
         # pylint: disable=no-member
         # pylint incorrectly detects that function nvmlDeviceGetUtilizationRates returns str
         return self.__nvml_get_or_else(
-            lambda: float(
-                nvmlDeviceGetUtilizationRates(
-                    nvmlDeviceGetHandleByIndex(card_index)
-                ).gpu
-            )
+            lambda: float(nvmlDeviceGetUtilizationRates(nvmlDeviceGetHandleByIndex(card_index)).gpu)
         )
 
     def get_card_used_memory_in_bytes(self, card_index):
@@ -59,9 +55,7 @@ class GPUMonitor(object):
             # pylint incorrectly detects that function nvmlDeviceGetMemoryInfo returns str
             return self.__nvml_get_or_else(
                 lambda: [
-                    nvmlDeviceGetMemoryInfo(
-                        nvmlDeviceGetHandleByIndex(card_index)
-                    ).total
+                    nvmlDeviceGetMemoryInfo(nvmlDeviceGetHandleByIndex(card_index)).total
                     for card_index in range(nvmlDeviceGetCount())
                 ],
                 default=0,

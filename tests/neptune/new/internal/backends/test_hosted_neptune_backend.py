@@ -39,6 +39,7 @@ from neptune.new.internal.backends.hosted_client import (  # pylint:disable=prot
     get_client_config,
 )
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
@@ -51,6 +52,7 @@ from neptune.new.internal.operation import (
 )
 from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
+from tests.neptune.new.utils import response_mock
 
 API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUuYWkiLCJ"
@@ -61,9 +63,7 @@ credentials = Credentials.from_token(API_TOKEN)
 
 
 @patch("neptune.new.internal.backends.hosted_client.RequestsClient", new=MagicMock())
-@patch(
-    "neptune.new.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock()
-)
+@patch("neptune.new.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock())
 @patch("bravado.client.SwaggerClient.from_url")
 @patch("platform.platform", new=lambda: "testPlatform")
 @patch("platform.python_version", new=lambda: "3.9.test")
@@ -280,9 +280,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_new_artifact")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_track_to_new_artifact(
-        self, track_to_new_artifact_mock, swagger_client_factory
-    ):
+    def test_track_to_new_artifact(self, track_to_new_artifact_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
@@ -294,9 +292,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         swagger_client.api.executeOperations.return_value.response.return_value.result = [
             response_error
         ]
-        swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(
-            response=MagicMock()
-        )
+        swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(response=response_mock())
+        swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
 
         for container_type in self.container_types:
             with self.subTest(msg=f"For type {container_type.value}"):
@@ -338,7 +335,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                 track_to_new_artifact_mock.assert_has_calls(
                     [
                         call(
-                            swagger_client=swagger_client,
+                            swagger_client=swagger_client_wrapper,
                             project_id=project_id,
                             path=["sub", "one"],
                             parent_identifier=str(container_id),
@@ -346,7 +343,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             default_request_params=DEFAULT_REQUEST_KWARGS,
                         ),
                         call(
-                            swagger_client=swagger_client,
+                            swagger_client=swagger_client_wrapper,
                             project_id=project_id,
                             path=["sub", "two"],
                             parent_identifier=str(container_id),
@@ -357,7 +354,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             default_request_params=DEFAULT_REQUEST_KWARGS,
                         ),
                         call(
-                            swagger_client=swagger_client,
+                            swagger_client=swagger_client_wrapper,
                             project_id=project_id,
                             path=["sub", "three"],
                             parent_identifier=str(container_id),
@@ -371,9 +368,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                     any_order=True,
                 )
 
-    @patch(
-        "neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact"
-    )
+    @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_track_to_existing_artifact(
         self, track_to_existing_artifact_mock, swagger_client_factory
@@ -392,6 +387,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         swagger_client.api.getArtifactAttribute.return_value.response.return_value.result.hash = (
             "dummyHash"
         )
+        swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
 
         for container_type in self.container_types:
             track_to_existing_artifact_mock.reset_mock()
@@ -436,7 +432,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                 track_to_existing_artifact_mock.assert_has_calls(
                     [
                         call(
-                            swagger_client=swagger_client,
+                            swagger_client=swagger_client_wrapper,
                             project_id=project_id,
                             path=["sub", "one"],
                             artifact_hash="dummyHash",
@@ -445,7 +441,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             default_request_params=DEFAULT_REQUEST_KWARGS,
                         ),
                         call(
-                            swagger_client=swagger_client,
+                            swagger_client=swagger_client_wrapper,
                             project_id=project_id,
                             path=["sub", "two"],
                             artifact_hash="dummyHash",
@@ -457,7 +453,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
                             default_request_params=DEFAULT_REQUEST_KWARGS,
                         ),
                         call(
-                            swagger_client=swagger_client,
+                            swagger_client=swagger_client_wrapper,
                             project_id=project_id,
                             path=["sub", "three"],
                             artifact_hash="dummyHash",
@@ -543,11 +539,9 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         container_uuid = str(uuid.uuid4())
 
         # when:
-        error = MagicMock()
+        error = response_mock()
         error.json.return_value = {"title": "Maximum storage limit reached"}
-        swagger_client.api.executeOperations.side_effect = HTTPPaymentRequired(
-            response=error
-        )
+        swagger_client.api.executeOperations.side_effect = HTTPPaymentRequired(response=error)
 
         # then:
         for container_type in self.container_types:
@@ -569,11 +563,9 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         container_uuid = str(uuid.uuid4())
 
         # when:
-        error = MagicMock()
+        error = response_mock()
         error.json.return_value = {"title": "Monitoring hours not left"}
-        swagger_client.api.executeOperations.side_effect = HTTPUnprocessableEntity(
-            response=error
-        )
+        swagger_client.api.executeOperations.side_effect = HTTPUnprocessableEntity(response=error)
 
         # then:
         for container_type in self.container_types:

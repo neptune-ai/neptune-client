@@ -61,6 +61,4 @@ class CopiableAtom(Atom):
         ...
 
     def fetch(self):
-        return self.getter(
-            self._backend, self._container_id, self._container_type, self._path
-        )
+        return self.getter(self._backend, self._container_id, self._container_type, self._path)

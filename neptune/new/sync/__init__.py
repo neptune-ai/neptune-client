@@ -52,9 +52,7 @@ def get_neptune_path(ctx, param, path: str) -> Path:
         return path
     else:
         raise click.BadParameter(
-            "Path {} does not contain a '{}' folder.".format(
-                path, NEPTUNE_DATA_DIRECTORY
-            )
+            "Path {} does not contain a '{}' folder.".format(path, NEPTUNE_DATA_DIRECTORY)
         )
 
 
@@ -117,11 +115,19 @@ def status(path: Path) -> None:
     metavar="project-name",
     help="project name (workspace/project) where offline runs will be sent",
 )
+@click.option(
+    "--offline-only",
+    "offline_only",
+    is_flag=True,
+    default=False,
+    help="synchronize only the offline runs inside '.neptune' directory",
+)
 def sync(
     path: Path,
     runs_names: List[str],
     object_names: List[str],
     project_name: Optional[str],
+    offline_only: Optional[bool],
 ):
     """Synchronizes objects with unsent data with the server.
 
@@ -153,6 +159,14 @@ def sync(
     # Synchronize only the offline run with UUID offline/a1561719-b425-4000-a65a-b5efb044d6bb
     # to project "workspace/project"
     neptune sync --project workspace/project --object offline/a1561719-b425-4000-a65a-b5efb044d6bb
+
+    \b
+    # Synchronize only the offline runs
+    neptune sync --offline-only
+
+    \b
+    # Synchronize only the offline runs to project "workspace/project"
+    neptune sync --project workspace/project --offline-only
     """
 
     sync_runner = SyncRunner(backend=HostedNeptuneBackend(Credentials.from_token()))
@@ -165,7 +179,13 @@ def sync(
         object_names = set(object_names)
         object_names.update(runs_names)
 
-    if object_names:
+    if offline_only:
+        if object_names:
+            raise click.BadParameter("--object and --offline-only are mutually exclusive")
+
+        sync_runner.sync_all_offline_containers(path, project_name)
+
+    elif object_names:
         sync_runner.sync_selected_containers(path, project_name, object_names)
     else:
         sync_runner.sync_all_containers(path, project_name)

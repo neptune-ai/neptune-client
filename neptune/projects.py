@@ -82,9 +82,7 @@ class Project(object):
             if member.registeredMemberInfo
         ]
 
-    def get_experiments(
-        self, id=None, state=None, owner=None, tag=None, min_running_time=None
-    ):
+    def get_experiments(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
         """Retrieve list of experiments matching the specified criteria.
 
         All parameters are optional, each of them specifies a single criterion.
@@ -128,17 +126,13 @@ class Project(object):
                 #  Experiment(SAL-1960),
                 #  Experiment(SAL-2025)]
         """
-        leaderboard_entries = self._fetch_leaderboard(
-            id, state, owner, tag, min_running_time
-        )
+        leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
         return [
             Experiment(self._backend, self, entry.id, entry.internal_id)
             for entry in leaderboard_entries
         ]
 
-    def get_leaderboard(
-        self, id=None, state=None, owner=None, tag=None, min_running_time=None
-    ):
+    def get_leaderboard(self, id=None, state=None, owner=None, tag=None, min_running_time=None):
         """Fetch Neptune experiments view as pandas ``DataFrame``.
 
         **returned DataFrame**
@@ -187,14 +181,10 @@ class Project(object):
                 project.get_leaderboard(state=['aborted'], owner=['neyo'], min_running_time=100000)
         """
 
-        leaderboard_entries = self._fetch_leaderboard(
-            id, state, owner, tag, min_running_time
-        )
+        leaderboard_entries = self._fetch_leaderboard(id, state, owner, tag, min_running_time)
 
         def make_row(entry):
-            channels = dict(
-                ("channel_{}".format(ch.name), ch.trimmed_y) for ch in entry.channels
-            )
+            channels = dict(("channel_{}".format(ch.name), ch.trimmed_y) for ch in entry.channels)
 
             parameters = map_keys("parameter_{}".format, entry.parameters)
             properties = map_keys("property_{}".format, entry.properties)
@@ -426,15 +416,10 @@ class Project(object):
             upload_source_files=upload_source_files
         )
 
-        if (
-            notebook_path is None
-            and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None
-        ):
+        if notebook_path is None and os.getenv(NOTEBOOK_PATH_ENV_NAME, None) is not None:
             notebook_path = os.environ[NOTEBOOK_PATH_ENV_NAME]
 
-        abortable = (
-            abort_callback is not None or DefaultAbortImpl.requirements_installed()
-        )
+        abortable = abort_callback is not None or DefaultAbortImpl.requirements_installed()
 
         checkpoint_id = None
         if notebook_id is not None and notebook_path is not None:

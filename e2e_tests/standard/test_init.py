@@ -39,9 +39,7 @@ class TestInitRun(BaseE2ETest):
 
         run.stop()
 
-        exp2 = neptune.init_run(
-            custom_run_id=custom_run_id, project=environment.project
-        )
+        exp2 = neptune.init_run(custom_run_id=custom_run_id, project=environment.project)
         assert exp2[key].fetch() == val
 
     def test_send_source_code(self, environment):
@@ -110,9 +108,7 @@ class TestInitModel(BaseE2ETest):
 class TestReinitialization(BaseE2ETest):
     @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
     def test_resuming_container(self, container_type, environment):
-        container = initialize_container(
-            container_type=container_type, project=environment.project
-        )
+        container = initialize_container(container_type=container_type, project=environment.project)
         sys_id = container["sys/id"].fetch()
 
         key = self.gen_key()

@@ -48,6 +48,4 @@ class Datetime(CopiableAtom):
         else:
             value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
         with self._container.lock():
-            self._enqueue_operation(
-                self.create_assignment_operation(self._path, value), wait
-            )
+            self._enqueue_operation(self.create_assignment_operation(self._path, value), wait)

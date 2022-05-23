@@ -46,9 +46,7 @@ class TestArtifact(TestAttributeBase):
         self.path = self._random_path()
         self.path_str = path_to_str(self.path)
 
-        self.artifact_hash = (
-            "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-        )
+        self.artifact_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         self.artifact_files = [
             ArtifactFileData(
                 file_path="fname.txt",
@@ -69,9 +67,7 @@ class TestArtifact(TestAttributeBase):
         self.exp._backend._containers[(self.exp._id, ContainerType.RUN)].set(
             self.path, ArtifactAttr(self.artifact_hash)
         )
-        self.exp._backend._artifacts[
-            self.exp._project_id, self.artifact_hash
-        ] = self.artifact_files
+        self.exp._backend._artifacts[self.exp._project_id, self.artifact_hash] = self.artifact_files
 
         self._downloads = set()
 
@@ -89,9 +85,7 @@ class TestArtifact(TestAttributeBase):
                 return []
 
             @classmethod
-            def download_file(
-                cls, destination: pathlib.Path, file_definition: ArtifactFileData
-            ):
+            def download_file(cls, destination: pathlib.Path, file_definition: ArtifactFileData):
                 destination.touch()
 
         self.test_artifact_driver = TestArtifactDriver

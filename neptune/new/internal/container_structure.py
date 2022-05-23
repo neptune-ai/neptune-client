@@ -63,9 +63,7 @@ class ContainerStructure(Generic[T, Node]):
             if not isinstance(ref, self._node_type):
                 raise MetadataInconsistency(
                     "Cannot access path '{}': '{}' is already defined as an attribute, "
-                    "not a namespace".format(
-                        path_to_str(path), path_to_str(path[:index])
-                    )
+                    "not a namespace".format(path_to_str(path), path_to_str(path[:index]))
                 )
             if part not in ref:
                 return None

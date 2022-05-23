@@ -330,9 +330,7 @@ class NVMLError(Exception):
     def __str__(self):
         try:
             if self.value not in NVMLError._errcode_to_string:
-                NVMLError._errcode_to_string[self.value] = str(
-                    nvml_error_string(self.value)
-                )
+                NVMLError._errcode_to_string[self.value] = str(nvml_error_string(self.value))
             return NVMLError._errcode_to_string[self.value]
         except NVMLError_Uninitialized:
             return "NVML Error with code %d" % self.value

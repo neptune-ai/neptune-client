@@ -65,9 +65,7 @@ def get_source_code_to_upload(
                 common_source_root = os.path.commonpath(absolute_paths)
             except ValueError:
                 for absolute_path in absolute_paths:
-                    source_target_pairs.append(
-                        (absolute_path, normalize_file_name(absolute_path))
-                    )
+                    source_target_pairs.append((absolute_path, normalize_file_name(absolute_path)))
             else:
                 if os.path.isfile(common_source_root):
                     common_source_root = os.path.dirname(common_source_root)
@@ -77,9 +75,7 @@ def get_source_code_to_upload(
                     source_target_pairs.append(
                         (
                             absolute_path,
-                            normalize_file_name(
-                                os.path.relpath(absolute_path, common_source_root)
-                            ),
+                            normalize_file_name(os.path.relpath(absolute_path, common_source_root)),
                         )
                     )
     return entrypoint, source_target_pairs

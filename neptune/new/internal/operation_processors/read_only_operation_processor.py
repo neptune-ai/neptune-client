@@ -34,9 +34,7 @@ class ReadOnlyOperationProcessor(OperationProcessor):
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         if not self._warning_emitted:
             self._warning_emitted = True
-            _logger.warning(
-                "Client in read-only mode, nothing will be saved to server."
-            )
+            _logger.warning("Client in read-only mode, nothing will be saved to server.")
 
     def wait(self):
         pass

@@ -21,12 +21,8 @@ import re
 class CGroupFilesystemReader(object):
     def __init__(self):
         cgroup_memory_dir = self.__cgroup_mount_dir(subsystem="memory")
-        self.__memory_usage_file = os.path.join(
-            cgroup_memory_dir, "memory.usage_in_bytes"
-        )
-        self.__memory_limit_file = os.path.join(
-            cgroup_memory_dir, "memory.limit_in_bytes"
-        )
+        self.__memory_usage_file = os.path.join(cgroup_memory_dir, "memory.usage_in_bytes")
+        self.__memory_limit_file = os.path.join(cgroup_memory_dir, "memory.limit_in_bytes")
 
         cgroup_cpu_dir = self.__cgroup_mount_dir(subsystem="cpu")
         self.__cpu_period_file = os.path.join(cgroup_cpu_dir, "cpu.cfs_period_us")

@@ -66,9 +66,7 @@ class AlphaPropertyDTO(AlphaAttributeWrapper):
     def is_valid_attribute(cls, attribute):
         """Checks if attribute can be used as property"""
         has_valid_type = super().is_valid_attribute(attribute)
-        is_in_properties_space = attribute.name.startswith(
-            alpha_consts.PROPERTIES_ATTRIBUTE_SPACE
-        )
+        is_in_properties_space = attribute.name.startswith(alpha_consts.PROPERTIES_ATTRIBUTE_SPACE)
         return has_valid_type and is_in_properties_space
 
     @property
@@ -96,9 +94,7 @@ class AlphaParameterDTO(AlphaAttributeWrapper):
     def is_valid_attribute(cls, attribute):
         """Checks if attribute can be used as property"""
         has_valid_type = super().is_valid_attribute(attribute)
-        is_in_parameters_space = attribute.name.startswith(
-            alpha_consts.PARAMETERS_ATTRIBUTE_SPACE
-        )
+        is_in_parameters_space = attribute.name.startswith(alpha_consts.PARAMETERS_ATTRIBUTE_SPACE)
         return has_valid_type and is_in_parameters_space
 
     @property
@@ -241,6 +237,4 @@ def channel_value_type_to_operation(
 
 
 def deprecated_img_to_alpha_image(img: dict) -> ImageValue:
-    return ImageValue(
-        data=img["data"], name=img["name"], description=img["description"]
-    )
+    return ImageValue(data=img["data"], name=img["name"], description=img["description"])

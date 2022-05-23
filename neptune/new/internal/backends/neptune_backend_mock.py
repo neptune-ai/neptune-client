@@ -122,18 +122,12 @@ class NeptuneBackendMock(NeptuneBackend):
     def __init__(self, credentials=None, proxies=None):
         # pylint: disable=unused-argument
         self._project_id: UniqueId = UniqueId(str(uuid.uuid4()))
-        self._containers: Dict[
-            (UniqueId, ContainerType), ContainerStructure[Value, dict]
-        ] = dict()
+        self._containers: Dict[(UniqueId, ContainerType), ContainerStructure[Value, dict]] = dict()
         self._next_run = 1  # counter for runs
         self._next_model_version = defaultdict(lambda: 1)  # counter for model versions
         self._artifacts: Dict[Tuple[str, str], List[ArtifactFileData]] = dict()
-        self._attribute_type_converter_value_visitor = (
-            self.AttributeTypeConverterValueVisitor()
-        )
-        self._create_container(
-            self._project_id, ContainerType.PROJECT, self.PROJECT_KEY
-        )
+        self._attribute_type_converter_value_visitor = self.AttributeTypeConverterValueVisitor()
+        self._create_container(self._project_id, ContainerType.PROJECT, self.PROJECT_KEY)
 
     def get_display_address(self) -> str:
         return "OFFLINE"
@@ -215,9 +209,7 @@ class NeptuneBackendMock(NeptuneBackend):
             trashed=False,
         )
 
-    def create_model_version(
-        self, project_id: str, model_id: UniqueId
-    ) -> ApiExperiment:
+    def create_model_version(self, project_id: str, model_id: UniqueId) -> ApiExperiment:
         try:
             model_key = self._get_container(
                 container_id=model_id, container_type=ContainerType.MODEL
@@ -225,9 +217,7 @@ class NeptuneBackendMock(NeptuneBackend):
         except ContainerUUIDNotFound:
             model_key = "MOD"
 
-        sys_id = SysId(
-            f"{self.PROJECT_KEY}-{model_key}-{self._next_model_version[model_id]}"
-        )
+        sys_id = SysId(f"{self.PROJECT_KEY}-{model_key}-{self._next_model_version[model_id]}")
         self._next_model_version[model_id] += 1
         new_run_id = UniqueId(str(uuid.uuid4()))
         self._create_container(new_run_id, ContainerType.MODEL_VERSION, sys_id=sys_id)
@@ -295,9 +285,7 @@ class NeptuneBackendMock(NeptuneBackend):
         val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
             if isinstance(val, dict):
-                raise MetadataInconsistency(
-                    "{} is a namespace, not an attribute".format(op.path)
-                )
+                raise MetadataInconsistency("{} is a namespace, not an attribute".format(op.path))
             else:
                 raise InternalClientError("{} is a {}".format(op.path, type(val)))
         visitor = NeptuneBackendMock.NewValueOpVisitor(self, op.path, val)
@@ -307,9 +295,7 @@ class NeptuneBackendMock(NeptuneBackend):
         else:
             run.pop(op.path)
 
-    def get_attributes(
-        self, container_id: str, container_type: ContainerType
-    ) -> List[Attribute]:
+    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
         run = self._get_container(container_id, container_type)
         return list(self._generate_attributes(None, run.get_structure()))
 
@@ -334,8 +320,7 @@ class NeptuneBackendMock(NeptuneBackend):
         run = self._get_container(container_id, container_type)
         value: File = run.get(path)
         target_path = os.path.abspath(
-            destination
-            or (path[-1] + ("." + value.extension if value.extension else ""))
+            destination or (path[-1] + ("." + value.extension if value.extension else ""))
         )
         if value.content is not None:
             with open(target_path, "wb") as target_file:
@@ -412,9 +397,7 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(container_id, container_type, path, Artifact)
         return ArtifactAttribute(val.hash)
 
-    def list_artifact_files(
-        self, project_id: str, artifact_hash: str
-    ) -> List[ArtifactFileData]:
+    def list_artifact_files(self, project_id: str, artifact_hash: str) -> List[ArtifactFileData]:
         return self._artifacts[(project_id, artifact_hash)]
 
     def get_float_series_attribute(
@@ -449,9 +432,7 @@ class NeptuneBackendMock(NeptuneBackend):
             raise MetadataInconsistency("Attribute {} not found".format(str_path))
         if isinstance(value, expected_type):
             return value
-        raise MetadataInconsistency(
-            "Attribute {} is not {}".format(str_path, type.__name__)
-        )
+        raise MetadataInconsistency("Attribute {} is not {}".format(str_path, type.__name__))
 
     def get_string_series_values(
         self,
@@ -507,19 +488,13 @@ class NeptuneBackendMock(NeptuneBackend):
     ):
         """Non relevant for backend"""
 
-    def get_run_url(
-        self, run_id: str, workspace: str, project_name: str, sys_id: str
-    ) -> str:
+    def get_run_url(self, run_id: str, workspace: str, project_name: str, sys_id: str) -> str:
         return f"offline/{run_id}"
 
-    def get_project_url(
-        self, project_id: str, workspace: str, project_name: str
-    ) -> str:
+    def get_project_url(self, project_id: str, workspace: str, project_name: str) -> str:
         return f"offline/{project_id}"
 
-    def get_model_url(
-        self, model_id: str, workspace: str, project_name: str, sys_id: str
-    ) -> str:
+    def get_model_url(self, model_id: str, workspace: str, project_name: str, sys_id: str) -> str:
         return f"offline/{model_id}"
 
     def get_model_version_url(
@@ -538,9 +513,7 @@ class NeptuneBackendMock(NeptuneBackend):
             if isinstance(value, dict):
                 yield from self._get_attribute_values(value, path_prefix + [k])
             else:
-                attr_type = value.accept(
-                    self._attribute_type_converter_value_visitor
-                ).value
+                attr_type = value.accept(self._attribute_type_converter_value_visitor).value
                 attr_path = "/".join(path_prefix + [k])
                 if hasattr(value, "value"):
                     yield attr_path, attr_type, value.value
@@ -613,9 +586,7 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_namespace(self, _: Namespace) -> AttributeType:
             raise NotImplementedError
 
-        def copy_value(
-            self, source_type: Type[Attribute], source_path: List[str]
-        ) -> AttributeType:
+        def copy_value(self, source_type: Type[Attribute], source_path: List[str]) -> AttributeType:
             raise NotImplementedError
 
     class NewValueOpVisitor(OperationVisitor[Optional[Value]]):
@@ -623,58 +594,40 @@ class NeptuneBackendMock(NeptuneBackend):
             self._backend = backend
             self._path = path
             self._current_value = current_value
-            self._artifact_hash = (
-                "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-            )
+            self._artifact_hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
 
         def visit_assign_float(self, op: AssignFloat) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, Float
-            ):
+            if self._current_value is not None and not isinstance(self._current_value, Float):
                 raise self._create_type_error("assign", Float.__name__)
             return Float(op.value)
 
         def visit_assign_int(self, op: AssignInt) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, Integer
-            ):
+            if self._current_value is not None and not isinstance(self._current_value, Integer):
                 raise self._create_type_error("assign", Integer.__name__)
             return Integer(op.value)
 
         def visit_assign_bool(self, op: AssignBool) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, Boolean
-            ):
+            if self._current_value is not None and not isinstance(self._current_value, Boolean):
                 raise self._create_type_error("assign", Boolean.__name__)
             return Boolean(op.value)
 
         def visit_assign_string(self, op: AssignString) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, String
-            ):
+            if self._current_value is not None and not isinstance(self._current_value, String):
                 raise self._create_type_error("assign", String.__name__)
             return String(op.value)
 
         def visit_assign_datetime(self, op: AssignDatetime) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, Datetime
-            ):
+            if self._current_value is not None and not isinstance(self._current_value, Datetime):
                 raise self._create_type_error("assign", Datetime.__name__)
             return Datetime(op.value)
 
         def visit_assign_artifact(self, op: AssignArtifact) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, Artifact
-            ):
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
                 raise self._create_type_error("assign", Artifact.__name__)
             return Artifact(op.hash)
 
-        def visit_track_files_to_artifact(
-            self, _: TrackFilesToArtifact
-        ) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, Artifact
-            ):
+        def visit_track_files_to_artifact(self, _: TrackFilesToArtifact) -> Optional[Value]:
+            if self._current_value is not None and not isinstance(self._current_value, Artifact):
                 raise self._create_type_error("save", Artifact.__name__)
             return Artifact(self._artifact_hash)
 
@@ -686,16 +639,12 @@ class NeptuneBackendMock(NeptuneBackend):
             return Artifact()
 
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, File
-            ):
+            if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("save", File.__name__)
             return File(path=op.file_path, extension=op.ext)
 
         def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
-            if self._current_value is not None and not isinstance(
-                self._current_value, File
-            ):
+            if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("upload_files", File.__name__)
             return File(content=base64_decode(op.file_content), extension=op.ext)
 
@@ -728,9 +677,7 @@ class NeptuneBackendMock(NeptuneBackend):
             return StringSeries(self._current_value.values + raw_values)
 
         def visit_log_images(self, op: LogImages) -> Optional[Value]:
-            raw_values = [
-                File.from_content(base64_decode(x.value.data)) for x in op.values
-            ]
+            raw_values = [File.from_content(base64_decode(x.value.data)) for x in op.values]
             if self._current_value is None:
                 return FileSeries(raw_values)
             if not isinstance(self._current_value, FileSeries):
@@ -771,9 +718,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 return FloatSeries([], min=op.min, max=op.max, unit=op.unit)
             if not isinstance(self._current_value, FloatSeries):
                 raise self._create_type_error("log", FloatSeries.__name__)
-            return FloatSeries(
-                self._current_value.values, min=op.min, max=op.max, unit=op.unit
-            )
+            return FloatSeries(self._current_value.values, min=op.min, max=op.max, unit=op.unit)
 
         def visit_add_strings(self, op: AddStrings) -> Optional[Value]:
             if self._current_value is None:

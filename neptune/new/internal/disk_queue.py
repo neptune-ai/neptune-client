@@ -112,9 +112,7 @@ class DiskQueue(Generic[T]):
             if self._read_file_version >= self._write_file_version:
                 return None, -1
             self._reader.close()
-            self._read_file_version = self._next_log_file_version(
-                self._read_file_version
-            )
+            self._read_file_version = self._next_log_file_version(self._read_file_version)
             self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
             # It is safe. Max recursion level is 2.
             return self._get()
@@ -185,9 +183,7 @@ class DiskQueue(Generic[T]):
         log_files = glob("{}/data-*.log".format(self._dir_path))
         if not log_files:
             return 1, 1
-        return sorted(
-            [int(file[len(str(self._dir_path)) + 6 : -4]) for file in log_files]
-        )
+        return sorted([int(file[len(str(self._dir_path)) + 6 : -4]) for file in log_files])
 
     def _get_first_and_last_log_file_version(self) -> (int, int):
         log_versions = self._get_all_log_file_versions()

@@ -45,9 +45,7 @@ class MetricServiceFactory(object):
         metrics_container = metrics_factory.create_metrics_container()
 
         for metric in metrics_container.metrics():
-            metric.internal_id = self.__backend.create_hardware_metric(
-                experiment, metric
-            )
+            metric.internal_id = self.__backend.create_hardware_metric(experiment, metric)
 
         metric_reporter = MetricReporterFactory(reference_timestamp).create(
             metrics=metrics_container.metrics()

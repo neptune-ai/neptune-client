@@ -112,13 +112,9 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
             ],
         }
         # pylint:disable=protected-access
-        execute_operations = (
-            self.leaderboard.leaderboard_swagger_client.api.executeOperations
-        )
+        execute_operations = self.leaderboard.leaderboard_swagger_client.api.executeOperations
         self.assertEqual(len(execute_operations.call_args_list), 1)
-        self.assertDictEqual(
-            execute_operations.call_args_list[0][1], expected_call_args
-        )
+        self.assertDictEqual(execute_operations.call_args_list[0][1], expected_call_args)
 
     def test_send_channels_text_values(self):
         channel_y_elements = [

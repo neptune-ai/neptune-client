@@ -53,12 +53,8 @@ class HostedFileOperationsHelper(unittest.TestCase):
         swagger_mock = MagicMock()
         swagger_mock.swagger_spec.http_client = MagicMock()
         swagger_mock.swagger_spec.api_url = "ui.neptune.ai"
-        swagger_mock.api.uploadFileSetAttributeChunk.operation.path_name = (
-            "/uploadFileSetChunk"
-        )
-        swagger_mock.api.uploadFileSetAttributeTar.operation.path_name = (
-            "/uploadFileSetTar"
-        )
+        swagger_mock.api.uploadFileSetAttributeChunk.operation.path_name = "/uploadFileSetChunk"
+        swagger_mock.api.uploadFileSetAttributeTar.operation.path_name = "/uploadFileSetTar"
         swagger_mock.api.uploadPath.operation.path_name = "/uploadPath"
         swagger_mock.api.uploadAttribute.operation.path_name = "/attributes/upload"
         swagger_mock.api.downloadAttribute.operation.path_name = "/attributes/download"
@@ -79,9 +75,7 @@ class HostedFileOperationsHelper(unittest.TestCase):
         swagger_mock.api.fileAtomMultipartUploadPart.operation.path_name = (
             "/attributes/storage/file/upload/part"
         )
-        swagger_mock.api.fileAtomUpload.operation.path_name = (
-            "/attributes/storage/file/upload"
-        )
+        swagger_mock.api.fileAtomUpload.operation.path_name = "/attributes/storage/file/upload"
 
         swagger_mock.api.fileSetFileMultipartUploadStart.operation.path_name = (
             "/attributes/storage/fileset/upload/start"
@@ -103,9 +97,7 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
     def test_get_content_disposition_filename(self):
         # given
         response_mock = MagicMock()
-        response_mock.headers = {
-            "Content-Disposition": 'attachment; filename="sample.file"'
-        }
+        response_mock.headers = {"Content-Disposition": 'attachment; filename="sample.file"'}
 
         # when
         filename = _get_content_disposition_filename(response_mock)
@@ -113,9 +105,7 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
         # then
         self.assertEqual(filename, "sample.file")
 
-    @patch(
-        "neptune.new.internal.backends.hosted_file_operations._store_response_as_file"
-    )
+    @patch("neptune.new.internal.backends.hosted_file_operations._store_response_as_file")
     @patch("neptune.new.internal.backends.hosted_file_operations._download_raw_data")
     def test_download_file_attribute(self, download_raw, store_response_mock):
         # given
@@ -139,9 +129,7 @@ class TestCommonHostedFileOperations(HostedFileOperationsHelper):
         )
         store_response_mock.assert_called_once_with(download_raw.return_value, None)
 
-    @patch(
-        "neptune.new.internal.backends.hosted_file_operations._store_response_as_file"
-    )
+    @patch("neptune.new.internal.backends.hosted_file_operations._store_response_as_file")
     @patch("neptune.new.internal.backends.hosted_file_operations._download_raw_data")
     @patch(
         "neptune.new.internal.backends.hosted_file_operations._get_download_url",
@@ -176,9 +164,7 @@ class TestOldUploadFileOperations(HostedFileOperationsHelper):
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_raw_data_mock.return_value = b"null"
-        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = (
-            10
-        )
+        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = 10
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:
@@ -343,9 +329,7 @@ class TestOldUploadFileOperations(HostedFileOperationsHelper):
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_raw_data_mock.return_value = b"null"
-        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = (
-            10
-        )
+        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = 10
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:
@@ -534,9 +518,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
                     data=data[chunk_size:],
                     http_client=swagger_mock.swagger_spec.http_client,
                     url="https://ui.neptune.ai/attributes/storage/file/upload/part",
-                    headers={
-                        "X-Range": f"bytes={chunk_size}-{len(data) - 1}/{len(data)}"
-                    },
+                    headers={"X-Range": f"bytes={chunk_size}-{len(data) - 1}/{len(data)}"},
                     query_params={
                         "uploadPartIdx": 1,
                         "uploadId": upload_id,
@@ -670,9 +652,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
                     data=data[chunk_size:],
                     http_client=swagger_mock.swagger_spec.http_client,
                     url="https://ui.neptune.ai/attributes/storage/fileset/upload/part",
-                    headers={
-                        "X-Range": f"bytes={chunk_size}-{len(data) - 1}/{len(data)}"
-                    },
+                    headers={"X-Range": f"bytes={chunk_size}-{len(data) - 1}/{len(data)}"},
                     query_params={
                         "uploadPartIdx": 1,
                         "uploadId": upload_id,
@@ -695,9 +675,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
         exp_uuid = str(uuid.uuid4())
         swagger_mock = self._get_swagger_mock()
         upload_raw_data_mock.return_value = b"null"
-        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = (
-            10
-        )
+        swagger_mock.api.getUploadConfig.return_value.response.return_value.result.chunkSize = 10
 
         # when
         with NamedTemporaryFile("w") as temp_file_1:

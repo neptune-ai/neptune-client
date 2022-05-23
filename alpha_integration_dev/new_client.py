@@ -115,9 +115,7 @@ class NewClientFeatures(ClientFeatures):
         with self.with_check_if_file_appears("assigned image.png"):
             self.exp[ARTIFACT_ATTRIBUTE_SPACE]["assigned image"].download()
         with self.with_check_if_file_appears("custom_dest.png"):
-            self.exp[ARTIFACT_ATTRIBUTE_SPACE]["assigned image"].download(
-                "custom_dest.png"
-            )
+            self.exp[ARTIFACT_ATTRIBUTE_SPACE]["assigned image"].download("custom_dest.png")
 
         self.exp[ARTIFACT_ATTRIBUTE_SPACE]["logged image"].log(g_img)
 

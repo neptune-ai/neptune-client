@@ -23,9 +23,7 @@ from neptune.new.metadata_containers import MetadataContainer
 
 
 class StdStreamCaptureLogger:
-    def __init__(
-        self, container: MetadataContainer, attribute_name: str, stream: TextIO
-    ):
+    def __init__(self, container: MetadataContainer, attribute_name: str, stream: TextIO):
         self._logger = NeptuneLogger(container, attribute_name)
         self.stream = stream
         self._thread_local = threading.local()

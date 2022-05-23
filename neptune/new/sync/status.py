@@ -67,18 +67,10 @@ class StatusRunner(AbstractBackendRunner):
                 unsynced_containers.append(metadata_container)
 
         not_found = len(
-            [
-                exp
-                for exp in synced_containers + unsynced_containers
-                if not exp or exp.trashed
-            ]
+            [exp for exp in synced_containers + unsynced_containers if not exp or exp.trashed]
         )
-        synced_containers = [
-            obj for obj in synced_containers if obj and not obj.trashed
-        ]
-        unsynced_containers = [
-            obj for obj in unsynced_containers if obj and not obj.trashed
-        ]
+        synced_containers = [obj for obj in synced_containers if obj and not obj.trashed]
+        unsynced_containers = [obj for obj in unsynced_containers if obj and not obj.trashed]
 
         return synced_containers, unsynced_containers, not_found
 
@@ -122,15 +114,11 @@ class StatusRunner(AbstractBackendRunner):
         click.echo("Please run with the `neptune sync --help` to see example commands.")
 
     def synchronization_status(self, base_path: Path) -> None:
-        synced_containers, unsynced_containers, not_found = self.partition_containers(
-            base_path
-        )
+        synced_containers, unsynced_containers, not_found = self.partition_containers(base_path)
         if not_found > 0:
             click.echo(
                 f"WARNING: {not_found} objects was skipped because they are in trash or do not exist anymore.",
                 sys.stderr,
             )
         offline_dirs = get_offline_dirs(base_path)
-        self.list_containers(
-            base_path, synced_containers, unsynced_containers, offline_dirs
-        )
+        self.list_containers(base_path, synced_containers, unsynced_containers, offline_dirs)

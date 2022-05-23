@@ -128,9 +128,7 @@ class TestDiskQueue(unittest.TestCase):
             data_files_versions = [
                 int(file[len(dirpath + "/data-") : -len(".log")]) for file in data_files
             ]
-            self.assertTrue(
-                len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1
-            )
+            self.assertTrue(len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1)
             queue.close()
 
             queue = DiskQueue[TestDiskQueue.Obj](

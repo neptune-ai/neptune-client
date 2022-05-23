@@ -55,9 +55,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(image_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(expected_image), self._encode_pil_image(expected_image)
-        )
+        self.assertEqual(get_image_content(expected_image), self._encode_pil_image(expected_image))
 
     def test_get_image_content_from_2d_grayscale_array(self):
         # given
@@ -66,9 +64,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_array), self._encode_pil_image(expected_image)
-        )
+        self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
 
     def test_get_image_content_from_3d_grayscale_array(self):
         # given
@@ -79,9 +75,7 @@ class TestImage(unittest.TestCase):
         # expect
         stderr = io.StringIO()
         with contextlib.redirect_stderr(stderr):
-            self.assertEqual(
-                get_image_content(image_array), self._encode_pil_image(expected_image)
-            )
+            self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
         self.assertEqual(
             stderr.getvalue(),
             "The smallest value in the array is -3 and the largest value in the array is 6."
@@ -95,9 +89,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_array), self._encode_pil_image(expected_image)
-        )
+        self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
 
         # and make sure that original image's size was preserved
         self.assertFalse((image_array * 255 - scaled_array).any())
@@ -109,9 +101,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(scaled_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_array), self._encode_pil_image(expected_image)
-        )
+        self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
 
         # and make sure that original image's size was preserved
         self.assertFalse((image_array * 255 - scaled_array).any())
@@ -139,9 +129,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_tensor), self._encode_pil_image(expected_image)
-        )
+        self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
         # and make sure that original image's size was preserved
         self.assertFalse((image_tensor.numpy() * 255 - expected_array).any())
@@ -156,9 +144,7 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        self.assertEqual(
-            get_image_content(image_tensor), self._encode_pil_image(expected_image)
-        )
+        self.assertEqual(get_image_content(image_tensor), self._encode_pil_image(expected_image))
 
     def test_get_html_from_matplotlib_figure(self):
         # given
@@ -243,7 +229,7 @@ class TestImage(unittest.TestCase):
         result = get_html_content(p)
 
         # then
-        self.assertTrue(result.startswith('\n\n\n\n<!DOCTYPE html>\n<html lang="en">'))
+        self.assertTrue(result.startswith('<!DOCTYPE html>\n<html lang="en">'))
 
     def test_get_html_from_pandas(self):
         # given

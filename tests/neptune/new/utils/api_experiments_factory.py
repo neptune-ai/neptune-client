@@ -45,9 +45,7 @@ def api_metadata_container(container_type: ContainerType) -> ApiExperiment:
 
 
 def api_project() -> ApiExperiment:
-    return _api_metadata_container(
-        sys_id=_random_key(), container_type=ContainerType.PROJECT
-    )
+    return _api_metadata_container(sys_id=_random_key(), container_type=ContainerType.PROJECT)
 
 
 def api_run() -> ApiExperiment:
@@ -69,9 +67,7 @@ def api_model_version() -> ApiExperiment:
     )
 
 
-def _api_metadata_container(
-    sys_id: str, container_type: ContainerType
-) -> ApiExperiment:
+def _api_metadata_container(sys_id: str, container_type: ContainerType) -> ApiExperiment:
     return ApiExperiment(
         id=UniqueId(str(uuid.uuid4())),
         type=container_type,
@@ -83,6 +79,4 @@ def _api_metadata_container(
 
 
 def _random_key(key_length: int = 3) -> str:
-    return "".join(
-        random.choice(string.ascii_letters).upper() for _ in range(key_length)
-    )
+    return "".join(random.choice(string.ascii_letters).upper() for _ in range(key_length))

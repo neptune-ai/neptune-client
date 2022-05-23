@@ -164,9 +164,7 @@ class TestStringSet(BaseE2ETest):
         container[self.neptune_tags_path].add(remaining_tag1)
         container[self.neptune_tags_path].add([to_remove_tag1, remaining_tag2])
         container[self.neptune_tags_path].remove(to_remove_tag1)
-        container[self.neptune_tags_path].remove(
-            to_remove_tag2
-        )  # remove non existing tag
+        container[self.neptune_tags_path].remove(to_remove_tag2)  # remove non existing tag
         container.sync()
 
         assert container[self.neptune_tags_path].fetch() == {
@@ -177,30 +175,30 @@ class TestStringSet(BaseE2ETest):
 
 class TestFetchTable(BaseE2ETest):
     def test_fetch_runs_table(self, environment):
-        tag = str(uuid.uuid4())
+        tag1, tag2 = str(uuid.uuid4()), str(uuid.uuid4())
 
         with neptune.init_run(project=environment.project) as run:
-            run["sys/tags"].add(tag)
+            run["sys/tags"].add(tag1)
+            run["sys/tags"].add(tag2)
             run["value"] = 12
             run.sync()
 
         with neptune.init_run(project=environment.project) as run:
-            run["sys/tags"].add(tag)
+            run["sys/tags"].add(tag2)
             run["another/value"] = "testing"
             run.sync()
 
-        # wait for the elasticsearch cache to fill
+        # wait for the cache to fill
         time.sleep(5)
 
         project = neptune.get_project(name=environment.project)
 
         runs_table = sorted(
-            project.fetch_runs_table(tag=tag).to_rows(),
+            project.fetch_runs_table(tag=[tag1, tag2]).to_rows(),
             key=lambda r: r.get_attribute_value("sys/id"),
         )
-        assert len(runs_table) == 2
+        assert len(runs_table) == 1
         assert runs_table[0].get_attribute_value("value") == 12
-        assert runs_table[1].get_attribute_value("another/value") == "testing"
 
     @pytest.mark.parametrize("container", ["model"], indirect=True)
     def test_fetch_model_versions_table(self, container: Model, environment):
@@ -208,9 +206,7 @@ class TestFetchTable(BaseE2ETest):
         versions_to_initialize = 5
 
         for _ in range(versions_to_initialize):
-            with neptune.init_model_version(
-                model=model_sys_id, project=environment.project
-            ):
+            with neptune.init_model_version(model=model_sys_id, project=environment.project):
                 pass
 
         # wait for the elasticsearch cache to fill
@@ -223,6 +219,5 @@ class TestFetchTable(BaseE2ETest):
         assert len(versions_table) == versions_to_initialize
         for index in range(versions_to_initialize):
             assert (
-                versions_table[index].get_attribute_value("sys/id")
-                == f"{model_sys_id}-{index + 1}"
+                versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
             )

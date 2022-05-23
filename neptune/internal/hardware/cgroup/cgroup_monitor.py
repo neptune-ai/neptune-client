@@ -53,25 +53,15 @@ class CGroupMonitor(object):
 
     def get_cpu_usage_percentage(self):
         current_timestamp_nanos = time.time() * 10**9
-        cpu_cumulative_usage_nanos = (
-            self.__cgroup_filesystem_reader.get_cpuacct_usage_nanos()
-        )
+        cpu_cumulative_usage_nanos = self.__cgroup_filesystem_reader.get_cpuacct_usage_nanos()
 
         if self.__first_measurement():
             current_usage = 0.0
         else:
-            usage_diff = (
-                cpu_cumulative_usage_nanos - self.__last_cpu_cumulative_usage_nanos
-            )
-            time_diff = (
-                current_timestamp_nanos
-                - self.__last_cpu_usage_measurement_timestamp_nanos
-            )
+            usage_diff = cpu_cumulative_usage_nanos - self.__last_cpu_cumulative_usage_nanos
+            time_diff = current_timestamp_nanos - self.__last_cpu_usage_measurement_timestamp_nanos
             current_usage = (
-                float(usage_diff)
-                / float(time_diff)
-                / self.get_cpu_usage_limit_in_cores()
-                * 100.0
+                float(usage_diff) / float(time_diff) / self.get_cpu_usage_limit_in_cores() * 100.0
             )
 
         self.__last_cpu_usage_measurement_timestamp_nanos = current_timestamp_nanos

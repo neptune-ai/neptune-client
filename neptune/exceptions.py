@@ -166,9 +166,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        super(NeptuneNoExperimentContextException, self).__init__(
-            message.format(**STYLES)
-        )
+        super(NeptuneNoExperimentContextException, self).__init__(message.format(**STYLES))
 
 
 class NeptuneMissingApiTokenException(NeptuneException):
@@ -299,9 +297,7 @@ class InvalidNeptuneBackend(NeptuneException):
 class DeprecatedApiToken(NeptuneException):
     def __init__(self, app_url):
         super(DeprecatedApiToken, self).__init__(
-            "Your API token is deprecated. Please visit {} to get a new one.".format(
-                app_url
-            )
+            "Your API token is deprecated. Please visit {} to get a new one.".format(app_url)
         )
 
 
@@ -472,7 +468,3 @@ You may also want to check the following docs pages:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(**STYLES))
-
-
-class ProjectMigratedToNewStructure(NeptuneException):
-    pass

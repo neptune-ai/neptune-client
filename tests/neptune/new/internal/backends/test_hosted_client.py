@@ -58,6 +58,7 @@ from neptune.new.internal.backends.hosted_client import (
 )
 from neptune.new.internal.backends.utils import verify_host_resolution
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
+from tests.neptune.new.utils import response_mock
 
 API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYXBwLnN0YWdlLm5lcHR1bmUubWwiLCJ"
@@ -66,9 +67,7 @@ API_TOKEN = (
 
 
 @patch("neptune.new.internal.backends.hosted_client.RequestsClient", new=MagicMock())
-@patch(
-    "neptune.new.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock()
-)
+@patch("neptune.new.internal.backends.hosted_client.NeptuneAuthenticator", new=MagicMock())
 @patch("bravado.client.SwaggerClient.from_url")
 @patch("platform.platform", new=lambda: "testPlatform")
 @patch("platform.python_version", new=lambda: "3.9.test")
@@ -124,10 +123,8 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
             Mock(role="member", registeredMemberInfo=Mock(username="tester1")),
             Mock(role="owner", registeredMemberInfo=Mock(username="tester2")),
         ]
-        swagger_client.api.listOrganizationMembers.return_value.response = (
-            BravadoResponseMock(
-                result=members,
-            )
+        swagger_client.api.listOrganizationMembers.return_value.response = BravadoResponseMock(
+            result=members,
         )
 
         # when:
@@ -141,10 +138,8 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # given:
         members = []
-        swagger_client.api.listOrganizationMembers.return_value.response = (
-            BravadoResponseMock(
-                result=members,
-            )
+        swagger_client.api.listOrganizationMembers.return_value.response = BravadoResponseMock(
+            result=members,
         )
 
         # when:
@@ -158,7 +153,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # when:
         swagger_client.api.listOrganizationMembers.side_effect = HTTPNotFound(
-            response=MagicMock()
+            response=response_mock()
         )
 
         # then:
@@ -174,10 +169,8 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
             Mock(role="manager", registeredMemberInfo=Mock(username="tester2")),
             Mock(role="viewer", registeredMemberInfo=Mock(username="tester3")),
         ]
-        swagger_client.api.listProjectMembers.return_value.response = (
-            BravadoResponseMock(
-                result=members,
-            )
+        swagger_client.api.listProjectMembers.return_value.response = BravadoResponseMock(
+            result=members,
         )
 
         # when:
@@ -194,10 +187,8 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # given:
         members = []
-        swagger_client.api.listProjectMembers.return_value.response = (
-            BravadoResponseMock(
-                result=members,
-            )
+        swagger_client.api.listProjectMembers.return_value.response = BravadoResponseMock(
+            result=members,
         )
 
         # when:
@@ -210,9 +201,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.listProjectMembers.side_effect = HTTPNotFound(
-            response=MagicMock()
-        )
+        swagger_client.api.listProjectMembers.side_effect = HTTPNotFound(response=response_mock())
 
         # then:
         with self.assertRaises(ProjectNotFound):
@@ -222,9 +211,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.deleteProject.side_effect = HTTPNotFound(
-            response=MagicMock()
-        )
+        swagger_client.api.deleteProject.side_effect = HTTPNotFound(response=response_mock())
 
         # then:
         with self.assertRaises(ProjectNotFound):
@@ -234,9 +221,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.deleteProject.side_effect = HTTPForbidden(
-            response=MagicMock()
-        )
+        swagger_client.api.deleteProject.side_effect = HTTPForbidden(response=response_mock())
 
         # then:
         with self.assertRaises(AccessRevokedOnDeletion):
@@ -251,13 +236,11 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         organizations = [organization]
 
         # when:
-        swagger_client.api.listOrganizations.return_value.response = (
-            BravadoResponseMock(
-                result=organizations,
-            )
+        swagger_client.api.listOrganizations.return_value.response = BravadoResponseMock(
+            result=organizations,
         )
         swagger_client.api.createProject.side_effect = HTTPBadRequest(
-            response=MagicMock(),
+            response=response_mock(),
             swagger_result=MagicMock(
                 code=None,
                 errorType={"name": "validationError"},
@@ -286,10 +269,8 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         organizations = [organization]
 
         # when:
-        swagger_client.api.listOrganizations.return_value.response = (
-            BravadoResponseMock(
-                result=organizations,
-            )
+        swagger_client.api.listOrganizations.return_value.response = BravadoResponseMock(
+            result=organizations,
         )
 
         with self.assertRaises(UnsupportedValue):
@@ -309,10 +290,8 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         organizations = [organization]
 
         # when:
-        swagger_client.api.listOrganizations.return_value.response = (
-            BravadoResponseMock(
-                result=organizations,
-            )
+        swagger_client.api.listOrganizations.return_value.response = BravadoResponseMock(
+            result=organizations,
         )
 
         # then:
@@ -332,10 +311,8 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         project.name = "proj"
 
         # when:
-        swagger_client.api.listOrganizations.return_value.response = (
-            BravadoResponseMock(
-                result=organizations,
-            )
+        swagger_client.api.listOrganizations.return_value.response = BravadoResponseMock(
+            result=organizations,
         )
         swagger_client.api.createProject.return_value.response = BravadoResponseMock(
             result=project,
@@ -351,7 +328,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # when:
         swagger_client.api.addProjectMember.side_effect = HTTPNotFound(
-            response=MagicMock()
+            response=response_mock(),
         )
 
         # then:
@@ -379,9 +356,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.addProjectMember.side_effect = HTTPConflict(
-            response=MagicMock()
-        )
+        swagger_client.api.addProjectMember.side_effect = HTTPConflict(response=response_mock())
 
         # then:
         with self.assertRaises(UserAlreadyHasAccess):
@@ -397,39 +372,33 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
 
         # when:
         swagger_client.api.deleteProjectMember.side_effect = HTTPNotFound(
-            response=MagicMock()
+            response=response_mock(),
         )
 
         # then:
         with self.assertRaises(ProjectNotFound):
-            remove_project_member(
-                name="org/proj", username="tester", api_token=API_TOKEN
-            )
+            remove_project_member(name="org/proj", username="tester", api_token=API_TOKEN)
 
     def test_remove_project_member_no_user(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
         swagger_client.api.deleteProjectMember.side_effect = HTTPUnprocessableEntity(
-            response=MagicMock()
+            response=response_mock(),
         )
 
         # then:
         with self.assertRaises(UserNotExistsOrWithoutAccess):
-            remove_project_member(
-                name="org/proj", username="tester", api_token=API_TOKEN
-            )
+            remove_project_member(name="org/proj", username="tester", api_token=API_TOKEN)
 
     def test_remove_project_member_permissions(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
         swagger_client.api.deleteProjectMember.side_effect = HTTPForbidden(
-            response=MagicMock()
+            response=response_mock(),
         )
 
         # then:
         with self.assertRaises(AccessRevokedOnMemberRemoval):
-            remove_project_member(
-                name="org/proj", username="tester", api_token=API_TOKEN
-            )
+            remove_project_member(name="org/proj", username="tester", api_token=API_TOKEN)
