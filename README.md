@@ -11,7 +11,7 @@
 ## Flexible metadata store for MLOps, built for research and production teams that run a lot of experiments.
 Neptune is a lightweight solution designed for:
 * **Experiment tracking:** log, display, organize, and compare ML experiments in a single place.
-* **Model registry:** version, store, manage, and query trained models, and model-building metadata.
+* **Model registry:** version, store, manage, and query trained models and model-building metadata.
 * **Monitoring ML runs live:** record and monitor model training, evaluation, or production runs live.
 &nbsp;
 
@@ -20,7 +20,7 @@ Neptune is a lightweight solution designed for:
 
 **Step 1:** Sign up for a **[free account](https://neptune.ai/register)**
 
-**Step 2:** Install Neptune client library
+**Step 2:** Install the Neptune client library
 ```bash
 pip install neptune-client
 ```
@@ -60,11 +60,11 @@ Learn more in the [documentation](https://docs.neptune.ai/) or check our [video 
 Neptune [supports log and display](https://docs.neptune.ai/you-should-know/what-can-you-log-and-display) for many different types of metadata generated during the ML model lifecycle:
 * metrics and learning curves
 * parameters, tags, and properties
-* code, .git info, files, and jupyter notebooks
-* hardware consumption (CPU, GPU, Memory)
+* code, Git info, files, and Jupyter notebooks
+* hardware consumption (CPU, GPU, memory)
 * images, interactive charts, and HTML objects
 * audio and video files
-* tables and .csv files
+* tables and CSV files
 * and [more](https://docs.neptune.ai/you-should-know/what-can-you-log-and-display)
 
 <div align="center">
@@ -91,7 +91,7 @@ You can [compare model-building runs](https://docs.neptune.ai/you-should-know/co
 
 ***Filter and organize***
 
-As well as filter, sort, and group model training runs using [highly configurable dashboards](https://docs.neptune.ai/you-should-know/organizing-and-filtering-runs).
+Filter, sort, and group model training runs using [highly configurable dashboards](https://docs.neptune.ai/you-should-know/organizing-and-filtering-runs).
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Filter-and-organize-3688604602-1644927778194.png" width="600">
@@ -100,7 +100,7 @@ As well as filter, sort, and group model training runs using [highly configurabl
 
 ***Collaborate***
 
-And improve [team management and collaboration](https://docs.neptune.ai/you-should-know/collaboration-in-neptune) by grouping all experiments into projects and workspaces and quickly sharing any result or visualization within the team.
+Improve [team management and collaboration](https://docs.neptune.ai/you-should-know/collaboration-in-neptune) by grouping all experiments into projects and workspaces and quickly sharing any result or visualization within the team.
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Collaboration.gif" width="600">
@@ -109,11 +109,11 @@ And improve [team management and collaboration](https://docs.neptune.ai/you-shou
 
 ### Integrate with your favourite ML libraries
 Neptune comes with **25+ integrations with Python libraries** popular in machine learning, deep learning and reinforcement learning.
-Integrations available:
+Available integrations:
 * PyTorch and PyTorch Lightning
 * TensorFlow / Keras and TensorBoard
-* Scikit-Learn, LightGBM, and XGBoost
-* Optuna, Scikit Optimize, and Keras Tuner
+* Scikit-learn, LightGBM, and XGBoost
+* Optuna, Scikit-Optimize, and Keras Tuner
 * Bokeh, Altair, Plotly, and Matplotlib
 * and [more](https://docs.neptune.ai/integrations-and-supported-tools/intro)
 
@@ -126,17 +126,17 @@ Example:
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import NeptuneLogger
 
-# create NeptuneLogger
+# Create NeptuneLogger
 neptune_logger = NeptuneLogger(
     api_key="ANONYMOUS",  # replace with your own
-    project="common/pytorch-lightning-integration",  # "<WORKSPACE/PROJECT>"
+    project="common/pytorch-lightning-integration",  # "WORKSPACE_NAME/PROJECT_NAME"
     tags=["training", "resnet"],  # optional
 )
 
-# pass it to the Trainer
+# Pass it to the Trainer
 trainer = Trainer(max_epochs=10, logger=neptune_logger)
 
-# run training
+# Run training
 trainer.fit(my_model, my_dataloader)
 
 ```
@@ -315,7 +315,7 @@ def objective(trial):
     return accuracy
 
 
-# Create a Neptune Run
+# Create a Neptune run
 run = neptune.init(
     api_token="ANONYMOUS", project="common/optuna-integration"
 )  # you can pass your credentials here
@@ -327,7 +327,7 @@ neptune_callback = optuna_utils.NeptuneCallback(run)
 study = optuna.create_study(direction="maximize")
 study.optimize(objective, n_trials=20, callbacks=[neptune_callback])
 
-# Stop logging to a Neptune Run
+# Stop logging to the run
 run.stop()
 ```
 
@@ -351,12 +351,12 @@ run.stop()
 Read how various customers use Neptune to [improve their workflow](https://neptune.ai/customers).
 
 ### Support
-If you got stuck or simply want to talk to us about something here are your options:
-* Check our [FAQ page](https://docs.neptune.ai/getting-started/getting-help#frequently-asked-questions)
-* Chat! When in application click on the [blue message icon](https://docs.neptune.ai/getting-started/getting-help#chat) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP),
+If you get stuck or simply want to talk to us about something, here are your options:
+* Check our [FAQ page](https://docs.neptune.ai/getting-started/getting-help#frequently-asked-questions).
+* Chat! In the app, click the [blue message icon](https://docs.neptune.ai/getting-started/getting-help#chat) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
 * You can just shoot us an email at [support@neptune.ai](mailto:support@neptune.ai).
 
 ### People behind Neptune
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Grzegorz, Paweł, Natalia, Marcin, Jakub, Prince, Piotr, Rafał, Sandra, Bartosz, Dominika, Karolina, Parth, Vovik, Rafał, Stephen and [you?](https://neptune.ai/jobs)
+Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Grzegorz, Paweł, Marcin, Jakub, Prince, Piotr, Rafał, Sandra, Bartosz, Dominika, Karolina, Parth, Vovik, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, and [you?](https://neptune.ai/jobs)

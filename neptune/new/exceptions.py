@@ -54,11 +54,11 @@ class MissingFieldException(NeptuneException, AttributeError, KeyError):
 {h1}
 ----MissingFieldException-------------------------------------------------------
 {end}
-Field "{field_path}" was not found.
+The field "{field_path}" was not found.
 
 There are two possible reasons:
     - There is a typo in a path. Double-check your code for typos.
-    - You are fetching a field that other process created, but local representation is not synchronized.
+    - You are fetching a field that another process created, but the local representation is not synchronized.
     If you are sending metadata from multiple processes at the same time, synchronize the local representation before fetching values:
         {python}run.sync(){end}
 
@@ -122,7 +122,7 @@ class InternalClientError(NeptuneException):
 {h1}
 ----InternalClientError-----------------------------------------------------------------------
 {end}
-Neptune Client Library encountered an unexpected Internal Error:
+The Neptune client library encountered an unexpected internal error:
 {msg}
 
 Please contact Neptune support.
@@ -140,9 +140,9 @@ class ClientHttpError(NeptuneException):
 {h1}
 ----ClientHttpError-----------------------------------------------------------------------
 {end}
-Neptune server returned status {fail}{status}{end}.
+The Neptune server returned the status {fail}{status}{end}.
 
-Server response was:
+The server response was:
 {fail}{response}{end}
 
 Verify the correctness of your call or contact Neptune support.
@@ -264,7 +264,7 @@ class ContainerUUIDNotFound(NeptuneException):
         self.container_id = container_id
         self.container_type = container_type
         super().__init__(
-            "{} with ID {} not found. Could be deleted.".format(
+            "{} with ID {} not found. It may have been deleted.".format(
                 container_type.value.capitalize(), container_id
             )
         )
@@ -287,7 +287,7 @@ class ProjectNotFoundWithSuggestions(
 {h1}
 ----NeptuneProjectNotFoundException------------------------------------
 {end}
-We couldn’t find project {fail}"{project}"{end}.
+We couldn't find project {fail}"{project}"{end}.
 {available_projects_message}{available_workspaces_message}
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/projects
@@ -332,7 +332,7 @@ class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing)
 {h1}
 ----NeptuneMissingProjectNameException----------------------------------------
 {end}
-Neptune client couldn't find your project name.
+The Neptune client couldn't find your project name.
 {available_projects_message}{available_workspaces_message}
 There are two options two add it:
     - specify it in your code
@@ -378,9 +378,9 @@ class InactiveContainerException(NeptuneException):
 {h1}
 ----{cls}----------------------------------------
 {end}
-It seems you are trying to log (or fetch) metadata to a {container_type} that was stopped ({label}).
+It seems you are trying to log metadata to (or fetch it from) a {container_type} that was stopped ({label}).
 
-What should I do?{resume_info}
+Here's what you can do:{resume_info}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/api-reference/{container_type}#.stop
@@ -437,7 +437,7 @@ class InactiveModelVersionException(InactiveContainerException):
 
 class InactiveProjectException(InactiveContainerException):
     resume_info = """
-    - Initialize connection to the project again to continue logging to it:
+    - Resume the connection to the project to continue logging to it:
     https://docs.neptune.ai/api-reference/neptune#.init_project
     - Don't invoke `stop()` on a project that you want to access."""
 
@@ -451,7 +451,7 @@ class NeptuneMissingApiTokenException(NeptuneException):
 {h1}
 ----NeptuneMissingApiTokenException-------------------------------------------
 {end}
-Neptune client couldn't find your API token.
+The Neptune client couldn't find your API token.
 
 You can get it here:
     - https://app.neptune.ai/get_my_api_token
@@ -494,7 +494,7 @@ class NeptuneInvalidApiTokenException(NeptuneException):
 {h1}
 ----NeptuneInvalidApiTokenException------------------------------------------------
 {end}
-Provided API token is invalid.
+The provided API token is invalid.
 Make sure you copied and provided your API token correctly.
 
 You can get it or check if it is correct here:
@@ -522,7 +522,7 @@ or export or set an environment variable depending on your operating system:
 and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -548,7 +548,7 @@ class NeedExistingExperimentForReadOnlyMode(NeptuneException):
 {end}
 Read-only mode can be used only with an existing {container_type}.
 
-Parameter {python}{container_type}{end} of {python}{callback_name}{end} must be provided and reference
+The {python}{container_type}{end} parameter of {python}{callback_name}{end} must be provided and reference
 an existing run when using {python}mode="read-only"{end}.
 
 You may also want to check the following docs pages:
@@ -603,11 +603,11 @@ class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
 {end}
 It's not possible to use {python}custom_run_id{end} while resuming a run.
 
-Parameters {python}run{end} and {python}custom_run_id{end} of {python}neptune.init(){end} are mutually exclusive.
+The {python}run{end} and {python}custom_run_id{end} parameters of {python}neptune.init(){end} are mutually exclusive.
 Make sure you have no {bash}{custom_id_env}{end} environment variable set
-and no value is explicitly passed to `custom_run_id` argument when you are resuming a run.
+and no value is explicitly passed to the `custom_run_id` argument when you are resuming a run.
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/api-reference/neptune#init
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -632,7 +632,7 @@ class UnsupportedClientVersion(NeptuneException):
 {h1}
 ----UnsupportedClientVersion-------------------------------------------------------------
 {end}
-Your version of neptune-client ({current_version}) library is not supported by the Neptune server.
+Your version of the neptune-client ({current_version}) library is not supported by the Neptune server.
 
 Please install neptune-client{required_version}
 
@@ -678,15 +678,15 @@ class CannotResolveHostname(NeptuneException):
 {h1}
 ----CannotResolveHostname-----------------------------------------------------------------------
 {end}
-Neptune Client Library was not able to resolve hostname {underline}{host}{end}.
+The Neptune client library was not able to resolve hostname {underline}{host}{end}.
 
 What should I do?
     - Check if your computer is connected to the internet.
-    - Check if your computer should use any proxy to access internet.
-      If so, you may want to use {python}proxies{end} parameter of {python}neptune.init(){end} function.
+    - Check if your computer is supposed to be using a proxy to access the internet.
+      If so, you may want to use the {python}proxies{end} parameter of the {python}neptune.init(){end} method.
       See https://docs.neptune.ai/api-reference/neptune#.init
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
-    - Check Neptune services status: https://status.neptune.ai/
+    - Check the status of Neptune services: https://status.neptune.ai/
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -700,18 +700,18 @@ class NeptuneSSLVerificationError(NeptuneException):
 ----NeptuneSSLVerificationError-----------------------------------------------------------------------
 {end}
 
-Neptune client was unable to verify your SSL Certificate.
+The Neptune client was unable to verify your SSL Certificate.
 
-{bold}What could go wrong?{end}
+{bold}What could have gone wrong?{end}
     - You are behind a proxy that inspects traffic to Neptune servers.
         - Contact your network administrator
-    - Your on-prem installation's SSL/TLS certificate is not recognized due to a custom Certificate Authority (CA).
-        - To check run the following command in terminal:
+    - The SSL/TLS certificate of your on-premises installation is not recognized due to a custom Certificate Authority (CA).
+        - To check, run the following command in your terminal:
             {bash}curl https://<your_domain>/api/backend/echo {end}
-        - Where <your_domain> is the address that you use to access Neptune UI i.e. abc.com
+        - Where <your_domain> is the address that you use to access Neptune app, such as abc.com
         - Contact your network administrator if you get the following output:
             {fail}"curl: (60) server certificate verification failed..."{end}
-    - Your machine software is not up-to-date.
+    - Your machine software is outdated.
         - Minimal OS requirements:
             - Windows >= XP SP3
             - macOS >= 10.12.1
@@ -719,9 +719,9 @@ Neptune client was unable to verify your SSL Certificate.
             - Debian >= 8
 
 {bold}What can I do?{end}
-You can manually configure Neptune to skip all SSL checks. To do that
+You can manually configure Neptune to skip all SSL checks. To do that,
 set the NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE environment variable to 'TRUE'.
-{bold}Note that might mean your connection is less secure{end}.
+{bold}Note: This might mean that your connection is less secure{end}.
 
 Linux/Unix
 In your terminal run:
@@ -735,7 +735,7 @@ Jupyter notebook
 In your code cell:
     {bash}%env NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/api-reference/environment-variables#neptune_allow_self_signed_certificate
 
 
@@ -751,17 +751,17 @@ class NeptuneConnectionLostException(NeptuneException):
 {h1}
 ----NeptuneConnectionLostException---------------------------------------------------------
 {end}
-A connection to the Neptune server was lost.
-If you are using asynchronous (default) connection mode Neptune will continue to locally track your metadata and will continuously try to re-establish connection with Neptune servers.
-If the connection is not re-established you can upload it later using Neptune Command Line Interface:
+The connection to the Neptune server was lost.
+If you are using the asynchronous (default) connection mode, Neptune continues to locally track your metadata and continuously tries to re-establish a connection to the Neptune servers.
+If the connection is not re-established, you can upload your data later with the Neptune command-line utility:
     {bash}neptune sync -p workspace_name/project_name{end}
 
 What should I do?
     - Check if your computer is connected to the internet.
-    - If your connection is unstable you can consider working using the offline mode:
+    - If your connection is unstable, consider working in offline mode:
         {python}run = neptune.init(mode="offline"){end}
 
-You can read in detail how it works and how to upload your data on the following doc pages:
+You can find detailed instructions on the following doc pages:
     - https://docs.neptune.ai/you-should-know/connection-modes#offline
     - https://docs.neptune.ai/you-should-know/connection-modes#uploading-offline-data
 
@@ -780,9 +780,9 @@ class InternalServerError(NeptuneApiException):
 {h1}
 ----InternalServerError-----------------------------------------------------------------------
 {end}
-Neptune Client Library encountered an unexpected Internal Server Error.
+The Neptune client library encountered an unexpected internal server error.
 
-Server response was:
+The server response was:
 {fail}{response}{end}
 
 Please try again later or contact Neptune support.
@@ -798,18 +798,18 @@ class Unauthorized(NeptuneApiException):
 {h1}
 ----Unauthorized-----------------------------------------------------------------------
 {end}
-You have no permission to access given resource.
+You don't have permission to access the given resource.
 
-    - Verify your API token is correct.
+    - Verify that your API token is correct.
       See: https://app.neptune.ai/get_my_api_token
 
-    - Verify if your the provided project name is correct.
-      The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+    - Verify that the provided project name is correct.
+      The correct project name should look like this: {correct}WORKSPACE_NAME/PROJECT_NAME{end}
       It has two parts:
-          - {correct}WORKSPACE{end}: which can be your username or your organization name
-          - {correct}PROJECT_NAME{end}: which is the actual project name you chose
+          - {correct}WORKSPACE_NAME{end}: can be your username or your organization name
+          - {correct}PROJECT_NAME{end}: the name specified for the project
 
-   - Ask your organization administrator to grant you necessary privileges to the project
+   - Ask your organization administrator to grant you necessary privileges to the project.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -822,18 +822,18 @@ class Forbidden(NeptuneApiException):
 {h1}
 ----Forbidden-----------------------------------------------------------------------
 {end}
-You have no permission to access given resource.
+You don't have permission to access the given resource.
 
-    - Verify your API token is correct.
+    - Verify that your API token is correct.
       See: https://app.neptune.ai/get_my_api_token
 
-    - Verify if your the provided project name is correct.
-      The correct project name should look like this {correct}WORKSPACE/PROJECT_NAME{end}.
+    - Verify that the provided project name is correct.
+      The correct project name should look like this: {correct}WORKSPACE_NAME/PROJECT_NAME{end}
       It has two parts:
-          - {correct}WORKSPACE{end}: which can be your username or your organization name
-          - {correct}PROJECT_NAME{end}: which is the actual project name you chose
+          - {correct}WORKSPACE_NAME{end}: can be your username or your organization name
+          - {correct}PROJECT_NAME{end}: the name specified for the project
 
-   - Ask your organization administrator to grant you necessary privileges to the project
+   - Ask your organization administrator to grant you necessary privileges to the project.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -850,13 +850,13 @@ class NeptuneOfflineModeFetchException(NeptuneOfflineModeException):
 {h1}
 ----NeptuneOfflineModeFetchException---------------------------------------------------
 {end}
-It seems you are trying to fetch data from the server, while working in an offline mode.
-You need to work in non-offline connection mode to fetch data from the server.
+It seems you are trying to fetch data from the server while working in offline mode.
+You need to work in a non-offline connection mode to fetch data from the server.
 
-You can set connection mode when creating a new run:
+You can set the connection mode when creating a new run:
     {python}run = neptune.init(mode="async"){end}
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/you-should-know/connection-modes
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -870,7 +870,7 @@ class NeptuneOfflineModeChangeStageException(NeptuneOfflineModeException):
 {h1}
 ----NeptuneOfflineModeChangeStageException---------------------------------------
 {end}
-You cannot change the stage of the model version while in OFFLINE mode.
+You cannot change the stage of the model version while in offline mode.
 """
         super().__init__(message.format(**STYLES))
 
@@ -901,7 +901,7 @@ Field {path} cannot be changed directly.
 class NeptuneCannotChangeStageManually(NeptuneProtectedPathException):
     extra_info = """
 If you want to change the stage of the model version,
-use the {python}.change_stage(){end} function:
+use the {python}.change_stage(){end} method:
     {python}model_version.change_stage("staging"){end}"""
 
 
@@ -917,11 +917,11 @@ class NeptuneLegacyProjectException(NeptuneException):
 ----NeptuneLegacyProjectException---------------------------------------------------------
 {end}
 Your project "{project}" has not been migrated to the new structure yet.
-Unfortunately neptune.new Python API is incompatible with projects using old structure,
-please use legacy neptune Python API.
+Unfortunately the neptune.new Python API is incompatible with projects using the old structure,
+so please use legacy neptune Python API.
 Don't worry - we are working hard on migrating all the projects and you will be able to use the neptune.new API soon.
 
-You can find documentation for legacy neptune Python API here:
+You can find documentation for the legacy neptune Python API here:
     - https://docs-legacy.neptune.ai/index.html
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -935,7 +935,7 @@ class NeptuneUninitializedException(NeptuneException):
 {h1}
 ----NeptuneUninitializedException----------------------------------------------------
 {end}
-You must initialize neptune-client before you access `get_last_run`.
+You must initialize the Neptune client library before you can access `get_last_run`.
 
 Looks like you forgot to add:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
@@ -943,7 +943,7 @@ Looks like you forgot to add:
 before you ran:
     {python}neptune.get_last_run(){end}
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/api-reference/neptune#get_last_run
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -958,12 +958,12 @@ class NeptuneIntegrationNotInstalledException(NeptuneException):
 ----NeptuneIntegrationNotInstalledException-----------------------------------------
 {end}
 Looks like integration {integration_package_name} wasn't installed.
-To install run:
+To install, run:
     {bash}pip install {integration_package_name}{end}
 Or:
     {bash}pip install neptune-client[{framework_name}]{end}
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/integrations-and-supported-tools/intro
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -986,17 +986,45 @@ class NeptuneLimitExceedException(NeptuneException):
 {reason}
 
 It's not possible to upload new data, but you can still fetch and delete data.
-If you are using asynchronous (default) connection mode Neptune automatically switched to an offline mode
-and your data is being stored safely on the disk. You can upload it later using Neptune Command Line Interface:
+If you are using asynchronous (default) connection mode, Neptune automatically switched to offline mode
+and your data is being stored safely on the disk. You can upload it later using the Neptune command-line utility:
     {bash}neptune sync -p project_name{end}
 What should I do?
-    - In case of storage limit go to your projects and remove runs or model metadata you don't need
+    - In case of storage limitations, go to your projects and remove runs or model metadata you don't need
     - ... or update your subscription plan here: https://app.neptune.ai/-/subscription
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/advanced-user-guides/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(message.format(**STYLES, reason=reason))
+
+
+# TODO Do not hardcode limit in error message (NPT-11935)
+class NeptuneFieldCountLimitExceedException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneFieldCountLimitExceedException---------------------------------------------------------------------------------------
+{end}
+There are too many fields (more than 9000).
+We have stopped the synchronization to the Neptune server and stored the data locally.
+
+To continue uploading the metadata:
+
+    1. Delete some excess fields.
+
+       You can delete fields or namespaces with the "del" command.
+       For example, to delete the "training/checkpoints" namespace:
+
+       {python}del run["training/checkpoints"]{end}
+
+    2. Once you're done, synchronize the data manually with the following command:
+
+       {bash}neptune sync -p project_name{end}
+
+For more details, see https://docs.neptune.ai/you-should-know/best-practices
+"""
+        super().__init__(message.format(**STYLES))
 
 
 class NeptuneStorageLimitException(NeptuneException):
@@ -1005,14 +1033,14 @@ class NeptuneStorageLimitException(NeptuneException):
 {h1}
 ----NeptuneStorageLimitException---------------------------------------------------------------------------------------
 {end}
-You exceeded storage limit for workspace. It's not possible to upload new data, but you can still fetch and delete data.
-If you are using asynchronous (default) connection mode Neptune automatically switched to an offline mode
-and your data is being stored safely on the disk. You can upload it later using Neptune Command Line Interface:
+You exceeded the storage limit of the workspace. It's not possible to upload new data, but you can still fetch and delete data.
+If you are using asynchronous (default) connection mode, Neptune automatically switched to offline mode
+and your data is being stored safely on the disk. You can upload it later using the Neptune command-line utility:
     {bash}neptune sync -p project_name{end}
 What should I do?
     - Go to your projects and remove runs or model metadata you don't need
     - ... or update your subscription plan here: https://app.neptune.ai/-/subscription
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/advanced-user-guides/connection-modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -1025,18 +1053,18 @@ class FetchAttributeNotFoundException(MetadataInconsistency):
 {h1}
 ----MetadataInconsistency----------------------------------------------------------------------
 {end}
-Field {python}{attribute_path}{end} was not found.
+The field {python}{attribute_path}{end} was not found.
 
-Remember that in the asynchronous (default) connection mode data is synchronized
-with the Neptune servers in the background and may have not reached
-it yet before it's fetched. Before fetching the data you can force
+Remember that in the asynchronous (default) connection mode, data is synchronized
+with the Neptune servers in the background. The data may have not reached
+the servers before it was fetched. Before fetching the data, you can force
 wait for all the requests sent by invoking:
 
     {python}run.wait(){end}
 
 Remember that each use of {python}wait{end} introduces a delay in code execution.
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/you-should-know/connection-modes
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
@@ -1052,16 +1080,16 @@ class ArtifactNotFoundException(MetadataInconsistency):
 {end}
 Artifact with hash {python}{artifact_hash}{end} was not found.
 
-Remember that in the asynchronous (default) connection mode data is synchronized
-with the Neptune servers in the background and may have not reached
-it yet before it's fetched. Before fetching the data you can force
+Remember that in the asynchronous (default) connection mode, data is synchronized
+with the Neptune servers in the background. The data may have not reached
+the servers before it was fetched. Before fetching the data, you can force
 wait for all the requests sent by invoking:
 
     {python}run.wait(){end}
 
 Remember that each use of {python}wait{end} introduces a delay in code execution.
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs.neptune.ai/you-should-know/connection-modes
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help.html
@@ -1087,21 +1115,21 @@ class NeptunePossibleLegacyUsageException(NeptuneWrongInitParametersException):
 {h1}
 ----NeptunePossibleLegacyUsageException----------------------------------------------------------------
 {end}
-It seems you are trying to use legacy API, but imported the new one.
+It seems you are trying to use the legacy API, but you imported the new one.
 
 Simply update your import statement to:
     {python}import neptune{end}
 
-You may want to check the Legacy API docs:
+You may want to check the legacy API docs:
     - https://docs-legacy.neptune.ai
 
-If you want to update your code with the new API we prepared a handy migration guide:
+If you want to update your code with the new API, we prepared a handy migration guide:
     - https://docs.neptune.ai/migration-guide
 
 You can read more about neptune.new in the release blog post:
     - https://neptune.ai/blog/neptune-new
 
-You may also want to check the following docs pages:
+You may also want to check the following docs page:
     - https://docs-legacy.neptune.ai/getting-started/integrate-neptune-into-your-codebase.html
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -1135,7 +1163,7 @@ class NeptuneUnhandledArtifactSchemeException(NeptuneException):
 {h1}
 ----NeptuneUnhandledArtifactProtocolException------------------------------------
 {end}
-You have used a Neptune Artifact to track a file with scheme unhandled by this client ({scheme}).
+You have used a Neptune Artifact to track a file with a scheme unhandled by this client ({scheme}).
 Problematic path: {path}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
@@ -1162,7 +1190,7 @@ class NeptuneLocalStorageAccessException(NeptuneException):
 {h1}
 ----NeptuneLocalStorageAccessException-------------------------------------
 {end}
-Neptune had problem processing "{path}", it expects it to be {expected_description}.
+Neptune had a problem processing "{path}". It expects it to be {expected_description}.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -1227,7 +1255,7 @@ class NeptuneEmptyLocationException(NeptuneException):
 {h1}
 ----NeptuneEmptyLocationException----------------------------------------------
 {end}
-Neptune could not find files in the requested location ({location}) during creation of an Artifact in "{namespace}".
+Neptune could not find files in the requested location ({location}) during the creation of an Artifact in "{namespace}".
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
@@ -1242,11 +1270,11 @@ class NeptuneFeatureNotAvailableException(NeptuneException):
 {h1}
 ----NeptuneFeatureNotAvailableException----------------------------------------------
 {end}
-Following feature is not yet supported by the Neptune instance you are using:
+The following feature is not yet supported by the Neptune instance you are using:
 {missing_feature}
 
 An update of the Neptune instance is required in order to use it. Please contact your local Neptune administrator
-or the Neptune support directly (support@neptune.ai) about the upcoming updates.
+or Neptune support directly (support@neptune.ai) about the upcoming updates.
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
