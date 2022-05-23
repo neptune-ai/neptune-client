@@ -35,7 +35,7 @@ class ApiMethodWrapper:
     @staticmethod
     def handle_neptune_http_errors(response, exception: Optional[HTTPError] = None):
         try:
-            _json = response.json()
+            _json = response.json() or dict()
         except Exception:
             _json = {}
 
