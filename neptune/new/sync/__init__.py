@@ -35,6 +35,7 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
+from neptune.new.internal.utils.debug_log import logger
 from neptune.new.sync.status import StatusRunner
 from neptune.new.sync.sync import SyncRunner
 
@@ -172,7 +173,7 @@ def sync(
     sync_runner = SyncRunner(backend=HostedNeptuneBackend(Credentials.from_token()))
 
     if runs_names:
-        click.echo(
+        logger.warning(
             "WARNING: --run parameter is deprecated and will be removed in the future, please start using --object"
         )
         # prefer object_names, obviously

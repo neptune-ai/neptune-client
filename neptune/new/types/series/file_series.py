@@ -16,9 +16,8 @@
 
 from typing import TYPE_CHECKING, List, TypeVar
 
-import click
-
 from neptune.new.internal.utils import is_collection
+from neptune.new.internal.utils.debug_log import logger
 from neptune.new.types import File
 from neptune.new.types.series.series import Series
 
@@ -37,10 +36,7 @@ class FileSeries(Series):
         self.name = kwargs.pop("name", None)
         self.description = kwargs.pop("description", None)
         if kwargs:
-            click.echo(
-                "Warning: unexpected arguments ({kwargs}) in FileSeries".format(kwargs=kwargs),
-                err=True,
-            )
+            logger.error("Warning: unexpected arguments (%s) in FileSeries", kwargs)
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_image_series(self)
@@ -50,4 +46,4 @@ class FileSeries(Series):
         return self._values
 
     def __str__(self):
-        return "FileSeries({})".format(str(self.values))
+        return f"FileSeries({self.values})"

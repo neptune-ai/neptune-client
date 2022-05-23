@@ -15,12 +15,11 @@
 #
 from typing import TYPE_CHECKING, Iterable, List, Optional
 
-import click
-
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.series import Series
 from neptune.new.internal.backends.api_model import StringSeriesValues
 from neptune.new.internal.operation import ClearStringLog, LogStrings, Operation
+from neptune.new.internal.utils.debug_log import logger
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.utils import split_to_chunks
@@ -48,11 +47,12 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
         ):
             # the first truncation
             self._value_truncation_occurred = True
-            click.echo(
-                f"Warning: string series '{ path_to_str(self._path)}' value was "
-                f"longer than {MAX_STRING_SERIES_VALUE_LENGTH} characters and was truncated. "
-                f"This warning is printed only once per series.",
-                err=True,
+            logger.warning(
+                "Warning: string series '%s' value was"
+                " longer than %s characters and was truncated."
+                " This warning is printed only once per series.",
+                path_to_str(self._path),
+                MAX_STRING_SERIES_VALUE_LENGTH,
             )
 
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in values]
@@ -63,10 +63,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
         if kwargs:
-            click.echo(
-                "Warning: unexpected arguments ({kwargs}) in StringSeries".format(kwargs=kwargs),
-                err=True,
-            )
+            logger.warning("Warning: unexpected arguments (%s) in StringSeries", kwargs)
         return StringSeriesVal(values)
 
     def _is_value_type(self, value) -> bool:
