@@ -38,7 +38,7 @@ class ApiMethodWrapper:
     def _parse_error_type(response) -> Optional[str]:
         try:
             error_data = json.loads(response.text)
-            return error_data.get("errorType")
+            return error_data.get("errorType") if error_data is not None else None
         except JSONDecodeError:
             return None
 
