@@ -73,11 +73,11 @@ class TestImage(unittest.TestCase):
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
         # expect
-        stderr = io.StringIO()
-        with contextlib.redirect_stderr(stderr):
+        stdout = io.StringIO()
+        with contextlib.redirect_stdout(stdout):
             self.assertEqual(get_image_content(image_array), self._encode_pil_image(expected_image))
         self.assertEqual(
-            stderr.getvalue(),
+            stdout.getvalue(),
             "The smallest value in the array is -3 and the largest value in the array is 6."
             " To be interpreted as colors correctly values in the array need to be in the [0, 1] range.\n",
         )
@@ -264,8 +264,8 @@ class TestImage(unittest.TestCase):
             caplog.output,
             [
                 "WARNING:neptune.new.internal.utils.limits:You are attempting to create an in-memory file that"
-                " is 38.1MB large. Neptune supports logging in-memory file objects smaller than 32MB. "
-                "Resize or increase compression of this object"
+                " is 38.1MB large. Neptune supports logging in-memory file objects smaller than 32MB."
+                " Resize or increase compression of this object"
             ],
         )
 
