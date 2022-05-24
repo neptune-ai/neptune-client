@@ -35,20 +35,20 @@ class ApiMethodWrapper:
     @staticmethod
     def handle_neptune_http_errors(response, exception: Optional[HTTPError] = None):
         try:
-            _json = response.json() or dict()
+            body = response.json() or dict()
         except Exception:
-            _json = {}
+            body = {}
 
-        error_type: Optional[str] = _json.get("errorType")
+        error_type: Optional[str] = body.get("errorType")
         if error_type == ApiMethodWrapper.ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED:
             raise NeptuneFieldCountLimitExceedException(
-                limit=_json.get("limit", "<unknown limit>"),
-                container_type=_json.get("experimentType", "object"),
-                identifier=_json.get("experimentQualifiedName", "<unknown identifier>"),
+                limit=body.get("limit", "<unknown limit>"),
+                container_type=body.get("experimentType", "object"),
+                identifier=body.get("experimentQualifiedName", "<unknown identifier>"),
             )
         elif error_type == ApiMethodWrapper.WORKSPACE_IN_READ_ONLY_MODE:
             raise NeptuneLimitExceedException(
-                reason=_json.get("title", "Unknown reason")
+                reason=body.get("title", "Unknown reason")
             ) from exception
         elif exception:
             raise exception
