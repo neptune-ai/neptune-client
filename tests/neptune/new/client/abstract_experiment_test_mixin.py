@@ -95,6 +95,14 @@ class AbstractExperimentTestMixin:
                 exp.wait()
 
     @pytest.mark.timeout(10)
+    def test_async_mode_die_during_wait(self):
+        with self.call_init(mode="async", flush_period=1) as exp:
+            exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
+            exp["some/variable"] = 13
+            with self.assertRaises(Exception):
+                exp.wait()
+
+    @pytest.mark.timeout(10)
     def test_async_mode_stop_on_dead(self):
         stream = StringIO()
         with contextlib.redirect_stderr(stream):

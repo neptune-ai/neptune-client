@@ -83,12 +83,13 @@ class AsyncOperationProcessor(OperationProcessor):
             self.wait()
 
     def wait(self):
-        if not self._consumer.is_running():
-            raise Exception("Synchronization job is not running, unable to synchronize")
         self.flush()
         waiting_for_version = self._last_version
         self._consumer.wake_up()
-        self._waiting_cond.wait_for(lambda: self._consumed_version >= waiting_for_version)
+        while self._consumed_version < waiting_for_version and self._consumer.is_running():
+            self._waiting_cond.wait()
+        if not self._consumer.is_running():
+            raise Exception("Synchronization job is not running, unable to synchronize")
 
     def flush(self):
         self._queue.flush()
@@ -194,6 +195,14 @@ class AsyncOperationProcessor(OperationProcessor):
             self._processor = processor
             self._batch_size = batch_size
             self._last_flush = 0
+
+        def run(self):
+            try:
+                super().run()
+            except Exception:
+                with self._processor._waiting_cond:
+                    self._processor._waiting_cond.notify_all()
+                raise
 
         def work(self) -> None:
             ts = time()
