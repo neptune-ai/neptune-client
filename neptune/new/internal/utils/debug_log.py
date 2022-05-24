@@ -17,6 +17,8 @@
 import logging
 import sys
 
+LOGGER_NAME = "neptune-client"
+
 
 class GrabbableStdoutHandler(logging.StreamHandler):
     """
@@ -37,10 +39,10 @@ class GrabbableStdoutHandler(logging.StreamHandler):
         return sys.stdout
 
 
-logger = logging.getLogger("neptune-client")
+logger = logging.getLogger(LOGGER_NAME)
 
 logger.propagate = False
-logger.setLevel(level=logging.NOTSET)
+logger.setLevel(level=logging.DEBUG)
 stdout_handler = GrabbableStdoutHandler()
 stdout_handler.setFormatter(logging.Formatter("%(message)s"))
 logger.addHandler(stdout_handler)
