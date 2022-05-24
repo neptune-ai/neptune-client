@@ -106,10 +106,10 @@ class StatusRunner(AbstractBackendRunner):
             logger.info("There are no unsynchronized objects in %s", base_path)
 
         if not synced_containers:
-            logger.info()
+            logger.info("")
             logger.info("There are no synchronized objects in %s", base_path)
 
-        logger.info()
+        logger.info("")
         logger.info("Please run with the `neptune sync --help` to see example commands.")
 
     def synchronization_status(self, base_path: Path) -> None:

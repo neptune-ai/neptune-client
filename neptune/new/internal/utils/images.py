@@ -176,7 +176,7 @@ def _get_numpy_as_image(array):
     if array_max > 1:
         data_range_warnings.append(f"the largest value in the array is {array_max}")
     if data_range_warnings:
-        data_range_warning_message = (" and ".join(data_range_warnings) + ". ").capitalize()
+        data_range_warning_message = (" and ".join(data_range_warnings) + ".").capitalize()
         logger.warning(
             "%s To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
             data_range_warning_message,
