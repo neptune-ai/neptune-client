@@ -16,6 +16,7 @@
 import abc
 import atexit
 import itertools
+import logging
 import threading
 import time
 import traceback
@@ -60,7 +61,12 @@ from neptune.new.internal.utils import (
     is_string_like,
     verify_type,
 )
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.debug_log import (
+    LOGGER_NAME,
+    build_handler_for_metadata_container,
+    get_logger_for_metadata_container,
+    logger,
+)
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
 from neptune.new.internal.utils.uncaught_exception_handler import (
@@ -131,6 +137,8 @@ class MetadataContainer(AbstractContextManager):
         self._lock = lock
         self._state = ContainerState.CREATED
         self._sys_id = sys_id
+        self._logger = get_logger_for_metadata_container(self._id)
+        self._log_handler = build_handler_for_metadata_container(self._id)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         if exc_tb is not None:
@@ -194,9 +202,11 @@ class MetadataContainer(AbstractContextManager):
 
     def start(self):
         atexit.register(self._shutdown_hook)
+        self._logger.addHandler(self._log_handler)
         self._op_processor.start()
         self._bg_job.start(self)
         self._state = ContainerState.STARTED
+        self._logger.debug("Started %s %s", self.container_type.value, self._sys_id)
 
     def stop(self, seconds: Optional[Union[float, int]] = None) -> None:
         verify_type("seconds", seconds, (float, int, type(None)))
@@ -205,18 +215,20 @@ class MetadataContainer(AbstractContextManager):
 
         self._state = ContainerState.STOPPING
         ts = time.time()
-        logger.info("Shutting down background jobs, please wait a moment...")
+        self._logger.info("Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
         self._bg_job.join(seconds)
-        logger.info("Done!")
+        self._logger.info("Done!")
         with self._lock:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
         if self._mode != Mode.OFFLINE:
-            logger.info("Explore the metadata in the Neptune app:")
-            logger.info(self._metadata_url)
+            self._logger.info("Explore the metadata in the Neptune app:")
+            self._logger.info(self._metadata_url)
         self._backend.close()
         self._state = ContainerState.STOPPED
+        self._logger.debug("Stopped %s %s", self.container_type.value, self._sys_id)
+        self._logger.removeHandler(self._log_handler)
 
     def get_structure(self) -> Dict[str, Any]:
         # This is very weird pylint false-positive.
@@ -340,13 +352,13 @@ class MetadataContainer(AbstractContextManager):
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            logger.info(self.get_url())
+            self._logger.info(self.get_url())
 
         self.start()
 
         if not debug_mode:
             if in_interactive() or in_notebook():
-                logger.info(
+                self._logger.info(
                     "Remember to stop your %s once you’ve finished logging your metadata (%s)."
                     " It will be stopped automatically only when the notebook"
                     " kernel/interactive console is terminated.",

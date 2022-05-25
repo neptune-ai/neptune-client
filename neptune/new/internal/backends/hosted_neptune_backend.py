@@ -114,6 +114,10 @@ from neptune.new.internal.operation import (
     UploadFileSet,
 )
 from neptune.new.internal.utils import base64_decode
+from neptune.new.internal.utils.debug_log import (
+    get_logger_for_metadata_container,
+    trace_request,
+)
 from neptune.new.internal.utils.generic_attribute_mapper import (
     map_attribute_result_to_value,
 )
@@ -127,9 +131,6 @@ if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
 
     from neptune.new.internal.backends.api_model import ClientConfig
-
-
-_logger = logging.getLogger(__name__)
 
 
 class HostedNeptuneBackend(NeptuneBackend):
@@ -631,8 +632,9 @@ class HostedNeptuneBackend(NeptuneBackend):
         }
 
         try:
-            result = self.leaderboard_client.api.executeOperations(**kwargs).response().result
-            return [MetadataInconsistency(err.errorDescription) for err in result]
+            response = self.leaderboard_client.api.executeOperations(**kwargs).response()
+            trace_request(container_id, response)
+            return [MetadataInconsistency(err.errorDescription) for err in response.result]
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(container_id, container_type) from e
         except (HTTPPaymentRequired, HTTPUnprocessableEntity) as e:
@@ -641,7 +643,11 @@ class HostedNeptuneBackend(NeptuneBackend):
             ) from e
 
     @with_api_exceptions_handler
-    def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
+    def get_attributes(
+        self, container_id: UniqueId, container_type: ContainerType
+    ) -> List[Attribute]:
+        logger = get_logger_for_metadata_container(container_id)
+
         def to_attribute(attr) -> Attribute:
             return Attribute(attr.name, AttributeType(attr.type))
 
@@ -650,6 +656,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             **DEFAULT_REQUEST_KWARGS,
         }
         try:
+            logger.debug("getExperimentAttributes")
             experiment = (
                 self.leaderboard_client.api.getExperimentAttributes(**params).response().result
             )
@@ -664,7 +671,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 attr.type for attr in accepted_attributes
             )
             if ignored_attributes:
-                _logger.warning(
+                logger.warning(
                     "Ignored following attributes (unknown type): %s.\n"
                     "Try to upgrade `neptune-client.",
                     ignored_attributes,
