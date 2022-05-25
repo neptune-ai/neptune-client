@@ -977,7 +977,6 @@ You may also want to check the following docs pages:
         super().__init__(message.format(**STYLES, reason=reason))
 
 
-# TODO Do not hardcode limit in error message (NPT-11935)
 class NeptuneFieldCountLimitExceedException(NeptuneException):
     def __init__(self, limit: int, container_type: str, identifier: str):
         message = """
