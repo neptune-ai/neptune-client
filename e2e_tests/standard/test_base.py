@@ -202,6 +202,34 @@ class TestFetchTable(BaseE2ETest):
         assert runs_table[0].get_attribute_value("value") == 12
         assert runs_table[1].get_attribute_value("another/value") == "testing"
 
+    def test_fetch_models_table(self, environment):
+        tag = str(uuid.uuid4())
+        model_name1 = str(uuid.uuid4())
+        model_name2 = str(uuid.uuid4())
+
+        with neptune.init_model(project=environment.project, name=model_name1) as model:
+            model["sys/tags"].add(tag)
+            model["value"] = 12
+            model.sync()
+
+        with neptune.init_model(project=environment.project, name=model_name2) as model:
+            model["sys/tags"].add(tag)
+            model["another/value"] = "testing"
+            model.sync()
+
+        # wait for the elasticsearch cache to fill
+        time.sleep(5)
+
+        project = neptune.get_project(name=environment.project)
+
+        models_table = sorted(
+            project.fetch_models_table(tag=tag).to_rows(),
+            key=lambda r: r.get_attribute_value("sys/id"),
+        )
+        assert len(models_table) == 2
+        assert models_table[0].get_attribute_value("value") == 12
+        assert models_table[1].get_attribute_value("another/value") == "testing"
+
     @pytest.mark.parametrize("container", ["model"], indirect=True)
     def test_fetch_model_versions_table(self, container: Model, environment):
         model_sys_id = container["sys/id"].fetch()

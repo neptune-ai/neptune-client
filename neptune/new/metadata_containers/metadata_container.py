@@ -22,7 +22,7 @@ import traceback
 from contextlib import AbstractContextManager
 from datetime import datetime
 from functools import wraps
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 import click
 
@@ -42,7 +42,7 @@ from neptune.new.exceptions import (
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.backends.nql import NQLQuery
+from neptune.new.internal.backends.nql import NQLAggregator, NQLQuery, NQLQueryAggregate
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.container_type import ContainerType
@@ -365,7 +365,11 @@ class MetadataContainer(AbstractContextManager):
     def _shutdown_hook(self):
         self.stop()
 
-    def _fetch_entries(self, child_type: ContainerType, query: NQLQuery) -> Table:
+    def _fetch_entries(
+        self, child_type: ContainerType, filters: Iterable[NQLQuery]
+    ) -> Table:
+        query = NQLQueryAggregate(items=filters, aggregator=NQLAggregator.AND)
+
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
             types=[child_type],

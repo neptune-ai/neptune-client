@@ -66,10 +66,12 @@ class Model(MetadataContainer):
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,
-            query=NQLQueryAttribute(
-                name="sys/model_id",
-                value=self._sys_id,
-                operator=NQLAttributeOperator.EQUALS,
-                type=NQLAttributeType.STRING,
-            ),
+            filters=[
+                NQLQueryAttribute(
+                    name="sys/model_id",
+                    value=self._sys_id,
+                    operator=NQLAttributeOperator.EQUALS,
+                    type=NQLAttributeType.STRING,
+                )
+            ],
         )
