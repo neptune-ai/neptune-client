@@ -98,19 +98,15 @@ class StatusRunner(AbstractBackendRunner):
             logger.info("Unsynchronized offline objects:")
             for run_id in offline_dirs:
                 logger.info("- %s", f"{OFFLINE_NAME_PREFIX}{run_id}")
-            logger.info("")
-            logger.info(textwrap.fill(offline_run_explainer, width=90))
+            logger.info("\n%s", textwrap.fill(offline_run_explainer, width=90))
 
         if not unsynced_containers:
-            logger.info("")
-            logger.info("There are no unsynchronized objects in %s", base_path)
+            logger.info("\nThere are no unsynchronized objects in %s", base_path)
 
         if not synced_containers:
-            logger.info("")
-            logger.info("There are no synchronized objects in %s", base_path)
+            logger.info("\nThere are no synchronized objects in %s", base_path)
 
-        logger.info("")
-        logger.info("Please run with the `neptune sync --help` to see example commands.")
+        logger.info("\nPlease run with the `neptune sync --help` to see example commands.")
 
     def synchronization_status(self, base_path: Path) -> None:
         synced_containers, unsynced_containers, not_found = self.partition_containers(base_path)
