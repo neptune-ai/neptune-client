@@ -19,7 +19,7 @@ import threading
 import time
 
 from neptune.new.exceptions import NeptuneConnectionLostException
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 
 
 class Daemon(threading.Thread):

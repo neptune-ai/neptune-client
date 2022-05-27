@@ -25,7 +25,7 @@ from neptune.new.internal.operation import (
     Operation,
 )
 from neptune.new.internal.utils import verify_type
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.utils import split_to_chunks
 

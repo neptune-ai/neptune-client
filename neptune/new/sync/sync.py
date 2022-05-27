@@ -38,7 +38,7 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
     create_dir_name,

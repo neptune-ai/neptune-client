@@ -60,7 +60,7 @@ from neptune.new.internal.utils import (
     is_string_like,
     verify_type,
 )
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
 from neptune.new.internal.utils.uncaught_exception_handler import (
