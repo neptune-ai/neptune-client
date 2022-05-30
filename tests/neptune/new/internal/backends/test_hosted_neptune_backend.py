@@ -26,8 +26,8 @@ from neptune.new.exceptions import (
     CannotResolveHostname,
     FileUploadError,
     MetadataInconsistency,
+    NeptuneClientUpgradeRequiredError,
     NeptuneLimitExceedException,
-    UnsupportedClientVersion,
 )
 from neptune.new.internal.backends.hosted_client import (  # pylint:disable=protected-access
     DEFAULT_REQUEST_KWARGS,
@@ -490,10 +490,10 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         self._get_swagger_client_mock(swagger_client_factory, min_compatible="0.5.14")
 
         # expect
-        with self.assertRaises(UnsupportedClientVersion) as ex:
+        with self.assertRaises(NeptuneClientUpgradeRequiredError) as ex:
             HostedNeptuneBackend(credentials)
 
-        self.assertTrue("Please install neptune-client>=0.5.14" in str(ex.exception))
+        self.assertTrue("minimal required version is >=0.5.14" in str(ex.exception))
 
     @patch(
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
@@ -517,7 +517,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         self._get_swagger_client_mock(swagger_client_factory, max_compatible="0.4.999")
 
         # expect
-        with self.assertRaises(UnsupportedClientVersion) as ex:
+        with self.assertRaises(NeptuneClientUpgradeRequiredError) as ex:
             HostedNeptuneBackend(credentials)
 
         self.assertTrue("Please install neptune-client==0.4.0" in str(ex.exception))

@@ -19,7 +19,7 @@ from typing import Dict, Tuple
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
 
-from neptune.new.exceptions import UnsupportedClientVersion
+from neptune.new.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import (
@@ -114,7 +114,7 @@ def get_client_config(
 
     client_config = ClientConfig.from_api_response(config)
     if not client_config.version_info:
-        raise UnsupportedClientVersion(neptune_client_version, max_version="0.4.111")
+        raise NeptuneClientUpgradeRequiredError(neptune_client_version, max_version="0.4.111")
     return client_config
 
 
