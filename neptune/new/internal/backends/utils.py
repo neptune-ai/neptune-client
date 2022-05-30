@@ -198,9 +198,9 @@ def verify_client_version(client_config: ClientConfig, version: Version):
         and client_config.version_info.min_recommended > version
     ):
         click.echo(
-            "WARNING: We recommend an upgrade to a new version of neptune-client - {} (installed - {}).".format(
-                client_config.version_info.min_recommended, version
-            ),
+            f"WARNING: Your version of Neptune client library ({version}) is deprecated,"
+            " and soon will no longer be supported by the Neptune server."
+            f" We recommend an upgrade to at least version {client_config.version_info.min_recommended}.",
             sys.stderr,
         )
 

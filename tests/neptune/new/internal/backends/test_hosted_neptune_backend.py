@@ -520,7 +520,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         with self.assertRaises(NeptuneClientUpgradeRequiredError) as ex:
             HostedNeptuneBackend(credentials)
 
-        self.assertTrue("Please install neptune-client==0.4.0" in str(ex.exception))
+        self.assertTrue("minimal required version is ==0.4.0" in str(ex.exception))
 
     @patch("socket.gethostbyname")
     def test_cannot_resolve_host(self, gethostname_mock, _):
