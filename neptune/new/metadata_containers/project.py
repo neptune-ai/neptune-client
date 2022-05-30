@@ -17,13 +17,6 @@ import threading
 from typing import Any, Dict, Iterable, Optional, Union
 
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.backends.nql import (
-    NQLAggregator,
-    NQLAttributeOperator,
-    NQLAttributeType,
-    NQLQueryAggregate,
-    NQLQueryAttribute,
-)
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import SysId, UniqueId
@@ -32,6 +25,12 @@ from neptune.new.internal.operation_processors.operation_processor import (
 )
 from neptune.new.internal.utils import as_list
 from neptune.new.metadata_containers import MetadataContainer
+from neptune.new.metadata_containers.common_queries import (
+    filter_ids,
+    filter_owners,
+    filter_states,
+    filter_tags,
+)
 from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.types.mode import Mode
 
@@ -170,75 +169,32 @@ class Project(MetadataContainer):
         owners = as_list("owner", owner)
         tags = as_list("tag", tag)
 
-        query_items = []
+        return MetadataContainer._fetch_entries(
+            self,
+            child_type=ContainerType.RUN,
+            filters=[
+                filter_ids(ids),
+                filter_states(states),
+                filter_owners(owners),
+                filter_tags(tags),
+            ],
+        )
 
-        if ids:
-            query_items.append(
-                NQLQueryAggregate(
-                    items=[
-                        NQLQueryAttribute(
-                            name="sys/id",
-                            type=NQLAttributeType.STRING,
-                            operator=NQLAttributeOperator.EQUALS,
-                            value=api_id,
-                        )
-                        for api_id in ids
-                    ],
-                    aggregator=NQLAggregator.OR,
-                )
-            )
+    def fetch_models_table(
+        self,
+        id: Optional[Union[str, Iterable[str]]] = None,
+        owner: Optional[Union[str, Iterable[str]]] = None,
+        tag: Optional[Union[str, Iterable[str]]] = None,
+    ) -> Table:
+        ids = as_list("id", id)
+        owners = as_list("owner", owner)
+        tags = as_list("tag", tag)
 
-        if states:
-            query_items.append(
-                NQLQueryAggregate(
-                    items=[
-                        NQLQueryAttribute(
-                            name="sys/state",
-                            type=NQLAttributeType.EXPERIMENT_STATE,
-                            operator=NQLAttributeOperator.EQUALS,
-                            value=state,
-                        )
-                        for state in states
-                    ],
-                    aggregator=NQLAggregator.OR,
-                )
-            )
-
-        if owners:
-            query_items.append(
-                NQLQueryAggregate(
-                    items=[
-                        NQLQueryAttribute(
-                            name="sys/owner",
-                            type=NQLAttributeType.STRING,
-                            operator=NQLAttributeOperator.EQUALS,
-                            value=owner,
-                        )
-                        for owner in owners
-                    ],
-                    aggregator=NQLAggregator.OR,
-                )
-            )
-
-        if tags:
-            query_items.append(
-                NQLQueryAggregate(
-                    items=[
-                        NQLQueryAttribute(
-                            name="sys/tags",
-                            type=NQLAttributeType.STRING_SET,
-                            operator=NQLAttributeOperator.CONTAINS,
-                            value=tag,
-                        )
-                        for tag in tags
-                    ],
-                    aggregator=NQLAggregator.AND,
-                )
-            )
-
-        query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
-
-        return MetadataContainer._fetch_entries(self, child_type=ContainerType.RUN, query=query)
+        return MetadataContainer._fetch_entries(
+            self,
+            child_type=ContainerType.MODEL,
+            filters=[filter_ids(ids), filter_owners(owners), filter_tags(tags)],
+        )
 
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.

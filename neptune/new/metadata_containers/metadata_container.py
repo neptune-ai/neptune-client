@@ -22,7 +22,9 @@ import traceback
 from contextlib import AbstractContextManager
 from datetime import datetime
 from functools import wraps
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
+
+import click
 
 from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
@@ -40,7 +42,7 @@ from neptune.new.exceptions import (
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.backends.nql import NQLQuery
+from neptune.new.internal.backends.nql import NQLAggregator, NQLQuery, NQLQueryAggregate
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.container_type import ContainerType
@@ -60,7 +62,6 @@ from neptune.new.internal.utils import (
     is_string_like,
     verify_type,
 )
-from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
 from neptune.new.internal.utils.uncaught_exception_handler import (
@@ -205,16 +206,16 @@ class MetadataContainer(AbstractContextManager):
 
         self._state = ContainerState.STOPPING
         ts = time.time()
-        logger.info("Shutting down background jobs, please wait a moment...")
+        click.echo("Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
         self._bg_job.join(seconds)
-        logger.info("Done!")
+        click.echo("Done!")
         with self._lock:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
         if self._mode != Mode.OFFLINE:
-            logger.info("Explore the metadata in the Neptune app:")
-            logger.info(self._metadata_url)
+            click.echo("Explore the metadata in the Neptune app:")
+            click.echo(self._metadata_url)
         self._backend.close()
         self._state = ContainerState.STOPPED
 
@@ -228,16 +229,16 @@ class MetadataContainer(AbstractContextManager):
 
     def _print_structure_impl(self, struct: dict, indent: int) -> None:
         for key in sorted(struct.keys()):
-            print("    " * indent, end="")
+            click.echo("    " * indent, nl=False)
             if isinstance(struct[key], dict):
-                print(
+                click.echo(
                     "{blue}'{key}'{end}:".format(
                         blue=UNIX_STYLES["blue"], key=key, end=UNIX_STYLES["end"]
                     )
                 )
                 self._print_structure_impl(struct[key], indent=indent + 1)
             else:
-                print(
+                click.echo(
                     "{blue}'{key}'{end}: {type}".format(
                         blue=UNIX_STYLES["blue"],
                         key=key,
@@ -340,18 +341,17 @@ class MetadataContainer(AbstractContextManager):
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            logger.info(self.get_url())
+            click.echo(self.get_url())
 
         self.start()
 
         if not debug_mode:
             if in_interactive() or in_notebook():
-                logger.info(
-                    "Remember to stop your %s once you’ve finished logging your metadata (%s)."
+                click.echo(
+                    f"Remember to stop your {self.container_type.value} once you’ve finished logging your metadata"
+                    f" ({self._docs_url_stop})."
                     " It will be stopped automatically only when the notebook"
-                    " kernel/interactive console is terminated.",
-                    self.container_type.value,
-                    self._docs_url_stop,
+                    " kernel/interactive console is terminated."
                 )
 
         uncaught_exception_handler.activate()
@@ -359,7 +359,9 @@ class MetadataContainer(AbstractContextManager):
     def _shutdown_hook(self):
         self.stop()
 
-    def _fetch_entries(self, child_type: ContainerType, query: NQLQuery) -> Table:
+    def _fetch_entries(self, child_type: ContainerType, filters: Iterable[NQLQuery]) -> Table:
+        query = NQLQueryAggregate(items=filters, aggregator=NQLAggregator.AND)
+
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
             types=[child_type],
