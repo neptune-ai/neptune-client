@@ -32,6 +32,11 @@ class NQLQuery:
     pass
 
 
+class NQLEmptyQuery(NQLQuery):
+    def __str__(self) -> str:
+        return ""
+
+
 class NQLAggregator(str, Enum):
     AND = "AND"
     OR = "OR"

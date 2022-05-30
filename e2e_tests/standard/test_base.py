@@ -22,6 +22,7 @@ import pytest
 
 import neptune.new as neptune
 from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
+from e2e_tests.utils import a_key
 from neptune.new.metadata_containers import MetadataContainer, Model
 
 
@@ -199,6 +200,32 @@ class TestFetchTable(BaseE2ETest):
         )
         assert len(runs_table) == 1
         assert runs_table[0].get_attribute_value("value") == 12
+
+    def test_fetch_models_table(self, environment):
+        model1_name, model2_name = a_key(), a_key()
+        model1_id, model2_id = None, None
+
+        with neptune.init_model(project=environment.project, key=model1_name) as model:
+            model["value"] = 12
+            model1_id = model["sys/id"].fetch()
+            model.sync()
+
+        with neptune.init_model(project=environment.project, key=model2_name) as model:
+            model["another/value"] = "testing"
+            model2_id = model["sys/id"].fetch()
+            model.sync()
+
+        # wait for the elasticsearch cache to fill
+        time.sleep(5)
+
+        project = neptune.get_project(name=environment.project)
+        models = project.fetch_models_table().to_rows()
+
+        model1 = next(filter(lambda m: m.get_attribute_value("sys/id") == model1_id, models))
+        model2 = next(filter(lambda m: m.get_attribute_value("sys/id") == model2_id, models))
+
+        assert model1.get_attribute_value("value") == 12
+        assert model2.get_attribute_value("another/value") == "testing"
 
     @pytest.mark.parametrize("container", ["model"], indirect=True)
     def test_fetch_model_versions_table(self, container: Model, environment):
