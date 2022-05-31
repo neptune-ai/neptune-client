@@ -201,7 +201,7 @@ def verify_client_version(client_config: ClientConfig, version: Version):
             " and soon will no longer be supported by the Neptune server."
             " We recommend upgrading to at least version %s.",
             version,
-            client_config.version_info.min_recommended
+            client_config.version_info.min_recommended,
         )
 
 
