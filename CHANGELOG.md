@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 0.16.3
+## neptune-client 0.16.3
 
 ## Features
 - Added fetching Models method to Project ([#916](https://github.com/neptune-ai/neptune-client/pull/916))
