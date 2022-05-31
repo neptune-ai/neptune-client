@@ -493,7 +493,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
         with self.assertRaises(NeptuneClientUpgradeRequiredError) as ex:
             HostedNeptuneBackend(credentials)
 
-        self.assertTrue("minimal required version is >=0.5.14" in str(ex.exception))
+        self.assertTrue("minimum required version is >=0.5.14" in str(ex.exception))
 
     @patch(
         "neptune.new.internal.backends.hosted_client.neptune_client_version",
