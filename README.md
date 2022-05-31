@@ -359,4 +359,4 @@ If you get stuck or simply want to talk to us about something, here are your opt
 ### People behind Neptune
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Grzegorz, Paweł, Marcin, Jakub, Prince, Piotr, Rafał, Sandra, Bartosz, Dominika, Karolina, Parth, Vovik, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, and [you?](https://neptune.ai/jobs)
+Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Grzegorz, Paweł, Marcin, Jakub, Prince, Piotr, Rafał, Bartosz, Dominika, Karolina, Parth, Vovik, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, Kshiteej, and [you?](https://neptune.ai/jobs)
