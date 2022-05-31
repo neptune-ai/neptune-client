@@ -101,7 +101,9 @@ class FileNotFound(NeptuneException):
 
 class UploadedFileChanged(NeptuneException):
     def __init__(self, filename: str):
-        super().__init__("File {} changed during upload, restarting upload.".format(filename))
+        super().__init__(
+            "File {} changed during upload, restarting upload.".format(filename)
+        )
 
 
 class FileUploadError(NeptuneException):
@@ -157,13 +159,19 @@ class MetadataContainerNotFound(NeptuneException):
     def __init__(self, container_id: str, container_type: Optional[ContainerType]):
         self.container_id = container_id
         self.container_type = container_type
-        container_type_str = container_type.value.capitalize() if container_type else "object"
+        container_type_str = (
+            container_type.value.capitalize() if container_type else "object"
+        )
         super().__init__("{} {} not found.".format(container_type_str, container_id))
 
     @classmethod
-    def of_container_type(cls, container_type: Optional[ContainerType], container_id: str):
+    def of_container_type(
+        cls, container_type: Optional[ContainerType], container_id: str
+    ):
         if container_type is None:
-            return MetadataContainerNotFound(container_id=container_id, container_type=None)
+            return MetadataContainerNotFound(
+                container_id=container_id, container_type=None
+            )
         elif container_type == ContainerType.PROJECT:
             return ProjectNotFound(project_id=container_id)
         elif container_type == ContainerType.RUN:
@@ -193,7 +201,9 @@ class ModelNotFound(MetadataContainerNotFound):
 
 class ModelVersionNotFound(MetadataContainerNotFound):
     def __init__(self, model_version_id: str):
-        super().__init__(container_id=model_version_id, container_type=ContainerType.MODEL_VERSION)
+        super().__init__(
+            container_id=model_version_id, container_type=ContainerType.MODEL_VERSION
+        )
 
 
 class ExceptionWithProjectsWorkspacesListing(NeptuneException):
@@ -264,7 +274,9 @@ class ContainerUUIDNotFound(NeptuneException):
 RunUUIDNotFound = ContainerUUIDNotFound
 
 
-class ProjectNotFoundWithSuggestions(ExceptionWithProjectsWorkspacesListing, ProjectNotFound):
+class ProjectNotFoundWithSuggestions(
+    ExceptionWithProjectsWorkspacesListing, ProjectNotFound
+):
     def __init__(
         self,
         project_id: QualifiedName,
@@ -305,7 +317,9 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message=message, available_projects=available_projects, project=project_id)
+        super().__init__(
+            message=message, available_projects=available_projects, project=project_id
+        )
 
 
 class NeptuneMissingProjectNameException(ExceptionWithProjectsWorkspacesListing):
@@ -325,7 +339,7 @@ There are two options two add it:
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
-Pass it to {bold}neptune.init(){end} via {bold}project{end} argument:
+Pass it to the {bold}init(){end} method via the {bold}project{end} argument:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
@@ -339,7 +353,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
        {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
 
-and skip the {bold}project{end} argument of {bold}neptune.init(){end}:
+and skip the {bold}project{end} argument of the {bold}init(){end} method:
     {python}neptune.init(){end}
 
 You may also want to check the following docs pages:
@@ -447,7 +461,7 @@ There are two options to add it:
     - set an environment variable in your operating system.
 
 {h2}CODE{end}
-Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
+Pass the token to the {bold}init(){end} method via the {bold}api_token{end} argument:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
@@ -461,7 +475,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
         {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
 
-and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
+and skip the {bold}api_token{end} argument of the {bold}init(){end} method:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
@@ -469,7 +483,9 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
+        super().__init__(
+            message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
+        )
 
 
 class NeptuneInvalidApiTokenException(NeptuneException):
@@ -489,7 +505,7 @@ There are two options to add it:
     - set as an environment variable in your operating system.
 
 {h2}CODE{end}
-Pass the token to {bold}neptune.init(){end} via {bold}api_token{end} argument:
+Pass the token to the {bold}init(){end} method via the {bold}api_token{end} argument:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
@@ -503,7 +519,7 @@ or export or set an environment variable depending on your operating system:
     In your CMD run:
         {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
 
-and skip the {bold}api_token{end} argument of {bold}neptune.init(){end}:
+and skip the {bold}api_token{end} argument of the {bold}init(){end} method:
     {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs page:
@@ -511,7 +527,9 @@ You may also want to check the following docs page:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
+        super().__init__(
+            message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
+        )
 
 
 class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):
@@ -553,12 +571,16 @@ You may also want to check the following docs pages:
 
 class NeedExistingRunForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
     def __init__(self):
-        super().__init__(container_type=ContainerType.RUN, callback_name="neptune.init_run")
+        super().__init__(
+            container_type=ContainerType.RUN, callback_name="neptune.init_run"
+        )
 
 
 class NeedExistingModelForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
     def __init__(self):
-        super().__init__(container_type=ContainerType.MODEL, callback_name="neptune.init_model")
+        super().__init__(
+            container_type=ContainerType.MODEL, callback_name="neptune.init_model"
+        )
 
 
 class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyMode):
@@ -581,7 +603,7 @@ class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
 {end}
 It's not possible to use {python}custom_run_id{end} while resuming a run.
 
-The {python}run{end} and {python}custom_run_id{end} parameters of {python}neptune.init(){end} are mutually exclusive.
+The {python}run{end} and {python}custom_run_id{end} parameters of the {python}init(){end} method are mutually exclusive.
 Make sure you have no {bash}{custom_id_env}{end} environment variable set
 and no value is explicitly passed to the `custom_run_id` argument when you are resuming a run.
 
@@ -661,7 +683,7 @@ The Neptune client library was not able to resolve hostname {underline}{host}{en
 What should I do?
     - Check if your computer is connected to the internet.
     - Check if your computer is supposed to be using a proxy to access the internet.
-      If so, you may want to use the {python}proxies{end} parameter of the {python}neptune.init(){end} method.
+      If so, you may want to use the {python}proxies{end} parameter of the {python}init(){end} method.
       See https://docs.neptune.ai/api-reference/neptune#.init
       and https://requests.readthedocs.io/en/master/user/advanced/#proxies
     - Check the status of Neptune services: https://status.neptune.ai/
@@ -731,7 +753,7 @@ class NeptuneConnectionLostException(NeptuneException):
 {end}
 The connection to the Neptune server was lost.
 If you are using the asynchronous (default) connection mode, Neptune continues to locally track your metadata and continuously tries to re-establish a connection to the Neptune servers.
-If the connection is not re-established, you can upload your data later with the Neptune command-line utility:
+If the connection is not re-established, you can upload your data later with the Neptune Command Line Interface tool:
     {bash}neptune sync -p workspace_name/project_name{end}
 
 What should I do?
@@ -965,7 +987,7 @@ class NeptuneLimitExceedException(NeptuneException):
 
 It's not possible to upload new data, but you can still fetch and delete data.
 If you are using asynchronous (default) connection mode, Neptune automatically switched to offline mode
-and your data is being stored safely on the disk. You can upload it later using the Neptune command-line utility:
+and your data is being stored safely on the disk. You can upload it later using the Neptune Command Line Interface tool:
     {bash}neptune sync -p project_name{end}
 What should I do?
     - In case of storage limitations, go to your projects and remove runs or model metadata you don't need
@@ -1003,7 +1025,10 @@ For more details, see https://docs.neptune.ai/you-should-know/best-practices
 """
         super().__init__(
             message.format(
-                **STYLES, limit=limit, container_type=container_type, identifier=identifier
+                **STYLES,
+                limit=limit,
+                container_type=container_type,
+                identifier=identifier,
             )
         )
 
@@ -1016,7 +1041,7 @@ class NeptuneStorageLimitException(NeptuneException):
 {end}
 You exceeded the storage limit of the workspace. It's not possible to upload new data, but you can still fetch and delete data.
 If you are using asynchronous (default) connection mode, Neptune automatically switched to offline mode
-and your data is being stored safely on the disk. You can upload it later using the Neptune command-line utility:
+and your data is being stored safely on the disk. You can upload it later using the Neptune Command Line Interface tool:
     {bash}neptune sync -p project_name{end}
 What should I do?
     - Go to your projects and remove runs or model metadata you don't need
@@ -1176,7 +1201,9 @@ Neptune had a problem processing "{path}". It expects it to be {expected_descrip
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(
-            message.format(path=path, expected_description=expected_description, **STYLES)
+            message.format(
+                path=path, expected_description=expected_description, **STYLES
+            )
         )
 
 
@@ -1223,7 +1250,9 @@ It seems you are using Neptune Artifacts functionality that is currently not sup
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(functionality_info=functionality_info, **STYLES))
+        super().__init__(
+            message.format(functionality_info=functionality_info, **STYLES)
+        )
 
 
 class NeptuneEmptyLocationException(NeptuneException):
@@ -1236,7 +1265,9 @@ Neptune could not find files in the requested location ({location}) during the c
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(message.format(location=location, namespace=namespace, **STYLES))
+        super().__init__(
+            message.format(location=location, namespace=namespace, **STYLES)
+        )
 
 
 class NeptuneFeatureNotAvailableException(NeptuneException):
