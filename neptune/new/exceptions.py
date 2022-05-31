@@ -610,7 +610,7 @@ class NeptuneClientUpgradeRequiredError(NeptuneException):
 {h1}
 ----NeptuneClientUpgradeRequiredError-------------------------------------------------------------
 {end}
-Your version of Neptune client library ({current_version}) is no longer supported by the Neptune
+Your version of the Neptune client library ({current_version}) is no longer supported by the Neptune
  server, minimal required version is {required_version}.
 
 In order to update the Neptune client library in your terminal run:
