@@ -18,7 +18,7 @@ import typing
 from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import AssignString
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.string import String as StringVal
 

@@ -26,7 +26,7 @@ from pandas import DataFrame
 
 from neptune.new.exceptions import PlotlyIncompatibilityException
 from neptune.new.internal.utils import limits
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
 

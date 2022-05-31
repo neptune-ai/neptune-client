@@ -30,7 +30,7 @@ from neptune.new.attributes.constants import (
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
 from neptune.new.internal.utils import process_killer
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 
 if TYPE_CHECKING:

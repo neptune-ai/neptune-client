@@ -29,7 +29,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
 from neptune.new.internal.threading.daemon import Daemon
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 
 # pylint: disable=protected-access
 

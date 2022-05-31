@@ -19,7 +19,7 @@ from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.series import Series
 from neptune.new.internal.backends.api_model import StringSeriesValues
 from neptune.new.internal.operation import ClearStringLog, LogStrings, Operation
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.utils import split_to_chunks

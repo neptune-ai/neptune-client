@@ -24,7 +24,7 @@ from typing import List, Sequence, Tuple
 from neptune.new.constants import ASYNC_DIRECTORY, OFFLINE_NAME_PREFIX
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.internal.backends.api_model import ApiExperiment
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
     get_metadata_container,
@@ -98,19 +98,15 @@ class StatusRunner(AbstractBackendRunner):
             logger.info("Unsynchronized offline objects:")
             for run_id in offline_dirs:
                 logger.info("- %s", f"{OFFLINE_NAME_PREFIX}{run_id}")
-            logger.info("")
-            logger.info(textwrap.fill(offline_run_explainer, width=90))
+            logger.info("\n%s", textwrap.fill(offline_run_explainer, width=90))
 
         if not unsynced_containers:
-            logger.info("")
-            logger.info("There are no unsynchronized objects in %s", base_path)
+            logger.info("\nThere are no unsynchronized objects in %s", base_path)
 
         if not synced_containers:
-            logger.info("")
-            logger.info("There are no synchronized objects in %s", base_path)
+            logger.info("\nThere are no synchronized objects in %s", base_path)
 
-        logger.info("")
-        logger.info("Please run with the `neptune sync --help` to see example commands.")
+        logger.info("\nPlease run with the `neptune sync --help` to see example commands.")
 
     def synchronization_status(self, base_path: Path) -> None:
         synced_containers, unsynced_containers, not_found = self.partition_containers(base_path)

@@ -67,7 +67,7 @@ from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.operation import CopyAttribute, Operation
 from neptune.new.internal.utils import replace_patch_version
-from neptune.new.internal.utils.debug_log import logger
+from neptune.new.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
 
