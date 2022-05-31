@@ -613,7 +613,7 @@ class NeptuneClientUpgradeRequiredError(NeptuneException):
 Your version of the Neptune client library ({current_version}) is no longer supported by the Neptune
  server. The minimum required version is {required_version}.
 
-In order to update the Neptune client library in your terminal run:
+In order to update the Neptune client library, run the following command in your terminal:
     {bash}pip install -U neptune-client{end}
 Or if you are using Conda, run the following instead:
     {bash}conda update -c conda-forge neptune-client{end}
