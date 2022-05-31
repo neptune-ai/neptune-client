@@ -108,4 +108,6 @@ class UnsupportedValue(ManagementOperationFailure):
 
 class BadRequestException(ManagementOperationFailure):
     code = 400
-    description = "Your request has encountered the following validation errors: {validation_errors}"
+    description = (
+        "Your request has encountered the following validation errors: {validation_errors}"
+    )
