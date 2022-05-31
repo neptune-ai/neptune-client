@@ -611,7 +611,7 @@ class NeptuneClientUpgradeRequiredError(NeptuneException):
 ----NeptuneClientUpgradeRequiredError-------------------------------------------------------------
 {end}
 Your version of the Neptune client library ({current_version}) is no longer supported by the Neptune
- server, minimal required version is {required_version}.
+ server. The minimum required version is {required_version}.
 
 In order to update the Neptune client library in your terminal run:
     {bash}pip install -U neptune-client{end}
