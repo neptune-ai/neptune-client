@@ -161,7 +161,7 @@ class Project(MetadataContainer):
             >>> # You can combine conditions. Runs satisfying all conditions will be fetched
             ... runs_table_df = project.fetch_runs_table(state="idle", tag="Exploration").to_pandas()
 
-        You may also want to check out the API reference in the docs:
+        You may also want to check the API reference in the docs:
             https://docs.neptune.ai/api-reference/project#fetch_runs_table
         """
         ids = as_list("id", id)
@@ -265,7 +265,7 @@ class Project(MetadataContainer):
             >>> # Extract the last model id
             ... last_model_id = models_table_df["sys/id"].values[0]
 
-        You may also want to check the API referene in docs:
+        You may also want to check the API referene in the docs:
             https://docs.neptune.ai/api-reference/project
         """
         return MetadataContainer._fetch_entries(
