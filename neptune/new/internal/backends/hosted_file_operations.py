@@ -22,7 +22,6 @@ from io import BytesIO
 from typing import AnyStr, Dict, Iterable, List, Optional, Set, Union
 from urllib.parse import urlencode
 
-import click
 from bravado.exception import HTTPPaymentRequired, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
 from requests import Request, Response
@@ -60,6 +59,7 @@ from neptune.new.internal.backends.utils import (
     with_api_exceptions_handler,
 )
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
+from neptune.new.internal.utils.logger import logger
 
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)
@@ -315,7 +315,7 @@ def _multichunk_upload_with_retry(
                 upload_entry, swagger_client, query_params, multipart_config, urlset
             )
         except UploadedFileChanged as e:
-            click.echo(e)
+            logger.error(str(e))
 
 
 def _multichunk_upload(

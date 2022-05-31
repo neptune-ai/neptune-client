@@ -15,8 +15,6 @@
 #
 from typing import Iterable, List, Optional, Union
 
-import click
-
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.series import Series
 from neptune.new.internal.backends.api_model import FloatSeriesValues
@@ -27,6 +25,7 @@ from neptune.new.internal.operation import (
     Operation,
 )
 from neptune.new.internal.utils import verify_type
+from neptune.new.internal.utils.logger import logger
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.utils import split_to_chunks
 
@@ -64,10 +63,7 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
         if kwargs:
-            click.echo(
-                "Warning: unexpected arguments ({kwargs}) in FloatSeries".format(kwargs=kwargs),
-                err=True,
-            )
+            logger.warning("Warning: unexpected arguments (%s) in FloatSeries", kwargs)
         return FloatSeriesVal(values)
 
     def _is_value_type(self, value) -> bool:

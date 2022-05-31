@@ -15,13 +15,11 @@
 #
 import abc
 import functools
-import sys
 import threading
 import time
 
-import click
-
 from neptune.new.exceptions import NeptuneConnectionLostException
+from neptune.new.internal.utils.logger import logger
 
 
 class Daemon(threading.Thread):
@@ -77,15 +75,15 @@ class Daemon(threading.Thread):
                         result = func(self_, *args, **kwargs)
                         if self_.last_backoff_time > 0:
                             self_.last_backoff_time = 0
-                            click.echo("Communication with Neptune restored!", sys.stderr)
+                            logger.info("Communication with Neptune restored!")
                         return result
                     except NeptuneConnectionLostException as e:
                         if self_.last_backoff_time == 0:
-                            click.echo(
-                                "Experiencing connection interruptions. "
-                                "Will try to reestablish communication with Neptune. "
-                                f"Internal exception was: {e.cause.__class__.__name__}",
-                                sys.stderr,
+                            logger.warning(
+                                "Experiencing connection interruptions."
+                                " Will try to reestablish communication with Neptune."
+                                " Internal exception was: %s",
+                                e.cause.__class__.__name__,
                             )
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:
@@ -94,9 +92,9 @@ class Daemon(threading.Thread):
                             )
                         time.sleep(self_.last_backoff_time)
                     except Exception:
-                        click.echo(
-                            f"Unexpected error occurred in Neptune background thread: {self.kill_message}",
-                            sys.stderr,
+                        logger.error(
+                            "Unexpected error occurred in Neptune background thread: %s",
+                            self.kill_message,
                         )
                         raise
 
