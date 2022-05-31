@@ -15,11 +15,10 @@
 #
 import typing
 
-import click
-
 from neptune.new.attributes.atoms.copiable_atom import CopiableAtom
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import AssignString
+from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.string import String as StringVal
 
@@ -60,11 +59,12 @@ class String(CopiableAtom):
             if not self._value_truncation_occurred:
                 # the first truncation
                 self._value_truncation_occurred = True
-                click.echo(
-                    f"Warning: string '{path_to_str(self._path)}' value was "
-                    f"longer than {String.MAX_VALUE_LENGTH} characters and was truncated. "
-                    f"This warning is printed only once.",
-                    err=True,
+                logger.warning(
+                    "Warning: string '%s' value was"
+                    " longer than %s characters and was truncated."
+                    " This warning is printed only once.",
+                    path_to_str(self._path),
+                    String.MAX_VALUE_LENGTH,
                 )
 
         with self._container.lock():

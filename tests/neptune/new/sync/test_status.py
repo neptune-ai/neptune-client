@@ -59,14 +59,14 @@ def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, conta
 
     # then
     captured = capsys.readouterr()
-    assert captured.err == ""
-    assert (
-        "Synchronized objects:\n- {}".format(get_qualified_name(synced_container)) in captured.out
-    )
-    assert (
-        "Unsynchronized objects:\n- {}".format(get_qualified_name(unsynced_container))
-        in captured.out
-    )
+    assert captured.out.splitlines() == [
+        "Unsynchronized objects:",
+        f"- {get_qualified_name(unsynced_container)}",
+        "Synchronized objects:",
+        f"- {get_qualified_name(synced_container)}",
+        "",
+        "Please run with the `neptune sync --help` to see example commands.",
+    ]
 
 
 def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):

@@ -27,13 +27,10 @@ __all__ = [
 
 import logging
 import os
-import sys
 import textwrap
 import threading
 from pathlib import Path
 from typing import Iterator, List, Optional, Tuple, Union
-
-import click
 
 from neptune.new.constants import OFFLINE_DIRECTORY
 from neptune.new.envs import PROJECT_ENV_NAME
@@ -48,6 +45,7 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
+from neptune.new.internal.utils.logger import logger
 
 
 def get_metadata_container(
@@ -59,11 +57,10 @@ def get_metadata_container(
     try:
         return backend.get_metadata_container(container_id, expected_container_type=container_type)
     except MetadataContainerNotFound:
-        click.echo(f"Can't fetch {public_container_type} {container_id}. Skipping.")
+        logger.warning("Can't fetch %s %s. Skipping.", public_container_type, container_id)
     except NeptuneException as e:
-        click.echo(
-            f"Exception while fetching {public_container_type} {container_id}. Skipping.",
-            err=True,
+        logger.warning(
+            "Exception while fetching %s %s. Skipping.", public_container_type, container_id
         )
         logging.exception(e)
 
@@ -71,19 +68,17 @@ def get_metadata_container(
 
 
 _project_name_missing_message = (
-    "Project name not provided. Could not synchronize offline runs. "
-    "To synchronize offline run, specify the project name with the --project flag "
-    "or by setting the {} environment variable.".format(PROJECT_ENV_NAME)
+    "Project name not provided. Could not synchronize offline runs."
+    " To synchronize offline run, specify the project name with the --project flag"
+    f" or by setting the {PROJECT_ENV_NAME} environment variable."
 )
 
 
 def _project_not_found_message(project_name: QualifiedName) -> str:
     return (
-        "Project {} not found. Could not synchronize offline runs. ".format(project_name)
-        + "Please ensure you specified the correct project name with the --project flag "
-        + "or with the {} environment variable, or contact Neptune for support.".format(
-            PROJECT_ENV_NAME
-        )
+        f"Project {project_name} not found. Could not synchronize offline runs."
+        " Please ensure you specified the correct project name with the --project flag"
+        f" or with the {PROJECT_ENV_NAME} environment variable, or contact Neptune for support."
     )
 
 
@@ -92,17 +87,17 @@ def get_project(
 ) -> Optional[Project]:
     project_name = project_name_flag or QualifiedName(os.getenv(PROJECT_ENV_NAME))
     if not project_name:
-        click.echo(textwrap.fill(_project_name_missing_message), file=sys.stderr)
+        logger.warning(textwrap.fill(_project_name_missing_message))
         return None
     try:
         return backend.get_project(project_name)
     except ProjectNotFound:
-        click.echo(textwrap.fill(_project_not_found_message(project_name)), file=sys.stderr)
+        logger.warning(textwrap.fill(_project_not_found_message(project_name)))
         return None
 
 
 def get_qualified_name(run: ApiExperiment) -> QualifiedName:
-    return QualifiedName("{}/{}/{}".format(run.workspace, run.project_name, run.sys_id))
+    return QualifiedName(f"{run.workspace}/{run.project_name}/{run.sys_id}")
 
 
 def is_container_synced(run_path: Path) -> bool:

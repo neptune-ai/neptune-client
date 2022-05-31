@@ -20,8 +20,6 @@ import threading
 from time import monotonic, time
 from typing import List, Optional
 
-import click
-
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
@@ -31,6 +29,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
 from neptune.new.internal.threading.daemon import Daemon
+from neptune.new.internal.utils.logger import logger
 
 # pylint: disable=protected-access
 
@@ -103,19 +102,19 @@ class AsyncOperationProcessor(OperationProcessor):
         )
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:
-                click.echo(
-                    f"We have been experiencing connection interruptions during your run. "
-                    f"Neptune client will now try to resume connection and sync data for the next "
-                    f"{max_reconnect_wait_time} seconds. "
-                    f"You can also kill this process and synchronize your data manually later "
-                    f"using `neptune sync` command.",
-                    sys.stderr,
+                logger.warning(
+                    "We have been experiencing connection interruptions during your run."
+                    " Neptune client will now try to resume connection and sync data for the next"
+                    " %s seconds."
+                    " You can also kill this process and synchronize your data manually later"
+                    " using `neptune sync` command.",
+                    max_reconnect_wait_time,
                 )
             else:
-                click.echo(
-                    f"Waiting for the remaining {initial_queue_size} operations to synchronize with Neptune. "
-                    f"Do not kill this process.",
-                    sys.stderr,
+                logger.warning(
+                    "Waiting for the remaining %s operations to synchronize with Neptune."
+                    " Do not kill this process.",
+                    initial_queue_size,
                 )
 
         while True:
@@ -136,32 +135,34 @@ class AsyncOperationProcessor(OperationProcessor):
                 (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             )
             if size_remaining == 0:
-                click.echo(f"All {initial_queue_size} operations synced, thanks for waiting!")
+                logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
                 return
 
             time_elapsed = monotonic() - waiting_start
             if self._consumer.last_backoff_time > 0 and time_elapsed >= max_reconnect_wait_time:
-                click.echo(
-                    f"Failed to reconnect with Neptune in {max_reconnect_wait_time} seconds."
-                    f" You have {size_remaining} operations saved on disk that can be manually synced"
-                    f" using `neptune sync` command.",
-                    sys.stderr,
+                logger.warning(
+                    "Failed to reconnect with Neptune in %s seconds."
+                    " You have %s operations saved on disk that can be manually synced"
+                    " using `neptune sync` command.",
+                    max_reconnect_wait_time,
+                    size_remaining,
                 )
                 return
 
             if seconds is not None and wait_time == 0:
-                click.echo(
-                    f"Failed to sync all operations in {seconds} seconds."
-                    f" You have {size_remaining} operations saved on disk that can be manually synced"
-                    f" using `neptune sync` command.",
-                    sys.stderr,
+                logger.warning(
+                    "Failed to sync all operations in %s seconds."
+                    " You have %s operations saved on disk that can be manually synced"
+                    " using `neptune sync` command.",
+                    seconds,
+                    size_remaining,
                 )
                 return
 
-            click.echo(
-                f"Still waiting for the remaining {size_remaining} operations "
-                f"({already_synced_proc:.2f}% done). Please wait.",
-                sys.stderr,
+            logger.warning(
+                "Still waiting for the remaining %s operations" " (%.2f%% done). Please wait.",
+                size_remaining,
+                already_synced_proc,
             )
 
     def stop(self, seconds: Optional[float] = None):

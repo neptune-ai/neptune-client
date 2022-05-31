@@ -271,7 +271,7 @@ def test_sync_non_existent_container(tmp_path, capsys, sync_runner):
 
     # then
     captured = capsys.readouterr()
-    assert "Warning: Run 'bar' does not exist in location" in captured.err
+    assert "Warning: Run 'bar' does not exist in location" in captured.out
 
 
 def test_sync_non_existent_offline_containers(tmp_path, capsys, sync_runner):
@@ -285,5 +285,5 @@ def test_sync_non_existent_offline_containers(tmp_path, capsys, sync_runner):
 
     # then
     captured = capsys.readouterr()
-    assert "Offline run foo__bar not found on disk." in captured.err
-    assert "Offline run model__bar not found on disk." in captured.err
+    assert "Offline run foo__bar not found on disk." in captured.out
+    assert "Offline run model__bar not found on disk." in captured.out
