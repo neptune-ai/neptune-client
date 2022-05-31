@@ -18,13 +18,11 @@ import itertools
 import logging
 import os
 import socket
-import sys
 import time
 from functools import lru_cache, wraps
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Text
 from urllib.parse import urljoin, urlparse
 
-import click
 import requests
 import urllib3
 from bravado.client import SwaggerClient
@@ -69,6 +67,7 @@ from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.operation import CopyAttribute, Operation
 from neptune.new.internal.utils import replace_patch_version
+from neptune.new.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
 
@@ -197,11 +196,12 @@ def verify_client_version(client_config: ClientConfig, version: Version):
         client_config.version_info.min_recommended
         and client_config.version_info.min_recommended > version
     ):
-        click.echo(
-            f"WARNING: Your version of the Neptune client library ({version}) is deprecated,"
+        logger.warning(
+            "WARNING: Your version of the Neptune client library (%s) is deprecated,"
             " and soon will no longer be supported by the Neptune server."
-            f" We recommend upgrading to at least version {client_config.version_info.min_recommended}.",
-            sys.stderr,
+            " We recommend upgrading to at least version %s.",
+            version,
+            client_config.version_info.min_recommended
         )
 
 
@@ -210,7 +210,7 @@ def update_session_proxies(session: Session, proxies: Optional[Dict[str, str]]):
         try:
             session.proxies.update(proxies)
         except (TypeError, ValueError):
-            raise ValueError("Wrong proxies format: {}".format(proxies))
+            raise ValueError(f"Wrong proxies format: {proxies}")
 
 
 def build_operation_url(base_api: str, operation_url: str) -> str:
@@ -225,13 +225,13 @@ def handle_server_raw_response_messages(response: Response):
     try:
         info = response.headers.get("X-Server-Info")
         if info:
-            click.echo(info)
+            logger.info(info)
         warning = response.headers.get("X-Server-Warning")
         if warning:
-            click.echo(warning)
+            logger.warning(warning)
         error = response.headers.get("X-Server-Error")
         if error:
-            click.echo(message=error, err=True)
+            logger.error(error)
         return response
     except Exception:
         # any issues with printing server messages should not cause code to fail
@@ -258,13 +258,13 @@ class NeptuneResponseAdapter(RequestsResponseAdapter):
         try:
             info = self._delegate.headers.get("X-Server-Info")
             if info:
-                click.echo(info)
+                logger.info(info)
             warning = self._delegate.headers.get("X-Server-Warning")
             if warning:
-                click.echo(warning)
+                logger.warning(warning)
             error = self._delegate.headers.get("X-Server-Error")
             if error:
-                click.echo(message=error, err=True)
+                logger.error(error)
         except Exception:
             # any issues with printing server messages should not cause code to fail
             pass

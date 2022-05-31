@@ -18,13 +18,10 @@ __all__ = ["SyncRunner"]
 
 import logging
 import os
-import sys
 import threading
 import time
 from pathlib import Path
 from typing import Iterable, List, Optional, Sequence
-
-import click
 
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
@@ -41,6 +38,7 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
+from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.sync.utils import (
     create_dir_name,
@@ -59,14 +57,14 @@ retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 class SyncRunner(AbstractBackendRunner):
     def sync_run(self, run_path: Path, run: ApiExperiment) -> None:
         qualified_run_name = get_qualified_name(run)
-        click.echo("Synchronising {}".format(qualified_run_name))
+        logger.info("Synchronising %s", qualified_run_name)
         for execution_path in run_path.iterdir():
             self.sync_execution(
                 execution_path=execution_path,
                 container_id=run.id,
                 container_type=run.type,
             )
-        click.echo(f"Synchronization of {run.type.value} {qualified_run_name} completed.")
+        logger.info("Synchronization of %s %s completed.", run.type.value, qualified_run_name)
 
     def sync_execution(
         self,
@@ -103,11 +101,11 @@ class SyncRunner(AbstractBackendRunner):
                 except NeptuneConnectionLostException as ex:
                     if time.monotonic() - start_time > retries_timeout:
                         raise ex
-                    click.echo(
-                        "Experiencing connection interruptions. "
-                        "Will try to reestablish communication with Neptune. "
-                        f"Internal exception was: {ex.cause.__class__.__name__}",
-                        sys.stderr,
+                    logger.warning(
+                        "Experiencing connection interruptions."
+                        " Will try to reestablish communication with Neptune."
+                        " Internal exception was: %s",
+                        ex.cause.__class__.__name__,
                     )
 
     def sync_all_registered_containers(self, base_path: Path) -> None:
@@ -138,9 +136,8 @@ class SyncRunner(AbstractBackendRunner):
                 elif run_path_deprecated.exists():
                     self.sync_run(run_path=run_path_deprecated, run=run)
                 else:
-                    click.echo(
-                        "Warning: Run '{}' does not exist in location {}".format(name, base_path),
-                        file=sys.stderr,
+                    logger.warning(
+                        "Warning: Run '%s' does not exist in location %s", name, base_path
                     )
 
     def _register_offline_run(
@@ -152,10 +149,9 @@ class SyncRunner(AbstractBackendRunner):
             else:
                 raise ValueError("Only runs are supported in offline mode")
         except Exception as e:
-            click.echo(
-                "Exception occurred while trying to create a run "
-                "on the Neptune server. Please try again later",
-                file=sys.stderr,
+            logger.warning(
+                "Exception occurred while trying to create a run"
+                " on the Neptune server. Please try again later",
             )
             logging.exception(e)
             return None
@@ -191,13 +187,12 @@ class SyncRunner(AbstractBackendRunner):
                         server_id=run.id,
                         server_type=run.type,
                     )
-                    click.echo(f"Offline run {offline_dir} registered as {get_qualified_name(run)}")
+                    logger.info(
+                        "Offline run %s registered as %s", offline_dir, get_qualified_name(run)
+                    )
                     result.append(run)
             else:
-                click.echo(
-                    f"Offline run {offline_dir} not found on disk.",
-                    err=True,
-                )
+                logger.warning("Offline run %s not found on disk.", offline_dir)
         return result
 
     def sync_offline_runs(

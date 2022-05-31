@@ -21,12 +21,12 @@ import warnings
 from io import BytesIO, StringIO
 from typing import Optional
 
-import click
 from packaging import version
 from pandas import DataFrame
 
 from neptune.new.exceptions import PlotlyIncompatibilityException
 from neptune.new.internal.utils import limits
+from neptune.new.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
 
@@ -107,10 +107,10 @@ def _to_html(chart) -> str:
             chart = _matplotlib_to_plotly(chart)
             return _export_plotly_figure(chart)
         except ImportError:
-            print("Plotly not installed. Logging plot as an image.")
+            logger.warning("Plotly not installed. Logging plot as an image.")
             return _image_content_to_html(_get_figure_image_data(chart))
         except UserWarning:
-            print(
+            logger.warning(
                 "Couldn't convert Matplotlib plot to interactive Plotly plot. Logging plot as an image instead."
             )
             return _image_content_to_html(_get_figure_image_data(chart))
@@ -176,11 +176,10 @@ def _get_numpy_as_image(array):
     if array_max > 1:
         data_range_warnings.append(f"the largest value in the array is {array_max}")
     if data_range_warnings:
-        data_range_warning_message = (" and ".join(data_range_warnings) + ". ").capitalize()
-        click.echo(
-            f"{data_range_warning_message}"
-            f"To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
-            err=True,
+        data_range_warning_message = (" and ".join(data_range_warnings) + ".").capitalize()
+        logger.warning(
+            "%s To be interpreted as colors correctly values in the array need to be in the [0, 1] range.",
+            data_range_warning_message,
         )
     array *= 255
     shape = array.shape

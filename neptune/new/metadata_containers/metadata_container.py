@@ -24,8 +24,6 @@ from datetime import datetime
 from functools import wraps
 from typing import Any, Dict, List, Optional, Union
 
-import click
-
 from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
@@ -62,6 +60,7 @@ from neptune.new.internal.utils import (
     is_string_like,
     verify_type,
 )
+from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
 from neptune.new.internal.utils.uncaught_exception_handler import (
@@ -206,16 +205,16 @@ class MetadataContainer(AbstractContextManager):
 
         self._state = ContainerState.STOPPING
         ts = time.time()
-        click.echo("Shutting down background jobs, please wait a moment...")
+        logger.info("Shutting down background jobs, please wait a moment...")
         self._bg_job.stop()
         self._bg_job.join(seconds)
-        click.echo("Done!")
+        logger.info("Done!")
         with self._lock:
             sec_left = None if seconds is None else seconds - (time.time() - ts)
             self._op_processor.stop(sec_left)
         if self._mode != Mode.OFFLINE:
-            click.echo("Explore the metadata in the Neptune app:")
-            click.echo(self._metadata_url)
+            logger.info("Explore the metadata in the Neptune app:")
+            logger.info(self._metadata_url)
         self._backend.close()
         self._state = ContainerState.STOPPED
 
@@ -229,16 +228,16 @@ class MetadataContainer(AbstractContextManager):
 
     def _print_structure_impl(self, struct: dict, indent: int) -> None:
         for key in sorted(struct.keys()):
-            click.echo("    " * indent, nl=False)
+            print("    " * indent, end="")
             if isinstance(struct[key], dict):
-                click.echo(
+                print(
                     "{blue}'{key}'{end}:".format(
                         blue=UNIX_STYLES["blue"], key=key, end=UNIX_STYLES["end"]
                     )
                 )
                 self._print_structure_impl(struct[key], indent=indent + 1)
             else:
-                click.echo(
+                print(
                     "{blue}'{key}'{end}: {type}".format(
                         blue=UNIX_STYLES["blue"],
                         key=key,
@@ -341,17 +340,18 @@ class MetadataContainer(AbstractContextManager):
 
     def _startup(self, debug_mode):
         if not debug_mode:
-            click.echo(self.get_url())
+            logger.info(self.get_url())
 
         self.start()
 
         if not debug_mode:
             if in_interactive() or in_notebook():
-                click.echo(
-                    f"Remember to stop your {self.container_type.value} once you’ve finished logging your metadata"
-                    f" ({self._docs_url_stop})."
+                logger.info(
+                    "Remember to stop your %s once you’ve finished logging your metadata (%s)."
                     " It will be stopped automatically only when the notebook"
-                    " kernel/interactive console is terminated."
+                    " kernel/interactive console is terminated.",
+                    self.container_type.value,
+                    self._docs_url_stop,
                 )
 
         uncaught_exception_handler.activate()

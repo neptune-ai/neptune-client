@@ -1,5 +1,8 @@
 ## [UNRELEASED] neptune-client 0.16.3
 
+## Features
+- Added fetching Models method to Project ([#916](https://github.com/neptune-ai/neptune-client/pull/916))
+
 ## Fixes
 - Fix computing of a multipart upload chunk size ([#897](https://github.com/neptune-ai/neptune-client/pull/897))
 - Matching all listed tags instead of any when calling `fetch_runs_table` ([#899](https://github.com/neptune-ai/neptune-client/pull/899))
