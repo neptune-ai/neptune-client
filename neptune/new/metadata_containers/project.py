@@ -21,6 +21,7 @@ from neptune.new.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
+    NQLEmptyQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
@@ -239,6 +240,38 @@ class Project(MetadataContainer):
         query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
 
         return MetadataContainer._fetch_entries(self, child_type=ContainerType.RUN, query=query)
+
+    def fetch_models_table(self) -> Table:
+        """Retrieve models
+
+        Returns:
+            ``Table``: object containing models matching the specified criteria.
+
+            Use `.to_pandas()` to convert it to Pandas `DataFrame`.
+
+        Examples:
+            >>> import neptune.new as neptune
+
+            >>> # Fetch project 'jackie/sandbox'
+            ... project = neptune.get_project(name='jackie/sandbox')
+
+            >>> # Fetch all Models metadata as Pandas DataFrame
+            ... models_table_df = project.fetch_models_table().to_pandas()
+
+            >>> # Sort models by creation time
+            ... models_table_df = models_table_df.sort_values(by='sys/creation_time', ascending=False)
+
+            >>> # Extract the last model id
+            ... last_model_id = models_table_df['sys/id'].values[0]
+
+        You may also want to check `fetch_models_table docs page`_.
+
+        .. _fetch_runs_table docs page:
+            https://docs.neptune.ai/api-reference/project#fetch_models_table
+        """
+        return MetadataContainer._fetch_entries(
+            self, child_type=ContainerType.MODEL, query=NQLEmptyQuery()
+        )
 
     def assign(self, value, wait: bool = False) -> None:
         """Assign values to multiple fields from a dictionary.

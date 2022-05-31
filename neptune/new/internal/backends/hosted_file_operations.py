@@ -432,7 +432,8 @@ def upload_raw_data(
     )
     response = handle_server_raw_response_messages(session.send(session.prepare_request(request)))
 
-    ApiMethodWrapper.handle_neptune_http_errors(response)
+    if response.status_code >= 300:
+        ApiMethodWrapper.handle_neptune_http_errors(response)
     if response.status_code in (
         HTTPUnprocessableEntity.status_code,
         HTTPPaymentRequired.status_code,
