@@ -288,7 +288,7 @@ from neptune.new.exceptions import RunNotFound
 from neptune.new.exceptions import RunUUIDNotFound
 from neptune.new.exceptions import NeptuneSSLVerificationError
 from neptune.new.exceptions import Unauthorized
-from neptune.new.exceptions import UnsupportedClientVersion
+from neptune.new.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.new.exceptions import Version
 from neptune.new.exceptions import Workspace
 from neptune.new.handler import Artifact

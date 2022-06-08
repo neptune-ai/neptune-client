@@ -56,12 +56,12 @@ from neptune.new.exceptions import (
     ClientHttpError,
     Forbidden,
     MetadataInconsistency,
+    NeptuneClientUpgradeRequiredError,
     NeptuneConnectionLostException,
     NeptuneFeatureNotAvailableException,
     NeptuneInvalidApiTokenException,
     NeptuneSSLVerificationError,
     Unauthorized,
-    UnsupportedClientVersion,
 )
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
@@ -182,14 +182,14 @@ def verify_client_version(client_config: ClientConfig, version: Version):
         client_config.version_info.min_compatible
         and client_config.version_info.min_compatible > version
     ):
-        raise UnsupportedClientVersion(
+        raise NeptuneClientUpgradeRequiredError(
             version, min_version=client_config.version_info.min_compatible
         )
     if (
         client_config.version_info.max_compatible
         and client_config.version_info.max_compatible < version_with_patch_0
     ):
-        raise UnsupportedClientVersion(
+        raise NeptuneClientUpgradeRequiredError(
             version, max_version=client_config.version_info.max_compatible
         )
     if (
@@ -197,9 +197,11 @@ def verify_client_version(client_config: ClientConfig, version: Version):
         and client_config.version_info.min_recommended > version
     ):
         logger.warning(
-            "WARNING: We recommend an upgrade to a new version of neptune-client - %s (installed - %s).",
-            client_config.version_info.min_recommended,
+            "WARNING: Your version of the Neptune client library (%s) is deprecated,"
+            " and soon will no longer be supported by the Neptune server."
+            " We recommend upgrading to at least version %s.",
             version,
+            client_config.version_info.min_recommended,
         )
 
 

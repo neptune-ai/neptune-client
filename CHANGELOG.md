@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune-client 0.16.4
+
+## Changes
+- Rename and copy update for UnsupportedClientVersion and DeprecatedClientLibraryVersion ([#917](https://github.com/neptune-ai/neptune-client/pull/917))
+
 ## neptune-client 0.16.3
 
 ## Features

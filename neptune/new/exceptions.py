@@ -593,7 +593,7 @@ You may also want to check the following docs page:
         super().__init__(message.format(custom_id_env=CUSTOM_RUN_ID_ENV_NAME, **STYLES))
 
 
-class UnsupportedClientVersion(NeptuneException):
+class NeptuneClientUpgradeRequiredError(NeptuneException):
     def __init__(
         self,
         version: Union[Version, str],
@@ -608,11 +608,15 @@ class UnsupportedClientVersion(NeptuneException):
         )
         message = """
 {h1}
-----UnsupportedClientVersion-------------------------------------------------------------
+----NeptuneClientUpgradeRequiredError-------------------------------------------------------------
 {end}
-Your version of the neptune-client ({current_version}) library is not supported by the Neptune server.
+Your version of the Neptune client library ({current_version}) is no longer supported by the Neptune
+ server. The minimum required version is {required_version}.
 
-Please install neptune-client{required_version}
+In order to update the Neptune client library, run the following command in your terminal:
+    {bash}pip install -U neptune-client{end}
+Or if you are using Conda, run the following instead:
+    {bash}conda update -c conda-forge neptune-client{end}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
