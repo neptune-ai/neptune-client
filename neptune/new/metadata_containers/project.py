@@ -156,13 +156,13 @@ class Project(MetadataContainer):
             ... runs_table_df = project.fetch_runs_table(owner="my_company_ci_service").to_pandas()
 
             >>> # Fetch only runs that have both "Exploration" and "Optuna" tags
-            ... runs_table_df = project.fetch_runs_table(tag=['Exploration', 'Optuna']).to_pandas()
+            ... runs_table_df = project.fetch_runs_table(tag=["Exploration", "Optuna"]).to_pandas()
 
             >>> # You can combine conditions. Runs satisfying all conditions will be fetched
             ... runs_table_df = project.fetch_runs_table(state="idle", tag="Exploration").to_pandas()
 
         You may also want to check the API reference in the docs:
-            https://docs.neptune.ai/api-reference/project#fetch_runs_table
+            https://docs.neptune.ai/api-reference/project#.fetch_runs_table
         """
         ids = as_list("id", id)
         states = as_list("state", state)
@@ -266,7 +266,7 @@ class Project(MetadataContainer):
             ... last_model_id = models_table_df["sys/id"].values[0]
 
         You may also want to check the API referene in the docs:
-            https://docs.neptune.ai/api-reference/project
+            https://docs.neptune.ai/api-reference/project#.fetch_models_table
         """
         return MetadataContainer._fetch_entries(
             self, child_type=ContainerType.MODEL, query=NQLEmptyQuery()
