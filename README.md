@@ -9,33 +9,36 @@
 [![youtube](https://img.shields.io/youtube/views/9iX6DxcijO8?style=social)](https://www.youtube.com/channel/UCvOJU-ubyUqxGSDRN7xK4Ng)
 
 ## Flexible metadata store for MLOps, built for research and production teams that run a lot of experiments.
+
 Neptune is a lightweight solution designed for:
+
 * **Experiment tracking:** log, display, organize, and compare ML experiments in a single place.
 * **Model registry:** version, store, manage, and query trained models and model-building metadata.
 * **Monitoring ML runs live:** record and monitor model training, evaluation, or production runs live.
 &nbsp;
-
 
 ### Getting started
 
 **Step 1:** Sign up for a **[free account](https://neptune.ai/register)**
 
 **Step 2:** Install the Neptune client library
+
 ```bash
 pip install neptune-client
 ```
+
 **Step 3:** Connect Neptune to your code
+
 ```python
 import neptune.new as neptune
 
-run = neptune.init(project="common/quickstarts",
-                   api_token="ANONYMOUS")
+run = neptune.init(project="common/quickstarts", api_token="ANONYMOUS")
 
-run["parameters"] = {"batch_size": 64,
-                     "dropout": 0.2,
-                     "optim": {"learning_rate": 0.001,
-                               "optimizer": "Adam"}
-                     }
+run["parameters"] = {
+    "batch_size": 64,
+    "dropout": 0.2,
+    "optim": {"learning_rate": 0.001, "optimizer": "Adam"},
+}
 
 for epoch in range(100):
     run["train/accuracy"].log(epoch * 0.6)
@@ -46,15 +49,16 @@ run["f1_score"] = 0.66
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/how-to-guides/hello-world/notebooks/Neptune_hello_world.ipynb)
 
 <div align="center">
-  <a href="https://youtu.be/15p-mAuIMlA" target="_blank">
-    <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/manage-all-your-model-building-metadat-in-a-single-place.jpg" width="600">
-  </a>
+    <a href="https://youtu.be/15p-mAuIMlA" target="_blank">
+      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/manage-all-your-model-building-metadat-in-a-single-place.jpg" width="600">
+    </a>
 </div>
 &nbsp;
 
 Learn more in the [documentation](https://docs.neptune.ai/) or check our [video tutorials](https://www.youtube.com/c/NeptuneAI/) to find your specific use case.
 
 ### Features
+
 ***Log and display***
 
 Neptune [supports log and display](https://docs.neptune.ai/you-should-know/what-can-you-log-and-display) for many different types of metadata generated during the ML model lifecycle:
@@ -72,7 +76,6 @@ Neptune [supports log and display](https://docs.neptune.ai/you-should-know/what-
 </div>
 &nbsp;
 
-
 ***Compare***
 
 You can [compare model-building runs](https://docs.neptune.ai/you-should-know/comparing-runs) you log to Neptune using various comparison views:
@@ -87,7 +90,6 @@ You can [compare model-building runs](https://docs.neptune.ai/you-should-know/co
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Compare.gif" width="600">
 </div>
 &nbsp;
-
 
 ***Filter and organize***
 
@@ -119,9 +121,10 @@ Available integrations:
 
 #### PyTorch Lightning
 
-  <img src="https://neptune.ai/wp-content/uploads/PyTorch-Lightning.png" width="350" /><br><br>
+<img src="https://neptune.ai/wp-content/uploads/PyTorch-Lightning.png" width="350" /><br><br>
 
 Example:
+
 ```python
 from pytorch_lightning import Trainer
 from pytorch_lightning.loggers import NeptuneLogger
@@ -138,7 +141,6 @@ trainer = Trainer(max_epochs=10, logger=neptune_logger)
 
 # Run training
 trainer.fit(my_model, my_dataloader)
-
 ```
 
 [![neptune-pl](https://img.shields.io/badge/PytorchLightning-experiment-success?logo=data:image/png;base64,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)](https://app.neptune.ai/common/pytorch-lightning-integration/experiments?split=tbl&dash=charts&viewId=faa75e77-5bd6-42b9-9379-863fe7a33227)
@@ -151,9 +153,10 @@ trainer.fit(my_model, my_dataloader)
 
 #### TensorFow/Keras
 
-  <img src="https://neptune.ai/wp-content/uploads/TensorFowKeras.png" width="400" /><br><br>
+<img src="https://neptune.ai/wp-content/uploads/TensorFowKeras.png" width="400" /><br><br>
 
 Example:
+
 ```python
 import tensorflow as tf
 import neptune.new as neptune
@@ -185,7 +188,6 @@ model.compile(
 
 neptune_cbk = NeptuneCallback(run=run, base_namespace="metrics")
 model.fit(x_train, y_train, epochs=5, batch_size=64, callbacks=[neptune_cbk])
-
 ```
 
 [![neptune-pl](https://img.shields.io/badge/TF/Keras-experiment-success?logo=data:image/png;base64,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)](https://app.neptune.ai/common/tf-keras-integration/e/TFK-18/all)
@@ -198,9 +200,10 @@ model.fit(x_train, y_train, epochs=5, batch_size=64, callbacks=[neptune_cbk])
 
 #### Scikit-learn
 
-  <img src="https://neptune.ai/wp-content/uploads/Scikit-learn.png" width="200" /><br><br>
+<img src="https://neptune.ai/wp-content/uploads/Scikit-learn.png" width="200" /><br><br>
 
 Example:
+
 ```python
 from sklearn.datasets import load_digits
 from sklearn.ensemble import GradientBoostingClassifier
@@ -246,9 +249,10 @@ run["cls_summary"] = npt_utils.create_classifier_summary(
 
 #### fastai
 
-  <img src="https://neptune.ai/wp-content/uploads/fastai-1.png" width="150" /><br><br>
+<img src="https://neptune.ai/wp-content/uploads/fastai-1.png" width="150" /><br><br>
 
 Example:
+
 ```python
 import fastai
 from neptune.new.integrations.fastai import NeptuneCallback
@@ -263,7 +267,9 @@ path = untar_data(URLs.MNIST_TINY)
 dls = ImageDataLoaders.from_csv(path)
 
 # Log all training phases of the learner
-learn = cnn_learner(dls, resnet18, cbs=[NeptuneCallback(run=run, base_namespace="experiment")])
+learn = cnn_learner(
+    dls, resnet18, cbs=[NeptuneCallback(run=run, base_namespace="experiment")]
+)
 learn.fit_one_cycle(2)
 learn.fit_one_cycle(1)
 
@@ -280,9 +286,10 @@ run.stop()
 
 #### Optuna
 
-  <img src="https://neptune.ai/wp-content/uploads/Optuna-1.png" width="300" /><br><br>
+<img src="https://neptune.ai/wp-content/uploads/Optuna-1.png" width="300" /><br><br>
 
 Example:
+
 ```python
 import lightgbm as lgb
 import neptune.new as neptune
@@ -291,7 +298,6 @@ import optuna
 from sklearn.datasets import load_breast_cancer
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
-
 
 def objective(trial):
     data, target = load_breast_cancer(return_X_y=True)
@@ -343,20 +349,21 @@ run.stop()
 &nbsp;
 
 <div align="center">
-  <img src="https://neptune.ai/wp-content/uploads/Neptune-customers.png" width="900" />
-
+    <img src="https://neptune.ai/wp-content/uploads/Neptune-customers.png" width="900" />
 </div>
 &nbsp;
 
 Read how various customers use Neptune to [improve their workflow](https://neptune.ai/customers).
 
 ### Support
+
 If you get stuck or simply want to talk to us about something, here are your options:
 * Check our [FAQ page](https://docs.neptune.ai/getting-started/getting-help#frequently-asked-questions).
 * Chat! In the app, click the [blue message icon](https://docs.neptune.ai/getting-started/getting-help#chat) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
 * You can just shoot us an email at [support@neptune.ai](mailto:support@neptune.ai).
 
 ### People behind Neptune
+
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
 Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Grzegorz, Paweł, Marcin, Jakub, Prince, Rafał, Bartosz, Dominika, Karolina, Parth, Vovik, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, Kshiteej, Tomek, Tymoteusz, Piotr, Chaz, and [you?](https://neptune.ai/jobs)
