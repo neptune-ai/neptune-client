@@ -104,67 +104,65 @@ class Project(MetadataContainer):
     ) -> Table:
         """Retrieve runs matching the specified criteria.
 
-        All parameters are optional, each of them specifies a single criterion.
+        All parameters are optional. Each of them specifies a single criterion.
         Only runs matching all of the criteria will be returned.
 
         Args:
-            id (str or list of str, optional): A run's id or list of ids.
-                E.g. `'SAN-1'` or `['SAN-1', 'SAN-2']`.
+            id (str or list of str, optional): A run's Neptune id or list of ids.
+                Example: `"SAN-1"` or `["SAN-1", "SAN-2"]`.
                 Matching any element of the list is sufficient to pass the criterion.
                 Defaults to `None`.
             state (str or list of str, optional): A run's state like or list of states.
-                E.g. `'running'` or `['idle', 'running']`.
-                Possible values: 'idle', 'running'.
+                Example: `"running"` or `["idle", "running"]`.
+                Possible values: "idle", "running".
                 Defaults to `None`.
                 Matching any element of the list is sufficient to pass the criterion.
-            owner (str or list of str, optional): Username of the run's owner  or a list of owners.
-                E.g. 'josh' or ['frederic', 'josh'].
+            owner (str or list of str, optional): Username of the run owner or a list of owners.
+                Example: "josh" or ["frederic", "josh"].
                 The user who created the tracked run is an owner.
                 Defaults to `None`.
                 Matching any element of the list is sufficient to pass the criterion.
             tag (str or list of str, optional): An experiment tag or list of tags.
-                E.g. `'lightGBM'` or ['pytorch', 'cycleLR'].
+                Example: `"lightGBM"` or ["pytorch", "cycleLR"].
                 Defaults to `None`.
-                Only experiments that have all specified tags will match this criterion.
+                Only runs that have all specified tags will match this criterion.
 
         Returns:
-            ``Table``: object containing experiments matching the specified criteria.
+            `Table`: object containing runs matching the specified criteria.
 
-            Use `.to_pandas()` to convert it to Pandas `DataFrame`.
+            Use `to_pandas()` to convert the table to a pandas DataFrame.
 
         Examples:
             >>> import neptune.new as neptune
 
-            >>> # Fetch project 'jackie/sandbox'
-            ... project = neptune.get_project(name='jackie/sandbox')
+            >>> # Fetch project "jackie/sandbox"
+            ... project = neptune.get_project(name="jackie/sandbox")
 
-            >>> # Fetch all Runs metadata as Pandas DataFrame
+            >>> # Fetch the metadata of all runs as a pandas DataFrame
             ... runs_table_df = project.fetch_runs_table().to_pandas()
 
             >>> # Sort runs by creation time
-            ... runs_table_df = runs_table_df.sort_values(by='sys/creation_time', ascending=False)
+            ... runs_table_df = runs_table_df.sort_values(by="sys/creation_time", ascending=False)
 
-            >>> # Extract the last runs id
-            ... last_run_id = runs_table_df['sys/id'].values[0]
+            >>> # Extract the id of the last run
+            ... last_run_id = runs_table_df["sys/id"].values[0]
 
-            You can also filter the runs table by state, owner or tag or a combination:
+            You can also filter the runs table by state, owner, tag, or a combination of these:
 
             >>> # Fetch only inactive runs
-            ... runs_table_df = project.fetch_runs_table(state='idle').to_pandas()
+            ... runs_table_df = project.fetch_runs_table(state="idle").to_pandas()
 
             >>> # Fetch only runs created by CI service
-            ... runs_table_df = project.fetch_runs_table(owner='my_company_ci_service').to_pandas()
+            ... runs_table_df = project.fetch_runs_table(owner="my_company_ci_service").to_pandas()
 
-            >>> # Fetch only runs that have both 'Exploration' and 'Optuna' tag
-            ... runs_table_df = project.fetch_runs_table(tag=['Exploration', 'Optuna']).to_pandas()
+            >>> # Fetch only runs that have both "Exploration" and "Optuna" tags
+            ... runs_table_df = project.fetch_runs_table(tag=["Exploration", "Optuna"]).to_pandas()
 
             >>> # You can combine conditions. Runs satisfying all conditions will be fetched
-            ... runs_table_df = project.fetch_runs_table(state='idle', tag='Exploration').to_pandas()
+            ... runs_table_df = project.fetch_runs_table(state="idle", tag="Exploration").to_pandas()
 
-        You may also want to check `fetch_runs_table docs page`_.
-
-        .. _fetch_runs_table docs page:
-            https://docs.neptune.ai/api-reference/project#fetch_runs_table
+        You may also want to check the API reference in the docs:
+            https://docs.neptune.ai/api-reference/project#.fetch_runs_table
         """
         ids = as_list("id", id)
         states = as_list("state", state)
@@ -242,32 +240,33 @@ class Project(MetadataContainer):
         return MetadataContainer._fetch_entries(self, child_type=ContainerType.RUN, query=query)
 
     def fetch_models_table(self) -> Table:
-        """Retrieve models
+        """Retrieve models stored in the project.
 
         Returns:
-            ``Table``: object containing models matching the specified criteria.
+            `Table`: object containing `Model` objects.
 
-            Use `.to_pandas()` to convert it to Pandas `DataFrame`.
+            Use `to_pandas()` to convert the table to a pandas DataFrame.
 
         Examples:
             >>> import neptune.new as neptune
 
-            >>> # Fetch project 'jackie/sandbox'
-            ... project = neptune.get_project(name='jackie/sandbox')
+            >>> # Fetch project "jackie/sandbox"
+            ... project = neptune.get_project(name="jackie/sandbox")
 
-            >>> # Fetch all Models metadata as Pandas DataFrame
+            >>> # Fetch the metadata of all models as a pandas DataFrame
             ... models_table_df = project.fetch_models_table().to_pandas()
 
+            >>> # Sort model objects by size
+            ... models_table_df = models_table_df.sort_values(by="sys/size")
+
             >>> # Sort models by creation time
-            ... models_table_df = models_table_df.sort_values(by='sys/creation_time', ascending=False)
+            ... models_table_df = models_table_df.sort_values(by="sys/creation_time", ascending=False)
 
             >>> # Extract the last model id
-            ... last_model_id = models_table_df['sys/id'].values[0]
+            ... last_model_id = models_table_df["sys/id"].values[0]
 
-        You may also want to check `fetch_models_table docs page`_.
-
-        .. _fetch_runs_table docs page:
-            https://docs.neptune.ai/api-reference/project#fetch_models_table
+        You may also want to check the API referene in the docs:
+            https://docs.neptune.ai/api-reference/project#.fetch_models_table
         """
         return MetadataContainer._fetch_entries(
             self, child_type=ContainerType.MODEL, query=NQLEmptyQuery()
