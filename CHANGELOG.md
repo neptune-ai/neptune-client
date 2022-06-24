@@ -1,5 +1,8 @@
 ## [UNRELEASED] neptune-client 0.16.4
 
+## Fixes
+- fetch_extension added to Handler ([#923](https://github.com/neptune-ai/neptune-client/pull/923))
+
 ## Changes
 - Rename and copy update for UnsupportedClientVersion and DeprecatedClientLibraryVersion ([#917](https://github.com/neptune-ai/neptune-client/pull/917))
 
