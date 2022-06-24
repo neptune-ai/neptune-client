@@ -479,6 +479,14 @@ class Handler:
         """
         return self._pass_call_to_attr(function_name="fetch_hash")
 
+    def fetch_extension(self) -> str:
+        """Fetches the extension of a file.
+
+        You may also want to check `fetch_extension docs page`_.
+           https://docs.neptune.ai/api-reference/field-types#.fetch_extension
+        """
+        return self._pass_call_to_attr(function_name="fetch_extension")
+
     def fetch_files_list(self) -> List[ArtifactFileData]:
         """Fetches the list of files in an artifact and their metadata.
 

@@ -50,7 +50,8 @@ class TestUpload(BaseE2ETest):
     )
     def test_single_file(self, container: MetadataContainer, file_size: int):
         key = self.gen_key()
-        filename = fake.file_name()
+        extension = fake.file_extension()
+        filename = fake.file_name(extension=extension)
         downloaded_filename = fake.file_name()
 
         with tmp_context():
@@ -62,6 +63,7 @@ class TestUpload(BaseE2ETest):
             container.sync()
             container[key].download(downloaded_filename)
 
+            assert container[key].fetch_extension() == extension
             assert os.path.getsize(downloaded_filename) == file_size
             with open(downloaded_filename, "rb") as file:
                 content = file.read()
