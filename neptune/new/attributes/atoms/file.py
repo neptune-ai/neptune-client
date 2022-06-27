@@ -53,7 +53,7 @@ class File(Atom):
             self._container_id, self._container_type, self._path, destination
         )
 
-    def fetch_extension(self):
+    def fetch_extension(self) -> str:
         # pylint: disable=protected-access
         val = self._backend.get_file_attribute(self._container_id, self._container_type, self._path)
         return val.ext
