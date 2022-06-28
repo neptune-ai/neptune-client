@@ -103,7 +103,7 @@ class File(Atom):
             ext = "bin"
 
         if limits.file_size_exceeds_limit(len(content)):
-            content = ""
+            content = b""
 
         return File(content=content, extension=extension or ext)
 

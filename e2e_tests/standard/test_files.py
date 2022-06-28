@@ -29,7 +29,7 @@ from neptune.new.internal.backends import hosted_file_operations
 from neptune.new.internal.backends.api_model import MultipartConfig, OptionalFeatures
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.metadata_containers import MetadataContainer
-from neptune.new.types import FileSet
+from neptune.new.types import File, FileSet
 
 
 class TestUpload(BaseE2ETest):
@@ -69,6 +69,32 @@ class TestUpload(BaseE2ETest):
                 content = file.read()
                 assert len(content) == file_size
                 assert content == b"\0" * file_size
+
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    @pytest.mark.parametrize(
+        "file_size",
+        [
+            pytest.param(10 * 2**20, id="big"),  # 10 MB, multipart
+            pytest.param(100 * 2**10, id="small"),  # 100 kB, single upload
+        ],
+    )
+    def test_in_memory_file(self, container: MetadataContainer, file_size: int):
+        key = self.gen_key()
+        extension = fake.file_extension()
+        downloaded_filename = fake.file_name()
+        expected_content = os.urandom(file_size)
+
+        container[key].upload(File.from_content(expected_content, extension))
+
+        container.sync()
+        container[key].download(downloaded_filename)
+
+        assert container[key].fetch_extension() == extension
+        assert os.path.getsize(downloaded_filename) == file_size
+        with open(downloaded_filename, "rb") as file:
+            content = file.read()
+            assert len(content) == file_size
+            assert content == expected_content
 
     def test_single_file_changed_during_upload(self, environment, monkeypatch):
         key = self.gen_key()
