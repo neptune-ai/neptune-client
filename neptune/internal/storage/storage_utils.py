@@ -35,27 +35,27 @@ class AttributeUploadConfiguration:
 
 
 class UploadEntry(object):
-    def __init__(self, source_path: Union[str, BytesIO], target_path: str):
-        self.source_path = source_path
+    def __init__(self, source: Union[str, BytesIO], target_path: str):
+        self.source = source
         self.target_path = target_path
 
     def length(self) -> int:
         if self.is_stream():
-            return self.source_path.getbuffer().nbytes
+            return self.source.getbuffer().nbytes
         else:
-            return os.path.getsize(self.source_path)
+            return os.path.getsize(self.source)
 
     def get_stream(self) -> Union[BinaryIO, io.BytesIO]:
         if self.is_stream():
-            return self.source_path
+            return self.source
         else:
-            return io.open(self.source_path, "rb")
+            return io.open(self.source, "rb")
 
     def get_permissions(self) -> str:
         if self.is_stream():
             return "----------"
         else:
-            return self.permissions_to_unix_string(self.source_path)
+            return self.permissions_to_unix_string(self.source)
 
     @classmethod
     def permissions_to_unix_string(cls, path):
@@ -92,7 +92,7 @@ class UploadEntry(object):
         """
         Returns the hash of source and target path
         """
-        return hash((self.source_path, self.target_path))
+        return hash((self.source, self.target_path))
 
     def to_str(self):
         """
@@ -107,7 +107,7 @@ class UploadEntry(object):
         return self.to_str()
 
     def is_stream(self):
-        return hasattr(self.source_path, "read")
+        return hasattr(self.source, "read")
 
 
 class UploadPackage(object):
@@ -214,11 +214,11 @@ def scan_unique_upload_entries(upload_entries):
     """
     walked_entries = set()
     for entry in upload_entries:
-        if entry.is_stream() or not os.path.isdir(entry.source_path):
+        if entry.is_stream() or not os.path.isdir(entry.source):
             walked_entries.add(entry)
         else:
-            for root, _, files in os.walk(entry.source_path):
-                path_relative_to_entry_source = os.path.relpath(root, entry.source_path)
+            for root, _, files in os.walk(entry.source):
+                path_relative_to_entry_source = os.path.relpath(root, entry.source)
                 target_root = os.path.normpath(
                     os.path.join(entry.target_path, path_relative_to_entry_source)
                 )
@@ -249,7 +249,7 @@ def split_upload_files(
             yield current_package
             current_package.reset()
         else:
-            size = os.path.getsize(entry.source_path)
+            size = os.path.getsize(entry.source)
             if (
                 size + current_package.size > upload_configuration.chunk_size
                 or current_package.len > max_files

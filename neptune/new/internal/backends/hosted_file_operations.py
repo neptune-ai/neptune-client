@@ -144,7 +144,7 @@ def upload_file_set_attribute(
             creating_a_single_empty_dir = (
                 package.len == 1
                 and not package.items[0].is_stream()
-                and os.path.isdir(package.items[0].source_path)
+                and os.path.isdir(package.items[0].source)
             )
 
             if uploading_multiple_entries or creating_a_single_empty_dir or package.is_empty():
@@ -352,7 +352,7 @@ def _multichunk_upload(
 
             upload_id = result.uploadId
             chunker = FileChunker(
-                upload_entry.source_path,
+                None if upload_entry.is_stream() else upload_entry.source,
                 file_stream,
                 entry_length,
                 multipart_config,
