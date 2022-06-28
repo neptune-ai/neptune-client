@@ -349,7 +349,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
         with ZipFile(target_file, "w") as zipObj:
             for upload_entry in upload_entries:
-                zipObj.write(upload_entry.source_path, upload_entry.target_path)
+                zipObj.write(upload_entry.source, upload_entry.target_path)
 
     def get_float_attribute(
         self, container_id: str, container_type: ContainerType, path: List[str]

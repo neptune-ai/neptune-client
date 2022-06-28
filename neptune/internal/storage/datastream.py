@@ -18,7 +18,7 @@ import io
 import math
 import os
 import tarfile
-from typing import Any, BinaryIO, Generator, Union
+from typing import Any, BinaryIO, Generator, Optional, Union
 
 from future.builtins import object
 
@@ -38,8 +38,10 @@ class FileChunk:
 
 
 class FileChunker:
-    def __init__(self, filename, fobj, total_size, multipart_config: MultipartConfig):
-        self._filename = filename
+    def __init__(
+        self, filename: Optional[str], fobj, total_size, multipart_config: MultipartConfig
+    ):
+        self._filename: Optional[str] = filename
         self._fobj = fobj
         self._total_size = total_size
         self._min_chunk_size = multipart_config.min_chunk_size
@@ -51,7 +53,7 @@ class FileChunker:
             # can't fit it
             max_size = self._max_chunk_count * self._max_chunk_size
             raise InternalClientError(
-                f"File {self._filename} is too big to upload:"
+                f"File {self._filename or 'stream'} is too big to upload:"
                 f" {self._total_size} bytes exceeds max size {max_size}"
             )
         if self._total_size <= self._max_chunk_count * self._min_chunk_size:
@@ -64,11 +66,11 @@ class FileChunker:
     def generate(self) -> Generator[FileChunk, Any, None]:
         chunk_size = self._get_chunk_size()
         last_offset = 0
-        last_change = os.stat(self._filename).st_mtime
+        last_change: Optional = os.stat(self._filename).st_mtime if self._filename else None
         while last_offset < self._total_size:
             chunk = self._fobj.read(chunk_size)
             if chunk:
-                if last_change < os.stat(self._filename).st_mtime:
+                if last_change and last_change < os.stat(self._filename).st_mtime:
                     raise UploadedFileChanged(self._filename)
                 if isinstance(chunk, str):
                     chunk = chunk.encode("utf-8")
@@ -118,7 +120,7 @@ def compress_to_tar_gz_in_memory(upload_entries) -> bytes:
 
     with tarfile.TarFile.open(fileobj=f, mode="w|gz", dereference=True) as archive:
         for entry in upload_entries:
-            archive.add(name=entry.source_path, arcname=entry.target_path, recursive=True)
+            archive.add(name=entry.source, arcname=entry.target_path, recursive=True)
 
     f.seek(0)
     data = f.read()

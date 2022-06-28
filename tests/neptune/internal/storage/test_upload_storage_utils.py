@@ -52,7 +52,7 @@ class TestUploadStorageUtils(unittest.TestCase):
         # GIVEN
         entry = UploadEntry("/tmp/test.gz", "test.gz")
         # AND
-        upload_entry = UploadEntry(entry.source_path, entry.target_path)
+        upload_entry = UploadEntry(entry.source, entry.target_path)
         size = 10 * self.MAX_PACKAGE_SIZE
         config = AttributeUploadConfiguration(size)
         getsize.return_value = size
