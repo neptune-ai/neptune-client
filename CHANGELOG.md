@@ -1,9 +1,16 @@
-## [UNRELEASED] neptune-client 0.16.4
+## [UNRELEASED] neptune-client 0.16.5
+
+
+
+## neptune-client 0.16.4
 
 ## Fixes
+- Fix uploading in-memory files lager than 5MB ([#924](https://github.com/neptune-ai/neptune-client/pull/924))
 - fetch_extension added to Handler ([#923](https://github.com/neptune-ai/neptune-client/pull/923))
 
 ## Changes
+- Force jsonschema version < 4.0.0 ([#922](https://github.com/neptune-ai/neptune-client/pull/922))
+
 - Rename and copy update for UnsupportedClientVersion and DeprecatedClientLibraryVersion ([#917](https://github.com/neptune-ai/neptune-client/pull/917))
 
 ## neptune-client 0.16.3
