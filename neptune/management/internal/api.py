@@ -433,3 +433,42 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
         }
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=name) from e
+
+
+@with_api_exceptions_handler
+def add_project_service_account(
+    name: str,
+    service_account_name: str,
+    role: str,
+    workspace: Optional[str] = None,
+    api_token: Optional[str] = None,
+):
+    verify_type("name", name, str)
+    verify_type("service_account_name", service_account_name, str)
+    verify_type("role", role, str)
+    verify_type("api_token", api_token, (str, type(None)))
+
+
+@with_api_exceptions_handler
+def remove_project_service_account(
+    name: str,
+    service_account_name: str,
+    workspace: Optional[str] = None,
+    api_token: Optional[str] = None,
+):
+    verify_type("name", name, str)
+    verify_type("api_token", api_token, (str, type(None)))
+
+
+@with_api_exceptions_handler
+def get_project_service_account_list(
+    name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
+):
+    verify_type("name", name, str)
+    verify_type("api_token", api_token, (str, type(None)))
+
+
+@with_api_exceptions_handler
+def get_workspace_service_account_list(name: str, api_token: Optional[str] = None):
+    verify_type("name", name, str)
+    verify_type("api_token", api_token, (str, type(None)))

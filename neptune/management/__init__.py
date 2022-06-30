@@ -32,6 +32,10 @@ __all__ = [
     "add_project_member",
     "remove_project_member",
     "get_workspace_member_list",
+    "add_project_service_account",
+    "remove_project_service_account",
+    "get_project_service_account_list",
+    "get_workspace_service_account_list",
     "MemberRole",
     "ProjectVisibility",
 ]
