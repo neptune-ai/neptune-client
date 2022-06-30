@@ -21,9 +21,9 @@ jobs:
   # Both integration tests and E2E
   test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 120
     strategy:
-      max-parallel: 4
+      max-parallel: 2
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.7", "3.8", "3.9", "3.10"]
@@ -39,7 +39,7 @@ jobs:
       # Time before went into offline mode
       # Default is 1 minute, and it made most of the tests to failure
       # as it takes some time to create project and all internal structures
-      NEPTUNE_RETRIES_TIMEOUT: 600
+      NEPTUNE_RETRIES_TIMEOUT: 1200
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
