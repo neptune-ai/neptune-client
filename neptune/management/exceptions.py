@@ -106,6 +106,27 @@ class UnsupportedValue(ManagementOperationFailure):
     description = "{enum} cannot have value {value}"
 
 
+class ServiceAccountAlreadyHasAccess(ManagementOperationFailure):
+    code = 13
+    description = (
+        'Service Account "{service_account_name}" already has access to the project "{project}". '
+        'Role already set to "{role}".'
+    )
+
+
+class AccessRevokedOnServiceAccountRemoval(ManagementOperationFailure):
+    code = 14
+    description = 'Not enough permissions to remove service account "{service_account_name}" from project "{project}".'
+
+
+class ServiceAccountNotExistsOrWithoutAccess(ManagementOperationFailure):
+    code = 15
+    description = (
+        'Service Account "{service_account_name}" does not exist or has no access to project "{project}". '
+        "If the project visibility is set to workspace, a service account cannot be added or removed."
+    )
+
+
 class BadRequestException(ManagementOperationFailure):
     code = 400
     description = (
