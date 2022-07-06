@@ -15,7 +15,7 @@
 #
 import os
 import re
-from typing import Dict, List, Mapping, Optional
+from typing import Dict, List, Optional
 
 from bravado.exception import (
     HTTPBadRequest,
@@ -442,7 +442,7 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
 @with_api_exceptions_handler
 def _get_raw_workspace_service_account_list(
     workspace_name: str, api_token: Optional[str] = None
-) -> Mapping[str, ServiceAccountDTO]:
+) -> Dict[str, ServiceAccountDTO]:
     verify_type("workspace_name", workspace_name, str)
     verify_type("api_token", api_token, (str, type(None)))
 
@@ -464,7 +464,7 @@ def _get_raw_workspace_service_account_list(
 @with_api_exceptions_handler
 def get_workspace_service_account_list(
     name: str, api_token: Optional[str] = None
-) -> Mapping[str, str]:
+) -> Dict[str, str]:
     service_accounts = _get_raw_workspace_service_account_list(
         workspace_name=name, api_token=api_token
     )
@@ -478,7 +478,7 @@ def get_workspace_service_account_list(
 @with_api_exceptions_handler
 def get_project_service_account_list(
     name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
-) -> Mapping[str, str]:
+) -> Dict[str, str]:
     verify_type("name", name, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
