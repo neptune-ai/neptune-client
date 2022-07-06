@@ -28,10 +28,13 @@ from bravado.exception import (
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
+    AccessRevokedOnServiceAccountRemoval,
     BadRequestException,
     ProjectAlreadyExists,
     ProjectNotFound,
     ProjectsLimitReached,
+    ServiceAccountAlreadyHasAccess,
+    ServiceAccountNotExistsOrWithoutAccess,
     UserAlreadyHasAccess,
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
@@ -39,6 +42,7 @@ from neptune.management.exceptions import (
 from neptune.management.internal.dto import (
     ProjectMemberRoleDTO,
     ProjectVisibilityDTO,
+    ServiceAccountDTO,
     WorkspaceMemberRoleDTO,
 )
 from neptune.management.internal.types import *
@@ -433,3 +437,146 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
         }
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=name) from e
+
+
+@with_api_exceptions_handler
+def _get_raw_workspace_service_account_list(
+    workspace_name: str, api_token: Optional[str] = None
+) -> Dict[str, ServiceAccountDTO]:
+    verify_type("workspace_name", workspace_name, str)
+    verify_type("api_token", api_token, (str, type(None)))
+
+    backend_client = _get_backend_client(api_token=api_token)
+
+    params = {
+        "organizationIdentifier": workspace_name,
+        "deactivated": False,
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    try:
+        result = backend_client.api.listServiceAccounts(**params).response().result
+        return {f"{sa.name}": ServiceAccountDTO(name=sa.name, id=sa.id) for sa in result}
+    except HTTPNotFound as e:
+        raise WorkspaceNotFound(workspace=workspace_name) from e
+
+
+@with_api_exceptions_handler
+def get_workspace_service_account_list(
+    name: str, api_token: Optional[str] = None
+) -> Dict[str, str]:
+    service_accounts = _get_raw_workspace_service_account_list(
+        workspace_name=name, api_token=api_token
+    )
+
+    return {
+        service_account_name: WorkspaceMemberRoleDTO.to_domain("member")
+        for service_account_name, _ in service_accounts.items()
+    }
+
+
+@with_api_exceptions_handler
+def get_project_service_account_list(
+    name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
+) -> Dict[str, str]:
+    verify_type("name", name, str)
+    verify_type("workspace", workspace, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+
+    backend_client = _get_backend_client(api_token=api_token)
+    project_identifier = normalize_project_name(name=name, workspace=workspace)
+
+    params = {"projectIdentifier": project_identifier, **DEFAULT_REQUEST_KWARGS}
+
+    try:
+        result = backend_client.api.listProjectServiceAccounts(**params).response().result
+        return {
+            f"{sa.serviceAccountInfo.name}": ProjectMemberRoleDTO.to_domain(sa.role)
+            for sa in result
+        }
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_identifier) from e
+
+
+@with_api_exceptions_handler
+def add_project_service_account(
+    name: str,
+    service_account_name: str,
+    role: str,
+    workspace: Optional[str] = None,
+    api_token: Optional[str] = None,
+):
+    verify_type("name", name, str)
+    verify_type("service_account_name", service_account_name, str)
+    verify_type("role", role, str)
+    verify_type("workspace", workspace, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+
+    backend_client = _get_backend_client(api_token=api_token)
+    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    service_account = _get_raw_workspace_service_account_list(
+        workspace_name=workspace, api_token=api_token
+    ).get(service_account_name)
+
+    params = {
+        "projectIdentifier": project_identifier,
+        "account": {
+            "serviceAccountId": service_account.id,
+            "role": ProjectMemberRoleDTO.from_str(role).value,
+        },
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    try:
+        backend_client.api.addProjectServiceAccount(**params).response()
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_identifier) from e
+    except HTTPConflict as e:
+        service_accounts = get_project_service_account_list(
+            name=name, workspace=workspace, api_token=api_token
+        )
+        service_account_role = service_accounts.get(service_account_name)
+
+        raise ServiceAccountAlreadyHasAccess(
+            service_account_name=service_account_name,
+            project=project_identifier,
+            role=service_account_role,
+        ) from e
+
+
+@with_api_exceptions_handler
+def remove_project_service_account(
+    name: str,
+    service_account_name: str,
+    workspace: Optional[str] = None,
+    api_token: Optional[str] = None,
+):
+    verify_type("name", name, str)
+    verify_type("service_account_name", service_account_name, str)
+    verify_type("workspace", workspace, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+
+    backend_client = _get_backend_client(api_token=api_token)
+    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    service_account = _get_raw_workspace_service_account_list(
+        workspace_name=workspace, api_token=api_token
+    ).get(service_account_name)
+
+    params = {
+        "projectIdentifier": project_identifier,
+        "serviceAccountId": service_account.id,
+        **DEFAULT_REQUEST_KWARGS,
+    }
+
+    try:
+        backend_client.api.deleteProjectServiceAccount(**params).response()
+    except HTTPNotFound as e:
+        raise ProjectNotFound(name=project_identifier) from e
+    except HTTPUnprocessableEntity as e:
+        raise ServiceAccountNotExistsOrWithoutAccess(
+            service_account_name=service_account_name, project=project_identifier
+        ) from e
+    except HTTPForbidden as e:
+        raise AccessRevokedOnServiceAccountRemoval(
+            service_account_name=service_account_name, project=project_identifier
+        ) from e

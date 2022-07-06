@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from dataclasses import dataclass
 from enum import Enum
 
 from neptune.management.exceptions import UnsupportedValue
@@ -82,3 +83,9 @@ class WorkspaceMemberRoleDTO(Enum):
             WorkspaceMemberRoleDTO.OWNER.value: WorkspaceMemberRole.ADMIN,
             WorkspaceMemberRoleDTO.MEMBER.value: WorkspaceMemberRole.MEMBER,
         }.get(role)
+
+
+@dataclass
+class ServiceAccountDTO:
+    name: str
+    id: str
