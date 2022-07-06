@@ -15,7 +15,7 @@
 #
 import os
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Mapping, Optional
 
 from bravado.exception import (
     HTTPBadRequest,
@@ -441,26 +441,30 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
 
 @with_api_exceptions_handler
 def _get_raw_workspace_service_account_list(
-    name: str, api_token: Optional[str] = None
-) -> Dict[str, ServiceAccountDTO]:
-    verify_type("name", name, str)
+    workspace_name: str, api_token: Optional[str] = None
+) -> Mapping[str, ServiceAccountDTO]:
+    verify_type("workspace_name", workspace_name, str)
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
 
-    params = {"organizationIdentifier": name, "deactivated": False, **DEFAULT_REQUEST_KWARGS}
+    params = {
+        "organizationIdentifier": workspace_name,
+        "deactivated": False,
+        **DEFAULT_REQUEST_KWARGS,
+    }
 
     try:
         result = backend_client.api.listServiceAccounts(**params).response().result
         return {f"{sa.name}": ServiceAccountDTO(name=sa.name, id=sa.id) for sa in result}
     except HTTPNotFound as e:
-        raise WorkspaceNotFound(workspace=name) from e
+        raise WorkspaceNotFound(workspace=workspace_name) from e
 
 
 @with_api_exceptions_handler
 def get_workspace_service_account_list(
     name: str, api_token: Optional[str] = None
-) -> Dict[str, str]:
+) -> Mapping[str, str]:
     service_accounts = _get_raw_workspace_service_account_list(name=name, api_token=api_token)
 
     return {
