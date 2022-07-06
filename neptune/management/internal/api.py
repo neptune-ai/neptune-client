@@ -465,7 +465,9 @@ def _get_raw_workspace_service_account_list(
 def get_workspace_service_account_list(
     name: str, api_token: Optional[str] = None
 ) -> Mapping[str, str]:
-    service_accounts = _get_raw_workspace_service_account_list(name=name, api_token=api_token)
+    service_accounts = _get_raw_workspace_service_account_list(
+        workspace_name=name, api_token=api_token
+    )
 
     return {
         service_account_name: WorkspaceMemberRoleDTO.to_domain("member")
@@ -476,7 +478,7 @@ def get_workspace_service_account_list(
 @with_api_exceptions_handler
 def get_project_service_account_list(
     name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
-) -> Dict[str, str]:
+) -> Mapping[str, str]:
     verify_type("name", name, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
@@ -513,7 +515,7 @@ def add_project_service_account(
     backend_client = _get_backend_client(api_token=api_token)
     project_identifier = normalize_project_name(name=name, workspace=workspace)
     service_account = _get_raw_workspace_service_account_list(
-        name=workspace, api_token=api_token
+        workspace_name=workspace, api_token=api_token
     ).get(service_account_name)
 
     params = {
@@ -557,7 +559,7 @@ def remove_project_service_account(
     backend_client = _get_backend_client(api_token=api_token)
     project_identifier = normalize_project_name(name=name, workspace=workspace)
     service_account = _get_raw_workspace_service_account_list(
-        name=workspace, api_token=api_token
+        workspace_name=workspace, api_token=api_token
     ).get(service_account_name)
 
     params = {
