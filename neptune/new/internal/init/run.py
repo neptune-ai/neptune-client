@@ -223,7 +223,6 @@ def init_run(
 
     # for backward compatibility imports
     mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
-
     name = DEFAULT_NAME if run is None and name is None else name
     description = "" if run is None and description is None else description
     hostname = get_hostname() if run is None else None
