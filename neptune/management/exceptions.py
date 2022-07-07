@@ -127,6 +127,13 @@ class ServiceAccountNotExistsOrWithoutAccess(ManagementOperationFailure):
     )
 
 
+class VisibilityRestricted(ManagementOperationFailure):
+    code = 16
+    description = (
+        "In workspace {workspace} you can't create project with visibility set to {visibility}. "
+    )
+
+
 class BadRequestException(ManagementOperationFailure):
     code = 400
     description = (

@@ -37,6 +37,7 @@ from neptune.management.exceptions import (
     ServiceAccountNotExistsOrWithoutAccess,
     UserAlreadyHasAccess,
     UserNotExistsOrWithoutAccess,
+    VisibilityRestricted,
     WorkspaceNotFound,
 )
 from neptune.management.internal.dto import (
@@ -48,6 +49,7 @@ from neptune.management.internal.dto import (
 from neptune.management.internal.types import *
 from neptune.management.internal.utils import normalize_project_name
 from neptune.new.envs import API_TOKEN_ENV_NAME
+from neptune.new.internal.backends.api_exception_type import ApiExceptionType
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_backend_client,
@@ -199,7 +201,12 @@ def create_project(
             raise ProjectAlreadyExists(name=project_identifier) from e
         raise BadRequestException(validation_errors=validation_errors)
     except HTTPUnprocessableEntity as e:
-        raise ProjectsLimitReached() from e
+        if e.response.json().get("errorType") == ApiExceptionType.limit_of_projects_reached.value:
+            raise ProjectsLimitReached() from e
+        elif e.response.json().get("errorType") == ApiExceptionType.visibility_restricted.value:
+            raise VisibilityRestricted(workspace=workspace, visibility=visibility) from e
+        else:
+            raise e
 
 
 @with_api_exceptions_handler
