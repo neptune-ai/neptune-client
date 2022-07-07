@@ -2,6 +2,7 @@
 
 ## Features
 - Added `NEPTUNE_MODE` environment variable ([#928](https://github.com/neptune-ai/neptune-client/pull/928))
+- Added support of Service account management ([#927](https://github.com/neptune-ai/neptune-client/pull/927))
 
 ## neptune-client 0.16.4
 
