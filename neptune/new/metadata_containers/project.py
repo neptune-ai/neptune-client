@@ -52,6 +52,7 @@ class Project(MetadataContainer):
         self,
         *,
         id_: UniqueId,
+        mode: Mode,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
@@ -59,10 +60,10 @@ class Project(MetadataContainer):
         workspace: str,
         project_name: str,
         sys_id: SysId,
-        mode: Optional[Mode] = Mode.ASYNC,
     ):
         super().__init__(
             id_=id_,
+            mode=mode,
             backend=backend,
             op_processor=op_processor,
             background_job=background_job,
@@ -71,7 +72,6 @@ class Project(MetadataContainer):
             project_name=project_name,
             workspace=workspace,
             sys_id=sys_id,
-            mode=mode,
         )
 
     @property
