@@ -33,6 +33,7 @@ from contextlib import contextmanager
 from datetime import datetime
 
 import numpy
+from attr import dataclass
 from PIL import Image
 from PIL.PngImagePlugin import PngImageFile
 
@@ -107,10 +108,15 @@ def a_project_name(project_slug: str):
     return project_name, project_key
 
 
-Environment = namedtuple(
-    "Environment",
-    ["workspace", "project", "user_token", "admin_token", "admin", "user"],
-)
+@dataclass
+class Environment:
+    workspace: str
+    project: str
+    user_token: str
+    admin_token: str
+    admin: str
+    user: str
+    service_account: str
 
 
 def initialize_container(container_type, project, **extra_args):

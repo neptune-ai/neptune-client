@@ -33,6 +33,7 @@ def environment():
     workspace = os.getenv("WORKSPACE_NAME")
     admin_token = os.getenv("ADMIN_NEPTUNE_API_TOKEN")
     user = os.getenv("USER_USERNAME")
+    service_account = os.getenv("SERVICE_ACCOUNT_NAME")
 
     project_name, project_key = a_project_name(project_slug=fake.slug())
     project_identifier = normalize_project_name(name=project_name, workspace=workspace)
@@ -61,6 +62,7 @@ def environment():
         admin_token=admin_token,
         admin=os.getenv("ADMIN_USERNAME"),
         user=user,
+        service_account=service_account,
     )
 
 
