@@ -22,6 +22,7 @@ from typing import List, Optional, Union
 
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.envs import (
+    CONNECTION_MODE,
     CUSTOM_RUN_ID_ENV_NAME,
     MONITORING_NAMESPACE,
     NEPTUNE_NOTEBOOK_ID,
@@ -82,7 +83,7 @@ def init_run(
     api_token: Optional[str] = None,
     run: Optional[str] = None,
     custom_run_id: Optional[str] = None,
-    mode: str = Mode.ASYNC.value,
+    mode: Optional[str] = None,
     name: Optional[str] = None,
     description: Optional[str] = None,
     tags: Optional[Union[List[str], str]] = None,
@@ -113,7 +114,9 @@ def init_run(
         custom_run_id (str, optional): A unique identifier to be used when running Neptune in pipelines.
             Defaults to `None`.
             Make sure you are using the same identifier throughout the whole pipeline execution.
-        mode (str, optional): Connection mode in which the tracking will work. Defaults to `'async'`.
+        mode (str, optional): Connection mode in which the tracking will work. Defaults to `None`.
+            If `None`, the value of `NEPTUNE_MODE` environment variable will be taken.
+            If no value was set for environment variable then `'async'` at default.
             Possible values 'async', 'sync', 'offline', 'read-only' and 'debug'.
         name (str, optional): Editable name of the run. Defaults to `'Untitled'`.
             Name is displayed in the run's Details and in Runs table as a column.
@@ -197,7 +200,7 @@ def init_run(
     verify_type("api_token", api_token, (str, type(None)))
     verify_type("run", run, (str, type(None)))
     verify_type("custom_run_id", custom_run_id, (str, type(None)))
-    verify_type("mode", mode, str)
+    verify_type("mode", mode, (str, type(None)))
     verify_type("name", name, (str, type(None)))
     verify_type("description", description, (str, type(None)))
     verify_type("capture_stdout", capture_stdout, bool)
@@ -219,7 +222,7 @@ def init_run(
             verify_collection_type("source_files", source_files, str)
 
     # for backward compatibility imports
-    mode = Mode(mode)
+    mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
 
     name = DEFAULT_NAME if run is None and name is None else name
     description = "" if run is None and description is None else description

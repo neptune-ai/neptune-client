@@ -1,6 +1,7 @@
 ## [UNRELEASED] neptune-client 0.16.5
 
-
+## Features
+- Added `NEPTUNE_MODE` environment variable ([#?](?))
 
 ## neptune-client 0.16.4
 

@@ -100,7 +100,6 @@ class Run(MetadataContainer):
         self,
         *,
         id_: UniqueId,
-        mode: Mode,
         backend: NeptuneBackend,
         op_processor: OperationProcessor,
         background_job: BackgroundJob,
@@ -109,11 +108,11 @@ class Run(MetadataContainer):
         project_name: str,
         sys_id: SysId,
         project_id: UniqueId,
+        mode: Optional[Mode] = Mode.ASYNC,
         monitoring_namespace: str = "monitoring",
     ):
         super().__init__(
             id_=id_,
-            mode=mode,
             backend=backend,
             op_processor=op_processor,
             background_job=background_job,
@@ -122,6 +121,7 @@ class Run(MetadataContainer):
             project_name=project_name,
             workspace=workspace,
             sys_id=sys_id,
+            mode=mode,
         )
         self.monitoring_namespace = monitoring_namespace
 
