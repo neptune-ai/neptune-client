@@ -24,13 +24,13 @@ from neptune.management.exceptions import (
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 
-def normalize_project_name(name: str, workspace: Optional[str] = None):
+def extract_project_and_workspace(name: str, workspace: Optional[str] = None):
     project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, name)
 
     if not project_spec:
         raise InvalidProjectName(name=name)
 
-    extracted_workspace, extracted_name = (
+    extracted_workspace, extracted_project_name = (
         project_spec["workspace"],
         project_spec["project"],
     )
@@ -41,4 +41,14 @@ def normalize_project_name(name: str, workspace: Optional[str] = None):
     if workspace and extracted_workspace and workspace != extracted_workspace:
         raise ConflictingWorkspaceName(name=name, workspace=workspace)
 
-    return f"{extracted_workspace or workspace}/{extracted_name}"
+    final_workspace_name = extracted_workspace or workspace
+
+    return final_workspace_name, extracted_project_name
+
+
+def normalize_project_name(name: str, workspace: Optional[str] = None):
+    extracted_workspace_name, extracted_project_name = extract_project_and_workspace(
+        name=name, workspace=workspace
+    )
+
+    return f"{extracted_workspace_name}/{extracted_project_name}"
