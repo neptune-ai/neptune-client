@@ -28,7 +28,6 @@ import os
 import random
 import string
 import tempfile
-from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
 
