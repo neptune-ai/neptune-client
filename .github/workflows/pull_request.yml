@@ -1,12 +1,8 @@
 name: Pull Request
 on:
   push:
-    branches:
+    branches-ignore:
       - master
-#on:
-#  push:
-#    branches-ignore:
-#      - master
 jobs:
   lint:
     runs-on: ubuntu-latest

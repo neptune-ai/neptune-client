@@ -1,17 +1,13 @@
 name: All
 on:
   push:
-    branches-ignore:
+    branches:
       - master
-#on:
-#  push:
-#    branches:
-#      - master
-#    tags:
-#      - '*'
-#  workflow_dispatch:
-#  schedule:
-#    - cron: '0 4 * * *' # Run every day at arbitrary time (4:00 AM UTC)
+    tags:
+      - '*'
+  workflow_dispatch:
+  schedule:
+    - cron: '0 4 * * *' # Run every day at arbitrary time (4:00 AM UTC)
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -29,8 +25,8 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        os: [ubuntu-latest] #, macos-latest, windows-latest]
-        python-version: ["3.7"] #, "3.8", "3.9", "3.10"]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
@@ -68,10 +64,10 @@ jobs:
         run: |
           pytest ./tests
 
-#      - name: E2E - Client
-#        if: matrix.os != 'windows-latest'
-#        run: |
-#          pytest ./e2e_tests -m "not integrations"
+      - name: E2E - Client
+        if: matrix.os != 'windows-latest'
+        run: |
+          pytest ./e2e_tests -m "not integrations"
 
       - name: E2E - Service Accounts
         if: matrix.os != 'windows-latest'
@@ -80,28 +76,28 @@ jobs:
         run: |
           pytest ./e2e_tests -m "not integrations and not management"
 
-#      - name: E2E - Integrations
-#        if: matrix.os != 'windows-latest'
-#        run: |
-#          pytest ./e2e_tests -m integrations
-#
-#      - name: Test Fast.ai integration
-#        if: matrix.os != 'windows-latest'
-#        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
-#        with:
-#          working_directory: neptune_fastai
-#        env:
-#          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
-#          NEPTUNE_PROJECT: e2e-tests/e2e
-#
-#      - name: Test Kedro integration
-#        if: matrix.os == 'ubuntu-latest'
-#        uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
-#        with:
-#          working_directory: neptune_kedro
-#        env:
-#          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
-#          NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
+      - name: E2E - Integrations
+        if: matrix.os != 'windows-latest'
+        run: |
+          pytest ./e2e_tests -m integrations
+
+      - name: Test Fast.ai integration
+        if: matrix.os != 'windows-latest'
+        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
+        with:
+          working_directory: neptune_fastai
+        env:
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_PROJECT: e2e-tests/e2e
+
+      - name: Test Kedro integration
+        if: matrix.os == 'ubuntu-latest'
+        uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
+        with:
+          working_directory: neptune_kedro
+        env:
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
 
   notify:
     needs: [lint, test]
