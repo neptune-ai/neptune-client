@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import os
-import re
 from typing import Dict, List, Optional
 
 from bravado.exception import (
@@ -46,7 +45,10 @@ from neptune.management.internal.dto import (
     WorkspaceMemberRoleDTO,
 )
 from neptune.management.internal.types import *
-from neptune.management.internal.utils import normalize_project_name
+from neptune.management.internal.utils import (
+    extract_project_and_workspace,
+    normalize_project_name,
+)
 from neptune.new.envs import API_TOKEN_ENV_NAME
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
@@ -61,7 +63,6 @@ from neptune.new.internal.backends.utils import (
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.utils import verify_type
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 
 def _get_token(api_token: Optional[str] = None) -> str:
@@ -161,10 +162,8 @@ def create_project(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
-
-    project_spec = re.search(PROJECT_QUALIFIED_NAME_PATTERN, project_identifier)
-    workspace, name = project_spec["workspace"], project_spec["project"]
+    workspace, name = extract_project_and_workspace(name=name, workspace=workspace)
+    project_qualified_name = f"{workspace}/{name}"
 
     try:
         workspaces = (
@@ -196,7 +195,7 @@ def create_project(
     except HTTPBadRequest as e:
         validation_errors = parse_validation_errors(error=e)
         if "ERR_NOT_UNIQUE" in validation_errors:
-            raise ProjectAlreadyExists(name=project_identifier) from e
+            raise ProjectAlreadyExists(name=project_qualified_name) from e
         raise BadRequestException(validation_errors=validation_errors)
     except HTTPUnprocessableEntity as e:
         raise ProjectsLimitReached() from e
@@ -513,13 +512,15 @@ def add_project_service_account(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
+    project_qualified_name = f"{workspace}/{project_name}"
+
     service_account = _get_raw_workspace_service_account_list(
         workspace_name=workspace, api_token=api_token
     ).get(service_account_name)
 
     params = {
-        "projectIdentifier": project_identifier,
+        "projectIdentifier": project_qualified_name,
         "account": {
             "serviceAccountId": service_account.id,
             "role": ProjectMemberRoleDTO.from_str(role).value,
@@ -530,7 +531,7 @@ def add_project_service_account(
     try:
         backend_client.api.addProjectServiceAccount(**params).response()
     except HTTPNotFound as e:
-        raise ProjectNotFound(name=project_identifier) from e
+        raise ProjectNotFound(name=project_qualified_name) from e
     except HTTPConflict as e:
         service_accounts = get_project_service_account_list(
             name=name, workspace=workspace, api_token=api_token
@@ -539,7 +540,7 @@ def add_project_service_account(
 
         raise ServiceAccountAlreadyHasAccess(
             service_account_name=service_account_name,
-            project=project_identifier,
+            project=project_qualified_name,
             role=service_account_role,
         ) from e
 
@@ -557,13 +558,15 @@ def remove_project_service_account(
     verify_type("api_token", api_token, (str, type(None)))
 
     backend_client = _get_backend_client(api_token=api_token)
-    project_identifier = normalize_project_name(name=name, workspace=workspace)
+    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
+    project_qualified_name = f"{workspace}/{project_name}"
+
     service_account = _get_raw_workspace_service_account_list(
         workspace_name=workspace, api_token=api_token
     ).get(service_account_name)
 
     params = {
-        "projectIdentifier": project_identifier,
+        "projectIdentifier": project_qualified_name,
         "serviceAccountId": service_account.id,
         **DEFAULT_REQUEST_KWARGS,
     }
@@ -571,12 +574,12 @@ def remove_project_service_account(
     try:
         backend_client.api.deleteProjectServiceAccount(**params).response()
     except HTTPNotFound as e:
-        raise ProjectNotFound(name=project_identifier) from e
+        raise ProjectNotFound(name=project_qualified_name) from e
     except HTTPUnprocessableEntity as e:
         raise ServiceAccountNotExistsOrWithoutAccess(
-            service_account_name=service_account_name, project=project_identifier
+            service_account_name=service_account_name, project=project_qualified_name
         ) from e
     except HTTPForbidden as e:
         raise AccessRevokedOnServiceAccountRemoval(
-            service_account_name=service_account_name, project=project_identifier
+            service_account_name=service_account_name, project=project_qualified_name
         ) from e
