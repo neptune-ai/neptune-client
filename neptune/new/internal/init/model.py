@@ -14,10 +14,12 @@
 # limitations under the License.
 #
 
+import os
 import threading
 from typing import Optional
 
 from neptune.new.attributes import constants as attr_consts
+from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
     NeptuneException,
@@ -49,7 +51,7 @@ def init_model(
     key: Optional[str] = None,
     project: Optional[str] = None,
     api_token: Optional[str] = None,
-    mode: str = Mode.ASYNC.value,
+    mode: Optional[str] = None,
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Model:
@@ -58,11 +60,12 @@ def init_model(
     verify_type("key", key, (str, type(None)))
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
-    verify_type("mode", mode, str)
+    verify_type("mode", mode, (str, type(None)))
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
+
     # make mode proper Enum instead of string
-    mode = Mode(mode)
+    mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
 
     if mode == Mode.OFFLINE:
         raise NeptuneException("Model can't be initialized in OFFLINE mode")

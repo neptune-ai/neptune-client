@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import threading
 from typing import Optional
 
+from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
@@ -33,17 +35,18 @@ def init_project(
     *,
     name: Optional[str] = None,
     api_token: Optional[str] = None,
-    mode: str = Mode.ASYNC.value,
+    mode: Optional[str] = None,
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Project:
     verify_type("name", name, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
-    verify_type("mode", mode, str)
+    verify_type("mode", mode, (str, type(None)))
     verify_type("flush_period", flush_period, (int, float))
     verify_type("proxies", proxies, (dict, type(None)))
+
     # make mode proper Enum instead of string
-    mode = Mode(mode)
+    mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
 
     if mode == Mode.OFFLINE:
         raise NeptuneException("Project can't be initialized in OFFLINE mode")
