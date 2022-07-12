@@ -160,19 +160,6 @@ class TestManagement(BaseE2ETest):
 
         assert project_identifier not in get_project_list(api_token=environment.admin_token)
 
-    @staticmethod
-    def _create_project(environment: "Environment", *, name_suffix):
-        project_name, project_key = a_project_name(project_slug=f"{fake.slug()}-{name_suffix}")
-
-        created_project_identifier = create_project(
-            name=project_name,
-            key=project_key,
-            visibility="priv",
-            workspace=environment.workspace,
-            api_token=environment.admin_token,
-        )
-        return created_project_identifier
-
     def test_service_accounts(self, environment: "Environment"):
         assert (
             get_workspace_service_account_list(
@@ -181,7 +168,7 @@ class TestManagement(BaseE2ETest):
             == "member"
         )
 
-        created_project_identifier = self._create_project(environment, name_suffix="foo")
+        created_project_identifier = environment.project
         assert environment.service_account not in get_project_service_account_list(
             name=created_project_identifier, api_token=environment.admin_token
         )
