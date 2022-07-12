@@ -21,7 +21,12 @@ import boto3
 import pytest
 from faker import Faker
 
-from e2e_tests.utils import Environment, a_project_name, initialize_container
+from e2e_tests.utils import (
+    Environment,
+    RawEnvironment,
+    a_project_name,
+    initialize_container,
+)
 from neptune.management import add_project_member, create_project
 from neptune.management.internal.utils import normalize_project_name
 
@@ -30,9 +35,10 @@ fake = Faker()
 
 @pytest.fixture(scope="session")
 def environment():
-    workspace = os.getenv("WORKSPACE_NAME")
-    admin_token = os.getenv("ADMIN_NEPTUNE_API_TOKEN")
-    user = os.getenv("USER_USERNAME")
+    raw_env = RawEnvironment()
+    workspace = raw_env.workspace_name
+    admin_token = raw_env.admin_neptune_api_token
+    user = raw_env.user_username
 
     project_name, project_key = a_project_name(project_slug=fake.slug())
     project_identifier = normalize_project_name(name=project_name, workspace=workspace)
@@ -57,10 +63,11 @@ def environment():
     yield Environment(
         workspace=workspace,
         project=project_identifier,
-        user_token=os.getenv("NEPTUNE_API_TOKEN"),
+        user_token=raw_env.neptune_api_token,
         admin_token=admin_token,
-        admin=os.getenv("ADMIN_USERNAME"),
+        admin=raw_env.admin_username,
         user=user,
+        service_account=raw_env.service_account_name,
     )
 
 

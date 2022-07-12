@@ -28,15 +28,16 @@ import os
 import random
 import string
 import tempfile
-from collections import namedtuple
 from contextlib import contextmanager
 from datetime import datetime
 
 import numpy
+from attr import dataclass
 from PIL import Image
 from PIL.PngImagePlugin import PngImageFile
 
 import neptune.new as neptune
+from e2e_tests.exceptions import MissingEnvironmentVariable
 
 
 def _remove_file_if_exists(filepath):
@@ -107,10 +108,37 @@ def a_project_name(project_slug: str):
     return project_name, project_key
 
 
-Environment = namedtuple(
-    "Environment",
-    ["workspace", "project", "user_token", "admin_token", "admin", "user"],
-)
+class RawEnvironment:
+    """Load environment variables required to run e2e tests"""
+
+    def __init__(self):
+        env = os.environ
+        try:
+            # Target workspace name
+            self.workspace_name = env["WORKSPACE_NAME"]
+            # Admin user
+            self.admin_username = env["ADMIN_USERNAME"]
+            # Admin user API token
+            self.admin_neptune_api_token = env["ADMIN_NEPTUNE_API_TOKEN"]
+            # Member user
+            self.user_username = env["USER_USERNAME"]
+            # Member user API token
+            self.neptune_api_token = env["NEPTUNE_API_TOKEN"]
+            # SA name
+            self.service_account_name = env["SERVICE_ACCOUNT_NAME"]
+        except KeyError as e:
+            raise MissingEnvironmentVariable(missing_variable=e.args[0]) from e
+
+
+@dataclass
+class Environment:
+    workspace: str
+    project: str
+    user_token: str
+    admin_token: str
+    admin: str
+    user: str
+    service_account: str
 
 
 def initialize_container(container_type, project, **extra_args):
