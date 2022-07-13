@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 import os
+import re
+from retry import retry
 from typing import Dict, List, Optional
 
 from bravado.exception import (
@@ -48,6 +50,7 @@ from neptune.management.internal.types import *
 from neptune.management.internal.utils import (
     extract_project_and_workspace,
     normalize_project_name,
+    ProjectKeyGenerator,
 )
 from neptune.new.envs import API_TOKEN_ENV_NAME
 from neptune.new.internal.backends.hosted_client import (
@@ -77,8 +80,7 @@ def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClientWrapper
     return create_backend_client(client_config=client_config, http_client=http_client)
 
 
-@with_api_exceptions_handler
-def get_project_list(api_token: Optional[str] = None) -> List[str]:
+def get_project_names_list(api_token: Optional[str] = None) -> List[str]:
     """Get a list of projects you have access to.
     Args:
         api_token(str, optional): User’s API token. Defaults to `None`.
@@ -90,22 +92,14 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
         ``List[str]``: list of project names of a format 'WORKSPACE/PROJECT'
     Examples:
         >>> from neptune import management
-        >>> management.get_project_list()
+        >>> management.get_project_names_list()
     You may also want to check `management API reference`_.
     .. _management API reference:
        https://docs.neptune.ai/api-reference/management
     """
     verify_type("api_token", api_token, (str, type(None)))
 
-    backend_client = _get_backend_client(api_token=api_token)
-
-    params = {
-        "userRelation": "viewerOrHigher",
-        "sortBy": ["lastViewed"],
-        **DEFAULT_REQUEST_KWARGS,
-    }
-
-    projects = backend_client.api.listProjects(**params).response().result.entries
+    projects = _get_projects_list(api_token)
 
     return [
         normalize_project_name(name=project.name, workspace=project.organizationName)
@@ -113,10 +107,30 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     ]
 
 
+def get_projects_keys(api_token: Optional[str] = None) -> set[str]:
+    """Get a list of project's keys you have access to."""
+    verify_type("api_token", api_token, (str, type(None)))
+    projects = _get_projects_list(api_token)
+    return {response_project.projectKey for response_project in projects}
+
+
 @with_api_exceptions_handler
+def _get_projects_list(api_token: Optional[str] = None) -> List:
+    verify_type("api_token", api_token, (str, type(None)))
+    backend_client = _get_backend_client(api_token=api_token)
+    params = {
+        "userRelation": "viewerOrHigher",
+        "sortBy": ["lastViewed"],
+        **DEFAULT_REQUEST_KWARGS,
+    }
+    return backend_client.api.listProjects(**params).response().result.entries
+
+
+@with_api_exceptions_handler
+@retry(exceptions=ProjectAlreadyExists, tries=3)
 def create_project(
     name: str,
-    key: str,
+    key: Optional[str] = None,
     workspace: Optional[str] = None,
     visibility: str = ProjectVisibility.PRIVATE,
     description: Optional[str] = None,
@@ -155,7 +169,7 @@ def create_project(
        https://docs.neptune.ai/api-reference/management
     """
     verify_type("name", name, str)
-    verify_type("key", key, str)
+    verify_type("key", key, (str, type(None)))
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("visibility", visibility, str)
     verify_type("description", description, (str, type(None)))
@@ -176,6 +190,10 @@ def create_project(
     if workspace not in workspace_name_to_id:
         raise WorkspaceNotFound(workspace=workspace)
 
+    if key is None:
+        project_keys = get_projects_keys(api_token)
+        key = ProjectKeyGenerator(name, project_keys).get_default_project_key()
+
     params = {
         "projectToCreate": {
             "name": name,
@@ -187,11 +205,16 @@ def create_project(
         **DEFAULT_REQUEST_KWARGS,
     }
 
+    project_response = _create_project(backend_client, project_qualified_name, params)
+
+    return normalize_project_name(
+        name=project_response.result.name, workspace=project_response.result.organizationName
+    )
+
+
+def _create_project(backend_client, project_qualified_name: str, params: dict):
     try:
-        response = backend_client.api.createProject(**params).response()
-        return normalize_project_name(
-            name=response.result.name, workspace=response.result.organizationName
-        )
+        return backend_client.api.createProject(**params).response()
     except HTTPBadRequest as e:
         validation_errors = parse_validation_errors(error=e)
         if "ERR_NOT_UNIQUE" in validation_errors:

@@ -18,7 +18,7 @@ from .internal.api import (
     add_project_service_account,
     create_project,
     delete_project,
-    get_project_list,
+    get_project_names_list,
     get_project_member_list,
     get_project_service_account_list,
     get_workspace_member_list,
@@ -29,7 +29,7 @@ from .internal.api import (
 from .internal.types import MemberRole, ProjectVisibility
 
 __all__ = [
-    "get_project_list",
+    "get_project_names_list",
     "create_project",
     "delete_project",
     "get_project_member_list",
