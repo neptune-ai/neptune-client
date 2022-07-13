@@ -27,7 +27,11 @@ from e2e_tests.utils import (
     a_project_name,
     initialize_container,
 )
-from neptune.management import add_project_member, create_project
+from neptune.management import (
+    add_project_member,
+    add_project_service_account,
+    create_project,
+)
 from neptune.management.internal.utils import normalize_project_name
 
 fake = Faker()
@@ -39,6 +43,7 @@ def environment():
     workspace = raw_env.workspace_name
     admin_token = raw_env.admin_neptune_api_token
     user = raw_env.user_username
+    service_account_name = raw_env.service_account_name
 
     project_name, project_key = a_project_name(project_slug=fake.slug())
     project_identifier = normalize_project_name(name=project_name, workspace=workspace)
@@ -55,6 +60,14 @@ def environment():
     add_project_member(
         name=created_project_identifier,
         username=user,
+        # pylint: disable=no-member
+        role="contributor",
+        api_token=admin_token,
+    )
+
+    add_project_service_account(
+        name=created_project_identifier,
+        service_account_name=service_account_name,
         # pylint: disable=no-member
         role="contributor",
         api_token=admin_token,
