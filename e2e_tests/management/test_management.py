@@ -58,7 +58,6 @@ class TestManagement(BaseE2ETest):
 
         created_project_identifier = create_project(
             name=project_name,
-            key=project_key,
             visibility="priv",
             workspace=environment.workspace,
             api_token=environment.admin_token,
@@ -125,7 +124,6 @@ class TestManagement(BaseE2ETest):
 
         created_project_identifier = create_project(
             name=project_name,
-            key=project_key,
             visibility="workspace",
             workspace=environment.workspace,
             api_token=environment.admin_token,
