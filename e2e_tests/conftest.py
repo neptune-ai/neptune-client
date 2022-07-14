@@ -49,7 +49,6 @@ def environment():
     project_identifier = normalize_project_name(name=project_name, workspace=workspace)
     created_project_identifier = create_project(
         name=project_name,
-        key=project_key,
         visibility="priv",
         workspace=workspace,
         api_token=admin_token,
