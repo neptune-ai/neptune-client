@@ -31,6 +31,7 @@ from neptune.management import (
     add_project_member,
     add_project_service_account,
     create_project,
+    delete_project,
 )
 from neptune.management.internal.utils import normalize_project_name
 
@@ -82,6 +83,8 @@ def environment():
         user=user,
         service_account=raw_env.service_account_name,
     )
+
+    delete_project(name=created_project_identifier, api_token=admin_token)
 
 
 @pytest.fixture(scope="session")
