@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import time
+
 import pytest
 import torch
 from pytorch_lightning import LightningModule, Trainer
@@ -85,6 +87,7 @@ def pytorch_run(environment):
     trainer = Trainer(
         limit_train_batches=1,
         limit_val_batches=1,
+        log_every_n_steps=1,
         max_epochs=3,
         logger=neptune_logger,
         callbacks=[model_checkpoint],
@@ -97,5 +100,6 @@ def pytorch_run(environment):
     trainer.fit(model, train_dataloaders=train_data, val_dataloaders=val_data)
     trainer.test(model, dataloaders=test_data)
     run.sync()
+    time.sleep(10)
 
     yield run
