@@ -16,7 +16,7 @@
 import random
 import re
 import string
-from typing import Optional
+from typing import Optional, Set
 
 from neptune.management.exceptions import (
     ConflictingWorkspaceName,
@@ -64,7 +64,7 @@ class ProjectKeyGenerator:
     _PROJECT_KEY_RANDOM_SUFFIX_SIZE = 3
     _PROJECT_KEY_RANDOM_SUFFIX_ALPHABET = list(string.ascii_uppercase)
 
-    def __init__(self, project_name: str, existing_project_keys: set[str]):
+    def __init__(self, project_name: str, existing_project_keys: Set[str]):
         self.project_name = project_name
         self.existing_project_keys = existing_project_keys
         self.max_substring_length = min(
