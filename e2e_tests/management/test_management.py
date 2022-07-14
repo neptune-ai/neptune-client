@@ -22,8 +22,8 @@ from neptune.management import (
     add_project_service_account,
     create_project,
     delete_project,
-    get_project_names_list,
     get_project_member_list,
+    get_project_names_list,
     get_project_service_account_list,
     get_workspace_member_list,
     get_workspace_service_account_list,
@@ -65,7 +65,9 @@ class TestManagement(BaseE2ETest):
         )
 
         assert created_project_identifier == project_identifier
-        assert created_project_identifier in get_project_names_list(api_token=environment.admin_token)
+        assert created_project_identifier in get_project_names_list(
+            api_token=environment.admin_token
+        )
         assert environment.user not in get_project_member_list(
             name=created_project_identifier, api_token=environment.admin_token
         )
@@ -86,7 +88,9 @@ class TestManagement(BaseE2ETest):
             ).get(environment.user)
             == "contributor"
         )
-        assert created_project_identifier in get_project_names_list(api_token=environment.user_token)
+        assert created_project_identifier in get_project_names_list(
+            api_token=environment.user_token
+        )
 
         remove_project_member(
             name=created_project_identifier,
@@ -128,7 +132,9 @@ class TestManagement(BaseE2ETest):
         )
 
         assert created_project_identifier == project_identifier
-        assert created_project_identifier in get_project_names_list(api_token=environment.admin_token)
+        assert created_project_identifier in get_project_names_list(
+            api_token=environment.admin_token
+        )
         assert environment.user in get_project_member_list(
             name=created_project_identifier, api_token=environment.admin_token
         )
@@ -147,7 +153,9 @@ class TestManagement(BaseE2ETest):
                 api_token=environment.admin_token,
             )
 
-        assert created_project_identifier in get_project_names_list(api_token=environment.user_token)
+        assert created_project_identifier in get_project_names_list(
+            api_token=environment.user_token
+        )
 
         with pytest.raises(UserNotExistsOrWithoutAccess):
             remove_project_member(

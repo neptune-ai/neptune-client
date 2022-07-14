@@ -15,7 +15,6 @@
 #
 import os
 import re
-from retry import retry
 from typing import Dict, List, Optional
 
 from bravado.exception import (
@@ -25,6 +24,7 @@ from bravado.exception import (
     HTTPNotFound,
     HTTPUnprocessableEntity,
 )
+from retry import retry
 
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,

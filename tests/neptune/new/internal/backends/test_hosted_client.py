@@ -31,8 +31,8 @@ from neptune.management import (
     add_project_member,
     create_project,
     delete_project,
-    get_project_names_list,
     get_project_member_list,
+    get_project_names_list,
     get_workspace_member_list,
     remove_project_member,
 )
