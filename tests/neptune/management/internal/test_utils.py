@@ -55,8 +55,8 @@ class TestManagementUtils(unittest.TestCase):
         (("ddd", {"aaa", "bbb", "ccc"}), "ddd"),
         (("aaaa", {"aaaa", "bbb", "ccc"}), "aaa"),
         (("aaaa", {"aaa", "bbb", "ccc"}), "aaaa"),
-        (("aaa3", {"aaa", "aaa2" "bbb", "ccc"}), "aaa3"),
-        (("aaaa", {"aaa", "aaa2" "bbb", "ccc"}), "aaaa"),
+        (("aaa3", {"aaa", "aaa2", "bbb", "ccc"}), "aaa3"),
+        (("aaaa", {"aaa", "aaa2", "bbb", "ccc"}), "aaaa"),
         (("aaaa", {"aaa", "aaa2", "aaaa", "bbb", "ccc"}), "aaaa2"),
         (("aaaa", {"aaa", "aaa2", "aaaa", "aaaa2", "bbb", "ccc"}), "aaa3"),
     ],
@@ -78,4 +78,4 @@ def test_project_key_with_random_generation(test_input):
     existing_project_keys = test_input[1]
     result = ProjectKeyGenerator(project_name, existing_project_keys).get_default_project_key()
     assert len(result) == len(project_name) + 3
-    assert result[: -ProjectKeyGenerator._PROJECT_KEY_RANDOM_SUFFIX_SIZE] == project_name
+    assert result[:-3] == project_name
