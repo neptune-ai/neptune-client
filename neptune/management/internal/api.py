@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import os
-import re
 from typing import Dict, List, Optional, Set
 
 from bravado.exception import (
@@ -48,9 +47,9 @@ from neptune.management.internal.dto import (
 )
 from neptune.management.internal.types import *
 from neptune.management.internal.utils import (
+    ProjectKeyGenerator,
     extract_project_and_workspace,
     normalize_project_name,
-    ProjectKeyGenerator,
 )
 from neptune.new.envs import API_TOKEN_ENV_NAME
 from neptune.new.internal.backends.hosted_client import (
