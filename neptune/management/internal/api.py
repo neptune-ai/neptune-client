@@ -15,7 +15,7 @@
 #
 import os
 import re
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Set
 
 from bravado.exception import (
     HTTPBadRequest,
@@ -107,7 +107,7 @@ def get_project_names_list(api_token: Optional[str] = None) -> List[str]:
     ]
 
 
-def get_projects_keys(api_token: Optional[str] = None) -> set[str]:
+def get_projects_keys(api_token: Optional[str] = None) -> Set[str]:
     """Get a list of project's keys you have access to."""
     verify_type("api_token", api_token, (str, type(None)))
     projects = _get_projects_list(api_token)
