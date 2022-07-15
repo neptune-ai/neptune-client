@@ -70,19 +70,19 @@ jobs:
           pytest ./e2e_tests -m "not integrations"
 
       - name: E2E - Service Accounts
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
         env:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         run: |
           pytest ./e2e_tests -m "not integrations and not management"
 
       - name: E2E - Integrations
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
         run: |
           pytest ./e2e_tests -m integrations
 
       - name: Test Fast.ai integration
-        if: matrix.os != 'windows-latest'
+        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
         uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
         with:
           working_directory: neptune_fastai
@@ -91,7 +91,7 @@ jobs:
           NEPTUNE_PROJECT: e2e-tests/e2e
 
       - name: Test Kedro integration
-        if: matrix.os == 'ubuntu-latest'
+        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
         uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
         with:
           working_directory: neptune_kedro
