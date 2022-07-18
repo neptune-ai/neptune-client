@@ -99,8 +99,6 @@ def pytorch_run(environment):
     # then
     trainer.fit(model, train_dataloaders=train_data, val_dataloaders=val_data)
     trainer.test(model, dataloaders=test_data)
-
-    time.sleep(30)
     run.sync()
 
     yield run
