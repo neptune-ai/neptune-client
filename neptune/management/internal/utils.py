@@ -57,6 +57,16 @@ def normalize_project_name(name: str, workspace: Optional[str] = None):
 
 
 class ProjectKeyGenerator:
+    """
+    First algorithm wants to find the shortest unique substring of projectName. Substring is always from index 0.
+
+    The second stage if unique key is not found is digit addition at the end of the shortest unique substring.
+    Substring is always from index 0.
+
+    The last stage if unique key is not found is addition of random suffix of length _PROJECT_KEY_RANDOM_SUFFIX_SIZE to
+    substring of size min(len(project_name), self._PROJECT_KEY_MAX_LENGTH_FOR_DEFAULT_GENERATOR)
+    """
+
     _PROJECT_KEY_MIN_LENGTH_FOR_DEFAULT_GENERATOR = 3  # project_name is at least 3 characters long
     _PROJECT_KEY_MAX_LENGTH_FOR_DEFAULT_GENERATOR = 5
     _PROJECT_KEY_MIN_NUMBER_ITERATOR = 2
@@ -65,8 +75,8 @@ class ProjectKeyGenerator:
     _PROJECT_KEY_RANDOM_SUFFIX_ALPHABET = list(string.ascii_uppercase)
 
     def __init__(self, project_name: str, existing_project_keys: Set[str]):
-        self.project_name = project_name
-        self.existing_project_keys = existing_project_keys
+        self.project_name = project_name.upper()
+        self.existing_project_keys = [project_key.upper() for project_key in existing_project_keys]
         self.max_substring_length = min(
             len(project_name), self._PROJECT_KEY_MAX_LENGTH_FOR_DEFAULT_GENERATOR
         )
@@ -82,17 +92,15 @@ class ProjectKeyGenerator:
             return unique_key_with_incrementation
 
         #  if above code do not find a proper id then add random string as suffix
-        while 1:
+        while True:
             project_name_substring = (
                 self.project_name[: self.max_substring_length] + self._generate_random_suffix()
             )
             if project_name_substring not in self.existing_project_keys:
                 return project_name_substring
 
-    def _generate_random_suffix(self):
-        alphabet_copy = self._PROJECT_KEY_RANDOM_SUFFIX_ALPHABET.copy()
-        random.shuffle(alphabet_copy)
-        return "".join(alphabet_copy[: self._PROJECT_KEY_RANDOM_SUFFIX_SIZE])
+    def _generate_random_suffix(self) -> str:
+        return "".join(random.choices(self._PROJECT_KEY_RANDOM_SUFFIX_ALPHABET, k=3))
 
     def _find_unique_project_key_with_incrementation(self) -> Optional[str]:
         for name_incrementation in range(

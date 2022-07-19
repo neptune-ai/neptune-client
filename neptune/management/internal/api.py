@@ -165,7 +165,7 @@ def create_project(
         ...                           visibility="pub")
     You may also want to check `management API reference`_.
     .. _management API reference:
-       https://docs.neptune.ai/api-reference/management
+       https://docs.neptune.ai/api-reference/management#.create_project
     """
     verify_type("name", name, str)
     verify_type("key", key, (str, type(None)))
