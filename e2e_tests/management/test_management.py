@@ -43,15 +43,25 @@ class TestManagement(BaseE2ETest):
         )
 
         assert project_identifier not in get_project_list(api_token=environment.admin_token)
-        assert environment.user in get_workspace_member_list(
+        assert project_identifier not in get_project_list(api_token=environment.user_token)
+
+        workspace_members = get_workspace_member_list(
             name=environment.workspace, api_token=environment.admin_token
         )
-        assert (
-            get_workspace_member_list(
-                name=environment.workspace, api_token=environment.admin_token
-            ).get(environment.user)
-            == "member"
+        assert environment.user in workspace_members
+        assert workspace_members.get(environment.user) == "member"
+
+        workspace_members = get_workspace_member_list(
+            name=environment.workspace, api_token=environment.user_token
         )
+        assert environment.user in workspace_members
+        assert workspace_members.get(environment.user) == "member"
+
+        workspace_sa = get_workspace_service_account_list(
+            name=environment.workspace, api_token=environment.user_token
+        )
+        assert environment.service_account in workspace_sa
+        assert workspace_sa.get(environment.service_account) == "member"
 
         created_project_identifier = create_project(
             name=project_name,
@@ -62,10 +72,21 @@ class TestManagement(BaseE2ETest):
 
         assert created_project_identifier == project_identifier
         assert created_project_identifier in get_project_list(api_token=environment.admin_token)
+        assert created_project_identifier not in get_project_list(api_token=environment.user_token)
+
         assert environment.user not in get_project_member_list(
             name=created_project_identifier, api_token=environment.admin_token
         )
+        assert environment.service_account not in get_project_service_account_list(
+            name=created_project_identifier, api_token=environment.admin_token
+        )
 
+        add_project_service_account(
+            name=created_project_identifier,
+            service_account_name=environment.service_account,
+            role="contributor",
+            api_token=environment.admin_token,
+        )
         add_project_member(
             name=created_project_identifier,
             username=environment.user,
@@ -73,15 +94,18 @@ class TestManagement(BaseE2ETest):
             api_token=environment.admin_token,
         )
 
-        assert environment.user in get_project_member_list(
+        project_members = get_project_member_list(
             name=created_project_identifier, api_token=environment.admin_token
         )
-        assert (
-            get_project_member_list(
-                name=created_project_identifier, api_token=environment.admin_token
-            ).get(environment.user)
-            == "contributor"
+        assert environment.user in project_members
+        assert project_members.get(environment.user) == "contributor"
+
+        project_members = get_project_member_list(
+            name=created_project_identifier, api_token=environment.user_token
         )
+        assert environment.user in project_members
+        assert project_members.get(environment.user) == "contributor"
+
         assert created_project_identifier in get_project_list(api_token=environment.user_token)
 
         remove_project_member(
@@ -89,14 +113,23 @@ class TestManagement(BaseE2ETest):
             username=environment.user,
             api_token=environment.admin_token,
         )
+        remove_project_service_account(
+            name=created_project_identifier,
+            service_account_name=environment.service_account,
+            api_token=environment.admin_token,
+        )
 
+        assert created_project_identifier not in get_project_list(api_token=environment.user_token)
         assert environment.user not in get_project_member_list(
+            name=created_project_identifier, api_token=environment.admin_token
+        )
+        assert environment.service_account not in get_project_service_account_list(
             name=created_project_identifier, api_token=environment.admin_token
         )
 
         delete_project(name=created_project_identifier, api_token=environment.admin_token)
 
-        assert project_identifier not in get_project_list(api_token=environment.admin_token)
+        assert created_project_identifier not in get_project_list(api_token=environment.admin_token)
 
     def test_visibility_workspace(self, environment: "Environment"):
         project_name = a_project_name(project_slug=f"{fake.slug()}-workspace")
@@ -105,6 +138,8 @@ class TestManagement(BaseE2ETest):
         )
 
         assert project_identifier not in get_project_list(api_token=environment.admin_token)
+        assert project_identifier not in get_project_list(api_token=environment.user_token)
+
         assert environment.user in get_workspace_member_list(
             name=environment.workspace, api_token=environment.admin_token
         )
@@ -124,14 +159,22 @@ class TestManagement(BaseE2ETest):
 
         assert created_project_identifier == project_identifier
         assert created_project_identifier in get_project_list(api_token=environment.admin_token)
-        assert environment.user in get_project_member_list(
+
+        project_members = get_project_member_list(
             name=created_project_identifier, api_token=environment.admin_token
         )
-        assert (
-            get_project_member_list(
-                name=created_project_identifier, api_token=environment.admin_token
-            ).get(environment.user)
-            == "owner"
+        assert environment.user in project_members
+        assert project_members.get(environment.user) == "owner"
+
+        assert environment.service_account not in get_project_service_account_list(
+            name=created_project_identifier, api_token=environment.user_token
+        )
+
+        add_project_service_account(
+            name=created_project_identifier,
+            service_account_name=environment.service_account,
+            role="contributor",
+            api_token=environment.admin_token,
         )
 
         assert created_project_identifier in get_project_list(api_token=environment.user_token)
@@ -143,50 +186,12 @@ class TestManagement(BaseE2ETest):
                 api_token=environment.admin_token,
             )
 
-        delete_project(name=created_project_identifier, api_token=environment.admin_token)
-
-        assert project_identifier not in get_project_list(api_token=environment.admin_token)
-
-    def test_service_accounts(self, environment: "Environment"):
-        project_name = a_project_name(project_slug=f"{fake.slug()}-sa")
-        created_project_identifier = create_project(
-            name=project_name,
-            visibility="workspace",
-            workspace=environment.workspace,
-            api_token=environment.admin_token,
-        )
-
-        assert (
-            get_workspace_service_account_list(
-                name=environment.workspace, api_token=environment.admin_token
-            )[environment.service_account]
-            == "member"
-        )
-
-        assert environment.service_account not in get_project_service_account_list(
-            name=created_project_identifier, api_token=environment.admin_token
-        )
-
-        add_project_service_account(
-            name=created_project_identifier,
-            service_account_name=environment.service_account,
-            role="owner",
-            api_token=environment.admin_token,
-        )
-        assert (
-            get_project_service_account_list(
-                name=created_project_identifier, api_token=environment.admin_token
-            )[environment.service_account]
-            == "owner"
-        )
-
         remove_project_service_account(
             name=created_project_identifier,
             service_account_name=environment.service_account,
             api_token=environment.admin_token,
         )
-        assert environment.service_account not in get_project_service_account_list(
-            name=created_project_identifier, api_token=environment.admin_token
-        )
 
         delete_project(name=created_project_identifier, api_token=environment.admin_token)
+
+        assert project_identifier not in get_project_list(api_token=environment.admin_token)
