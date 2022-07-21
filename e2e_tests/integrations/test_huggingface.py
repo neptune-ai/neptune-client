@@ -36,12 +36,12 @@ class RegressionModel(torch.nn.Module):
     def __init__(self, initial_a=0, initial_b=0):
         super().__init__()
 
-        self.a = torch.nn.Parameter(torch.tensor(initial_a).float())
-        self.b = torch.nn.Parameter(torch.tensor(initial_b).float())
+        self.a = torch.nn.Parameter(torch.Tensor(initial_a).float())
+        self.b = torch.nn.Parameter(torch.Tensor(initial_b).float())
 
         self.config = None
 
-    def forward(self, input_x, labels=None, **kwargs):
+    def forward(self, input_x, labels=None):
         y = input_x * self.a + self.b
 
         if labels is None:

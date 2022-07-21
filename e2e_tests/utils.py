@@ -211,8 +211,10 @@ def modified_environ(*remove, **update):
 
     try:
         env.update(update)
-        [env.pop(k, None) for k in remove]
+        for k in remove:
+            env.pop(k, None)
         yield
     finally:
         env.update(update_after)
-        [env.pop(k) for k in remove_after]
+        for k in remove_after:
+            env.pop(k)
