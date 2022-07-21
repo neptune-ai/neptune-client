@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# pylint: disable=redefined-outer-name
 import re
 
 import pytest
+import pytorch_lightning
 import torch
 from pytorch_lightning import LightningModule, Trainer
-from pytorch_lightning import __version__ as ptl_version
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.neptune import NeptuneLogger
 from torch.utils.data import DataLoader, Dataset
@@ -111,7 +112,7 @@ class TestPytorchLightning(BaseE2ETest):
     def test_logging_values(self, pytorch_run):
         # correct integration version is logged
         logged_version = pytorch_run["source_code/integrations/lightning"].fetch()
-        assert logged_version == ptl_version  # pylint: disable=E1101
+        assert logged_version == pytorch_lightning.__version__  # pylint: disable=E1101
 
         assert pytorch_run.exists("custom_prefix/valid/loss")
         assert len(pytorch_run["custom_prefix/valid/loss"].fetch_values()) == 3

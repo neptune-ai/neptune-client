@@ -36,8 +36,9 @@ class RegressionModel(torch.nn.Module):
     def __init__(self, initial_a=0, initial_b=0):
         super().__init__()
 
-        self.a = torch.nn.Parameter(torch.Tensor(initial_a).float())
-        self.b = torch.nn.Parameter(torch.Tensor(initial_b).float())
+        # pylint: disable=no-member
+        self.a = torch.nn.Parameter(torch.tensor(initial_a).float())
+        self.b = torch.nn.Parameter(torch.tensor(initial_b).float())
 
         self.config = None
 
@@ -49,7 +50,7 @@ class RegressionModel(torch.nn.Module):
 
         loss = torch.nn.functional.mse_loss(y, labels)
 
-        return (loss, y)
+        return loss, y
 
 
 class RegressionDataset:
