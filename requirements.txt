@@ -17,4 +17,4 @@ dataclasses>=0.6; python_version<"3.7"
 swagger-spec-validator>=2.7.4
 psutil
 jsonschema<4.0.0
-retry>=0.9.2, == 0.9.*
+retry~=0.9.2
