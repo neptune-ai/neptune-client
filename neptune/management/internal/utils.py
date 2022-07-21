@@ -100,7 +100,11 @@ class ProjectKeyGenerator:
                 return project_name_substring
 
     def _generate_random_suffix(self) -> str:
-        return "".join(random.choices(self._PROJECT_KEY_RANDOM_SUFFIX_ALPHABET, k=3))
+        return "".join(
+            random.choices(
+                self._PROJECT_KEY_RANDOM_SUFFIX_ALPHABET, k=self._PROJECT_KEY_RANDOM_SUFFIX_SIZE
+            )
+        )
 
     def _find_unique_project_key_with_incrementation(self) -> Optional[str]:
         for name_incrementation in range(
