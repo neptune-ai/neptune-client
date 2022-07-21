@@ -151,6 +151,8 @@ class TestHuggingFace(BaseE2ETest):
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
             trainer.train()
+
+            # pylint: disable=no-member
             with pytest.raises(NeptuneCallback.MissingConfiguration):
                 trainer.train()
 
