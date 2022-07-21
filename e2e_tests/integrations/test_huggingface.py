@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import numpy as np
+import pandas as pd
 import pytest
 import torch
 from faker import Faker
@@ -36,11 +37,12 @@ class RegressionModel(torch.nn.Module):
     def __init__(self, initial_a=0, initial_b=0):
         super().__init__()
 
+        self._initial_a = initial_a
+        self._initial_b = initial_b
+
         # pylint: disable=no-member
         self.a = torch.nn.Parameter(torch.tensor(initial_a).float())
         self.b = torch.nn.Parameter(torch.tensor(initial_b).float())
-
-        self.config = None
 
     def forward(self, input_x, labels=None):
         y = input_x * self.a + self.b
@@ -51,6 +53,10 @@ class RegressionModel(torch.nn.Module):
         loss = torch.nn.functional.mse_loss(y, labels)
 
         return loss, y
+
+    @property
+    def config(self):
+        return pd.DataFrame([["a", self._initial_a], ["b", self._initial_a]])
 
 
 class RegressionDataset:
@@ -103,7 +109,7 @@ class TestHuggingFace(BaseE2ETest):
                 NeptuneCallback(
                     api_token=environment.user_token, project=environment.project, tags=[common_tag]
                 )
-            ]
+            ],
         )
 
         expected_times = 5
@@ -123,7 +129,7 @@ class TestHuggingFace(BaseE2ETest):
                 **self._trainer_default_attributes,
                 callbacks=[
                     NeptuneCallback(api_token=environment.user_token, project=environment.project)
-                ]
+                ],
             )
             trainer.train()
             del trainer
@@ -161,3 +167,51 @@ class TestHuggingFace(BaseE2ETest):
 
         with pytest.raises(Exception):
             NeptuneCallback.get_run(trainer)
+
+    def test_log_parameters_indicator(self, environment):
+        with init_run(project=environment.project, api_token=environment.user_token) as run:
+            base_namespace = "custom/base/path"
+            callback = NeptuneCallback(run=run, base_namespace=base_namespace)
+            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            trainer.train()
+            run.sync()
+
+            assert run.exists(f"{base_namespace}/trainer_parameters")
+            assert run.exists(f"{base_namespace}/model_parameters")
+
+        with init_run(project=environment.project, api_token=environment.user_token) as run:
+            callback = NeptuneCallback(run=run, log_parameters=False)
+            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            trainer.train()
+            run.sync()
+
+            assert not run.exists("finetuning/trainer_parameters")
+            assert not run.exists("finetuning/model_parameters")
+
+    def test_log_with_custom_base_namespace(self, environment):
+        with init_run(project=environment.project, api_token=environment.user_token) as run:
+            base_namespace = "just/a/sample/path"
+            callback = NeptuneCallback(run=run, base_namespace=base_namespace)
+            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            trainer.log({"metric1": 123, "another/metric": 0.2})
+            trainer.train()
+            trainer.log({"after_training_metric": 2501})
+            run.sync()
+
+            assert run.exists(f"{base_namespace}/train")
+            assert run.exists(f"{base_namespace}/train/metric1")
+            assert run.exists(f"{base_namespace}/train/another/metric")
+            assert run.exists(f"{base_namespace}/train/after_training_metric")
+
+            assert run[f"{base_namespace}/train/metric1"].fetch_last() == 123
+            assert run[f"{base_namespace}/train/another/metric"].fetch_last() == 0.2
+            assert run[f"{base_namespace}/train/after_training_metric"].fetch_last() == 2501
+
+    def test_integration_version_is_logged(self, environment):
+        with init_run(project=environment.project, api_token=environment.user_token) as run:
+            callback = NeptuneCallback(run=run)
+            trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+            trainer.train()
+            run.sync()
+
+            assert run.exists("source_code/integrations/transformers")

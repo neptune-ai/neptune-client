@@ -7,4 +7,4 @@ pytest-tap
 pytorch-lightning
 torchvision
 sklearn
-git+https://github.com/neptune-ai/transformers.git@rj/proper-run-lifecycle#egg=transformers
+git+https://github.com/neptune-ai/transformers.git@rj/logging-metadata#egg=transformers
