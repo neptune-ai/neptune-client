@@ -31,8 +31,8 @@ from neptune.management import (
     add_project_member,
     create_project,
     delete_project,
+    get_project_list,
     get_project_member_list,
-    get_project_names_list,
     get_workspace_member_list,
     remove_project_member,
 )
@@ -91,7 +91,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # when:
-        returned_projects = get_project_names_list(api_token=API_TOKEN)
+        returned_projects = get_project_list(api_token=API_TOKEN)
 
         # then:
         self.assertEqual([], returned_projects)
@@ -110,7 +110,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # when:
-        returned_projects = get_project_names_list(api_token=API_TOKEN)
+        returned_projects = get_project_list(api_token=API_TOKEN)
 
         # then:
         self.assertEqual(["org1/project1", "org2/project2"], returned_projects)
