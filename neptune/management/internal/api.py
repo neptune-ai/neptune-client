@@ -603,7 +603,7 @@ def add_project_service_account(
         api_token: Account's API token.
             If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
-                API token in plain text in your source code.
+            API token in plain text in your source code.
 
     Examples:
         >>> from neptune import management
@@ -666,12 +666,12 @@ def remove_project_service_account(
 ):
     """Removes a service account from a Neptune project.
 
-    To add a service account, the user or service account must be a project owner.
+    To remove a service account, the user or service account must be a project owner.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If workspace argument was set, it should only contain 'project' instead of 'workspace-name/project-name'.
-        service_account_name: Name of the service account to add to the project (without the workspace tag).
+        service_account_name: Name of the service account to remove from the project (without the workspace tag).
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the name argument to 'project' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
