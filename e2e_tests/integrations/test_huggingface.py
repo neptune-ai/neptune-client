@@ -16,6 +16,7 @@
 import time
 
 import numpy as np
+import optuna
 import pytest
 import torch
 from faker import Faker
@@ -533,3 +534,37 @@ class TestHuggingFace(BaseE2ETest):
         )
         assert len(runs) == 2
         assert runs[1].get_attribute_value("finetuning/train/metric3") == 345
+
+    def test_hyperparameter_optimization(self, environment):
+        # given
+        n_trials = 5
+        common_tag = fake.nic_handle()
+        project = get_project(name=environment.project, api_token=environment.user_token)
+
+        # and
+        def model_init():
+            return RegressionModel(initial_a=2, initial_b=3)
+
+        # and
+        callback = NeptuneCallback(
+            project=environment.project, api_token=environment.user_token, tags=common_tag
+        )
+        trainer = Trainer(
+            **self._trainer_default_attributes, model_init=model_init, callbacks=[callback]
+        )
+
+        # when
+        trainer.hyperparameter_search(
+            backend="optuna", n_trials=n_trials, hp_name=lambda trial: f"trial_{trial.number}"
+        )
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = sorted(
+            project.fetch_runs_table(tag=common_tag).to_rows(),
+            key=lambda run: run.get_attribute_value("sys/id"),
+        )
+        assert len(runs) == n_trials
+        for run_id, run in enumerate(runs):
+            assert run.get_attribute_value("finetuning/trial") == f"trial_{run_id}"
+            assert run.get_attribute_value("monitoring/cpu") is not None
