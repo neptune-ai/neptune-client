@@ -16,7 +16,6 @@
 import time
 
 import numpy as np
-import optuna
 import pandas as pd
 import pytest
 import torch
