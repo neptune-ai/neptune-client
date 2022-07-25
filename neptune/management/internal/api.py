@@ -110,11 +110,13 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     ]
 
 
-def _get_projects_keys_in_organization(workspace: str, api_token: Optional[str] = None) -> Set[str]:
+def _get_projects_keys_in_organization(
+    workspace_id: str, api_token: Optional[str] = None
+) -> Set[str]:
     """Get a list of project's keys you have access to."""
     verify_type("api_token", api_token, (str, type(None)))
     params = {
-        "organizationIdentifier": workspace,
+        "organizationIdentifier": workspace_id,
         "sortBy": ["lastViewed"],
         **DEFAULT_REQUEST_KWARGS,
     }
@@ -180,13 +182,7 @@ def create_project(
     backend_client = _get_backend_client(api_token=api_token)
     workspace, name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{name}"
-
-    workspace_name_to_id = _get_workspace_name_id_map(backend_client, workspace)
-
-    if workspace not in workspace_name_to_id:
-        raise WorkspaceNotFound(workspace=workspace)
-
-    workspace_id = workspace_name_to_id[workspace]
+    workspace_id = _get_workspace_id(backend_client, workspace)
 
     if key is None:
         project_keys = _get_projects_keys_in_organization(workspace_id, api_token)
@@ -210,16 +206,17 @@ def create_project(
     )
 
 
-@with_api_exceptions_handler
-def _get_workspace_name_id_map(backend_client, workspace):
-    try:
-        workspaces = (
-            backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS).response().result
-        )
-        workspace_name_to_id = {f"{f.name}": f.id for f in workspaces}
-    except HTTPNotFound:
+def _get_workspace_id(backend_client, workspace) -> str:
+    workspaces = _get_workspaces(backend_client)
+    workspace_name_to_id = {f"{f.name}": f.id for f in workspaces}
+    if workspace not in workspace_name_to_id:
         raise WorkspaceNotFound(workspace=workspace)
-    return workspace_name_to_id
+    return workspace_name_to_id[workspace]
+
+
+@with_api_exceptions_handler
+def _get_workspaces(backend_client):
+    return backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS).response().result
 
 
 @with_api_exceptions_handler
