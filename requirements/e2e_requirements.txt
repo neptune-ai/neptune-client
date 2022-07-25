@@ -7,4 +7,5 @@ pytest-tap
 pytorch-lightning
 torchvision
 sklearn
-git+https://github.com/neptune-ai/transformers.git@rj/monitoring-disabled#egg=transformers
+optuna
+git+https://github.com/neptune-ai/transformers.git@rj/hpo#egg=transformers
