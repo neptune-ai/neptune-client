@@ -24,7 +24,7 @@ from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
 
 from neptune.new.exceptions import NeptuneInvalidApiTokenException
-from neptune.utils import update_session_proxies, with_api_exceptions_handler
+from neptune.utils import update_session_proxies, with_api_exceptions_handler_legacy
 
 _decoding_options = {
     "verify_signature": False,
@@ -58,7 +58,7 @@ class NeptuneAuth(AuthBase):
         )
         return r
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def refresh_token_if_needed(self):
         if self.token_expires_at - time.time() < 30:
             self._refresh_token()

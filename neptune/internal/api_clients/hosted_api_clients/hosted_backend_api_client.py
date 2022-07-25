@@ -41,14 +41,14 @@ from neptune.projects import Project
 from neptune.utils import (
     NoopObject,
     update_session_proxies,
-    with_api_exceptions_handler,
+    with_api_exceptions_handler_legacy,
 )
 
 _logger = logging.getLogger(__name__)
 
 
 class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def __init__(self, api_token=None, proxies=None):
         self._old_leaderboard_client = None
         self._new_leaderboard_client = None
@@ -141,7 +141,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     def proxies(self):
         return self._proxies
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_project(self, project_qualified_name):
         try:
             response = self.backend_swagger_client.api.getProject(
@@ -161,7 +161,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
         except HTTPNotFound:
             raise ProjectNotFound(project_qualified_name)
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_projects(self, namespace):
         try:
             r = self.backend_swagger_client.api.listProjects(
@@ -179,7 +179,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             self._new_leaderboard_client = HostedAlphaLeaderboardApiClient(backend_api_client=self)
         return self._new_leaderboard_client
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def _create_authenticator(self, api_token, ssl_verify, proxies, backend_client):
         return NeptuneAuthenticator(api_token, backend_client, ssl_verify, proxies)
 

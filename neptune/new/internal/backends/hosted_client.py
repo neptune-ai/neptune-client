@@ -94,7 +94,6 @@ def _get_token_client(
 
 
 @cache
-@with_api_exceptions_handler
 def get_client_config(
     credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]
 ) -> ClientConfig:

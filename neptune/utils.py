@@ -244,7 +244,7 @@ def get_git_info(repo_path=None):
         return None
 
 
-def with_api_exceptions_handler(func):
+def with_api_exceptions_handler_legacy(func):
     def wrapper(*args, **kwargs):
         # pylint: disable=global-statement
         retries = 11

@@ -284,12 +284,8 @@ def _build_multipart_urlset(
 ) -> MultipartUrlSet:
     urlnameset = MULTIPART_URLS[target]
     return MultipartUrlSet(
-        start_chunked=with_api_exceptions_handler(
-            getattr(swagger_client.api, urlnameset.start_chunked)
-        ),
-        finish_chunked=with_api_exceptions_handler(
-            getattr(swagger_client.api, urlnameset.finish_chunked)
-        ),
+        start_chunked=getattr(swagger_client.api, urlnameset.start_chunked),
+        finish_chunked=getattr(swagger_client.api, urlnameset.finish_chunked),
         send_chunk=build_operation_url(
             swagger_client.swagger_spec.api_url,
             getattr(swagger_client.api, urlnameset.send_chunk).operation.path_name,

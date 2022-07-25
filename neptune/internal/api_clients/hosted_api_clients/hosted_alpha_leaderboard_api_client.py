@@ -104,7 +104,7 @@ from neptune.notebook import Notebook
 from neptune.utils import (
     NoopObject,
     assure_directory_exists,
-    with_api_exceptions_handler,
+    with_api_exceptions_handler_legacy,
 )
 
 _logger = logging.getLogger(__name__)
@@ -152,7 +152,7 @@ if TYPE_CHECKING:
 
 
 class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def __init__(self, backend_api_client: "HostedNeptuneBackendApiClient"):
         self._backend_api_client = backend_api_client
 
@@ -211,7 +211,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
     def proxies(self):
         return self._backend_api_client.proxies
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_project_members(self, project_identifier):
         try:
             r = self.backend_swagger_client.api.listProjectMembers(
@@ -221,7 +221,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier)
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def create_experiment(
         self,
         project,
@@ -311,7 +311,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         )
         self._execute_upload_operations_with_400_retry(experiment, upload_files_operation)
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_notebook(self, project, notebook_id):
         try:
             api_notebook_list = (
@@ -336,7 +336,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         except HTTPNotFound:
             raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_last_checkpoint(self, project, notebook_id):
         try:
             api_checkpoint_list = (
@@ -355,7 +355,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         except HTTPNotFound:
             raise NotebookNotFound(notebook_id=notebook_id, project=project.full_id)
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def create_notebook(self, project):
         try:
             api_notebook = (
@@ -375,7 +375,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         except HTTPNotFound:
             raise ProjectNotFound(project_identifier=project.full_id)
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def create_checkpoint(self, notebook_id, jupyter_path, _file=None):
         if _file is not None:
             with self._upload_raw_data(
@@ -405,7 +405,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             except HTTPNotFound:
                 return None
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_experiment(self, experiment_id):
         api_attributes = self._get_api_experiment_attributes(experiment_id)
         attributes = api_attributes.attributes
@@ -436,7 +436,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             ],
         )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def set_property(self, experiment, key, value):
         """Save attribute casted to string under `alpha_consts.PROPERTIES_ATTRIBUTE_SPACE` namespace"""
         self._execute_operations(
@@ -451,13 +451,13 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             ],
         )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def remove_property(self, experiment, key):
         self._remove_attribute(
             experiment, str_path=f"{alpha_consts.PROPERTIES_ATTRIBUTE_SPACE}{key}"
         )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def update_tags(self, experiment, tags_to_add, tags_to_delete):
         operations = [
             alpha_operation.AddStrings(
@@ -516,7 +516,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             )
         )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def create_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         channel_id = f"{alpha_consts.LOG_ATTRIBUTE_SPACE}{name}"
         return self._create_channel(
@@ -541,7 +541,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 project_qualified_name=experiment._project.full_id,
             )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
         api_channels = [
             channel
@@ -551,7 +551,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         ]
         return {ch.name: ch for ch in api_channels}
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def create_system_channel(self, experiment, name, channel_type) -> ChannelWithLastValue:
         channel_id = f"{alpha_consts.MONITORING_ATTRIBUTE_SPACE}{name}"
         return self._create_channel(
@@ -562,7 +562,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             channel_namespace=ChannelNamespace.SYSTEM,
         )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_system_channels(self, experiment) -> Dict[str, AlphaChannelDTO]:
         return {
             channel.name: channel
@@ -573,7 +573,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             )
         }
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def send_channels_values(self, experiment, channels_with_values):
         send_operations = []
         for channel_with_values in channels_with_values:
@@ -642,7 +642,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             return "monitoring/{}_{}".format(resource_type, gauge_name).lower()
         return "monitoring/{}".format(resource_type).lower()
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def create_hardware_metric(self, experiment, metric):
         operations = []
         gauges_count = len(metric.gauges)
@@ -659,7 +659,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             )
         self._execute_operations(experiment, operations)
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def send_hardware_metric_reports(self, experiment, metrics, metric_reports):
         operations = []
         metrics_by_name = {metric.name: metric for metric in metrics}
@@ -738,7 +738,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 raise DeleteArtifactUnsupportedInAlphaException(path, experiment) from None
             raise
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def download_data(self, experiment: Experiment, path: str, destination):
         project_storage_path = f"artifacts/{path}"
         with self._download_raw_data(
@@ -775,7 +775,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             destination=destination_dir,
         )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def _get_file_set_download_request(self, run_id: str, path: str):
         params = {
             "experimentId": run_id,
@@ -877,7 +877,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 if "Length of stream does not match given range" not in ex.response:
                     raise ex
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def _execute_operations(
         self, experiment: Experiment, operations: List[alpha_operation.Operation]
     ):
@@ -997,7 +997,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
 
         return init_operations
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def reset_channel(self, experiment, channel_id, channel_name, channel_type):
         op = channel_type_to_clear_operation(ChannelType(channel_type))
         attr_path = self._get_channel_attribute_path(channel_name, ChannelNamespace.USER)
@@ -1006,7 +1006,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             operations=[op(path=alpha_path_utils.parse_path(attr_path))],
         )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def _get_channel_tuples_from_csv(self, experiment, channel_attribute_path):
         try:
             csv = (
@@ -1026,7 +1026,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 project_qualified_name=experiment._project.full_id,
             )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_channel_points_csv(self, experiment, channel_internal_id, channel_name):
         try:
             channel_attr_path = self._get_channel_attribute_path(
@@ -1046,7 +1046,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 project_qualified_name=experiment._project.full_id,
             )
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_metrics_csv(self, experiment):
         metric_channels = [
             channel
@@ -1078,7 +1078,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         csv.seek(0)
         return csv
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def get_leaderboard_entries(
         self,
         project,

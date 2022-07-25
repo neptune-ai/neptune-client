@@ -77,7 +77,6 @@ def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClientWrapper
     return create_backend_client(client_config=client_config, http_client=http_client)
 
 
-@with_api_exceptions_handler
 def get_project_list(api_token: Optional[str] = None) -> List[str]:
     """Get a list of projects you have access to.
     Args:
@@ -113,7 +112,6 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     ]
 
 
-@with_api_exceptions_handler
 def create_project(
     name: str,
     key: str,
@@ -201,7 +199,6 @@ def create_project(
         raise ProjectsLimitReached() from e
 
 
-@with_api_exceptions_handler
 def delete_project(name: str, workspace: Optional[str] = None, api_token: Optional[str] = None):
     """Deletes a project from your Neptune workspace.
     Args:
@@ -239,7 +236,6 @@ def delete_project(name: str, workspace: Optional[str] = None, api_token: Option
         raise AccessRevokedOnDeletion(name=project_identifier) from e
 
 
-@with_api_exceptions_handler
 def add_project_member(
     name: str,
     username: str,
@@ -305,7 +301,6 @@ def add_project_member(
         raise UserAlreadyHasAccess(user=username, project=project_identifier, role=user_role) from e
 
 
-@with_api_exceptions_handler
 def get_project_member_list(
     name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
@@ -350,7 +345,6 @@ def get_project_member_list(
         raise ProjectNotFound(name=project_identifier) from e
 
 
-@with_api_exceptions_handler
 def remove_project_member(
     name: str,
     username: str,
@@ -402,7 +396,6 @@ def remove_project_member(
         raise AccessRevokedOnMemberRemoval(user=username, project=project_identifier) from e
 
 
-@with_api_exceptions_handler
 def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Get a list of members of a workspace.
     Args:
@@ -438,7 +431,6 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
         raise WorkspaceNotFound(workspace=name) from e
 
 
-@with_api_exceptions_handler
 def _get_raw_workspace_service_account_list(
     workspace_name: str, api_token: Optional[str] = None
 ) -> Dict[str, ServiceAccountDTO]:
@@ -460,7 +452,6 @@ def _get_raw_workspace_service_account_list(
         raise WorkspaceNotFound(workspace=workspace_name) from e
 
 
-@with_api_exceptions_handler
 def get_workspace_service_account_list(
     name: str, api_token: Optional[str] = None
 ) -> Dict[str, str]:
@@ -474,7 +465,6 @@ def get_workspace_service_account_list(
     }
 
 
-@with_api_exceptions_handler
 def get_project_service_account_list(
     name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
@@ -497,7 +487,6 @@ def get_project_service_account_list(
         raise ProjectNotFound(name=project_identifier) from e
 
 
-@with_api_exceptions_handler
 def add_project_service_account(
     name: str,
     service_account_name: str,
@@ -545,7 +534,6 @@ def add_project_service_account(
         ) from e
 
 
-@with_api_exceptions_handler
 def remove_project_service_account(
     name: str,
     service_account_name: str,

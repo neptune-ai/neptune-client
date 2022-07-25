@@ -23,6 +23,7 @@ from neptune.new.exceptions import (
     NeptuneFieldCountLimitExceedException,
     NeptuneLimitExceedException,
 )
+from neptune.new.internal.backends.utils import with_api_exceptions_handler
 
 
 class ApiMethodWrapper:
@@ -53,6 +54,7 @@ class ApiMethodWrapper:
         elif exception:
             raise exception
 
+    @with_api_exceptions_handler
     def __call__(self, *args, **kwargs):
         try:
             future = self._api_method(*args, **kwargs)

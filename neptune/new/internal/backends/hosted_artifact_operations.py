@@ -126,7 +126,6 @@ def _extract_file_list(
     return files
 
 
-@with_api_exceptions_handler
 def create_new_artifact(
     swagger_client: SwaggerClientWrapper,
     project_id: str,
@@ -153,7 +152,6 @@ def create_new_artifact(
         raise ArtifactNotFoundException(artifact_hash)
 
 
-@with_api_exceptions_handler
 def upload_artifact_files_metadata(
     swagger_client: SwaggerClientWrapper,
     project_id: str,
@@ -178,7 +176,6 @@ def upload_artifact_files_metadata(
         raise ArtifactNotFoundException(artifact_hash)
 
 
-@with_api_exceptions_handler
 def create_artifact_version(
     swagger_client: SwaggerClientWrapper,
     project_id: str,

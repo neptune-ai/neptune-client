@@ -32,7 +32,7 @@ from neptune.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.internal.api_clients.client_config import ClientConfig, MultipartConfig
-from neptune.utils import with_api_exceptions_handler
+from neptune.utils import with_api_exceptions_handler_legacy
 
 _logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ uuid_format = SwaggerFormat(
 class HostedNeptuneMixin:
     """Mixin containing operation common for both backend and leaderboard api clients"""
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def _get_swagger_client(self, url, http_client):
         return SwaggerClient.from_url(
             url,
@@ -65,7 +65,7 @@ class HostedNeptuneMixin:
     def _get_client_config_args(api_token):
         return dict(X_Neptune_Api_Token=api_token)
 
-    @with_api_exceptions_handler
+    @with_api_exceptions_handler_legacy
     def _create_client_config(self, api_token, backend_client):
         client_config_args = self._get_client_config_args(api_token)
         config = backend_client.api.getClientConfig(**client_config_args).response().result
