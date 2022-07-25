@@ -398,3 +398,138 @@ class TestHuggingFace(BaseE2ETest):
         )
         assert len(runs) == 2
         assert runs[1].get_attribute_value("finetuning/train/metric3") == 345
+
+    def test_non_monitoring_runs_creation(self, environment):
+        # given
+        common_tag = fake.nic_handle()
+        project = get_project(name=environment.project, api_token=environment.user_token)
+
+        # and
+        callback = NeptuneCallback(
+            project=environment.project, api_token=environment.user_token, tags=common_tag
+        )
+        trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+
+        # when
+        trainer.log({"metric1": 123})
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = project.fetch_runs_table(tag=common_tag).to_rows()
+        assert len(runs) == 1
+        with pytest.raises(ValueError):
+            runs[0].get_attribute_value("monitoring/cpu")
+        assert runs[0].get_attribute_value("finetuning/train/metric1") == 123
+
+        # when
+        trainer.train()
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = project.fetch_runs_table(tag=common_tag).to_rows()
+        assert len(runs) == 1
+        assert runs[0].get_attribute_value("monitoring/cpu") is not None
+
+        # when
+        trainer.log({"metric2": 234})
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = project.fetch_runs_table(tag=common_tag).to_rows()
+        assert len(runs) == 1
+        assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        assert runs[0].get_attribute_value("finetuning/train/metric2") == 234
+
+        # when
+        trainer.train()
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = sorted(
+            project.fetch_runs_table(tag=common_tag).to_rows(),
+            key=lambda run: run.get_attribute_value("sys/id"),
+        )
+        assert len(runs) == 2
+        assert runs[1].get_attribute_value("monitoring/cpu") is not None
+
+        # when
+        trainer.log({"metric3": 345})
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = sorted(
+            project.fetch_runs_table(tag=common_tag).to_rows(),
+            key=lambda run: run.get_attribute_value("sys/id"),
+        )
+        assert len(runs) == 2
+        assert runs[1].get_attribute_value("finetuning/train/metric3") == 345
+
+    def test_non_monitoring_runs_creation_with_initial_run(self, environment):
+        # given
+        common_tag = fake.nic_handle()
+        project = get_project(name=environment.project, api_token=environment.user_token)
+
+        # and
+        initial_run = init_run(
+            project=environment.project, api_token=environment.user_token, tags=common_tag
+        )
+        callback = NeptuneCallback(
+            project=environment.project,
+            api_token=environment.user_token,
+            tags=common_tag,
+            run=initial_run,
+        )
+        trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
+
+        # when
+        trainer.log({"metric1": 123})
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = project.fetch_runs_table(tag=common_tag).to_rows()
+        assert len(runs) == 1
+        assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        assert runs[0].get_attribute_value("finetuning/train/metric1") == 123
+
+        # when
+        trainer.train()
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = project.fetch_runs_table(tag=common_tag).to_rows()
+        assert len(runs) == 1
+        assert runs[0].get_attribute_value("monitoring/cpu") is not None
+
+        # when
+        trainer.log({"metric2": 234})
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = project.fetch_runs_table(tag=common_tag).to_rows()
+        assert len(runs) == 1
+        assert runs[0].get_attribute_value("monitoring/cpu") is not None
+        assert runs[0].get_attribute_value("finetuning/train/metric2") == 234
+
+        # when
+        trainer.train()
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = sorted(
+            project.fetch_runs_table(tag=common_tag).to_rows(),
+            key=lambda run: run.get_attribute_value("sys/id"),
+        )
+        assert len(runs) == 2
+        assert runs[1].get_attribute_value("monitoring/cpu") is not None
+
+        # when
+        trainer.log({"metric3": 345})
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+
+        # then
+        runs = sorted(
+            project.fetch_runs_table(tag=common_tag).to_rows(),
+            key=lambda run: run.get_attribute_value("sys/id"),
+        )
+        assert len(runs) == 2
+        assert runs[1].get_attribute_value("finetuning/train/metric3") == 345
