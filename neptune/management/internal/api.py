@@ -528,9 +528,9 @@ def get_workspace_service_account_list(
 def get_project_service_account_list(
     name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
-    """Lists service accounts of a Neptune workspace.
+    """Lists service accounts of a Neptune project.
 
-    To get the service account list, the user or service account must be a member of the workspace.
+    To get the service account list, the user or service account must have access to the project.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
