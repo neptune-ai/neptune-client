@@ -223,7 +223,7 @@ def delete_project(name: str, workspace: Optional[str] = None, api_token: Option
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the name argument to 'project' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
-        api_token: Account's API token.
+        api_token: User's API token.
             If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
@@ -328,7 +328,7 @@ def get_project_member_list(
 ) -> Dict[str, str]:
     """Lists members of a Neptune project.
 
-    To get the project member list, the user or service account must have access to the project.
+    To get the list, the user or service account must have access to the project.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -432,7 +432,7 @@ def remove_project_member(
 def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists members of a Neptune workspace.
 
-    To get the workspace member list, the user or service account must be a member of the workspace.
+    To get the list, the user or service account must be a member of the workspace.
 
     Args:
         name: Name of the Neptune workspace.
@@ -495,7 +495,7 @@ def get_workspace_service_account_list(
 ) -> Dict[str, str]:
     """Lists service accounts of a Neptune workspace.
 
-    To get the service account list, the user or service account must be a member of the workspace.
+    To get the list, the user or service account must be a member of the workspace.
 
     Args:
         name: Name of the Neptune workspace.
@@ -530,7 +530,7 @@ def get_project_service_account_list(
 ) -> Dict[str, str]:
     """Lists service accounts of a Neptune project.
 
-    To get the service account list, the user or service account must have access to the project.
+    To get the list, the user or service account must have access to the project.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -585,7 +585,7 @@ def add_project_service_account(
 ):
     """Adds a service account to a Neptune project.
 
-    To add a service account, the user or service account must be a project owner.
+    The user or service account that performs the adding must be a project owner.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -666,7 +666,7 @@ def remove_project_service_account(
 ):
     """Removes a service account from a Neptune project.
 
-    To remove a service account, the user or service account must be a project owner.
+    The user or service account that performs the removal must be a project owner.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
