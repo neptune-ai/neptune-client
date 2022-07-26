@@ -417,3 +417,44 @@ class TestHuggingFace(BaseE2ETest):
         for run_id, run in enumerate(runs):
             assert run.get_attribute_value("finetuning/trial") == f"trial_{run_id}"
             assert run.get_attribute_value("monitoring/cpu") is not None
+
+    def test_usages(self, environment):
+        # given
+        trainer_args = self._trainer_default_attributes.copy()
+        trainer_args["args"] = TrainingArguments("model", report_to=["all"])
+
+        # when
+        trainer = Trainer(**trainer_args)
+
+        # then
+        assert "NeptuneCallback" in [
+            type(callback).__name__ for callback in trainer.callback_handler.callbacks
+        ]
+
+        # given
+        trainer_args = self._trainer_default_attributes.copy()
+        trainer_args["args"] = TrainingArguments("model", report_to=["neptune"])
+
+        # when
+        trainer = Trainer(**trainer_args)
+
+        # then
+        assert "NeptuneCallback" in [
+            type(callback).__name__ for callback in trainer.callback_handler.callbacks
+        ]
+
+        # when
+        trainer = Trainer(**self._trainer_default_attributes, callbacks=[NeptuneCallback])
+
+        # then
+        assert "NeptuneCallback" in [
+            type(callback).__name__ for callback in trainer.callback_handler.callbacks
+        ]
+
+        # when
+        trainer = Trainer(**self._trainer_default_attributes, callbacks=[NeptuneCallback()])
+
+        # then
+        assert "NeptuneCallback" in [
+            type(callback).__name__ for callback in trainer.callback_handler.callbacks
+        ]
