@@ -105,6 +105,7 @@ class TestManagement(BaseE2ETest):
         )
         assert environment.user in project_members
         assert project_members.get(environment.user) == "contributor"
+        assert environment.service_account not in project_members
 
         assert created_project_identifier in get_project_list(api_token=environment.user_token)
 
