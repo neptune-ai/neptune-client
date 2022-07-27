@@ -50,10 +50,11 @@ class RegressionPreTrainedModel(PreTrainedModel):
 
     def __init__(self, config):
         super().__init__(config)
+        # pylint: disable=no-member
         self.a = torch.nn.Parameter(torch.tensor(config.a).float())
         self.b = torch.nn.Parameter(torch.tensor(config.b).float())
 
-    def forward(self, input_x, labels=None, **kwargs):
+    def forward(self, input_x, labels=None):
         y = input_x * self.a + self.b
         if labels is None:
             return (y,)
@@ -419,7 +420,7 @@ class TestHuggingFace(BaseE2ETest):
             assert run.get_attribute_value("finetuning/trial") == f"trial_{run_id}"
             assert run.get_attribute_value("monitoring/cpu") is not None
 
-    def test_usages(self, environment):
+    def test_usages(self):
         # given
         trainer_args = self._trainer_default_attributes.copy()
         trainer_args["args"] = TrainingArguments("model", report_to=["all"])
