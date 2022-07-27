@@ -35,6 +35,7 @@ from neptune.management.exceptions import (
     ProjectsLimitReached,
     ServiceAccountAlreadyHasAccess,
     ServiceAccountNotExistsOrWithoutAccess,
+    ServiceAccountNotFound,
     UserAlreadyHasAccess,
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
@@ -486,7 +487,9 @@ def _get_raw_workspace_service_account_list(
 
     try:
         result = backend_client.api.listServiceAccounts(**params).response().result
-        return {f"{sa.name}": ServiceAccountDTO(name=sa.name, id=sa.id) for sa in result}
+        return {
+            f"{sa.displayName}": ServiceAccountDTO(name=sa.displayName, id=sa.id) for sa in result
+        }
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=workspace_name) from e
 
@@ -521,7 +524,7 @@ def get_project_service_account_list(
     try:
         result = backend_client.api.listProjectServiceAccounts(**params).response().result
         return {
-            f"{sa.serviceAccountInfo.name}": ProjectMemberRoleDTO.to_domain(sa.role)
+            f"{sa.serviceAccountInfo.displayName}": ProjectMemberRoleDTO.to_domain(sa.role)
             for sa in result
         }
     except HTTPNotFound as e:
@@ -546,9 +549,12 @@ def add_project_service_account(
     workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
-    service_account = _get_raw_workspace_service_account_list(
+    workspace_service_accounts = _get_raw_workspace_service_account_list(
         workspace_name=workspace, api_token=api_token
-    ).get(service_account_name)
+    )
+    if service_account_name not in workspace_service_accounts:
+        raise ServiceAccountNotFound(name=service_account_name)
+    service_account = workspace_service_accounts.get(service_account_name)
 
     params = {
         "projectIdentifier": project_qualified_name,
@@ -592,9 +598,12 @@ def remove_project_service_account(
     workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
-    service_account = _get_raw_workspace_service_account_list(
+    workspace_service_accounts = _get_raw_workspace_service_account_list(
         workspace_name=workspace, api_token=api_token
-    ).get(service_account_name)
+    )
+    if service_account_name not in workspace_service_accounts:
+        raise ServiceAccountNotFound(name=service_account_name)
+    service_account = workspace_service_accounts.get(service_account_name)
 
     params = {
         "projectIdentifier": project_qualified_name,

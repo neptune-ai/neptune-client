@@ -127,6 +127,11 @@ class ServiceAccountNotExistsOrWithoutAccess(ManagementOperationFailure):
     )
 
 
+class ServiceAccountNotFound(ManagementOperationFailure):
+    code = 16
+    description = 'Service account "{name}" could not be found.'
+
+
 class BadRequestException(ManagementOperationFailure):
     code = 400
     description = (
