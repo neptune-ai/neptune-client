@@ -552,7 +552,7 @@ def add_project_service_account(
     try:
         service_account = _get_raw_workspace_service_account_list(
             workspace_name=workspace, api_token=api_token
-        ).get(service_account_name)
+        )[service_account_name]
     except KeyError as e:
         raise ServiceAccountNotFound(name=service_account_name) from e
 
@@ -601,7 +601,7 @@ def remove_project_service_account(
     try:
         service_account = _get_raw_workspace_service_account_list(
             workspace_name=workspace, api_token=api_token
-        ).get(service_account_name)
+        )[service_account_name]
     except KeyError as e:
         raise ServiceAccountNotFound(name=service_account_name) from e
 
