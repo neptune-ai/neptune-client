@@ -549,12 +549,12 @@ def add_project_service_account(
     workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
-    workspace_service_accounts = _get_raw_workspace_service_account_list(
-        workspace_name=workspace, api_token=api_token
-    )
-    if service_account_name not in workspace_service_accounts:
-        raise ServiceAccountNotFound(name=service_account_name)
-    service_account = workspace_service_accounts.get(service_account_name)
+    try:
+        service_account = _get_raw_workspace_service_account_list(
+            workspace_name=workspace, api_token=api_token
+        ).get(service_account_name)
+    except KeyError as e:
+        raise ServiceAccountNotFound(name=service_account_name) from e
 
     params = {
         "projectIdentifier": project_qualified_name,
@@ -598,12 +598,12 @@ def remove_project_service_account(
     workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
-    workspace_service_accounts = _get_raw_workspace_service_account_list(
-        workspace_name=workspace, api_token=api_token
-    )
-    if service_account_name not in workspace_service_accounts:
-        raise ServiceAccountNotFound(name=service_account_name)
-    service_account = workspace_service_accounts.get(service_account_name)
+    try:
+        service_account = _get_raw_workspace_service_account_list(
+            workspace_name=workspace, api_token=api_token
+        ).get(service_account_name)
+    except KeyError as e:
+        raise ServiceAccountNotFound(name=service_account_name) from e
 
     params = {
         "projectIdentifier": project_qualified_name,
