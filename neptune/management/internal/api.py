@@ -554,7 +554,9 @@ def add_project_service_account(
             workspace_name=workspace, api_token=api_token
         )[service_account_name]
     except KeyError as e:
-        raise ServiceAccountNotFound(name=service_account_name) from e
+        raise ServiceAccountNotFound(
+            service_account_name=service_account_name, workspace=workspace
+        ) from e
 
     params = {
         "projectIdentifier": project_qualified_name,
@@ -603,7 +605,9 @@ def remove_project_service_account(
             workspace_name=workspace, api_token=api_token
         )[service_account_name]
     except KeyError as e:
-        raise ServiceAccountNotFound(name=service_account_name) from e
+        raise ServiceAccountNotFound(
+            service_account_name=service_account_name, workspace=workspace
+        ) from e
 
     params = {
         "projectIdentifier": project_qualified_name,

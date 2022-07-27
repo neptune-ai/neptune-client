@@ -129,7 +129,9 @@ class ServiceAccountNotExistsOrWithoutAccess(ManagementOperationFailure):
 
 class ServiceAccountNotFound(ManagementOperationFailure):
     code = 16
-    description = 'Service account "{name}" could not be found.'
+    description = (
+        'Service account "{service_account_name}" could not be found in workspace "{workspace}"'
+    )
 
 
 class BadRequestException(ManagementOperationFailure):
