@@ -92,7 +92,8 @@ class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
 class UserAlreadyHasAccess(ManagementOperationFailure):
     code = 10
     description = (
-        'User "{user}" already has access to the project "{project}". Role already set to "{role}".'
+        'User "{user}" already has access to the project "{project}". '
+        'Their role is "{role}".'
     )
 
 
@@ -109,9 +110,9 @@ class UnsupportedValue(ManagementOperationFailure):
 class ServiceAccountAlreadyHasAccess(ManagementOperationFailure):
     code = 13
     description = (
-        "The service account '{service_account_name}' already has access to the project '{project}', "
+        'The service account "{service_account_name}" already has access to the project "{project}", '
         "either because it was already added or because of the project's visibility setting. "
-        "The service account's role is set to '{role}'."
+        'The role of the service account is "{role}".'
     )
 
 
@@ -126,9 +127,9 @@ class AccessRevokedOnServiceAccountRemoval(ManagementOperationFailure):
 class ServiceAccountNotExistsOrWithoutAccess(ManagementOperationFailure):
     code = 15
     description = (
-        "Service account '{service_account_name}' does not exist or didn't have access to project '{project}' "
-        'in the first place. If the project visibility is set to "workspace", '
-        "an individual account cannot be added or removed as long as it's a workspace member."
+        'Service account "{service_account_name}" does not exist or did not have access to project "{project}" '
+        'in the first place. If the project visibility is set to "workspace", you cannot revoke access for '
+        "invididual workspace members."
     )
 
 
