@@ -30,10 +30,7 @@ from neptune.management import (
     remove_project_member,
     remove_project_service_account,
 )
-from neptune.management.exceptions import (
-    UserAlreadyHasAccess,
-    UserNotExistsOrWithoutAccess,
-)
+from neptune.management.exceptions import UserNotExistsOrWithoutAccess
 from neptune.management.internal.utils import normalize_project_name
 
 
