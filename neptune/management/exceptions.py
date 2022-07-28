@@ -92,8 +92,7 @@ class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
 class UserAlreadyHasAccess(ManagementOperationFailure):
     code = 10
     description = (
-        'User "{user}" already has access to the project "{project}". '
-        'Their role is "{role}".'
+        'User "{user}" already has access to the project "{project}". ' 'Their role is "{role}".'
     )
 
 
@@ -130,6 +129,13 @@ class ServiceAccountNotExistsOrWithoutAccess(ManagementOperationFailure):
         'Service account "{service_account_name}" does not exist or did not have access to project "{project}" '
         'in the first place. If the project visibility is set to "workspace", you cannot revoke access for '
         "invididual workspace members."
+    )
+
+
+class ServiceAccountNotFound(ManagementOperationFailure):
+    code = 16
+    description = (
+        'Service account "{service_account_name}" could not be found in workspace "{workspace}"'
     )
 
 

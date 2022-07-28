@@ -30,17 +30,14 @@ from neptune.management import (
     remove_project_member,
     remove_project_service_account,
 )
-from neptune.management.exceptions import (
-    UserAlreadyHasAccess,
-    UserNotExistsOrWithoutAccess,
-)
+from neptune.management.exceptions import UserNotExistsOrWithoutAccess
 from neptune.management.internal.utils import normalize_project_name
 
 
 @pytest.mark.management
 class TestManagement(BaseE2ETest):
     def test_standard_scenario(self, environment: Environment):
-        project_name, project_key = a_project_name(project_slug=f"{fake.slug()}-mgmt")
+        project_name, _ = a_project_name(project_slug=f"{fake.slug()}-mgmt")
         project_identifier = normalize_project_name(
             name=project_name, workspace=environment.workspace
         )
@@ -58,7 +55,6 @@ class TestManagement(BaseE2ETest):
 
         created_project_identifier = create_project(
             name=project_name,
-            key=project_key,
             visibility="priv",
             workspace=environment.workspace,
             api_token=environment.admin_token,
@@ -103,7 +99,7 @@ class TestManagement(BaseE2ETest):
         assert project_identifier not in get_project_list(api_token=environment.admin_token)
 
     def test_visibility_workspace(self, environment: "Environment"):
-        project_name, project_key = a_project_name(project_slug=f"{fake.slug()}-workspace")
+        project_name, _ = a_project_name(project_slug=f"{fake.slug()}-workspace")
         project_identifier = normalize_project_name(
             name=project_name, workspace=environment.workspace
         )
@@ -121,7 +117,6 @@ class TestManagement(BaseE2ETest):
 
         created_project_identifier = create_project(
             name=project_name,
-            key=project_key,
             visibility="workspace",
             workspace=environment.workspace,
             api_token=environment.admin_token,
@@ -138,14 +133,6 @@ class TestManagement(BaseE2ETest):
             ).get(environment.user)
             == "owner"
         )
-
-        with pytest.raises(UserAlreadyHasAccess):
-            add_project_member(
-                name=created_project_identifier,
-                username=environment.user,
-                role="contributor",
-                api_token=environment.admin_token,
-            )
 
         assert created_project_identifier in get_project_list(api_token=environment.user_token)
 
