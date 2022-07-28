@@ -137,14 +137,6 @@ class TestManagement(BaseE2ETest):
             == "owner"
         )
 
-        with pytest.raises(UserAlreadyHasAccess):
-            add_project_member(
-                name=created_project_identifier,
-                username=environment.user,
-                role="contributor",
-                api_token=environment.admin_token,
-            )
-
         assert created_project_identifier in get_project_list(api_token=environment.user_token)
 
         with pytest.raises(UserNotExistsOrWithoutAccess):
