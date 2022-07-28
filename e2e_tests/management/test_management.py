@@ -30,10 +30,7 @@ from neptune.management import (
     remove_project_member,
     remove_project_service_account,
 )
-from neptune.management.exceptions import (
-    UserAlreadyHasAccess,
-    UserNotExistsOrWithoutAccess,
-)
+from neptune.management.exceptions import UserNotExistsOrWithoutAccess
 from neptune.management.internal.utils import normalize_project_name
 
 
@@ -136,14 +133,6 @@ class TestManagement(BaseE2ETest):
             ).get(environment.user)
             == "owner"
         )
-
-        with pytest.raises(UserAlreadyHasAccess):
-            add_project_member(
-                name=created_project_identifier,
-                username=environment.user,
-                role="contributor",
-                api_token=environment.admin_token,
-            )
 
         assert created_project_identifier in get_project_list(api_token=environment.user_token)
 
