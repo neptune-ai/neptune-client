@@ -92,7 +92,7 @@ class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
 class UserAlreadyHasAccess(ManagementOperationFailure):
     code = 10
     description = (
-        'User "{user}" already has access to the project "{project}". ' 'Their role is "{role}".'
+        'User "{user}" already has access to the project "{project}". Their role is "{role}".'
     )
 
 
