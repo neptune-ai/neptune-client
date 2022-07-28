@@ -528,7 +528,7 @@ def get_workspace_service_account_list(
 def get_project_service_account_list(
     name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
-    """Lists service accounts of a Neptune project.
+    """Lists service accounts assigned to a Neptune project.
 
     To get the list, the user or service account must have access to the project.
 
@@ -590,7 +590,7 @@ def add_project_service_account(
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If workspace argument was set, it should only contain 'project' instead of 'workspace-name/project-name'.
-        service_account_name: Name of the service account to add to the project (without the workspace tag).
+        service_account_name: Name of the service account to add to the project.
         role: level of permissions the user or service account should have in a project.
             Can be set to:
              - 'viewer': can only view project content and members
@@ -610,7 +610,7 @@ def add_project_service_account(
         >>> management.add_project_service_account(
         ...     workspace="ml-team",
         ...     name="classification",
-        ...     service_account_name="automaton",
+        ...     service_account_name="cicd@ml-team",
         ...     role="contributor",
         ... )
 
@@ -671,7 +671,7 @@ def remove_project_service_account(
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If workspace argument was set, it should only contain 'project' instead of 'workspace-name/project-name'.
-        service_account_name: Name of the service account to remove from the project (without the workspace tag).
+        service_account_name: Name of the service account to remove from the project.
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the name argument to 'project' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
@@ -685,7 +685,7 @@ def remove_project_service_account(
         >>> management.remove_project_service_account(
         ...     workspace="ml-team",
         ...     name="classification",
-        ...     service_account_name="automaton",
+        ...     service_account_name="cicd@ml-team",
         ... )
 
     You may also want to check the management API reference:
