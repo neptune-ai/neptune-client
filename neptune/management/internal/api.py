@@ -145,13 +145,10 @@ def create_project(
 ) -> str:
     """Creates a new project in a Neptune workspace.
 
-    To create projects, the user or service account must have access to the workspace.
-
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If workspace argument was set, it should only contain 'project' instead of 'workspace-name/project-name'.
-        key: Project identifier. It has to be contain 1-10 upper case letters or numbers.
-            For example, 'CLS'
+        key: Project identifier. Must contain 1-10 upper case letters or numbers. For example, 'CLS'.
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the name argument to 'project' instead of'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
@@ -295,7 +292,7 @@ def add_project_member(
 ):
     """Adds a member to a Neptune project.
 
-    To add members, the user or service account must be a project owner.
+    Only project owners can add members.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -361,8 +358,6 @@ def get_project_member_list(
 ) -> Dict[str, str]:
     """Lists members of a Neptune project.
 
-    To get the list, the user or service account must have access to the project.
-
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If workspace argument was set, it should only contain 'project' instead of 'workspace-name/project-name'.
@@ -413,7 +408,7 @@ def remove_project_member(
 ):
     """Removes member from a Neptune project.
 
-    To remove members, the user or service account must be a project owner.
+    Only project owners can remove members.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -464,8 +459,6 @@ def remove_project_member(
 @with_api_exceptions_handler
 def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists members of a Neptune workspace.
-
-    To get the list, the user or service account must be a member of the workspace.
 
     Args:
         name: Name of the Neptune workspace.
@@ -530,8 +523,6 @@ def get_workspace_service_account_list(
 ) -> Dict[str, str]:
     """Lists service accounts of a Neptune workspace.
 
-    To get the list, the user or service account must be a member of the workspace.
-
     Args:
         name: Name of the Neptune workspace.
         api_token: Account's API token.
@@ -564,8 +555,6 @@ def get_project_service_account_list(
     name: str, workspace: Optional[str] = None, api_token: Optional[str] = None
 ) -> Dict[str, str]:
     """Lists service accounts assigned to a Neptune project.
-
-    To get the list, the user or service account must have access to the project.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -620,7 +609,7 @@ def add_project_service_account(
 ):
     """Adds a service account to a Neptune project.
 
-    The user or service account that performs the adding must be a project owner.
+    Only project owners can add accounts as members.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
@@ -706,7 +695,7 @@ def remove_project_service_account(
 ):
     """Removes a service account from a Neptune project.
 
-    The user or service account that performs the removal must be a project owner.
+    Only project owners can remove accounts.
 
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
