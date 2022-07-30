@@ -150,7 +150,7 @@ def create_project(
             If workspace argument was set, it should only contain 'project' instead of 'workspace-name/project-name'.
         key: Project identifier. Must contain 1-10 upper case letters or numbers. For example, 'CLS'.
         workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project' instead of'workspace-name/project-name'.
+            change the format of the name argument to 'project' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         visibility: Level of visibility you want your project to have.
             Can be set to:
