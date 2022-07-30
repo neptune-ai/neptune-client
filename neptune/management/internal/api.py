@@ -154,8 +154,9 @@ def create_project(
             If None, it will be parsed from the name argument.
         visibility: Level of visibility you want your project to have.
             Can be set to:
-             - 'pub' for public projects
-             - 'priv' for private projects
+             - 'pub': Public project
+             - 'priv': Private project
+             - 'workspace' (team workspaces only): Accessible to all workspace members
             If None, it will be set to 'priv'.
         description: Project description.
             If None, it will be left empty.
