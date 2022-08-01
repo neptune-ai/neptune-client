@@ -168,7 +168,7 @@ class TestManagement(BaseE2ETest):
         assert project_members.get(environment.user) == "owner"
 
         assert environment.service_account not in get_project_service_account_list(
-            name=created_project_identifier, api_token=environment.user_token
+            name=created_project_identifier, api_token=environment.admin_token
         )
 
         add_project_service_account(
