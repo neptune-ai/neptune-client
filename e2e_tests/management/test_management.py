@@ -196,3 +196,35 @@ class TestManagement(BaseE2ETest):
         delete_project(name=created_project_identifier, api_token=environment.admin_token)
 
         assert project_identifier not in get_project_list(api_token=environment.admin_token)
+
+    def test_create_project(self, environment: "Environment"):
+        project_name, _ = a_project_name(project_slug=f"{fake.slug()}-workspace")
+        project_identifier = normalize_project_name(
+            name=project_name, workspace=environment.workspace
+        )
+
+        assert project_identifier not in get_project_list(api_token=environment.user_token)
+
+        assert environment.user in get_workspace_member_list(
+            name=environment.workspace, api_token=environment.user_token
+        )
+        assert (
+            get_workspace_member_list(
+                name=environment.workspace, api_token=environment.user_token
+            ).get(environment.user)
+            == "member"
+        )
+
+        created_project_identifier = create_project(
+            name=project_name,
+            visibility="workspace",
+            workspace=environment.workspace,
+            api_token=environment.user_token,
+        )
+
+        assert created_project_identifier == project_identifier
+        assert created_project_identifier in get_project_list(api_token=environment.user_token)
+
+        delete_project(name=created_project_identifier, api_token=environment.admin_token)
+
+        assert project_identifier not in get_project_list(api_token=environment.user_token)
