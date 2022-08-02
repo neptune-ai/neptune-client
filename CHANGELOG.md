@@ -3,7 +3,6 @@
 ## Features
 - Added `NEPTUNE_MODE` environment variable ([#928](https://github.com/neptune-ai/neptune-client/pull/928))
 - Added support of Service account management ([#927](https://github.com/neptune-ai/neptune-client/pull/927))
-- Project key is now optional in API. If it is not provided by user it is generated. ([#946](https://github.com/neptune-ai/neptune-client/pull/946))
 
 ## neptune-client 0.16.4
 
