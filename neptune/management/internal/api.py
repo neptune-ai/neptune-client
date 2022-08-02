@@ -16,7 +16,6 @@
 import os
 from typing import Dict, List, Optional, Set
 
-import backoff
 from bravado.exception import (
     HTTPBadRequest,
     HTTPConflict,
@@ -24,6 +23,7 @@ from bravado.exception import (
     HTTPNotFound,
     HTTPUnprocessableEntity,
 )
+from retry import retry
 
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
@@ -132,7 +132,7 @@ def _get_projects(params, api_token: Optional[str] = None) -> List:
     return backend_client.api.listProjects(**params).response().result.entries
 
 
-@backoff.on_exception(backoff.expo, ProjectAlreadyExists, max_tries=3)
+@retry(exceptions=ProjectAlreadyExists, tries=3)
 def create_project(
     name: str,
     key: Optional[str] = None,
