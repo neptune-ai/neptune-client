@@ -25,7 +25,7 @@ from e2e_tests.base import BaseE2ETest
 from e2e_tests.utils import catch_time, modified_environ
 from neptune.new import get_project, init_run
 
-EXPECTED_OVERWHELMING_FACTOR = 1.2
+MAX_OVERWHELMING_FACTOR = 1.2
 
 
 logging.set_verbosity_error()
@@ -128,7 +128,7 @@ class TestHuggingFace(BaseE2ETest):
             trainer.train()
             del trainer
 
-        assert with_neptune_callback() / standard() <= EXPECTED_OVERWHELMING_FACTOR
+        assert with_neptune_callback() / standard() <= MAX_OVERWHELMING_FACTOR
 
     def test_run_access_methods(self, environment):
         callback = NeptuneCallback(api_token=environment.user_token, project=environment.project)
