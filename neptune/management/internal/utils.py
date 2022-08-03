@@ -13,10 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import random
 import re
-import string
-from typing import Optional, Set
+from typing import Optional
 
 from neptune.management.exceptions import (
     ConflictingWorkspaceName,
