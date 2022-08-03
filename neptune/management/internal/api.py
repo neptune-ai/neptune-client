@@ -16,7 +16,6 @@
 import os
 from typing import Dict, List, Optional, Set
 
-import backoff
 from bravado.exception import (
     HTTPBadRequest,
     HTTPConflict,
@@ -48,7 +47,6 @@ from neptune.management.internal.dto import (
 )
 from neptune.management.internal.types import *
 from neptune.management.internal.utils import (
-    ProjectKeyGenerator,
     extract_project_and_workspace,
     normalize_project_name,
 )
@@ -132,7 +130,6 @@ def _get_projects(params, api_token: Optional[str] = None) -> List:
     return backend_client.api.listProjects(**params).response().result.entries
 
 
-@backoff.on_exception(backoff.expo, ProjectAlreadyExists, max_tries=3)
 def create_project(
     name: str,
     key: Optional[str] = None,
@@ -145,7 +142,7 @@ def create_project(
     Args:
         name(str): The name of the project in Neptune in the format 'WORKSPACE/PROJECT'.
             If workspace argument was set, it should only contain 'PROJECT' instead of 'WORKSPACE/PROJECT'.
-        key(str): Project identifier. It has to be contain 1-10 upper case letters or numbers.
+        key(str, optional): Project identifier. It has to be contain 1-10 upper case letters or numbers.
             For example, 'GOOD5'
         workspace(str, optional): Name of your Neptune workspace.
             If you specify it, change the format of the name argument to 'PROJECT' instead of 'WORKSPACE/PROJECT'.
@@ -184,10 +181,6 @@ def create_project(
     workspace, name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{name}"
     workspace_id = _get_workspace_id(backend_client, workspace)
-
-    if key is None:
-        project_keys = _get_projects_keys_in_organization(workspace_id, api_token)
-        key = ProjectKeyGenerator(name, project_keys).get_default_project_key()
 
     params = {
         "projectToCreate": {
