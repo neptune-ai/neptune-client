@@ -142,11 +142,16 @@ def _matplotlib_to_plotly(chart):
     # E.g. when trying to convert a Seaborn confusion matrix or a hist2d, it emits a UserWarning with message
     # "Dang! That path collection is out of this world. I totally don't know what to do with it yet!
     # Plotly can only import path collections linked to 'data' coordinates"
+    #
+    # Plotly is not compatible with the latest matplotlib (3.5.0+)
+    # due to fact that mpl_to_plotly uses deprecated matplotlib functionalities
     plotly_version = plotly.__version__
     matplotlib_version = matplotlib.__version__
-    if version.parse(matplotlib_version) >= version.parse("3.3.0") and version.parse(
-        plotly_version
-    ) < version.parse("5.0.0"):
+    if (
+        version.parse(matplotlib_version) >= version.parse("3.3.0")
+        and version.parse(plotly_version) < version.parse("5.0.0")
+        or version.parse(matplotlib_version) >= version.parse("3.5.0")
+    ):
         raise PlotlyIncompatibilityException(matplotlib_version, plotly_version)
 
     with warnings.catch_warnings():
