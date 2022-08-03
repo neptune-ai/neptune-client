@@ -147,12 +147,23 @@ def _matplotlib_to_plotly(chart):
     # due to fact that mpl_to_plotly uses deprecated matplotlib functionalities
     plotly_version = plotly.__version__
     matplotlib_version = matplotlib.__version__
-    if (
-        version.parse(matplotlib_version) >= version.parse("3.3.0")
-        and version.parse(plotly_version) < version.parse("5.0.0")
-        or version.parse(matplotlib_version) >= version.parse("3.5.0")
-    ):
-        raise PlotlyIncompatibilityException(matplotlib_version, plotly_version)
+    if version.parse(matplotlib_version) >= version.parse("3.3.0") and version.parse(
+        plotly_version
+    ) < version.parse("5.0.0"):
+        raise PlotlyIncompatibilityException(
+            matplotlib_version,
+            plotly_version,
+            "https://stackoverflow.com/q/63120058",
+            "Downgrade matplotlib to version 3.2, upgrade plotly to 5.0+ or use as_image to log static chart",
+        )
+
+    if version.parse(matplotlib_version) >= version.parse("3.5.0"):
+        raise PlotlyIncompatibilityException(
+            matplotlib_version,
+            plotly_version,
+            "https://github.com/plotly/plotly.py/issues/3624",
+            "Downgrade matplotlib to version 3.4",
+        )
 
     with warnings.catch_warnings():
         warnings.filterwarnings(
