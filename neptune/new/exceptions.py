@@ -1086,12 +1086,11 @@ You may also want to check the following docs page:
 
 
 class PlotlyIncompatibilityException(Exception):
-    def __init__(self, matplotlib_version, plotly_version, issue_url, details):
+    def __init__(self, matplotlib_version, plotly_version, details):
         super().__init__(
             "Unable to convert plotly figure to matplotlib format. "
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
-            "See {} for details. "
-            "{}.".format(matplotlib_version, plotly_version, issue_url, details)
+            "{}".format(matplotlib_version, plotly_version, details)
         )
 
 

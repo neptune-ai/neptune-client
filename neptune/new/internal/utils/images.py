@@ -153,16 +153,8 @@ def _matplotlib_to_plotly(chart):
         raise PlotlyIncompatibilityException(
             matplotlib_version,
             plotly_version,
-            "https://stackoverflow.com/q/63120058",
-            "Downgrade matplotlib to version 3.2, upgrade plotly to 5.0+ or use as_image to log static chart",
-        )
-
-    if version.parse(matplotlib_version) >= version.parse("3.5.0"):
-        raise PlotlyIncompatibilityException(
-            matplotlib_version,
-            plotly_version,
-            "https://github.com/plotly/plotly.py/issues/3624",
-            "Downgrade matplotlib to version 3.4",
+            "Downgrade matplotlib to version 3.2, upgrade plotly to 5.0+ or use as_image to log static chart."
+            " See https://stackoverflow.com/q/63120058 for details.",
         )
 
     with warnings.catch_warnings():
@@ -171,7 +163,16 @@ def _matplotlib_to_plotly(chart):
             category=UserWarning,
             message=".*Plotly can only import path collections linked to 'data' coordinates.*",
         )
-        chart = plotly.tools.mpl_to_plotly(chart)
+        try:
+            chart = plotly.tools.mpl_to_plotly(chart)
+        except AttributeError as e:
+            if "'PathCollection' object has no attribute 'get_offset_position'" in str(e):
+                raise PlotlyIncompatibilityException(
+                    matplotlib_version,
+                    plotly_version,
+                    "Due to plotly using some deprecated matplotlib methods, we recommend downgrading matplotlib"
+                    " to version 3.4. See https://github.com/plotly/plotly.py/issues/3624 for details.",
+                ) from e
 
     return chart
 
