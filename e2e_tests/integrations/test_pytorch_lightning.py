@@ -25,7 +25,10 @@ from e2e_tests.base import BaseE2ETest
 class TestPytorchLightning(BaseE2ETest):
     def test_logging_values(self, pytorch_run):
         # correct integration version is logged
-        logged_version = pytorch_run["source_code/integrations/lightning"].fetch()
+        if pytorch_run.exists("source_code/integrations/lightning"):
+            logged_version = pytorch_run["source_code/integrations/lightning"].fetch()
+        else:
+            logged_version = pytorch_run["source_code/integrations/pytorch-lightning"].fetch()
         assert logged_version == pl.__version__  # pylint: disable=E1101
 
         assert pytorch_run.exists("custom_prefix/valid/loss")
