@@ -8,4 +8,4 @@ pytorch-lightning
 torchvision
 sklearn
 optuna
-git+https://github.com/neptune-ai/transformers.git@rj/modelcheckpoints#egg=transformers
+git+https://github.com/neptune-ai/transformers.git@rj/volatile-checkpoints#egg=transformers
