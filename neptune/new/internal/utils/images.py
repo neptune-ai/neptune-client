@@ -173,6 +173,7 @@ def _matplotlib_to_plotly(chart):
                     "Due to plotly using some deprecated matplotlib methods, we recommend downgrading matplotlib"
                     " to version 3.4. See https://github.com/plotly/plotly.py/issues/3624 for details.",
                 ) from e
+            raise e
 
     return chart
 
