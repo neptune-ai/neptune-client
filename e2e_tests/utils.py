@@ -121,10 +121,10 @@ class RawEnvironment:
             self.admin_neptune_api_token = env["ADMIN_NEPTUNE_API_TOKEN"]
             # Member user
             self.user_username = env["USER_USERNAME"]
-            # Member user API token
-            self.neptune_api_token = env["NEPTUNE_API_TOKEN"]
             # SA name
             self.service_account_name = env["SERVICE_ACCOUNT_NAME"]
+            # Member user or SA API token
+            self.neptune_api_token = env["NEPTUNE_API_TOKEN"]
         except KeyError as e:
             raise MissingEnvironmentVariable(missing_variable=e.args[0]) from e
 
@@ -133,7 +133,7 @@ class RawEnvironment:
 class Environment:
     workspace: str
     project: str
-    user_token: str
+    user_token: str  # token of `user` or `service_account`
     admin_token: str
     admin: str
     user: str
