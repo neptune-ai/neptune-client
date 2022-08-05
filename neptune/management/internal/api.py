@@ -96,12 +96,13 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
        https://docs.neptune.ai/api-reference/management
     """
     verify_type("api_token", api_token, (str, type(None)))
+    backend_client = _get_backend_client(api_token=api_token)
     params = {
         "userRelation": "viewerOrHigher",
         "sortBy": ["lastViewed"],
         **DEFAULT_REQUEST_KWARGS,
     }
-    projects = _get_projects(params, api_token)
+    projects = _get_projects(backend_client, params)
 
     return [
         normalize_project_name(name=project.name, workspace=project.organizationName)
@@ -110,9 +111,7 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
 
 
 @with_api_exceptions_handler
-def _get_projects(params, api_token: Optional[str] = None) -> List:
-    verify_type("api_token", api_token, (str, type(None)))
-    backend_client = _get_backend_client(api_token=api_token)
+def _get_projects(backend_client, params) -> List:
     return backend_client.api.listProjects(**params).response().result.entries
 
 
