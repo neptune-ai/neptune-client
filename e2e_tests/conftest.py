@@ -46,11 +46,10 @@ def environment():
     user = raw_env.user_username
     service_account_name = raw_env.service_account_name
 
-    project_name, project_key = a_project_name(project_slug=fake.slug())
+    project_name = a_project_name(project_slug=fake.slug())
     project_identifier = normalize_project_name(name=project_name, workspace=workspace)
     created_project_identifier = create_project(
         name=project_name,
-        key=project_key,
         visibility="priv",
         workspace=workspace,
         api_token=admin_token,

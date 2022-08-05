@@ -78,7 +78,6 @@ def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClientWrapper
     return create_backend_client(client_config=client_config, http_client=http_client)
 
 
-@with_api_exceptions_handler
 def get_project_list(api_token: Optional[str] = None) -> List[str]:
     """Get a list of projects you have access to.
     Args:
@@ -97,16 +96,13 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
        https://docs.neptune.ai/api-reference/management
     """
     verify_type("api_token", api_token, (str, type(None)))
-
     backend_client = _get_backend_client(api_token=api_token)
-
     params = {
         "userRelation": "viewerOrHigher",
         "sortBy": ["lastViewed"],
         **DEFAULT_REQUEST_KWARGS,
     }
-
-    projects = backend_client.api.listProjects(**params).response().result.entries
+    projects = _get_projects(backend_client, params)
 
     return [
         normalize_project_name(name=project.name, workspace=project.organizationName)
@@ -115,9 +111,13 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
 
 
 @with_api_exceptions_handler
+def _get_projects(backend_client, params) -> List:
+    return backend_client.api.listProjects(**params).response().result.entries
+
+
 def create_project(
     name: str,
-    key: str,
+    key: Optional[str] = None,
     workspace: Optional[str] = None,
     visibility: str = ProjectVisibility.PRIVATE,
     description: Optional[str] = None,
@@ -127,7 +127,7 @@ def create_project(
     Args:
         name(str): The name of the project in Neptune in the format 'WORKSPACE/PROJECT'.
             If workspace argument was set, it should only contain 'PROJECT' instead of 'WORKSPACE/PROJECT'.
-        key(str): Project identifier. It has to be contain 1-10 upper case letters or numbers.
+        key(str, optional): Project identifier. It has to be contain 1-10 upper case letters or numbers.
             For example, 'GOOD5'
         workspace(str, optional): Name of your Neptune workspace.
             If you specify it, change the format of the name argument to 'PROJECT' instead of 'WORKSPACE/PROJECT'.
@@ -153,10 +153,10 @@ def create_project(
         ...                           visibility="pub")
     You may also want to check `management API reference`_.
     .. _management API reference:
-       https://docs.neptune.ai/api-reference/management
+       https://docs.neptune.ai/api-reference/management#.create_project
     """
     verify_type("name", name, str)
-    verify_type("key", key, str)
+    verify_type("key", key, (str, type(None)))
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("visibility", visibility, str)
     verify_type("description", description, (str, type(None)))
@@ -165,34 +165,43 @@ def create_project(
     backend_client = _get_backend_client(api_token=api_token)
     workspace, name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{name}"
-
-    try:
-        workspaces = (
-            backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS).response().result
-        )
-        workspace_name_to_id = {f"{f.name}": f.id for f in workspaces}
-    except HTTPNotFound:
-        raise WorkspaceNotFound(workspace=workspace)
-
-    if workspace not in workspace_name_to_id:
-        raise WorkspaceNotFound(workspace=workspace)
+    workspace_id = _get_workspace_id(backend_client, workspace)
 
     params = {
         "projectToCreate": {
             "name": name,
             "description": description,
             "projectKey": key,
-            "organizationId": workspace_name_to_id[workspace],
+            "organizationId": workspace_id,
             "visibility": ProjectVisibilityDTO.from_str(visibility).value,
         },
         **DEFAULT_REQUEST_KWARGS,
     }
 
+    project_response = _create_project(backend_client, project_qualified_name, params)
+
+    return normalize_project_name(
+        name=project_response.result.name, workspace=project_response.result.organizationName
+    )
+
+
+def _get_workspace_id(backend_client, workspace) -> str:
+    workspaces = _get_workspaces(backend_client)
+    workspace_name_to_id = {f"{f.name}": f.id for f in workspaces}
+    if workspace not in workspace_name_to_id:
+        raise WorkspaceNotFound(workspace=workspace)
+    return workspace_name_to_id[workspace]
+
+
+@with_api_exceptions_handler
+def _get_workspaces(backend_client):
+    return backend_client.api.listOrganizations(**DEFAULT_REQUEST_KWARGS).response().result
+
+
+@with_api_exceptions_handler
+def _create_project(backend_client, project_qualified_name: str, params: dict):
     try:
-        response = backend_client.api.createProject(**params).response()
-        return normalize_project_name(
-            name=response.result.name, workspace=response.result.organizationName
-        )
+        return backend_client.api.createProject(**params).response()
     except HTTPBadRequest as e:
         validation_errors = parse_validation_errors(error=e)
         if "ERR_NOT_UNIQUE" in validation_errors:

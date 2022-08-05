@@ -103,9 +103,8 @@ def a_key():
 
 def a_project_name(project_slug: str):
     project_name = f"e2e-{datetime.now().strftime('%Y%m%d-%H%M')}-{project_slug}"
-    project_key = a_key()
 
-    return project_name, project_key
+    return project_name
 
 
 class RawEnvironment:
