@@ -153,8 +153,9 @@ def _matplotlib_to_plotly(chart):
         raise PlotlyIncompatibilityException(
             matplotlib_version,
             plotly_version,
-            "Downgrade matplotlib to version 3.2, upgrade plotly to 5.0+ or use as_image to log static chart."
-            " See https://stackoverflow.com/q/63120058 for details.",
+            "Downgrade Matplotlib to version 3.2, upgrade Plotly to 5.0+, or upload the chart as a static "
+            "image: run['chart'].upload(File.as_image(plotly_chart)). "
+            "For details, see https://github.com/plotly/plotly.py/issues/1568.",
         )
 
     with warnings.catch_warnings():
@@ -170,7 +171,7 @@ def _matplotlib_to_plotly(chart):
                 raise PlotlyIncompatibilityException(
                     matplotlib_version,
                     plotly_version,
-                    "Due to plotly using some deprecated matplotlib methods, we recommend downgrading matplotlib"
+                    "Due to Plotly using some deprecated Matplotlib methods, we recommend downgrading Matplotlib"
                     " to version 3.4. See https://github.com/plotly/plotly.py/issues/3624 for details.",
                 ) from e
             raise e
