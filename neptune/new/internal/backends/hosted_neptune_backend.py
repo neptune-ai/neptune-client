@@ -26,6 +26,7 @@ from bravado.exception import (
 )
 
 from neptune.new.exceptions import (
+    AmbiguousProjectName,
     ArtifactNotFoundException,
     ClientHttpError,
     ContainerUUIDNotFound,
@@ -38,7 +39,6 @@ from neptune.new.exceptions import (
     NeptuneLegacyProjectException,
     NeptuneLimitExceedException,
     NeptuneObjectCreationConflict,
-    ProjectNameCollision,
     ProjectNotFound,
     ProjectNotFoundWithSuggestions,
 )
@@ -186,7 +186,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                     project = available_projects[0]
                     project_id = f"{project.workspace}/{project.name}"
                 elif len(available_projects) > 1:
-                    raise ProjectNameCollision(
+                    raise AmbiguousProjectName(
                         project_id=project_id, available_projects=available_projects
                     )
                 else:

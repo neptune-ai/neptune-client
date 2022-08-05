@@ -3,6 +3,10 @@
 ## Features
 - Added `NEPTUNE_MODE` environment variable ([#928](https://github.com/neptune-ai/neptune-client/pull/928))
 - Added support of Service account management ([#927](https://github.com/neptune-ai/neptune-client/pull/927))
+- Dedicated exceptions for collision and validation errors in `create_project()` ([#965](https://github.com/neptune-ai/neptune-client/pull/965))
+
+### Breaking changes
+- Former `ProjectNameCollision` exception renamed to AmbiguousProjectName ([#965](https://github.com/neptune-ai/neptune-client/pull/965))
 
 ## neptune-client 0.16.4
 

@@ -134,6 +134,26 @@ class ServiceAccountNotFound(ManagementOperationFailure):
     )
 
 
+class ProjectKeyCollision(ManagementOperationFailure):
+    code = 17
+    description = 'Project with key "{key}" already exists.'
+
+
+class ProjectNameCollision(ManagementOperationFailure):
+    code = 18
+    description = 'Project with name "{name}" already exists.'
+
+
+class ProjectKeyInvalid(ManagementOperationFailure):
+    code = 19
+    description = 'Invalid project key "{key}": {reason}'
+
+
+class ProjectNameInvalid(ManagementOperationFailure):
+    code = 20
+    description = 'Invalid project name "{name}": {reason}'
+
+
 class BadRequestException(ManagementOperationFailure):
     code = 400
     description = (
