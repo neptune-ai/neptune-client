@@ -282,7 +282,7 @@ from neptune.new.exceptions import NeptuneUnsupportedArtifactFunctionalityExcept
 from neptune.new.exceptions import OperationNotSupported
 from neptune.new.exceptions import PlotlyIncompatibilityException
 from neptune.new.exceptions import Project
-from neptune.new.exceptions import ProjectNameCollision
+from neptune.new.exceptions import AmbiguousProjectName
 from neptune.new.exceptions import ProjectNotFound
 from neptune.new.exceptions import RunNotFound
 from neptune.new.exceptions import RunUUIDNotFound
