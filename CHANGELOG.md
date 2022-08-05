@@ -3,6 +3,7 @@
 ## Features
 - Added `NEPTUNE_MODE` environment variable ([#928](https://github.com/neptune-ai/neptune-client/pull/928))
 - Added support of Service account management ([#927](https://github.com/neptune-ai/neptune-client/pull/927))
+- More informational exception due to plotly and matplotlib incompatibility ([#960](https://github.com/neptune-ai/neptune-client/pull/960))
 - Dedicated exceptions for collision and validation errors in `create_project()` ([#965](https://github.com/neptune-ai/neptune-client/pull/965))
 
 ### Breaking changes

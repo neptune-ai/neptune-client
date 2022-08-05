@@ -142,12 +142,21 @@ def _matplotlib_to_plotly(chart):
     # E.g. when trying to convert a Seaborn confusion matrix or a hist2d, it emits a UserWarning with message
     # "Dang! That path collection is out of this world. I totally don't know what to do with it yet!
     # Plotly can only import path collections linked to 'data' coordinates"
+    #
+    # Plotly is not compatible with the latest matplotlib (3.5.0+)
+    # due to fact that mpl_to_plotly uses deprecated matplotlib functionalities
     plotly_version = plotly.__version__
     matplotlib_version = matplotlib.__version__
     if version.parse(matplotlib_version) >= version.parse("3.3.0") and version.parse(
         plotly_version
     ) < version.parse("5.0.0"):
-        raise PlotlyIncompatibilityException(matplotlib_version, plotly_version)
+        raise PlotlyIncompatibilityException(
+            matplotlib_version,
+            plotly_version,
+            "Downgrade matplotlib to version 3.2, upgrade plotly to 5.0+, or upload the chart as a static "
+            "image: run['chart'].upload(File.as_image(plotly_chart)). "
+            "For details, see https://github.com/plotly/plotly.py/issues/1568.",
+        )
 
     with warnings.catch_warnings():
         warnings.filterwarnings(
@@ -155,7 +164,17 @@ def _matplotlib_to_plotly(chart):
             category=UserWarning,
             message=".*Plotly can only import path collections linked to 'data' coordinates.*",
         )
-        chart = plotly.tools.mpl_to_plotly(chart)
+        try:
+            chart = plotly.tools.mpl_to_plotly(chart)
+        except AttributeError as e:
+            if "'PathCollection' object has no attribute 'get_offset_position'" in str(e):
+                raise PlotlyIncompatibilityException(
+                    matplotlib_version,
+                    plotly_version,
+                    "Due to plotly using some deprecated matplotlib methods, we recommend downgrading matplotlib"
+                    " to version 3.4. See https://github.com/plotly/plotly.py/issues/3624 for details.",
+                ) from e
+            raise e
 
     return chart
 
