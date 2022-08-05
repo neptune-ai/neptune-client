@@ -18,7 +18,7 @@ import pandas as pd
 import pytest
 import torch
 from faker import Faker
-from transformers import Trainer, TrainingArguments
+from transformers import PretrainedConfig, PreTrainedModel, Trainer, TrainingArguments
 from transformers.integrations import NeptuneCallback
 from transformers.utils import logging
 
@@ -33,30 +33,29 @@ logging.set_verbosity_error()
 fake = Faker()
 
 
-class RegressionModel(torch.nn.Module):
-    def __init__(self, initial_a=0, initial_b=0):
-        super().__init__()
+class RegressionModelConfig(PretrainedConfig):
+    def __init__(self, a=2, b=3, **kwargs):
+        super().__init__(**kwargs)
+        self.a = a
+        self.b = b
 
-        self._initial_a = initial_a
-        self._initial_b = initial_b
 
+class RegressionPreTrainedModel(PreTrainedModel):
+    config_class = RegressionModelConfig
+    base_model_prefix = "regression"
+
+    def __init__(self, config):
+        super().__init__(config)
         # pylint: disable=no-member
-        self.a = torch.nn.Parameter(torch.tensor(initial_a).float())
-        self.b = torch.nn.Parameter(torch.tensor(initial_b).float())
+        self.a = torch.nn.Parameter(torch.tensor(config.a).float())
+        self.b = torch.nn.Parameter(torch.tensor(config.b).float())
 
     def forward(self, input_x, labels=None):
         y = input_x * self.a + self.b
-
         if labels is None:
             return (y,)
-
         loss = torch.nn.functional.mse_loss(y, labels)
-
         return loss, y
-
-    @property
-    def config(self):
-        return pd.DataFrame([["a", self._initial_a], ["b", self._initial_a]])
 
 
 class RegressionDataset:
@@ -84,7 +83,8 @@ class RegressionDataset:
 class TestHuggingFace(BaseE2ETest):
     @property
     def _trainer_default_attributes(self):
-        model = RegressionModel(initial_a=2, initial_b=3)
+        config = RegressionModelConfig()
+        model = RegressionPreTrainedModel(config)
         train_dataset = RegressionDataset(length=32)
         validation_dataset = RegressionDataset(length=16)
 
@@ -177,7 +177,14 @@ class TestHuggingFace(BaseE2ETest):
             run.sync()
 
             assert run.exists(f"{base_namespace}/trainer_parameters")
+            assert run.exists(f"{base_namespace}/num_train_epochs")
+            assert run[f"{base_namespace}/num_train_epochs"] == 1000
+
             assert run.exists(f"{base_namespace}/model_parameters")
+            assert run.exists(f"{base_namespace}/model_parameters/a")
+            assert run.exists(f"{base_namespace}/model_parameters/b")
+            assert run[f"{base_namespace}/model_parameters/a"].fetch() == 2
+            assert run[f"{base_namespace}/model_parameters/b"].fetch() == 3
 
         with init_run(project=environment.project, api_token=environment.user_token) as run:
             callback = NeptuneCallback(run=run, log_parameters=False)
