@@ -109,20 +109,6 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     ]
 
 
-def _get_projects_keys_in_organization(
-    workspace_id: str, api_token: Optional[str] = None
-) -> Set[str]:
-    """Get a list of project's keys you have access to."""
-    verify_type("api_token", api_token, (str, type(None)))
-    params = {
-        "organizationIdentifier": workspace_id,
-        "sortBy": ["lastViewed"],
-        **DEFAULT_REQUEST_KWARGS,
-    }
-    projects = _get_projects(params, api_token)
-    return {response_project.projectKey for response_project in projects}
-
-
 @with_api_exceptions_handler
 def _get_projects(params, api_token: Optional[str] = None) -> List:
     verify_type("api_token", api_token, (str, type(None)))
