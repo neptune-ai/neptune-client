@@ -291,13 +291,13 @@ You may also want to check the following docs pages:
         )
 
 
-class ProjectNameCollision(ExceptionWithProjectsWorkspacesListing):
+class AmbiguousProjectName(ExceptionWithProjectsWorkspacesListing):
     def __init__(self, project_id: str, available_projects: List[Project] = ()):
         message = """
 {h1}
 ----NeptuneProjectNameCollisionException------------------------------------
 {end}
-Cannot resolve project {fail}"{project}"{end}.
+Cannot resolve project {fail}"{project}"{end}. Name is ambiguous.
 {available_projects_message}
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/projects

@@ -19,6 +19,12 @@ from typing import Optional
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
+from neptune.management.exceptions import (
+    ProjectKeyCollision,
+    ProjectKeyInvalid,
+    ProjectNameCollision,
+    ProjectNameInvalid,
+)
 from neptune.new.exceptions import (
     NeptuneFieldCountLimitExceedException,
     NeptuneLimitExceedException,
@@ -28,6 +34,10 @@ from neptune.new.exceptions import (
 class ApiMethodWrapper:
     ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED = "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED"
     WORKSPACE_IN_READ_ONLY_MODE = "WORKSPACE_IN_READ_ONLY_MODE"
+    PROJECT_KEY_COLLISION = "PROJECT_KEY_COLLISION"
+    PROJECT_NAME_COLLISION = "PROJECT_NAME_COLLISION"
+    PROJECT_KEY_INVALID = "PROJECT_KEY_INVALID"
+    PROJECT_NAME_INVALID = "PROJECT_NAME_INVALID"
 
     def __init__(self, api_method):
         self._api_method = api_method
@@ -49,6 +59,18 @@ class ApiMethodWrapper:
         elif error_type == ApiMethodWrapper.WORKSPACE_IN_READ_ONLY_MODE:
             raise NeptuneLimitExceedException(
                 reason=body.get("title", "Unknown reason")
+            ) from exception
+        elif error_type == ApiMethodWrapper.PROJECT_KEY_COLLISION:
+            raise ProjectKeyCollision(key=body.get("key", "<unknown key>")) from exception
+        elif error_type == ApiMethodWrapper.PROJECT_NAME_COLLISION:
+            raise ProjectNameCollision(name=body.get("name", "<unknown name>")) from exception
+        elif error_type == ApiMethodWrapper.PROJECT_KEY_INVALID:
+            raise ProjectKeyInvalid(
+                key=body.get("key", "<unknown key>"), reason=body.get("reason", "Unknown reason")
+            ) from exception
+        elif error_type == ApiMethodWrapper.PROJECT_NAME_INVALID:
+            raise ProjectNameInvalid(
+                name=body.get("name", "<unknown name>"), reason=body.get("reason", "Unknown reason")
             ) from exception
         elif exception:
             raise exception
