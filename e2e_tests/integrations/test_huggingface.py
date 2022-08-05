@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import numpy as np
-import pandas as pd
 import pytest
 import torch
 from faker import Faker
@@ -177,8 +176,8 @@ class TestHuggingFace(BaseE2ETest):
             run.sync()
 
             assert run.exists(f"{base_namespace}/trainer_parameters")
-            assert run.exists(f"{base_namespace}/num_train_epochs")
-            assert run[f"{base_namespace}/num_train_epochs"] == 1000
+            assert run.exists(f"{base_namespace}/trainer_parameters/num_train_epochs")
+            assert run[f"{base_namespace}/trainer_parameters/num_train_epochs"].fetch() == 1000
 
             assert run.exists(f"{base_namespace}/model_parameters")
             assert run.exists(f"{base_namespace}/model_parameters/a")
