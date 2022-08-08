@@ -227,7 +227,7 @@ class TestManagement(BaseE2ETest):
         assert project_identifier not in get_project_list(api_token=environment.admin_token)
 
     def test_create_project(self, environment: "Environment"):
-        project_name, project_key = a_project_name(project_slug=f"{fake.slug()}-create")
+        project_name = a_project_name(project_slug=f"{fake.slug()}-create")
         project_identifier = normalize_project_name(
             name=project_name, workspace=environment.workspace
         )
@@ -243,7 +243,6 @@ class TestManagement(BaseE2ETest):
 
         created_project_identifier = create_project(
             name=project_name,
-            key=project_key,
             workspace=environment.workspace,
             api_token=environment.user_token,
         )
@@ -332,14 +331,13 @@ class TestManagement(BaseE2ETest):
         )
 
     def test_invite_as_non_admin(self, environment: "Environment"):
-        project_name, project_key = a_project_name(project_slug=f"{fake.slug()}-invitation")
+        project_name = a_project_name(project_slug=f"{fake.slug()}-invitation")
         project_identifier = normalize_project_name(
             name=project_name, workspace=environment.workspace
         )
 
         created_project_identifier = create_project(
             name=project_name,
-            key=project_key,
             workspace=environment.workspace,
             api_token=environment.user_token,
         )
