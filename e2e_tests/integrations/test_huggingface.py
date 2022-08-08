@@ -171,7 +171,7 @@ class TestHuggingFace(BaseE2ETest):
         with pytest.raises(Exception):
             NeptuneCallback.get_run(trainer)
 
-    def _test(self, environment, pre, post):
+    def _test_with_run_initialization(self, environment, pre, post):
         with init_run(project=environment.project, api_token=environment.user_token) as run:
             run_id = run["sys/id"].fetch()
             pre(run)
@@ -204,7 +204,7 @@ class TestHuggingFace(BaseE2ETest):
             assert run[f"{base_namespace}/model_parameters/a"].fetch() == 2
             assert run[f"{base_namespace}/model_parameters/b"].fetch() == 3
 
-        self._test(environment, run_test, assert_metadata_structure)
+        self._test_with_run_initialization(environment, run_test, assert_metadata_structure)
 
     def test_log_parameters_disabled(self, environment):
         def run_test(run):
@@ -216,7 +216,7 @@ class TestHuggingFace(BaseE2ETest):
             assert not run.exists("finetuning/trainer_parameters")
             assert not run.exists("finetuning/model_parameters")
 
-        self._test(environment, run_test, assert_metadata_structure)
+        self._test_with_run_initialization(environment, run_test, assert_metadata_structure)
 
     def test_log_with_custom_base_namespace(self, environment):
         base_namespace = "just/a/sample/path"
@@ -243,7 +243,7 @@ class TestHuggingFace(BaseE2ETest):
             assert run[f"{base_namespace}/train/another/metric"].fetch_last() == 0.2
             assert run[f"{base_namespace}/train/after_training_metric"].fetch_last() == 2501
 
-        self._test(environment, run_test, assert_metadata_structure)
+        self._test_with_run_initialization(environment, run_test, assert_metadata_structure)
 
     def test_integration_version_is_logged(self, environment):
         def run_test(run):
@@ -254,7 +254,7 @@ class TestHuggingFace(BaseE2ETest):
         def assert_metadata_structure(run):
             assert run.exists("source_code/integrations/transformers")
 
-        self._test(environment, run_test, assert_metadata_structure)
+        self._test_with_run_initialization(environment, run_test, assert_metadata_structure)
 
     def test_non_monitoring_runs_creation(self, environment):
         # given
