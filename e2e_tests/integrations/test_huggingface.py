@@ -118,6 +118,7 @@ class TestHuggingFace(BaseE2ETest):
         for _ in range(expected_times):
             trainer.train()
 
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
         assert len(project.fetch_runs_table(tag=common_tag).to_rows()) == expected_times
 
     def test_runtime_factor(self, environment):
@@ -178,6 +179,7 @@ class TestHuggingFace(BaseE2ETest):
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
         run = init_run(
             run=run_id,
             project=environment.project,
@@ -186,7 +188,7 @@ class TestHuggingFace(BaseE2ETest):
         )
         assert run.exists(f"{base_namespace}/trainer_parameters")
         assert run.exists(f"{base_namespace}/trainer_parameters/num_train_epochs")
-        assert run[f"{base_namespace}/trainer_parameters/num_train_epochs"].fetch() == 1000
+        assert run[f"{base_namespace}/trainer_parameters/num_train_epochs"].fetch() == 500
 
         assert run.exists(f"{base_namespace}/model_parameters")
         assert run.exists(f"{base_namespace}/model_parameters/a")
@@ -200,6 +202,7 @@ class TestHuggingFace(BaseE2ETest):
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
         run = init_run(
             run=run_id,
             project=environment.project,
@@ -247,6 +250,7 @@ class TestHuggingFace(BaseE2ETest):
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
         run = init_run(
             run=run_id,
             project=environment.project,
