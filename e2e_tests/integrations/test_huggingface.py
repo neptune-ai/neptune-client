@@ -171,51 +171,57 @@ class TestHuggingFace(BaseE2ETest):
         with pytest.raises(Exception):
             NeptuneCallback.get_run(trainer)
 
-    def test_log_parameters_indicator(self, environment):
+    def _test(self, environment, pre, post):
         with init_run(project=environment.project, api_token=environment.user_token) as run:
             run_id = run["sys/id"].fetch()
-            base_namespace = "custom/base/path"
+            pre(run)
+
+        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
+        run = init_run(
+            run=run_id,
+            project=environment.project,
+            api_token=environment.user_token,
+            mode="read-only",
+        )
+        post(run)
+
+    def test_log_parameters_with_base_namespace(self, environment):
+        base_namespace = "custom/base/path"
+
+        def run_test(run):
             callback = NeptuneCallback(run=run, base_namespace=base_namespace)
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
-        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
-        )
-        assert run.exists(f"{base_namespace}/trainer_parameters")
-        assert run.exists(f"{base_namespace}/trainer_parameters/num_train_epochs")
-        assert run[f"{base_namespace}/trainer_parameters/num_train_epochs"].fetch() == 500
+        def assert_metadata_structure(run):
+            assert run.exists(f"{base_namespace}/trainer_parameters")
+            assert run.exists(f"{base_namespace}/trainer_parameters/num_train_epochs")
+            assert run[f"{base_namespace}/trainer_parameters/num_train_epochs"].fetch() == 500
 
-        assert run.exists(f"{base_namespace}/model_parameters")
-        assert run.exists(f"{base_namespace}/model_parameters/a")
-        assert run.exists(f"{base_namespace}/model_parameters/b")
-        assert run[f"{base_namespace}/model_parameters/a"].fetch() == 2
-        assert run[f"{base_namespace}/model_parameters/b"].fetch() == 3
+            assert run.exists(f"{base_namespace}/model_parameters")
+            assert run.exists(f"{base_namespace}/model_parameters/a")
+            assert run.exists(f"{base_namespace}/model_parameters/b")
+            assert run[f"{base_namespace}/model_parameters/a"].fetch() == 2
+            assert run[f"{base_namespace}/model_parameters/b"].fetch() == 3
 
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
+        self._test(environment, run_test, assert_metadata_structure)
+
+    def test_log_parameters_disabled(self, environment):
+        def run_test(run):
             callback = NeptuneCallback(run=run, log_parameters=False)
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
-        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
-        )
-        assert not run.exists("finetuning/trainer_parameters")
-        assert not run.exists("finetuning/model_parameters")
+        def assert_metadata_structure(run):
+            assert not run.exists("finetuning/trainer_parameters")
+            assert not run.exists("finetuning/model_parameters")
+
+        self._test(environment, run_test, assert_metadata_structure)
 
     def test_log_with_custom_base_namespace(self, environment):
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
-            base_namespace = "just/a/sample/path"
+        base_namespace = "just/a/sample/path"
+
+        def run_test(run):
             callback = NeptuneCallback(
                 run=run,
                 base_namespace=base_namespace,
@@ -227,37 +233,28 @@ class TestHuggingFace(BaseE2ETest):
             trainer.train()
             trainer.log({"after_training_metric": 2501})
 
-        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
-        )
-        assert run.exists(f"{base_namespace}/train")
-        assert run.exists(f"{base_namespace}/train/metric1")
-        assert run.exists(f"{base_namespace}/train/another/metric")
-        assert run.exists(f"{base_namespace}/train/after_training_metric")
+        def assert_metadata_structure(run):
+            assert run.exists(f"{base_namespace}/train")
+            assert run.exists(f"{base_namespace}/train/metric1")
+            assert run.exists(f"{base_namespace}/train/another/metric")
+            assert run.exists(f"{base_namespace}/train/after_training_metric")
 
-        assert run[f"{base_namespace}/train/metric1"].fetch_last() == 123
-        assert run[f"{base_namespace}/train/another/metric"].fetch_last() == 0.2
-        assert run[f"{base_namespace}/train/after_training_metric"].fetch_last() == 2501
+            assert run[f"{base_namespace}/train/metric1"].fetch_last() == 123
+            assert run[f"{base_namespace}/train/another/metric"].fetch_last() == 0.2
+            assert run[f"{base_namespace}/train/after_training_metric"].fetch_last() == 2501
+
+        self._test(environment, run_test, assert_metadata_structure)
 
     def test_integration_version_is_logged(self, environment):
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
+        def run_test(run):
             callback = NeptuneCallback(run=run)
             trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
             trainer.train()
 
-        time.sleep(SECONDS_TO_WAIT_FOR_UPDATE)
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
-        )
-        assert run.exists("source_code/integrations/transformers")
+        def assert_metadata_structure(run):
+            assert run.exists("source_code/integrations/transformers")
+
+        self._test(environment, run_test, assert_metadata_structure)
 
     def test_non_monitoring_runs_creation(self, environment):
         # given
