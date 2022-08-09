@@ -346,11 +346,17 @@ class TestManagement(BaseE2ETest):
         assert created_project_identifier in get_project_list(api_token=environment.user_token)
 
         # user who created a project (`user_token` owner) will be automatically project owner
-        sa_is_project_owner = environment.service_account in get_project_service_account_list(
-            name=created_project_identifier, api_token=environment.user_token
+        sa_is_project_owner = (
+            get_project_service_account_list(
+                name=created_project_identifier, api_token=environment.user_token
+            ).get(environment.service_account)
+            == "owner"
         )
-        user_is_project_owner = environment.user in get_project_service_account_list(
-            name=created_project_identifier, api_token=environment.user_token
+        user_is_project_owner = (
+            get_project_member_list(
+                name=created_project_identifier, api_token=environment.user_token
+            ).get(environment.user)
+            == "owner"
         )
         if sa_is_project_owner and not user_is_project_owner:
             # SA has access to project, so tests are run as SA
