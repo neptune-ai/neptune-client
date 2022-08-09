@@ -465,105 +465,95 @@ class TestHuggingFace(BaseE2ETest):
         ]
 
     def test_model_checkpoints_same(self, environment):
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
+        def run_test(run):
             callback = NeptuneCallback(run=run, log_checkpoints="same")
-            training_args = self._trainer_default_attributes.copy()
+            training_args = self._trainer_default_attributes
             training_args["args"] = TrainingArguments(
                 "model", report_to=[], num_train_epochs=500, save_steps=1000, save_strategy="steps"
             )
             trainer = Trainer(**training_args, callbacks=[callback])
             trainer.train()
 
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
+        def assert_metadata_structure(run):
+            assert run.exists("finetuning/checkpoints")
+            assert run["finetuning/train/epoch"].fetch_last() == 500
+            with tmp_context():
+                run["finetuning/checkpoints"].download("checkpoints.zip")
+
+                with ZipFile("checkpoints.zip") as handler:
+                    assert set([os.path.dirname(x) for x in handler.namelist()]) == {
+                        "/",
+                        "model",
+                        "model/checkpoint-1000",
+                        "model/checkpoint-2000",
+                    }
+                    handler.extractall(".")
+
+        self._test_with_run_initialization(
+            environment, pre=run_test, post=assert_metadata_structure
         )
 
-        assert run.exists("finetuning/checkpoints")
-        assert run["finetuning/train/epoch"].fetch_last() == 500
-        with tmp_context():
-            run["finetuning/checkpoints"].download("checkpoints.zip")
-
-            with ZipFile("checkpoints.zip") as handler:
-                assert set([os.path.dirname(x) for x in handler.namelist()]) == {
-                    "/",
-                    "model",
-                    "model/checkpoint-1000",
-                    "model/checkpoint-2000",
-                }
-                handler.extractall(".")
-
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
+        def run_test(run):
             callback = NeptuneCallback(run=run)
-            training_args = self._trainer_default_attributes.copy()
+            training_args = self._trainer_default_attributes
             training_args["args"] = TrainingArguments("model", report_to=[], num_train_epochs=1000)
             trainer = Trainer(**training_args, callbacks=[callback])
             trainer.train(resume_from_checkpoint="model/checkpoint-2000")
 
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
+        def assert_metadata_structure(run):
+            assert run["finetuning/train/epoch"].fetch_last() == 1000
+
+        self._test_with_run_initialization(
+            environment, pre=run_test, post=assert_metadata_structure
         )
-        assert run["finetuning/train/epoch"].fetch_last() == 1000
 
     def test_model_checkpoints_last(self, environment):
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
+        def run_test(run):
             callback = NeptuneCallback(run=run, log_checkpoints="last")
-            training_args = self._trainer_default_attributes.copy()
+            training_args = self._trainer_default_attributes
             training_args["args"] = TrainingArguments(
                 "model", report_to=[], num_train_epochs=500, save_steps=500, save_strategy="steps"
             )
             trainer = Trainer(**training_args, callbacks=[callback])
             trainer.train()
 
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
+        def assert_metadata_structure(run):
+            assert run.exists("finetuning/checkpoints")
+            assert run.exists("finetuning/checkpoints/last")
+            assert run["finetuning/train/epoch"].fetch_last() == 500
+            with tmp_context():
+                run["finetuning/checkpoints/last"].download("checkpoints.zip")
+
+                with ZipFile("checkpoints.zip") as handler:
+                    assert set([os.path.dirname(x) for x in handler.namelist()]) == {
+                        "/",
+                        "model",
+                        "model/checkpoint-2000",
+                    }
+                    handler.extractall(".")
+
+        self._test_with_run_initialization(
+            environment, pre=run_test, post=assert_metadata_structure
         )
 
-        assert run.exists("finetuning/checkpoints")
-        assert run.exists("finetuning/checkpoints/last")
-        assert run["finetuning/train/epoch"].fetch_last() == 500
-        with tmp_context():
-            run["finetuning/checkpoints/last"].download("checkpoints.zip")
-
-            with ZipFile("checkpoints.zip") as handler:
-                assert set([os.path.dirname(x) for x in handler.namelist()]) == {
-                    "/",
-                    "model",
-                    "model/checkpoint-2000",
-                }
-                handler.extractall(".")
-
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
+        def run_test(run):
             callback = NeptuneCallback(run=run)
-            training_args = self._trainer_default_attributes.copy()
+            training_args = self._trainer_default_attributes
             training_args["args"] = TrainingArguments("model", report_to=[], num_train_epochs=1000)
             trainer = Trainer(**training_args, callbacks=[callback])
             trainer.train(resume_from_checkpoint="model/checkpoint-2000")
 
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
+        def assert_metadata_structure(run):
+            assert run["finetuning/train/epoch"].fetch_last() == 1000
+
+        self._test_with_run_initialization(
+            environment, pre=run_test, post=assert_metadata_structure
         )
-        assert run["finetuning/train/epoch"].fetch_last() == 1000
 
     def test_model_checkpoints_best_invalid_load_best_model_at_end(self, environment):
         with init_run(project=environment.project, api_token=environment.user_token) as run:
             callback = NeptuneCallback(run=run, log_checkpoints="best")
-            training_args = self._trainer_default_attributes.copy()
+            training_args = self._trainer_default_attributes
             training_args["args"] = TrainingArguments(
                 "model",
                 report_to=[],
@@ -579,57 +569,56 @@ class TestHuggingFace(BaseE2ETest):
                 Trainer(**training_args, callbacks=[callback])
 
     def test_model_checkpoints_best(self, environment):
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
-            callback = NeptuneCallback(run=run, log_checkpoints="best")
-            training_args = self._trainer_default_attributes.copy()
-            training_args["args"] = TrainingArguments(
-                "model",
-                report_to=[],
-                num_train_epochs=500,
-                learning_rate=0.5,
-                save_steps=500,
-                save_strategy="steps",
-                load_best_model_at_end=True,
-                evaluation_strategy="steps",
-                eval_steps=500,
-            )
-            trainer = Trainer(**training_args, callbacks=[callback])
-            trainer.train()
-
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
-        )
-
-        assert run.exists("finetuning/checkpoints")
-        assert run.exists("finetuning/checkpoints/best")
-        assert run["finetuning/train/epoch"].fetch_last() == 500
         with tmp_context():
-            run["finetuning/checkpoints/best"].download("checkpoints.zip")
 
-            with ZipFile("checkpoints.zip") as handler:
-                dirs_in_zip = set([os.path.dirname(x) for x in handler.namelist()])
-                checkpoint_path = max(dirs_in_zip)
+            def run_test(run):
+                callback = NeptuneCallback(run=run, log_checkpoints="best")
+                training_args = self._trainer_default_attributes
+                training_args["args"] = TrainingArguments(
+                    "model",
+                    report_to=[],
+                    num_train_epochs=500,
+                    learning_rate=0.5,
+                    save_steps=500,
+                    save_strategy="steps",
+                    load_best_model_at_end=True,
+                    evaluation_strategy="steps",
+                    eval_steps=500,
+                )
+                trainer = Trainer(**training_args, callbacks=[callback])
+                trainer.train()
 
-                assert len(dirs_in_zip) == 3
+            def assert_metadata_structure(run):
+                assert run.exists("finetuning/checkpoints")
+                assert run.exists("finetuning/checkpoints/best")
+                assert run["finetuning/train/epoch"].fetch_last() == 500
 
-                handler.extractall(".")
+                run["finetuning/checkpoints/best"].download("checkpoints.zip")
 
-        with init_run(project=environment.project, api_token=environment.user_token) as run:
-            run_id = run["sys/id"].fetch()
-            callback = NeptuneCallback(run=run)
-            training_args = self._trainer_default_attributes.copy()
-            training_args["args"] = TrainingArguments("model", report_to=[], num_train_epochs=1000)
-            trainer = Trainer(**training_args, callbacks=[callback])
-            trainer.train(resume_from_checkpoint=checkpoint_path)
+                with ZipFile("checkpoints.zip") as handler:
+                    dirs_in_zip = set([os.path.dirname(x) for x in handler.namelist()])
 
-        run = init_run(
-            run=run_id,
-            project=environment.project,
-            api_token=environment.user_token,
-            mode="read-only",
-        )
-        assert run["finetuning/train/epoch"].fetch_last() == 1000
+                    assert len(dirs_in_zip) == 3
+
+                    handler.extractall(".")
+
+            self._test_with_run_initialization(
+                environment, pre=run_test, post=assert_metadata_structure
+            )
+
+            def run_test(run):
+                callback = NeptuneCallback(run=run)
+                training_args = self._trainer_default_attributes
+                training_args["args"] = TrainingArguments(
+                    "model", report_to=[], num_train_epochs=1000
+                )
+                trainer = Trainer(**training_args, callbacks=[callback])
+                checkpoint_id = max(os.listdir("model"))
+                trainer.train(resume_from_checkpoint=f"model/{checkpoint_id}")
+
+            def assert_metadata_structure(run):
+                assert run["finetuning/train/epoch"].fetch_last() == 1000
+
+            self._test_with_run_initialization(
+                environment, pre=run_test, post=assert_metadata_structure
+            )
