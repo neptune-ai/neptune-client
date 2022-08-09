@@ -8,4 +8,4 @@ pytorch-lightning!=1.7.0 # PTL introduced a bug that made neptune integration un
 torchvision
 sklearn
 # Update it with `transformers` after release
-git+https://github.com/neptune-ai/transformers.git@rj/logging-metadata#egg=transformers
+git+https://github.com/neptune-ai/transformers.git@dev#egg=transformers
