@@ -524,26 +524,37 @@ class TestHuggingFace(BaseE2ETest):
             environment, pre=run_test, post=assert_metadata_structure
         )
 
-    def test_model_checkpoints_same(self, environment):
+    @pytest.mark.parametrize(
+        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
+    )
+    def test_model_checkpoints_same(self, environment, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(
                 environment=environment,
                 log_checkpoints="same",
                 expected_checkpoints={"model/checkpoint-1000", "model/checkpoint-2000"},
+                additional_training_args=checkpoint_settings
             )
             self._test_restore_from_checkpoint(environment=environment)
 
-    def test_model_checkpoints_last(self, environment):
+    @pytest.mark.parametrize(
+        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
+    )
+    def test_model_checkpoints_last(self, environment, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(
                 environment=environment,
                 log_checkpoints="last",
                 expected_checkpoints={"model/checkpoint-2000"},
                 checkpoints_key="last",
+                additional_training_args=checkpoint_settings
             )
             self._test_restore_from_checkpoint(environment=environment)
 
-    def test_model_checkpoints_best(self, environment):
+    @pytest.mark.parametrize(
+        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
+    )
+    def test_model_checkpoints_best(self, environment, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(
                 environment=environment,
@@ -552,6 +563,7 @@ class TestHuggingFace(BaseE2ETest):
                     "load_best_model_at_end": True,
                     "evaluation_strategy": "steps",
                     "eval_steps": 500,
+                    **checkpoint_settings
                 },
                 expected_checkpoints={"model/checkpoint-1000"},
                 checkpoints_key="best",
