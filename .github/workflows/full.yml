@@ -4,10 +4,10 @@ on:
     branches:
       - master
     tags:
-      - '*'
+      - "*"
   workflow_dispatch:
   schedule:
-    - cron: '0 4 * * *' # Run every day at arbitrary time (4:00 AM UTC)
+    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -98,6 +98,15 @@ jobs:
         env:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
           NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
+
+      - name: Test Prophet integration
+        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
+        uses: neptune-ai/neptune-prophet/.github/actions/e2e@main
+        with:
+          working_directory: neptune_prophet
+        env:
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_PROJECT: e2e-tests/e2e
 
   notify:
     needs: [lint, test]
