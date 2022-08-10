@@ -291,13 +291,13 @@ You may also want to check the following docs pages:
         )
 
 
-class ProjectNameCollision(ExceptionWithProjectsWorkspacesListing):
+class AmbiguousProjectName(ExceptionWithProjectsWorkspacesListing):
     def __init__(self, project_id: str, available_projects: List[Project] = ()):
         message = """
 {h1}
 ----NeptuneProjectNameCollisionException------------------------------------
 {end}
-Cannot resolve project {fail}"{project}"{end}.
+Cannot resolve project {fail}"{project}"{end}. Name is ambiguous.
 {available_projects_message}
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/projects
@@ -1086,14 +1086,11 @@ You may also want to check the following docs page:
 
 
 class PlotlyIncompatibilityException(Exception):
-    def __init__(self, matplotlib_version, plotly_version):
+    def __init__(self, matplotlib_version, plotly_version, details):
         super().__init__(
             "Unable to convert plotly figure to matplotlib format. "
             "Your matplotlib ({}) and plotlib ({}) versions are not compatible. "
-            "See https://stackoverflow.com/q/63120058 for details. "
-            "Downgrade matplotlib to version 3.2, upgrade plotly to 5.0+ or use as_image to log static chart.".format(
-                matplotlib_version, plotly_version
-            )
+            "{}".format(matplotlib_version, plotly_version, details)
         )
 
 

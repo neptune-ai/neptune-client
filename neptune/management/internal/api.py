@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import os
-from typing import Dict, List, Optional, Set
+from typing import Dict, List, Optional
 
 from bravado.exception import (
     HTTPBadRequest,
@@ -23,7 +23,6 @@ from bravado.exception import (
     HTTPNotFound,
     HTTPUnprocessableEntity,
 )
-from retry import retry
 
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
@@ -48,7 +47,6 @@ from neptune.management.internal.dto import (
 )
 from neptune.management.internal.types import *
 from neptune.management.internal.utils import (
-    ProjectKeyGenerator,
     extract_project_and_workspace,
     normalize_project_name,
 )
@@ -100,12 +98,13 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     https://docs.neptune.ai/api-reference/management
     """
     verify_type("api_token", api_token, (str, type(None)))
+    backend_client = _get_backend_client(api_token=api_token)
     params = {
         "userRelation": "viewerOrHigher",
         "sortBy": ["lastViewed"],
         **DEFAULT_REQUEST_KWARGS,
     }
-    projects = _get_projects(params, api_token)
+    projects = _get_projects(backend_client, params)
 
     return [
         normalize_project_name(name=project.name, workspace=project.organizationName)
@@ -113,28 +112,11 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     ]
 
 
-def _get_projects_keys_in_organization(
-    workspace_id: str, api_token: Optional[str] = None
-) -> Set[str]:
-    """Get a list of project's keys you have access to."""
-    verify_type("api_token", api_token, (str, type(None)))
-    params = {
-        "organizationIdentifier": workspace_id,
-        "sortBy": ["lastViewed"],
-        **DEFAULT_REQUEST_KWARGS,
-    }
-    projects = _get_projects(params, api_token)
-    return {response_project.projectKey for response_project in projects}
-
-
 @with_api_exceptions_handler
-def _get_projects(params, api_token: Optional[str] = None) -> List:
-    verify_type("api_token", api_token, (str, type(None)))
-    backend_client = _get_backend_client(api_token=api_token)
+def _get_projects(backend_client, params) -> List:
     return backend_client.api.listProjects(**params).response().result.entries
 
 
-@retry(exceptions=ProjectAlreadyExists, tries=3)
 def create_project(
     name: str,
     key: Optional[str] = None,
@@ -146,12 +128,12 @@ def create_project(
     """Creates a new project in a Neptune workspace.
 
     Args:
-        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
-            If you pass the workspace argument, the name argument should only contain 'project-name'
-            instead of 'workspace-name/project-name'.
-        key: Project identifier. Must contain 1-10 upper case letters or numbers. For example, 'CLS'.
-        workspace: Name of your Neptune workspace. If you specify it,
-            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
+        name: The name for the project in Neptune. Can contain letters and hyphens. For example, 'classification'.
+            If you leave out the workspace argument, include the workspace name here,
+            in the form 'workspace-name/project-name'. For example, 'ml-team/classification'.
+        key: Project identifier. Must contain 1-10 upper case letters or numbers (at least one letter).
+            For example, 'CLS2'. If you leave it out, Neptune generates a project key for you.
+        workspace: Name of your Neptune workspace.
             If None, it will be parsed from the name argument.
         visibility: Level of visibility you want your project to have.
             Can be set to:
@@ -193,10 +175,6 @@ def create_project(
     workspace, name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{name}"
     workspace_id = _get_workspace_id(backend_client, workspace)
-
-    if key is None:
-        project_keys = _get_projects_keys_in_organization(workspace_id, api_token)
-        key = ProjectKeyGenerator(name, project_keys).get_default_project_key()
 
     params = {
         "projectToCreate": {

@@ -1,9 +1,14 @@
-## [UNRELEASED] neptune-client 0.16.5
+## neptune-client 0.16.5
 
 ## Features
 - Added `NEPTUNE_MODE` environment variable ([#928](https://github.com/neptune-ai/neptune-client/pull/928))
 - Added support of Service account management ([#927](https://github.com/neptune-ai/neptune-client/pull/927))
+- More informational exception due to plotly and matplotlib incompatibility ([#960](https://github.com/neptune-ai/neptune-client/pull/960))
+- Dedicated exceptions for collision and validation errors in `create_project()` ([#965](https://github.com/neptune-ai/neptune-client/pull/965))
 - Project key is now optional in API. If it is not provided by user it is generated. ([#946](https://github.com/neptune-ai/neptune-client/pull/946))
+
+### Breaking changes
+- Former `ProjectNameCollision` exception renamed to AmbiguousProjectName ([#965](https://github.com/neptune-ai/neptune-client/pull/965))
 
 ## neptune-client 0.16.4
 
