@@ -590,5 +590,5 @@ class TestHuggingFace(BaseE2ETest):
                 evaluation_strategy="steps",
                 eval_steps=500,
             )
-            with pytest.raises(AssertionError):
+            with pytest.raises(ValueError):
                 Trainer(**training_args, callbacks=[callback])
