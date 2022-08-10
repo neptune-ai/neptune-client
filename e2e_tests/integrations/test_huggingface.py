@@ -30,7 +30,7 @@ from e2e_tests.utils import catch_time, modified_environ, tmp_context
 from neptune.new import init_run
 
 MAX_OVERWHELMING_FACTOR = 1.2
-SECONDS_TO_WAIT_FOR_UPDATE = 10
+SECONDS_TO_WAIT_FOR_UPDATE = 15
 
 
 logging.set_verbosity_error()
@@ -403,9 +403,9 @@ class TestHuggingFace(BaseE2ETest):
         callback = NeptuneCallback(
             project=environment.project, api_token=environment.user_token, tags=common_tag
         )
-        trainer = Trainer(
-            **self._trainer_default_attributes, model_init=model_init, callbacks=[callback]
-        )
+        trainer_config = self._trainer_default_attributes
+        del trainer_config["model"]
+        trainer = Trainer(**trainer_config, model_init=model_init, callbacks=[callback])
 
         # when
         trainer.hyperparameter_search(
