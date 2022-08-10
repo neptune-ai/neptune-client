@@ -45,6 +45,7 @@ def main():
                 "sklearn": ["neptune-sklearn"],
                 "tensorflow-keras": ["neptune-tensorflow-keras"],
                 "xgboost": ["neptune-xgboost"],
+                "prophet": ["neptune-prophet"],
             },
             entry_points={
                 "console_scripts": [
