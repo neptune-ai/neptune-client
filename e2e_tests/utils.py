@@ -21,6 +21,8 @@ __all__ = [
     "Environment",
     "initialize_container",
     "reinitialize_container",
+    "modified_environ",
+    "catch_time",
 ]
 
 import io

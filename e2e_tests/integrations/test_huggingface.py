@@ -468,11 +468,13 @@ class TestHuggingFace(BaseE2ETest):
         self,
         environment,
         log_checkpoints,
-        expected_checkpoints,
+        expected_checkpoints=None,
+        expected_checkpoints_number=None,
         additional_training_args=None,
         checkpoints_key="",
     ):
-        expected_checkpoints.update({"/", "model"})
+        if expected_checkpoints is not None:
+            expected_checkpoints.update({"/", "model"})
 
         if additional_training_args is None:
             additional_training_args = {}
@@ -498,10 +500,13 @@ class TestHuggingFace(BaseE2ETest):
                 run[f"finetuning/checkpoints/{checkpoints_key}"].download("checkpoints.zip")
 
                 with ZipFile("checkpoints.zip") as handler:
-                    assert (
-                        set([os.path.dirname(x) for x in handler.namelist()])
-                        == expected_checkpoints
-                    )
+                    subdirectories = set([os.path.dirname(x) for x in handler.namelist()])
+
+                    if expected_checkpoints_number is not None:
+                        assert len(subdirectories) == expected_checkpoints_number
+
+                    if expected_checkpoints is not None:
+                        assert subdirectories == expected_checkpoints
                     handler.extractall(".")
 
         self._test_with_run_initialization(
@@ -533,7 +538,7 @@ class TestHuggingFace(BaseE2ETest):
                 environment=environment,
                 log_checkpoints="same",
                 expected_checkpoints={"model/checkpoint-1000", "model/checkpoint-2000"},
-                additional_training_args=checkpoint_settings
+                additional_training_args=checkpoint_settings,
             )
             self._test_restore_from_checkpoint(environment=environment)
 
@@ -547,7 +552,7 @@ class TestHuggingFace(BaseE2ETest):
                 log_checkpoints="last",
                 expected_checkpoints={"model/checkpoint-2000"},
                 checkpoints_key="last",
-                additional_training_args=checkpoint_settings
+                additional_training_args=checkpoint_settings,
             )
             self._test_restore_from_checkpoint(environment=environment)
 
@@ -563,9 +568,9 @@ class TestHuggingFace(BaseE2ETest):
                     "load_best_model_at_end": True,
                     "evaluation_strategy": "steps",
                     "eval_steps": 500,
-                    **checkpoint_settings
+                    **checkpoint_settings,
                 },
-                expected_checkpoints={"model/checkpoint-1000"},
+                expected_checkpoints_number=3,
                 checkpoints_key="best",
             )
             self._test_restore_from_checkpoint(environment=environment)
