@@ -13,7 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import time
+from zipfile import ZipFile
 
 import numpy as np
 import pytest
@@ -24,7 +26,7 @@ from transformers.integrations import NeptuneCallback
 from transformers.utils import logging
 
 from e2e_tests.base import BaseE2ETest
-from e2e_tests.utils import catch_time, modified_environ
+from e2e_tests.utils import catch_time, modified_environ, tmp_context
 from neptune.new import init_run
 
 MAX_OVERWHELMING_FACTOR = 1.2
@@ -461,3 +463,132 @@ class TestHuggingFace(BaseE2ETest):
         assert "NeptuneCallback" in [
             type(callback).__name__ for callback in trainer.callback_handler.callbacks
         ]
+
+    def _test_checkpoints_creation(
+        self,
+        environment,
+        log_checkpoints,
+        expected_checkpoints=None,
+        expected_checkpoints_number=None,
+        additional_training_args=None,
+        checkpoints_key="",
+    ):
+        if expected_checkpoints is not None:
+            expected_checkpoints.update({"/", "model"})
+
+        if additional_training_args is None:
+            additional_training_args = {}
+
+        def run_test(run):
+            callback = NeptuneCallback(run=run, log_checkpoints=log_checkpoints)
+            training_args = self._trainer_default_attributes
+            training_args["args"] = TrainingArguments(
+                "model",
+                report_to=[],
+                num_train_epochs=500,
+                save_steps=1000,
+                save_strategy="steps",
+                **additional_training_args,
+            )
+            trainer = Trainer(**training_args, callbacks=[callback])
+            trainer.train()
+
+        def assert_metadata_structure(run):
+            assert run.exists("finetuning/checkpoints")
+            assert run["finetuning/train/epoch"].fetch_last() == 500
+            with tmp_context():
+                run[f"finetuning/checkpoints/{checkpoints_key}"].download("checkpoints.zip")
+
+                with ZipFile("checkpoints.zip") as handler:
+                    subdirectories = set([os.path.dirname(x) for x in handler.namelist()])
+
+                    if expected_checkpoints_number is not None:
+                        assert len(subdirectories) == expected_checkpoints_number
+
+                    if expected_checkpoints is not None:
+                        assert subdirectories == expected_checkpoints
+                    handler.extractall(".")
+
+        self._test_with_run_initialization(
+            environment, pre=run_test, post=assert_metadata_structure
+        )
+
+    def _test_restore_from_checkpoint(self, environment):
+        def run_test(run):
+            callback = NeptuneCallback(run=run)
+            training_args = self._trainer_default_attributes
+            training_args["args"] = TrainingArguments("model", report_to=[], num_train_epochs=1000)
+            trainer = Trainer(**training_args, callbacks=[callback])
+            checkpoint_id = max(os.listdir("model"))
+            trainer.train(resume_from_checkpoint=f"model/{checkpoint_id}")
+
+        def assert_metadata_structure(run):
+            assert run["finetuning/train/epoch"].fetch_last() == 1000
+
+        self._test_with_run_initialization(
+            environment, pre=run_test, post=assert_metadata_structure
+        )
+
+    @pytest.mark.parametrize(
+        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
+    )
+    def test_model_checkpoints_same(self, environment, checkpoint_settings):
+        with tmp_context():
+            self._test_checkpoints_creation(
+                environment=environment,
+                log_checkpoints="same",
+                expected_checkpoints={"model/checkpoint-1000", "model/checkpoint-2000"},
+                additional_training_args=checkpoint_settings,
+            )
+            self._test_restore_from_checkpoint(environment=environment)
+
+    @pytest.mark.parametrize(
+        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
+    )
+    def test_model_checkpoints_last(self, environment, checkpoint_settings):
+        with tmp_context():
+            self._test_checkpoints_creation(
+                environment=environment,
+                log_checkpoints="last",
+                expected_checkpoints={"model/checkpoint-2000"},
+                checkpoints_key="last",
+                additional_training_args=checkpoint_settings,
+            )
+            self._test_restore_from_checkpoint(environment=environment)
+
+    @pytest.mark.parametrize(
+        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
+    )
+    def test_model_checkpoints_best(self, environment, checkpoint_settings):
+        with tmp_context():
+            self._test_checkpoints_creation(
+                environment=environment,
+                log_checkpoints="best",
+                additional_training_args={
+                    "load_best_model_at_end": True,
+                    "evaluation_strategy": "steps",
+                    "eval_steps": 500,
+                    **checkpoint_settings,
+                },
+                expected_checkpoints_number=3,
+                checkpoints_key="best",
+            )
+            self._test_restore_from_checkpoint(environment=environment)
+
+    def test_model_checkpoints_best_invalid_load_best_model_at_end(self, environment):
+        with init_run(project=environment.project, api_token=environment.user_token) as run:
+            callback = NeptuneCallback(run=run, log_checkpoints="best")
+            training_args = self._trainer_default_attributes
+            training_args["args"] = TrainingArguments(
+                "model",
+                report_to=[],
+                num_train_epochs=500,
+                learning_rate=0.5,
+                save_steps=500,
+                save_strategy="steps",
+                load_best_model_at_end=False,
+                evaluation_strategy="steps",
+                eval_steps=500,
+            )
+            with pytest.raises(AssertionError):
+                Trainer(**training_args, callbacks=[callback])
