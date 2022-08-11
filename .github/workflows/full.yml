@@ -7,14 +7,14 @@ on:
 #  schedule:
 #    - cron: '0 4 * * *' # Run every day at arbitrary time (4:00 AM UTC)
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Lint
-        uses: ./.github/actions/lint
+#  lint:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#
+#      - name: Lint
+#        uses: ./.github/actions/lint
 
   # Both integration tests and E2E
   test:
