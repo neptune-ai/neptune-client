@@ -83,7 +83,7 @@ def environment():
         service_account=raw_env.service_account_name,
     )
 
-    # delete_project(name=created_project_identifier, api_token=admin_token)
+    delete_project(name=created_project_identifier, api_token=admin_token)
 
 
 @pytest.fixture(scope="session")
