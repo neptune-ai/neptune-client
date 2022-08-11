@@ -24,7 +24,7 @@ jobs:
       max-parallel: 2
       matrix:
         os: [ubuntu-latest] #, macos-latest, windows-latest]
-        python-version: ["3.9"] #, "3.8", "3.9", "3.10"]
+        python-version: ["3.8"] #, "3.8", "3.9", "3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
@@ -56,7 +56,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt && pip install -r requirements/e2e_requirements.txt
+          pip install -r requirements.txt -r requirements/e2e_requirements.txt
 
 #      - name: Integration tests
 #        run: |
