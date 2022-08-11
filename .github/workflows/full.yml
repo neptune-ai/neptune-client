@@ -24,7 +24,7 @@ jobs:
       max-parallel: 2
       matrix:
         os: [ubuntu-latest] #, macos-latest, windows-latest]
-        python-version: ["3.10"] #, "3.8", "3.9", "3.10"]
+        python-version: ["3.8"] #, "3.8", "3.9", "3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
