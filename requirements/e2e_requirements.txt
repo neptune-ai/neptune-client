@@ -4,7 +4,6 @@ Faker
 pytest-tap
 
 # integrations
-lightning
-# git+https://github.com/Lightning-AI/lightning.git@master#egg=lightning
+pytorch-lightning!=1.7.0 # PTL introduced a bug that made neptune integration unable to use. Check https://github.com/Lightning-AI/lightning/pull/13988 for details
 torchvision
 sklearn
