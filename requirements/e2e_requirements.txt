@@ -4,6 +4,6 @@ Faker
 pytest-tap
 
 # integrations
-git+https://github.com/Lightning-AI/lightning.git@master#egg=pytorch-lightning
+git+https://github.com/Lightning-AI/lightning.git@master#egg=lightning
 torchvision
 sklearn
