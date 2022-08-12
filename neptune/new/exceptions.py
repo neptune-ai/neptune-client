@@ -943,7 +943,7 @@ Looks like integration {integration_package_name} wasn't installed.
 To install, run:
     {bash}pip install {integration_package_name}{end}
 Or:
-    {bash}pip install neptune-client[{framework_name}]{end}
+    {bash}pip install "neptune-client[{framework_name}]"{end}
 
 You may also want to check the following docs page:
     - https://docs.neptune.ai/integrations-and-supported-tools/intro
