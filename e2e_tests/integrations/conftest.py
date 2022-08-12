@@ -67,36 +67,43 @@ class BoringModel(LightningModule):
 
 @pytest.fixture(scope="session")
 def pytorch_run(environment):
-    # given
-    run = neptune.init(name="Pytorch-Lightning integration", project=environment.project)
-    # and
-    model_checkpoint = ModelCheckpoint(
-        dirpath="my_model/checkpoints/",
-        filename="{epoch:02d}-{valid/loss:.2f}",
-        save_weights_only=True,
-        save_top_k=2,
-        save_last=True,
-        monitor="valid/loss",
-        every_n_epochs=1,
+    from pytorch_lightning.loggers.neptune import (
+        _NEPTUNE_AVAILABLE,
+        _NEPTUNE_GREATER_EQUAL_0_9,
     )
-    neptune_logger = NeptuneLogger(run=run, prefix="custom_prefix")
-    # and (Subject)
-    model = BoringModel()
-    trainer = Trainer(
-        limit_train_batches=1,
-        limit_val_batches=1,
-        log_every_n_steps=1,
-        max_epochs=3,
-        logger=neptune_logger,
-        callbacks=[model_checkpoint],
-    )
-    train_data = DataLoader(RandomDataset(32, 64), batch_size=2)
-    val_data = DataLoader(RandomDataset(32, 64), batch_size=2)
-    test_data = DataLoader(RandomDataset(32, 64), batch_size=2)
 
-    # then
-    trainer.fit(model, train_dataloaders=train_data, val_dataloaders=val_data)
-    trainer.test(model, dataloaders=test_data)
-    run.sync()
+    print("_NEPTUNE_AVAILABLE", _NEPTUNE_AVAILABLE)
+    print("_NEPTUNE_GREATER_EQUAL_0_9", _NEPTUNE_GREATER_EQUAL_0_9)
+    # # given
+    run = neptune.init(name="Pytorch-Lightning integration", project=environment.project)
+    # # and
+    # model_checkpoint = ModelCheckpoint(
+    #     dirpath="my_model/checkpoints/",
+    #     filename="{epoch:02d}-{valid/loss:.2f}",
+    #     save_weights_only=True,
+    #     save_top_k=2,
+    #     save_last=True,
+    #     monitor="valid/loss",
+    #     every_n_epochs=1,
+    # )
+    # neptune_logger = NeptuneLogger(run=run, prefix="custom_prefix")
+    # # and (Subject)
+    # model = BoringModel()
+    # trainer = Trainer(
+    #     limit_train_batches=1,
+    #     limit_val_batches=1,
+    #     log_every_n_steps=1,
+    #     max_epochs=3,
+    #     logger=neptune_logger,
+    #     callbacks=[model_checkpoint],
+    # )
+    # train_data = DataLoader(RandomDataset(32, 64), batch_size=2)
+    # val_data = DataLoader(RandomDataset(32, 64), batch_size=2)
+    # test_data = DataLoader(RandomDataset(32, 64), batch_size=2)
+    #
+    # # then
+    # trainer.fit(model, train_dataloaders=train_data, val_dataloaders=val_data)
+    # trainer.test(model, dataloaders=test_data)
+    # run.sync()
 
     yield run
