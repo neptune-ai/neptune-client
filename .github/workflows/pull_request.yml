@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.7", "3.10"] # minimum, maximum
+        python-version: ["3.7"] #, "3.10"] # minimum, maximum
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install -r requirements.txt -r requirements/test_requirements.txt
+          pip install -r requirements.txt -r requirements/e2e_requirements.txt
 
       - name: Build and test
         run : |
