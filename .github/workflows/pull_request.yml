@@ -19,7 +19,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.7"] #, "3.10"] # minimum, maximum
+        python-version: ["3.7", "3.10"] # minimum, maximum
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
