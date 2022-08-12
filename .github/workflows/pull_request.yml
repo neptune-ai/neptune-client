@@ -33,6 +33,10 @@ jobs:
         run: |
           pip install -r requirements.txt -r requirements/test_requirements.txt
 
+      - name: List dependencies
+        run: |
+          pip list
+
       - name: Build and test
         run : |
           pytest ./tests
