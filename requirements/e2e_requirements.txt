@@ -1,5 +1,3 @@
-# Install development package as some integrations are checking that neptune-client will be listed by distutils
--e .
 -r ./test_requirements.txt
 
 Faker
