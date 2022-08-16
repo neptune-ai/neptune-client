@@ -1,4 +1,4 @@
 :orphan:
 
-Neptune client documentation has moved `here <https://docs.neptune.ai/python-api/api-reference.html>`_.
+Neptune client documentation has moved `here <https://docs.neptune.ai/>`_.
 =======================================================================================================
