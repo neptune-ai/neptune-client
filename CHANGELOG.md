@@ -1,6 +1,7 @@
 ## [UNRELEASED] neptune-client 0.16.6
 
 ## Features
+- Exposed integrations related utils ([#980](https://github.com/neptune-ai/neptune-client/pull/980))
 - Added support for Prophet integration ([#978](https://github.com/neptune-ai/neptune-client/pull/978))
 
 ## neptune-client 0.16.5
