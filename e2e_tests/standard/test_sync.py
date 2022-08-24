@@ -135,7 +135,7 @@ class TestSync(BaseE2ETest):
             assert len(sys_id_found.groups()) == 1
             sys_id = sys_id_found.group(1)
 
-            run2 = neptune.init_run(run=sys_id, project=environment.project)
+            run2 = neptune.init_run(with_id=sys_id, project=environment.project)
             assert run2[key].fetch() == val
 
     @pytest.mark.parametrize("container_type", ["model", "model_version", "project"])

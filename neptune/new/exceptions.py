@@ -573,6 +573,24 @@ class NeptuneWrongInitParametersException(NeptuneException):
     pass
 
 
+class NeptuneInitParametersCollision(NeptuneWrongInitParametersException):
+    def __init__(self, parameter1, parameter2):
+        self.parameter1 = parameter1
+        self.parameter2 = parameter2
+        message = """
+{h1}
+----NeptuneRunResumeAndCustomIdCollision-----------------------------------------
+{end}
+The {python}{parameter1}{end} and {python}{parameter2}{end} parameters of the {python}init(){end} method are mutually exclusive.
+
+You may also want to check the following docs page:
+    - https://docs.neptune.ai/api-reference/neptune#init
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(paramteter1=parameter1, parameter2=parameter2, **STYLES))
+
+
 class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
     def __init__(self):
         message = """
