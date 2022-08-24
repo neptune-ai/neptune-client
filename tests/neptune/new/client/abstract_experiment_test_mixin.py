@@ -105,7 +105,7 @@ class AbstractExperimentTestMixin:
     @pytest.mark.timeout(10)
     def test_async_mode_stop_on_dead(self):
         stream = StringIO()
-        with contextlib.redirect_stderr(stream):
+        with contextlib.redirect_stdout(stream):
             exp = self.call_init(mode="async", flush_period=0.5)
             update_freq = 1
             default_freq = exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS

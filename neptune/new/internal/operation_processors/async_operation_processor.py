@@ -86,8 +86,13 @@ class AsyncOperationProcessor(OperationProcessor):
         self.flush()
         waiting_for_version = self._last_version
         self._consumer.wake_up()
-        while self._consumed_version < waiting_for_version and self._consumer.is_running():
-            self._waiting_cond.wait()
+
+        # Probably reentering lock just for sure
+        with self._waiting_cond:
+            self._waiting_cond.wait_for(
+                lambda: self._consumed_version >= waiting_for_version
+                or not self._consumer.is_running()
+            )
         if not self._consumer.is_running():
             raise Exception("Synchronization job is not running, unable to synchronize")
 
@@ -163,7 +168,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 return
 
             if not self._consumer.is_running():
-                click.echo("Synchronization job is not running, unable to synchronize.", sys.stderr)
+                logger.warning("Synchronization job is not running, unable to synchronize.")
                 return
 
             logger.warning(
