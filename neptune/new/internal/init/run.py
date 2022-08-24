@@ -203,7 +203,7 @@ def init_run(
     _check_for_extra_kwargs(init_run.__name__, kwargs)
     if run:
         if with_id:
-            raise NeptuneInitParametersCollision("with_id", "custom_run_id")
+            raise NeptuneInitParametersCollision("with_id", "custom_run_id", method_name="init_run")
 
         _logger.warning(
             "`run` parameter is deprecated, use `with_id` instead."
