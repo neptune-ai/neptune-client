@@ -28,6 +28,7 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     MissingFieldException,
     NeptuneOfflineModeFetchException,
+    NeptuneSynchronizationAlreadyStoppedException,
     TypeDoesNotSupportAttributeException,
 )
 
@@ -91,7 +92,7 @@ class AbstractExperimentTestMixin:
             exp["some/variable"] = 13
             # wait for the process to die
             time.sleep(1)
-            with self.assertRaises(Exception):
+            with self.assertRaises(NeptuneSynchronizationAlreadyStoppedException):
                 exp.wait()
 
     @pytest.mark.timeout(10)
@@ -99,7 +100,7 @@ class AbstractExperimentTestMixin:
         with self.call_init(mode="async", flush_period=1) as exp:
             exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
             exp["some/variable"] = 13
-            with self.assertRaises(Exception):
+            with self.assertRaises(NeptuneSynchronizationAlreadyStoppedException):
                 exp.wait()
 
     @pytest.mark.timeout(10)
@@ -117,9 +118,7 @@ class AbstractExperimentTestMixin:
             finally:
                 exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = default_freq
 
-        self.assertIn(
-            "Synchronization job is not running, unable to synchronize", stream.getvalue()
-        )
+        self.assertIn("NeptuneSynchronizationAlreadyStopped", stream.getvalue())
 
     def test_missing_attribute(self):
         exp = self.call_init(mode="debug")

@@ -20,6 +20,7 @@ import threading
 from time import monotonic, time
 from typing import List, Optional
 
+from neptune.new.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
@@ -94,7 +95,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 or not self._consumer.is_running()
             )
         if not self._consumer.is_running():
-            raise Exception("Synchronization job is not running, unable to synchronize")
+            raise NeptuneSynchronizationAlreadyStoppedException()
 
     def flush(self):
         self._queue.flush()
@@ -168,7 +169,8 @@ class AsyncOperationProcessor(OperationProcessor):
                 return
 
             if not self._consumer.is_running():
-                logger.warning("Synchronization job is not running, unable to synchronize.")
+                exception = NeptuneSynchronizationAlreadyStoppedException()
+                logger.warning(str(exception))
                 return
 
             logger.warning(
