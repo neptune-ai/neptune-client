@@ -1033,7 +1033,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         else:
             query_params = {}
         if columns:
-            attributes_filter = {"attributesFilter": [{"name": column} for column in columns]}
+            attributes_filter = {"attributeFilters": [{"path": column} for column in columns]}
         else:
             attributes_filter = {}
 
