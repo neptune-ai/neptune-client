@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import argparse
 import os
 import unittest
 
@@ -403,6 +404,29 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(exp["params/metadata/age"].fetch(), 376)
         self.assertEqual(exp["params/toys"].fetch_last(), "hat")
         self.assertEqual(exp["params/nested/nested/deep_secret"].fetch_last(), 15)
+
+    def test_convertable_to_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["params"] = argparse.Namespace(
+            foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55)
+        )
+        self.assertEqual(exp["params/foo"].fetch(), "bar")
+        self.assertEqual(exp["params/baz"].fetch(), 42)
+        self.assertEqual(exp["params/nested/nested_attr"].fetch(), "[1, 2, 3]")
+        self.assertEqual(exp["params/nested/num"].fetch(), 55)
+
+    def test_object(self):
+        class Dog:
+            def __init__(self, name, fierceness):
+                self.name = name
+                self.fierceness = fierceness
+
+            def __str__(self):
+                return f"{self.name} goes " + "Woof! " * self.fierceness
+
+        exp = init(mode="debug", flush_period=0.5)
+        exp["burek"] = Dog("Burek", 3)
+        self.assertEqual(exp["burek"].fetch(), "Burek goes Woof! Woof! Woof! ")
 
     def test_artifacts(self):
         exp = init(mode="debug", flush_period=0.5)

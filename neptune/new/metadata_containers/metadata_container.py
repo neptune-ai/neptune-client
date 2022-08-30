@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import abc
+import argparse
 import atexit
 import itertools
 import threading
@@ -256,6 +257,8 @@ class MetadataContainer(AbstractContextManager):
             pass
         elif isinstance(value, Handler):
             value = ValueCopy(value)
+        elif isinstance(value, argparse.Namespace):
+            value = Namespace(vars(value))
         elif is_bool(value):
             value = Boolean(value)
         elif is_int(value):
