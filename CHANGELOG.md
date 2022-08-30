@@ -2,6 +2,7 @@
 
 ## Features
 - Added support for Prophet integration ([#978](https://github.com/neptune-ai/neptune-client/pull/978))
+- Introduce filtering columns when fetching run, model and model_version tables ([#986](https://github.com/neptune-ai/neptune-client/pull/986))
 
 ## neptune-client 0.16.5
 
