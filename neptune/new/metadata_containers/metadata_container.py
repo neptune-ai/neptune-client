@@ -362,15 +362,16 @@ class MetadataContainer(AbstractContextManager):
     def _fetch_entries(
         self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]]
     ) -> Table:
-        # always return entries with `sys/id` column
-        columns_with_sysid = set(columns)
-        columns_with_sysid.add("sys/id")
+        if columns is not None:
+            # always return entries with `sys/id` column when filter applied
+            columns = set(columns)
+            columns.add("sys/id")
 
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
             types=[child_type],
             query=query,
-            columns=columns_with_sysid,
+            columns=columns,
         )
 
         return Table(
