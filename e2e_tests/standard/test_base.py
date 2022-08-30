@@ -248,3 +248,43 @@ class TestFetchTable(BaseE2ETest):
             assert (
                 versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
             )
+
+    def test_filtering_columns(self, environment):
+        key1 = self.gen_key()
+        key2 = self.gen_key()
+        value = fake.name()
+
+        with neptune.init_run(project=environment.project) as run:
+            sys_id = run["sys/id"].fetch()
+            run[key1] = value
+            run[key2] = value
+            run.sync()
+
+        # wait for the cache to fill
+        time.sleep(5)
+
+        project = neptune.get_project(name=environment.project)
+
+        non_filtered = project.fetch_runs_table().to_rows()
+        assert len(non_filtered) == 1
+        assert non_filtered[0].get_attribute_value("sys/id") == sys_id
+        assert non_filtered[0].get_attribute_value(key1) == value
+        assert non_filtered[0].get_attribute_value(key2) == value
+
+        columns_none = project.fetch_runs_table(columns=None).to_rows()
+        assert len(columns_none) == 1
+        assert columns_none[0].get_attribute_value("sys/id") == sys_id
+        assert columns_none[0].get_attribute_value(key1) == value
+        assert columns_none[0].get_attribute_value(key2) == value
+
+        columns_empty = project.fetch_runs_table(columns=[]).to_rows()
+        assert len(columns_empty) == 1
+        assert columns_empty[0].get_attribute_value("sys/id") == sys_id
+        assert columns_empty[0].get_attribute_value(key1) is None
+        assert columns_empty[0].get_attribute_value(key2) is None
+
+        columns_with_one_key = project.fetch_runs_table(columns=[key1]).to_rows()
+        assert len(columns_with_one_key) == 1
+        assert columns_with_one_key[0].get_attribute_value("sys/id") == sys_id
+        assert columns_with_one_key[0].get_attribute_value(key1) == value
+        assert columns_with_one_key[0].get_attribute_value(key2) is None
