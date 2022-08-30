@@ -15,17 +15,19 @@
 #
 
 import unittest
+from typing import List
 
 from neptune.new import get_project
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.metadata_containers.metadata_containers_table import Table, TableEntry
 from tests.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 
 class TestRunTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.RUN
 
-    def get_table(self):
-        return get_project("organization/project").fetch_runs_table()
+    def get_table(self, **kwargs) -> Table:
+        return get_project("organization/project").fetch_runs_table(**kwargs)
 
-    def get_table_entries(self, table):
+    def get_table_entries(self, table) -> List[TableEntry]:
         return table.to_rows()
