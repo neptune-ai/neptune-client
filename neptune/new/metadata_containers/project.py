@@ -175,6 +175,7 @@ class Project(MetadataContainer):
         columns: Optional[Iterable[str]] = None,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
+        TODO: columns parameter docs
 
         All parameters are optional. Each of them specifies a single criterion.
         Only runs matching all of the criteria will be returned.
@@ -262,6 +263,7 @@ class Project(MetadataContainer):
 
     def fetch_models_table(self, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve models stored in the project.
+        TODO: columns parameter docs
 
         Args:
             columns: Names of columns to include in the table, as a list of namespace or field names.
