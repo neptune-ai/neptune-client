@@ -2,6 +2,7 @@
 
 ## Features
 - Added support for Prophet integration ([#978](https://github.com/neptune-ai/neptune-client/pull/978))
+- Log argparse.Namespace objects as dicts ([#984](https://github.com/neptune-ai/neptune-client/pull/984))
 
 ## neptune-client 0.16.5
 
