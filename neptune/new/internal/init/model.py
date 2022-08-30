@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 import os
 import threading
 from typing import Optional
@@ -23,6 +23,7 @@ from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
     NeptuneException,
+    NeptuneInitParametersCollision,
     NeptuneMissingRequiredInitParameter,
     NeptuneModelKeyAlreadyExistsError,
     NeptuneObjectCreationConflict,
@@ -43,9 +44,12 @@ from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.metadata_containers import Model
 from neptune.new.types.mode import Mode
 
+_logger = logging.getLogger(__name__)
+
 
 def init_model(
     *,
+    with_id: Optional[str] = None,
     model: Optional[str] = None,
     name: Optional[str] = None,
     key: Optional[str] = None,
@@ -55,7 +59,17 @@ def init_model(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Model:
-    verify_type("model", model, (str, type(None)))
+    if model:
+        if with_id:
+            raise NeptuneInitParametersCollision("with_id", "model", method_name="init_model")
+
+        _logger.warning(
+            "parameter `model` is deprecated, use `with_id` instead."
+            " We'll end support of it in `neptune-client==1.0.0`."
+        )
+        with_id = model
+
+    verify_type("with_id", with_id, (str, type(None)))
     verify_type("name", name, (str, type(None)))
     verify_type("key", key, (str, type(None)))
     verify_type("project", project, (str, type(None)))
@@ -70,7 +84,7 @@ def init_model(
     if mode == Mode.OFFLINE:
         raise NeptuneException("Model can't be initialized in OFFLINE mode")
 
-    name = DEFAULT_NAME if model is None and name is None else name
+    name = DEFAULT_NAME if with_id is None and name is None else name
 
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
@@ -81,12 +95,12 @@ def init_model(
     project_obj = project_name_lookup(backend=backend, name=project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
-    if model is not None:
-        # model (resume existing model) has priority over key (creating a new model)
+    if with_id is not None:
+        # with_id (resume existing model) has priority over key (creating a new model)
         #  additional creation parameters (e.g. name) are simply ignored in this scenario
-        model = QualifiedName(project + "/" + model)
+        model_id = QualifiedName(project + "/" + with_id)
         api_model = backend.get_metadata_container(
-            container_id=model, expected_container_type=Model.container_type
+            container_id=model_id, expected_container_type=Model.container_type
         )
     elif key is not None:
         if mode == Mode.READ_ONLY:

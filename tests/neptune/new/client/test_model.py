@@ -23,7 +23,11 @@ from mock import patch
 from neptune.new import ANONYMOUS, init_model
 from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneException, NeptuneWrongInitParametersException
+from neptune.new.exceptions import (
+    NeptuneException,
+    NeptuneInitParametersCollision,
+    NeptuneWrongInitParametersException,
+)
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
@@ -66,7 +70,7 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
-        exp = init_model(mode="read-only", model="whatever")
+        exp = init_model(mode="read-only", with_id="whatever")
 
         with self.assertLogs() as caplog:
             exp["some/variable"] = 13
@@ -91,13 +95,15 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
     )
     def test_resume(self):
-        with init_model(flush_period=0.5, model="whatever") as exp:
+        with init_model(flush_period=0.5, with_id="whatever") as exp:
             self.assertEqual(exp._id, AN_API_MODEL.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
-            init_model(model=None, key=None)
+            init_model(with_id=None, key=None)
+        with self.assertRaises(NeptuneInitParametersCollision):
+            init_model(model="foo", with_id="foo")
 
     def test_name_parameter(self):
         with init_model(key="TRY", name="some_name") as exp:

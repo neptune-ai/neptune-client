@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import logging
 import os
 import threading
 from typing import Optional
@@ -23,6 +23,7 @@ from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import (
     NeedExistingModelVersionForReadOnlyMode,
     NeptuneException,
+    NeptuneInitParametersCollision,
     NeptuneMissingRequiredInitParameter,
 )
 from neptune.new.internal import id_formats
@@ -41,9 +42,12 @@ from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.metadata_containers import Model, ModelVersion
 from neptune.new.types.mode import Mode
 
+_logger = logging.getLogger(__name__)
+
 
 def init_model_version(
     *,
+    with_id: Optional[str] = None,
     version: Optional[str] = None,
     name: Optional[str] = None,
     model: Optional[str] = None,
@@ -53,7 +57,19 @@ def init_model_version(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> ModelVersion:
-    verify_type("version", version, (str, type(None)))
+    if version:
+        if with_id:
+            raise NeptuneInitParametersCollision(
+                "with_id", "version", method_name="init_model_version"
+            )
+
+        _logger.warning(
+            "parameter `version` is deprecated, use `with_id` instead."
+            " We'll end support of it in `neptune-client==1.0.0`."
+        )
+        with_id = version
+
+    verify_type("with_id", with_id, (str, type(None)))
     verify_type("name", name, (str, type(None)))
     verify_type("model", model, (str, type(None)))
     verify_type("project", project, (str, type(None)))
@@ -79,11 +95,11 @@ def init_model_version(
     project_obj = project_name_lookup(backend, project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
-    if version is not None:
-        # version (resume existing model_version) has priority over model (creating a new model_version)
-        version = QualifiedName(project + "/" + version)
+    if with_id is not None:
+        # with_id (resume existing model_version) has priority over model (creating a new model_version)
+        version_id = QualifiedName(project + "/" + with_id)
         api_model_version = backend.get_metadata_container(
-            container_id=version, expected_container_type=ModelVersion.container_type
+            container_id=version_id, expected_container_type=ModelVersion.container_type
         )
     elif model is not None:
         if mode == Mode.READ_ONLY:

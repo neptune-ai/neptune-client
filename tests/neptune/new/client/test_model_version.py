@@ -25,6 +25,7 @@ from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     NeptuneException,
+    NeptuneInitParametersCollision,
     NeptuneOfflineModeChangeStageException,
     NeptuneWrongInitParametersException,
 )
@@ -82,7 +83,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
     )
     def test_read_only_mode(self):
-        exp = init_model_version(mode="read-only", version="whatever")
+        exp = init_model_version(mode="read-only", with_id="whatever")
 
         with self.assertLogs() as caplog:
             exp["some/variable"] = 13
@@ -110,7 +111,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type, _path: StringAttribute("MDL"),
     )
     def test_resume(self):
-        with init_model_version(flush_period=0.5, version="whatever") as exp:
+        with init_model_version(flush_period=0.5, with_id="whatever") as exp:
             self.assertEqual(exp._id, AN_API_MODEL_VERSION.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 
@@ -122,7 +123,9 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
 
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
-            init_model_version(version=None, model=None)
+            init_model_version(with_id=None, model=None)
+        with self.assertRaises(NeptuneInitParametersCollision):
+            init_model_version(version="foo", with_id="foo")
 
     def test_change_stage(self):
         exp = self.call_init()

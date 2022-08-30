@@ -591,7 +591,7 @@ You may also want to check the following docs page:
 """
         super().__init__(
             message.format(
-                paramteter1=parameter1, parameter2=parameter2, method_name=method_name, **STYLES
+                parameter1=parameter1, parameter2=parameter2, method_name=method_name, **STYLES
             )
         )
 
