@@ -1282,3 +1282,26 @@ You can check all of your models in the project on the Models page:
         super().__init__(
             message.format(model_key=model_key, models_tab_url=models_tab_url, **STYLES)
         )
+
+
+class NeptuneSynchronizationAlreadyStoppedException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----NeptuneSynchronizationAlreadyStopped---------------------------------------------------
+{end}
+The synchronization thread had stopped before Neptune could finish uploading the logged metadata.
+Your data is stored locally, but you'll need to finish the synchronization manually.
+To synchronize with the Neptune servers, enter the following on your command line:
+
+    {bash}neptune sync{end}
+
+For details, see https://docs.neptune.ai/you-should-know/connection-modes#uploading-offline-data
+
+If the synchronization fails, you may want to check your connection and ensure that you're
+within limits by going to your Neptune project settings -> Usage.
+If the issue persists, our support is happy to help.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(message.format(**STYLES))

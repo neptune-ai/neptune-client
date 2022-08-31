@@ -36,6 +36,8 @@
 - Fix computing of a multipart upload chunk size ([#897](https://github.com/neptune-ai/neptune-client/pull/897))
 - Matching all listed tags instead of any when calling `fetch_runs_table` ([#899](https://github.com/neptune-ai/neptune-client/pull/899))
 - Fix invalid processing of delete followed by file upload in a single batch ([#880](https://github.com/neptune-ai/neptune-client/pull/880))
+- Stop hanging indefinitely on wait when async data synchronization process is dead ([#909](https://github.com/neptune-ai/neptune-client/pull/909))
+- Finish stop() faster when async data synchronization process dies ([#909](https://github.com/neptune-ai/neptune-client/pull/909))
 
 ## Changes
 - `click.echo` replaced with `logging` ([#903](https://github.com/neptune-ai/neptune-client/pull/903))
