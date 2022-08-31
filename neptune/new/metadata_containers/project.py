@@ -175,33 +175,37 @@ class Project(MetadataContainer):
         columns: Optional[Iterable[str]] = None,
     ) -> Table:
         """Retrieve runs matching the specified criteria.
-        TODO: columns parameter docs
 
         All parameters are optional. Each of them specifies a single criterion.
         Only runs matching all of the criteria will be returned.
 
         Args:
-            id (str or list of str, optional): A run's Neptune id or list of ids.
+            id: Neptune ID of a run, or list of several IDs.
                 Example: `"SAN-1"` or `["SAN-1", "SAN-2"]`.
                 Matching any element of the list is sufficient to pass the criterion.
                 Defaults to `None`.
-            state (str or list of str, optional): A run's state like or list of states.
+            state: Run state, or list of states.
                 Example: `"running"` or `["idle", "running"]`.
                 Possible values: "idle", "running".
                 Defaults to `None`.
                 Matching any element of the list is sufficient to pass the criterion.
-            owner (str or list of str, optional): Username of the run owner or a list of owners.
-                Example: "josh" or ["frederic", "josh"].
-                The user who created the tracked run is an owner.
+            owner: Username of the run owner, or a list of owners.
+                Example: `"josh"` or `["frederic", "josh"]`.
+                The owner is the user who created the run.
                 Defaults to `None`.
                 Matching any element of the list is sufficient to pass the criterion.
-            tag (str or list of str, optional): An experiment tag or list of tags.
-                Example: `"lightGBM"` or ["pytorch", "cycleLR"].
+            tag: A tag or list of tags applied to the run.
+                Example: `"lightGBM"` or `["pytorch", "cycleLR"]`.
                 Defaults to `None`.
                 Only runs that have all specified tags will match this criterion.
+            columns: Names of columns to include in the table, as a list of namespace or field names.
+                Examples:
+                    Fields: `["params/lr", "params/batch", "train/acc"]` - only these fields are included as columns.
+                    Namespaces: `["params", "train"]` - all the fields inside the namespaces are included as columns.
+                If `None` (default), all the columns of the runs table are included.
 
         Returns:
-            `Table`: object containing runs matching the specified criteria.
+            `Table` object containing `Run` objects matching the specified criteria.
 
             Use `to_pandas()` to convert the table to a pandas DataFrame.
 
@@ -213,6 +217,10 @@ class Project(MetadataContainer):
 
             >>> # Fetch the metadata of all runs as a pandas DataFrame
             ... runs_table_df = project.fetch_runs_table().to_pandas()
+
+            >>> # Fetch the metadata of all runs as a pandas DataFrame, including only the field "train/loss"
+            ... # and the fields from the "params" namespace as columns:
+            ... runs_table_df = project.fetch_runs_table(columns=["params", "train/loss"]).to_pandas()
 
             >>> # Sort runs by creation time
             ... runs_table_df = runs_table_df.sort_values(by="sys/creation_time", ascending=False)
@@ -253,10 +261,16 @@ class Project(MetadataContainer):
 
     def fetch_models_table(self, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve models stored in the project.
-        TODO: columns parameter docs
+
+        Args:
+            columns: Names of columns to include in the table, as a list of namespace or field names.
+                Examples:
+                    Fields: `["datasets/test", "info/size"]` - only these fields are included as columns.
+                    Namespaces: `["datasets", "info"]` - all the fields inside the namespaces are included as columns.
+                If `None` (default), all the columns of the models table are included.
 
         Returns:
-            `Table`: object containing `Model` objects.
+            `Table` object containing `Model` objects.
 
             Use `to_pandas()` to convert the table to a pandas DataFrame.
 
@@ -268,6 +282,10 @@ class Project(MetadataContainer):
 
             >>> # Fetch the metadata of all models as a pandas DataFrame
             ... models_table_df = project.fetch_models_table().to_pandas()
+
+            >>> # Fetch the metadata of all models as a pandas DataFrame,
+            ... # including only the "datasets" namespace and "info/size" field as columns:
+            ... models_table_df = project.fetch_models_table(columns=["datasets", "info/size"]).to_pandas()
 
             >>> # Sort model objects by size
             ... models_table_df = models_table_df.sort_values(by="sys/size")
