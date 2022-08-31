@@ -62,8 +62,9 @@ class Model(MetadataContainer):
 
         Args:
             columns: Names of columns to include in the table, as a list of namespace or field names.
+                The Neptune ID ("sys/id") is included automatically.
                 Examples:
-                    Fields: `["params/lr", "params/batch", "val/acc"]` - only these fields are included as columns.
+                    Fields: `["params/lr", "params/batch", "val/acc"]` - these fields are included as columns.
                     Namespaces: `["params", "val"]` - all the fields inside the namespaces are included as columns.
                 If `None` (default), all the columns of the model versions table are included.
 
