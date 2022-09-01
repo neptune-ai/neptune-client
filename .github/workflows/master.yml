@@ -141,19 +141,19 @@ jobs:
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
 
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
-        with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
-
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
-        with:
-          status: success
-          fields: repo,message,author,job,eventName,took
+#      - name: Notify about failure
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION != 'success'
+#        with:
+#          status: failure
+#          fields: repo,message,author,job,eventName,took
+#
+#      - name: Notify about success
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION == 'success'
+#        with:
+#          status: success
+#          fields: repo,message,author,job,eventName,took
 
   publish:
     needs: [lint, test, test-e2e]
@@ -168,12 +168,12 @@ jobs:
         with:
           python-version: "3.10"
 
-      - name: Build and test
-        run: |
-          python setup.py sdist
-
-      - name: Publish package
-        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
-        with:
-          user: __token__
-          password: ${{ secrets.PYPI_API_TOKEN }}
+#      - name: Build and test
+#        run: |
+#          python setup.py sdist
+#
+#      - name: Publish package
+#        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
+#        with:
+#          user: __token__
+#          password: ${{ secrets.PYPI_API_TOKEN }}
