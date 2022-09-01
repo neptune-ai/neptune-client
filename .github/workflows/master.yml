@@ -1,16 +1,62 @@
 name: All
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+  push:
+    branches:
+      - master
+      - jk/e2e-github
+    tags:
+      - "*"
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Lint
+        uses: ./.github/actions/lint
+
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          # Some tests are checking version of 'neptune' package.
+          # To simplify deployment we're using 'versioneer' but
+          # when working with branches it yields "0+unknown".
+          # Fetching all history fetches also last tag and helps versioneer
+          fetch-depth: 0
+
+      - name: Install Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -e . && pip install -r requirements/test_requirements.txt
+
+      - name: List dependencies
+        run: |
+          pip list
+
+      - name: Integration tests
+        run: |
+          pytest ./tests
+
   test-e2e:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 120
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        python-version: ["3.7"]
     env:
       WORKSPACE_NAME: e2e-tests
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
@@ -48,29 +94,21 @@ jobs:
         run: |
           pip list
 
-      - name: Integration tests
-        run: |
-          pytest ./tests
-
       - name: E2E - Client
-        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
         run: |
           pytest ./e2e_tests -m "not integrations"
 
       - name: E2E - Service Accounts
-        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
         env:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         run: |
           pytest ./e2e_tests -m "not integrations"
 
       - name: E2E - Integrations
-        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
         run: |
           pytest ./e2e_tests -m integrations
 
       - name: Test Fast.ai integration
-        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
         uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
         with:
           working_directory: neptune_fastai
@@ -79,7 +117,6 @@ jobs:
           NEPTUNE_PROJECT: e2e-tests/e2e
 
       - name: Test Kedro integration
-        if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.10'
         uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
         with:
           working_directory: neptune_kedro
@@ -88,7 +125,6 @@ jobs:
           NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
 
       - name: Test Prophet integration
-        if: matrix.os != 'windows-latest' && matrix.python-version == '3.10'
         uses: neptune-ai/neptune-prophet/.github/actions/e2e@main
         with:
           working_directory: neptune_prophet
@@ -97,7 +133,7 @@ jobs:
           NEPTUNE_PROJECT: e2e-tests/e2e
 
   notify:
-    needs: [lint-e2e]
+    needs: [lint, test, test-e2e]
     runs-on: ubuntu-latest
     if: always()
     env:
@@ -118,3 +154,26 @@ jobs:
         with:
           status: success
           fields: repo,message,author,job,eventName,took
+
+  publish:
+    needs: [lint, test, test-e2e]
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Install Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.10"
+
+      - name: Build and test
+        run: |
+          python setup.py sdist
+
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}
