@@ -67,56 +67,8 @@ jobs:
           # Fetching all history fetches also last tag and helps versioneer
           fetch-depth: 0
 
-      - name: Install Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install -e . && pip install -r requirements/e2e_requirements.txt
-
-      - name: List dependencies
-        run: |
-          pip list
-
-      - name: E2E - Client
-        run: |
-          pytest ./e2e_tests -m "not integrations"
-
-      - name: E2E - Service Accounts
-        env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
-        run: |
-          pytest ./e2e_tests -m "not integrations"
-
-      - name: E2E - Integrations
-        run: |
-          pytest ./e2e_tests -m integrations
-
-      - name: Test Fast.ai integration
-        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
-        with:
-          working_directory: neptune_fastai
-        env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
-          NEPTUNE_PROJECT: e2e-tests/e2e
-
-      - name: Test Kedro integration
-        uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
-        with:
-          working_directory: neptune_kedro
-        env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
-          NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
-
-      - name: Test Prophet integration
-        uses: neptune-ai/neptune-prophet/.github/actions/e2e@main
-        with:
-          working_directory: neptune_prophet
-        env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
-          NEPTUNE_PROJECT: e2e-tests/e2e
+      - name: Tests E2E
+        uses: ./.github/actions/tests-e2e
 
   notify:
     needs: [lint, test, test-e2e]
