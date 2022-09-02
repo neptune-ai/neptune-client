@@ -32,8 +32,9 @@ def deprecated_id_parameter(*, deprecated_kwarg_name):
                     )
 
                 logger.warning(
-                    f"parameter `{deprecated_kwarg_name}` is deprecated, use `with_id` instead."
-                    " We'll end support of it in `neptune-client==1.0.0`."
+                    "parameter `{deprecated_kwarg_name}` is deprecated, use `with_id` instead."
+                    " We'll end support of it in `neptune-client==1.0.0`.",
+                    deprecated_kwarg_name=deprecated_kwarg_name,
                 )
 
                 kwargs["with_id"] = deprecated_param

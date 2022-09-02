@@ -125,6 +125,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
         with self.assertRaises(NeptuneWrongInitParametersException):
             init_model_version(with_id=None, model=None)
         with self.assertRaises(NeptuneInitParametersCollision):
+            # pylint: disable=unexpected-keyword-arg
             init_model_version(version="foo", with_id="foo")
 
     def test_change_stage(self):

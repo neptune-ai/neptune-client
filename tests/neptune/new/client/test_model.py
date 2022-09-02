@@ -103,6 +103,7 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         with self.assertRaises(NeptuneWrongInitParametersException):
             init_model(with_id=None, key=None)
         with self.assertRaises(NeptuneInitParametersCollision):
+            # pylint: disable=unexpected-keyword-arg
             init_model(model="foo", with_id="foo")
 
     def test_name_parameter(self):

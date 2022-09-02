@@ -28,7 +28,7 @@ class TestModelVersionTables(AbstractTablesTestMixin, unittest.TestCase):
 
     def get_table(self, **kwargs) -> Table:
         return init_model(
-            model="organization/project",
+            with_id="organization/project",
             project="PRO-MOD",
             mode="read-only",
         ).fetch_model_versions_table(**kwargs)
