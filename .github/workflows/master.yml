@@ -33,22 +33,8 @@ jobs:
           # Fetching all history fetches also last tag and helps versioneer
           fetch-depth: 0
 
-      - name: Install Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install -e . && pip install -r requirements/test_requirements.txt
-
-      - name: List dependencies
-        run: |
-          pip list
-
-      - name: Integration tests
-        run: |
-          pytest ./tests
+      - name: Test
+        uses: ./.github/actions/tests
 
   test-e2e:
     runs-on: ${{ matrix.os }}
