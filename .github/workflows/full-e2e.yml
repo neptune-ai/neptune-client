@@ -17,7 +17,6 @@ jobs:
       AWS_ACCESS_KEY_ID: ${{ secrets.E2E_AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.E2E_AWS_SECRET_ACCESS_KEY }}
       USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
       ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
       ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
       SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
@@ -47,16 +46,16 @@ jobs:
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
 
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
-        with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
-
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
-        with:
-          status: success
-          fields: repo,message,author,job,eventName,took
+#      - name: Notify about failure
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION != 'success'
+#        with:
+#          status: failure
+#          fields: repo,message,author,job,eventName,took
+#
+#      - name: Notify about success
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION == 'success'
+#        with:
+#          status: success
+#          fields: repo,message,author,job,eventName,took

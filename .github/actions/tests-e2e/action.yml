@@ -2,8 +2,11 @@
 name: Test E2E
 description: Check client against production API
 inputs:
-  secrets-input:
-     description: "GitHub secrets"
+  sa-api-token:
+     description: "Api token for service account"
+     required: true
+  user-api-token:
+     description: "Api token for regular user"
      required: true
 runs:
     using: "composite"
@@ -23,19 +26,16 @@ runs:
           pip list
         shell: bash
 
-      - name: E2E - Client
-        run: |
-          pytest ./e2e_tests -m "not integrations"
-        shell: bash
-
       - name: E2E - Service Accounts
         env:
-          NEPTUNE_API_TOKEN: ${{ inputs.secret_inputsE2E_SERVICE_ACCOUNT_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token}}
         run: |
           pytest ./e2e_tests -m "not integrations"
         shell: bash
 
       - name: E2E - Integrations
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.secret-inputs.E2E_NEPTUNE_API_TOKEN }}
         run: |
           pytest ./e2e_tests -m integrations
         shell: bash
@@ -45,7 +45,7 @@ runs:
         with:
           working_directory: neptune_fastai
         env:
-          NEPTUNE_API_TOKEN: ${{ inputs.secret_inputsE2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
           NEPTUNE_PROJECT: e2e-tests/e2e
 
       - name: Test Kedro integration
@@ -53,7 +53,7 @@ runs:
         with:
           working_directory: neptune_kedro
         env:
-          NEPTUNE_API_TOKEN: ${{ inputs.secret_inputsE2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
           NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
 
       - name: Test Prophet integration
@@ -61,5 +61,5 @@ runs:
         with:
           working_directory: neptune_prophet
         env:
-          NEPTUNE_API_TOKEN: ${{ inputs.secret_inputsE2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
           NEPTUNE_PROJECT: e2e-tests/e2e
