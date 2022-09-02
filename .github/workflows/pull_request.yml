@@ -13,7 +13,7 @@ jobs:
       - name: Lint
         uses: ./.github/actions/lint
 
-  integration:
+  test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     strategy:
@@ -24,5 +24,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Test
+      - name: Tests
         uses: ./.github/actions/tests

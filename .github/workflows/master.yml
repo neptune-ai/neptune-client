@@ -33,7 +33,7 @@ jobs:
           # Fetching all history fetches also last tag and helps versioneer
           fetch-depth: 0
 
-      - name: Test
+      - name: Tests
         uses: ./.github/actions/tests
 
   test-e2e:
