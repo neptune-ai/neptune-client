@@ -2,6 +2,7 @@
 
 Faker
 pytest-tap
+pytest-timeout
 
 # integrations
 pytorch-lightning
