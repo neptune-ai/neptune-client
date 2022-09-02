@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
 import threading
 from typing import Optional
@@ -23,7 +22,6 @@ from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
     NeptuneException,
-    NeptuneInitParametersCollision,
     NeptuneMissingRequiredInitParameter,
     NeptuneModelKeyAlreadyExistsError,
     NeptuneObjectCreationConflict,
@@ -40,17 +38,16 @@ from neptune.new.internal.init.parameters import (
 )
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
+from neptune.new.internal.utils.deprecation import deprecated_id_parameter
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.metadata_containers import Model
 from neptune.new.types.mode import Mode
 
-_logger = logging.getLogger(__name__)
 
-
+@deprecated_id_parameter(deprecated_kwarg_name="model")
 def init_model(
     *,
     with_id: Optional[str] = None,
-    model: Optional[str] = None,
     name: Optional[str] = None,
     key: Optional[str] = None,
     project: Optional[str] = None,
@@ -59,16 +56,6 @@ def init_model(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Model:
-    if model:
-        if with_id:
-            raise NeptuneInitParametersCollision("with_id", "model", method_name="init_model")
-
-        _logger.warning(
-            "parameter `model` is deprecated, use `with_id` instead."
-            " We'll end support of it in `neptune-client==1.0.0`."
-        )
-        with_id = model
-
     verify_type("with_id", with_id, (str, type(None)))
     verify_type("name", name, (str, type(None)))
     verify_type("key", key, (str, type(None)))

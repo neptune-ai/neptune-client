@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
 import threading
 from typing import Optional
@@ -23,7 +22,6 @@ from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import (
     NeedExistingModelVersionForReadOnlyMode,
     NeptuneException,
-    NeptuneInitParametersCollision,
     NeptuneMissingRequiredInitParameter,
 )
 from neptune.new.internal import id_formats
@@ -38,17 +36,16 @@ from neptune.new.internal.init.parameters import (
 )
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
+from neptune.new.internal.utils.deprecation import deprecated_id_parameter
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.metadata_containers import Model, ModelVersion
 from neptune.new.types.mode import Mode
 
-_logger = logging.getLogger(__name__)
 
-
+@deprecated_id_parameter(deprecated_kwarg_name="version")
 def init_model_version(
     *,
     with_id: Optional[str] = None,
-    version: Optional[str] = None,
     name: Optional[str] = None,
     model: Optional[str] = None,
     project: Optional[str] = None,
@@ -57,18 +54,6 @@ def init_model_version(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> ModelVersion:
-    if version:
-        if with_id:
-            raise NeptuneInitParametersCollision(
-                "with_id", "version", method_name="init_model_version"
-            )
-
-        _logger.warning(
-            "parameter `version` is deprecated, use `with_id` instead."
-            " We'll end support of it in `neptune-client==1.0.0`."
-        )
-        with_id = version
-
     verify_type("with_id", with_id, (str, type(None)))
     verify_type("name", name, (str, type(None)))
     verify_type("model", model, (str, type(None)))

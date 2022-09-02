@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
 import threading
 import typing
@@ -30,7 +29,6 @@ from neptune.new.envs import (
 )
 from neptune.new.exceptions import (
     NeedExistingRunForReadOnlyMode,
-    NeptuneInitParametersCollision,
     NeptunePossibleLegacyUsageException,
     NeptuneRunResumeAndCustomIdCollision,
 )
@@ -55,6 +53,7 @@ from neptune.new.internal.streams.std_capture_background_job import (
     StdoutCaptureBackgroundJob,
 )
 from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.internal.utils.deprecation import deprecated_id_parameter
 from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
 from neptune.new.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
@@ -66,9 +65,6 @@ from neptune.new.internal.websockets.websocket_signals_background_job import (
 from neptune.new.metadata_containers import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
-
-_logger = logging.getLogger(__name__)
-
 
 LEGACY_KWARGS = ("project_qualified_name", "backend")
 
@@ -82,11 +78,11 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
+@deprecated_id_parameter(deprecated_kwarg_name="run")
 def init_run(
     project: Optional[str] = None,
     api_token: Optional[str] = None,
     with_id: Optional[str] = None,
-    run: Optional[str] = None,
     custom_run_id: Optional[str] = None,
     mode: Optional[str] = None,
     name: Optional[str] = None,
@@ -201,15 +197,6 @@ def init_run(
        https://docs.neptune.ai/api-reference/neptune#.init
     """
     _check_for_extra_kwargs(init_run.__name__, kwargs)
-    if run:
-        if with_id:
-            raise NeptuneInitParametersCollision("with_id", "run", method_name="init_run")
-
-        _logger.warning(
-            "parameter `run` is deprecated, use `with_id` instead."
-            " We'll end support of it in `neptune-client==1.0.0`."
-        )
-        with_id = run
 
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
