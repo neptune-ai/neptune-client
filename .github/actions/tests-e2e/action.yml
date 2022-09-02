@@ -12,24 +12,29 @@ runs:
       - name: Install dependencies
         run: |
           pip install -e . && pip install -r requirements/e2e_requirements.txt
+        shell: bash
 
       - name: List dependencies
         run: |
           pip list
+        shell: bash
 
       - name: E2E - Client
         run: |
           pytest ./e2e_tests -m "not integrations"
+        shell: bash
 
       - name: E2E - Service Accounts
         env:
           NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         run: |
           pytest ./e2e_tests -m "not integrations"
+        shell: bash
 
       - name: E2E - Integrations
         run: |
           pytest ./e2e_tests -m integrations
+        shell: bash
 
       - name: Test Fast.ai integration
         uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
