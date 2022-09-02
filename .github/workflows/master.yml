@@ -69,6 +69,8 @@ jobs:
 
       - name: Tests E2E
         uses: ./.github/actions/tests-e2e
+        with:
+          secrets-input: $(secrets)
 
   notify:
     needs: [lint, test, test-e2e]

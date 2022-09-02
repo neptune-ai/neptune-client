@@ -1,6 +1,10 @@
 ---
 name: Test E2E
 description: Check client against production API
+inputs:
+  secrets-input:
+     description: "GitHub secrets"
+     required: true
 runs:
     using: "composite"
     steps:
@@ -26,7 +30,7 @@ runs:
 
       - name: E2E - Service Accounts
         env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ inputs.secret_inputsE2E_SERVICE_ACCOUNT_API_TOKEN }}
         run: |
           pytest ./e2e_tests -m "not integrations"
         shell: bash
@@ -41,7 +45,7 @@ runs:
         with:
           working_directory: neptune_fastai
         env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ inputs.secret_inputsE2E_NEPTUNE_API_TOKEN }}
           NEPTUNE_PROJECT: e2e-tests/e2e
 
       - name: Test Kedro integration
@@ -49,7 +53,7 @@ runs:
         with:
           working_directory: neptune_kedro
         env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ inputs.secret_inputsE2E_NEPTUNE_API_TOKEN }}
           NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
 
       - name: Test Prophet integration
@@ -57,5 +61,5 @@ runs:
         with:
           working_directory: neptune_prophet
         env:
-          NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
+          NEPTUNE_API_TOKEN: ${{ inputs.secret_inputsE2E_NEPTUNE_API_TOKEN }}
           NEPTUNE_PROJECT: e2e-tests/e2e
