@@ -17,6 +17,7 @@
 import os
 import random
 import time
+from datetime import datetime
 
 import boto3
 import pytest
@@ -32,9 +33,9 @@ from neptune.management import (
     add_project_member,
     add_project_service_account,
     create_project,
-    delete_project,
 )
 from neptune.management.internal.utils import normalize_project_name
+from neptune.new import init_project
 
 fake = Faker()
 
@@ -87,7 +88,9 @@ def environment():
         service_account=raw_env.service_account_name,
     )
 
-    # delete_project(name=created_project_identifier, api_token=admin_token)
+    project = init_project(name=created_project_identifier, api_token=admin_token)
+    project["finished"] = datetime.now()
+    project.stop()
 
 
 @pytest.fixture(scope="session")
