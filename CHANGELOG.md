@@ -1,6 +1,6 @@
 ## [UNRELEASED] neptune-client 0.16.7
 
-## Features
+### Features
 - Exposed integrations related utils ([#983](https://github.com/neptune-ai/neptune-client/pull/983))
 - Introduce filtering columns when fetching run, model and model_version tables ([#986](https://github.com/neptune-ai/neptune-client/pull/986))
 
