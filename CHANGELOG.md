@@ -1,12 +1,18 @@
-## [UNRELEASED] neptune-client 0.16.6
+## [UNRELEASED] neptune-client 0.16.7
 
 ## Features
 - Exposed integrations related utils ([#983](https://github.com/neptune-ai/neptune-client/pull/983))
+- Introduce filtering columns when fetching run, model and model_version tables ([#986](https://github.com/neptune-ai/neptune-client/pull/986))
+
+## neptune-client 0.16.6
+
+### Features
 - Added support for Prophet integration ([#978](https://github.com/neptune-ai/neptune-client/pull/978))
+- Log argparse.Namespace objects as dicts ([#984](https://github.com/neptune-ai/neptune-client/pull/984))
 
 ## neptune-client 0.16.5
 
-## Features
+### Features
 - Added `NEPTUNE_MODE` environment variable ([#928](https://github.com/neptune-ai/neptune-client/pull/928))
 - Added support of Service account management ([#927](https://github.com/neptune-ai/neptune-client/pull/927))
 - More informational exception due to plotly and matplotlib incompatibility ([#960](https://github.com/neptune-ai/neptune-client/pull/960))
@@ -18,67 +24,69 @@
 
 ## neptune-client 0.16.4
 
-## Fixes
+### Fixes
 - Fix uploading in-memory files lager than 5MB ([#924](https://github.com/neptune-ai/neptune-client/pull/924))
 - fetch_extension added to Handler ([#923](https://github.com/neptune-ai/neptune-client/pull/923))
 
-## Changes
+### Changes
 - Force jsonschema version < 4.0.0 ([#922](https://github.com/neptune-ai/neptune-client/pull/922))
 
 - Rename and copy update for UnsupportedClientVersion and DeprecatedClientLibraryVersion ([#917](https://github.com/neptune-ai/neptune-client/pull/917))
 
 ## neptune-client 0.16.3
 
-## Features
+### Features
 - Added fetching Models method to Project ([#916](https://github.com/neptune-ai/neptune-client/pull/916))
 
-## Fixes
+### Fixes
 - Fix computing of a multipart upload chunk size ([#897](https://github.com/neptune-ai/neptune-client/pull/897))
 - Matching all listed tags instead of any when calling `fetch_runs_table` ([#899](https://github.com/neptune-ai/neptune-client/pull/899))
 - Fix invalid processing of delete followed by file upload in a single batch ([#880](https://github.com/neptune-ai/neptune-client/pull/880))
+- Stop hanging indefinitely on wait when async data synchronization process is dead ([#909](https://github.com/neptune-ai/neptune-client/pull/909))
+- Finish stop() faster when async data synchronization process dies ([#909](https://github.com/neptune-ai/neptune-client/pull/909))
 
-## Changes
+### Changes
 - `click.echo` replaced with `logging` ([#903](https://github.com/neptune-ai/neptune-client/pull/903))
 
 ## neptune-client 0.16.2
 
-## Features
+### Features
  - Sync only offline runs inside '.neptune' directory CLI flag ([#894](https://github.com/neptune-ai/neptune-client/pull/894))
 
-## Fixes
+### Fixes
 - Fix handling of server errors ([#896](https://github.com/neptune-ai/neptune-client/pull/896))
 
 ## neptune-client 0.16.1
 
-## Features
+### Features
 - Print metadata url on stop ([#883](https://github.com/neptune-ai/neptune-client/pull/883))
 
-## Fixes
+### Fixes
 - Fix handling Internal Server Error ([#885](https://github.com/neptune-ai/neptune-client/pull/885))
 
 ## neptune-client 0.16.0
 
-## Features
+### Features
 - Added python 3.10 support ([#879](https://github.com/neptune-ai/neptune-client/pull/879))
 - Dropped official support for python 3.6 ([#879](https://github.com/neptune-ai/neptune-client/pull/879))
 
-## Fixes
+### Fixes
 - restart upload when file changes during ([#877](https://github.com/neptune-ai/neptune-client/pull/877))
 
 ## neptune-client 0.15.2
 
-## Features
+### Features
 - Added support for workspace visibility in Management API ([#843](https://github.com/neptune-ai/neptune-client/pull/843))
 - Exposed container with a property of Handler ([#864](https://github.com/neptune-ai/neptune-client/pull/864))
 
 ## neptune-client 0.15.1
 
-## Fixes
+### Fixes
 - Restore __version__ in neptune.new ([#860](https://github.com/neptune-ai/neptune-client/pull/860))
 
 ## neptune-client 0.15.0
 
-## Features
+### Features
 - Methods for creating and manipulating Model Registry objects ([#794](https://github.com/neptune-ai/neptune-client/pull/794))
 
 ### Changes
@@ -89,10 +97,10 @@
 
 ## neptune-client 0.14.3
 
-## Features
+### Features
 - Stripping whitespaces from Neptune API Token ([#825](https://github.com/neptune-ai/neptune-client/pull/825))
 
-## Fixes
+### Fixes
 - Raise proper exception when invalid token were provided ([#825](https://github.com/neptune-ai/neptune-client/pull/825))
 - Make status error-handling in legacy client consistent with neptune.new ([#829](https://github.com/neptune-ai/neptune-client/pull/829))
 
@@ -101,7 +109,7 @@
 ### Features
 - Use new file upload API ([#789](https://github.com/neptune-ai/neptune-client/pull/789))
 
-## Fixes
+### Fixes
 - Fixed listing available workspaces when invalid name was provided ([#818](https://github.com/neptune-ai/neptune-client/pull/818))
 - Added proper docstrings for Project-Level Metadata ([#812](https://github.com/neptune-ai/neptune-client/pull/812))
 - Fixed backward compatibility when syncing old offline data ([#810](https://github.com/neptune-ai/neptune-client/pull/810))
@@ -111,7 +119,7 @@
 
 ## neptune-client 0.14.1
 
-## Fixes
+### Fixes
 - Fixed legacy url in NVML information ([#795](https://github.com/neptune-ai/neptune-client/pull/795))
 - Make init_project accepting kwargs only ([#805](https://github.com/neptune-ai/neptune-client/pull/805))
 

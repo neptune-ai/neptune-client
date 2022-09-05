@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import abc
+import argparse
 import atexit
 import itertools
 import threading
@@ -22,7 +23,7 @@ import traceback
 from contextlib import AbstractContextManager
 from datetime import datetime
 from functools import wraps
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 
 from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
@@ -256,6 +257,8 @@ class MetadataContainer(AbstractContextManager):
             pass
         elif isinstance(value, Handler):
             value = ValueCopy(value)
+        elif isinstance(value, argparse.Namespace):
+            value = Namespace(vars(value))
         elif is_bool(value):
             value = Boolean(value)
         elif is_int(value):
@@ -359,11 +362,19 @@ class MetadataContainer(AbstractContextManager):
     def _shutdown_hook(self):
         self.stop()
 
-    def _fetch_entries(self, child_type: ContainerType, query: NQLQuery) -> Table:
+    def _fetch_entries(
+        self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]]
+    ) -> Table:
+        if columns is not None:
+            # always return entries with `sys/id` column when filter applied
+            columns = set(columns)
+            columns.add("sys/id")
+
         leaderboard_entries = self._backend.search_leaderboard_entries(
             project_id=self._project_id,
             types=[child_type],
             query=query,
+            columns=columns,
         )
 
         return Table(

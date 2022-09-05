@@ -15,13 +15,20 @@
 #
 
 # pylint: disable=protected-access
+import contextlib
 import os
+import time
 from abc import abstractmethod
+from io import StringIO
+from unittest.mock import Mock
+
+import pytest
 
 from neptune.new.exceptions import (
     MetadataInconsistency,
     MissingFieldException,
     NeptuneOfflineModeFetchException,
+    NeptuneSynchronizationAlreadyStoppedException,
     TypeDoesNotSupportAttributeException,
 )
 
@@ -77,6 +84,41 @@ class AbstractExperimentTestMixin:
                 "data-1.log",
                 os.listdir(f".neptune/async/{exp_dir}/{execution_dir}"),
             )
+
+    @pytest.mark.timeout(10)
+    def test_async_mode_wait_on_dead(self):
+        with self.call_init(mode="async", flush_period=0.5) as exp:
+            exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
+            exp["some/variable"] = 13
+            # wait for the process to die
+            time.sleep(1)
+            with self.assertRaises(NeptuneSynchronizationAlreadyStoppedException):
+                exp.wait()
+
+    @pytest.mark.timeout(10)
+    def test_async_mode_die_during_wait(self):
+        with self.call_init(mode="async", flush_period=1) as exp:
+            exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
+            exp["some/variable"] = 13
+            with self.assertRaises(NeptuneSynchronizationAlreadyStoppedException):
+                exp.wait()
+
+    @pytest.mark.timeout(10)
+    def test_async_mode_stop_on_dead(self):
+        stream = StringIO()
+        with contextlib.redirect_stdout(stream):
+            exp = self.call_init(mode="async", flush_period=0.5)
+            update_freq = 1
+            default_freq = exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS
+            try:
+                exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = update_freq
+                exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
+                exp["some/variable"] = 13
+                exp.stop()
+            finally:
+                exp._op_processor.STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = default_freq
+
+        self.assertIn("NeptuneSynchronizationAlreadyStopped", stream.getvalue())
 
     def test_missing_attribute(self):
         exp = self.call_init(mode="debug")

@@ -20,6 +20,7 @@ import threading
 from time import monotonic, time
 from typing import List, Optional
 
+from neptune.new.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
@@ -86,7 +87,15 @@ class AsyncOperationProcessor(OperationProcessor):
         self.flush()
         waiting_for_version = self._last_version
         self._consumer.wake_up()
-        self._waiting_cond.wait_for(lambda: self._consumed_version >= waiting_for_version)
+
+        # Probably reentering lock just for sure
+        with self._waiting_cond:
+            self._waiting_cond.wait_for(
+                lambda: self._consumed_version >= waiting_for_version
+                or not self._consumer.is_running()
+            )
+        if not self._consumer.is_running():
+            raise NeptuneSynchronizationAlreadyStoppedException()
 
     def flush(self):
         self._queue.flush()
@@ -159,6 +168,11 @@ class AsyncOperationProcessor(OperationProcessor):
                 )
                 return
 
+            if not self._consumer.is_running():
+                exception = NeptuneSynchronizationAlreadyStoppedException()
+                logger.warning(str(exception))
+                return
+
             logger.warning(
                 "Still waiting for the remaining %s operations" " (%.2f%% done). Please wait.",
                 size_remaining,
@@ -188,6 +202,14 @@ class AsyncOperationProcessor(OperationProcessor):
             self._processor = processor
             self._batch_size = batch_size
             self._last_flush = 0
+
+        def run(self):
+            try:
+                super().run()
+            except Exception:
+                with self._processor._waiting_cond:
+                    self._processor._waiting_cond.notify_all()
+                raise
 
         def work(self) -> None:
             ts = time()
