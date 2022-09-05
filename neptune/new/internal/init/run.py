@@ -53,7 +53,7 @@ from neptune.new.internal.streams.std_capture_background_job import (
     StdoutCaptureBackgroundJob,
 )
 from neptune.new.internal.utils import verify_collection_type, verify_type
-from neptune.new.internal.utils.deprecation import deprecated_id_parameter
+from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
 from neptune.new.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
@@ -78,7 +78,7 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
-@deprecated_id_parameter(deprecated_kwarg_name="run")
+@deprecated_parameter(deprecated_kwarg_name="run", required_kwarg_name="with_id")
 def init_run(
     project: Optional[str] = None,
     api_token: Optional[str] = None,

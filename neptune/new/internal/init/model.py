@@ -38,13 +38,13 @@ from neptune.new.internal.init.parameters import (
 )
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
-from neptune.new.internal.utils.deprecation import deprecated_id_parameter
+from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.metadata_containers import Model
 from neptune.new.types.mode import Mode
 
 
-@deprecated_id_parameter(deprecated_kwarg_name="model")
+@deprecated_parameter(deprecated_kwarg_name="model", required_kwarg_name="with_id")
 def init_model(
     *,
     with_id: Optional[str] = None,
