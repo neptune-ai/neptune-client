@@ -58,13 +58,46 @@ class Model(MetadataContainer):
         return self._url.rstrip("/") + "/metadata"
 
     def fetch_model_versions_table(self, columns: Optional[Iterable[str]] = None) -> Table:
-        """Retrieve all model versions of the given model.
-        TODO: columns parameter docs
+        """Retrieve all versions of the given model.
+
+        Args:
+            columns: Names of columns to include in the table, as a list of namespace or field names.
+                The Neptune ID ("sys/id") is included automatically.
+                Examples:
+                    Fields: `["params/lr", "params/batch", "val/acc"]` - these fields are included as columns.
+                    Namespaces: `["params", "val"]` - all the fields inside the namespaces are included as columns.
+                If `None` (default), all the columns of the model versions table are included.
 
         Returns:
-            ``Table``: object containing experiments matching the specified criteria.
+            `Table` object containing `ModelVersion` objects that match the specified criteria.
 
-            Use `.to_pandas()` to convert it to Pandas `DataFrame`.
+            Use `to_pandas()` to convert it to a pandas DataFrame.
+
+        Examples:
+            >>> import neptune.new as neptune
+
+            >>> # Initialize model with the ID "CLS-FOREST"
+            ... model = neptune.init_model(model="CLS-FOREST")
+
+            >>> # Fetch the metadata of all model versions as a pandas DataFrame
+            ... model_versions_df = model.fetch_model_versions_table().to_pandas()
+
+            >>> # Fetch the metadata of all model versions as a pandas DataFrame,
+            ... # including only the fields "params/lr" and "val/loss" as columns:
+            ... model_versions = model.fetch_model_versions_table(columns=["params/lr", "val/loss"])
+            ... model_versions_df = model_versions.to_pandas()
+
+            >>> # Sort model versions by size
+            ... model_versions_df = model_versions_df.sort_values(by="sys/size")
+
+            >>> # Sort model versions by creation time
+            ... model_versions_df = model_versions_df.sort_values(by="sys/creation_time", ascending=False)
+
+            >>> # Extract the last model version ID
+            ... last_model_version_id = model_versions_df["sys/id"].values[0]
+
+        You may also want to check the API referene in the docs:
+            https://docs.neptune.ai/api-reference/model#.fetch_model_versions_table
         """
         return MetadataContainer._fetch_entries(
             self,
