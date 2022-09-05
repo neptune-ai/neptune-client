@@ -1,8 +1,7 @@
-name: All
+name: Release
 on:
   push:
     branches:
-      - master
       - jk/e2e-github
     tags:
       - "*"
@@ -37,12 +36,13 @@ jobs:
         uses: ./.github/actions/tests
 
   test-e2e:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
+    timeout-minutes: 75
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
-        python-version: ["3.7"]
+        python-version: ["3.7", "3.8", "3.9", "3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
@@ -66,9 +66,6 @@ jobs:
           # Fetching all history fetches also last tag and helps versioneer
           fetch-depth: 0
 
-      - name: Print
-        run: echo "Here $ADMIN_USERNAME"
-
       - name: Tests E2E
         uses: ./.github/actions/tests-e2e
         with:
@@ -84,19 +81,19 @@ jobs:
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
 
-#      - name: Notify about failure
-#        uses: 8398a7/action-slack@v3
-#        if: env.WORKFLOW_CONCLUSION != 'success'
-#        with:
-#          status: failure
-#          fields: repo,message,author,job,eventName,took
-#
-#      - name: Notify about success
-#        uses: 8398a7/action-slack@v3
-#        if: env.WORKFLOW_CONCLUSION == 'success'
-#        with:
-#          status: success
-#          fields: repo,message,author,job,eventName,took
+      - name: Notify about failure
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION != 'success'
+        with:
+          status: failure
+          fields: repo,message,author,job,eventName,took
+
+      - name: Notify about success
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION == 'success'
+        with:
+          status: success
+          fields: repo,message,author,job,eventName,took
 
   publish:
     needs: [lint, test, test-e2e]
@@ -111,12 +108,12 @@ jobs:
         with:
           python-version: "3.10"
 
-#      - name: Build and test
-#        run: |
-#          python setup.py sdist
-#
-#      - name: Publish package
-#        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
-#        with:
-#          user: __token__
-#          password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Build and test
+        run: |
+          python setup.py sdist
+
+      - name: Publish package
+        uses: pypa/gh-action-pypi-publish@54b39fb9371c0b3a6f9f14bb8a67394defc7a806
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}

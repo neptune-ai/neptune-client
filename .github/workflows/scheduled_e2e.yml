@@ -1,4 +1,4 @@
-name: All
+name: Scheduled E2E
 on:
   push:
     branches:
@@ -9,7 +9,7 @@ on:
 jobs:
   test-e2e:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
+    timeout-minutes: 75
     strategy:
       matrix:
         os: [ubuntu-latest, macos-latest]
@@ -52,16 +52,16 @@ jobs:
     steps:
       - uses: technote-space/workflow-conclusion-action@v2
 
-#      - name: Notify about failure
-#        uses: 8398a7/action-slack@v3
-#        if: env.WORKFLOW_CONCLUSION != 'success'
-#        with:
-#          status: failure
-#          fields: repo,message,author,job,eventName,took
-#
-#      - name: Notify about success
-#        uses: 8398a7/action-slack@v3
-#        if: env.WORKFLOW_CONCLUSION == 'success'
-#        with:
-#          status: success
-#          fields: repo,message,author,job,eventName,took
+      - name: Notify about failure
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION != 'success'
+        with:
+          status: failure
+          fields: repo,message,author,job,eventName,took
+
+      - name: Notify about success
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION == 'success'
+        with:
+          status: success
+          fields: repo,message,author,job,eventName,took
