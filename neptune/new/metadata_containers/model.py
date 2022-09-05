@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Iterable, Optional
+
 from neptune.new.internal.backends.nql import (
     NQLAttributeOperator,
     NQLAttributeType,
@@ -55,8 +57,9 @@ class Model(MetadataContainer):
     def _metadata_url(self) -> str:
         return self._url.rstrip("/") + "/metadata"
 
-    def fetch_model_versions_table(self) -> Table:
+    def fetch_model_versions_table(self, columns: Optional[Iterable[str]] = None) -> Table:
         """Retrieve all model versions of the given model.
+        TODO: columns parameter docs
 
         Returns:
             ``Table``: object containing experiments matching the specified criteria.
@@ -72,4 +75,5 @@ class Model(MetadataContainer):
                 operator=NQLAttributeOperator.EQUALS,
                 type=NQLAttributeType.STRING,
             ),
+            columns=columns,
         )

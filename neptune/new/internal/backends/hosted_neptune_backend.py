@@ -1026,10 +1026,16 @@ class HostedNeptuneBackend(NeptuneBackend):
         project_id: UniqueId,
         types: Optional[Iterable[ContainerType]] = None,
         query: Optional[NQLQuery] = None,
+        columns: Optional[Iterable[str]] = None,
     ) -> List[LeaderboardEntry]:
-        query_params = {}
         if query:
             query_params = {"query": {"query": str(query)}}
+        else:
+            query_params = {}
+        if columns:
+            attributes_filter = {"attributeFilters": [{"path": column} for column in columns]}
+        else:
+            attributes_filter = {}
 
         def get_portion(limit, offset):
             return (
@@ -1038,6 +1044,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                     type=list(map(lambda container_type: container_type.to_api(), types)),
                     params={
                         **query_params,
+                        **attributes_filter,
                         "pagination": {"limit": limit, "offset": offset},
                     },
                     **DEFAULT_REQUEST_KWARGS,

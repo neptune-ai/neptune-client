@@ -19,6 +19,7 @@ import os
 import uuid
 from abc import abstractmethod
 from datetime import datetime
+from typing import List
 
 from mock import Mock, patch
 
@@ -32,6 +33,7 @@ from neptune.new.internal.backends.api_model import (
     LeaderboardEntry,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
+from neptune.new.metadata_containers.metadata_containers_table import Table, TableEntry
 
 
 @patch(
@@ -43,11 +45,11 @@ class AbstractTablesTestMixin:
     expected_container_type = None
 
     @abstractmethod
-    def get_table(self):
+    def get_table(self, **kwargs) -> Table:
         pass
 
     @abstractmethod
-    def get_table_entries(self, table):
+    def get_table_entries(self, table) -> List[TableEntry]:
         pass
 
     @classmethod
@@ -94,6 +96,16 @@ class AbstractTablesTestMixin:
         attributes.append(AttributeWithProperties("file/set", AttributeType.FILE_SET, None))
         attributes.append(AttributeWithProperties("image/series", AttributeType.IMAGE_SERIES, None))
         return attributes
+
+    @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
+    def test_get_table_with_columns_filter(self, search_leaderboard_entries):
+        # when
+        self.get_table(columns=["datetime"])
+
+        # then
+        self.assertEqual(1, search_leaderboard_entries.call_count)
+        parameters = search_leaderboard_entries.call_args[1]
+        self.assertEqual({"sys/id", "datetime"}, parameters.get("columns"))
 
     @patch.object(NeptuneBackendMock, "search_leaderboard_entries")
     def test_get_table_as_pandas(self, search_leaderboard_entries):

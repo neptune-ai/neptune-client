@@ -15,21 +15,23 @@
 #
 
 import unittest
+from typing import List
 
 from neptune.new import init_model
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.metadata_containers.metadata_containers_table import Table, TableEntry
 from tests.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 
 class TestModelVersionTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.MODEL_VERSION
 
-    def get_table(self):
+    def get_table(self, **kwargs) -> Table:
         return init_model(
             model="organization/project",
             project="PRO-MOD",
             mode="read-only",
-        ).fetch_model_versions_table()
+        ).fetch_model_versions_table(**kwargs)
 
-    def get_table_entries(self, table):
+    def get_table_entries(self, table) -> List[TableEntry]:
         return table.to_rows()
