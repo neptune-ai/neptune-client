@@ -1,8 +1,6 @@
 name: Release
 on:
   push:
-    branches:
-      - jk/e2e-github
     tags:
       - "*"
 jobs:

@@ -3,7 +3,6 @@ on:
   push:
     branches:
       - master
-      - jk/e2e-github
 jobs:
   lint:
     runs-on: ubuntu-latest
