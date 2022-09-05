@@ -179,6 +179,7 @@ class TestFetchTable(BaseE2ETest):
         tag1, tag2 = str(uuid.uuid4()), str(uuid.uuid4())
 
         with neptune.init_run(project=environment.project) as run:
+            run_id1 = run["sys/id"].fetch()
             run["sys/tags"].add(tag1)
             run["sys/tags"].add(tag2)
 
@@ -190,11 +191,9 @@ class TestFetchTable(BaseE2ETest):
 
         project = neptune.get_project(name=environment.project)
 
-        runs_table = sorted(
-            project.fetch_runs_table(tag=[tag1, tag2]).to_rows(),
-            key=lambda r: r.get_attribute_value("sys/id"),
-        )
+        runs_table = project.fetch_runs_table(tag=[tag1, tag2]).to_rows()
         assert len(runs_table) == 1
+        assert runs_table[0].get_attribute_value("sys/id") == run_id1
 
     @pytest.mark.parametrize("container", ["model"], indirect=True)
     def test_fetch_model_versions_with_correct_ids(self, container: Model, environment):
