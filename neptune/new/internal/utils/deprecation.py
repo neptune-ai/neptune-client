@@ -19,25 +19,26 @@ from neptune.new.exceptions import NeptuneInitParametersCollision
 from neptune.new.internal.utils.logger import logger
 
 
-def deprecated_id_parameter(*, deprecated_kwarg_name):
+def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
     def deco(f):
         @wraps(f)
         def inner(*args, **kwargs):
             deprecated_param = kwargs.get(deprecated_kwarg_name)
-            with_id = kwargs.get("with_id")
+            required_param = kwargs.get(required_kwarg_name)
             if deprecated_param is not None:
-                if with_id is not None:
+                if required_param is not None:
                     raise NeptuneInitParametersCollision(
-                        "with_id", deprecated_kwarg_name, method_name=f.__name__
+                        required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__
                     )
 
                 logger.warning(
-                    "parameter `{deprecated_kwarg_name}` is deprecated, use `with_id` instead."
+                    "parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
                     " We'll end support of it in `neptune-client==1.0.0`.",
                     deprecated_kwarg_name=deprecated_kwarg_name,
+                    required_kwarg_name=required_kwarg_name,
                 )
 
-                kwargs["with_id"] = deprecated_param
+                kwargs[required_kwarg_name] = deprecated_param
                 del kwargs[deprecated_kwarg_name]
 
             return f(*args, **kwargs)
