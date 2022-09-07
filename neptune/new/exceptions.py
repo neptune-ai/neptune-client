@@ -569,18 +569,14 @@ class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyM
         )
 
 
-class NeptuneWrongInitParametersException(NeptuneException):
-    pass
-
-
-class NeptuneInitParametersCollision(NeptuneWrongInitParametersException):
+class NeptuneParametersCollision(NeptuneException):
     def __init__(self, parameter1, parameter2, method_name):
         self.parameter1 = parameter1
         self.parameter2 = parameter2
         self.method_name = method_name
         message = """
 {h1}
-----NeptuneInitParametersCollision-----------------------------------------
+----NeptuneParametersCollision-----------------------------------------
 {end}
 The {python}{parameter1}{end} and {python}{parameter2}{end} parameters of the {python}{method_name}(){end} method are mutually exclusive.
 
@@ -594,6 +590,16 @@ You may also want to check the following docs page:
                 parameter1=parameter1, parameter2=parameter2, method_name=method_name, **STYLES
             )
         )
+
+
+class NeptuneWrongInitParametersException(NeptuneException):
+    pass
+
+
+class NeptuneInitParametersCollision(
+    NeptuneWrongInitParametersException, NeptuneParametersCollision
+):
+    pass
 
 
 class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
