@@ -16,10 +16,8 @@
 import unittest
 from unittest import mock
 
-from neptune.new.exceptions import NeptuneInitParametersCollision
+from neptune.new.exceptions import NeptuneParametersCollision
 from neptune.new.internal.utils.deprecation import deprecated_parameter
-from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
-from tests.neptune.new.utils.file_helpers import create_file
 
 
 @deprecated_parameter(deprecated_kwarg_name="deprecated_param", required_kwarg_name="new_param")
@@ -43,5 +41,5 @@ class TestDeprecatedParameter(unittest.TestCase):
         )
 
     def test_conflict(self):
-        with self.assertRaises(NeptuneInitParametersCollision):
+        with self.assertRaises(NeptuneParametersCollision):
             fun(new_param=42, deprecated_param=42)

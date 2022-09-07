@@ -15,7 +15,7 @@
 #
 from functools import wraps
 
-from neptune.new.exceptions import NeptuneInitParametersCollision
+from neptune.new.exceptions import NeptuneParametersCollision
 from neptune.new.internal.utils.logger import logger
 
 
@@ -27,7 +27,7 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
             required_param = kwargs.get(required_kwarg_name)
             if deprecated_param is not None:
                 if required_param is not None:
-                    raise NeptuneInitParametersCollision(
+                    raise NeptuneParametersCollision(
                         required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__
                     )
 
