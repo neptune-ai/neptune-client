@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 0.16.7
+## neptune-client 0.16.7
 
 ### Features
 - Exposed integrations related utils ([#983](https://github.com/neptune-ai/neptune-client/pull/983))
