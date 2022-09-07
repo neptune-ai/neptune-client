@@ -15,6 +15,7 @@
 #
 import unittest
 from unittest import mock
+from unittest.mock import call
 
 from neptune.new.exceptions import NeptuneParametersCollision
 from neptune.new.internal.utils.deprecation import deprecated_parameter
@@ -37,11 +38,16 @@ class TestDeprecatedParameter(unittest.TestCase):
         # pylint: disable=missing-kwoa
         self.assertEqual(42, fun(deprecated_param=42))
         self.assertEqual(1, logger_mock.warning.call_count)
-        print(f"<< {list(logger_mock.warning.call_args.kwargs.keys())}")
-        print(f"<< {logger_mock.warning.call_args.kwargs.get('extra')}")
         self.assertEqual(
-            {"deprecated_kwarg_name": "deprecated_param", "required_kwarg_name": "new_param"},
-            logger_mock.warning.call_args.kwargs.get("extra"),
+            call(
+                "parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
+                " We'll end support of it in `neptune-client==1.0.0`.",
+                extra={
+                    "deprecated_kwarg_name": "deprecated_param",
+                    "required_kwarg_name": "new_param",
+                },
+            ),
+            logger_mock.warning.call_args,
         )
 
     def test_conflict(self):
