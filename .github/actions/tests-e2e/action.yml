@@ -1,0 +1,65 @@
+---
+name: Test E2E
+description: Check client against production API
+inputs:
+  sa-api-token:
+     description: "Api token for service account"
+     required: true
+  user-api-token:
+     description: "Api token for regular user"
+     required: true
+runs:
+    using: "composite"
+    steps:
+      - name: Install Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install -e . && pip install -r requirements/e2e_requirements.txt
+        shell: bash
+
+      - name: List dependencies
+        run: |
+          pip list
+        shell: bash
+
+      - name: E2E - Service Accounts
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token}}
+        run: |
+          pytest ./e2e_tests --timeout=600  --timeout_method=thread -m "not integrations"
+        shell: bash
+
+      - name: E2E - Integrations
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token }}
+        run: |
+          pytest ./e2e_tests --timeout=600  --timeout_method=thread -m integrations
+        shell: bash
+
+      - name: Test Fast.ai integration
+        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
+        with:
+          working_directory: neptune_fastai
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
+          NEPTUNE_PROJECT: e2e-tests/e2e
+
+      - name: Test Kedro integration
+        uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
+        with:
+          working_directory: neptune_kedro
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
+          NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
+
+      - name: Test Prophet integration
+        uses: neptune-ai/neptune-prophet/.github/actions/e2e@main
+        with:
+          working_directory: neptune_prophet
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
+          NEPTUNE_PROJECT: e2e-tests/e2e

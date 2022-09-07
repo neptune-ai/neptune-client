@@ -13,9 +13,9 @@ jobs:
       - name: Lint
         uses: ./.github/actions/lint
 
-  integration:
+  test:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 60
+    timeout-minutes: 20
     strategy:
       matrix:
         os: [ubuntu-latest]
@@ -24,19 +24,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Install Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt -r requirements/test_requirements.txt
-
-      - name: List dependencies
-        run: |
-          pip list
-
-      - name: Build and test
-        run : |
-          pytest ./tests
+      - name: Tests
+        uses: ./.github/actions/tests

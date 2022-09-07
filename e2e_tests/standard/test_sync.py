@@ -60,38 +60,36 @@ class TestSync(BaseE2ETest):
             )[0]
             with open(queue_dir / "last_put_version", encoding="utf-8") as last_put_version_f:
                 last_put_version = int(last_put_version_f.read())
-                with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
-                    queue_f.write(
-                        json.dumps(
-                            {
-                                "obj": {
-                                    "type": "AssignString",
-                                    "path": key.split("/"),
-                                    "value": updated_value,
-                                },
-                                "version": last_put_version + 1,
-                            }
-                        )
+            with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
+                queue_f.write(
+                    json.dumps(
+                        {
+                            "obj": {
+                                "type": "AssignString",
+                                "path": key.split("/"),
+                                "value": updated_value,
+                            },
+                            "version": last_put_version + 1,
+                        }
                     )
-                    queue_f.write(
-                        json.dumps(
-                            {
-                                "obj": {
-                                    "type": "CopyAttribute",
-                                    "path": ["copy"] + key.split("/"),
-                                    "container_id": container_id,
-                                    "container_type": container_type,
-                                    "source_path": key.split("/"),
-                                    "source_attr_name": "String",
-                                },
-                                "version": last_put_version + 2,
-                            }
-                        )
+                )
+                queue_f.write(
+                    json.dumps(
+                        {
+                            "obj": {
+                                "type": "CopyAttribute",
+                                "path": ["copy"] + key.split("/"),
+                                "container_id": container_id,
+                                "container_type": container_type,
+                                "source_path": key.split("/"),
+                                "source_attr_name": "String",
+                            },
+                            "version": last_put_version + 2,
+                        }
                     )
-                with open(
-                    queue_dir / "last_put_version", "w", encoding="utf-8"
-                ) as last_put_version_f:
-                    last_put_version_f.write(str(last_put_version + 2))
+                )
+            with open(queue_dir / "last_put_version", "w", encoding="utf-8") as last_put_version_f:
+                last_put_version_f.write(str(last_put_version + 2))
 
             with reinitialize_container(
                 container_sys_id, container_type, project=environment.project
