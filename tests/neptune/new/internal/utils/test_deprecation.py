@@ -33,6 +33,8 @@ class TestDeprecatedParameter(unittest.TestCase):
 
     @mock.patch("neptune.new.internal.utils.deprecation.logger")
     def test_deprecated_replaced(self, logger_mock):
+        # pylint: disable=unexpected-keyword-arg
+        # pylint: disable=missing-kwoa
         self.assertEqual(42, fun(deprecated_param=42))
         self.assertEqual(1, logger_mock.warning.call_count)
         self.assertEqual(
@@ -42,4 +44,5 @@ class TestDeprecatedParameter(unittest.TestCase):
 
     def test_conflict(self):
         with self.assertRaises(NeptuneParametersCollision):
+            # pylint: disable=unexpected-keyword-arg
             fun(new_param=42, deprecated_param=42)

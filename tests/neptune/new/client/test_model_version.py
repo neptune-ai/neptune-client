@@ -25,8 +25,8 @@ from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     NeptuneException,
-    NeptuneInitParametersCollision,
     NeptuneOfflineModeChangeStageException,
+    NeptuneParametersCollision,
     NeptuneWrongInitParametersException,
 )
 from neptune.new.internal.backends.api_model import (
@@ -124,7 +124,7 @@ class TestClientModelVersion(AbstractExperimentTestMixin, unittest.TestCase):
     def test_wrong_parameters(self):
         with self.assertRaises(NeptuneWrongInitParametersException):
             init_model_version(with_id=None, model=None)
-        with self.assertRaises(NeptuneInitParametersCollision):
+        with self.assertRaises(NeptuneParametersCollision):
             # pylint: disable=unexpected-keyword-arg
             init_model_version(version="foo", with_id="foo")
 
