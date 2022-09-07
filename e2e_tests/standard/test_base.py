@@ -250,7 +250,7 @@ class TestFetchTable(BaseE2ETest):
         assert container1.get_attribute_value(key2) == value2
         assert container2.get_attribute_value(key1) == value1
         with pytest.raises(ValueError):
-            assert container2.get_attribute_value(key2)
+            container2.get_attribute_value(key2)
 
         def get_container1(**kwargs):
             containers_as_rows = get_containers_as_rows(**kwargs)
@@ -270,18 +270,18 @@ class TestFetchTable(BaseE2ETest):
 
         columns_empty = get_container1(columns=[])
         with pytest.raises(ValueError):
-            assert columns_empty.get_attribute_value(key1)
+            columns_empty.get_attribute_value(key1)
         with pytest.raises(ValueError):
-            assert columns_empty.get_attribute_value(key2)
+            columns_empty.get_attribute_value(key2)
 
         columns_with_one_key = get_container1(columns=[key1])
         assert columns_with_one_key.get_attribute_value(key1) == value1
         with pytest.raises(ValueError):
-            assert columns_with_one_key.get_attribute_value(key2)
+            columns_with_one_key.get_attribute_value(key2)
 
         columns_with_one_key = get_container1(columns=[key2])
         with pytest.raises(ValueError):
-            assert columns_with_one_key.get_attribute_value(key1)
+            columns_with_one_key.get_attribute_value(key1)
         assert columns_with_one_key.get_attribute_value(key2) == value2
 
     def test_fetch_runs_table(self, environment):
