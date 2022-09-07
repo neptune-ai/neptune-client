@@ -34,8 +34,10 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
                 logger.warning(
                     "parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
                     " We'll end support of it in `neptune-client==1.0.0`.",
-                    deprecated_kwarg_name=deprecated_kwarg_name,
-                    required_kwarg_name=required_kwarg_name,
+                    extra={
+                        "deprecated_kwarg_name": deprecated_kwarg_name,
+                        "required_kwarg_name": required_kwarg_name,
+                    },
                 )
 
                 kwargs[required_kwarg_name] = deprecated_param
