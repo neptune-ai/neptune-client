@@ -5,10 +5,6 @@
 - Add new with_id parameter to init functions ([#985](https://github.com/neptune-ai/neptune-client/pull/985))
 - Introduce filtering columns when fetching run, model and model_version tables ([#986](https://github.com/neptune-ai/neptune-client/pull/986))
 
-### Fixes
-- Stop hanging indefinitely on wait when async data synchronization process is dead ([#909](https://github.com/neptune-ai/neptune-client/pull/909))
-- Finish stop() faster when async data synchronization process dies ([#909](https://github.com/neptune-ai/neptune-client/pull/909))
-
 ## neptune-client 0.16.6
 
 ### Features
