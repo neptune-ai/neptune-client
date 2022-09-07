@@ -17,7 +17,7 @@ from typing import TYPE_CHECKING, List
 
 from neptune.new.exceptions import TypeDoesNotSupportAttributeException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.operation import Operation
+from neptune.new.internal.operation import AttributeOperation
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
@@ -36,7 +36,7 @@ class Attribute:
     def __getattr__(self, attr):
         raise TypeDoesNotSupportAttributeException(type_=type(self), attribute=attr)
 
-    def _enqueue_operation(self, operation: Operation, wait: bool):
+    def _enqueue_operation(self, operation: AttributeOperation, wait: bool):
         # pylint: disable=protected-access
         self._container._op_processor.enqueue_operation(operation, wait)
 

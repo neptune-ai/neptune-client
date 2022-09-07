@@ -19,10 +19,10 @@ from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.series import Series
 from neptune.new.internal.backends.api_model import FloatSeriesValues
 from neptune.new.internal.operation import (
+    AttributeOperation,
     ClearFloatLog,
     ConfigFloatSeries,
     LogFloats,
-    Operation,
 )
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.logger import logger
@@ -51,14 +51,14 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> List[Operation]:
+    ) -> List[AttributeOperation]:
         values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
         return [LogFloats(self._path, chunk) for chunk in split_to_chunks(values, 100)]
 
-    def _get_clear_operation(self) -> Operation:
+    def _get_clear_operation(self) -> AttributeOperation:
         return ClearFloatLog(self._path)
 
-    def _get_config_operation_from_value(self, value: Val) -> Optional[Operation]:
+    def _get_config_operation_from_value(self, value: Val) -> Optional[AttributeOperation]:
         return ConfigFloatSeries(self._path, value.min, value.max, value.unit)
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:

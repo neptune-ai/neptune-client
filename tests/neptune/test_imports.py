@@ -142,7 +142,7 @@ from neptune.new.attributes.atoms.string import StringVal
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.attribute import List
 from neptune.new.attributes.attribute import NeptuneBackend
-from neptune.new.attributes.attribute import Operation
+from neptune.new.attributes.attribute import AttributeOperation
 from neptune.new.attributes.file_set import Attribute
 from neptune.new.attributes.file_set import DeleteFiles
 from neptune.new.attributes.file_set import FileSet
@@ -176,7 +176,7 @@ from neptune.new.attributes.series.file_series import FileSeriesVal
 from neptune.new.attributes.series.file_series import ImageValue
 from neptune.new.attributes.series.file_series import Iterable
 from neptune.new.attributes.series.file_series import LogImages
-from neptune.new.attributes.series.file_series import Operation
+from neptune.new.attributes.series.file_series import AttributeOperation
 from neptune.new.attributes.series.file_series import OperationNotSupported
 from neptune.new.attributes.series.file_series import Series
 from neptune.new.attributes.series.file_series import Val
@@ -188,13 +188,13 @@ from neptune.new.attributes.series.float_series import FloatSeriesVal
 from neptune.new.attributes.series.float_series import FloatSeriesValues
 from neptune.new.attributes.series.float_series import Iterable
 from neptune.new.attributes.series.float_series import LogFloats
-from neptune.new.attributes.series.float_series import Operation
+from neptune.new.attributes.series.float_series import AttributeOperation
 from neptune.new.attributes.series.float_series import Series
 from neptune.new.attributes.series.float_series import Val
 from neptune.new.attributes.series.series import Attribute
 from neptune.new.attributes.series.series import Generic
 from neptune.new.attributes.series.series import Iterable
-from neptune.new.attributes.series.series import Operation
+from neptune.new.attributes.series.series import AttributeOperation
 from neptune.new.attributes.series.series import Series
 from neptune.new.attributes.series.series import SeriesVal
 from neptune.new.attributes.series.series import TypeVar
@@ -204,7 +204,7 @@ from neptune.new.attributes.series.string_series import FetchableSeries
 from neptune.new.attributes.series.string_series import Iterable
 from neptune.new.attributes.series.string_series import List
 from neptune.new.attributes.series.string_series import LogStrings
-from neptune.new.attributes.series.string_series import Operation
+from neptune.new.attributes.series.string_series import AttributeOperation
 from neptune.new.attributes.series.string_series import Series
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.series.string_series import StringSeriesVal
@@ -339,7 +339,7 @@ from neptune.new.sync import HostedNeptuneBackend
 from neptune.new.sync import NeptuneBackend
 from neptune.new.sync import NeptuneConnectionLostException
 from neptune.new.sync import NeptuneException
-from neptune.new.sync import Operation
+from neptune.new.sync import Operation  # TODO: other object is returned
 from neptune.new.sync import Path
 from neptune.new.sync import Project
 from neptune.new.sync import ProjectNotFound

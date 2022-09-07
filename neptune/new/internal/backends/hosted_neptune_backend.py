@@ -106,6 +106,7 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import (
+    AttributeOperation,
     DeleteAttribute,
     Operation,
     TrackFilesToArtifact,
@@ -490,7 +491,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         self,
         container_id: str,
         container_type: ContainerType,
-        upload_operations: List[Operation],
+        upload_operations: List[AttributeOperation],
     ) -> List[NeptuneException]:
         errors = list()
 
@@ -554,7 +555,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         self,
         container_id: str,
         container_type: ContainerType,
-        upload_operations: List[Operation],
+        upload_operations: List[AttributeOperation],
     ) -> List[NeptuneException]:
         while True:
             try:
@@ -571,7 +572,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         container_id: str,
         container_type: ContainerType,
         artifact_operations: List[TrackFilesToArtifact],
-    ) -> Tuple[List[Optional[NeptuneException]], List[Optional[Operation]]]:
+    ) -> Tuple[List[Optional[NeptuneException]], List[Optional[AttributeOperation]]]:
         errors = list()
         assign_operations = list()
 

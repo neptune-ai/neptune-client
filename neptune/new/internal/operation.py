@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 import abc
+import inspect
+from abc import ABC
 from dataclasses import dataclass
 from datetime import datetime
 from typing import TYPE_CHECKING, Generic, List, Optional, Set, Tuple, Type, TypeVar
@@ -31,16 +33,13 @@ T = TypeVar("T")
 
 
 def all_subclasses(cls):
-    return set(cls.__subclasses__()).union(
+    return set(c for c in cls.__subclasses__() if not inspect.isabstract(c)).union(
         [s for c in cls.__subclasses__() for s in all_subclasses(c)]
     )
 
 
 @dataclass
-class Operation:
-
-    path: List[str]
-
+class Operation(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         pass
@@ -60,7 +59,12 @@ class Operation:
 
 
 @dataclass
-class AssignFloat(Operation):
+class AttributeOperation(Operation, ABC):
+    path: List[str]
+
+
+@dataclass
+class AssignFloat(AttributeOperation):
 
     value: float
 
@@ -78,7 +82,7 @@ class AssignFloat(Operation):
 
 
 @dataclass
-class AssignInt(Operation):
+class AssignInt(AttributeOperation):
 
     value: int
 
@@ -96,7 +100,7 @@ class AssignInt(Operation):
 
 
 @dataclass
-class AssignBool(Operation):
+class AssignBool(AttributeOperation):
 
     value: bool
 
@@ -114,7 +118,7 @@ class AssignBool(Operation):
 
 
 @dataclass
-class AssignString(Operation):
+class AssignString(AttributeOperation):
 
     value: str
 
@@ -132,7 +136,7 @@ class AssignString(Operation):
 
 
 @dataclass
-class AssignDatetime(Operation):
+class AssignDatetime(AttributeOperation):
 
     value: datetime
 
@@ -150,7 +154,7 @@ class AssignDatetime(Operation):
 
 
 @dataclass
-class AssignArtifact(Operation):
+class AssignArtifact(AttributeOperation):
 
     hash: str
 
@@ -168,7 +172,7 @@ class AssignArtifact(Operation):
 
 
 @dataclass
-class UploadFile(Operation):
+class UploadFile(AttributeOperation):
 
     ext: str
     file_path: str
@@ -188,7 +192,7 @@ class UploadFile(Operation):
 
 
 @dataclass
-class UploadFileContent(Operation):
+class UploadFileContent(AttributeOperation):
 
     ext: str
     file_content: str
@@ -208,7 +212,7 @@ class UploadFileContent(Operation):
 
 
 @dataclass
-class UploadFileSet(Operation):
+class UploadFileSet(AttributeOperation):
 
     file_globs: List[str]
     reset: bool
@@ -245,7 +249,7 @@ class LogSeriesValue(Generic[T]):
 
 
 @dataclass
-class LogFloats(Operation):
+class LogFloats(AttributeOperation):
 
     ValueType = LogSeriesValue[float]
 
@@ -268,7 +272,7 @@ class LogFloats(Operation):
 
 
 @dataclass
-class LogStrings(Operation):
+class LogStrings(AttributeOperation):
 
     ValueType = LogSeriesValue[str]
 
@@ -315,7 +319,7 @@ class ImageValue:
 
 
 @dataclass
-class LogImages(Operation):
+class LogImages(AttributeOperation):
 
     ValueType = LogSeriesValue[ImageValue]
 
@@ -341,7 +345,7 @@ class LogImages(Operation):
 
 
 @dataclass
-class ClearFloatLog(Operation):
+class ClearFloatLog(AttributeOperation):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_clear_float_log(self)
 
@@ -351,7 +355,7 @@ class ClearFloatLog(Operation):
 
 
 @dataclass
-class ClearStringLog(Operation):
+class ClearStringLog(AttributeOperation):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_clear_string_log(self)
 
@@ -361,7 +365,7 @@ class ClearStringLog(Operation):
 
 
 @dataclass
-class ClearImageLog(Operation):
+class ClearImageLog(AttributeOperation):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_clear_image_log(self)
 
@@ -371,7 +375,7 @@ class ClearImageLog(Operation):
 
 
 @dataclass
-class ConfigFloatSeries(Operation):
+class ConfigFloatSeries(AttributeOperation):
 
     min: Optional[float]
     max: Optional[float]
@@ -393,7 +397,7 @@ class ConfigFloatSeries(Operation):
 
 
 @dataclass
-class AddStrings(Operation):
+class AddStrings(AttributeOperation):
 
     values: Set[str]
 
@@ -411,7 +415,7 @@ class AddStrings(Operation):
 
 
 @dataclass
-class RemoveStrings(Operation):
+class RemoveStrings(AttributeOperation):
 
     values: Set[str]
 
@@ -429,7 +433,7 @@ class RemoveStrings(Operation):
 
 
 @dataclass
-class ClearStringSet(Operation):
+class ClearStringSet(AttributeOperation):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_clear_string_set(self)
 
@@ -439,7 +443,7 @@ class ClearStringSet(Operation):
 
 
 @dataclass
-class DeleteFiles(Operation):
+class DeleteFiles(AttributeOperation):
 
     file_paths: Set[str]
 
@@ -457,7 +461,7 @@ class DeleteFiles(Operation):
 
 
 @dataclass
-class DeleteAttribute(Operation):
+class DeleteAttribute(AttributeOperation):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_delete_attribute(self)
 
@@ -467,7 +471,7 @@ class DeleteAttribute(Operation):
 
 
 @dataclass
-class TrackFilesToArtifact(Operation):
+class TrackFilesToArtifact(AttributeOperation):
     project_id: str
     entries: List[Tuple[str, Optional[str]]]
 
@@ -490,7 +494,7 @@ class TrackFilesToArtifact(Operation):
 
 
 @dataclass
-class ClearArtifact(Operation):
+class ClearArtifact(AttributeOperation):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_clear_artifact(self)
 
@@ -500,7 +504,7 @@ class ClearArtifact(Operation):
 
 
 @dataclass
-class CopyAttribute(Operation):
+class CopyAttribute(AttributeOperation):
     container_id: str
     container_type: ContainerType
     source_path: List[str]
@@ -536,7 +540,7 @@ class CopyAttribute(Operation):
             source_attr_cls,
         )
 
-    def resolve(self, backend: "NeptuneBackend") -> Operation:
+    def resolve(self, backend: "NeptuneBackend") -> AttributeOperation:
         # repack CopyAttribute op into target attribute assignment
         getter = self.source_attr_cls.getter
         create_assignment_operation = self.source_attr_cls.create_assignment_operation

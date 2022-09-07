@@ -196,14 +196,14 @@ class AlphaChannelWithValueDTO:
         self._y = y
 
 
-def _map_using_dict(el, el_name, source_dict) -> alpha_operation.Operation:
+def _map_using_dict(el, el_name, source_dict) -> alpha_operation.AttributeOperation:
     try:
         return source_dict[el]
     except KeyError as e:
         raise NeptuneException(f"We're not supporting {el} {el_name}.") from e
 
 
-def channel_type_to_operation(channel_type: ChannelType) -> alpha_operation.Operation:
+def channel_type_to_operation(channel_type: ChannelType) -> alpha_operation.AttributeOperation:
     _channel_type_to_operation = {
         ChannelType.TEXT: alpha_operation.LogStrings,
         ChannelType.NUMERIC: alpha_operation.LogFloats,
@@ -214,7 +214,7 @@ def channel_type_to_operation(channel_type: ChannelType) -> alpha_operation.Oper
 
 def channel_type_to_clear_operation(
     channel_type: ChannelType,
-) -> alpha_operation.Operation:
+) -> alpha_operation.AttributeOperation:
     _channel_type_to_operation = {
         ChannelType.TEXT: alpha_operation.ClearStringLog,
         ChannelType.NUMERIC: alpha_operation.ClearFloatLog,
@@ -225,7 +225,7 @@ def channel_type_to_clear_operation(
 
 def channel_value_type_to_operation(
     channel_value_type: ChannelValueType,
-) -> alpha_operation.Operation:
+) -> alpha_operation.AttributeOperation:
     _channel_value_type_to_operation = {
         ChannelValueType.TEXT_VALUE: alpha_operation.LogStrings,
         ChannelValueType.NUMERIC_VALUE: alpha_operation.LogFloats,

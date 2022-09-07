@@ -18,7 +18,11 @@ from typing import TYPE_CHECKING, Iterable, List, Optional
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.series import Series
 from neptune.new.internal.backends.api_model import StringSeriesValues
-from neptune.new.internal.operation import ClearStringLog, LogStrings, Operation
+from neptune.new.internal.operation import (
+    AttributeOperation,
+    ClearStringLog,
+    LogStrings,
+)
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
@@ -40,7 +44,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
 
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> List[Operation]:
+    ) -> List[AttributeOperation]:
         values = [v[:MAX_STRING_SERIES_VALUE_LENGTH] for v in value.values]
         if not self._value_truncation_occurred and any(
             [len(v) > MAX_STRING_SERIES_VALUE_LENGTH for v in value.values]
@@ -58,7 +62,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in values]
         return [LogStrings(self._path, chunk) for chunk in split_to_chunks(values, 10)]
 
-    def _get_clear_operation(self) -> Operation:
+    def _get_clear_operation(self) -> AttributeOperation:
         return ClearStringLog(self._path)
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:

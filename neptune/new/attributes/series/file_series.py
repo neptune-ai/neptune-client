@@ -21,10 +21,10 @@ from typing import Iterable, List, Optional
 from neptune.new.attributes.series.series import Series
 from neptune.new.exceptions import FileNotFound, OperationNotSupported
 from neptune.new.internal.operation import (
+    AttributeOperation,
     ClearImageLog,
     ImageValue,
     LogImages,
-    Operation,
 )
 from neptune.new.internal.utils import base64_encode
 from neptune.new.types import File
@@ -38,7 +38,7 @@ Data = File
 class FileSeries(Series[Val, Data]):
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> List[Operation]:
+    ) -> List[AttributeOperation]:
         values = [
             LogImages.ValueType(
                 ImageValue(
@@ -53,7 +53,7 @@ class FileSeries(Series[Val, Data]):
         ]
         return [LogImages(self._path, chunk) for chunk in split_to_chunks(values, 1)]
 
-    def _get_clear_operation(self) -> Operation:
+    def _get_clear_operation(self) -> AttributeOperation:
         return ClearImageLog(self._path)
 
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:

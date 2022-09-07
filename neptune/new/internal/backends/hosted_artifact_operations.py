@@ -31,7 +31,7 @@ from neptune.new.internal.artifacts.types import (
 from neptune.new.internal.backends.api_model import ArtifactModel
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
-from neptune.new.internal.operation import AssignArtifact, Operation
+from neptune.new.internal.operation import AssignArtifact, AttributeOperation
 
 
 def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):
@@ -51,7 +51,7 @@ def track_to_new_artifact(
     parent_identifier: str,
     entries: List[Tuple[str, Optional[str]]],
     default_request_params: Dict,
-) -> Optional[Operation]:
+) -> Optional[AttributeOperation]:
     files: List[ArtifactFileData] = _extract_file_list(path, entries)
 
     if not files:
@@ -87,7 +87,7 @@ def track_to_existing_artifact(
     parent_identifier: str,
     entries: List[Tuple[str, Optional[str]]],
     default_request_params: Dict,
-) -> Optional[Operation]:
+) -> Optional[AttributeOperation]:
     files: List[ArtifactFileData] = _extract_file_list(path, entries)
 
     if not files:

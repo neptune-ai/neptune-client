@@ -829,7 +829,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         )
 
     def _execute_upload_operation(
-        self, experiment: Experiment, upload_operation: alpha_operation.Operation
+        self, experiment: Experiment, upload_operation: alpha_operation.AttributeOperation
     ):
         experiment_id = experiment.internal_id
         try:
@@ -868,7 +868,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         return None
 
     def _execute_upload_operations_with_400_retry(
-        self, experiment: Experiment, upload_operation: alpha_operation.Operation
+        self, experiment: Experiment, upload_operation: alpha_operation.AttributeOperation
     ):
         while True:
             try:
@@ -879,7 +879,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
 
     @with_api_exceptions_handler
     def _execute_operations(
-        self, experiment: Experiment, operations: List[alpha_operation.Operation]
+        self, experiment: Experiment, operations: List[alpha_operation.AttributeOperation]
     ):
         experiment_id = experiment.internal_id
         file_operations = (
@@ -924,7 +924,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
 
     def _get_init_experiment_operations(
         self, name, description, params, properties, tags, hostname, entrypoint
-    ) -> List[alpha_operation.Operation]:
+    ) -> List[alpha_operation.AttributeOperation]:
         """Returns operations required to initialize newly created experiment"""
         init_operations = list()
 

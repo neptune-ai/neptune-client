@@ -18,7 +18,7 @@ import time
 from typing import Generic, Iterable, List, Optional, TypeVar, Union
 
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.internal.operation import Operation
+from neptune.new.internal.operation import AttributeOperation
 from neptune.new.internal.utils import is_collection, verify_type
 from neptune.new.types.series.series import Series as SeriesVal
 
@@ -33,16 +33,16 @@ class Series(Attribute, Generic[Val, Data]):
     @abc.abstractmethod
     def _get_log_operations_from_value(
         self, value: Val, step: Optional[float], timestamp: float
-    ) -> List[Operation]:
+    ) -> List[AttributeOperation]:
         pass
 
     # pylint: disable=unused-argument
     # pylint: disable=assignment-from-none
-    def _get_config_operation_from_value(self, value: Val) -> Optional[Operation]:
+    def _get_config_operation_from_value(self, value: Val) -> Optional[AttributeOperation]:
         return None
 
     @abc.abstractmethod
-    def _get_clear_operation(self) -> Operation:
+    def _get_clear_operation(self) -> AttributeOperation:
         pass
 
     @abc.abstractmethod

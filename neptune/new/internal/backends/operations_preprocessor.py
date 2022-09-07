@@ -27,6 +27,7 @@ from neptune.new.internal.operation import (
     AssignFloat,
     AssignInt,
     AssignString,
+    AttributeOperation,
     ClearFloatLog,
     ClearImageLog,
     ClearStringLog,
@@ -38,7 +39,6 @@ from neptune.new.internal.operation import (
     LogFloats,
     LogImages,
     LogStrings,
-    Operation,
     RemoveStrings,
     TrackFilesToArtifact,
     UploadFile,
@@ -57,19 +57,22 @@ class RequiresPreviousCompleted(Exception):
 
 @dataclasses.dataclass
 class AccumulatedOperations:
-    upload_operations: List[Operation] = dataclasses.field(default_factory=list)
+    # TODO: Operation or AttributeOperation?
+    upload_operations: List[AttributeOperation] = dataclasses.field(default_factory=list)
     artifact_operations: List[TrackFilesToArtifact] = dataclasses.field(default_factory=list)
-    other_operations: List[Operation] = dataclasses.field(default_factory=list)
+    other_operations: List[AttributeOperation] = dataclasses.field(default_factory=list)
 
     errors: List[MetadataInconsistency] = dataclasses.field(default_factory=list)
 
 
 class OperationsPreprocessor:
     def __init__(self):
+        # TODO: Operation or AttributeOperation?
+        # probbly there will be group of `Operation`
         self._accumulators: typing.Dict[str, "_OperationsAccumulator"] = dict()
         self.processed_ops_count = 0
 
-    def process(self, operations: List[Operation]):
+    def process(self, operations: List[AttributeOperation]):
         for op in operations:
             try:
                 self._process_op(op)
@@ -77,18 +80,18 @@ class OperationsPreprocessor:
             except RequiresPreviousCompleted:
                 return
 
-    def _process_op(self, op: Operation) -> "_OperationsAccumulator":
+    def _process_op(self, op: AttributeOperation) -> "_OperationsAccumulator":
         path_str = path_to_str(op.path)
         target_acc = self._accumulators.setdefault(path_str, _OperationsAccumulator(op.path))
         target_acc.visit(op)
         return target_acc
 
     @staticmethod
-    def is_file_op(op: Operation):
+    def is_file_op(op: AttributeOperation):
         return isinstance(op, (UploadFile, UploadFileContent, UploadFileSet))
 
     @staticmethod
-    def is_artifact_op(op: Operation):
+    def is_artifact_op(op: AttributeOperation):
         return isinstance(op, TrackFilesToArtifact)
 
     def get_operations(self) -> AccumulatedOperations:
@@ -137,13 +140,13 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._config_ops = []
         self._errors = []
 
-    def get_operations(self) -> List[Operation]:
+    def get_operations(self) -> List[AttributeOperation]:
         return self._delete_ops + self._modify_ops + self._config_ops
 
     def get_errors(self) -> List[MetadataInconsistency]:
         return self._errors
 
-    def _check_prerequisites(self, op: Operation):
+    def _check_prerequisites(self, op: AttributeOperation):
         if (
             OperationsPreprocessor.is_file_op(op) or OperationsPreprocessor.is_artifact_op(op)
         ) and len(self._delete_ops) > 0:
@@ -152,8 +155,10 @@ class _OperationsAccumulator(OperationVisitor[None]):
     def _process_modify_op(
         self,
         expected_type: _DataType,
-        op: Operation,
-        modifier: Callable[[List[Operation], Operation], List[Operation]],
+        op: AttributeOperation,
+        modifier: Callable[
+            [List[AttributeOperation], AttributeOperation], List[AttributeOperation]
+        ],
     ) -> None:
 
         if self._type and self._type != expected_type:
@@ -174,7 +179,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
 
-    def _process_config_op(self, expected_type: _DataType, op: Operation) -> None:
+    def _process_config_op(self, expected_type: _DataType, op: AttributeOperation) -> None:
 
         if self._type and self._type != expected_type:
             # This case should never happen since inconsistencies on data types are verified on user api.

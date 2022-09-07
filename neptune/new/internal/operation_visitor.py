@@ -24,6 +24,7 @@ from neptune.new.internal.operation import (
     AssignFloat,
     AssignInt,
     AssignString,
+    AttributeOperation,
     ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
@@ -36,7 +37,6 @@ from neptune.new.internal.operation import (
     LogFloats,
     LogImages,
     LogStrings,
-    Operation,
     RemoveStrings,
     TrackFilesToArtifact,
     UploadFile,
@@ -48,7 +48,8 @@ Ret = TypeVar("Ret")
 
 
 class OperationVisitor(Generic[Ret]):
-    def visit(self, op: Operation) -> Ret:
+    # TODO: Operation or AttributeOperation?
+    def visit(self, op: AttributeOperation) -> Ret:
         return op.accept(self)
 
     @abc.abstractmethod
