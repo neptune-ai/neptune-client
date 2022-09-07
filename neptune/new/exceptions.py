@@ -596,12 +596,6 @@ class NeptuneWrongInitParametersException(NeptuneException):
     pass
 
 
-class NeptuneInitParametersCollision(
-    NeptuneWrongInitParametersException, NeptuneParametersCollision
-):
-    pass
-
-
 class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
     def __init__(self):
         message = """
