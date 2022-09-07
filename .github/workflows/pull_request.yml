@@ -1,25 +1,16 @@
-name: Pull Request
+name: Pull Request tmp
 on:
   push:
     branches-ignore:
       - master
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Lint
-        uses: ./.github/actions/lint
-
   integration:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     strategy:
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.7", "3.10"] # minimum, maximum
+        python-version: ["3.7"] # minimum, maximum
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -39,4 +30,4 @@ jobs:
 
       - name: Build and test
         run : |
-          pytest ./tests
+          pytest ./tests/neptune/new/internal/utils

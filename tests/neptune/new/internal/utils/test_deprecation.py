@@ -37,6 +37,8 @@ class TestDeprecatedParameter(unittest.TestCase):
         # pylint: disable=missing-kwoa
         self.assertEqual(42, fun(deprecated_param=42))
         self.assertEqual(1, logger_mock.warning.call_count)
+        print(f"<< {list(logger_mock.warning.call_args.kwargs.keys())}")
+        print(f"<< {logger_mock.warning.call_args.kwargs.get('extra')}")
         self.assertEqual(
             {"deprecated_kwarg_name": "deprecated_param", "required_kwarg_name": "new_param"},
             logger_mock.warning.call_args.kwargs.get("extra"),
