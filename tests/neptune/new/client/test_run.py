@@ -63,7 +63,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type, _path: IntAttribute(42),
     )
     def test_read_only_mode(self):
-        exp = init_run(mode="read-only", run="whatever")
+        exp = init_run(mode="read-only", with_id="whatever")
 
         with self.assertLogs() as caplog:
             exp["some/variable"] = 13
@@ -88,7 +88,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         new=lambda _, _uuid, _type: [Attribute("test", AttributeType.STRING)],
     )
     def test_resume(self):
-        with init_run(flush_period=0.5, run="whatever") as exp:
+        with init_run(flush_period=0.5, with_id="whatever") as exp:
             self.assertEqual(exp._id, AN_API_RUN.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 

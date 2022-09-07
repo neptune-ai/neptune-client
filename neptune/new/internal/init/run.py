@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import os
 import threading
 import typing
@@ -54,6 +53,7 @@ from neptune.new.internal.streams.std_capture_background_job import (
     StdoutCaptureBackgroundJob,
 )
 from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
 from neptune.new.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
@@ -78,10 +78,11 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
+@deprecated_parameter(deprecated_kwarg_name="run", required_kwarg_name="with_id")
 def init_run(
     project: Optional[str] = None,
     api_token: Optional[str] = None,
-    run: Optional[str] = None,
+    with_id: Optional[str] = None,
     custom_run_id: Optional[str] = None,
     mode: Optional[str] = None,
     name: Optional[str] = None,
@@ -108,7 +109,7 @@ def init_run(
             .. note::
                 It is strongly recommended to use `NEPTUNE_API_TOKEN` environment variable rather than placing your
                 API token in plain text in your source code.
-        run (str, optional): An existing run's identifier like 'SAN-1' in case of resuming a tracked run.
+        with_id (str, optional): An existing run's identifier like 'SAN-1' in case of resuming a tracked run.
             Defaults to `None`.
             A run with such identifier must exist. If `None` is passed, starts a new tracked run.
         custom_run_id (str, optional): A unique identifier to be used when running Neptune in pipelines.
@@ -196,9 +197,10 @@ def init_run(
        https://docs.neptune.ai/api-reference/neptune#.init
     """
     _check_for_extra_kwargs(init_run.__name__, kwargs)
+
     verify_type("project", project, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
-    verify_type("run", run, (str, type(None)))
+    verify_type("with_id", with_id, (str, type(None)))
     verify_type("custom_run_id", custom_run_id, (str, type(None)))
     verify_type("mode", mode, (str, type(None)))
     verify_type("name", name, (str, type(None)))
@@ -223,13 +225,13 @@ def init_run(
 
     # for backward compatibility imports
     mode = Mode(mode or os.getenv(CONNECTION_MODE) or Mode.ASYNC.value)
-    name = DEFAULT_NAME if run is None and name is None else name
-    description = "" if run is None and description is None else description
-    hostname = get_hostname() if run is None else None
+    name = DEFAULT_NAME if with_id is None and name is None else name
+    description = "" if with_id is None and description is None else description
+    hostname = get_hostname() if with_id is None else None
     custom_run_id = custom_run_id or os.getenv(CUSTOM_RUN_ID_ENV_NAME)
     monitoring_namespace = monitoring_namespace or os.getenv(MONITORING_NAMESPACE) or "monitoring"
 
-    if run and custom_run_id:
+    if with_id and custom_run_id:
         raise NeptuneRunResumeAndCustomIdCollision()
 
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
@@ -241,9 +243,9 @@ def init_run(
     project_obj = project_name_lookup(backend, project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
-    if run:
+    if with_id:
         api_run = backend.get_metadata_container(
-            container_id=QualifiedName(project + "/" + run),
+            container_id=QualifiedName(project + "/" + with_id),
             expected_container_type=Run.container_type,
         )
     else:
@@ -320,7 +322,7 @@ def init_run(
             _run[attr_consts.SYSTEM_HOSTNAME_ATTRIBUTE_PATH] = hostname
         if tags is not None:
             _run[attr_consts.SYSTEM_TAGS_ATTRIBUTE_PATH].add(tags)
-        if run is None:
+        if with_id is None:
             _run[attr_consts.SYSTEM_FAILED_ATTRIBUTE_PATH] = False
 
         if capture_stdout and not _run.exists(stdout_path):
@@ -328,7 +330,7 @@ def init_run(
         if capture_stderr and not _run.exists(stderr_path):
             _run.define(stderr_path, StringSeries([]))
 
-        if run is None or source_files is not None:
+        if with_id is None or source_files is not None:
             # upload default sources ONLY if creating a new run
             upload_source_code(source_files=source_files, run=_run)
 

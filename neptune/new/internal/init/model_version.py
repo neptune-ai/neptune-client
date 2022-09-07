@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import os
 import threading
 from typing import Optional
@@ -37,14 +36,16 @@ from neptune.new.internal.init.parameters import (
 )
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
+from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.metadata_containers import Model, ModelVersion
 from neptune.new.types.mode import Mode
 
 
+@deprecated_parameter(deprecated_kwarg_name="version", required_kwarg_name="with_id")
 def init_model_version(
     *,
-    version: Optional[str] = None,
+    with_id: Optional[str] = None,
     name: Optional[str] = None,
     model: Optional[str] = None,
     project: Optional[str] = None,
@@ -53,7 +54,7 @@ def init_model_version(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> ModelVersion:
-    verify_type("version", version, (str, type(None)))
+    verify_type("with_id", with_id, (str, type(None)))
     verify_type("name", name, (str, type(None)))
     verify_type("model", model, (str, type(None)))
     verify_type("project", project, (str, type(None)))
@@ -79,11 +80,11 @@ def init_model_version(
     project_obj = project_name_lookup(backend, project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
-    if version is not None:
-        # version (resume existing model_version) has priority over model (creating a new model_version)
-        version = QualifiedName(project + "/" + version)
+    if with_id is not None:
+        # with_id (resume existing model_version) has priority over model (creating a new model_version)
+        version_id = QualifiedName(project + "/" + with_id)
         api_model_version = backend.get_metadata_container(
-            container_id=version, expected_container_type=ModelVersion.container_type
+            container_id=version_id, expected_container_type=ModelVersion.container_type
         )
     elif model is not None:
         if mode == Mode.READ_ONLY:

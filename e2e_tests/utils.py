@@ -166,12 +166,12 @@ def reinitialize_container(sys_id: str, container_type: str, project: str):
         return neptune.init_project(name=project)
 
     if container_type == "run":
-        return neptune.init_run(run=sys_id, project=project)
+        return neptune.init_run(with_id=sys_id, project=project)
 
     if container_type == "model":
-        return neptune.init_model(model=sys_id, project=project)
+        return neptune.init_model(with_id=sys_id, project=project)
 
     if container_type == "model_version":
-        return neptune.init_model_version(version=sys_id, project=project)
+        return neptune.init_model_version(with_id=sys_id, project=project)
 
     raise NotImplementedError()

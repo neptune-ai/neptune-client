@@ -192,7 +192,7 @@ class Run(MetadataContainer):
             `dict` containing all non-File Atom fields values.
         Examples:
             >>> import neptune.new as neptune
-            >>> resumed_run = neptune.init(run="HEL-3")
+            >>> resumed_run = neptune.init(with_id="HEL-3")
             >>> params = resumed_run['model/parameters'].fetch()
             >>> run_data = resumed_run.fetch()
             >>> print(run_data)
@@ -311,7 +311,7 @@ class Run(MetadataContainer):
             >>> import neptune.new as neptune
             >>> # Connect to a run from Worker #3
             ... worker_id = 3
-            >>> run = neptune.init(run='DIST-43', monitoring_namespace='monitoring/{}'.format(worker_id))
+            >>> run = neptune.init(with_id='DIST-43', monitoring_namespace='monitoring/{}'.format(worker_id))
             >>> # Try to access logs that were created in meantime by Worker #2
             ... worker_2_status = run['status/2'].fetch() # Error if this field was created after this script starts
             >>> run.sync() # Synchronizes local representation with Neptune servers.

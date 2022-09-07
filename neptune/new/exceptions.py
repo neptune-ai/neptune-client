@@ -569,6 +569,29 @@ class NeedExistingModelVersionForReadOnlyMode(NeedExistingExperimentForReadOnlyM
         )
 
 
+class NeptuneParametersCollision(NeptuneException):
+    def __init__(self, parameter1, parameter2, method_name):
+        self.parameter1 = parameter1
+        self.parameter2 = parameter2
+        self.method_name = method_name
+        message = """
+{h1}
+----NeptuneParametersCollision-----------------------------------------
+{end}
+The {python}{parameter1}{end} and {python}{parameter2}{end} parameters of the {python}{method_name}(){end} method are mutually exclusive.
+
+You may also want to check the following docs page:
+    - https://docs.neptune.ai/api-reference/neptune#init
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+"""
+        super().__init__(
+            message.format(
+                parameter1=parameter1, parameter2=parameter2, method_name=method_name, **STYLES
+            )
+        )
+
+
 class NeptuneWrongInitParametersException(NeptuneException):
     pass
 
@@ -581,7 +604,7 @@ class NeptuneRunResumeAndCustomIdCollision(NeptuneWrongInitParametersException):
 {end}
 It's not possible to use {python}custom_run_id{end} while resuming a run.
 
-The {python}run{end} and {python}custom_run_id{end} parameters of the {python}init(){end} method are mutually exclusive.
+The {python}run{end} and {python}custom_run_id{end} parameters of the {python}init_run(){end} method are mutually exclusive.
 Make sure you have no {bash}{custom_id_env}{end} environment variable set
 and no value is explicitly passed to the `custom_run_id` argument when you are resuming a run.
 

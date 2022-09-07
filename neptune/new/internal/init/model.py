@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 import os
 import threading
 from typing import Optional
@@ -39,14 +38,16 @@ from neptune.new.internal.init.parameters import (
 )
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
+from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.metadata_containers import Model
 from neptune.new.types.mode import Mode
 
 
+@deprecated_parameter(deprecated_kwarg_name="model", required_kwarg_name="with_id")
 def init_model(
     *,
-    model: Optional[str] = None,
+    with_id: Optional[str] = None,
     name: Optional[str] = None,
     key: Optional[str] = None,
     project: Optional[str] = None,
@@ -55,7 +56,7 @@ def init_model(
     flush_period: float = DEFAULT_FLUSH_PERIOD,
     proxies: Optional[dict] = None,
 ) -> Model:
-    verify_type("model", model, (str, type(None)))
+    verify_type("with_id", with_id, (str, type(None)))
     verify_type("name", name, (str, type(None)))
     verify_type("key", key, (str, type(None)))
     verify_type("project", project, (str, type(None)))
@@ -70,7 +71,7 @@ def init_model(
     if mode == Mode.OFFLINE:
         raise NeptuneException("Model can't be initialized in OFFLINE mode")
 
-    name = DEFAULT_NAME if model is None and name is None else name
+    name = DEFAULT_NAME if with_id is None and name is None else name
 
     backend = get_backend(mode=mode, api_token=api_token, proxies=proxies)
 
@@ -81,12 +82,12 @@ def init_model(
     project_obj = project_name_lookup(backend=backend, name=project)
     project = f"{project_obj.workspace}/{project_obj.name}"
 
-    if model is not None:
-        # model (resume existing model) has priority over key (creating a new model)
+    if with_id is not None:
+        # with_id (resume existing model) has priority over key (creating a new model)
         #  additional creation parameters (e.g. name) are simply ignored in this scenario
-        model = QualifiedName(project + "/" + model)
+        model_id = QualifiedName(project + "/" + with_id)
         api_model = backend.get_metadata_container(
-            container_id=model, expected_container_type=Model.container_type
+            container_id=model_id, expected_container_type=Model.container_type
         )
     elif key is not None:
         if mode == Mode.READ_ONLY:
