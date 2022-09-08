@@ -39,6 +39,7 @@ from neptune.new.internal.operation import (
     LogFloats,
     LogImages,
     LogStrings,
+    Operation,
     RemoveStrings,
     TrackFilesToArtifact,
     UploadFile,
@@ -57,7 +58,6 @@ class RequiresPreviousCompleted(Exception):
 
 @dataclasses.dataclass
 class AccumulatedOperations:
-    # TODO: Operation or AttributeOperation?
     upload_operations: List[AttributeOperation] = dataclasses.field(default_factory=list)
     artifact_operations: List[TrackFilesToArtifact] = dataclasses.field(default_factory=list)
     other_operations: List[AttributeOperation] = dataclasses.field(default_factory=list)
@@ -72,7 +72,7 @@ class OperationsPreprocessor:
         self._accumulators: typing.Dict[str, "_OperationsAccumulator"] = dict()
         self.processed_ops_count = 0
 
-    def process(self, operations: List[AttributeOperation]):
+    def process(self, operations: List[Operation]):
         for op in operations:
             try:
                 self._process_op(op)
@@ -80,11 +80,15 @@ class OperationsPreprocessor:
             except RequiresPreviousCompleted:
                 return
 
-    def _process_op(self, op: AttributeOperation) -> "_OperationsAccumulator":
-        path_str = path_to_str(op.path)
-        target_acc = self._accumulators.setdefault(path_str, _OperationsAccumulator(op.path))
-        target_acc.visit(op)
-        return target_acc
+    def _process_op(self, op: Operation) -> "_OperationsAccumulator":
+        if isinstance(op, AttributeOperation):
+            path_str = path_to_str(op.path)
+            target_acc = self._accumulators.setdefault(path_str, _OperationsAccumulator(op.path))
+            target_acc.visit(op)
+            return target_acc
+        else:
+            # TODO: implement in NPT-11662
+            raise ValueError("Only AttributeOperations are currently supported")
 
     @staticmethod
     def is_file_op(op: AttributeOperation):
@@ -140,7 +144,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
         self._config_ops = []
         self._errors = []
 
-    def get_operations(self) -> List[AttributeOperation]:
+    def get_operations(self) -> List[Operation]:
         return self._delete_ops + self._modify_ops + self._config_ops
 
     def get_errors(self) -> List[MetadataInconsistency]:
@@ -179,7 +183,7 @@ class _OperationsAccumulator(OperationVisitor[None]):
             self._type = expected_type
             self._modify_ops = modifier(self._modify_ops, op)
 
-    def _process_config_op(self, expected_type: _DataType, op: AttributeOperation) -> None:
+    def _process_config_op(self, expected_type: _DataType, op: ConfigFloatSeries) -> None:
 
         if self._type and self._type != expected_type:
             # This case should never happen since inconsistencies on data types are verified on user api.
