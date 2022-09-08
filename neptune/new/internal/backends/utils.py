@@ -336,11 +336,7 @@ class ExecuteOperationsBatchingManager:
                 if not result.operations:
                     try:
                         # CopyAttribute can be at the start of a batch
-                        from datetime import datetime
-
-                        start = datetime.now()
                         result.operations.append(op.resolve(self._backend))
-                        print(f"< {datetime.now() - start}")
                     except MetadataInconsistency as e:
                         result.errors.append(e)
                         result.dropped_operations_count += 1

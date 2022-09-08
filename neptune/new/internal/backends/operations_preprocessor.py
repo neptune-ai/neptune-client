@@ -67,8 +67,6 @@ class AccumulatedOperations:
 
 class OperationsPreprocessor:
     def __init__(self):
-        # TODO: Operation or AttributeOperation?
-        # probbly there will be group of `Operation`
         self._accumulators: typing.Dict[str, "_OperationsAccumulator"] = dict()
         self.processed_ops_count = 0
 
@@ -91,11 +89,11 @@ class OperationsPreprocessor:
             raise ValueError("Only AttributeOperations are currently supported")
 
     @staticmethod
-    def is_file_op(op: AttributeOperation):
+    def is_file_op(op: Operation):
         return isinstance(op, (UploadFile, UploadFileContent, UploadFileSet))
 
     @staticmethod
-    def is_artifact_op(op: AttributeOperation):
+    def is_artifact_op(op: Operation):
         return isinstance(op, TrackFilesToArtifact)
 
     def get_operations(self) -> AccumulatedOperations:

@@ -48,7 +48,6 @@ Ret = TypeVar("Ret")
 
 
 class OperationVisitor(Generic[Ret]):
-    # TODO: Operation or Operation?
     def visit(self, op: Operation) -> Ret:
         return op.accept(self)
 
