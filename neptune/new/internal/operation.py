@@ -44,9 +44,8 @@ class Operation(metaclass=abc.ABCMeta):
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         pass
 
-    # pylint: disable=unused-argument
     def to_dict(self) -> dict:
-        return {"type": self.__class__.__name__, "path": self.path}
+        return {"type": self.__class__.__name__}
 
     @staticmethod
     def from_dict(data: dict) -> "Operation":
@@ -61,6 +60,9 @@ class Operation(metaclass=abc.ABCMeta):
 @dataclass
 class AttributeOperation(Operation, ABC):
     path: List[str]
+
+    def to_dict(self) -> dict:
+        return {"type": self.__class__.__name__, "path": self.path}
 
 
 @dataclass
