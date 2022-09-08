@@ -23,7 +23,6 @@ from neptune.new.internal.operation import (
     AssignFloat,
     AssignInt,
     AssignString,
-    AttributeOperation,
     ClearArtifact,
     ClearFloatLog,
     ClearImageLog,
@@ -36,6 +35,7 @@ from neptune.new.internal.operation import (
     LogFloats,
     LogImages,
     LogStrings,
+    Operation,
     RemoveStrings,
     TrackFilesToArtifact,
     UploadFile,
@@ -46,8 +46,7 @@ from neptune.new.internal.operation_visitor import OperationVisitor, Ret
 
 
 class OperationApiObjectConverter(OperationVisitor[dict]):
-    # TODO: Operation or AttributeOperation?
-    def convert(self, op: AttributeOperation) -> dict:
+    def convert(self, op: Operation) -> dict:
         return op.accept(self)
 
     def visit_assign_float(self, op: AssignFloat) -> dict:
