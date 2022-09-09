@@ -164,3 +164,8 @@ class BadRequestException(ManagementOperationFailure):
     description = (
         "Your request has encountered the following validation errors: {validation_errors}"
     )
+
+
+class IncorrectIdentifierException(ManagementOperationFailure):
+    code = 21
+    description = "Can not parse '{identifier}' as identifier."
