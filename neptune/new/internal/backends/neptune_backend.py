@@ -115,6 +115,14 @@ class NeptuneBackend:
         pass
 
     @abc.abstractmethod
+    def trash_metadata_containers(
+        self,
+        project_id: Union[UniqueId, QualifiedName],
+        container_ids: List[Union[UniqueId, QualifiedName]],
+    ) -> None:
+        pass
+
+    @abc.abstractmethod
     def create_checkpoint(self, notebook_id: str, jupyter_path: str) -> Optional[str]:
         pass
 
