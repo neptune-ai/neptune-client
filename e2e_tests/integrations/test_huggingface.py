@@ -22,7 +22,7 @@ import pytest
 import torch
 from faker import Faker
 from transformers import PretrainedConfig, PreTrainedModel, Trainer, TrainingArguments
-from transformers.integrations import NeptuneCallback
+from transformers.integrations import NeptuneCallback, NeptuneMissingConfiguration
 from transformers.utils import logging
 
 from e2e_tests.base import BaseE2ETest
@@ -175,7 +175,7 @@ class TestHuggingFace(BaseE2ETest):
             trainer.train()
 
             # pylint: disable=no-member
-            with pytest.raises(NeptuneCallback.MissingConfiguration):
+            with pytest.raises(NeptuneMissingConfiguration):
                 trainer.train()
 
     def test_run_access_without_callback_configured(self):
@@ -495,7 +495,7 @@ class TestHuggingFace(BaseE2ETest):
 
         def assert_metadata_structure(run):
             assert run.exists("finetuning/checkpoints")
-            assert run["finetuning/train/epoch"].fetch_last() == 500
+            assert run["finetuning/train/epoch"].fetch() == 500
             with tmp_context():
                 run[f"finetuning/checkpoints/{checkpoints_key}"].download("checkpoints.zip")
 
@@ -523,7 +523,7 @@ class TestHuggingFace(BaseE2ETest):
             trainer.train(resume_from_checkpoint=f"model/{checkpoint_id}")
 
         def assert_metadata_structure(run):
-            assert run["finetuning/train/epoch"].fetch_last() == 1000
+            assert run["finetuning/train/epoch"].fetch() == 1000
 
         self._test_with_run_initialization(
             environment, pre=run_test, post=assert_metadata_structure
