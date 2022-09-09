@@ -27,11 +27,11 @@ from neptune.new.internal.backends.nql import (
 )
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import SysId, UniqueId
+from neptune.new.internal.id_formats import QualifiedName, SysId, UniqueId
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.internal.utils import as_list
+from neptune.new.internal.utils import as_list, verify_collection_type
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.types.mode import Mode
@@ -465,3 +465,19 @@ class Project(MetadataContainer):
             https://docs.neptune.ai/api-reference/project#.sync
         """
         return MetadataContainer.sync(self, wait=wait)
+
+    def trash_objects(
+        self,
+        ids: Union[str, Iterable[str]],
+    ) -> None:
+        """TODO: add docs"""
+        if ids is not None:
+            if isinstance(ids, str):
+                ids = [ids]
+            else:
+                verify_collection_type("ids", ids, str)
+
+        qualified_name_ids = [QualifiedName(f"{self._label}/{id_}") for id_ in ids] + [self._id]
+        self._backend.trash_metadata_containers(
+            project_id=self._id, container_ids=qualified_name_ids
+        )
