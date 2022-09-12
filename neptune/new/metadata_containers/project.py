@@ -32,6 +32,7 @@ from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
 from neptune.new.internal.utils import as_list, verify_collection_type
+from neptune.new.internal.utils.logger import logger
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.types.mode import Mode
@@ -471,13 +472,17 @@ class Project(MetadataContainer):
         ids: Union[str, Iterable[str]],
     ) -> None:
         """TODO: add docs"""
+        if self._mode == Mode.READ_ONLY:
+            logger.warning("Client in read-only mode, nothing will be saved to server.")
+            return
+
         if ids is not None:
             if isinstance(ids, str):
                 ids = [ids]
             else:
                 verify_collection_type("ids", ids, str)
 
-        qualified_name_ids = [QualifiedName(f"{self._label}/{id_}") for id_ in ids] + [self._id]
+        qualified_name_ids = [QualifiedName(f"{self._label}/{id_}") for id_ in ids]
         self._backend.trash_metadata_containers(
             project_id=self._id, container_ids=qualified_name_ids
         )
