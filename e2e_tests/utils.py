@@ -38,6 +38,7 @@ from PIL.PngImagePlugin import PngImageFile
 
 import neptune.new as neptune
 from e2e_tests.exceptions import MissingEnvironmentVariable
+from neptune.new.internal.container_type import ContainerType
 
 
 def _remove_file_if_exists(filepath):
@@ -141,6 +142,9 @@ class Environment:
 
 
 def initialize_container(container_type, project, **extra_args):
+    if isinstance(container_type, ContainerType):
+        container_type = container_type.value
+
     if container_type == "project":
         return neptune.init_project(name=project, **extra_args)
 
