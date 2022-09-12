@@ -58,8 +58,7 @@ class ApiMethodWrapper:
         elif error_type == ApiMethodWrapper.INCORRECT_IDENTIFIER:
             from neptune.management.exceptions import IncorrectIdentifierException
 
-            # TODO: fix in backend
-            identifier = body.get("identifier") or body.get("title")
+            identifier = body.get("identifier", "<Unknown identifier>")
             raise IncorrectIdentifierException(identifier=identifier) from exception
         elif error_type == ApiMethodWrapper.PROJECT_KEY_COLLISION:
             from neptune.management.exceptions import ProjectKeyCollision
