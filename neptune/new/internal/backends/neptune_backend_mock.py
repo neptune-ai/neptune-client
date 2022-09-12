@@ -114,7 +114,7 @@ Val = TypeVar("Val", bound=Value)
 
 
 class NeptuneBackendMock(NeptuneBackend):
-    WORKSPACE_NAME = "offline"
+    WORKSPACE_NAME = "mock-workspace"
     PROJECT_NAME = "project-placeholder"
     PROJECT_KEY = SysId("OFFLINE")
     MODEL_SYS_ID = SysId("OFFLINE-MOD")
@@ -269,7 +269,7 @@ class NeptuneBackendMock(NeptuneBackend):
         project_id: Union[UniqueId, QualifiedName],
         container_ids: List[Union[UniqueId, QualifiedName]],
     ) -> None:
-        raise NotImplementedError()
+        """Non relevant for backend"""
 
     def execute_operations(
         self,
