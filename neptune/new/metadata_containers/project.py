@@ -471,9 +471,28 @@ class Project(MetadataContainer):
         self,
         ids: Union[str, Iterable[str]],
     ) -> None:
-        """TODO: add docs"""
+        """Moves one or more Neptune objects to the project trash.
+
+        Args:
+            ids: Neptune ID of object to trash (or list of multiple IDs).
+                You can find the ID:
+                - (app) In the leftmost column of the table view.
+                - (API) In the "sys/id" field of the object.
+
+        Examples:
+            Trashing a run with the ID "CLS-1":
+            >>> import neptune.new as neptune
+            >>> project = neptune.init_project(name="ml-team/classification")
+            >>> project.trash_objects("CLS-1")
+
+            Trashing two runs and a model with the key "PRETRAINED":
+            >>> project.trash_objects(["CLS-2", "CLS-3", "CLS-PRETRAINED"])
+            Note: Trashing a model object also trashes all of its versions.
+
+        For more, see the docs: https://docs.neptune.ai/api-reference/project#.trash_objects
+        """
         if self._mode == Mode.READ_ONLY:
-            logger.warning("Client in read-only mode, nothing will be saved to server.")
+            logger.warning("Client in read-only mode. Nothing will be saved to the server.")
             return
 
         if ids is not None:
