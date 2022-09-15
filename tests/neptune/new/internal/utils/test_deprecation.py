@@ -40,12 +40,10 @@ class TestDeprecatedParameter(unittest.TestCase):
         self.assertEqual(1, logger_mock.warning.call_count)
         self.assertEqual(
             call(
-                "parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
+                "parameter `%s` is deprecated, use `%s` instead."
                 " We'll end support of it in `neptune-client==1.0.0`.",
-                extra={
-                    "deprecated_kwarg_name": "deprecated_param",
-                    "required_kwarg_name": "new_param",
-                },
+                "deprecated_param",
+                "new_param",
             ),
             logger_mock.warning.call_args,
         )
