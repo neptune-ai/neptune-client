@@ -44,6 +44,7 @@ def main():
                 "sacred": ["neptune-sacred"],
                 "sklearn": ["neptune-sklearn"],
                 "tensorflow-keras": ["neptune-tensorflow-keras"],
+                "transformers": ["transformers"],
                 "xgboost": ["neptune-xgboost"],
                 "prophet": ["neptune-prophet"],
             },

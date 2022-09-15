@@ -35,7 +35,7 @@ from neptune.management import (
     create_project,
 )
 from neptune.management.internal.utils import normalize_project_name
-from neptune.new import init_project
+from neptune.new import get_project, init_project
 
 fake = Faker()
 
@@ -122,3 +122,13 @@ def bucket(environment):
     yield bucket_name, s3_client
 
     s3_bucket.objects.filter(Prefix=environment.project).delete()
+
+
+@pytest.fixture()
+def common_tag():
+    yield fake.nic_handle()
+
+
+@pytest.fixture(scope="session")
+def project(environment):
+    yield get_project(name=environment.project, api_token=environment.user_token)
