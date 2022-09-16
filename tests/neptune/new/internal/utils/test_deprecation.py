@@ -52,3 +52,12 @@ class TestDeprecatedParameter(unittest.TestCase):
         with self.assertRaises(NeptuneParametersCollision):
             # pylint: disable=unexpected-keyword-arg
             fun(new_param=42, deprecated_param=42)
+
+    def test_passing_deprecated_parameter_as_none(self):
+        # pylint: disable=unexpected-keyword-arg
+        # pylint: disable=missing-kwoa
+        self.assertIsNone(fun(deprecated_param=None))
+
+        # test collision
+        with self.assertRaises(NeptuneParametersCollision):
+            fun(new_param=None, deprecated_param=None)
