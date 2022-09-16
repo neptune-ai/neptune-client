@@ -319,3 +319,13 @@ class File(Atom):
             or is_pandas_dataframe(value)
             or isinstance(value, File)
         )
+
+    @staticmethod
+    def is_convertable_to_image(value):
+        convertable_to_img_predicates = (is_pil_image, is_matplotlib_figure)
+        return any(predicate(value) for predicate in convertable_to_img_predicates)
+
+    @staticmethod
+    def is_convertable_to_html(value):
+        convertable_to_html_predicates = (is_altair_chart, is_bokeh_figure, is_plotly_figure)
+        return any(predicate(value) for predicate in convertable_to_html_predicates)
