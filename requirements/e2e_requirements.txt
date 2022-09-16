@@ -7,5 +7,4 @@ pytest-tap
 pytorch-lightning
 torchvision
 sklearn
-# Update it with `transformers` after release
-git+https://github.com/huggingface/transformers.git@main#egg=transformers
+transformers
