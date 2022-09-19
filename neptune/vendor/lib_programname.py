@@ -30,7 +30,7 @@ __all__ = ["get_path_executed_script"]
 empty_path = pathlib.Path()
 
 
-def get_path_executed_script() -> pathlib.Path:
+def get_path_executed_script() -> str:
     """
     getting the full path of the program from which a Python module is running
 
@@ -76,12 +76,14 @@ def get_path_executed_script() -> pathlib.Path:
     # try to get it from __main__.__file__ - does not work under pytest, doctest
     path_candidate = get_fullpath_from_main_file()
     if path_candidate != empty_path:
-        return path_candidate
+        return str(path_candidate)
 
     # try to get it from sys_argv - does not work when loaded from uwsgi, works in eclipse and pydev
     path_candidate = get_fullpath_from_sys_argv()
     if path_candidate != empty_path:
-        return path_candidate
+        return str(path_candidate)
+
+    return ""
 
 
 def get_fullpath_from_main_file() -> pathlib.Path:
