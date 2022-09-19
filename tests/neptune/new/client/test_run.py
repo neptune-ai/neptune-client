@@ -17,7 +17,6 @@
 # pylint: disable=protected-access
 import os
 import unittest
-from pathlib import Path
 
 from mock import patch
 
