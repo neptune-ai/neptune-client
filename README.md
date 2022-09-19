@@ -32,7 +32,10 @@ pip install neptune-client
 ```python
 import neptune.new as neptune
 
-run = neptune.init(project="common/quickstarts", api_token="ANONYMOUS")
+run = neptune.init_run(
+    project="common/quickstarts",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+)
 
 run["parameters"] = {
     "batch_size": 64,
@@ -46,6 +49,7 @@ for epoch in range(100):
 
 run["f1_score"] = 0.66
 ```
+
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/how-to-guides/hello-world/notebooks/Neptune_hello_world.ipynb)
 
 <div align="center">
@@ -110,12 +114,18 @@ Improve [team management and collaboration](https://docs.neptune.ai/you-should-k
 &nbsp;
 
 ### Integrate with your favourite ML libraries
+
 Neptune comes with **25+ integrations with Python libraries** popular in machine learning, deep learning and reinforcement learning.
+
 Available integrations:
+
 * PyTorch and PyTorch Lightning
-* TensorFlow / Keras and TensorBoard
-* Scikit-learn, LightGBM, and XGBoost
-* Optuna, Scikit-Optimize, and Keras Tuner
+* TensorFlow/Keras
+* scikit-learn, LightGBM, and XGBoost
+* Prophet
+* 🤗 Transformers
+* Optuna
+* Kedro
 * Bokeh, Altair, Plotly, and Matplotlib
 * and [more](https://docs.neptune.ai/integrations-and-supported-tools/intro)
 
@@ -132,7 +142,7 @@ from pytorch_lightning.loggers import NeptuneLogger
 # Create NeptuneLogger
 neptune_logger = NeptuneLogger(
     api_key="ANONYMOUS",  # replace with your own
-    project="common/pytorch-lightning-integration",  # "WORKSPACE_NAME/PROJECT_NAME"
+    project="common/pytorch-lightning-integration",  # "workspace-name/project-name"
     tags=["training", "resnet"],  # optional
 )
 
@@ -162,7 +172,10 @@ import tensorflow as tf
 import neptune.new as neptune
 from neptune.new.integrations.tensorflow_keras import NeptuneCallback
 
-run = neptune.init(project="common/tf-keras-integration", api_token="ANONYMOUS")
+run = neptune.init_run(
+    project="common/tf-keras-integration",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+)
 
 mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -198,7 +211,7 @@ model.fit(x_train, y_train, epochs=5, batch_size=64, callbacks=[neptune_cbk])
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/integrations-and-supported-tools/tensorflow-keras/notebooks/Neptune_TensorFlow_Keras.ipynb)
 [<img src="https://img.shields.io/badge/docs-TensorFow%2FKeras-yellow">](https://docs.neptune.ai/integrations-and-supported-tools/model-training/tensorflow-keras)
 
-#### Scikit-learn
+#### scikit-learn
 
 <img src="https://neptune.ai/wp-content/uploads/Scikit-learn.png" width="200" /><br><br>
 
@@ -211,9 +224,9 @@ from sklearn.model_selection import train_test_split
 import neptune.new as neptune
 import neptune.new.integrations.sklearn as npt_utils
 
-run = neptune.init(
+run = neptune.init_run(
     project="common/sklearn-integration",
-    api_token="ANONYMOUS",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
     name="classification-example",
     tags=["GradientBoostingClassifier", "classification"],
 )
@@ -259,8 +272,10 @@ from neptune.new.integrations.fastai import NeptuneCallback
 from fastai.vision.all import *
 import neptune.new as neptune
 
-run = neptune.init(
-    project="common/fastai-integration", api_token="ANONYMOUS", tags="basic"
+run = neptune.init_run(
+    project="common/fastai-integration",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+    tags="basic",
 )
 
 path = untar_data(URLs.MNIST_TINY)
@@ -322,9 +337,10 @@ def objective(trial):
 
 
 # Create a Neptune run
-run = neptune.init(
-    api_token="ANONYMOUS", project="common/optuna-integration"
-)  # you can pass your credentials here
+run = neptune.init_run(
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+    project="common/optuna-integration",
+)
 
 # Create a NeptuneCallback for Optuna
 neptune_callback = optuna_utils.NeptuneCallback(run)
