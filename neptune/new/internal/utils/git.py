@@ -19,6 +19,7 @@ import warnings
 from typing import Optional
 
 from neptune.new.types.atoms import GitRef
+from neptune.vendor.lib_programname import get_fullpath_from_main_file
 
 _logger = logging.getLogger(__name__)
 
@@ -75,17 +76,5 @@ def get_git_repo_path(initial_path: str) -> Optional[str]:
 
 
 def discover_git_repo_location() -> Optional[str]:
-    git_path = None
-
-    # pylint:disable=bad-option-value,import-outside-toplevel
-    import __main__
-
-    if hasattr(__main__, "__file__"):
-        git_path = get_git_repo_path(
-            initial_path=os.path.dirname(os.path.abspath(__main__.__file__))
-        )
-
-    if not git_path:
-        git_path = get_git_repo_path(initial_path=os.getcwd())
-
-    return git_path
+    potential_initial_path = os.path.dirname(os.path.abspath(get_fullpath_from_main_file()))
+    return get_git_repo_path(initial_path=potential_initial_path)

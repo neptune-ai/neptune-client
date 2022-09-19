@@ -100,7 +100,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.new.internal.utils.os.path.abspath",
-        new=lambda path: os.path.normpath("/home/user/main_dir/" + path),
+        new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
     @patch("neptune.new.internal.utils.os.getcwd", new=lambda: "/home/user/main_dir")
     @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
@@ -148,7 +148,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.new.internal.utils.os.path.abspath",
-        new=lambda path: os.path.normpath("/home/user/main_dir/" + path),
+        new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
     def test_entrypoint_without_common_root(self):
         exp = init_run(mode="debug", source_files=["../*"])

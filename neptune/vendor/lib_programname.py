@@ -25,12 +25,12 @@ import sys
 
 import __main__  # noqa
 
-__all__ = ["get_path_executed_script"]
+__all__ = ["empty_path", "get_path_executed_script", "get_fullpath_from_main_file"]
 
 empty_path = pathlib.Path()
 
 
-def get_path_executed_script() -> str:
+def get_path_executed_script() -> pathlib.Path:
     """
     getting the full path of the program from which a Python module is running
 
@@ -76,14 +76,14 @@ def get_path_executed_script() -> str:
     # try to get it from __main__.__file__ - does not work under pytest, doctest
     path_candidate = get_fullpath_from_main_file()
     if path_candidate != empty_path:
-        return str(path_candidate)
+        return path_candidate
 
     # try to get it from sys_argv - does not work when loaded from uwsgi, works in eclipse and pydev
     path_candidate = get_fullpath_from_sys_argv()
     if path_candidate != empty_path:
-        return str(path_candidate)
+        return path_candidate
 
-    return ""
+    return empty_path
 
 
 def get_fullpath_from_main_file() -> pathlib.Path:

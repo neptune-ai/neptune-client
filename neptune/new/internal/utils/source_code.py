@@ -21,7 +21,7 @@ from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.utils import is_ipython
-from neptune.vendor.lib_programname import get_path_executed_script
+from neptune.vendor.lib_programname import empty_path, get_path_executed_script
 
 if TYPE_CHECKING:
     from neptune.new import Run
@@ -33,7 +33,7 @@ _logger = logging.getLogger(__name__)
 def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
     entry_file = get_path_executed_script()
 
-    if not is_ipython() and entry_file and os.path.isfile(entry_file):
+    if not is_ipython() and entry_file != empty_path and os.path.isfile(entry_file):
         if source_files is None:
             entrypoint = os.path.basename(entry_file)
             source_files = str(entry_file)
