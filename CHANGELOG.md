@@ -15,6 +15,9 @@
 - Fixed `with_id` deprecation message ([#1002](https://github.com/neptune-ai/neptune-client/pull/1002))
 - Fix passing None as deprecated parameter to deprecated_parameter decorator ([#1001](https://github.com/neptune-ai/neptune-client/pull/1001))
 
+### Changes
+- Changed source files and entry point path resolving behaviour ([#1007](https://github.com/neptune-ai/neptune-client/pull/1007))
+
 ## neptune-client 0.16.7
 
 ### Features
