@@ -20,7 +20,6 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 
-import inspect
 import pathlib
 import sys
 
@@ -84,13 +83,6 @@ def get_path_executed_script() -> pathlib.Path:
     if path_candidate != empty_path:
         return path_candidate
 
-    # try to get it from stack, works under dreampie
-    path_candidate = get_fullpath_from_stack()
-    if path_candidate != empty_path:
-        return path_candidate
-
-    raise RuntimeError("can not determine the path of the launched program")  # pragma: no cover
-
 
 def get_fullpath_from_main_file() -> pathlib.Path:
     """try to get it from __main__.__file__ - does not work under pytest, doctest
@@ -137,28 +129,6 @@ def get_fullpath_from_sys_argv() -> pathlib.Path:
     return empty_path
 
 
-def get_fullpath_from_stack() -> pathlib.Path:
-    """try to get it from stack, works under dreampie
-
-    >>> assert get_fullpath_from_stack() == pathlib.Path(__file__).resolve()
-
-    """
-
-    levels_back = 0
-    while True:
-        try:
-            arg_string = inspect.stack()[levels_back][1]
-            valid_executable_path = get_valid_executable_path_or_empty_path(arg_string)
-            if (
-                valid_executable_path != empty_path
-            ):  # pragma: no cover     # its hard to tamper around with the stack, therefore we dont cover it
-                return valid_executable_path
-            levels_back += 1  # pragma: no cover
-        except IndexError:  # pragma: no cover
-            break  # pragma: no cover
-    return empty_path  # pragma: no cover
-
-
 def get_valid_executable_path_or_empty_path(arg_string: str) -> pathlib.Path:
     arg_string = remove_doctest_and_docrunner_parameters(arg_string)
     arg_string = add_python_extension_if_not_there(arg_string)
@@ -199,12 +169,3 @@ def add_python_extension_if_not_there(arg_string: str) -> str:
     if not arg_string.endswith(".py"):
         arg_string = arg_string + ".py"
     return arg_string
-
-
-def main():
-    print(sys.argv)
-    print(get_path_executed_script())
-
-
-if __name__ == "__main__":
-    main()

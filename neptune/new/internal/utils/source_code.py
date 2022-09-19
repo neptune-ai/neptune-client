@@ -15,7 +15,6 @@
 #
 import logging
 import os
-import sys
 from typing import TYPE_CHECKING, List, Optional
 
 from neptune.internal.storage.storage_utils import normalize_file_name
@@ -32,23 +31,22 @@ _logger = logging.getLogger(__name__)
 
 
 def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
-    run_script_path = get_path_executed_script()
-    print(run_script_path)
+    entry_file = get_path_executed_script()
 
-    if not is_ipython() and os.path.isfile(sys.argv[0]):
+    if not is_ipython() and entry_file and os.path.isfile(entry_file):
         if source_files is None:
-            entrypoint = os.path.basename(sys.argv[0])
-            source_files = sys.argv[0]
+            entrypoint = os.path.basename(entry_file)
+            source_files = str(entry_file)
         elif not source_files:
-            entrypoint = os.path.basename(sys.argv[0])
+            entrypoint = os.path.basename(entry_file)
         else:
             common_root = get_common_root(get_absolute_paths(source_files))
             if common_root is not None:
                 entrypoint = normalize_file_name(
-                    os.path.relpath(os.path.abspath(sys.argv[0]), common_root)
+                    os.path.relpath(os.path.abspath(entry_file), common_root)
                 )
             else:
-                entrypoint = normalize_file_name(os.path.abspath(sys.argv[0]))
+                entrypoint = normalize_file_name(os.path.abspath(entry_file))
         run[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint
 
     if source_files is not None:

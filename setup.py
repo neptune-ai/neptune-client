@@ -51,7 +51,6 @@ def main():
             entry_points={
                 "console_scripts": [
                     "neptune = neptune_cli.main:main",
-                    "neptune_source_files = neptune.vendor.lib_programname:main",
                 ],
             },
             classifiers=[
