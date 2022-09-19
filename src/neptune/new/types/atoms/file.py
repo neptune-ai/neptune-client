@@ -295,9 +295,9 @@ class File(Atom):
     def create_from(value) -> "File":
         if isinstance(value, str):
             return File(path=value)
-        elif is_pil_image(value) or is_matplotlib_figure(value):
+        elif File.is_convertable_to_image(value):
             return File.as_image(value)
-        elif is_plotly_figure(value) or is_altair_chart(value) or is_bokeh_figure(value):
+        elif File.is_convertable_to_html(value):
             return File.as_html(value)
         elif is_numpy_array(value):
             raise TypeError("Value of type {} is not supported. Please use File.as_image().".format(type(value)))
