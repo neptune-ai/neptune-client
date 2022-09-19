@@ -8,3 +8,4 @@ pytorch-lightning
 torchvision
 sklearn
 transformers
+optuna
