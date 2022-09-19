@@ -16,5 +16,4 @@ urllib3
 dataclasses>=0.6; python_version<"3.7"
 swagger-spec-validator>=2.7.4
 psutil
-webcolors
-jsonschema[format]<4.0.0
+jsonschema<4.0.0
