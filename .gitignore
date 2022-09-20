@@ -3,9 +3,6 @@
 tests/.neptune/
 tests/neptune/.neptune/
 
-# Neptune dev code
-./alpha_integration_dev/tmp.py
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
