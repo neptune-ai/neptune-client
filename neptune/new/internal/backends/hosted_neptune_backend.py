@@ -117,7 +117,6 @@ from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import (
     map_attribute_result_to_value,
 )
-from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
@@ -303,24 +302,6 @@ class HostedNeptuneBackend(NeptuneBackend):
             raise MetadataContainerNotFound.of_container_type(
                 container_type=expected_container_type, container_id=container_id
             )
-
-    def trash_metadata_containers(
-        self,
-        project_id: Union[UniqueId, QualifiedName],
-        container_ids: List[Union[UniqueId, QualifiedName]],
-    ) -> None:
-        batch_size = 100
-        errors = list()
-        for batch_ids in get_batches(container_ids, batch_size):
-            response = self.leaderboard_client.api.trashExperiments(
-                projectIdentifier=project_id,
-                experimentIdentifiers=batch_ids,
-                **DEFAULT_REQUEST_KWARGS,
-            ).response()
-            errors += response.result.errors
-
-        for error in errors:
-            _logger.warning(error)
 
     @with_api_exceptions_handler
     def create_run(

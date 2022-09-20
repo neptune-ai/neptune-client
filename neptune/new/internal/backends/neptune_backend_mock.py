@@ -264,14 +264,6 @@ class NeptuneBackendMock(NeptuneBackend):
         else:
             raise ProjectNotFound(container_id)
 
-    def trash_metadata_containers(
-        self,
-        project_id: Union[UniqueId, QualifiedName],
-        container_ids: List[Union[UniqueId, QualifiedName]],
-    ) -> None:
-        """Non relevant for backend"""
-        pass
-
     def execute_operations(
         self,
         container_id: UniqueId,

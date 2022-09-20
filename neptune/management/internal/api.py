@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import os
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional, Union
 
 from bravado.exception import (
     HTTPBadRequest,
@@ -55,6 +55,7 @@ from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_backend_client,
     create_http_client_with_auth,
+    create_leaderboard_client,
 )
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import (
@@ -63,19 +64,32 @@ from neptune.new.internal.backends.utils import (
     with_api_exceptions_handler,
 )
 from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.utils import verify_type
+from neptune.new.internal.id_formats import QualifiedName
+from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.internal.utils.iteration import get_batches
+from neptune.new.internal.utils.logger import logger
 
 
 def _get_token(api_token: Optional[str] = None) -> str:
     return api_token or os.getenv(API_TOKEN_ENV_NAME)
 
 
-def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClientWrapper:
+def _get_http_client_and_config(api_token: Optional[str] = None):
     credentials = Credentials.from_token(api_token=_get_token(api_token=api_token))
     http_client, client_config = create_http_client_with_auth(
         credentials=credentials, ssl_verify=ssl_verify(), proxies={}
     )
+    return http_client, client_config
+
+
+def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClientWrapper:
+    http_client, client_config = _get_http_client_and_config(api_token)
     return create_backend_client(client_config=client_config, http_client=http_client)
+
+
+def _get_leaderboard_client(api_token: Optional[str] = None) -> SwaggerClientWrapper:
+    http_client, client_config = _get_http_client_and_config(api_token)
+    return create_leaderboard_client(client_config=client_config, http_client=http_client)
 
 
 def get_project_list(api_token: Optional[str] = None) -> List[str]:
@@ -743,3 +757,42 @@ def remove_project_service_account(
         raise AccessRevokedOnServiceAccountRemoval(
             service_account_name=service_account_name, project=project_qualified_name
         ) from e
+
+
+def trash_objects(
+    name: str,  # name of the project
+    ids: Union[str, Iterable[str]],
+    workspace: str = None,
+    api_token: str = None,
+) -> None:
+    """TODO: add docs"""
+    verify_type("name", name, str)
+    verify_type("workspace", workspace, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+
+    leaderboard_client = _get_leaderboard_client(api_token=api_token)
+    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
+    project_qualified_name = f"{workspace}/{project_name}"
+
+    if ids is not None:
+        if isinstance(ids, str):
+            ids = [ids]
+        else:
+            verify_collection_type("ids", ids, str)
+
+    batch_size = 100
+    qualified_name_ids = [
+        QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids
+    ]
+    errors = list()
+    for batch_ids in get_batches(qualified_name_ids, batch_size):
+        params = {
+            "projectIdentifier": project_qualified_name,
+            "experimentIdentifiers": batch_ids,
+            **DEFAULT_REQUEST_KWARGS,
+        }
+        response = leaderboard_client.api.trashExperiments(**params).response()
+        errors += response.result.errors
+
+    for error in errors:
+        logger.warning(error)

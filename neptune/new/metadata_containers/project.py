@@ -466,23 +466,3 @@ class Project(MetadataContainer):
             https://docs.neptune.ai/api-reference/project#.sync
         """
         return MetadataContainer.sync(self, wait=wait)
-
-    def trash_objects(
-        self,
-        ids: Union[str, Iterable[str]],
-    ) -> None:
-        """TODO: add docs"""
-        if self._mode == Mode.READ_ONLY:
-            logger.warning("Client in read-only mode, nothing will be saved to server.")
-            return
-
-        if ids is not None:
-            if isinstance(ids, str):
-                ids = [ids]
-            else:
-                verify_collection_type("ids", ids, str)
-
-        qualified_name_ids = [QualifiedName(f"{self._label}/{id_}") for id_ in ids]
-        self._backend.trash_metadata_containers(
-            project_id=self._id, container_ids=qualified_name_ids
-        )
