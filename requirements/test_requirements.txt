@@ -1,22 +1,22 @@
-freezegun
-mock
-munch
+# freezegun
+# mock
+# munch
 pylint==2.9.6
 pylintfileheader
 pytest
 pytest-cov
 pytest-xdist
-tensorflow
+# tensorflow
 pytest-timeout
-matplotlib
+# matplotlib
 pytest-mock
-moto[s3]
-plotly
-altair
-vega_datasets
-bokeh
-pre-commit
+# moto[s3]
+# plotly
+# altair
+# vega_datasets
+# bokeh
+# pre-commit
 
 # Installing Torch on Windows increases the test duration by ~10 minutes
 # torch seems to be unavailable for 3.10 on Mac (as of 2022-04-06)
-torch; platform_system != 'Windows' and (platform_system != 'Darwin' or python_version < "3.10")
+# torch; platform_system != 'Windows' and (platform_system != 'Darwin' or python_version < "3.10")

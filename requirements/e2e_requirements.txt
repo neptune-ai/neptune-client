@@ -5,7 +5,7 @@ pytest-tap
 
 # integrations
 pytorch-lightning
-torchvision
-sklearn
-transformers
-optuna
+# torchvision
+# sklearn
+# transformers
+# optuna
