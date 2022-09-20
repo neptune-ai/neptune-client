@@ -270,6 +270,7 @@ class NeptuneBackendMock(NeptuneBackend):
         container_ids: List[Union[UniqueId, QualifiedName]],
     ) -> None:
         """Non relevant for backend"""
+        pass
 
     def execute_operations(
         self,
@@ -494,6 +495,7 @@ class NeptuneBackendMock(NeptuneBackend):
         destination: str,
     ):
         """Non relevant for backend"""
+        pass
 
     def get_run_url(self, run_id: str, workspace: str, project_name: str, sys_id: str) -> str:
         return f"offline/{run_id}"

@@ -39,6 +39,8 @@ from neptune.new.internal.container_type import ContainerType
 
 
 class OfflineNeptuneBackend(NeptuneBackendMock):
+    WORKSPACE_NAME = "offline"
+
     def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
         raise NeptuneOfflineModeFetchException
 
