@@ -26,7 +26,7 @@ from neptune.new.metadata_containers import Model
 
 
 class TestFetchTable(BaseE2ETest):
-    def test_fetch_runs_by_tag(self, environment):
+    def test_fetch_runs_by_tag(self, environment, project):
         tag1, tag2 = str(uuid.uuid4()), str(uuid.uuid4())
 
         with neptune.init_run(project=environment.project) as run:
@@ -39,8 +39,6 @@ class TestFetchTable(BaseE2ETest):
 
         # wait for the cache to fill
         time.sleep(5)
-
-        project = neptune.get_project(name=environment.project)
 
         runs_table = project.fetch_runs_table(tag=[tag1, tag2]).to_rows()
         assert len(runs_table) == 1
@@ -91,10 +89,16 @@ class TestFetchTable(BaseE2ETest):
 
         containers_as_rows = get_containers_as_rows()
         container1 = next(
-            filter(lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows)
+            filter(
+                lambda m: m.get_attribute_value("sys/id") == container_id1,
+                containers_as_rows,
+            )
         )
         container2 = next(
-            filter(lambda m: m.get_attribute_value("sys/id") == container_id2, containers_as_rows)
+            filter(
+                lambda m: m.get_attribute_value("sys/id") == container_id2,
+                containers_as_rows,
+            )
         )
 
         assert container1.get_attribute_value(key1) == value1
@@ -107,7 +111,8 @@ class TestFetchTable(BaseE2ETest):
             containers_as_rows = get_containers_as_rows(**kwargs)
             return next(
                 filter(
-                    lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows
+                    lambda m: m.get_attribute_value("sys/id") == container_id1,
+                    containers_as_rows,
                 )
             )
 
@@ -135,22 +140,20 @@ class TestFetchTable(BaseE2ETest):
             columns_with_one_key.get_attribute_value(key1)
         assert columns_with_one_key.get_attribute_value(key2) == value2
 
-    def test_fetch_runs_table(self, environment):
+    def test_fetch_runs_table(self, environment, project):
         def init_run():
             return neptune.init_run(project=environment.project)
 
         def get_runs_as_rows(**kwargs):
-            project = neptune.get_project(name=environment.project)
             return project.fetch_runs_table(**kwargs).to_rows()
 
         self._test_fetch_from_container(init_run, get_runs_as_rows)
 
-    def test_fetch_models_table(self, environment):
+    def test_fetch_models_table(self, environment, project):
         def init_run():
             return neptune.init_model(project=environment.project, key=a_key())
 
         def get_models_as_rows(**kwargs):
-            project = neptune.get_project(name=environment.project)
             return project.fetch_models_table(**kwargs).to_rows()
 
         self._test_fetch_from_container(init_run, get_models_as_rows)

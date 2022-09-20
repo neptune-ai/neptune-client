@@ -23,24 +23,20 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
     def deco(f):
         @wraps(f)
         def inner(*args, **kwargs):
-            deprecated_param = kwargs.get(deprecated_kwarg_name)
-            required_param = kwargs.get(required_kwarg_name)
-            if deprecated_param is not None:
-                if required_param is not None:
+            if deprecated_kwarg_name in kwargs:
+                if required_kwarg_name in kwargs:
                     raise NeptuneParametersCollision(
                         required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__
                     )
 
                 logger.warning(
-                    "parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
+                    "parameter `%s` is deprecated, use `%s` instead."
                     " We'll end support of it in `neptune-client==1.0.0`.",
-                    extra={
-                        "deprecated_kwarg_name": deprecated_kwarg_name,
-                        "required_kwarg_name": required_kwarg_name,
-                    },
+                    deprecated_kwarg_name,
+                    required_kwarg_name,
                 )
 
-                kwargs[required_kwarg_name] = deprecated_param
+                kwargs[required_kwarg_name] = kwargs[deprecated_kwarg_name]
                 del kwargs[deprecated_kwarg_name]
 
             return f(*args, **kwargs)

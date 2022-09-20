@@ -7,3 +7,5 @@ pytest-tap
 pytorch-lightning
 torchvision
 sklearn
+transformers
+optuna
