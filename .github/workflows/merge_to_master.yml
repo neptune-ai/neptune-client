@@ -4,34 +4,34 @@ on:
     branches-ignore:
       - master
 jobs:
-  lint:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Lint
-        uses: ./.github/actions/lint
-
-  test:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 20
-    strategy:
-      matrix:
-        os: [ubuntu-latest] #, macos-latest, windows-latest]
-        python-version: ["3.10"]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          # Some tests are checking version of 'neptune' package.
-          # To simplify deployment we're using 'versioneer' but
-          # when working with branches it yields "0+unknown".
-          # Fetching all history fetches also last tag and helps versioneer
-          fetch-depth: 0
-
-      - name: Tests
-        uses: ./.github/actions/tests
+#  lint:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#
+#      - name: Lint
+#        uses: ./.github/actions/lint
+#
+#  test:
+#    runs-on: ${{ matrix.os }}
+#    timeout-minutes: 20
+#    strategy:
+#      matrix:
+#        os: [ubuntu-latest] #, macos-latest, windows-latest]
+#        python-version: ["3.10"]
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#        with:
+#          # Some tests are checking version of 'neptune' package.
+#          # To simplify deployment we're using 'versioneer' but
+#          # when working with branches it yields "0+unknown".
+#          # Fetching all history fetches also last tag and helps versioneer
+#          fetch-depth: 0
+#
+#      - name: Tests
+#        uses: ./.github/actions/tests
 
   test-e2e:
     runs-on: ${{ matrix.os }}
@@ -69,25 +69,25 @@ jobs:
           sa-api-token: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
           user-api-token: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
 
-  notify:
-    needs: [lint, test, test-e2e]
-    runs-on: ubuntu-latest
-    if: always()
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
-        with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
-
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
-        with:
-          status: success
-          fields: repo,message,author,job,eventName,took
+#  notify:
+#    needs: [lint, test, test-e2e]
+#    runs-on: ubuntu-latest
+#    if: always()
+#    env:
+#      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#    steps:
+#      - uses: technote-space/workflow-conclusion-action@v2
+#
+#      - name: Notify about failure
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION != 'success'
+#        with:
+#          status: failure
+#          fields: repo,message,author,job,eventName,took
+#
+#      - name: Notify about success
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION == 'success'
+#        with:
+#          status: success
+#          fields: repo,message,author,job,eventName,took
