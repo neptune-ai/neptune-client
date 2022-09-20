@@ -23,7 +23,7 @@ runs:
 
       - name: List dependencies
         run: |
-          pip list
+          pip freeze
         shell: bash
 
 #      - name: E2E - Service Accounts
@@ -33,12 +33,12 @@ runs:
 #          pytest ./e2e_tests --timeout=600  --timeout_method=thread -m "not integrations"
 #        shell: bash
 
-      - name: E2E - Integrations
-        env:
-          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token }}
-        run: |
-          pytest ./e2e_tests --timeout=600  --timeout_method=thread -m integrations
-        shell: bash
+#      - name: E2E - Integrations
+#        env:
+#          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token }}
+#        run: |
+#          pytest ./e2e_tests --timeout=600  --timeout_method=thread -m integrations
+#        shell: bash
 
 #      - name: Test Fast.ai integration
 #        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
