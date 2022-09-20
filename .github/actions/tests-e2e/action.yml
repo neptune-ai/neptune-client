@@ -18,7 +18,7 @@ runs:
 
       - name: Install dependencies
         run: |
-          pip install -e . && pip install -r requirements/e2e_requirements.txt
+          pip install -e .
         shell: bash
 
       - name: List dependencies
