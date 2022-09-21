@@ -29,7 +29,6 @@ __all__ = (
     "trash_objects",
 )
 
-
 import os
 from typing import Dict, Iterable, List, Optional, Union
 
@@ -85,6 +84,8 @@ from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.logger import logger
+
+TRASH_BATCH_SIZE = 100
 
 
 def _get_token(api_token: Optional[str] = None) -> str:
@@ -822,12 +823,11 @@ def trash_objects(
     workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
-    batch_size = 100
     qualified_name_ids = [
         QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids
     ]
     errors = list()
-    for batch_ids in get_batches(qualified_name_ids, batch_size=batch_size):
+    for batch_ids in get_batches(qualified_name_ids, batch_size=TRASH_BATCH_SIZE):
         params = {
             "projectIdentifier": project_qualified_name,
             "experimentIdentifiers": batch_ids,
