@@ -19,10 +19,10 @@ from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.series import Series
 from neptune.new.internal.backends.api_model import StringSeriesValues
 from neptune.new.internal.operation import ClearStringLog, LogStrings, Operation
+from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
-from neptune.utils import split_to_chunks
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer
@@ -56,7 +56,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
             )
 
         values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in values]
-        return [LogStrings(self._path, chunk) for chunk in split_to_chunks(values, 10)]
+        return [LogStrings(self._path, chunk) for chunk in get_batches(values, batch_size=10)]
 
     def _get_clear_operation(self) -> Operation:
         return ClearStringLog(self._path)

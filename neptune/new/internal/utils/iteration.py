@@ -13,24 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Any, Iterable
+from itertools import chain, islice
+from typing import Iterable, List, TypeVar
+
+T = TypeVar("T")
 
 
-def get_batches(iterable: Iterable[Any], batch_size: int):
+def get_batches(iterable: Iterable[T], *, batch_size: int) -> Iterable[List[T]]:
     assert batch_size > 0
-    iterable = iter(iterable)
 
-    batch = list()
+    source_iter = iter(iterable)
     while True:
-        if len(batch) == batch_size:
-            yield batch
-            batch = list()
-
+        # return consequent slices of `batch_size` elements
+        slices = islice(source_iter, batch_size)
         try:
-            next_element = next(iterable)
+            first_from_slice = next(slices)
         except StopIteration:
-            if batch:
-                yield batch
+            # but if there's nothing to return in last slice, close generator instead of returning empty list
             return
-
-        batch.append(next_element)
+        yield list(chain([first_from_slice], slices))

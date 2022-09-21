@@ -27,12 +27,11 @@ from neptune.new.internal.backends.nql import (
 )
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import QualifiedName, SysId, UniqueId
+from neptune.new.internal.id_formats import SysId, UniqueId
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.internal.utils import as_list, verify_collection_type
-from neptune.new.internal.utils.logger import logger
+from neptune.new.internal.utils import as_list
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.types.mode import Mode

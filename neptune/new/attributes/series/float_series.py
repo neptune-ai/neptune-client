@@ -25,9 +25,9 @@ from neptune.new.internal.operation import (
     Operation,
 )
 from neptune.new.internal.utils import verify_type
+from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.logger import logger
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
-from neptune.utils import split_to_chunks
 
 Val = FloatSeriesVal
 Data = Union[float, int]
@@ -53,7 +53,7 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
         self, value: Val, step: Optional[float], timestamp: float
     ) -> List[Operation]:
         values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
-        return [LogFloats(self._path, chunk) for chunk in split_to_chunks(values, 100)]
+        return [LogFloats(self._path, chunk) for chunk in get_batches(values, batch_size=100)]
 
     def _get_clear_operation(self) -> Operation:
         return ClearFloatLog(self._path)
