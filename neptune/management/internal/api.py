@@ -827,7 +827,7 @@ def trash_objects(
         QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids
     ]
     errors = list()
-    for batch_ids in get_batches(qualified_name_ids, batch_size):
+    for batch_ids in get_batches(qualified_name_ids, batch_size=batch_size):
         params = {
             "projectIdentifier": project_qualified_name,
             "experimentIdentifiers": batch_ids,

@@ -22,7 +22,6 @@ import os
 import re
 import sys
 import time
-from typing import Collection
 
 import numpy as np
 import pandas as pd

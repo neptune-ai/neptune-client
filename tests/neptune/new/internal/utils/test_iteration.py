@@ -20,14 +20,28 @@ from neptune.new.internal.utils.iteration import get_batches
 
 class TestIterationUtils(unittest.TestCase):
     def test_get_batches(self):
-        self.assertEqual([[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]], list(get_batches(range(10), 3)))
-        self.assertEqual([[0, 1, 2], [3, 4, 5], [6, 7, 8]], list(get_batches(range(9), 3)))
-        self.assertEqual([[1], [2], [3]], list(get_batches([1, 2, 3], 1)))
-        self.assertEqual([[1], [2], [3]], list(get_batches(iter([1, 2, 3]), 1)))
-        self.assertEqual([[1, 2, 3]], list(get_batches([1, 2, 3], 100)))
+        self.assertEqual(
+            [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9]], list(get_batches(range(10), batch_size=3))
+        )
+        self.assertEqual(
+            [[0, 1, 2], [3, 4, 5], [6, 7, 8]], list(get_batches(range(9), batch_size=3))
+        )
+        self.assertEqual([[1], [2], [3]], list(get_batches([1, 2, 3], batch_size=1)))
+        self.assertEqual([[1], [2], [3]], list(get_batches(iter([1, 2, 3]), batch_size=1)))
+        self.assertEqual([[1, 2, 3]], list(get_batches([1, 2, 3], batch_size=100)))
 
         with self.assertRaises(AssertionError):
-            next(get_batches([1, 2, 3], 0))
+            next(get_batches([1, 2, 3], batch_size=0))
 
         # but generator itself doesn't raise error untill used
-        get_batches([1, 2, 3], 0)
+        get_batches([1, 2, 3], batch_size=0)
+
+    def test_batch_lists(self):
+        list_of_lists = (list(range(i)) for i in range(10))
+        expected_batched = [
+            [[], [0], [0, 1]],
+            [[0, 1, 2], [0, 1, 2, 3], [0, 1, 2, 3, 4]],
+            [[0, 1, 2, 3, 4, 5], [0, 1, 2, 3, 4, 5, 6], [0, 1, 2, 3, 4, 5, 6, 7]],
+            [[0, 1, 2, 3, 4, 5, 6, 7, 8]],
+        ]
+        self.assertEqual(expected_batched, list(get_batches(list_of_lists, batch_size=3)))
