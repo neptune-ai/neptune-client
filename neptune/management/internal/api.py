@@ -13,6 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+__all__ = (
+    "get_project_list",
+    "create_project",
+    "delete_project",
+    "get_project_member_list",
+    "add_project_member",
+    "remove_project_member",
+    "get_workspace_member_list",
+    "add_project_service_account",
+    "remove_project_service_account",
+    "get_project_service_account_list",
+    "get_workspace_service_account_list",
+    "trash_objects",
+)
+
+
 import os
 from typing import Dict, Iterable, List, Optional, Union
 
@@ -760,25 +777,50 @@ def remove_project_service_account(
 
 
 def trash_objects(
-    name: str,  # name of the project
+    name: str,
     ids: Union[str, Iterable[str]],
     workspace: str = None,
     api_token: str = None,
 ) -> None:
-    """TODO: add docs"""
+    """Moves one or more Neptune objects to the project trash.
+    Args:
+        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+            If you pass the workspace argument, the name argument should only contain 'project-name'
+            instead of 'workspace-name/project-name'.
+        ids: Neptune ID of object to trash (or list of multiple IDs).
+            You can find the ID:
+            - (app) In the leftmost column of the table view.
+            - (API) In the "sys/id" field of the object.
+        workspace: Name of your Neptune workspace. If you specify it,
+            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the name argument.
+        api_token: Account's API token.
+            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
+            API token in plain text in your source code.
+    Examples:
+        Trashing a run with the ID "CLS-1":
+        >>> import neptune.new as neptune
+        >>> project = neptune.init_project("ml-team/classification")
+        >>> from neptune import management
+        >>> management.trash_objects(name="ml-team/classification", ids="CLS-1")
+        Trashing two runs and a model with the key "PRETRAINED":
+        >>> management.trash_objects("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
+        Note: Trashing a model object also trashes all of its versions.
+    For more, see the docs: https://docs.neptune.ai/api-reference/project#.trash_objects
+    """
     verify_type("name", name, str)
     verify_type("workspace", workspace, (str, type(None)))
     verify_type("api_token", api_token, (str, type(None)))
-
-    leaderboard_client = _get_leaderboard_client(api_token=api_token)
-    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
-    project_qualified_name = f"{workspace}/{project_name}"
-
     if ids is not None:
         if isinstance(ids, str):
             ids = [ids]
         else:
             verify_collection_type("ids", ids, str)
+
+    leaderboard_client = _get_leaderboard_client(api_token=api_token)
+    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
+    project_qualified_name = f"{workspace}/{project_name}"
 
     batch_size = 100
     qualified_name_ids = [

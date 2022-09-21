@@ -13,6 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+__all__ = (
+    "ProjectVisibility",
+    "ProjectMemberRole",
+    "MemberRole",
+    "WorkspaceMemberRole",
+)
+
+
 class ProjectVisibility:
     PRIVATE = "priv"
     PUBLIC = "pub"
