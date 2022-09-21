@@ -17,7 +17,6 @@
 # pylint: disable=protected-access
 import os
 import unittest
-from unittest.mock import call
 
 from mock import patch
 
@@ -30,7 +29,6 @@ from neptune.new.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.internal.utils.logger import LOGGER_NAME
 from tests.neptune.new.client.abstract_experiment_test_mixin import (
     AbstractExperimentTestMixin,
 )
@@ -96,35 +94,3 @@ class TestClientProject(AbstractExperimentTestMixin, unittest.TestCase):
 
         self.assertEqual(42, project["some/variable"].fetch())
         self.assertNotIn(str(project._id), os.listdir(".neptune"))
-
-    @patch(
-        "neptune.new.internal.backends.neptune_backend_mock.NeptuneBackendMock.trash_metadata_containers",
-    )
-    def test_project_trash_objects(self, trash_mock):
-        project = init_project(name=self.PROJECT_NAME, mode="async")
-        project.trash_objects(["RUN-1", "MOD", "MOD-1"])
-        self.assertEqual(1, trash_mock.call_count)
-        self.assertEqual(
-            call(
-                project_id=project._id,
-                container_ids=[
-                    "mock-workspace/project-placeholder/RUN-1",
-                    "mock-workspace/project-placeholder/MOD",
-                    "mock-workspace/project-placeholder/MOD-1",
-                ],
-            ),
-            trash_mock.call_args,
-        )
-
-    def test_project_trash_objects_in_read_only_mode(self):
-        project = init_project(name=self.PROJECT_NAME, mode="read-only")
-
-        with self.assertLogs(logger=LOGGER_NAME) as caplog:
-            project.trash_objects(["RUN-1"])
-            self.assertEqual(
-                caplog.output,
-                [
-                    "WARNING:neptune-client:"
-                    "Client in read-only mode, nothing will be saved to server."
-                ],
-            )
