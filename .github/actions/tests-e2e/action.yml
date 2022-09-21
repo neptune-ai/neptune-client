@@ -26,14 +26,19 @@ runs:
           pip uninstall -y webcolors
         shell: bash
 
-      - name: Install test dependencies
-        run: |
-          pip install -r requirements/e2e_requirements.txt
-        shell: bash
+#      - name: Install test dependencies
+#        run: |
+#          pip install -r requirements/e2e_requirements.txt
+#        shell: bash
 
       - name: List dependencies
         run: |
           pip freeze
+        shell: bash
+
+      - name: Neptune status
+        run: |
+          neptune status
         shell: bash
 
 #      - name: E2E - Service Accounts
@@ -42,14 +47,14 @@ runs:
 #        run: |
 #          pytest ./e2e_tests --timeout=600  --timeout_method=thread -m "not integrations"
 #        shell: bash
-
-      - name: E2E - Integrations
-        env:
-          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token }}
-        run: |
-          pytest ./e2e_tests --timeout=600  --timeout_method=thread -m integrations
-        shell: bash
-
+#
+#      - name: E2E - Integrations
+#        env:
+#          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token }}
+#        run: |
+#          pytest ./e2e_tests --timeout=600  --timeout_method=thread -m integrations
+#        shell: bash
+#
 #      - name: Test Fast.ai integration
 #        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
 #        with:
