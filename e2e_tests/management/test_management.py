@@ -381,7 +381,7 @@ class TestManagement(BaseE2ETest):
 @pytest.mark.management
 class TestTrashObjects(BaseE2ETest):
     """
-    Test Project specific functions
+    Test trash_objects
     """
 
     @pytest.mark.parametrize("container_type", ["model", "run"])
