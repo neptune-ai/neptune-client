@@ -23,7 +23,7 @@ runs:
 
       - name: Uninstall webcolors
         run: |
-          pip uninstall webcolors
+          pip uninstall -y webcolors
         shell: bash
 
       - name: Install test dependencies
