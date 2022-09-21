@@ -4,7 +4,7 @@ Faker
 pytest-tap
 
 # integrations
-pytorch-lightning
+pytorch-lightning==1.7.5
 # torchvision
 # sklearn
 # transformers
