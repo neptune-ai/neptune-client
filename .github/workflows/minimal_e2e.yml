@@ -1,9 +1,14 @@
 name: Minimal E2E
-on: [workflow_dispatch]
+#on: [workflow_dispatch]
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - master
 jobs:
   test-e2e:
     runs-on: ${{ matrix.os }}
-    timeout-minutes: 75
+    timeout-minutes: 40
     strategy:
       matrix:
         os: [ubuntu-latest]
