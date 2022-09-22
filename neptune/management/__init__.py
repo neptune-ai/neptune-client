@@ -25,6 +25,7 @@ from .internal.api import (
     get_workspace_service_account_list,
     remove_project_member,
     remove_project_service_account,
+    trash_objects,
 )
 from .internal.types import MemberRole, ProjectVisibility
 
@@ -40,6 +41,7 @@ __all__ = [
     "remove_project_service_account",
     "get_project_service_account_list",
     "get_workspace_service_account_list",
+    "trash_objects",
     "MemberRole",
     "ProjectVisibility",
 ]

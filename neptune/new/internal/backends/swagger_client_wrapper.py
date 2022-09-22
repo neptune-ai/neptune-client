@@ -27,6 +27,7 @@ from neptune.new.exceptions import (
 
 class ApiMethodWrapper:
     ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED = "ATTRIBUTES_PER_EXPERIMENT_LIMIT_EXCEEDED"
+    INCORRECT_IDENTIFIER = "INCORRECT_IDENTIFIER"
     WORKSPACE_IN_READ_ONLY_MODE = "WORKSPACE_IN_READ_ONLY_MODE"
     PROJECT_KEY_COLLISION = "PROJECT_KEY_COLLISION"
     PROJECT_NAME_COLLISION = "PROJECT_NAME_COLLISION"
@@ -54,6 +55,11 @@ class ApiMethodWrapper:
             raise NeptuneLimitExceedException(
                 reason=body.get("title", "Unknown reason")
             ) from exception
+        elif error_type == ApiMethodWrapper.INCORRECT_IDENTIFIER:
+            from neptune.management.exceptions import IncorrectIdentifierException
+
+            identifier = body.get("identifier", "<Unknown identifier>")
+            raise IncorrectIdentifierException(identifier=identifier) from exception
         elif error_type == ApiMethodWrapper.PROJECT_KEY_COLLISION:
             from neptune.management.exceptions import ProjectKeyCollision
 

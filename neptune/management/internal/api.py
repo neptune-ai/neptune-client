@@ -13,8 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+__all__ = (
+    "get_project_list",
+    "create_project",
+    "delete_project",
+    "get_project_member_list",
+    "add_project_member",
+    "remove_project_member",
+    "get_workspace_member_list",
+    "add_project_service_account",
+    "remove_project_service_account",
+    "get_project_service_account_list",
+    "get_workspace_service_account_list",
+    "trash_objects",
+)
+
 import os
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional, Union
 
 from bravado.exception import (
     HTTPBadRequest,
@@ -55,6 +71,7 @@ from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_backend_client,
     create_http_client_with_auth,
+    create_leaderboard_client,
 )
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import (
@@ -63,19 +80,34 @@ from neptune.new.internal.backends.utils import (
     with_api_exceptions_handler,
 )
 from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.utils import verify_type
+from neptune.new.internal.id_formats import QualifiedName
+from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.internal.utils.iteration import get_batches
+from neptune.new.internal.utils.logger import logger
+
+TRASH_BATCH_SIZE = 100
 
 
 def _get_token(api_token: Optional[str] = None) -> str:
     return api_token or os.getenv(API_TOKEN_ENV_NAME)
 
 
-def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClientWrapper:
+def _get_http_client_and_config(api_token: Optional[str] = None):
     credentials = Credentials.from_token(api_token=_get_token(api_token=api_token))
     http_client, client_config = create_http_client_with_auth(
         credentials=credentials, ssl_verify=ssl_verify(), proxies={}
     )
+    return http_client, client_config
+
+
+def _get_backend_client(api_token: Optional[str] = None) -> SwaggerClientWrapper:
+    http_client, client_config = _get_http_client_and_config(api_token)
     return create_backend_client(client_config=client_config, http_client=http_client)
+
+
+def _get_leaderboard_client(api_token: Optional[str] = None) -> SwaggerClientWrapper:
+    http_client, client_config = _get_http_client_and_config(api_token)
+    return create_leaderboard_client(client_config=client_config, http_client=http_client)
 
 
 def get_project_list(api_token: Optional[str] = None) -> List[str]:
@@ -743,3 +775,66 @@ def remove_project_service_account(
         raise AccessRevokedOnServiceAccountRemoval(
             service_account_name=service_account_name, project=project_qualified_name
         ) from e
+
+
+def trash_objects(
+    name: str,
+    ids: Union[str, Iterable[str]],
+    workspace: str = None,
+    api_token: str = None,
+) -> None:
+    """Moves one or more Neptune objects to the project trash.
+    Args:
+        name: The name of the project in Neptune in the form 'workspace-name/project-name'.
+            If you pass the workspace argument, the name argument should only contain 'project-name'
+            instead of 'workspace-name/project-name'.
+        ids: Neptune ID of object to trash (or list of multiple IDs).
+            You can find the ID:
+            - (app) In the leftmost column of the table view.
+            - (API) In the "sys/id" field of the object.
+        workspace: Name of your Neptune workspace. If you specify it,
+            change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
+            If None, it will be parsed from the name argument.
+        api_token: Account's API token.
+            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
+            API token in plain text in your source code.
+    Examples:
+        Trashing a run with the ID "CLS-1":
+        >>> import neptune.new as neptune
+        >>> project = neptune.init_project("ml-team/classification")
+        >>> from neptune import management
+        >>> management.trash_objects(name="ml-team/classification", ids="CLS-1")
+        Trashing two runs and a model with the key "PRETRAINED":
+        >>> management.trash_objects("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
+        Note: Trashing a model object also trashes all of its versions.
+    For more, see the docs: https://docs.neptune.ai/api-reference/project#.trash_objects
+    """
+    verify_type("name", name, str)
+    verify_type("workspace", workspace, (str, type(None)))
+    verify_type("api_token", api_token, (str, type(None)))
+    if ids is not None:
+        if isinstance(ids, str):
+            ids = [ids]
+        else:
+            verify_collection_type("ids", ids, str)
+
+    leaderboard_client = _get_leaderboard_client(api_token=api_token)
+    workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
+    project_qualified_name = f"{workspace}/{project_name}"
+
+    qualified_name_ids = [
+        QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids
+    ]
+    errors = list()
+    for batch_ids in get_batches(qualified_name_ids, batch_size=TRASH_BATCH_SIZE):
+        params = {
+            "projectIdentifier": project_qualified_name,
+            "experimentIdentifiers": batch_ids,
+            **DEFAULT_REQUEST_KWARGS,
+        }
+        response = leaderboard_client.api.trashExperiments(**params).response()
+        errors += response.result.errors
+
+    for error in errors:
+        logger.warning(error)

@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from time import sleep
 from typing import Dict
 
 import pytest
 
 from e2e_tests.base import BaseE2ETest, fake
-from e2e_tests.utils import Environment, a_project_name
+from e2e_tests.utils import Environment, a_project_name, initialize_container
 from neptune.management import (
     add_project_member,
     add_project_service_account,
@@ -31,9 +32,12 @@ from neptune.management import (
     get_workspace_service_account_list,
     remove_project_member,
     remove_project_service_account,
+    trash_objects,
 )
 from neptune.management.exceptions import UserNotExistsOrWithoutAccess
 from neptune.management.internal.utils import normalize_project_name
+from neptune.new import init_model_version
+from neptune.new.internal.container_type import ContainerType
 
 
 @pytest.mark.management
@@ -372,3 +376,87 @@ class TestManagement(BaseE2ETest):
         delete_project(name=created_project_identifier, api_token=environment.admin_token)
 
         assert project_identifier not in get_project_list(api_token=environment.user_token)
+
+
+@pytest.mark.management
+class TestTrashObjects(BaseE2ETest):
+    """
+    Test trash_objects
+    """
+
+    # pylint: disable=singleton-comparison
+
+    def test_trash_runs_and_models(self, project, environment):
+        # WITH runs and models
+        run1_id = initialize_container(ContainerType.RUN, project=environment.project)[
+            "sys/id"
+        ].fetch()
+        run2_id = initialize_container(ContainerType.RUN, project=environment.project)[
+            "sys/id"
+        ].fetch()
+        model1_id = initialize_container(ContainerType.MODEL, project=environment.project)[
+            "sys/id"
+        ].fetch()
+        model2_id = initialize_container(ContainerType.MODEL, project=environment.project)[
+            "sys/id"
+        ].fetch()
+
+        # WHEN trash one run and one model
+        trash_objects(environment.project, [run1_id, model1_id])
+        # wait for the elasticsearch cache to fill
+        sleep(5)
+
+        # THEN trashed runs are marked as trashed
+        runs = project.fetch_runs_table().to_pandas()
+        assert run1_id in runs[runs["sys/trashed"] == True]["sys/id"].tolist()
+        assert run2_id in runs[runs["sys/trashed"] == False]["sys/id"].tolist()
+
+        # AND trashed models are marked as trashed
+        models = project.fetch_models_table().to_pandas()
+        assert model1_id in models[models["sys/trashed"] == True]["sys/id"].tolist()
+        assert model2_id in models[models["sys/trashed"] == False]["sys/id"].tolist()
+
+    def test_trash_model_version(self, environment):
+        # WITH model
+        model = initialize_container(ContainerType.MODEL, project=environment.project)
+        model_id = model["sys/id"].fetch()
+
+        # AND model's model versions
+        model_version1 = init_model_version(model=model_id, project=environment.project)[
+            "sys/id"
+        ].fetch()
+        model_version2 = init_model_version(model=model_id, project=environment.project)[
+            "sys/id"
+        ].fetch()
+
+        # WHEN model version is trashed
+        trash_objects(environment.project, model_version1)
+        # wait for the elasticsearch cache to fill
+        sleep(5)
+
+        # THEN expect this version to be trashed
+        model_versions = model.fetch_model_versions_table().to_pandas()
+        assert (
+            model_version1
+            in model_versions[model_versions["sys/trashed"] == True]["sys/id"].tolist()
+        )
+        assert (
+            model_version2
+            in model_versions[model_versions["sys/trashed"] == False]["sys/id"].tolist()
+        )
+
+        # WHEN whole model is trashed
+        trash_objects(environment.project, model_id)
+        # wait for the elasticsearch cache to fill
+        sleep(5)
+
+        # THEN expect all its versions to be trashed
+        model_versions = model.fetch_model_versions_table().to_pandas()
+        assert (
+            model_version1
+            in model_versions[model_versions["sys/trashed"] == True]["sys/id"].tolist()
+        )
+        assert (
+            model_version2
+            in model_versions[model_versions["sys/trashed"] == True]["sys/id"].tolist()
+        )

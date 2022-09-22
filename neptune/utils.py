@@ -22,7 +22,6 @@ import os
 import re
 import sys
 import time
-from typing import Collection
 
 import numpy as np
 import pandas as pd
@@ -362,10 +361,3 @@ class NoopObject(object):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         pass
-
-
-def split_to_chunks(collection: Collection, chunk_size: int):
-    chunked_list = list()
-    for i in range(0, len(collection), chunk_size):
-        chunked_list.append(collection[i : i + chunk_size])
-    return chunked_list

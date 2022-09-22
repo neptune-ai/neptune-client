@@ -27,9 +27,9 @@ from neptune.new.internal.operation import (
     Operation,
 )
 from neptune.new.internal.utils import base64_encode
+from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.types import File
 from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
-from neptune.utils import split_to_chunks
 
 Val = FileSeriesVal
 Data = File
@@ -51,7 +51,7 @@ class FileSeries(Series[Val, Data]):
             )
             for val in value.values
         ]
-        return [LogImages(self._path, chunk) for chunk in split_to_chunks(values, 1)]
+        return [LogImages(self._path, chunk) for chunk in get_batches(values, batch_size=1)]
 
     def _get_clear_operation(self) -> Operation:
         return ClearImageLog(self._path)
