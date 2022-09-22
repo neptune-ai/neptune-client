@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 0.16.8
+## neptune-client 0.16.8
 
 ### Features
 - Added support of HuggingFace integration ([#948](https://github.com/neptune-ai/neptune-client/pull/948))
