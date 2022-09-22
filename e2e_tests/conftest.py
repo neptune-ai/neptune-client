@@ -51,8 +51,6 @@ def environment():
     project_name = a_project_name(project_slug=fake.slug())
     project_identifier = normalize_project_name(name=project_name, workspace=workspace)
 
-    # timeout to avoid ProjectKeyCollision when running many concurrent projects
-    time.sleep(random.random() * 20)
     created_project_identifier = create_project(
         name=project_name,
         visibility="priv",
