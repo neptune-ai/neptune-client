@@ -99,102 +99,107 @@ def init_run(
     capture_traceback: bool = True,
     **kwargs,
 ) -> Run:
-    """Starts a new tracked run, and append it to the top of the Runs table view.
+    """Starts a new tracked run and adds it to the top of the runs table.
+
+    If you provide the ID of an existing run, that run is resumed and no new run is created.
 
     Args:
-        project(str, optional): Name of a project in a form of `namespace/project_name`. Defaults to `None`.
-            If `None`, the value of `NEPTUNE_PROJECT` environment variable will be taken.
-        api_token(str, optional): User’s API token. Defaults to `None`.
-            If `None`, the value of `NEPTUNE_API_TOKEN` environment variable will be taken.
-            .. note::
-                It is strongly recommended to use `NEPTUNE_API_TOKEN` environment variable rather than placing your
-                API token in plain text in your source code.
-        with_id (str, optional): An existing run's identifier like 'SAN-1' in case of resuming a tracked run.
-            Defaults to `None`.
-            A run with such identifier must exist. If `None` is passed, starts a new tracked run.
-        custom_run_id (str, optional): A unique identifier to be used when running Neptune in pipelines.
-            Defaults to `None`.
-            Make sure you are using the same identifier throughout the whole pipeline execution.
-        mode (str, optional): Connection mode in which the tracking will work. Defaults to `None`.
-            If `None`, the value of `NEPTUNE_MODE` environment variable will be taken.
-            If no value was set for environment variable then `'async'` at default.
-            Possible values 'async', 'sync', 'offline', 'read-only' and 'debug'.
-        name (str, optional): Editable name of the run. Defaults to `'Untitled'`.
-            Name is displayed in the run's Details and in Runs table as a column.
-        description (str, optional): Editable description of the run. Defaults to `''`.
-            Description is displayed in the run's Details and can be displayed in the runs view as a column.
-        tags (list of str or str, optional): Tags of the run. Defaults to `[]`.
-            They are editable after run is created.
-            Tags are displayed in the run's Details and can be viewed in Runs table view as a column.
-        source_files (list of str or str, optional): List of source files to be uploaded.
-            Uploaded sources are displayed in the run’s Source code tab.
-            Unix style pathname pattern expansion is supported. For example, you can pass '*.py' to upload all python
-            source files from the current directory.
-            If `None` is passed, Python file from which run was created will be uploaded.
-        capture_stdout (bool, optional): Whether to send run's stdout. Defaults to `True`.
-            Tracked metadata will be stored inside `monitoring_namespace`.
-        capture_stderr (bool, optional):  Whether to send run’s stderr. Defaults to `True`.
-            Tracked metadata will be stored inside `monitoring_namespace`.
-        capture_hardware_metrics (bool, optional): Whether to send hardware monitoring logs
-            (CPU, GPU, Memory utilization). Defaults to `True`.
-            Tracked metadata will be stored inside `monitoring_namespace`.
-        fail_on_exception (bool, optional): Whether to register an uncaught exception handler to this process and,
-            in case of an exception, set run's sys/failed to True. Exception is always logged
-        monitoring_namespace (str, optional): Namespace inside which all monitoring logs be stored.
+        project: Name of the project where the run should go, in the form `workspace-name/project_name`.
+        If None (default), the value of the `NEPTUNE_PROJECT` environment variable is used.
+        api_token: User's API token. Defaults to None.
+            If None (default), the value of the `NEPTUNE_API_TOKEN` environment variable is used.
+            Note: We strongly recommended saving your API token as an environment variable
+            rather than placing it your source code in plain text.
+        with_id: If you want to resume a run, the identifier of the existing run.
+            For example, 'SAN-1'. A run with such an ID must exist.
+            If None (default) is passed, starts a new tracked run.
+        custom_run_id: A unique identifier to be used when running Neptune in pipelines.
+            Make sure to use the same identifier throughout the whole pipeline execution.
+        mode: Connection mode in which the tracking will work.
+            If None (default), the value of the `NEPTUNE_MODE` environment variable is used.
+            If no value was set for the environment variable, 'async' is used by default.
+            Possible values are 'async', 'sync', 'offline', 'read-only', and 'debug'.
+        name: Editable name of the run. Defaults to 'Untitled'.
+            The name is displayed in the run details and as a column in the runs table.
+        description: Editable description of the run. Defaults to `''`.
+            The description is displayed in the run details and can be added to the runs table as a column.
+        tags: Tags of the run as a list of strings. Defaults to `[]`.
+            Tags are displayed in the run details and in the runs table as a column.
+            You can edit the tags after the run is created, either through the app or the API.
+        source_files: List of source files to be uploaded.
+            Uploaded source files are displayed in the 'Source code' tab of the run view.
+            Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
+            all Python files from the current directory.
+            If None is passed, the Python file from which the run was created will be uploaded.
+        capture_stdout: Whether to log the stdout of the run. Defaults to True.
+            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
+        capture_stderr:  Whether to log the stderr of the run. Defaults to True.
+            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
+        capture_hardware_metrics: Whether to send hardware monitoring logs (CPU, GPU, and memory utilization).
+            Defaults to True.
+            The logged data is stored in the namespace defined by the 'monitoring_namespace' argument.
+        fail_on_exception: Whether to register an uncaught exception handler to this process and,
+            in case of an exception, set the 'sys/failed' field of the run to True.
+            An exception is always logged.
+        monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
             Defaults to 'monitoring'.
-        flush_period (float, optional): In an asynchronous (default) connection mode how often asynchronous thread
-            should synchronize data with Neptune servers. Defaults to 5.
-        proxies (dict of str, optional): Argument passed to HTTP calls made via the Requests library.
-            For more information see
-            `their proxies section <https://2.python-requests.org/en/master/user/advanced/#proxies>`_.
-        capture_traceback (bool, optional):  Whether to send run’s traceback in case of an exception.
-            Defaults to `True`.
-            Tracked metadata will be stored inside `monitoring/traceback`.
+        flush_period: In the asynchronous (default) connection mode, in seconds, how often the asynchronous thread
+            should synchronize data with Neptune servers. Defaults to 5 (every 5 seconds).
+        proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
+            For more information, see the 'Proxies' section of the Requests documentation:
+            https://2.python-requests.org/en/master/user/advanced/#proxies
+        capture_traceback:  Whether to log the traceback of the run in case of an exception.
+            Defaults to True.
+            Tracked metadata will be stored in the 'monitoring/traceback' namespace.
 
     Returns:
-        ``Run``: object that is used to manage the tracked run and log metadata to it.
+        Run object that is used to manage the tracked run and log metadata to it.
 
     Examples:
 
+        Creating a new run:
+
         >>> import neptune.new as neptune
 
-        >>> # minimal invoke
-        ... run = neptune.init()
+        >>> # Minimal invoke
+        ... # (creates a run in the project specified by the NEPTUNE_PROJECT environment variable)
+        ... run = neptune.init_run()
 
-        >>> # create a tracked run with a name
-        ... run = neptune.init(name='first-pytorch-ever')
+        >>> # Create a tracked run with a name and description, and no sources files uploaded
+        >>> run = neptune.init_run(
+        ...     name="neural-net-mnist",
+        ...     description="neural net trained on MNIST",
+        ...     source_files=[],
+        ... )
 
-        >>> # create a tracked run with a name and a description, and no sources files uploaded
-        >>> run = neptune.init(name='neural-net-mnist',
-        ...                    description='neural net trained on MNIST',
-        ...                    source_files=[])
+        >>> # Log all .py files from all subdirectories, excluding hidden files
+        ... run = neptune.init_run(source_files="**/*.py")
 
-        >>> # Send all py files in cwd (excluding hidden files with names beginning with a dot)
-        ... run = neptune.init(source_files='*.py')
+        >>> # Log all files and directories in the current working directory, excluding hidden files
+        ... run = neptune.init_run(source_files="*")
 
-        >>> # Send all py files from all subdirectories (excluding hidden files with names beginning with a dot)
-        ... # Supported on Python 3.5 and later.
-        ... run = neptune.init(source_files='**/*.py')
+        >>> # Larger example
+        ... run = neptune.init_run(
+        ...     name="first-pytorch-ever",
+        ...     description="Longer description of the run goes here",
+        ...     tags=["tags", "go-here", "as-list-of-strings"],
+        ...     source_files=["training_with_pytorch.py", "net.py"],
+        ...     monitoring_namespace="system_metrics",
+        ...     capture_stderr=False,
+        ... )
 
-        >>> # Send all files and directories in cwd (excluding hidden files with names beginning with a dot)
-        ... run = neptune.init(source_files='*')
+        Connecting to an existing run:
 
-        >>> # Send all files and directories in cwd including hidden files
-        ... run = neptune.init(source_files=['*', '.*'])
+        >>> # Resume logging to an existing run with the ID "SAN-3"
+        ... run = neptune.init_run(with_id="SAN-3")
+        ... run["parameters/lr"] = 0.1  # modify or add metadata
 
-        >>> # Send files with names being a single character followed by '.py' extension.
-        ... run = neptune.init(source_files='?.py')
+        >>> # Initialize an existing run in read-only mode (logging new data is not possible, only fetching)
+        ... run = neptune.init_run(with_id="SAN-4", mode="read-only")
+        ... learning_rate = run["parameters/lr"].fetch()
 
-        >>> # larger example
-        ... run = neptune.init(name='first-pytorch-ever',
-        ...               description='write longer description here',
-        ...               tags=['list-of', 'tags', 'goes-here', 'as-list-of-strings'],
-        ...               source_files=['training_with_pytorch.py', 'net.py'])
-
-    You may also want to check `init docs page`_.
-
-    .. _init docs page:
-       https://docs.neptune.ai/api-reference/neptune#.init
+    You may also want to check the init_run() docs page:
+    https://docs.neptune.ai/api-reference/neptune#.init_run
     """
     _check_for_extra_kwargs(init_run.__name__, kwargs)
 
