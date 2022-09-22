@@ -19,15 +19,11 @@ runs:
           pip list
         shell: bash
 
-      - name: Create dir for test results
-        run: mkdir ./test-results
-        shell: bash
-
       - name: Integration tests
         run: |
           pytest -v ./tests \
-          --junitxml="./test-results/test-integration-${{ matrix.os }}-${{ matrix.python-version }}.xml" \
-          --timeout=120
+          --timeout=120 \
+          --junitxml="./test-results/test-integration-${{ matrix.os }}-${{ matrix.python-version }}.xml"
         shell: bash
 
       - name: Display test artifacts
