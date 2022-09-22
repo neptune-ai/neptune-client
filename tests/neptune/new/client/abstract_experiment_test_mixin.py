@@ -22,8 +22,6 @@ from abc import abstractmethod
 from io import StringIO
 from unittest.mock import Mock
 
-import pytest
-
 from neptune.new.exceptions import (
     MetadataInconsistency,
     MissingFieldException,
@@ -85,7 +83,6 @@ class AbstractExperimentTestMixin:
                 os.listdir(f".neptune/async/{exp_dir}/{execution_dir}"),
             )
 
-    @pytest.mark.timeout(10)
     def test_async_mode_wait_on_dead(self):
         with self.call_init(mode="async", flush_period=0.5) as exp:
             exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
@@ -95,7 +92,6 @@ class AbstractExperimentTestMixin:
             with self.assertRaises(NeptuneSynchronizationAlreadyStoppedException):
                 exp.wait()
 
-    @pytest.mark.timeout(10)
     def test_async_mode_die_during_wait(self):
         with self.call_init(mode="async", flush_period=1) as exp:
             exp._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
@@ -103,7 +99,6 @@ class AbstractExperimentTestMixin:
             with self.assertRaises(NeptuneSynchronizationAlreadyStoppedException):
                 exp.wait()
 
-    @pytest.mark.timeout(10)
     def test_async_mode_stop_on_dead(self):
         stream = StringIO()
         with contextlib.redirect_stdout(stream):

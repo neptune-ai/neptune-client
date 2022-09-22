@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 20
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-lates]
         python-version: ["3.7", "3.10"] # minimum, maximum
     steps:
       - name: Checkout repository
@@ -26,3 +26,17 @@ jobs:
 
       - name: Tests
         uses: ./.github/actions/tests
+
+  publish-tests:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Publish tests
+        uses: ./.github/actions/publish-tests-result

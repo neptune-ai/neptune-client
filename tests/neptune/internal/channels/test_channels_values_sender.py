@@ -20,7 +20,6 @@ import time
 import unittest
 
 import mock
-import pytest
 
 from neptune.internal.channels.channels import (
     ChannelIdWithValues,
@@ -305,14 +304,9 @@ class TestChannelsValuesSender(unittest.TestCase):
             ),
         )
 
-    __TIMEOUT = 0.1
-
-    # Using pytest-timeout because Python 2.7 does not support timeouts on acquiring semaphores.
-    # Can be refactored once Python 2 support is dropped.
-    @pytest.mark.timeout(10 * __TIMEOUT)
     @mock.patch(
         "neptune.internal.channels.channels_values_sender.ChannelsValuesSendingThread._SLEEP_TIME",
-        __TIMEOUT,
+        0.1,
     )
     def test_send_when_waiting_for_next_value_timed_out(self):
         # given
