@@ -811,7 +811,7 @@ def trash_objects(
         >>> management.trash_objects("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
         Note: Trashing a model object also trashes all of its versions.
 
-    For more, see the docs: https://docs.neptune.ai/api-reference/project#.trash_objects
+    For more, see the docs: https://docs.neptune.ai/api-reference/management#.trash_objects
     """
     verify_type("name", name, str)
     verify_type("workspace", workspace, (str, type(None)))
