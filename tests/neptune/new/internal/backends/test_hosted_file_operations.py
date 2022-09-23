@@ -26,7 +26,6 @@ from mock import MagicMock, call, patch
 
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.hosted_file_operations import (
-    FileUploadTarget,
     _get_content_disposition_filename,
     download_file_attribute,
     download_file_set_attribute,
