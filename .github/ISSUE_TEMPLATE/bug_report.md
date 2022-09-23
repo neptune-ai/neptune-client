@@ -22,5 +22,8 @@ If applicable, add traceback or log output/screenshots to help explain your prob
 ```
 **The operating system you're using:**
 **The output of `python --version`:**
+### Share the Neptune Project or Run link (Optional)
+If applicable, add a link to your Neptune `Project` or `Run` to help us investigate your problem.\
+**Note**: If you prefer not to publicly share the link to your `Project` or `Run` on GitHub, you can email us at [support@neptune.ai](mailto:support@neptune.ai) instead of creating an issue.
 ### Additional context
 Add any other context about the problem here.
