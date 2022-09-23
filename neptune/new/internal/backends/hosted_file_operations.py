@@ -30,7 +30,6 @@ from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 from neptune.internal.storage.datastream import (
     FileChunk,
     FileChunker,
-    FileChunkStream,
     compress_to_tar_gz_in_memory,
 )
 from neptune.internal.storage.storage_utils import (
