@@ -21,5 +21,18 @@ runs:
 
       - name: Integration tests
         run: |
-          pytest --timeout=120  --timeout_method=thread ./tests
+          pytest -v ./tests \
+          --timeout=120 --timeout_method=thread \
+          --junitxml="./test-results/test-integration-${{ matrix.os }}-${{ matrix.python-version }}.xml"
         shell: bash
+
+      - name: Display test artifacts
+        if: always()
+        run: ls -R ./test-results
+        shell: bash
+
+      - uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: test-artifacts
+          path: ./test-results
