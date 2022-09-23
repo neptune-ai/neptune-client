@@ -18,14 +18,8 @@ import io
 import math
 import os
 import tarfile
-from typing import Any, BinaryIO, Generator, Optional, Union
+from typing import Any, Generator, Optional
 
-from future.builtins import object
-
-from neptune.internal.storage.storage_utils import (
-    AttributeUploadConfiguration,
-    UploadEntry,
-)
 from neptune.new.exceptions import InternalClientError, UploadedFileChanged
 from neptune.new.internal.backends.api_model import MultipartConfig
 
