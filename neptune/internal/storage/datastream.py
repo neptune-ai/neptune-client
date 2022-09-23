@@ -18,14 +18,8 @@ import io
 import math
 import os
 import tarfile
-from typing import Any, BinaryIO, Generator, Optional, Union
+from typing import Any, Generator, Optional
 
-from future.builtins import object
-
-from neptune.internal.storage.storage_utils import (
-    AttributeUploadConfiguration,
-    UploadEntry,
-)
 from neptune.new.exceptions import InternalClientError, UploadedFileChanged
 from neptune.new.internal.backends.api_model import MultipartConfig
 
@@ -77,42 +71,6 @@ class FileChunker:
                 new_offset = last_offset + len(chunk)
                 yield FileChunk(data=chunk, start=last_offset, end=new_offset)
                 last_offset = new_offset
-
-
-class FileChunkStream(object):
-    def __init__(
-        self,
-        upload_entry: UploadEntry,
-        upload_configuration: AttributeUploadConfiguration,
-    ):
-        self.filename: str = upload_entry.target_path
-        self.upload_configuration: AttributeUploadConfiguration = upload_configuration
-        self.length: int = upload_entry.length()
-        self.fobj: Union[BinaryIO, io.BytesIO] = upload_entry.get_stream()
-        self.permissions: str = upload_entry.get_permissions()
-
-    def __eq__(self, fs):
-        if isinstance(self, fs.__class__):
-            return self.__dict__ == fs.__dict__
-        return False
-
-    def generate(self) -> Generator[FileChunk, Any, None]:
-        last_offset = 0
-        while True:
-            chunk = self.fobj.read(self.upload_configuration.chunk_size)
-            if chunk:
-                if isinstance(chunk, str):
-                    chunk = chunk.encode("utf-8")
-                new_offset = last_offset + len(chunk)
-                yield FileChunk(data=chunk, start=last_offset, end=new_offset)
-                last_offset = new_offset
-            else:
-                if last_offset == 0:
-                    yield FileChunk(data=b"", start=0, end=0)
-                break
-
-    def close(self):
-        self.fobj.close()
 
 
 def compress_to_tar_gz_in_memory(upload_entries) -> bytes:

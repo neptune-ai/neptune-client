@@ -91,6 +91,15 @@ class MultipartConfig:
     max_chunk_count: int
     max_single_part_size: int
 
+    @staticmethod
+    def get_default() -> "MultipartConfig":
+        return MultipartConfig(
+            min_chunk_size=5242880,
+            max_chunk_size=1073741824,
+            max_chunk_count=1000,
+            max_single_part_size=5242880,
+        )
+
 
 @dataclass(frozen=True)
 class ClientConfig:
