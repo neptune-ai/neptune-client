@@ -104,19 +104,19 @@ def init_run(
     If you provide the ID of an existing run, that run is resumed and no new run is created.
 
     Args:
-        project: Name of the project where the run should go, in the form `workspace-name/project_name`.
-        If None (default), the value of the `NEPTUNE_PROJECT` environment variable is used.
+        project: Name of the project where the run should go, in the form `"workspace-name/project_name"`.
+        If None (default), the value of the NEPTUNE_PROJECT environment variable is used.
         api_token: User's API token. Defaults to None.
-            If None (default), the value of the `NEPTUNE_API_TOKEN` environment variable is used.
-            Note: We strongly recommended saving your API token as an environment variable
-            rather than placing it your source code in plain text.
+            If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
+            Note: To keep your API token secure, save it to the NEPTUNE_API_TOKEN environment variable rather than
+            placing it in plain text in the source code.
         with_id: If you want to resume a run, the identifier of the existing run.
             For example, 'SAN-1'. A run with such an ID must exist.
             If None (default) is passed, starts a new tracked run.
         custom_run_id: A unique identifier to be used when running Neptune in pipelines.
             Make sure to use the same identifier throughout the whole pipeline execution.
         mode: Connection mode in which the tracking will work.
-            If None (default), the value of the `NEPTUNE_MODE` environment variable is used.
+            If None (default), the value of the NEPTUNE_MODE environment variable is used.
             If no value was set for the environment variable, 'async' is used by default.
             Possible values are 'async', 'sync', 'offline', 'read-only', and 'debug'.
         name: Editable name of the run. Defaults to 'Untitled'.
@@ -146,8 +146,7 @@ def init_run(
         flush_period: In the asynchronous (default) connection mode, in seconds, how often the asynchronous thread
             should synchronize data with Neptune servers. Defaults to 5 (every 5 seconds).
         proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
-            For more information, see the 'Proxies' section of the Requests documentation:
-            https://2.python-requests.org/en/master/user/advanced/#proxies
+            For more information, see the 'Proxies' section in the Requests documentation.
         capture_traceback:  Whether to log the traceback of the run in case of an exception.
             Defaults to True.
             Tracked metadata will be stored in the 'monitoring/traceback' namespace.
