@@ -26,7 +26,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
-from neptune.new.envs import NEPTUNE_GET_ALL_ITEMS_STEP_SIZE
+from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
     AmbiguousProjectName,
     ArtifactNotFoundException,
@@ -1067,7 +1067,7 @@ class HostedNeptuneBackend(NeptuneBackend):
             return LeaderboardEntry(entry.experimentId, attributes)
 
         try:
-            step_size = int(os.getenv(NEPTUNE_GET_ALL_ITEMS_STEP_SIZE, "100"))
+            step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
             return [
                 to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=step_size)
             ]
