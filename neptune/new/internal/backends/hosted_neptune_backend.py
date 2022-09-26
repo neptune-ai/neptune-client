@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import logging
+import os
 import re
 import typing
 from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
@@ -25,6 +26,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
     AmbiguousProjectName,
     ArtifactNotFoundException,
@@ -1065,7 +1067,10 @@ class HostedNeptuneBackend(NeptuneBackend):
             return LeaderboardEntry(entry.experimentId, attributes)
 
         try:
-            return [to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=100)]
+            step_size = int(os.getenv(NEPTUNE_FETCH_TABLE_STEP_SIZE, "100"))
+            return [
+                to_leaderboard_entry(e) for e in self._get_all_items(get_portion, step=step_size)
+            ]
         except HTTPNotFound:
             raise ProjectNotFound(project_id)
 
