@@ -1,3 +1,10 @@
+## neptune-client 0.16.9
+
+### Fixes
+
+- Management docstring adjustments ([#1016](https://github.com/neptune-ai/neptune-client/pull/1016))
+- Few minor fixes
+
 ## neptune-client 0.16.8
 
 ### Features
