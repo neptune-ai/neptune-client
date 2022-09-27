@@ -25,7 +25,7 @@ import sys
 
 import __main__  # noqa
 
-__all__ = ["empty_path", "get_path_executed_script", "get_fullpath_from_main_file"]
+__all__ = ["empty_path", "get_path_executed_script"]
 
 empty_path = pathlib.Path()
 
