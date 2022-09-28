@@ -784,14 +784,13 @@ def trash_objects(
     api_token: str = None,
 ) -> None:
     """Moves one or more Neptune objects to the project trash.
+
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         ids: Neptune ID of object to trash (or list of multiple IDs).
-            You can find the ID:
-            - (app) In the leftmost column of the table view.
-            - (API) In the "sys/id" field of the object.
+            You can find the ID in the leftmost column of the table view, and in the "sys/id" field of each object.
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
@@ -799,6 +798,7 @@ def trash_objects(
             If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
+
     Examples:
         Trashing a run with the ID "CLS-1":
         >>> import neptune.new as neptune
