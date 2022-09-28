@@ -1,3 +1,8 @@
+## [UNRELEASED] neptune-client 0.16.10
+
+### Fixes
+- Update jsonschema requirement with explicit `format` specifier ([#1010](https://github.com/neptune-ai/neptune-client/pull/1010))
+
 ## neptune-client 0.16.9
 
 ### Fixes
