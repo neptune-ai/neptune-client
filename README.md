@@ -31,7 +31,10 @@ pip install neptune-client
 ```python
 import neptune.new as neptune
 
-run = neptune.init(project="common/quickstarts", api_token="ANONYMOUS")
+run = neptune.init_run(
+    project="common/quickstarts",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+)
 
 run["parameters"] = {
     "batch_size": 64,
@@ -45,6 +48,7 @@ for epoch in range(100):
 
 run["f1_score"] = 0.66
 ```
+
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/how-to-guides/hello-world/notebooks/Neptune_hello_world.ipynb)
 
 <div align="center">
@@ -161,7 +165,10 @@ import tensorflow as tf
 import neptune.new as neptune
 from neptune.new.integrations.tensorflow_keras import NeptuneCallback
 
-run = neptune.init(project="common/tf-keras-integration", api_token="ANONYMOUS")
+run = neptune.init_run(
+    project="common/tf-keras-integration",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+)
 
 mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -210,9 +217,9 @@ from sklearn.model_selection import train_test_split
 import neptune.new as neptune
 import neptune.new.integrations.sklearn as npt_utils
 
-run = neptune.init(
+run = neptune.init_run(
     project="common/sklearn-integration",
-    api_token="ANONYMOUS",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
     name="classification-example",
     tags=["GradientBoostingClassifier", "classification"],
 )
@@ -258,8 +265,10 @@ from neptune.new.integrations.fastai import NeptuneCallback
 from fastai.vision.all import *
 import neptune.new as neptune
 
-run = neptune.init(
-    project="common/fastai-integration", api_token="ANONYMOUS", tags="basic"
+run = neptune.init_run(
+    project="common/fastai-integration",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+    tags="basic",
 )
 
 path = untar_data(URLs.MNIST_TINY)
@@ -321,9 +330,10 @@ def objective(trial):
 
 
 # Create a Neptune run
-run = neptune.init(
-    api_token="ANONYMOUS", project="common/optuna-integration"
-)  # you can pass your credentials here
+run = neptune.init_run(
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+    project="common/optuna-integration",
+)
 
 # Create a NeptuneCallback for Optuna
 neptune_callback = optuna_utils.NeptuneCallback(run)
@@ -365,4 +375,4 @@ If you get stuck or simply want to talk to us about something, here are your opt
 
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Grzegorz, Paweł, Marcin, Jakub, Prince, Rafał, Dominika, Karolina, Parth, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, Kshiteej, Tomek, Tymoteusz, Piotr, Chaz, Michał, Siddhant, Karolina, Michał, and [you?](https://neptune.ai/jobs)
+Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Marcin, Jakub, Prince, Rafał, Dominika, Karolina, Parth, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, Kshiteej, Tomek, Tymoteusz, Piotr, Chaz, Michał, Siddhant, Karolina, Michał, Valentina, Bartosz, and [you?](https://neptune.ai/jobs)
