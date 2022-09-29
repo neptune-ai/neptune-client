@@ -1,5 +1,8 @@
 ## [UNRELEASED] neptune-client 0.16.10
 
+### Fixes
+- Update jsonschema requirement with explicit `format` specifier ([#1010](https://github.com/neptune-ai/neptune-client/pull/1010))
+
 ### Changes
 - More consistent and strict way of git repository, source files and entrypoint detection ([#1007](https://github.com/neptune-ai/neptune-client/pull/1007))
 

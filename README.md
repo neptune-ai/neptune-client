@@ -3,7 +3,6 @@
 </div>
 
 [![PyPI version](https://badge.fury.io/py/neptune-client.svg)](https://badge.fury.io/py/neptune-client)
-[![Build Status](https://travis-ci.org/neptune-ai/neptune-client.svg?branch=master)](https://travis-ci.org/neptune-ai/neptune-client)
 [![neptune-blog](https://img.shields.io/badge/Neptune-blog-informational?logo=data:image/png;base64,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)](https://neptune.ai/blog)
 [![twitter](https://img.shields.io/twitter/follow/neptune_ai.svg?label=Follow)](https://twitter.com/neptune_ai)
 [![youtube](https://img.shields.io/youtube/views/9iX6DxcijO8?style=social)](https://www.youtube.com/channel/UCvOJU-ubyUqxGSDRN7xK4Ng)
@@ -32,7 +31,10 @@ pip install neptune-client
 ```python
 import neptune.new as neptune
 
-run = neptune.init(project="common/quickstarts", api_token="ANONYMOUS")
+run = neptune.init_run(
+    project="common/quickstarts",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+)
 
 run["parameters"] = {
     "batch_size": 64,
@@ -46,6 +48,7 @@ for epoch in range(100):
 
 run["f1_score"] = 0.66
 ```
+
 [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/how-to-guides/hello-world/notebooks/Neptune_hello_world.ipynb)
 
 <div align="center">
@@ -162,7 +165,10 @@ import tensorflow as tf
 import neptune.new as neptune
 from neptune.new.integrations.tensorflow_keras import NeptuneCallback
 
-run = neptune.init(project="common/tf-keras-integration", api_token="ANONYMOUS")
+run = neptune.init_run(
+    project="common/tf-keras-integration",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+)
 
 mnist = tf.keras.datasets.mnist
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
@@ -211,9 +217,9 @@ from sklearn.model_selection import train_test_split
 import neptune.new as neptune
 import neptune.new.integrations.sklearn as npt_utils
 
-run = neptune.init(
+run = neptune.init_run(
     project="common/sklearn-integration",
-    api_token="ANONYMOUS",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
     name="classification-example",
     tags=["GradientBoostingClassifier", "classification"],
 )
@@ -259,8 +265,10 @@ from neptune.new.integrations.fastai import NeptuneCallback
 from fastai.vision.all import *
 import neptune.new as neptune
 
-run = neptune.init(
-    project="common/fastai-integration", api_token="ANONYMOUS", tags="basic"
+run = neptune.init_run(
+    project="common/fastai-integration",
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+    tags="basic",
 )
 
 path = untar_data(URLs.MNIST_TINY)
@@ -322,9 +330,10 @@ def objective(trial):
 
 
 # Create a Neptune run
-run = neptune.init(
-    api_token="ANONYMOUS", project="common/optuna-integration"
-)  # you can pass your credentials here
+run = neptune.init_run(
+    api_token=neptune.ANONYMOUS_API_TOKEN,
+    project="common/optuna-integration",
+)
 
 # Create a NeptuneCallback for Optuna
 neptune_callback = optuna_utils.NeptuneCallback(run)
@@ -366,4 +375,4 @@ If you get stuck or simply want to talk to us about something, here are your opt
 
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Grzegorz, Paweł, Marcin, Jakub, Prince, Rafał, Dominika, Karolina, Parth, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, Kshiteej, Tomek, Tymoteusz, Piotr, Chaz, Michał, Siddhant, Karolina, Michał, and [you?](https://neptune.ai/jobs)
+Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Marcin, Jakub, Prince, Rafał, Dominika, Karolina, Parth, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, Kshiteej, Tomek, Tymoteusz, Piotr, Chaz, Michał, Siddhant, Karolina, Michał, Valentina, Bartosz, and [you?](https://neptune.ai/jobs)

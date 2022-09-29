@@ -790,9 +790,7 @@ def trash_objects(
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         ids: Neptune ID of object to trash (or list of multiple IDs).
-            You can find the ID:
-            - (app) In the leftmost column of the table view.
-            - (API) In the "sys/id" field of the object.
+            You can find the ID in the leftmost column of the table view, and in the "sys/id" field of each object.
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
