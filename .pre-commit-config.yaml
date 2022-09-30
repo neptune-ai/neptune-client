@@ -1,19 +1,31 @@
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v2.3.0
     hooks:
-    -   id: check-yaml
-    -   id: end-of-file-fixer
-    -   id: trailing-whitespace
--   repo: https://github.com/pycqa/isort
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/pycqa/isort
     rev: 5.10.1
     hooks:
-    -   id: isort
+      - id: isort
         args: ["--profile", "black", "--filter-files", "--skip", "tests/neptune/test_imports.py"]
--   repo: https://github.com/psf/black
+  - repo: https://github.com/psf/black
     rev: 22.3.0
     hooks:
-    -   id: black
+      - id: black
         args:
-        - --line-length=100
-exclude: ^tests/data/
+          - --line-length=100
+  - repo: https://github.com/Lucas-C/pre-commit-hooks
+    rev: v1.3.1
+    hooks:
+      - id: insert-license
+        files: \.py$
+        args: ["--license-filepath", "neptune/license_header.txt", "--fuzzy-match-generates-todo"]
+exclude: |
+  (?x)(
+     ^tests/data/|
+     ^neptune/license_header\.txt
+  )
+default_language_version:
+    python: python3
