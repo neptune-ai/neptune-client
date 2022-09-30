@@ -22,6 +22,10 @@ repos:
       - id: insert-license
         files: ^neptune/new/.*\.py$
         args: ["--license-filepath", "neptune/license_header.txt"]
-exclude: ^tests/data/
+exclude: |
+  (?x)(
+     ^tests/data/|
+     ^neptune/license_header\.txt
+  )
 default_language_version:
     python: python3
