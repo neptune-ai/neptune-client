@@ -7,6 +7,7 @@
 - More consistent and strict way of git repository, source files and entrypoint detection ([#1007](https://github.com/neptune-ai/neptune-client/pull/1007))
 - Moved neptune and neptune_cli to src dir ([#1027](https://github.com/neptune-ai/neptune-client/pull/1027))
 - `fetch_runs_table(...)`, `fetch_models_table(...)` and `fetch_model_versions_table(...)` now queries only non-trashed ([#1033](https://github.com/neptune-ai/neptune-client/pull/1033))
+- `get_last_run`, `get_run_url`, `get_project` and `neptune.init` marked as deprecated ([#1011](https://github.com/neptune-ai/neptune-client/pull/1011))
 
 ## neptune-client 0.16.9
 

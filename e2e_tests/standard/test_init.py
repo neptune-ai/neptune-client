@@ -82,7 +82,7 @@ class TestInitProject(BaseE2ETest):
         project.sync()
         project.stop()
 
-        read_only_project = neptune.get_project(name=environment.project)
+        read_only_project = neptune.init_project(mode="read-only", name=environment.project)
         read_only_project.sync()
 
         assert set(read_only_project.get_structure()["sys"]) == {

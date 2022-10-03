@@ -43,6 +43,7 @@ from neptune.new.internal.init import (
     init_project,
     init_run,
 )
+from neptune.new.internal.utils.deprecation import deprecated
 from neptune.new.metadata_containers import Run
 from neptune.new.version import version
 
@@ -76,6 +77,7 @@ create_experiment = (
 ) = send_image = log_image = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
 
 
+@deprecated()
 def get_last_run() -> Optional[Run]:
     """Returns last created Run object.
 

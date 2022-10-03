@@ -20,7 +20,12 @@ from neptune.new.internal.init.project import (
     init_project,
 )
 from neptune.new.internal.init.run import init_run
+from neptune.new.internal.utils.deprecation import deprecated
 from neptune.new.types.mode import Mode
 
-init = init_run
 RunMode = Mode
+
+
+@deprecated(alternative="init_run")
+def init(*args, **kwargs):
+    return init_run(*args, **kwargs)

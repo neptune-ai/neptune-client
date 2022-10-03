@@ -17,7 +17,7 @@
 import unittest
 from typing import List
 
-from neptune.new import get_project
+from neptune.new import init_project
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.metadata_containers.metadata_containers_table import (
     Table,
@@ -30,7 +30,9 @@ class TestModelTables(AbstractTablesTestMixin, unittest.TestCase):
     expected_container_type = ContainerType.MODEL
 
     def get_table(self, **kwargs) -> Table:
-        return get_project("organization/project").fetch_models_table(**kwargs)
+        return init_project(name="organization/project", mode="read-only").fetch_models_table(
+            **kwargs
+        )
 
     def get_table_entries(self, table) -> List[TableEntry]:
         return table.to_rows()

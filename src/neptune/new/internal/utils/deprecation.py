@@ -14,9 +14,36 @@
 # limitations under the License.
 #
 from functools import wraps
+from typing import Optional
 
 from neptune.new.exceptions import NeptuneParametersCollision
 from neptune.new.internal.utils.logger import logger
+
+__all__ = ["deprecated", "deprecated_parameter"]
+
+
+def deprecated(*, alternative: Optional[str] = None):
+    def deco(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            if alternative:
+                logger.warning(
+                    "Function `%s` is deprecated, use `%s` instead."
+                    " We'll end support of it in `neptune-client==1.0.0`.",
+                    func.__name__,
+                    alternative,
+                )
+            else:
+                logger.warning(
+                    "Function `%s` is deprecated and will be removed."
+                    " We'll end support of it in `neptune-client==1.0.0`.",
+                    func.__name__,
+                )
+            return func(*args, **kwargs)
+
+        return inner
+
+    return deco
 
 
 def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
@@ -28,7 +55,7 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
                     raise NeptuneParametersCollision(required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__)
 
                 logger.warning(
-                    "parameter `%s` is deprecated, use `%s` instead."
+                    "Parameter `%s` is deprecated, use `%s` instead."
                     " We'll end support of it in `neptune-client==1.0.0`.",
                     deprecated_kwarg_name,
                     required_kwarg_name,
