@@ -104,7 +104,7 @@ def init_run(
     If you provide the ID of an existing run, that run is resumed and no new run is created.
 
     Args:
-        project: Name of the project where the run should go, in the form `"workspace-name/project_name"`.
+        project: Name of the project where the run should go, in the form "workspace-name/project_name".
         If None (default), the value of the NEPTUNE_PROJECT environment variable is used.
         api_token: User's API token. Defaults to None.
             If None (default), the value of the NEPTUNE_API_TOKEN environment variable is used.
@@ -179,6 +179,7 @@ def init_run(
 
         >>> # Larger example
         ... run = neptune.init_run(
+        ...     project="ml-team/classification",
         ...     name="first-pytorch-ever",
         ...     description="Longer description of the run goes here",
         ...     tags=["tags", "go-here", "as-list-of-strings"],
