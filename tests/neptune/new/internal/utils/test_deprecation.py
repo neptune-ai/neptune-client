@@ -17,6 +17,8 @@ from unittest.mock import patch
 
 import pytest
 
+import pytest
+
 from neptune.new.exceptions import NeptuneParametersCollision
 from neptune.new.internal.utils.deprecation import (
     NeptuneDeprecationWarning,
