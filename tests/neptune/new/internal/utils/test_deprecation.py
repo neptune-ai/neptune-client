@@ -40,6 +40,8 @@ class TestDeprecatedParameter:
             fun_with_deprecated_param(new_param=42)
 
     def test_deprecated_replaced(self):
+        # pylint: disable=unexpected-keyword-arg
+        # pylint: disable=missing-kwoa
         with pytest.deprecated_call(
             match="Parameter `deprecated_param` is deprecated, use `new_param` instead. We'll end support of it in "
             "`neptune-client==1.0.0`."
@@ -48,10 +50,13 @@ class TestDeprecatedParameter:
             assert value == 42
 
     def test_conflict(self):
+        # pylint: disable=unexpected-keyword-arg
         with pytest.raises(NeptuneParametersCollision):
             fun_with_deprecated_param(new_param=42, deprecated_param=42)
 
     def test_passing_deprecated_parameter_as_none(self):
+        # pylint: disable=unexpected-keyword-arg
+        # pylint: disable=missing-kwoa
         with pytest.raises(NeptuneParametersCollision):
             value = fun_with_deprecated_param(new_param=None, deprecated_param=None)
             assert value is None
