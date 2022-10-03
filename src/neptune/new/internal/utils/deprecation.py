@@ -60,6 +60,32 @@ def deprecated(*, alternative: Optional[str] = None, stack_level: int = 1):
 
     return deco
 
+__all__ = ["deprecated", "deprecated_parameter"]
+
+
+def deprecated(*, alternative: Optional[str] = None):
+    def deco(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            if alternative:
+                logger.warning(
+                    "Function `%s` is deprecated, use `%s` instead."
+                    " We'll end support of it in `neptune-client==1.0.0`.",
+                    func.__name__,
+                    alternative,
+                )
+            else:
+                logger.warning(
+                    "Function `%s` is deprecated and will be removed."
+                    " We'll end support of it in `neptune-client==1.0.0`.",
+                    func.__name__,
+                )
+            return func(*args, **kwargs)
+
+        return inner
+
+    return deco
+
 
 def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
     def deco(f):
