@@ -37,7 +37,7 @@ from neptune.new.types.mode import Mode
 class Run(MetadataContainer):
     """A Run in Neptune is a representation of all metadata that you log to Neptune.
 
-    Beginning when you start a tracked run with `neptune.init()` and ending when the script finishes
+    Beginning when you start a tracked run with `neptune.init_run()` and ending when the script finishes
     or when you explicitly stop the experiment with `.stop()`.
 
     You can log many ML metadata types, including:
@@ -53,7 +53,7 @@ class Run(MetadataContainer):
         >>> import neptune.new as neptune
 
         >>> # Create new experiment
-        ... run = neptune.init('my_workspace/my_project')
+        ... run = neptune.init_run('my_workspace/my_project')
 
         >>> # Log parameters
         ... params = {'max_epochs': 10, 'optimizer': 'Adam'}
@@ -200,7 +200,7 @@ class Run(MetadataContainer):
             `dict` containing all non-File Atom fields values.
         Examples:
             >>> import neptune.new as neptune
-            >>> resumed_run = neptune.init(with_id="HEL-3")
+            >>> resumed_run = neptune.init_run(with_id="HEL-3")
             >>> params = resumed_run['model/parameters'].fetch()
             >>> run_data = resumed_run.fetch()
             >>> print(run_data)
@@ -224,7 +224,7 @@ class Run(MetadataContainer):
         Examples:
             If you are creating tracked runs from the script you don't need to call `.stop()`:
             >>> import neptune.new as neptune
-            >>> run = neptune.init()
+            >>> run = neptune.init_run()
             >>> # Your training or monitoring code
             ... pass
             ... # If you are executing Python script .stop()
@@ -237,13 +237,13 @@ class Run(MetadataContainer):
             >>> # If you are running consecutive training jobs from the same script
             ... # stop the tracked runs manually at the end of single training job
             ... for config in configs:
-            ...   run = neptune.init()
+            ...   run = neptune.init_run()
             ...   # Your training or monitoring code
             ...   pass
             ...   run.stop()
             >>> # You can also use with statement and context manager
             ... for config in configs:
-            ...   with neptune.init() as run:
+            ...   with neptune.init_run() as run:
             ...     # Your training or monitoring code
             ...     pass
             ...     # .stop() is automatically called
@@ -282,7 +282,7 @@ class Run(MetadataContainer):
                 This makes the call synchronous. Defaults to `True`.
         Examples:
             >>> import neptune.new as neptune
-            >>> run = neptune.init()
+            >>> run = neptune.init_run()
             >>> run['parameters/learninggg_rata'] = 0.3
             >>> # Delete a field along with it's data
             ... run.pop('parameters/learninggg_rata')
@@ -319,7 +319,7 @@ class Run(MetadataContainer):
             >>> import neptune.new as neptune
             >>> # Connect to a run from Worker #3
             ... worker_id = 3
-            >>> run = neptune.init(with_id='DIST-43', monitoring_namespace='monitoring/{}'.format(worker_id))
+            >>> run = neptune.init_run(with_id='DIST-43', monitoring_namespace='monitoring/{}'.format(worker_id))
             >>> # Try to access logs that were created in meantime by Worker #2
             ... worker_2_status = run['status/2'].fetch() # Error if this field was created after this script starts
             >>> run.sync() # Synchronizes local representation with Neptune servers.

@@ -79,7 +79,7 @@ class BoringModel(LightningModule):
 @pytest.fixture(scope="session")
 def pytorch_run(environment):
     # given
-    run = neptune.init(name="Pytorch-Lightning integration", project=environment.project)
+    run = neptune.init_run(name="Pytorch-Lightning integration", project=environment.project)
     # and
     model_checkpoint = ModelCheckpoint(
         dirpath="my_model/checkpoints/",

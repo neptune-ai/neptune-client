@@ -135,7 +135,7 @@ class Handler:
             Assigning values:
 
             >>> import neptune.new as neptune
-            >>> run = neptune.init()
+            >>> run = neptune.init_run()
 
             >>> # You can both use the Python assign operator (=)
             ... run['parameters/max_epochs'] = 5
@@ -178,7 +178,7 @@ class Handler:
 
         Examples:
             >>> import neptune.new as neptune
-            >>> run = neptune.init()
+            >>> run = neptune.init_run()
 
             >>> # Upload example data
             ... run["dataset/data_sample"].upload("sample_data.csv")

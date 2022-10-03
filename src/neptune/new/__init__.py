@@ -88,7 +88,7 @@ def get_last_run() -> Optional[Run]:
         >>> import neptune.new as neptune
 
         >>> # Crate a new tracked run
-        ... neptune.init(name='A new approach', source_files='**/*.py')
+        ... neptune.init_run(name='A new approach', source_files='**/*.py')
         ... # Oops! We didn't capture the reference to the Run object
 
         >>> # Not a problem! We've got you covered.
