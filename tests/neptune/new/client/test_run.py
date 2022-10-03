@@ -92,7 +92,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
             self.assertEqual(exp._id, AN_API_RUN.id)
             self.assertIsInstance(exp.get_structure()["test"], String)
 
-    @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
+    @patch("neptune.new.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
     @patch("neptune.new.internal.init.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
         "neptune.new.internal.utils.glob",
@@ -100,7 +100,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.new.internal.utils.os.path.abspath",
-        new=lambda path: os.path.normpath("/home/user/main_dir/" + path),
+        new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
     @patch("neptune.new.internal.utils.os.getcwd", new=lambda: "/home/user/main_dir")
     @unittest.skipIf(IS_WINDOWS, "Linux/Mac test")
@@ -120,7 +120,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         exp = init_run(mode="debug", source_files=["../other_dir/*"])
         self.assertEqual(exp["source_code/entrypoint"].fetch(), "../main_dir/main.py")
 
-    @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
+    @patch("neptune.vendor.lib_programname.sys.argv", ["main.py"])
     @patch("neptune.new.internal.utils.source_code.is_ipython", new=lambda: True)
     def test_entrypoint_in_interactive_python(self):
         exp = init_run(mode="debug")
@@ -139,7 +139,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
         with self.assertRaises(MissingFieldException):
             exp["source_code/entrypoint"].fetch()
 
-    @patch("neptune.new.internal.utils.source_code.sys.argv", ["main.py"])
+    @patch("neptune.new.internal.utils.source_code.get_path_executed_script", lambda: "main.py")
     @patch("neptune.new.internal.utils.source_code.get_common_root", new=lambda _: None)
     @patch("neptune.new.internal.init.run.os.path.isfile", new=lambda file: "." in file)
     @patch(
@@ -148,7 +148,7 @@ class TestClientRun(AbstractExperimentTestMixin, unittest.TestCase):
     )
     @patch(
         "neptune.new.internal.utils.os.path.abspath",
-        new=lambda path: os.path.normpath("/home/user/main_dir/" + path),
+        new=lambda path: os.path.normpath(os.path.join("/home/user/main_dir", path)),
     )
     def test_entrypoint_without_common_root(self):
         exp = init_run(mode="debug", source_files=["../*"])

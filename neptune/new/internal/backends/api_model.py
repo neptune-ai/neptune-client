@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -90,6 +90,15 @@ class MultipartConfig:
     max_chunk_size: int
     max_chunk_count: int
     max_single_part_size: int
+
+    @staticmethod
+    def get_default() -> "MultipartConfig":
+        return MultipartConfig(
+            min_chunk_size=5242880,
+            max_chunk_size=1073741824,
+            max_chunk_count=1000,
+            max_single_part_size=5242880,
+        )
 
 
 @dataclass(frozen=True)

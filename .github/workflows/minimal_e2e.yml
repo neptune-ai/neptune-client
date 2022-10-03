@@ -1,16 +1,13 @@
-name: Scheduled E2E
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+name: Minimal E2E
+on: [workflow_dispatch]
 jobs:
   test-e2e:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        os: [ubuntu-latest]
+        python-version: ["3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
@@ -53,26 +50,3 @@ jobs:
 
       - name: Publish tests
         uses: ./.github/actions/publish-tests-result
-
-  notify:
-    needs: [test-e2e]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
-        with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
-
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
-        with:
-          status: success
-          fields: repo,message,author,job,eventName,took

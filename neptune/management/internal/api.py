@@ -115,7 +115,7 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
 
     Args:
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
@@ -176,7 +176,7 @@ def create_project(
         description: Project description.
             If None, it will be left empty.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
@@ -267,7 +267,7 @@ def delete_project(name: str, workspace: Optional[str] = None, api_token: Option
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         api_token: User's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
@@ -322,7 +322,7 @@ def add_project_member(
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
@@ -380,7 +380,7 @@ def get_project_member_list(
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
@@ -434,7 +434,7 @@ def remove_project_member(
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
@@ -479,7 +479,7 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
     Args:
         name: Name of the Neptune workspace.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
     Returns:
@@ -542,7 +542,7 @@ def get_workspace_service_account_list(
     Args:
         name: Name of the Neptune workspace.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
     Returns:
@@ -580,7 +580,7 @@ def get_project_service_account_list(
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
     Returns:
@@ -643,7 +643,7 @@ def add_project_service_account(
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
@@ -724,7 +724,7 @@ def remove_project_service_account(
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
 
@@ -784,31 +784,32 @@ def trash_objects(
     api_token: str = None,
 ) -> None:
     """Moves one or more Neptune objects to the project trash.
+
     Args:
         name: The name of the project in Neptune in the form 'workspace-name/project-name'.
             If you pass the workspace argument, the name argument should only contain 'project-name'
             instead of 'workspace-name/project-name'.
         ids: Neptune ID of object to trash (or list of multiple IDs).
-            You can find the ID:
-            - (app) In the leftmost column of the table view.
-            - (API) In the "sys/id" field of the object.
+            You can find the ID in the leftmost column of the table view, and in the "sys/id" field of each object.
         workspace: Name of your Neptune workspace. If you specify it,
             change the format of the name argument to 'project-name' instead of 'workspace-name/project-name'.
             If None, it will be parsed from the name argument.
         api_token: Account's API token.
-            If None, the value of NEPTUNE_API_TOKEN environment variable will be taken.
+            If None, the value of the NEPTUNE_API_TOKEN environment variable is used.
             Note: To keep your token secure, use the NEPTUNE_API_TOKEN environment variable rather than placing your
             API token in plain text in your source code.
+
     Examples:
+
         Trashing a run with the ID "CLS-1":
-        >>> import neptune.new as neptune
-        >>> project = neptune.init_project("ml-team/classification")
         >>> from neptune import management
         >>> management.trash_objects(name="ml-team/classification", ids="CLS-1")
+
         Trashing two runs and a model with the key "PRETRAINED":
         >>> management.trash_objects("ml-team/classification", ["CLS-2", "CLS-3", "CLS-PRETRAINED"])
         Note: Trashing a model object also trashes all of its versions.
-    For more, see the docs: https://docs.neptune.ai/api-reference/project#.trash_objects
+
+    For more, see the docs: https://docs.neptune.ai/api-reference/management#.trash_objects
     """
     verify_type("name", name, str)
     verify_type("workspace", workspace, (str, type(None)))

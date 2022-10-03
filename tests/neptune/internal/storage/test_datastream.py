@@ -16,78 +16,13 @@
 
 # pylint: disable=protected-access
 import unittest
-from io import BytesIO
 
 import pytest
-from mock import Mock, patch
+from mock import Mock
 
 from neptune.internal.api_clients.client_config import MultipartConfig
-from neptune.internal.storage.datastream import FileChunk, FileChunker, FileChunkStream
-from neptune.internal.storage.storage_utils import (
-    AttributeUploadConfiguration,
-    UploadEntry,
-)
+from neptune.internal.storage.datastream import FileChunker
 from neptune.new.exceptions import InternalClientError
-
-
-class TestFileChunkStream(unittest.TestCase):
-    @patch("os.path.exists", new=lambda _: True)
-    @patch("stat.S_ISDIR", new=lambda _: False)
-    @patch("os.lstat")
-    def test_permissions_to_unix_string_for_file(self, lstat):
-        # given
-        lstat.return_value.st_mode = 0o731
-
-        # when
-        permissions_string = UploadEntry.permissions_to_unix_string("/some/path")
-
-        # then
-        self.assertEqual("-rwx-wx--x", permissions_string)
-
-    @patch("os.path.exists", new=lambda _: True)
-    @patch("stat.S_ISDIR", new=lambda _: True)
-    @patch("os.lstat")
-    def test_permissions_to_unix_string_for_directory(self, lstat):
-        # given
-        lstat.return_value.st_mode = 0o642
-
-        # when
-        permissions_string = UploadEntry.permissions_to_unix_string("/some/path")
-
-        # then
-        self.assertEqual("drw-r---w-", permissions_string)
-
-    @patch("os.path.exists", new=lambda _: False)
-    def test_permissions_to_unix_string_for_nonexistent_file(self):
-        # when
-        permissions_string = UploadEntry.permissions_to_unix_string("/some/path")
-
-        # then
-        self.assertEqual("-" * 10, permissions_string)
-
-    def test_generate_chunks_from_stream(self):
-        # given
-        text = "ABCDEFGHIJKLMNOPRSTUWXYZ"
-
-        # when
-        stream = FileChunkStream(
-            UploadEntry(BytesIO(bytes(text, "utf-8")), "some/path"),
-            AttributeUploadConfiguration(10),
-        )
-        chunks = list()
-        for chunk in stream.generate():
-            chunks.append(chunk)
-
-        # then
-        self.assertEqual(stream.length, 24)
-        self.assertEqual(
-            chunks,
-            [
-                FileChunk(b"ABCDEFGHIJ", 0, 10),
-                FileChunk(b"KLMNOPRSTU", 10, 20),
-                FileChunk(b"WXYZ", 20, 24),
-            ],
-        )
 
 
 class TestFileChunker:

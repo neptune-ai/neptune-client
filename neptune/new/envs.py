@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -36,3 +36,5 @@ NEPTUNE_RETRIES_TIMEOUT_ENV = "NEPTUNE_RETRIES_TIMEOUT"
 NEPTUNE_SYNC_BATCH_TIMEOUT_ENV = "NEPTUNE_SYNC_BATCH_TIMEOUT"
 
 NEPTUNE_SUBPROCESS_KILL_TIMEOUT = "NEPTUNE_SUBPROCESS_KILL_TIMEOUT"
+
+NEPTUNE_FETCH_TABLE_STEP_SIZE = "NEPTUNE_FETCH_TABLE_STEP_SIZE"

@@ -69,6 +69,20 @@ jobs:
           sa-api-token: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
           user-api-token: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
 
+  publish-tests:
+    needs: [test, test-e2e]
+    runs-on: ubuntu-latest
+    if: always()
+    permissions:
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Publish tests
+        uses: ./.github/actions/publish-tests-result
+
   notify:
     needs: [lint, test, test-e2e]
     runs-on: ubuntu-latest
