@@ -13,10 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import unittest
-from unittest import mock
-from unittest.mock import call
-
 import pytest
 
 from neptune.new.exceptions import NeptuneParametersCollision
@@ -38,41 +34,27 @@ def deprecated_func_with_alternative():
     pass
 
 
-class TestDeprecatedParameter(unittest.TestCase):
-    @mock.patch("neptune.new.internal.utils.deprecation.logger")
-    def test_deprecated_not_used(self, logger_mock):
-        self.assertEqual(42, fun_with_deprecated_param(new_param=42))
-        self.assertFalse(logger_mock.called)
+class TestDeprecatedParameter:
+    def test_deprecated_not_used(self):
+        with pytest.warns(None):
+            fun_with_deprecated_param(new_param=42)
 
-    @mock.patch("neptune.new.internal.utils.deprecation.logger")
-    def test_deprecated_replaced(self, logger_mock):
-        # pylint: disable=unexpected-keyword-arg
-        # pylint: disable=missing-kwoa
-        self.assertEqual(42, fun_with_deprecated_param(deprecated_param=42))
-        self.assertEqual(1, logger_mock.warning.call_count)
-        self.assertEqual(
-            call(
-                "Parameter `%s` is deprecated, use `%s` instead."
-                " We'll end support of it in `neptune-client==1.0.0`.",
-                "deprecated_param",
-                "new_param",
-            ),
-            logger_mock.warning.call_args,
-        )
+    def test_deprecated_replaced(self):
+        with pytest.deprecated_call(
+            match="Parameter `deprecated_param` is deprecated, use `new_param` instead. We'll end support of it in "
+            "`neptune-client==1.0.0`."
+        ):
+            value = fun_with_deprecated_param(deprecated_param=42)
+            assert value == 42
 
     def test_conflict(self):
-        with self.assertRaises(NeptuneParametersCollision):
-            # pylint: disable=unexpected-keyword-arg
+        with pytest.raises(NeptuneParametersCollision):
             fun_with_deprecated_param(new_param=42, deprecated_param=42)
 
     def test_passing_deprecated_parameter_as_none(self):
-        # pylint: disable=unexpected-keyword-arg
-        # pylint: disable=missing-kwoa
-        self.assertIsNone(fun_with_deprecated_param(deprecated_param=None))
-
-        # test collision
-        with self.assertRaises(NeptuneParametersCollision):
-            fun_with_deprecated_param(new_param=None, deprecated_param=None)
+        with pytest.raises(NeptuneParametersCollision):
+            value = fun_with_deprecated_param(new_param=None, deprecated_param=None)
+            assert value is None
 
     def test_deprecated_func_without_alternative(self):
         with pytest.deprecated_call(

@@ -18,7 +18,6 @@ from functools import wraps
 from typing import Optional
 
 from neptune.new.exceptions import NeptuneParametersCollision
-from neptune.new.internal.utils.logger import logger
 
 __all__ = ["deprecated", "deprecated_parameter"]
 
@@ -55,12 +54,14 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
                 if required_kwarg_name in kwargs:
                     raise NeptuneParametersCollision(required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__)
 
-                logger.warning(
-                    "Parameter `%s` is deprecated, use `%s` instead."
-                    " We'll end support of it in `neptune-client==1.0.0`.",
-                    deprecated_kwarg_name,
-                    required_kwarg_name,
+                warnings.simplefilter("once", DeprecationWarning)
+                warnings.warn(
+                    f"Parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead. We'll "
+                    f"end support of it in `neptune-client==1.0.0`.",
+                    category=DeprecationWarning,
+                    stacklevel=2,
                 )
+                warnings.simplefilter("default", DeprecationWarning)
 
                 kwargs[required_kwarg_name] = kwargs[deprecated_kwarg_name]
                 del kwargs[deprecated_kwarg_name]
