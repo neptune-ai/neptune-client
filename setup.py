@@ -81,7 +81,7 @@ def main():
                 "ML Model Store",
                 "ML Metadata Store",
             ],
-            package_dir={"": "src"}
+            package_dir={"": "src"},
         )
 
 
