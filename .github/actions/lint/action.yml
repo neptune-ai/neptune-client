@@ -18,6 +18,14 @@ runs:
         run: pre-commit run --all-files
         shell: bash
 
+      - name: Print
+        run: cat neptune/new/handler.py
+        shell: bash
+
+      - name: Print 2
+        run: cat neptune/new/metadata_containers/metadata_container.py
+        shell: bash
+
       - name: Lint
         run: python -m pylint -j 0 -f parseable src tests e2e_tests
         shell: bash
