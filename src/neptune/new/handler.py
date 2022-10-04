@@ -288,7 +288,6 @@ class Handler:
                         " We'll end support of this behavior in `neptune-client==1.0.0`.",
                         stack_level=4,
                     )
-                    print(first_value, __name__, type(first_value))
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))
