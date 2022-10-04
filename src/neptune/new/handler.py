@@ -22,12 +22,10 @@ from typing import (
     Union,
 )
 
-from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.attributes.namespace import Namespace
-from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
@@ -40,6 +38,13 @@ from neptune.new.exceptions import (
     NeptuneException,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
+from neptune.new.internal.utils.deprecation import simple_warning
+from neptune.new.internal.utils.paths import join_paths, parse_path
+from neptune.new.types.atoms.file import File as FileVal
+from neptune.new.types.value_copy import ValueCopy
+
+from neptune.new.attributes import File
+from neptune.new.attributes.series import FileSeries
 from neptune.new.internal.utils import (
     is_collection,
     is_float,
@@ -277,6 +282,13 @@ class Handler:
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string_like(first_value):
+                    simple_warning(
+                        "You're logging an object with an implicit cast to a string."
+                        " Use `.log(str(object))` instead."
+                        " We'll end support of this behavior in `neptune-client==1.0.0`.",
+                        stack_level=4,
+                    )
+                    print(first_value, __name__, type(first_value))
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))

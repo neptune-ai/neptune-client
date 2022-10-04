@@ -33,7 +33,6 @@ from typing import (
 )
 
 from neptune.exceptions import UNIX_STYLES
-from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import Namespace as NamespaceAttr
 from neptune.new.attributes.namespace import NamespaceBuilder
@@ -59,16 +58,7 @@ from neptune.new.internal.id_formats import (
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.state import ContainerState
-from neptune.new.internal.utils import (
-    is_bool,
-    is_dict_like,
-    is_float,
-    is_float_like,
-    is_int,
-    is_string,
-    is_string_like,
-    verify_type,
-)
+from neptune.new.internal.utils.deprecation import simple_warning
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.utils.runningmode import (
@@ -89,6 +79,19 @@ from neptune.new.types.mode import Mode
 from neptune.new.types.namespace import Namespace
 from neptune.new.types.value import Value
 from neptune.new.types.value_copy import ValueCopy
+
+from neptune.new.attributes import create_attribute_from_type
+from neptune.new.internal.utils import (
+    is_bool,
+    is_dict_like,
+    is_float,
+    is_float_like,
+    is_int,
+    is_string,
+    is_string_like,
+    verify_type,
+)
+from neptune.new.types import Boolean, Integer
 
 
 def ensure_not_stopped(fun):
@@ -280,6 +283,12 @@ class MetadataContainer(AbstractContextManager):
         elif is_dict_like(value):
             value = Namespace(value)
         elif is_string_like(value):
+            simple_warning(
+                "You're assigning an object with an implicit cast to a string."
+                " Use `... = str(object)` instead."
+                " We'll end support of this behavior in `neptune-client==1.0.0`.",
+                stack_level=7,
+            )
             value = String(str(value))
         else:
             raise TypeError("Value of unsupported type {}".format(type(value)))
