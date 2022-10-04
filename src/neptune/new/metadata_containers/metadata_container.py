@@ -36,14 +36,12 @@ from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import Namespace as NamespaceAttr
 from neptune.new.attributes.namespace import NamespaceBuilder
-from neptune.new.exceptions import (
-    InactiveModelException,
-    InactiveModelVersionException,
-    InactiveProjectException,
-    InactiveRunException,
-    MetadataInconsistency,
-    NeptunePossibleLegacyUsageException,
-)
+from neptune.new.exceptions import (InactiveModelException,
+                                    InactiveModelVersionException,
+                                    InactiveProjectException,
+                                    InactiveRunException,
+                                    MetadataInconsistency,
+                                    NeptunePossibleLegacyUsageException)
 from neptune.new.handler import Handler
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -81,16 +79,9 @@ from neptune.new.types.value import Value
 from neptune.new.types.value_copy import ValueCopy
 
 from neptune.new.attributes import create_attribute_from_type
-from neptune.new.internal.utils import (
-    is_bool,
-    is_dict_like,
-    is_float,
-    is_float_like,
-    is_int,
-    is_string,
-    is_string_like,
-    verify_type,
-)
+from neptune.new.internal.utils import (is_bool, is_dict_like, is_float,
+                                        is_float_like, is_int, is_string,
+                                        is_string_like, verify_type)
 from neptune.new.types import Boolean, Integer
 
 

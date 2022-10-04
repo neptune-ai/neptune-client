@@ -29,14 +29,11 @@ from neptune.new.attributes.namespace import Namespace
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-
 # backwards compatibility
 # pylint: disable=unused-import
-from neptune.new.exceptions import (
-    MissingFieldException,
-    NeptuneCannotChangeStageManually,
-    NeptuneException,
-)
+from neptune.new.exceptions import (MissingFieldException,
+                                    NeptuneCannotChangeStageManually,
+                                    NeptuneException)
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils.deprecation import simple_warning
 from neptune.new.internal.utils.paths import join_paths, parse_path
@@ -60,6 +57,9 @@ from neptune.new.internal.utils.paths import (
 )
 from neptune.new.types.atoms.file import File as FileVal
 from neptune.new.types.value_copy import ValueCopy
+from neptune.new.internal.utils import (is_collection, is_float, is_float_like,
+                                        is_string, is_string_like,
+                                        verify_collection_type, verify_type)
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer
