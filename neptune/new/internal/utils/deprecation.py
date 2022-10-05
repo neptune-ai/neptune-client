@@ -25,9 +25,7 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
         def inner(*args, **kwargs):
             if deprecated_kwarg_name in kwargs:
                 if required_kwarg_name in kwargs:
-                    raise NeptuneParametersCollision(
-                        required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__
-                    )
+                    raise NeptuneParametersCollision(required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__)
 
                 logger.warning(
                     "parameter `%s` is deprecated, use `%s` instead."

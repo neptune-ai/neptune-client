@@ -17,9 +17,10 @@ import logging
 import os
 import unittest
 
-from neptune.new import ANONYMOUS, init
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.integrations.python_logger import NeptuneHandler
+
+from neptune.new import ANONYMOUS, init
 
 
 class TestLogHandler(unittest.TestCase):
@@ -92,9 +93,7 @@ class TestLogHandler(unittest.TestCase):
         self._log_messages(logger)
 
         log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(
-            log_entries, ["ERROR|root: error message", "WARNING|root: test message"]
-        )
+        self.assertListEqual(log_entries, ["ERROR|root: error message", "WARNING|root: test message"])
 
     def test_log_level_works(self):
         exp = init(mode="debug", flush_period=0.5)

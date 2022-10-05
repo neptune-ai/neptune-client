@@ -17,10 +17,10 @@
 
 
 from mock import MagicMock
-
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.internal.operation import AssignArtifact
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
+
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -37,9 +37,7 @@ class TestArtifactHash(TestAttributeBase):
         var._enqueue_operation(
             AssignArtifact(
                 var._path,
-                ArtifactVal(
-                    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-                ).hash,
+                ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash,
             ),
             False,
         )
@@ -54,9 +52,7 @@ class TestArtifactHash(TestAttributeBase):
         var._enqueue_operation(
             AssignArtifact(
                 var._path,
-                ArtifactVal(
-                    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-                ).hash,
+                ArtifactVal("e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855").hash,
             ),
             False,
         )

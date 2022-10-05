@@ -20,10 +20,7 @@ import pathlib
 import typing
 from dataclasses import dataclass
 
-from neptune.new.exceptions import (
-    NeptuneUnhandledArtifactSchemeException,
-    NeptuneUnhandledArtifactTypeException,
-)
+from neptune.new.exceptions import NeptuneUnhandledArtifactSchemeException, NeptuneUnhandledArtifactTypeException
 
 
 class ArtifactFileType(enum.Enum):

@@ -96,9 +96,7 @@ class LeaderboardEntry(object):
 
     @property
     def channels(self):
-        return [
-            ChannelWithLastValue(ch) for ch in self.project_leaderboard_entry_dto.channelsLastValues
-        ]
+        return [ChannelWithLastValue(ch) for ch in self.project_leaderboard_entry_dto.channelsLastValues]
 
     def add_channel(self, channel):
         self.project_leaderboard_entry_dto.channelsLastValues.append(channel.channel_with_value_dto)

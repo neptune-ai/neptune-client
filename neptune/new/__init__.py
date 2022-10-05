@@ -26,22 +26,13 @@ You may also want to check `Neptune docs page`_.
 
 from typing import Optional
 
-from neptune.new import types
 from neptune.new.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
-from neptune.new.exceptions import (
-    NeptunePossibleLegacyUsageException,
-    NeptuneUninitializedException,
-)
-from neptune.new.internal.init import (
-    get_project,
-    init,
-    init_model,
-    init_model_version,
-    init_project,
-    init_run,
-)
-from neptune.new.metadata_containers import Run
+from neptune.new.exceptions import NeptunePossibleLegacyUsageException, NeptuneUninitializedException
 from neptune.new.version import version
+
+from neptune.new import types
+from neptune.new.internal.init import get_project, init, init_model, init_model_version, init_project, init_run
+from neptune.new.metadata_containers import Run
 
 __version__ = str(version)
 
@@ -70,11 +61,7 @@ create_experiment = (
     send_text
 ) = (
     log_text
-) = (
-    send_image
-) = (
-    log_image
-) = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
+) = send_image = log_image = send_artifact = delete_artifacts = log_artifact = stop = _raise_legacy_client_expected
 
 
 def get_last_run() -> Optional[Run]:

@@ -36,6 +36,7 @@ from neptune.new.internal.operation import (
     TrackFilesToArtifact,
     UploadFileSet,
 )
+
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 FLog = LogFloats.ValueType
@@ -124,11 +125,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         )
         self.assertEqual(
             result.errors,
-            [
-                MetadataInconsistency(
-                    "Cannot perform AssignString operation on c: Attribute is not a String"
-                )
-            ],
+            [MetadataInconsistency("Cannot perform AssignString operation on c: Attribute is not a String")],
         )
         self.assertEqual(processor.processed_ops_count, len(operations))
 
@@ -203,11 +200,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         )
         self.assertEqual(
             result.errors,
-            [
-                MetadataInconsistency(
-                    "Cannot perform LogFloats operation on h: Attribute is not a Float Series"
-                )
-            ],
+            [MetadataInconsistency("Cannot perform LogFloats operation on h: Attribute is not a Float Series")],
         )
         self.assertEqual(processor.processed_ops_count, len(operations))
 
@@ -270,12 +263,8 @@ class TestOperationsPreprocessor(TestAttributeBase):
         self.assertEqual(
             result.errors,
             [
-                MetadataInconsistency(
-                    "Cannot perform RemoveStrings operation on h: Attribute is not a String Set"
-                ),
-                MetadataInconsistency(
-                    "Cannot perform AddStrings operation on i: Attribute is not a String Set"
-                ),
+                MetadataInconsistency("Cannot perform RemoveStrings operation on h: Attribute is not a String Set"),
+                MetadataInconsistency("Cannot perform AddStrings operation on i: Attribute is not a String Set"),
             ],
         )
         self.assertEqual(processor.processed_ops_count, len(operations))
@@ -321,11 +310,7 @@ class TestOperationsPreprocessor(TestAttributeBase):
         )
         self.assertEqual(
             result.errors,
-            [
-                MetadataInconsistency(
-                    "Cannot perform UploadFileSet operation on e: Attribute is not a File Set"
-                )
-            ],
+            [MetadataInconsistency("Cannot perform UploadFileSet operation on e: Attribute is not a File Set")],
         )
         self.assertEqual(processor.processed_ops_count, len(operations))
 
@@ -407,12 +392,8 @@ class TestOperationsPreprocessor(TestAttributeBase):
                     project_uuid,
                     [("dir1/", None), ("dir2/dir3/", "dir2/"), ("dir4/dir5/", "dir4/")],
                 ),
-                TrackFilesToArtifact(
-                    ["d"], project_uuid, [("dir2/dir3/", "dir2/"), ("dir4/", None)]
-                ),
-                TrackFilesToArtifact(
-                    ["e"], project_uuid, [("dir1/", None), ("dir2/dir3/", "dir2/")]
-                ),
+                TrackFilesToArtifact(["d"], project_uuid, [("dir2/dir3/", "dir2/"), ("dir4/", None)]),
+                TrackFilesToArtifact(["e"], project_uuid, [("dir1/", None), ("dir2/dir3/", "dir2/")]),
                 TrackFilesToArtifact(
                     ["f"],
                     project_uuid,

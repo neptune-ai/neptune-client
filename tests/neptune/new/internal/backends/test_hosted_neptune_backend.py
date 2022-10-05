@@ -20,8 +20,6 @@ from unittest.mock import call
 
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 from mock import MagicMock, patch
-from packaging.version import Version
-
 from neptune.new.exceptions import (
     CannotResolveHostname,
     FileUploadError,
@@ -43,13 +41,9 @@ from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWr
 from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.operation import (
-    AssignString,
-    LogFloats,
-    TrackFilesToArtifact,
-    UploadFile,
-    UploadFileContent,
-)
+from neptune.new.internal.operation import AssignString, LogFloats, TrackFilesToArtifact, UploadFile, UploadFileContent
+from packaging.version import Version
+
 from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 from tests.neptune.new.utils import response_mock
@@ -289,9 +283,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations.return_value.response.return_value.result = [
-            response_error
-        ]
+        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
         swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(response=response_mock())
         swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
 
@@ -370,9 +362,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_track_to_existing_artifact(
-        self, track_to_existing_artifact_mock, swagger_client_factory
-    ):
+    def test_track_to_existing_artifact(self, track_to_existing_artifact_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
@@ -381,12 +371,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations.return_value.response.return_value.result = [
-            response_error
-        ]
-        swagger_client.api.getArtifactAttribute.return_value.response.return_value.result.hash = (
-            "dummyHash"
-        )
+        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
+        swagger_client.api.getArtifactAttribute.return_value.response.return_value.result.hash = "dummyHash"
         swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
 
         for container_type in self.container_types:

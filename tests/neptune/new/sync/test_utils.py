@@ -18,7 +18,6 @@ import os
 from unittest.mock import MagicMock
 
 import pytest
-
 from neptune.new.exceptions import ProjectNotFound
 from neptune.new.sync.utils import get_project
 

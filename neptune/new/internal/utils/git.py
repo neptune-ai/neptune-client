@@ -18,8 +18,9 @@ import os
 import warnings
 from typing import Optional
 
-from neptune.new.types.atoms import GitRef
 from neptune.vendor.lib_programname import get_path_executed_script
+
+from neptune.new.types.atoms import GitRef
 
 _logger = logging.getLogger(__name__)
 

@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import List, Optional
 
 import click
-
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.exceptions import (
     CannotSynchronizeOfflineRunsWithoutProject,
@@ -37,6 +36,7 @@ from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.status import StatusRunner
+
 from neptune.new.sync.sync import SyncRunner
 
 # backwards compatibility
@@ -52,9 +52,7 @@ def get_neptune_path(ctx, param, path: str) -> Path:
     elif path.name == NEPTUNE_DATA_DIRECTORY and path.is_dir():
         return path
     else:
-        raise click.BadParameter(
-            "Path {} does not contain a '{}' folder.".format(path, NEPTUNE_DATA_DIRECTORY)
-        )
+        raise click.BadParameter("Path {} does not contain a '{}' folder.".format(path, NEPTUNE_DATA_DIRECTORY))
 
 
 path_option = click.option(

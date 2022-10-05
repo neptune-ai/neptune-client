@@ -16,15 +16,12 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import Operation
-from neptune.new.sync import StatusRunner
 from neptune.new.sync.utils import get_qualified_name
-from tests.neptune.new.sync.utils import (
-    generate_get_metadata_container,
-    prepare_metadata_container,
-)
+
+from neptune.new.sync import StatusRunner
+from tests.neptune.new.sync.utils import generate_get_metadata_container, prepare_metadata_container
 
 
 @pytest.fixture(name="backend")
@@ -40,15 +37,9 @@ def status_runner_fixture(backend):
 @pytest.mark.parametrize("container_type", list(ContainerType))
 def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, container_type):
     # given
-    unsynced_container = prepare_metadata_container(
-        container_type=container_type, path=tmp_path, last_ack_version=1
-    )
-    synced_container = prepare_metadata_container(
-        container_type=container_type, path=tmp_path, last_ack_version=3
-    )
-    get_container_impl = generate_get_metadata_container(
-        registered_containers=(unsynced_container, synced_container)
-    )
+    unsynced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=1)
+    synced_container = prepare_metadata_container(container_type=container_type, path=tmp_path, last_ack_version=3)
+    get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
 
     # and
     mocker.patch.object(backend, "get_metadata_container", get_container_impl)
@@ -86,9 +77,7 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     # then
     captured = capsys.readouterr()
     assert captured.err == ""
-    assert (
-        "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id) in captured.out
-    )
+    assert "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id) in captured.out
 
 
 def test_list_runs_when_no_run(tmp_path, capsys, status_runner):

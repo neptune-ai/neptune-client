@@ -19,7 +19,6 @@ import string
 import uuid
 
 import mock
-
 from neptune.projects import Project
 
 

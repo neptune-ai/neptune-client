@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from packaging import version
-
 from neptune._version import get_versions
+from packaging import version
 
 version = version.parse(get_versions()["version"])
 del get_versions

@@ -16,9 +16,8 @@
 import threading
 from typing import Optional
 
-from requests_oauthlib import OAuth2Session
-
 from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
+from requests_oauthlib import OAuth2Session
 
 
 class WebsocketsFactory:

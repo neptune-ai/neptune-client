@@ -18,8 +18,9 @@ from typing import Optional
 
 from neptune.new.attributes.atoms.atom import Atom
 from neptune.new.internal.operation import UploadFile, UploadFileContent
-from neptune.new.internal.utils import base64_encode, verify_type
 from neptune.new.types.atoms.file import File as FileVal
+
+from neptune.new.internal.utils import base64_encode, verify_type
 
 # pylint: disable=protected-access
 
@@ -29,9 +30,7 @@ class File(Atom):
         verify_type("value", value, FileVal)
 
         if value.path is not None:
-            operation = UploadFile(
-                self._path, ext=value.extension, file_path=os.path.abspath(value.path)
-            )
+            operation = UploadFile(self._path, ext=value.extension, file_path=os.path.abspath(value.path))
         elif value.content is not None:
             operation = UploadFileContent(
                 self._path,
@@ -49,9 +48,7 @@ class File(Atom):
 
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file(
-            self._container_id, self._container_type, self._path, destination
-        )
+        self._backend.download_file(self._container_id, self._container_type, self._path, destination)
 
     def fetch_extension(self) -> str:
         # pylint: disable=protected-access

@@ -18,7 +18,6 @@ import typing
 from typing import Generic, TypeVar
 
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.boolean import Boolean
 from neptune.new.types.atoms.datetime import Datetime
@@ -33,6 +32,8 @@ from neptune.new.types.series.float_series import FloatSeries
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value import Value
+
+from neptune.new.types.atoms import GitRef
 
 Ret = TypeVar("Ret")
 

@@ -15,8 +15,9 @@
 #
 from typing import TYPE_CHECKING, Iterable, List, TypeVar, Union
 
-from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.types.value import Value
+
+from neptune.new.internal.utils import verify_collection_type, verify_type
 
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor

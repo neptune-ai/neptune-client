@@ -69,9 +69,7 @@ class RegressionDataset:
         self.label_names = ["labels"]
         self.length = length
         self.x = np.random.normal(size=(length,)).astype(np.float32)
-        self.ys = [
-            a * self.x + b + np.random.normal(scale=0.1, size=(length,)) for _ in self.label_names
-        ]
+        self.ys = [a * self.x + b + np.random.normal(scale=0.1, size=(length,)) for _ in self.label_names]
         self.ys = [y.astype(np.float32) for y in self.ys]
 
     def __len__(self):
@@ -92,9 +90,7 @@ class TestHuggingFace(BaseE2ETest):
         train_dataset = RegressionDataset(length=32)
         validation_dataset = RegressionDataset(length=16)
 
-        train_args = TrainingArguments(
-            "model", report_to=[], num_train_epochs=500, learning_rate=0.5
-        )
+        train_args = TrainingArguments("model", report_to=[], num_train_epochs=500, learning_rate=0.5)
 
         return {
             "model": model,
@@ -121,9 +117,7 @@ class TestHuggingFace(BaseE2ETest):
         trainer = Trainer(
             **self._trainer_default_attributes,
             callbacks=[
-                NeptuneCallback(
-                    api_token=environment.user_token, project=environment.project, tags=[common_tag]
-                )
+                NeptuneCallback(api_token=environment.user_token, project=environment.project, tags=[common_tag])
             ],
         )
 
@@ -143,9 +137,7 @@ class TestHuggingFace(BaseE2ETest):
         with catch_time() as with_neptune_callback:
             trainer = Trainer(
                 **self._trainer_default_attributes,
-                callbacks=[
-                    NeptuneCallback(api_token=environment.user_token, project=environment.project)
-                ],
+                callbacks=[NeptuneCallback(api_token=environment.user_token, project=environment.project)],
             )
             trainer.train()
             del trainer
@@ -203,9 +195,7 @@ class TestHuggingFace(BaseE2ETest):
             assert run[f"{base_namespace}/model_parameters/a"].fetch() == 2
             assert run[f"{base_namespace}/model_parameters/b"].fetch() == 3
 
-        self._test_with_run_initialization(
-            environment, pre=run_test, post=assert_metadata_structure
-        )
+        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
 
     def test_log_parameters_disabled(self, environment):
         def run_test(run):
@@ -217,9 +207,7 @@ class TestHuggingFace(BaseE2ETest):
             assert not run.exists("finetuning/trainer_parameters")
             assert not run.exists("finetuning/model_parameters")
 
-        self._test_with_run_initialization(
-            environment, pre=run_test, post=assert_metadata_structure
-        )
+        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
 
     def test_log_with_custom_base_namespace(self, environment):
         base_namespace = "just/a/sample/path"
@@ -246,9 +234,7 @@ class TestHuggingFace(BaseE2ETest):
             assert run[f"{base_namespace}/train/another/metric"].fetch_last() == 0.2
             assert run[f"{base_namespace}/train/after_training_metric"].fetch_last() == 2501
 
-        self._test_with_run_initialization(
-            environment, pre=run_test, post=assert_metadata_structure
-        )
+        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
 
     def test_integration_version_is_logged(self, environment):
         def run_test(run):
@@ -259,15 +245,11 @@ class TestHuggingFace(BaseE2ETest):
         def assert_metadata_structure(run):
             assert run.exists("source_code/integrations/transformers")
 
-        self._test_with_run_initialization(
-            environment, pre=run_test, post=assert_metadata_structure
-        )
+        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
 
     def test_non_monitoring_runs_creation(self, environment, project, common_tag):
         # given
-        callback = NeptuneCallback(
-            project=environment.project, api_token=environment.user_token, tags=common_tag
-        )
+        callback = NeptuneCallback(project=environment.project, api_token=environment.user_token, tags=common_tag)
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
         # when
@@ -326,9 +308,7 @@ class TestHuggingFace(BaseE2ETest):
 
     def test_non_monitoring_runs_creation_with_initial_run(self, environment, project, common_tag):
         # given
-        initial_run = init_run(
-            project=environment.project, api_token=environment.user_token, tags=common_tag
-        )
+        initial_run = init_run(project=environment.project, api_token=environment.user_token, tags=common_tag)
         callback = NeptuneCallback(
             project=environment.project,
             api_token=environment.user_token,
@@ -400,9 +380,7 @@ class TestHuggingFace(BaseE2ETest):
             return RegressionPreTrainedModel(config)
 
         # and
-        callback = NeptuneCallback(
-            project=environment.project, api_token=environment.user_token, tags=common_tag
-        )
+        callback = NeptuneCallback(project=environment.project, api_token=environment.user_token, tags=common_tag)
         trainer_config = self._trainer_default_attributes
         del trainer_config["model"]
         trainer = Trainer(**trainer_config, model_init=model_init, callbacks=[callback])
@@ -432,9 +410,7 @@ class TestHuggingFace(BaseE2ETest):
         trainer = Trainer(**trainer_args)
 
         # then
-        assert "NeptuneCallback" in [
-            type(callback).__name__ for callback in trainer.callback_handler.callbacks
-        ]
+        assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
         # given
         trainer_args = self._trainer_default_attributes
@@ -444,25 +420,19 @@ class TestHuggingFace(BaseE2ETest):
         trainer = Trainer(**trainer_args)
 
         # then
-        assert "NeptuneCallback" in [
-            type(callback).__name__ for callback in trainer.callback_handler.callbacks
-        ]
+        assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
         # when
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[NeptuneCallback])
 
         # then
-        assert "NeptuneCallback" in [
-            type(callback).__name__ for callback in trainer.callback_handler.callbacks
-        ]
+        assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
         # when
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[NeptuneCallback()])
 
         # then
-        assert "NeptuneCallback" in [
-            type(callback).__name__ for callback in trainer.callback_handler.callbacks
-        ]
+        assert "NeptuneCallback" in [type(callback).__name__ for callback in trainer.callback_handler.callbacks]
 
     def _test_checkpoints_creation(
         self,
@@ -509,9 +479,7 @@ class TestHuggingFace(BaseE2ETest):
                         assert subdirectories == expected_checkpoints
                     handler.extractall(".")
 
-        self._test_with_run_initialization(
-            environment, pre=run_test, post=assert_metadata_structure
-        )
+        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
 
     def _test_restore_from_checkpoint(self, environment):
         def run_test(run):
@@ -525,13 +493,9 @@ class TestHuggingFace(BaseE2ETest):
         def assert_metadata_structure(run):
             assert run["finetuning/train/epoch"].fetch() == 1000
 
-        self._test_with_run_initialization(
-            environment, pre=run_test, post=assert_metadata_structure
-        )
+        self._test_with_run_initialization(environment, pre=run_test, post=assert_metadata_structure)
 
-    @pytest.mark.parametrize(
-        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
-    )
+    @pytest.mark.parametrize("checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}])
     def test_model_checkpoints_same(self, environment, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(
@@ -542,9 +506,7 @@ class TestHuggingFace(BaseE2ETest):
             )
             self._test_restore_from_checkpoint(environment=environment)
 
-    @pytest.mark.parametrize(
-        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
-    )
+    @pytest.mark.parametrize("checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}])
     def test_model_checkpoints_last(self, environment, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(
@@ -556,9 +518,7 @@ class TestHuggingFace(BaseE2ETest):
             )
             self._test_restore_from_checkpoint(environment=environment)
 
-    @pytest.mark.parametrize(
-        "checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}]
-    )
+    @pytest.mark.parametrize("checkpoint_settings", [{}, {"save_total_limit": 1}, {"overwrite_output_dir": True}])
     def test_model_checkpoints_best(self, environment, checkpoint_settings):
         with tmp_context():
             self._test_checkpoints_creation(

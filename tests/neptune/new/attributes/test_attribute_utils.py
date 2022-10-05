@@ -16,9 +16,10 @@
 import unittest
 from unittest.mock import MagicMock
 
-from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.internal.backends.api_model import AttributeType
+
+from neptune.new.attributes import create_attribute_from_type
 
 
 class TestAttributeUtils(unittest.TestCase):

@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from mock import MagicMock
-
 from neptune.internal.hardware.gauges.cpu import SystemCpuUsageGauge
 from neptune.internal.hardware.gauges.gauge_factory import GaugeFactory
 from neptune.internal.hardware.gauges.gpu import GpuMemoryGauge, GpuUsageGauge

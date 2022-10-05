@@ -18,9 +18,9 @@
 import os
 
 from mock import MagicMock
-
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.internal.operation import DeleteFiles, UploadFileSet
+
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -37,9 +37,7 @@ class TestFileSet(TestAttributeBase):
         )
         var = FileSet(exp, path)
         var.assign(globs, wait=wait)
-        processor.enqueue_operation.assert_called_once_with(
-            UploadFileSet(path, expected, reset=True), wait
-        )
+        processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected, reset=True), wait)
 
     def test_upload_files(self):
         globs = ["path1", "dir/", "glob/*.py"]
@@ -65,6 +63,4 @@ class TestFileSet(TestAttributeBase):
         )
         var = FileSet(exp, path)
         var.delete_files(["path1", "dir/"], wait=wait)
-        processor.enqueue_operation.assert_called_once_with(
-            DeleteFiles(path, {"path1", "dir/"}), wait
-        )
+        processor.enqueue_operation.assert_called_once_with(DeleteFiles(path, {"path1", "dir/"}), wait)

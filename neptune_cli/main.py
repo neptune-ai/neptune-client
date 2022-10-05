@@ -16,7 +16,6 @@
 
 import click
 import pkg_resources
-
 from neptune.new.cli import status, sync
 
 
@@ -28,10 +27,7 @@ def main():
 main.add_command(sync)
 main.add_command(status)
 
-plugins = {
-    entry_point.name: entry_point
-    for entry_point in pkg_resources.iter_entry_points("neptune.plugins")
-}
+plugins = {entry_point.name: entry_point for entry_point in pkg_resources.iter_entry_points("neptune.plugins")}
 
 for name, entry_point in plugins.items():
     main.add_command(entry_point.load(), name)

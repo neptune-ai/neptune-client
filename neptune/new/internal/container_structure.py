@@ -89,9 +89,7 @@ class ContainerStructure(Generic[T, Node]):
             if isinstance(attr, self._node_type):
                 # in-between nodes are auto-created, so ignore it's OK unless we want to change the type
                 return
-            raise MetadataInconsistency(
-                "Cannot set attribute '{}'. It's a namespace".format(path_to_str(path))
-            )
+            raise MetadataInconsistency("Cannot set attribute '{}'. It's a namespace".format(path_to_str(path)))
 
         ref[attribute_name] = attr
 
@@ -104,16 +102,12 @@ class ContainerStructure(Generic[T, Node]):
 
         head, tail = sub_path[0], sub_path[1:]
         if head not in ref:
-            raise MetadataInconsistency(
-                "Cannot delete {}. Attribute not found.".format(path_to_str(attr_path))
-            )
+            raise MetadataInconsistency("Cannot delete {}. Attribute not found.".format(path_to_str(attr_path)))
 
         if not tail:
             if isinstance(ref[head], self._node_type):
                 raise MetadataInconsistency(
-                    "Cannot delete {}. It's a namespace, not an attribute.".format(
-                        path_to_str(attr_path)
-                    )
+                    "Cannot delete {}. It's a namespace, not an attribute.".format(path_to_str(attr_path))
                 )
             del ref[head]
         else:

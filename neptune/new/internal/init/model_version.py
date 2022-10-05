@@ -17,29 +17,26 @@ import os
 import threading
 from typing import Optional
 
-from neptune.new.attributes import constants as attr_consts
 from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import (
     NeedExistingModelVersionForReadOnlyMode,
     NeptuneException,
     NeptuneMissingRequiredInitParameter,
 )
-from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.id_formats import QualifiedName
-from neptune.new.internal.init.parameters import (
-    DEFAULT_FLUSH_PERIOD,
-    DEFAULT_NAME,
-    OFFLINE_PROJECT_QUALIFIED_NAME,
-)
+from neptune.new.internal.init.parameters import DEFAULT_FLUSH_PERIOD, DEFAULT_NAME, OFFLINE_PROJECT_QUALIFIED_NAME
 from neptune.new.internal.operation_processors.factory import get_operation_processor
-from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.new.metadata_containers import Model, ModelVersion
 from neptune.new.types.mode import Mode
+
+from neptune.new.attributes import constants as attr_consts
+from neptune.new.internal import id_formats
+from neptune.new.internal.utils import verify_type
+from neptune.new.metadata_containers import Model, ModelVersion
 
 
 @deprecated_parameter(deprecated_kwarg_name="version", required_kwarg_name="with_id")
@@ -91,12 +88,8 @@ def init_model_version(
             raise NeedExistingModelVersionForReadOnlyMode()
 
         model_id = QualifiedName(project + "/" + model)
-        api_model = backend.get_metadata_container(
-            container_id=model_id, expected_container_type=Model.container_type
-        )
-        api_model_version = backend.create_model_version(
-            project_id=project_obj.id, model_id=api_model.id
-        )
+        api_model = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
+        api_model_version = backend.create_model_version(project_id=project_obj.id, model_id=api_model.id)
     else:
         raise NeptuneMissingRequiredInitParameter(
             parameter_name="model",

@@ -20,7 +20,6 @@ import unittest
 from pathlib import Path
 
 from mock import Mock, patch
-
 from neptune.new.internal.artifacts.file_hasher import FileHasher
 from neptune.new.internal.artifacts.types import ArtifactFileData
 

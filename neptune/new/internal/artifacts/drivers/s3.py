@@ -20,17 +20,12 @@ from urllib.parse import urlparse
 
 import boto3
 from botocore.exceptions import NoCredentialsError
-
 from neptune.new.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,
     NeptuneUnsupportedArtifactFunctionalityException,
 )
-from neptune.new.internal.artifacts.types import (
-    ArtifactDriver,
-    ArtifactFileData,
-    ArtifactFileType,
-)
+from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
 
 
 class S3ArtifactDriver(ArtifactDriver):

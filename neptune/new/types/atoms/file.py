@@ -17,7 +17,6 @@ import os
 from io import IOBase
 from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
-from neptune.new.internal.utils import get_stream_content, limits, verify_type
 from neptune.new.internal.utils.images import (
     get_html_content,
     get_image_content,
@@ -31,6 +30,8 @@ from neptune.new.internal.utils.images import (
     is_plotly_figure,
 )
 from neptune.new.types.atoms.atom import Atom
+
+from neptune.new.internal.utils import get_stream_content, limits, verify_type
 
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
@@ -108,9 +109,7 @@ class File(Atom):
         return File(content=content, extension=extension or ext)
 
     @staticmethod
-    def from_stream(
-        stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None
-    ) -> "File":
+    def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> "File":
         """Factory method for creating File value objects directly from binary and text streams.
 
         In the case of text stream, UTF-8 encoding will be used.
@@ -176,9 +175,7 @@ class File(Atom):
            https://docs.neptune.ai/api-reference/field-types#.as_image
         """
         content_bytes = get_image_content(image)
-        return File.from_content(
-            content_bytes if content_bytes is not None else b"", extension="png"
-        )
+        return File.from_content(content_bytes if content_bytes is not None else b"", extension="png")
 
     @staticmethod
     def as_html(chart) -> "File":
@@ -261,13 +258,9 @@ class File(Atom):
         elif is_plotly_figure(value) or is_altair_chart(value) or is_bokeh_figure(value):
             return File.as_html(value)
         elif is_numpy_array(value):
-            raise TypeError(
-                "Value of type {} is not supported. Please use File.as_image().".format(type(value))
-            )
+            raise TypeError("Value of type {} is not supported. Please use File.as_image().".format(type(value)))
         elif is_pandas_dataframe(value):
-            raise TypeError(
-                "Value of type {} is not supported. Please use File.as_html().".format(type(value))
-            )
+            raise TypeError("Value of type {} is not supported. Please use File.as_html().".format(type(value)))
         elif isinstance(value, File):
             return value
         raise TypeError("Value of type {} is not supported.".format(type(value)))

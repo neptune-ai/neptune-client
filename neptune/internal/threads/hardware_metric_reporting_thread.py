@@ -17,7 +17,6 @@ import logging
 import time
 
 from bravado.exception import HTTPError
-
 from neptune.exceptions import NeptuneException
 from neptune.internal.threads.neptune_thread import NeptuneThread
 

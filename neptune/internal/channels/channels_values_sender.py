@@ -21,15 +21,10 @@ from itertools import groupby
 from queue import Empty, Queue
 
 from bravado.exception import HTTPUnprocessableEntity
-
 from neptune.exceptions import NeptuneException
-from neptune.internal.channels.channels import (
-    ChannelIdWithValues,
-    ChannelNamespace,
-    ChannelType,
-    ChannelValue,
-)
 from neptune.internal.threads.neptune_thread import NeptuneThread
+
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNamespace, ChannelType, ChannelValue
 
 _logger = logging.getLogger(__name__)
 
@@ -79,9 +74,7 @@ class ChannelsValuesSender(object):
         if channel_name in namespaced_channel_map:
             channel_id = namespaced_channel_map[channel_name]
         else:
-            response = self._experiment._create_channel(
-                channel_name, channel_type, channel_namespace
-            )
+            response = self._experiment._create_channel(channel_name, channel_type, channel_namespace)
             channel_id = response.id
             namespaced_channel_map[channel_name] = channel_id
 
@@ -104,11 +97,7 @@ class ChannelsValuesSender(object):
                 self._values_queue = None
 
     def _is_running(self):
-        return (
-            self._values_queue is not None
-            and self._sending_thread is not None
-            and self._sending_thread.is_alive()
-        )
+        return self._values_queue is not None and self._sending_thread is not None and self._sending_thread.is_alive()
 
     def _start(self):
         self._values_queue = Queue()

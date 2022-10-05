@@ -21,14 +21,10 @@ from pathlib import Path
 import boto3
 import freezegun
 from moto import mock_s3
-
 from neptune.new.exceptions import NeptuneUnsupportedArtifactFunctionalityException
 from neptune.new.internal.artifacts.drivers.s3 import S3ArtifactDriver
-from neptune.new.internal.artifacts.types import (
-    ArtifactDriversMap,
-    ArtifactFileData,
-    ArtifactFileType,
-)
+from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactFileData, ArtifactFileType
+
 from tests.neptune.new.internal.artifacts.utils import md5
 
 
@@ -40,9 +36,7 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         self.s3.create_bucket(Bucket=self.bucket_name)
         self.update_time = datetime.datetime(2021, 5, 23, 3, 55, 26)
         with freezegun.freeze_time(self.update_time):
-            self.s3.put_object(
-                Bucket=self.bucket_name, Key="path/to/file1", Body=b"\xde\xad\xbe\xef"
-            )
+            self.s3.put_object(Bucket=self.bucket_name, Key="path/to/file1", Body=b"\xde\xad\xbe\xef")
             self.s3.put_object(Bucket=self.bucket_name, Key="path/to/file2", Body=b"\x20")
             self.s3.put_object(Bucket=self.bucket_name, Key="path/file3", Body=b"\x21")
 
@@ -66,9 +60,7 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             local_destination = Path(temporary) / "target.txt"
 
-            S3ArtifactDriver.download_file(
-                destination=local_destination, file_definition=artifact_file
-            )
+            S3ArtifactDriver.download_file(destination=local_destination, file_definition=artifact_file)
 
             self.assertEqual("2f249230a8e7c2bf6005ccd2679259ec", md5(local_destination))
 
@@ -103,9 +95,7 @@ class TestS3ArtifactDrivers(unittest.TestCase):
         self.assertEqual(f"s3://{self.bucket_name}/path/to/file2", files[1].metadata["location"])
 
     def test_multiple_retrieval_prefix(self):
-        files = S3ArtifactDriver.get_tracked_files(
-            f"s3://{self.bucket_name}/path/", "my/custom_path"
-        )
+        files = S3ArtifactDriver.get_tracked_files(f"s3://{self.bucket_name}/path/", "my/custom_path")
         files = sorted(files, key=lambda file: file.file_path)
 
         self.assertEqual(len(files), 3)

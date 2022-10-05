@@ -91,9 +91,7 @@ class UserNotExistsOrWithoutAccess(ManagementOperationFailure):
 
 class UserAlreadyHasAccess(ManagementOperationFailure):
     code = 10
-    description = (
-        'User "{user}" already has access to the project "{project}". Their role is "{role}".'
-    )
+    description = 'User "{user}" already has access to the project "{project}". Their role is "{role}".'
 
 
 class ProjectsLimitReached(ManagementOperationFailure):
@@ -134,9 +132,7 @@ class ServiceAccountNotExistsOrWithoutAccess(ManagementOperationFailure):
 
 class ServiceAccountNotFound(ManagementOperationFailure):
     code = 16
-    description = (
-        'Service account "{service_account_name}" could not be found in workspace "{workspace}"'
-    )
+    description = 'Service account "{service_account_name}" could not be found in workspace "{workspace}"'
 
 
 class ProjectKeyCollision(ManagementOperationFailure):
@@ -161,9 +157,7 @@ class ProjectNameInvalid(ManagementOperationFailure):
 
 class BadRequestException(ManagementOperationFailure):
     code = 400
-    description = (
-        "Your request has encountered the following validation errors: {validation_errors}"
-    )
+    description = "Your request has encountered the following validation errors: {validation_errors}"
 
 
 class IncorrectIdentifierException(ManagementOperationFailure):

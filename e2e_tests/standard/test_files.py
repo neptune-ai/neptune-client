@@ -22,12 +22,12 @@ from unittest.mock import Mock
 from zipfile import ZipFile
 
 import pytest
+from neptune.new.internal.backends.api_model import MultipartConfig, OptionalFeatures
+from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 
 from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
 from e2e_tests.utils import initialize_container, tmp_context
 from neptune.new.internal.backends import hosted_file_operations
-from neptune.new.internal.backends.api_model import MultipartConfig, OptionalFeatures
-from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types import File, FileSet
 
@@ -186,10 +186,7 @@ class TestUpload(BaseE2ETest):
         key = self.gen_key()
         large_filesize = 10 * 2**20  # 10MB
         large_filename = fake.file_name()
-        small_files = [
-            (f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8"))
-            for _ in range(100)
-        ]
+        small_files = [(f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8")) for _ in range(100)]
 
         with tmp_context():
             # create single large file (multipart) and a lot of very small files

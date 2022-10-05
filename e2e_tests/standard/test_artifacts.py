@@ -234,9 +234,7 @@ class TestArtifacts(BaseE2ETest):
             container[key].track_files(".", wait=True)
             retry_duration = time.time() - start
 
-            assert (
-                retry_duration * 2 < initial_duration
-            ), "Tracking again should be significantly faster"
+            assert retry_duration * 2 < initial_duration, "Tracking again should be significantly faster"
 
             # append additional byte to file
             with open(filename, "ab") as handler:
@@ -247,6 +245,4 @@ class TestArtifacts(BaseE2ETest):
             container[key].track_files(".", wait=True)
             updated_duration = time.time() - start
 
-            assert (
-                retry_duration * 2 < updated_duration
-            ), "Tracking updated file should take more time - no cache"
+            assert retry_duration * 2 < updated_duration, "Tracking updated file should take more time - no cache"

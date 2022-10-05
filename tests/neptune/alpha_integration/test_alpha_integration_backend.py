@@ -21,20 +21,13 @@ from typing import List
 import mock
 from freezegun import freeze_time
 from mock import MagicMock
-
-from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import (
     HostedAlphaLeaderboardApiClient,
 )
-from neptune.internal.channels.channels import (
-    ChannelIdWithValues,
-    ChannelNamespace,
-    ChannelType,
-    ChannelValue,
-)
-from tests.neptune.new.backend_test_mixin import (
-    BackendTestMixin as AlphaBackendTestMixin,
-)
+
+from neptune.internal.api_clients import HostedNeptuneBackendApiClient
+from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNamespace, ChannelType, ChannelValue
+from tests.neptune.new.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
 API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL2FscG"

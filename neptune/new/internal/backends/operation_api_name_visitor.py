@@ -71,9 +71,7 @@ class OperationApiNameVisitor(OperationVisitor[str]):
         raise InternalClientError("Specialized endpoint should be used to upload file attribute")
 
     def visit_upload_file_set(self, op: UploadFileSet) -> Ret:
-        raise InternalClientError(
-            "Specialized endpoints should be used to upload file set attribute"
-        )
+        raise InternalClientError("Specialized endpoints should be used to upload file set attribute")
 
     def visit_log_floats(self, _: LogFloats) -> str:
         return "logFloats"

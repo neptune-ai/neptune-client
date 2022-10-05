@@ -18,8 +18,9 @@ from typing import Iterable, Optional, Union
 
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.internal.operation import DeleteFiles, UploadFileSet
-from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.types.file_set import FileSet as FileSetVal
+
+from neptune.new.internal.utils import verify_collection_type, verify_type
 
 # pylint: disable=protected-access
 
@@ -57,6 +58,4 @@ class FileSet(Attribute):
 
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file_set(
-            self._container_id, self._container_type, self._path, destination
-        )
+        self._backend.download_file_set(self._container_id, self._container_type, self._path, destination)

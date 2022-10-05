@@ -24,14 +24,8 @@ from urllib.parse import urlencode
 
 from bravado.exception import HTTPPaymentRequired, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
-from requests import Request, Response
-
 from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
-from neptune.internal.storage.datastream import (
-    FileChunk,
-    FileChunker,
-    compress_to_tar_gz_in_memory,
-)
+from neptune.internal.storage.datastream import FileChunk, FileChunker, compress_to_tar_gz_in_memory
 from neptune.internal.storage.storage_utils import (
     AttributeUploadConfiguration,
     UploadEntry,
@@ -48,17 +42,16 @@ from neptune.new.exceptions import (
     UploadedFileChanged,
 )
 from neptune.new.internal.backends.api_model import MultipartConfig
-from neptune.new.internal.backends.swagger_client_wrapper import (
-    ApiMethodWrapper,
-    SwaggerClientWrapper,
-)
+from neptune.new.internal.backends.swagger_client_wrapper import ApiMethodWrapper, SwaggerClientWrapper
 from neptune.new.internal.backends.utils import (
     build_operation_url,
     handle_server_raw_response_messages,
     with_api_exceptions_handler,
 )
-from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.new.internal.utils.logger import logger
+from requests import Request, Response
+
+from neptune.new.internal.utils import get_absolute_paths, get_common_root
 
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)
@@ -122,9 +115,7 @@ def upload_file_set_attribute(
 
             uploading_multiple_entries = package.len > 1
             creating_a_single_empty_dir = (
-                package.len == 1
-                and not package.items[0].is_stream()
-                and os.path.isdir(package.items[0].source)
+                package.len == 1 and not package.items[0].is_stream() and os.path.isdir(package.items[0].source)
             )
 
             if uploading_multiple_entries or creating_a_single_empty_dir or package.is_empty():
@@ -207,9 +198,7 @@ def _attribute_upload_response_handler(result: bytes) -> None:
                 if len(error_list) == 0:
                     return
                 try:
-                    raise MetadataInconsistency(
-                        *[item["errorDescription"] for item in parsed["errors"]]
-                    )
+                    raise MetadataInconsistency(*[item["errorDescription"] for item in parsed["errors"]])
                 except KeyError:
                     # fall into default InternalClientError
                     pass
@@ -217,9 +206,7 @@ def _attribute_upload_response_handler(result: bytes) -> None:
     raise InternalClientError("Unexpected response from server: {}".format(result))
 
 
-MultipartUrlSet = collections.namedtuple(
-    "MultipartUrlSet", ["start_chunked", "finish_chunked", "send_chunk", "single"]
-)
+MultipartUrlSet = collections.namedtuple("MultipartUrlSet", ["start_chunked", "finish_chunked", "send_chunk", "single"])
 
 MULTIPART_URLS = {
     FileUploadTarget.FILE_ATOM: MultipartUrlSet(
@@ -237,17 +224,11 @@ MULTIPART_URLS = {
 }
 
 
-def _build_multipart_urlset(
-    swagger_client: SwaggerClientWrapper, target: FileUploadTarget
-) -> MultipartUrlSet:
+def _build_multipart_urlset(swagger_client: SwaggerClientWrapper, target: FileUploadTarget) -> MultipartUrlSet:
     urlnameset = MULTIPART_URLS[target]
     return MultipartUrlSet(
-        start_chunked=with_api_exceptions_handler(
-            getattr(swagger_client.api, urlnameset.start_chunked)
-        ),
-        finish_chunked=with_api_exceptions_handler(
-            getattr(swagger_client.api, urlnameset.finish_chunked)
-        ),
+        start_chunked=with_api_exceptions_handler(getattr(swagger_client.api, urlnameset.start_chunked)),
+        finish_chunked=with_api_exceptions_handler(getattr(swagger_client.api, urlnameset.finish_chunked)),
         send_chunk=build_operation_url(
             swagger_client.swagger_spec.api_url,
             getattr(swagger_client.api, urlnameset.send_chunk).operation.path_name,
@@ -269,9 +250,7 @@ def _multichunk_upload_with_retry(
     urlset = _build_multipart_urlset(swagger_client, target)
     while True:
         try:
-            return _multichunk_upload(
-                upload_entry, swagger_client, query_params, multipart_config, urlset
-            )
+            return _multichunk_upload(upload_entry, swagger_client, query_params, multipart_config, urlset)
         except UploadedFileChanged as e:
             logger.error(str(e))
 
@@ -301,9 +280,7 @@ def _multichunk_upload(
             _attribute_upload_response_handler(result)
         else:
             # chunked upload
-            result = (
-                urlset.start_chunked(**query_params, totalLength=entry_length).response().result
-            )
+            result = urlset.start_chunked(**query_params, totalLength=entry_length).response().result
             if result.errors:
                 raise MetadataInconsistency([err.errorDescription for err in result.errors])
 
@@ -332,9 +309,7 @@ def _multichunk_upload(
                 )
                 _attribute_upload_response_handler(result)
 
-            result = (
-                urlset.finish_chunked(**no_ext_query_params, uploadId=upload_id).response().result
-            )
+            result = urlset.finish_chunked(**no_ext_query_params, uploadId=upload_id).response().result
             if result.errors:
                 raise MetadataInconsistency([err.errorDescription for err in result.errors])
         return []
@@ -362,9 +337,7 @@ def upload_raw_data(
     url = _generate_url(url=url, path_params=path_params, query_params=query_params)
 
     session = http_client.session
-    request = http_client.authenticator.apply(
-        Request(method="POST", url=url, data=data, headers=headers)
-    )
+    request = http_client.authenticator.apply(Request(method="POST", url=url, data=data, headers=headers))
     response = handle_server_raw_response_messages(session.send(session.prepare_request(request)))
 
     if response.status_code >= 300:
@@ -485,9 +458,7 @@ def _download_raw_data(
     session = http_client.session
     request = http_client.authenticator.apply(Request(method="GET", url=url, headers=headers))
 
-    response = handle_server_raw_response_messages(
-        session.send(session.prepare_request(request), stream=True)
-    )
+    response = handle_server_raw_response_messages(session.send(session.prepare_request(request), stream=True))
 
     response.raise_for_status()
     return response

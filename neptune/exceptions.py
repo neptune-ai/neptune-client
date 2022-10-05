@@ -136,9 +136,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        super(NeptuneLibraryNotInstalledException, self).__init__(
-            message.format(library=library, **STYLES)
-        )
+        super(NeptuneLibraryNotInstalledException, self).__init__(message.format(library=library, **STYLES))
 
 
 class InvalidChannelValue(NeptuneException):

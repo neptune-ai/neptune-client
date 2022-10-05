@@ -16,12 +16,8 @@
 
 import random
 
+from neptune.internal.websockets.websocket_client_adapter import WebsocketClientAdapter, WebsocketNotConnectedException
 from websocket import WebSocketConnectionClosedException, WebSocketTimeoutException
-
-from neptune.internal.websockets.websocket_client_adapter import (
-    WebsocketClientAdapter,
-    WebsocketNotConnectedException,
-)
 
 
 class ReconnectingWebsocket(object):
@@ -82,9 +78,7 @@ class ReconnectingWebsocket(object):
         self._try_to_establish_connection()
 
     def _request_token_refresh(self):
-        self._token = self._oauth2_session.refresh_token(
-            token_url=self._oauth2_session.auto_refresh_url
-        )
+        self._token = self._oauth2_session.refresh_token(token_url=self._oauth2_session.auto_refresh_url)
 
 
 class ReconnectCounter(object):

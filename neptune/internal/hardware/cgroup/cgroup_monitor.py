@@ -16,9 +16,7 @@
 
 import time
 
-from neptune.internal.hardware.cgroup.cgroup_filesystem_reader import (
-    CGroupFilesystemReader,
-)
+from neptune.internal.hardware.cgroup.cgroup_filesystem_reader import CGroupFilesystemReader
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
 
 
@@ -60,9 +58,7 @@ class CGroupMonitor(object):
         else:
             usage_diff = cpu_cumulative_usage_nanos - self.__last_cpu_cumulative_usage_nanos
             time_diff = current_timestamp_nanos - self.__last_cpu_usage_measurement_timestamp_nanos
-            current_usage = (
-                float(usage_diff) / float(time_diff) / self.get_cpu_usage_limit_in_cores() * 100.0
-            )
+            current_usage = float(usage_diff) / float(time_diff) / self.get_cpu_usage_limit_in_cores() * 100.0
 
         self.__last_cpu_usage_measurement_timestamp_nanos = current_timestamp_nanos
         self.__last_cpu_cumulative_usage_nanos = cpu_cumulative_usage_nanos
@@ -72,8 +68,7 @@ class CGroupMonitor(object):
 
     def __first_measurement(self):
         return (
-            self.__last_cpu_usage_measurement_timestamp_nanos is None
-            or self.__last_cpu_cumulative_usage_nanos is None
+            self.__last_cpu_usage_measurement_timestamp_nanos is None or self.__last_cpu_cumulative_usage_nanos is None
         )
 
     @staticmethod

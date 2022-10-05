@@ -32,9 +32,7 @@ class FileChunk:
 
 
 class FileChunker:
-    def __init__(
-        self, filename: Optional[str], fobj, total_size, multipart_config: MultipartConfig
-    ):
+    def __init__(self, filename: Optional[str], fobj, total_size, multipart_config: MultipartConfig):
         self._filename: Optional[str] = filename
         self._fobj = fobj
         self._total_size = total_size

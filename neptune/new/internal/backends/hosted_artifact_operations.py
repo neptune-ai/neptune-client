@@ -16,18 +16,9 @@
 from typing import Dict, List, Optional, Tuple, Type
 
 from bravado.exception import HTTPNotFound
-
-from neptune.new.exceptions import (
-    ArtifactNotFoundException,
-    ArtifactUploadingError,
-    NeptuneEmptyLocationException,
-)
+from neptune.new.exceptions import ArtifactNotFoundException, ArtifactUploadingError, NeptuneEmptyLocationException
 from neptune.new.internal.artifacts.file_hasher import FileHasher
-from neptune.new.internal.artifacts.types import (
-    ArtifactDriver,
-    ArtifactDriversMap,
-    ArtifactFileData,
-)
+from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
 from neptune.new.internal.backends.api_model import ArtifactModel
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
@@ -109,9 +100,7 @@ def _compute_artifact_hash(files: List[ArtifactFileData]) -> str:
     return FileHasher.get_artifact_hash(files)
 
 
-def _extract_file_list(
-    path: List[str], entries: List[Tuple[str, Optional[str]]]
-) -> List[ArtifactFileData]:
+def _extract_file_list(path: List[str], entries: List[Tuple[str, Optional[str]]]) -> List[ArtifactFileData]:
     files: List[ArtifactFileData] = list()
 
     for entry_path, entry_destination in entries:

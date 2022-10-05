@@ -30,8 +30,6 @@ from neptune.new.attributes.series.float_series import FloatSeries as FloatSerie
 from neptune.new.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.new.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.new.exceptions import OperationNotSupported
-from neptune.new.types import Boolean, Integer
-from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.file import File
@@ -44,6 +42,9 @@ from neptune.new.types.series.float_series import FloatSeries
 from neptune.new.types.series.string_series import StringSeries
 from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value_visitor import ValueVisitor
+
+from neptune.new.types import Boolean, Integer
+from neptune.new.types.atoms import GitRef
 
 if TYPE_CHECKING:
     from neptune.new import MetadataContainer

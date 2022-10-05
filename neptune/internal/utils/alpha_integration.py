@@ -17,13 +17,14 @@ import abc
 from collections import namedtuple
 
 from neptune.exceptions import NeptuneException
-from neptune.internal.channels.channels import ChannelType, ChannelValueType
-from neptune.new.attributes import constants as alpha_consts
-from neptune.new.internal import operation as alpha_operation
 from neptune.new.internal.backends.api_model import AttributeType as AlphaAttributeType
 
 # Alpha equivalent of old api's `KeyValueProperty` used in `Experiment.properties`
 from neptune.new.internal.operation import ImageValue
+
+from neptune.internal.channels.channels import ChannelType, ChannelValueType
+from neptune.new.attributes import constants as alpha_consts
+from neptune.new.internal import operation as alpha_operation
 
 AlphaKeyValueProperty = namedtuple("AlphaKeyValueProperty", ["key", "value"])
 
@@ -107,11 +108,7 @@ class AlphaParameterDTO(AlphaAttributeWrapper):
 
     @property
     def parameterType(self):
-        return (
-            "double"
-            if self._properties.attributeType == AlphaAttributeType.FLOAT.value
-            else "string"
-        )
+        return "double" if self._properties.attributeType == AlphaAttributeType.FLOAT.value else "string"
 
 
 class AlphaChannelDTO(AlphaAttributeWrapper):
@@ -231,9 +228,7 @@ def channel_value_type_to_operation(
         ChannelValueType.NUMERIC_VALUE: alpha_operation.LogFloats,
         ChannelValueType.IMAGE_VALUE: alpha_operation.LogImages,
     }
-    return _map_using_dict(
-        channel_value_type, "channel value type", _channel_value_type_to_operation
-    )
+    return _map_using_dict(channel_value_type, "channel value type", _channel_value_type_to_operation)
 
 
 def deprecated_img_to_alpha_image(img: dict) -> ImageValue:

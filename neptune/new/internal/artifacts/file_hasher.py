@@ -19,10 +19,7 @@ import typing
 from pathlib import Path
 
 from neptune.new.internal.artifacts.local_file_hash_storage import LocalFileHashStorage
-from neptune.new.internal.artifacts.types import (
-    ArtifactFileData,
-    ArtifactMetadataSerializer,
-)
+from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactMetadataSerializer
 from neptune.new.internal.artifacts.utils import sha1
 
 
@@ -40,9 +37,7 @@ class FileHasher:
         local_storage = LocalFileHashStorage()
 
         absolute = Path(file_path).resolve()
-        modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime(
-            "%Y%m%d_%H%M%S%f"
-        )
+        modification_date = datetime.datetime.fromtimestamp(absolute.stat().st_mtime).strftime("%Y%m%d_%H%M%S%f")
 
         stored_file_hash = local_storage.fetch_one(absolute)
 
@@ -70,34 +65,24 @@ class FileHasher:
 
         for artifact_file in sorted(artifact_files, key=lambda file: file.file_path):
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
-            artifact_hash.update(
-                cls._number_to_bytes(len(artifact_file.file_path), cls.SERVER_INT_BYTES)
-            )
+            artifact_hash.update(cls._number_to_bytes(len(artifact_file.file_path), cls.SERVER_INT_BYTES))
             artifact_hash.update(artifact_file.file_path.encode(cls.ENCODING))
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
             artifact_hash.update(artifact_file.file_hash.encode(cls.ENCODING))
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
             if artifact_file.size is not None:
-                artifact_hash.update(
-                    cls._number_to_bytes(artifact_file.size, cls.SERVER_LONG_BYTES)
-                )
+                artifact_hash.update(cls._number_to_bytes(artifact_file.size, cls.SERVER_LONG_BYTES))
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
-            artifact_hash.update(
-                cls._number_to_bytes(len(artifact_file.type), cls.SERVER_INT_BYTES)
-            )
+            artifact_hash.update(cls._number_to_bytes(len(artifact_file.type), cls.SERVER_INT_BYTES))
             artifact_hash.update(artifact_file.type.encode(cls.ENCODING))
             artifact_hash.update(cls.HASH_ELEMENT_DIVISOR)
             for metadata_key_value in ArtifactMetadataSerializer.serialize(artifact_file.metadata):
-                metadata_name, metadata_value = metadata_key_value.get(
-                    "key"
-                ), metadata_key_value.get("value")
+                metadata_name, metadata_value = metadata_key_value.get("key"), metadata_key_value.get("value")
                 artifact_hash.update(cls.META_ELEMENT_DIVISOR)
                 artifact_hash.update(cls._number_to_bytes(len(metadata_name), cls.SERVER_INT_BYTES))
                 artifact_hash.update(metadata_name.encode(cls.ENCODING))
                 artifact_hash.update(cls.META_ELEMENT_DIVISOR)
-                artifact_hash.update(
-                    cls._number_to_bytes(len(metadata_value), cls.SERVER_INT_BYTES)
-                )
+                artifact_hash.update(cls._number_to_bytes(len(metadata_value), cls.SERVER_INT_BYTES))
                 artifact_hash.update(metadata_value.encode(cls.ENCODING))
 
         return str(artifact_hash.hexdigest())

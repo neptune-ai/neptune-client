@@ -19,23 +19,15 @@ import traceback
 
 import pandas as pd
 import six
-from pandas.errors import EmptyDataError
-
 from neptune.api_exceptions import ChannelDoesNotExist, ExperimentAlreadyFinished
-from neptune.exceptions import (
-    InvalidChannelValue,
-    NeptuneIncorrectImportException,
-    NoChannelValue,
-)
-from neptune.internal.channels.channels import (
-    ChannelNamespace,
-    ChannelType,
-    ChannelValue,
-)
+from neptune.exceptions import InvalidChannelValue, NeptuneIncorrectImportException, NoChannelValue
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.utils.image import get_image_content
 from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
+from pandas.errors import EmptyDataError
+
+from neptune.internal.channels.channels import ChannelNamespace, ChannelType, ChannelValue
 
 _logger = logging.getLogger(__name__)
 
@@ -781,10 +773,7 @@ class Experiment(object):
                 exp_params = experiment.get_parameters()
         """
         experiment = self._backend.get_experiment(self.internal_id)
-        return dict(
-            (p.name, self._convert_parameter_value(p.value, p.parameterType))
-            for p in experiment.parameters
-        )
+        return dict((p.name, self._convert_parameter_value(p.value, p.parameterType)) for p in experiment.parameters)
 
     def get_properties(self):
         """Retrieve User-defined properties for this experiment.
@@ -1009,11 +998,7 @@ class Experiment(object):
 
     def __eq__(self, o):
         # pylint: disable=protected-access
-        return (
-            self._id == o._id
-            and self._internal_id == o._internal_id
-            and self._project == o._project
-        )
+        return self._id == o._id and self._internal_id == o._internal_id and self._project == o._project
 
     def __ne__(self, o):
         return not self.__eq__(o)
