@@ -87,9 +87,7 @@ class Daemon(threading.Thread):
                             )
                             self_.last_backoff_time = self.INITIAL_RETRY_BACKOFF
                         else:
-                            self_.last_backoff_time = min(
-                                self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF
-                            )
+                            self_.last_backoff_time = min(self_.last_backoff_time * 2, self.MAX_RETRY_BACKOFF)
                         time.sleep(self_.last_backoff_time)
                     except Exception:
                         logger.error(

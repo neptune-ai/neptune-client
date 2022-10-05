@@ -26,12 +26,7 @@ from mock import Mock, patch
 from neptune.new import ANONYMOUS
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import MetadataInconsistency
-from neptune.new.internal.backends.api_model import (
-    Attribute,
-    AttributeType,
-    AttributeWithProperties,
-    LeaderboardEntry,
-)
+from neptune.new.internal.backends.api_model import Attribute, AttributeType, AttributeWithProperties, LeaderboardEntry
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.metadata_containers.metadata_containers_table import Table, TableEntry
 
@@ -64,27 +59,13 @@ class AbstractTablesTestMixin:
     @staticmethod
     def build_attributes_leaderboard(now: datetime):
         attributes = []
-        attributes.append(
-            AttributeWithProperties("run/state", AttributeType.RUN_STATE, Mock(value="idle"))
-        )
+        attributes.append(AttributeWithProperties("run/state", AttributeType.RUN_STATE, Mock(value="idle")))
         attributes.append(AttributeWithProperties("float", AttributeType.FLOAT, Mock(value=12.5)))
-        attributes.append(
-            AttributeWithProperties("string", AttributeType.STRING, Mock(value="some text"))
-        )
-        attributes.append(
-            AttributeWithProperties("datetime", AttributeType.DATETIME, Mock(value=now))
-        )
-        attributes.append(
-            AttributeWithProperties("float/series", AttributeType.FLOAT_SERIES, Mock(last=8.7))
-        )
-        attributes.append(
-            AttributeWithProperties(
-                "string/series", AttributeType.STRING_SERIES, Mock(last="last text")
-            )
-        )
-        attributes.append(
-            AttributeWithProperties("string/set", AttributeType.STRING_SET, Mock(values=["a", "b"]))
-        )
+        attributes.append(AttributeWithProperties("string", AttributeType.STRING, Mock(value="some text")))
+        attributes.append(AttributeWithProperties("datetime", AttributeType.DATETIME, Mock(value=now)))
+        attributes.append(AttributeWithProperties("float/series", AttributeType.FLOAT_SERIES, Mock(last=8.7)))
+        attributes.append(AttributeWithProperties("string/series", AttributeType.STRING_SERIES, Mock(last="last text")))
+        attributes.append(AttributeWithProperties("string/set", AttributeType.STRING_SET, Mock(values=["a", "b"])))
         attributes.append(
             AttributeWithProperties(
                 "git/ref",

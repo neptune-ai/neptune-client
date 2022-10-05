@@ -244,9 +244,7 @@ class TestImage(unittest.TestCase):
 
         # then
         self.assertTrue(
-            result.startswith(
-                '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">'
-            )
+            result.startswith('<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">')
         )
 
     def test_get_oversize_html_from_pandas(self):

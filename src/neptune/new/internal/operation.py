@@ -31,9 +31,7 @@ T = TypeVar("T")
 
 
 def all_subclasses(cls):
-    return set(cls.__subclasses__()).union(
-        [s for c in cls.__subclasses__() for s in all_subclasses(c)]
-    )
+    return set(cls.__subclasses__()).union([s for c in cls.__subclasses__() for s in all_subclasses(c)])
 
 
 @dataclass
@@ -239,9 +237,7 @@ class LogSeriesValue(Generic[T]):
 
     @staticmethod
     def from_dict(data: dict, value_deserializer=lambda x: x) -> "LogSeriesValue[T]":
-        return LogSeriesValue[T](
-            value_deserializer(data["value"]), data.get("step", None), data["ts"]
-        )
+        return LogSeriesValue[T](value_deserializer(data["value"]), data.get("step", None), data["ts"])
 
 
 @dataclass
@@ -309,9 +305,7 @@ class ImageValue:
         if isinstance(obj, dict):
             return ImageValue(data=obj["data"], name=obj["name"], description=obj["description"])
         else:
-            raise InternalClientError(
-                "Run data on disk is malformed or was saved by newer version of Neptune Library"
-            )
+            raise InternalClientError("Run data on disk is malformed or was saved by newer version of Neptune Library")
 
 
 @dataclass
@@ -333,10 +327,7 @@ class LogImages(Operation):
     def from_dict(data: dict) -> "LogImages":
         return LogImages(
             data["path"],
-            [
-                LogImages.ValueType.from_dict(value, ImageValue.deserializer)
-                for value in data["values"]
-            ],
+            [LogImages.ValueType.from_dict(value, ImageValue.deserializer) for value in data["values"]],
         )
 
 
@@ -521,9 +512,9 @@ class CopyAttribute(Operation):
     def from_dict(data: dict) -> "CopyAttribute":
         from neptune.new.attributes.attribute import Attribute
 
-        source_attr_cls = {
-            cls.__name__: cls for cls in all_subclasses(Attribute) if cls.supports_copy
-        }.get(data["source_attr_name"])
+        source_attr_cls = {cls.__name__: cls for cls in all_subclasses(Attribute) if cls.supports_copy}.get(
+            data["source_attr_name"]
+        )
 
         if source_attr_cls is None:
             raise MalformedOperation("Copy of non-copiable type found in queue!")

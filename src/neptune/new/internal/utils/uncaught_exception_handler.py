@@ -45,9 +45,7 @@ class UncaughtExceptionHandler:
                     "Traceback:",
                 ]
 
-                traceback_lines = (
-                    header_lines + traceback.format_tb(exc_tb) + str(exc_val).split("\n")
-                )
+                traceback_lines = header_lines + traceback.format_tb(exc_tb) + str(exc_val).split("\n")
                 for _, handler in self._handlers.items():
                     handler(traceback_lines)
 

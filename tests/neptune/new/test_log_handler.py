@@ -92,9 +92,7 @@ class TestLogHandler(unittest.TestCase):
         self._log_messages(logger)
 
         log_entries = list(exp["monitoring"]["python_logger"].fetch_values().value)
-        self.assertListEqual(
-            log_entries, ["ERROR|root: error message", "WARNING|root: test message"]
-        )
+        self.assertListEqual(log_entries, ["ERROR|root: error message", "WARNING|root: test message"])
 
     def test_log_level_works(self):
         exp = init(mode="debug", flush_period=0.5)

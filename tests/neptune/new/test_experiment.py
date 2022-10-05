@@ -17,15 +17,7 @@ import os
 import unittest
 from datetime import datetime
 
-from neptune.new import (
-    ANONYMOUS,
-    Run,
-    init,
-    init_model,
-    init_model_version,
-    init_project,
-    init_run,
-)
+from neptune.new import ANONYMOUS, Run, init, init_model, init_model_version, init_project, init_run
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     InactiveModelException,
@@ -69,9 +61,7 @@ class TestExperiment(unittest.TestCase):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):
                 exp.define("some/path/value", String("Some string"), wait=True)
-                self.assertEqual(
-                    exp.get_structure()["some"]["path"]["value"].fetch(), "Some string"
-                )
+                self.assertEqual(exp.get_structure()["some"]["path"]["value"].fetch(), "Some string")
 
     def test_define_few_variables(self):
         for exp in self.get_experiments(flush_period=0.5):

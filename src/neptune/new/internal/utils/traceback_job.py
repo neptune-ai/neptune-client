@@ -20,9 +20,7 @@ from typing import TYPE_CHECKING, List, Optional
 
 from neptune.new.attributes.constants import SYSTEM_FAILED_ATTRIBUTE_PATH
 from neptune.new.internal.background_job import BackgroundJob
-from neptune.new.internal.utils.uncaught_exception_handler import (
-    instance as traceback_handler,
-)
+from neptune.new.internal.utils.uncaught_exception_handler import instance as traceback_handler
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer

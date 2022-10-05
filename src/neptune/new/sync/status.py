@@ -65,9 +65,7 @@ class StatusRunner(AbstractBackendRunner):
             else:
                 unsynced_containers.append(metadata_container)
 
-        not_found = len(
-            [exp for exp in synced_containers + unsynced_containers if not exp or exp.trashed]
-        )
+        not_found = len([exp for exp in synced_containers + unsynced_containers if not exp or exp.trashed])
         synced_containers = [obj for obj in synced_containers if obj and not obj.trashed]
         unsynced_containers = [obj for obj in unsynced_containers if obj and not obj.trashed]
 

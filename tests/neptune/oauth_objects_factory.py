@@ -35,6 +35,4 @@ def an_access_token():
 
 
 def a_refresh_token():
-    return jwt.encode(
-        {"exp": 0, "azp": a_string(), "iss": "http://{}.com".format(a_string())}, SECRET
-    )
+    return jwt.encode({"exp": 0, "azp": a_string(), "iss": "http://{}.com".format(a_string())}, SECRET)

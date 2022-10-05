@@ -147,9 +147,9 @@ def _matplotlib_to_plotly(chart):
     # due to fact that mpl_to_plotly uses deprecated matplotlib functionalities
     plotly_version = plotly.__version__
     matplotlib_version = matplotlib.__version__
-    if version.parse(matplotlib_version) >= version.parse("3.3.0") and version.parse(
-        plotly_version
-    ) < version.parse("5.0.0"):
+    if version.parse(matplotlib_version) >= version.parse("3.3.0") and version.parse(plotly_version) < version.parse(
+        "5.0.0"
+    ):
         raise PlotlyIncompatibilityException(
             matplotlib_version,
             plotly_version,
@@ -257,10 +257,7 @@ def is_pil_image(image) -> bool:
 
 
 def is_matplotlib_figure(image):
-    return (
-        image.__class__.__module__.startswith("matplotlib.")
-        and image.__class__.__name__ == "Figure"
-    )
+    return image.__class__.__module__.startswith("matplotlib.") and image.__class__.__name__ == "Figure"
 
 
 def is_plotly_figure(chart):

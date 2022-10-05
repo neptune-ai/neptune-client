@@ -27,12 +27,8 @@ class Message(object):
 
     @classmethod
     def from_json(cls, json_value):
-        message_type = json_value.get(Message.MESSAGE_TYPE) or json_value.get(
-            Message.MESSAGE_NEW_TYPE
-        )
-        message_body = json_value.get(Message.MESSAGE_BODY) or json_value.get(
-            Message.MESSAGE_NEW_BODY
-        )
+        message_type = json_value.get(Message.MESSAGE_TYPE) or json_value.get(Message.MESSAGE_NEW_TYPE)
+        message_body = json_value.get(Message.MESSAGE_BODY) or json_value.get(Message.MESSAGE_NEW_BODY)
 
         if message_type == SIGNAL_TYPE_STOP:
             message_type = MessageType.STOP

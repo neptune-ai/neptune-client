@@ -22,12 +22,7 @@ from click.testing import CliRunner
 
 import neptune.new as neptune
 from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
-from e2e_tests.utils import (
-    DISABLE_SYSLOG_KWARGS,
-    initialize_container,
-    reinitialize_container,
-    tmp_context,
-)
+from e2e_tests.utils import DISABLE_SYSLOG_KWARGS, initialize_container, reinitialize_container, tmp_context
 from neptune.new.exceptions import NeptuneException
 from neptune.new.sync import sync
 
@@ -44,9 +39,7 @@ class TestSync(BaseE2ETest):
             original_value = fake.unique.word()
             updated_value = fake.unique.word()
 
-            with initialize_container(
-                container_type=container_type, project=environment.project
-            ) as container:
+            with initialize_container(container_type=container_type, project=environment.project) as container:
                 # assign original value
                 container[key] = original_value
                 container.wait()
@@ -55,9 +48,7 @@ class TestSync(BaseE2ETest):
                 container_sys_id = container._sys_id
 
             # manually add operations to queue
-            queue_dir = list(
-                Path(f"./.neptune/async/{container_type}__{container_id}/").glob("exec-*")
-            )[0]
+            queue_dir = list(Path(f"./.neptune/async/{container_type}__{container_id}/").glob("exec-*"))[0]
             with open(queue_dir / "last_put_version", encoding="utf-8") as last_put_version_f:
                 last_put_version = int(last_put_version_f.read())
             with open(queue_dir / "data-1.log", "a", encoding="utf-8") as queue_f:
@@ -91,9 +82,7 @@ class TestSync(BaseE2ETest):
             with open(queue_dir / "last_put_version", "w", encoding="utf-8") as last_put_version_f:
                 last_put_version_f.write(str(last_put_version + 2))
 
-            with reinitialize_container(
-                container_sys_id, container_type, project=environment.project
-            ) as container:
+            with reinitialize_container(container_sys_id, container_type, project=environment.project) as container:
                 # server should have the original value
                 assert container[key].fetch() == original_value
 
@@ -101,9 +90,7 @@ class TestSync(BaseE2ETest):
             result = runner.invoke(sync, ["--path", tmp])
             assert result.exit_code == 0
 
-            with reinitialize_container(
-                container_sys_id, container_type, project=environment.project
-            ) as container:
+            with reinitialize_container(container_sys_id, container_type, project=environment.project) as container:
                 # and we should get the updated value from server
                 assert container[key].fetch() == updated_value
                 assert container["copy/" + key].fetch() == updated_value

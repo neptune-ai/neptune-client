@@ -42,9 +42,7 @@ def upload_source_code(source_files: Optional[List[str]], run: "Run") -> None:
         else:
             common_root = get_common_root(get_absolute_paths(source_files))
             if common_root is not None:
-                entrypoint = normalize_file_name(
-                    os.path.relpath(os.path.abspath(entry_filepath), common_root)
-                )
+                entrypoint = normalize_file_name(os.path.relpath(os.path.abspath(entry_filepath), common_root))
             else:
                 entrypoint = normalize_file_name(os.path.abspath(entry_filepath))
         run[attr_consts.SOURCE_CODE_ENTRYPOINT_ATTRIBUTE_PATH] = entrypoint

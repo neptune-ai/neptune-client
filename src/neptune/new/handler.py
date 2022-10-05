@@ -28,11 +28,7 @@ from neptune.new.attributes.sets.string_set import StringSet
 
 # backwards compatibility
 # pylint: disable=unused-import
-from neptune.new.exceptions import (
-    MissingFieldException,
-    NeptuneCannotChangeStageManually,
-    NeptuneException,
-)
+from neptune.new.exceptions import MissingFieldException, NeptuneCannotChangeStageManually, NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     is_collection,
@@ -406,9 +402,7 @@ class Handler:
         .. _Field types docs page:
            https://docs.neptune.ai/api-reference/field-types
         """
-        return self._pass_call_to_attr(
-            function_name="fetch_values", include_timestamp=include_timestamp
-        )
+        return self._pass_call_to_attr(function_name="fetch_values", include_timestamp=include_timestamp)
 
     @check_protected_paths
     def delete_files(self, paths: Union[str, Iterable[str]], wait: bool = False) -> None:

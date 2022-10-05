@@ -26,11 +26,7 @@ from neptune.new.exceptions import (
     NeptuneRemoteStorageCredentialsException,
     NeptuneUnsupportedArtifactFunctionalityException,
 )
-from neptune.new.internal.artifacts.types import (
-    ArtifactDriver,
-    ArtifactFileData,
-    ArtifactFileType,
-)
+from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
 
 
 class S3ArtifactDriver(ArtifactDriver):

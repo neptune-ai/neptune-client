@@ -54,9 +54,7 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     Workspace,
 )
-from neptune.new.internal.backends.hosted_file_operations import (
-    get_unique_upload_entries,
-)
+from neptune.new.internal.backends.hosted_file_operations import get_unique_upload_entries
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.container_structure import ContainerStructure
@@ -147,12 +145,8 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_available_workspaces(self) -> List[Workspace]:
         return [Workspace(id=UniqueId(str(uuid.uuid4())), name=self.WORKSPACE_NAME)]
 
-    def _create_container(
-        self, container_id: UniqueId, container_type: ContainerType, sys_id: SysId
-    ):
-        container = self._containers.setdefault(
-            (container_id, container_type), ContainerStructure[Value, dict]()
-        )
+    def _create_container(self, container_id: UniqueId, container_type: ContainerType, sys_id: SysId):
+        container = self._containers.setdefault((container_id, container_type), ContainerStructure[Value, dict]())
         container.set(["sys", "id"], String(sys_id))
         container.set(["sys", "state"], String("running"))
         container.set(["sys", "owner"], String("offline_user"))
@@ -211,9 +205,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def create_model_version(self, project_id: str, model_id: UniqueId) -> ApiExperiment:
         try:
-            model_key = self._get_container(
-                container_id=model_id, container_type=ContainerType.MODEL
-            ).get("sys/id")
+            model_key = self._get_container(container_id=model_id, container_type=ContainerType.MODEL).get("sys/id")
         except ContainerUUIDNotFound:
             model_key = "MOD"
 
@@ -278,9 +270,7 @@ class NeptuneBackendMock(NeptuneBackend):
                 result.append(e)
         return len(operations), result
 
-    def _execute_operation(
-        self, container_id: UniqueId, container_type: ContainerType, op: Operation
-    ) -> None:
+    def _execute_operation(self, container_id: UniqueId, container_type: ContainerType, op: Operation) -> None:
         run = self._get_container(container_id, container_type)
         val = run.get(op.path)
         if val is not None and not isinstance(val, Value):
@@ -319,9 +309,7 @@ class NeptuneBackendMock(NeptuneBackend):
     ):
         run = self._get_container(container_id, container_type)
         value: File = run.get(path)
-        target_path = os.path.abspath(
-            destination or (path[-1] + ("." + value.extension if value.extension else ""))
-        )
+        target_path = os.path.abspath(destination or (path[-1] + ("." + value.extension if value.extension else "")))
         if value.content is not None:
             with open(target_path, "wb") as target_file:
                 target_file.write(value.content)
@@ -351,27 +339,19 @@ class NeptuneBackendMock(NeptuneBackend):
             for upload_entry in upload_entries:
                 zipObj.write(upload_entry.source, upload_entry.target_path)
 
-    def get_float_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FloatAttribute:
+    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:
         val = self._get_attribute(container_id, container_type, path, Float)
         return FloatAttribute(val.value)
 
-    def get_int_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> IntAttribute:
+    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntAttribute:
         val = self._get_attribute(container_id, container_type, path, Integer)
         return IntAttribute(val.value)
 
-    def get_bool_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> BoolAttribute:
+    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolAttribute:
         val = self._get_attribute(container_id, container_type, path, Boolean)
         return BoolAttribute(val.value)
 
-    def get_file_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FileAttribute:
+    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
         val = self._get_attribute(container_id, container_type, path, File)
         return FileAttribute(
             name=os.path.basename(val.path) if val.path else "",
@@ -445,10 +425,7 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(container_id, container_type, path, StringSeries)
         return StringSeriesValues(
             len(val.values),
-            [
-                StringPointValue(timestampMillis=42342, step=idx, value=v)
-                for idx, v in enumerate(val.values)
-            ],
+            [StringPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)],
         )
 
     def get_float_series_values(
@@ -462,10 +439,7 @@ class NeptuneBackendMock(NeptuneBackend):
         val = self._get_attribute(container_id, container_type, path, FloatSeries)
         return FloatSeriesValues(
             len(val.values),
-            [
-                FloatPointValue(timestampMillis=42342, step=idx, value=v)
-                for idx, v in enumerate(val.values)
-            ],
+            [FloatPointValue(timestampMillis=42342, step=idx, value=v) for idx, v in enumerate(val.values)],
         )
 
     def get_image_series_values(
@@ -756,9 +730,7 @@ class NeptuneBackendMock(NeptuneBackend):
             # pylint: disable=unused-argument
             if self._current_value is None:
                 raise MetadataInconsistency(
-                    "Cannot perform delete operation on {}. Attribute is undefined.".format(
-                        self._path
-                    )
+                    "Cannot perform delete operation on {}. Attribute is undefined.".format(self._path)
                 )
             return None
 

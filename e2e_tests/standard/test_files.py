@@ -186,10 +186,7 @@ class TestUpload(BaseE2ETest):
         key = self.gen_key()
         large_filesize = 10 * 2**20  # 10MB
         large_filename = fake.file_name()
-        small_files = [
-            (f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8"))
-            for _ in range(100)
-        ]
+        small_files = [(f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8")) for _ in range(100)]
 
         with tmp_context():
             # create single large file (multipart) and a lot of very small files

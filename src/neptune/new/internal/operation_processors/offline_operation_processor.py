@@ -17,9 +17,7 @@ from typing import Optional
 
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
-from neptune.new.internal.operation_processors.operation_processor import (
-    OperationProcessor,
-)
+from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 
 
 class OfflineOperationProcessor(OperationProcessor):

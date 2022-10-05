@@ -31,6 +31,4 @@ some_exp_entry_row = {
 }
 some_exp_entry_row.update({"property_" + p.key: p.value for p in some_exp_entry_dto.properties})
 some_exp_entry_row.update({"parameter_" + p.name: p.value for p in some_exp_entry_dto.parameters})
-some_exp_entry_row.update(
-    {"channel_" + c.channelName: c.y for c in some_exp_entry_dto.channelsLastValues}
-)
+some_exp_entry_row.update({"channel_" + c.channelName: c.y for c in some_exp_entry_dto.channelsLastValues})

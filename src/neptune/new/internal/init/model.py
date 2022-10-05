@@ -31,11 +31,7 @@ from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.id_formats import QualifiedName
-from neptune.new.internal.init.parameters import (
-    DEFAULT_FLUSH_PERIOD,
-    DEFAULT_NAME,
-    OFFLINE_PROJECT_QUALIFIED_NAME,
-)
+from neptune.new.internal.init.parameters import DEFAULT_FLUSH_PERIOD, DEFAULT_NAME, OFFLINE_PROJECT_QUALIFIED_NAME
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.deprecation import deprecated_parameter
@@ -86,9 +82,7 @@ def init_model(
         # with_id (resume existing model) has priority over key (creating a new model)
         #  additional creation parameters (e.g. name) are simply ignored in this scenario
         model_id = QualifiedName(project + "/" + with_id)
-        api_model = backend.get_metadata_container(
-            container_id=model_id, expected_container_type=Model.container_type
-        )
+        api_model = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
     elif key is not None:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelForReadOnlyMode()

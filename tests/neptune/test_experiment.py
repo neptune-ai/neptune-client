@@ -27,13 +27,7 @@ from pandas.testing import assert_frame_equal
 
 from neptune.experiments import Experiment
 from neptune.internal.channels.channels import ChannelType, ChannelValue
-from tests.neptune.random_utils import (
-    a_project,
-    a_string,
-    a_uuid_string,
-    an_experiment_id,
-    sort_df_by_columns,
-)
+from tests.neptune.random_utils import a_project, a_string, a_uuid_string, an_experiment_id, sort_df_by_columns
 
 
 class TestExperiment(unittest.TestCase):
@@ -42,9 +36,7 @@ class TestExperiment(unittest.TestCase):
     def test_send_metric(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
-        experiment = Experiment(
-            mock.MagicMock(), mock.MagicMock(), an_experiment_id(), a_uuid_string()
-        )
+        experiment = Experiment(mock.MagicMock(), mock.MagicMock(), an_experiment_id(), a_uuid_string())
         channel_value = ChannelValue(
             x=random.randint(0, 100),
             y=dict(numeric_value=random.randint(0, 100)),
@@ -52,14 +44,10 @@ class TestExperiment(unittest.TestCase):
         )
 
         # when
-        experiment.send_metric(
-            "loss", channel_value.x, channel_value.y["numeric_value"], channel_value.ts
-        )
+        experiment.send_metric("loss", channel_value.x, channel_value.y["numeric_value"], channel_value.ts)
 
         # then
-        channels_values_sender.send.assert_called_with(
-            "loss", ChannelType.NUMERIC.value, channel_value
-        )
+        channels_values_sender.send.assert_called_with("loss", ChannelType.NUMERIC.value, channel_value)
 
     @mock.patch("neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
     @mock.patch("neptune.experiments.ExecutionContext", new=mock.MagicMock)
@@ -67,19 +55,13 @@ class TestExperiment(unittest.TestCase):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
         experiment = Experiment(mock.MagicMock(), a_project(), an_experiment_id(), a_uuid_string())
-        channel_value = ChannelValue(
-            x=random.randint(0, 100), y=dict(text_value=a_string()), ts=time.time()
-        )
+        channel_value = ChannelValue(x=random.randint(0, 100), y=dict(text_value=a_string()), ts=time.time())
 
         # when
-        experiment.send_text(
-            "stdout", channel_value.x, channel_value.y["text_value"], channel_value.ts
-        )
+        experiment.send_text("stdout", channel_value.x, channel_value.y["text_value"], channel_value.ts)
 
         # then
-        channels_values_sender.send.assert_called_with(
-            "stdout", ChannelType.TEXT.value, channel_value
-        )
+        channels_values_sender.send.assert_called_with("stdout", ChannelType.TEXT.value, channel_value)
 
     @mock.patch("neptune.experiments.get_image_content", return_value=b"content")
     @mock.patch("neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
@@ -93,9 +75,7 @@ class TestExperiment(unittest.TestCase):
             description=a_string(),
             data=base64.b64encode(content()).decode("utf-8"),
         )
-        channel_value = ChannelValue(
-            x=random.randint(0, 100), y=dict(image_value=image_value), ts=time.time()
-        )
+        channel_value = ChannelValue(x=random.randint(0, 100), y=dict(image_value=image_value), ts=time.time())
 
         # when
         experiment.send_image(
@@ -108,9 +88,7 @@ class TestExperiment(unittest.TestCase):
         )
 
         # then
-        channels_values_sender.send.assert_called_with(
-            "errors", ChannelType.IMAGE.value, channel_value
-        )
+        channels_values_sender.send.assert_called_with("errors", ChannelType.IMAGE.value, channel_value)
 
     def test_append_tags(self):
         # given

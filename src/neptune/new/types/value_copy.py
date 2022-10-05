@@ -39,9 +39,7 @@ class ValueCopy(Value):
         source_path = self.source_handler._path
         source_attr = self.source_handler._container.get_attribute(source_path)
         if source_attr and source_attr.supports_copy:
-            return visitor.copy_value(
-                source_type=type(source_attr), source_path=parse_path(source_path)
-            )
+            return visitor.copy_value(source_type=type(source_attr), source_path=parse_path(source_path))
         else:
             raise Exception(f"{type(source_attr).__name__} doesn't support copying")
 

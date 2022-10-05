@@ -32,18 +32,12 @@ class WebsocketClientAdapter(object):
             sslopt = {"cert_reqs": ssl.CERT_NONE}
 
         proto = url.split(":")[0].replace("ws", "http")
-        proxy = (
-            proxies[proto]
-            if proxies and proto in proxies
-            else os.getenv("{}_PROXY".format(proto.upper()))
-        )
+        proxy = proxies[proto] if proxies and proto in proxies else os.getenv("{}_PROXY".format(proto.upper()))
 
         if proxy:
             proxy_split = urllib.parse.urlparse(proxy).netloc.split(":")
             proxy_host = proxy_split[0]
-            proxy_port = (
-                proxy_split[1] if len(proxy_split) > 1 else "80" if proto == "http" else "443"
-            )
+            proxy_port = proxy_split[1] if len(proxy_split) > 1 else "80" if proto == "http" else "443"
         else:
             proxy_host = None
             proxy_port = None

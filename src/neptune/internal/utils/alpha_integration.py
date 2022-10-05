@@ -107,11 +107,7 @@ class AlphaParameterDTO(AlphaAttributeWrapper):
 
     @property
     def parameterType(self):
-        return (
-            "double"
-            if self._properties.attributeType == AlphaAttributeType.FLOAT.value
-            else "string"
-        )
+        return "double" if self._properties.attributeType == AlphaAttributeType.FLOAT.value else "string"
 
 
 class AlphaChannelDTO(AlphaAttributeWrapper):
@@ -231,9 +227,7 @@ def channel_value_type_to_operation(
         ChannelValueType.NUMERIC_VALUE: alpha_operation.LogFloats,
         ChannelValueType.IMAGE_VALUE: alpha_operation.LogImages,
     }
-    return _map_using_dict(
-        channel_value_type, "channel value type", _channel_value_type_to_operation
-    )
+    return _map_using_dict(channel_value_type, "channel value type", _channel_value_type_to_operation)
 
 
 def deprecated_img_to_alpha_image(img: dict) -> ImageValue:

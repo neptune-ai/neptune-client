@@ -17,11 +17,7 @@ import pathlib
 import typing
 
 from neptune.new.attributes.atoms.atom import Atom
-from neptune.new.internal.artifacts.types import (
-    ArtifactDriver,
-    ArtifactDriversMap,
-    ArtifactFileData,
-)
+from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
 from neptune.new.internal.backends.api_model import OptionalFeatures
 from neptune.new.internal.operation import AssignArtifact, TrackFilesToArtifact
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
@@ -47,9 +43,7 @@ class Artifact(Atom):
 
     def fetch_hash(self) -> str:
         self._check_feature()
-        val = self._backend.get_artifact_attribute(
-            self._container_id, self._container_type, self._path
-        )
+        val = self._backend.get_artifact_attribute(self._container_id, self._container_type, self._path)
         return val.hash
 
     def fetch_files_list(self) -> typing.List[ArtifactFileData]:
@@ -63,12 +57,8 @@ class Artifact(Atom):
     def download(self, destination: str = None):
         self._check_feature()
         for file_definition in self.fetch_files_list():
-            driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_type(
-                file_definition.type
-            )
-            file_destination = pathlib.Path(destination or ".") / pathlib.Path(
-                file_definition.file_path
-            )
+            driver: typing.Type[ArtifactDriver] = ArtifactDriversMap.match_type(file_definition.type)
+            file_destination = pathlib.Path(destination or ".") / pathlib.Path(file_definition.file_path)
             file_destination.parent.mkdir(parents=True, exist_ok=True)
             driver.download_file(file_destination, file_definition)
 

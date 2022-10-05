@@ -19,16 +19,9 @@ import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
-from neptune.new.exceptions import (
-    NeptuneLocalStorageAccessException,
-    NeptuneUnsupportedArtifactFunctionalityException,
-)
+from neptune.new.exceptions import NeptuneLocalStorageAccessException, NeptuneUnsupportedArtifactFunctionalityException
 from neptune.new.internal.artifacts.file_hasher import FileHasher
-from neptune.new.internal.artifacts.types import (
-    ArtifactDriver,
-    ArtifactFileData,
-    ArtifactFileType,
-)
+from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
 
 
 class LocalArtifactDriver(ArtifactDriver):
@@ -46,9 +39,7 @@ class LocalArtifactDriver(ArtifactDriver):
     def _serialize_metadata(cls, metadata: typing.Dict[str, typing.Any]) -> typing.Dict[str, str]:
         return {
             "file_path": metadata["file_path"],
-            "last_modified": datetime.fromtimestamp(metadata["last_modified"]).strftime(
-                cls.DATETIME_FORMAT
-            ),
+            "last_modified": datetime.fromtimestamp(metadata["last_modified"]).strftime(cls.DATETIME_FORMAT),
         }
 
     @classmethod
@@ -73,9 +64,7 @@ class LocalArtifactDriver(ArtifactDriver):
 
         stored_files: typing.List[ArtifactFileData] = list()
 
-        files_to_check = (
-            source_location.rglob("*") if source_location.is_dir() else [source_location]
-        )
+        files_to_check = source_location.rglob("*") if source_location.is_dir() else [source_location]
         for file in files_to_check:
             # symlink dirs are omitted by rglob('*')
             if not file.is_file():
@@ -85,11 +74,7 @@ class LocalArtifactDriver(ArtifactDriver):
                 file_path = file.relative_to(source_location).as_posix()
             else:
                 file_path = file.name
-            file_path = (
-                file_path
-                if destination is None
-                else (pathlib.Path(destination) / file_path).as_posix()
-            )
+            file_path = file_path if destination is None else (pathlib.Path(destination) / file_path).as_posix()
 
             stored_files.append(
                 ArtifactFileData(
@@ -114,9 +99,7 @@ class LocalArtifactDriver(ArtifactDriver):
         absolute_path = pathlib.Path(parsed_path.netloc + parsed_path.path)
 
         if not absolute_path.is_file():
-            raise NeptuneLocalStorageAccessException(
-                path=absolute_path, expected_description="an existing file"
-            )
+            raise NeptuneLocalStorageAccessException(path=absolute_path, expected_description="an existing file")
 
         os.makedirs(str(destination.parent), exist_ok=True)
         if destination.exists():

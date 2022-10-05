@@ -17,10 +17,7 @@ import abc
 from datetime import datetime
 from typing import Dict, Generic, TypeVar, Union
 
-from neptune.new.internal.backends.api_model import (
-    FloatSeriesValues,
-    StringSeriesValues,
-)
+from neptune.new.internal.backends.api_model import FloatSeriesValues, StringSeriesValues
 
 Row = TypeVar("Row", StringSeriesValues, FloatSeriesValues)
 

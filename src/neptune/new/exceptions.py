@@ -230,9 +230,7 @@ You can check all of your projects on the Projects page:
 
         super().__init__(
             message.format(
-                available_projects_message=available_projects_message.format(
-                    projects=projects_formated_list
-                )
+                available_projects_message=available_projects_message.format(projects=projects_formated_list)
                 if available_projects
                 else "",
                 available_workspaces_message=available_workspaces_message.format(
@@ -254,9 +252,7 @@ class ContainerUUIDNotFound(NeptuneException):
         self.container_id = container_id
         self.container_type = container_type
         super().__init__(
-            "{} with ID {} not found. It may have been deleted.".format(
-                container_type.value.capitalize(), container_id
-            )
+            "{} with ID {} not found. It may have been deleted.".format(container_type.value.capitalize(), container_id)
         )
 
 
@@ -586,9 +582,7 @@ You may also want to check the following docs page:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
         super().__init__(
-            message.format(
-                parameter1=parameter1, parameter2=parameter2, method_name=method_name, **STYLES
-            )
+            message.format(parameter1=parameter1, parameter2=parameter2, method_name=method_name, **STYLES)
         )
 
 
@@ -624,11 +618,7 @@ class NeptuneClientUpgradeRequiredError(NeptuneException):
         max_version: Optional[Union[Version, str]] = None,
     ):
         current_version = str(version)
-        required_version = (
-            "==" + replace_patch_version(str(max_version))
-            if max_version
-            else ">=" + str(min_version)
-        )
+        required_version = "==" + replace_patch_version(str(max_version)) if max_version else ">=" + str(min_version)
         message = """
 {h1}
 ----NeptuneClientUpgradeRequiredError-------------------------------------------------------------
@@ -1202,9 +1192,7 @@ Neptune had a problem processing "{path}". It expects it to be {expected_descrip
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(
-            message.format(path=path, expected_description=expected_description, **STYLES)
-        )
+        super().__init__(message.format(path=path, expected_description=expected_description, **STYLES))
 
 
 class NeptuneRemoteStorageCredentialsException(NeptuneException):
@@ -1302,9 +1290,7 @@ You can check all of your models in the project on the Models page:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
 """
-        super().__init__(
-            message.format(model_key=model_key, models_tab_url=models_tab_url, **STYLES)
-        )
+        super().__init__(message.format(model_key=model_key, models_tab_url=models_tab_url, **STYLES))
 
 
 class NeptuneSynchronizationAlreadyStoppedException(NeptuneException):

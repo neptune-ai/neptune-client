@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.hardware.metrics.reports.metric_report import (
-    MetricReport,
-    MetricValue,
-)
+from neptune.internal.hardware.metrics.reports.metric_report import MetricReport, MetricValue
 
 
 class MetricReporter(object):
@@ -32,13 +29,7 @@ class MetricReporter(object):
         return [
             MetricReport(
                 metric=metric,
-                values=[
-                    x
-                    for x in [
-                        self.__metric_value_for_gauge(gauge, timestamp) for gauge in metric.gauges
-                    ]
-                    if x
-                ],
+                values=[x for x in [self.__metric_value_for_gauge(gauge, timestamp) for gauge in metric.gauges] if x],
             )
             for metric in self.__metrics
         ]

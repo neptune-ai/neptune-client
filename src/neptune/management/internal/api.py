@@ -32,13 +32,7 @@ __all__ = (
 import os
 from typing import Dict, Iterable, List, Optional, Union
 
-from bravado.exception import (
-    HTTPBadRequest,
-    HTTPConflict,
-    HTTPForbidden,
-    HTTPNotFound,
-    HTTPUnprocessableEntity,
-)
+from bravado.exception import HTTPBadRequest, HTTPConflict, HTTPForbidden, HTTPNotFound, HTTPUnprocessableEntity
 
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
@@ -62,10 +56,7 @@ from neptune.management.internal.dto import (
     WorkspaceMemberRoleDTO,
 )
 from neptune.management.internal.types import *
-from neptune.management.internal.utils import (
-    extract_project_and_workspace,
-    normalize_project_name,
-)
+from neptune.management.internal.utils import extract_project_and_workspace, normalize_project_name
 from neptune.new.envs import API_TOKEN_ENV_NAME
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
@@ -74,11 +65,7 @@ from neptune.new.internal.backends.hosted_client import (
     create_leaderboard_client,
 )
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
-from neptune.new.internal.backends.utils import (
-    parse_validation_errors,
-    ssl_verify,
-    with_api_exceptions_handler,
-)
+from neptune.new.internal.backends.utils import parse_validation_errors, ssl_verify, with_api_exceptions_handler
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.utils import verify_collection_type, verify_type
@@ -138,10 +125,7 @@ def get_project_list(api_token: Optional[str] = None) -> List[str]:
     }
     projects = _get_projects(backend_client, params)
 
-    return [
-        normalize_project_name(name=project.name, workspace=project.organizationName)
-        for project in projects
-    ]
+    return [normalize_project_name(name=project.name, workspace=project.organizationName) for project in projects]
 
 
 @with_api_exceptions_handler
@@ -406,10 +390,7 @@ def get_project_member_list(
 
     try:
         result = backend_client.api.listProjectMembers(**params).response().result
-        return {
-            f"{m.registeredMemberInfo.username}": ProjectMemberRoleDTO.to_domain(m.role)
-            for m in result
-        }
+        return {f"{m.registeredMemberInfo.username}": ProjectMemberRoleDTO.to_domain(m.role) for m in result}
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
 
@@ -501,10 +482,7 @@ def get_workspace_member_list(name: str, api_token: Optional[str] = None) -> Dic
 
     try:
         result = backend_client.api.listOrganizationMembers(**params).response().result
-        return {
-            f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role)
-            for m in result
-        }
+        return {f"{m.registeredMemberInfo.username}": WorkspaceMemberRoleDTO.to_domain(m.role) for m in result}
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=name) from e
 
@@ -526,17 +504,13 @@ def _get_raw_workspace_service_account_list(
 
     try:
         result = backend_client.api.listServiceAccounts(**params).response().result
-        return {
-            f"{sa.displayName}": ServiceAccountDTO(name=sa.displayName, id=sa.id) for sa in result
-        }
+        return {f"{sa.displayName}": ServiceAccountDTO(name=sa.displayName, id=sa.id) for sa in result}
     except HTTPNotFound as e:
         raise WorkspaceNotFound(workspace=workspace_name) from e
 
 
 @with_api_exceptions_handler
-def get_workspace_service_account_list(
-    name: str, api_token: Optional[str] = None
-) -> Dict[str, str]:
+def get_workspace_service_account_list(name: str, api_token: Optional[str] = None) -> Dict[str, str]:
     """Lists service accounts of a Neptune workspace.
 
     Args:
@@ -556,9 +530,7 @@ def get_workspace_service_account_list(
     You may also want to check the management API reference:
     https://docs.neptune.ai/api-reference/management
     """
-    service_accounts = _get_raw_workspace_service_account_list(
-        workspace_name=name, api_token=api_token
-    )
+    service_accounts = _get_raw_workspace_service_account_list(workspace_name=name, api_token=api_token)
 
     return {
         service_account_name: WorkspaceMemberRoleDTO.to_domain("member")
@@ -608,10 +580,7 @@ def get_project_service_account_list(
 
     try:
         result = backend_client.api.listProjectServiceAccounts(**params).response().result
-        return {
-            f"{sa.serviceAccountInfo.displayName}": ProjectMemberRoleDTO.to_domain(sa.role)
-            for sa in result
-        }
+        return {f"{sa.serviceAccountInfo.displayName}": ProjectMemberRoleDTO.to_domain(sa.role) for sa in result}
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_identifier) from e
 
@@ -670,13 +639,11 @@ def add_project_service_account(
     project_qualified_name = f"{workspace}/{project_name}"
 
     try:
-        service_account = _get_raw_workspace_service_account_list(
-            workspace_name=workspace, api_token=api_token
-        )[service_account_name]
+        service_account = _get_raw_workspace_service_account_list(workspace_name=workspace, api_token=api_token)[
+            service_account_name
+        ]
     except KeyError as e:
-        raise ServiceAccountNotFound(
-            service_account_name=service_account_name, workspace=workspace
-        ) from e
+        raise ServiceAccountNotFound(service_account_name=service_account_name, workspace=workspace) from e
 
     params = {
         "projectIdentifier": project_qualified_name,
@@ -692,9 +659,7 @@ def add_project_service_account(
     except HTTPNotFound as e:
         raise ProjectNotFound(name=project_qualified_name) from e
     except HTTPConflict as e:
-        service_accounts = get_project_service_account_list(
-            name=name, workspace=workspace, api_token=api_token
-        )
+        service_accounts = get_project_service_account_list(name=name, workspace=workspace, api_token=api_token)
         service_account_role = service_accounts.get(service_account_name)
 
         raise ServiceAccountAlreadyHasAccess(
@@ -749,13 +714,11 @@ def remove_project_service_account(
     project_qualified_name = f"{workspace}/{project_name}"
 
     try:
-        service_account = _get_raw_workspace_service_account_list(
-            workspace_name=workspace, api_token=api_token
-        )[service_account_name]
+        service_account = _get_raw_workspace_service_account_list(workspace_name=workspace, api_token=api_token)[
+            service_account_name
+        ]
     except KeyError as e:
-        raise ServiceAccountNotFound(
-            service_account_name=service_account_name, workspace=workspace
-        ) from e
+        raise ServiceAccountNotFound(service_account_name=service_account_name, workspace=workspace) from e
 
     params = {
         "projectIdentifier": project_qualified_name,
@@ -824,9 +787,7 @@ def trash_objects(
     workspace, project_name = extract_project_and_workspace(name=name, workspace=workspace)
     project_qualified_name = f"{workspace}/{project_name}"
 
-    qualified_name_ids = [
-        QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids
-    ]
+    qualified_name_ids = [QualifiedName(f"{workspace}/{project_name}/{container_id}") for container_id in ids]
     errors = list()
     for batch_ids in get_batches(qualified_name_ids, batch_size=TRASH_BATCH_SIZE):
         params = {

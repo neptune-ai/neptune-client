@@ -19,10 +19,7 @@ from typing import Optional
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
-from neptune.new.exceptions import (
-    NeptuneFieldCountLimitExceedException,
-    NeptuneLimitExceedException,
-)
+from neptune.new.exceptions import NeptuneFieldCountLimitExceedException, NeptuneLimitExceedException
 
 
 class ApiMethodWrapper:
@@ -52,9 +49,7 @@ class ApiMethodWrapper:
                 identifier=body.get("experimentQualifiedName", "<unknown identifier>"),
             )
         elif error_type == ApiMethodWrapper.WORKSPACE_IN_READ_ONLY_MODE:
-            raise NeptuneLimitExceedException(
-                reason=body.get("title", "Unknown reason")
-            ) from exception
+            raise NeptuneLimitExceedException(reason=body.get("title", "Unknown reason")) from exception
         elif error_type == ApiMethodWrapper.INCORRECT_IDENTIFIER:
             from neptune.management.exceptions import IncorrectIdentifierException
 

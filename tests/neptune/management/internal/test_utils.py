@@ -15,20 +15,14 @@
 #
 import unittest
 
-from neptune.management.exceptions import (
-    ConflictingWorkspaceName,
-    InvalidProjectName,
-    MissingWorkspaceName,
-)
+from neptune.management.exceptions import ConflictingWorkspaceName, InvalidProjectName, MissingWorkspaceName
 from neptune.management.internal.utils import normalize_project_name
 
 
 class TestManagementUtils(unittest.TestCase):
     def test_normalize_project_name(self):
         self.assertEqual("jackie/sandbox", normalize_project_name(name="jackie/sandbox"))
-        self.assertEqual(
-            "jackie/sandbox", normalize_project_name(name="sandbox", workspace="jackie")
-        )
+        self.assertEqual("jackie/sandbox", normalize_project_name(name="sandbox", workspace="jackie"))
         self.assertEqual(
             "jackie/sandbox",
             normalize_project_name(name="jackie/sandbox", workspace="jackie"),

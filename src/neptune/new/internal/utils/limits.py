@@ -67,8 +67,7 @@ def file_size_exceeds_limit(content_size):
 def stream_size_exceeds_limit(content_size):
     if content_size > _STREAM_SIZE_LIMIT_MB * BYTES_IN_MB:
         _logger.warning(
-            "Your stream is larger than %dMB. "
-            "Neptune supports saving files from streams smaller than %dMB.",
+            "Your stream is larger than %dMB. " "Neptune supports saving files from streams smaller than %dMB.",
             _STREAM_SIZE_LIMIT_MB,
             _STREAM_SIZE_LIMIT_MB,
         )

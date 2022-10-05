@@ -19,9 +19,7 @@ from websocket import WebSocketConnectionClosedException
 
 from neptune.internal.threads.neptune_thread import NeptuneThread
 from neptune.internal.websockets.message import MessageType
-from neptune.internal.websockets.websocket_message_processor import (
-    WebsocketMessageProcessor,
-)
+from neptune.internal.websockets.websocket_message_processor import WebsocketMessageProcessor
 
 
 class AbortingThread(NeptuneThread):

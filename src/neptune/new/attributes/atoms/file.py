@@ -29,9 +29,7 @@ class File(Atom):
         verify_type("value", value, FileVal)
 
         if value.path is not None:
-            operation = UploadFile(
-                self._path, ext=value.extension, file_path=os.path.abspath(value.path)
-            )
+            operation = UploadFile(self._path, ext=value.extension, file_path=os.path.abspath(value.path))
         elif value.content is not None:
             operation = UploadFileContent(
                 self._path,
@@ -49,9 +47,7 @@ class File(Atom):
 
     def download(self, destination: Optional[str] = None) -> None:
         verify_type("destination", destination, (str, type(None)))
-        self._backend.download_file(
-            self._container_id, self._container_type, self._path, destination
-        )
+        self._backend.download_file(self._container_id, self._container_type, self._path, destination)
 
     def fetch_extension(self) -> str:
         # pylint: disable=protected-access

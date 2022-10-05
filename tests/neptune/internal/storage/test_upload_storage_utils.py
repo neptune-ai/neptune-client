@@ -60,7 +60,5 @@ class TestUploadStorageUtils(unittest.TestCase):
         # EXPECT
         expected = UploadPackage()
         expected.update(entry, size)
-        for package in split_upload_files(
-            upload_entries={upload_entry}, upload_configuration=config
-        ):
+        for package in split_upload_files(upload_entries={upload_entry}, upload_configuration=config):
             self.assertFalse(package.is_empty())

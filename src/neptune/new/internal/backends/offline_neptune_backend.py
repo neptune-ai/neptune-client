@@ -44,24 +44,16 @@ class OfflineNeptuneBackend(NeptuneBackendMock):
     def get_attributes(self, container_id: str, container_type: ContainerType) -> List[Attribute]:
         raise NeptuneOfflineModeFetchException
 
-    def get_float_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FloatAttribute:
+    def get_float_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FloatAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_int_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> IntAttribute:
+    def get_int_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> IntAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_bool_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> BoolAttribute:
+    def get_bool_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> BoolAttribute:
         raise NeptuneOfflineModeFetchException
 
-    def get_file_attribute(
-        self, container_id: str, container_type: ContainerType, path: List[str]
-    ) -> FileAttribute:
+    def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
         raise NeptuneOfflineModeFetchException
 
     def get_string_attribute(

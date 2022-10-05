@@ -47,10 +47,7 @@ from packaging.version import Version
 from requests import Response, Session
 from urllib3.exceptions import NewConnectionError
 
-from neptune.new.envs import (
-    NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE,
-    NEPTUNE_RETRIES_TIMEOUT_ENV,
-)
+from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE, NEPTUNE_RETRIES_TIMEOUT_ENV
 from neptune.new.exceptions import (
     CannotResolveHostname,
     ClientHttpError,
@@ -178,24 +175,11 @@ def create_swagger_client(url: str, http_client: HttpClient) -> SwaggerClient:
 
 def verify_client_version(client_config: ClientConfig, version: Version):
     version_with_patch_0 = Version(replace_patch_version(str(version)))
-    if (
-        client_config.version_info.min_compatible
-        and client_config.version_info.min_compatible > version
-    ):
-        raise NeptuneClientUpgradeRequiredError(
-            version, min_version=client_config.version_info.min_compatible
-        )
-    if (
-        client_config.version_info.max_compatible
-        and client_config.version_info.max_compatible < version_with_patch_0
-    ):
-        raise NeptuneClientUpgradeRequiredError(
-            version, max_version=client_config.version_info.max_compatible
-        )
-    if (
-        client_config.version_info.min_recommended
-        and client_config.version_info.min_recommended > version
-    ):
+    if client_config.version_info.min_compatible and client_config.version_info.min_compatible > version:
+        raise NeptuneClientUpgradeRequiredError(version, min_version=client_config.version_info.min_compatible)
+    if client_config.version_info.max_compatible and client_config.version_info.max_compatible < version_with_patch_0:
+        raise NeptuneClientUpgradeRequiredError(version, max_version=client_config.version_info.max_compatible)
+    if client_config.version_info.min_recommended and client_config.version_info.min_recommended > version:
         logger.warning(
             "WARNING: Your version of the Neptune client library (%s) is deprecated,"
             " and soon will no longer be supported by the Neptune server."

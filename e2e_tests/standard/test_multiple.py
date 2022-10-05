@@ -24,18 +24,14 @@ from e2e_tests.utils import reinitialize_container
 
 
 def store_in_container(sys_id: str, project: str, container_type: str, destination: str):
-    container = reinitialize_container(
-        sys_id=sys_id, container_type=container_type, project=project
-    )
+    container = reinitialize_container(sys_id=sys_id, container_type=container_type, project=project)
     container[destination] = fake.color()
     container.sync()
 
 
 class TestMultiple(BaseE2ETest):
     @pytest.mark.parametrize("container", ["run", "model", "model_version"], indirect=True)
-    def test_single_thread(
-        self, container: neptune.metadata_containers.MetadataContainer, environment
-    ):
+    def test_single_thread(self, container: neptune.metadata_containers.MetadataContainer, environment):
         sys_id = container["sys/id"].fetch()
         number_of_reinitialized = 5
         namespace = self.gen_key()

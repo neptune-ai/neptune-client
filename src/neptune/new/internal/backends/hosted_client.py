@@ -55,9 +55,7 @@ DEFAULT_REQUEST_KWARGS = {
 
 
 def create_http_client(ssl_verify: bool, proxies: Dict[str, str]) -> RequestsClient:
-    http_client = RequestsClient(
-        ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
-    )
+    http_client = RequestsClient(ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter)
     http_client.session.verify = ssl_verify
 
     update_session_proxies(http_client.session, proxies)
@@ -95,12 +93,8 @@ def _get_token_client(
 
 @cache
 @with_api_exceptions_handler
-def get_client_config(
-    credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]
-) -> ClientConfig:
-    backend_client = _get_token_client(
-        credentials=credentials, ssl_verify=ssl_verify, proxies=proxies
-    )
+def get_client_config(credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]) -> ClientConfig:
+    backend_client = _get_token_client(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 
     config = (
         backend_client.api.getClientConfig(
@@ -122,9 +116,7 @@ def get_client_config(
 def create_http_client_with_auth(
     credentials: Credentials, ssl_verify: bool, proxies: Dict[str, str]
 ) -> Tuple[RequestsClient, ClientConfig]:
-    client_config = get_client_config(
-        credentials=credentials, ssl_verify=ssl_verify, proxies=proxies
-    )
+    client_config = get_client_config(credentials=credentials, ssl_verify=ssl_verify, proxies=proxies)
 
     config_api_url = credentials.api_url_opt or credentials.token_origin_address
 
@@ -151,9 +143,7 @@ def create_http_client_with_auth(
 
 
 @cache
-def create_backend_client(
-    client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClientWrapper:
+def create_backend_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClientWrapper:
     return SwaggerClientWrapper(
         create_swagger_client(
             build_operation_url(client_config.api_url, BACKEND_SWAGGER_PATH),
@@ -163,9 +153,7 @@ def create_backend_client(
 
 
 @cache
-def create_leaderboard_client(
-    client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClientWrapper:
+def create_leaderboard_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClientWrapper:
     return SwaggerClientWrapper(
         create_swagger_client(
             build_operation_url(client_config.api_url, LEADERBOARD_SWAGGER_PATH),
@@ -175,9 +163,7 @@ def create_leaderboard_client(
 
 
 @cache
-def create_artifacts_client(
-    client_config: ClientConfig, http_client: HttpClient
-) -> SwaggerClientWrapper:
+def create_artifacts_client(client_config: ClientConfig, http_client: HttpClient) -> SwaggerClientWrapper:
     return SwaggerClientWrapper(
         create_swagger_client(
             build_operation_url(client_config.api_url, ARTIFACTS_SWAGGER_PATH),

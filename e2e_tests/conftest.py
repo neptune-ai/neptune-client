@@ -22,17 +22,8 @@ import boto3
 import pytest
 from faker import Faker
 
-from e2e_tests.utils import (
-    Environment,
-    RawEnvironment,
-    a_project_name,
-    initialize_container,
-)
-from neptune.management import (
-    add_project_member,
-    add_project_service_account,
-    create_project,
-)
+from e2e_tests.utils import Environment, RawEnvironment, a_project_name, initialize_container
+from neptune.management import add_project_member, add_project_service_account, create_project
 from neptune.management.internal.utils import normalize_project_name
 from neptune.new import get_project, init_project
 

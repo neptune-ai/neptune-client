@@ -15,10 +15,7 @@
 #
 import logging
 from functools import wraps
-from http.client import (  # pylint:disable=no-name-in-module
-    NOT_FOUND,
-    UNPROCESSABLE_ENTITY,
-)
+from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
 
 from requests.exceptions import HTTPError
 

@@ -13,16 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.internal.hardware.gauges.cpu import (
-    CGroupCpuUsageGauge,
-    SystemCpuUsageGauge,
-)
+from neptune.internal.hardware.gauges.cpu import CGroupCpuUsageGauge, SystemCpuUsageGauge
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.gauges.gpu import GpuMemoryGauge, GpuUsageGauge
-from neptune.internal.hardware.gauges.memory import (
-    CGroupMemoryUsageGauge,
-    SystemMemoryUsageGauge,
-)
+from neptune.internal.hardware.gauges.memory import CGroupMemoryUsageGauge, SystemMemoryUsageGauge
 
 
 class GaugeFactory(object):

@@ -80,9 +80,7 @@ class NeptuneAuth(AuthBase):
     def _refresh_session_token(self):
         self.session.refresh_token(self.session.auto_refresh_url, verify=self.session.verify)
         if self.session.token is not None and self.session.token.get("access_token") is not None:
-            decoded_json_token = jwt.decode(
-                self.session.token.get("access_token"), options=_decoding_options
-            )
+            decoded_json_token = jwt.decode(self.session.token.get("access_token"), options=_decoding_options)
             self.token_expires_at = decoded_json_token.get("exp")
 
 
@@ -93,20 +91,14 @@ class NeptuneAuthenticator(Authenticator):
         # We need to pass a lambda to be able to re-create fresh session at any time when needed
         def session_factory():
             try:
-                auth_tokens = (
-                    backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token)
-                    .response()
-                    .result
-                )
+                auth_tokens = backend_client.api.exchangeApiToken(X_Neptune_Api_Token=api_token).response().result
             except HTTPUnauthorized:
                 raise NeptuneInvalidApiTokenException()
 
             decoded_json_token = jwt.decode(auth_tokens.accessToken, options=_decoding_options)
             expires_at = decoded_json_token.get("exp")
             client_name = decoded_json_token.get("azp")
-            refresh_url = "{realm_url}/protocol/openid-connect/token".format(
-                realm_url=decoded_json_token.get("iss")
-            )
+            refresh_url = "{realm_url}/protocol/openid-connect/token".format(realm_url=decoded_json_token.get("iss"))
             token = {
                 "access_token": auth_tokens.accessToken,
                 "refresh_token": auth_tokens.refreshToken,

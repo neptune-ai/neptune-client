@@ -20,9 +20,7 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import SysId, UniqueId
-from neptune.new.internal.operation_processors.operation_processor import (
-    OperationProcessor,
-)
+from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types.mode import Mode
 

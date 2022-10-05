@@ -18,9 +18,7 @@ from typing import Optional
 
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.operation import Operation
-from neptune.new.internal.operation_processors.operation_processor import (
-    OperationProcessor,
-)
+from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 
 _logger = logging.getLogger(__name__)
 
