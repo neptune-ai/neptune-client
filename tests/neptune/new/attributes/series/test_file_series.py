@@ -17,10 +17,10 @@
 # pylint: disable=protected-access
 import numpy
 from mock import MagicMock, call, patch
-
 from neptune.new.attributes.series.file_series import FileSeries
 from neptune.new.exceptions import OperationNotSupported
 from neptune.new.internal.operation import ClearImageLog, ImageValue, LogImages
+
 from neptune.new.internal.utils import base64_encode
 from neptune.new.types import File
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase

@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune import envs
 from neptune.exceptions import STYLES, NeptuneException
+
+from neptune import envs
 
 
 class NeptuneApiException(NeptuneException):

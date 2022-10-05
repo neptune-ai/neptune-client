@@ -16,7 +16,6 @@
 
 import click
 import pkg_resources
-
 from neptune.new.cli import status, sync
 
 

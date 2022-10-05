@@ -18,7 +18,6 @@ import os
 import unittest
 
 from mock import MagicMock
-
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.internal.hardware.resources.system_resource_info_factory import (
@@ -26,6 +25,7 @@ from neptune.internal.hardware.resources.system_resource_info_factory import (
 )
 from neptune.internal.hardware.system.system_monitor import SystemMonitor
 from neptune.utils import IS_MACOS, IS_WINDOWS
+
 from tests.neptune.utils.assertions import AssertionExtensions
 
 

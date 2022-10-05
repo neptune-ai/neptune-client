@@ -19,7 +19,6 @@ import typing
 from platform import node as get_hostname
 from typing import List, Optional, Union
 
-from neptune.new.attributes import constants as attr_consts
 from neptune.new.envs import (
     CONNECTION_MODE,
     CUSTOM_RUN_ID_ENV_NAME,
@@ -32,7 +31,6 @@ from neptune.new.exceptions import (
     NeptunePossibleLegacyUsageException,
     NeptuneRunResumeAndCustomIdCollision,
 )
-from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
@@ -46,13 +44,11 @@ from neptune.new.internal.init.parameters import (
     DEFAULT_NAME,
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
-from neptune.new.internal.notebooks.notebooks import create_checkpoint
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.streams.std_capture_background_job import (
     StderrCaptureBackgroundJob,
     StdoutCaptureBackgroundJob,
 )
-from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
 from neptune.new.internal.utils.limits import custom_run_id_exceeds_length
@@ -62,9 +58,14 @@ from neptune.new.internal.utils.traceback_job import TracebackJob
 from neptune.new.internal.websockets.websocket_signals_background_job import (
     WebsocketSignalsBackgroundJob,
 )
-from neptune.new.metadata_containers import Run
 from neptune.new.types.mode import Mode
 from neptune.new.types.series.string_series import StringSeries
+
+from neptune.new.attributes import constants as attr_consts
+from neptune.new.internal import id_formats
+from neptune.new.internal.notebooks.notebooks import create_checkpoint
+from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.metadata_containers import Run
 
 LEGACY_KWARGS = ("project_qualified_name", "backend")
 

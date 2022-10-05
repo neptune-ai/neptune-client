@@ -18,7 +18,6 @@ import os
 import pathlib
 from typing import Iterable, List, Optional
 
-from neptune.new.attributes.series.series import Series
 from neptune.new.exceptions import FileNotFound, OperationNotSupported
 from neptune.new.internal.operation import (
     ClearImageLog,
@@ -26,10 +25,12 @@ from neptune.new.internal.operation import (
     LogImages,
     Operation,
 )
-from neptune.new.internal.utils import base64_encode
 from neptune.new.internal.utils.iteration import get_batches
-from neptune.new.types import File
 from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
+
+from neptune.new.attributes.series.series import Series
+from neptune.new.internal.utils import base64_encode
+from neptune.new.types import File
 
 Val = FileSeriesVal
 Data = File

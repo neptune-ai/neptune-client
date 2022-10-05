@@ -25,19 +25,15 @@ from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import PIL
-
-from neptune.new import ANONYMOUS, init
 from neptune.new.attributes.atoms.boolean import Boolean
 from neptune.new.attributes.atoms.datetime import Datetime
 from neptune.new.attributes.atoms.file import File
 from neptune.new.attributes.atoms.float import Float
 from neptune.new.attributes.atoms.integer import Integer
 from neptune.new.attributes.atoms.string import String
-from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import FileNotFound
-from neptune.new.types import File as FileVal
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
 from neptune.new.types.atoms.float import Float as FloatVal
@@ -47,6 +43,10 @@ from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 from neptune.new.types.series.float_series import FloatSeries as FloatSeriesVal
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 from neptune.new.types.sets.string_set import StringSet as StringSetVal
+
+from neptune.new import ANONYMOUS, init
+from neptune.new.attributes.series import FileSeries
+from neptune.new.types import File as FileVal
 from tests.neptune.new.utils.file_helpers import create_file
 
 

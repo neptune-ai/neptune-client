@@ -17,6 +17,9 @@ from time import sleep
 from typing import Dict
 
 import pytest
+from neptune.management.exceptions import UserNotExistsOrWithoutAccess
+from neptune.management.internal.utils import normalize_project_name
+from neptune.new.internal.container_type import ContainerType
 
 from e2e_tests.base import BaseE2ETest, fake
 from e2e_tests.utils import Environment, a_project_name, initialize_container
@@ -34,10 +37,7 @@ from neptune.management import (
     remove_project_service_account,
     trash_objects,
 )
-from neptune.management.exceptions import UserNotExistsOrWithoutAccess
-from neptune.management.internal.utils import normalize_project_name
 from neptune.new import init_model_version
-from neptune.new.internal.container_type import ContainerType
 
 
 @pytest.mark.management

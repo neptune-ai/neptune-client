@@ -21,15 +21,15 @@ from itertools import groupby
 from queue import Empty, Queue
 
 from bravado.exception import HTTPUnprocessableEntity
-
 from neptune.exceptions import NeptuneException
+from neptune.internal.threads.neptune_thread import NeptuneThread
+
 from neptune.internal.channels.channels import (
     ChannelIdWithValues,
     ChannelNamespace,
     ChannelType,
     ChannelValue,
 )
-from neptune.internal.threads.neptune_thread import NeptuneThread
 
 _logger = logging.getLogger(__name__)
 

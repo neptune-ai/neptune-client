@@ -15,8 +15,9 @@
 #
 
 from neptune.experiments import Experiment
-from neptune.new import Run
 from neptune.new.exceptions import NeptuneLegacyIncompatibilityException
+
+from neptune.new import Run
 
 
 def expect_not_an_experiment(run: Run):

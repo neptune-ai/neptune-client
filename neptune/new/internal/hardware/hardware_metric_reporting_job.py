@@ -34,8 +34,9 @@ from neptune.internal.hardware.system.system_monitor import SystemMonitor
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.new.internal.threading.daemon import Daemon
-from neptune.new.types.series import FloatSeries
 from neptune.utils import in_docker
+
+from neptune.new.types.series import FloatSeries
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer

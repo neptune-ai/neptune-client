@@ -16,8 +16,9 @@
 
 from typing import TYPE_CHECKING, List, TypeVar
 
-from neptune.new.internal.utils import is_collection
 from neptune.new.internal.utils.logger import logger
+
+from neptune.new.internal.utils import is_collection
 from neptune.new.types import File
 from neptune.new.types.series.series import Series
 

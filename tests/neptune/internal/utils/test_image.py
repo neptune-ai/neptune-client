@@ -18,7 +18,6 @@ import sys
 import unittest
 
 import matplotlib
-
 from neptune.utils import IS_MACOS, IS_WINDOWS
 
 matplotlib.use("agg")
@@ -26,13 +25,12 @@ from uuid import uuid4
 
 import numpy
 from matplotlib import pyplot
-from PIL import Image
-
 from neptune.internal.utils.image import (
     _get_figure_as_image,
     _get_pil_image_data,
     get_image_content,
 )
+from PIL import Image
 
 
 class TestImage(unittest.TestCase):

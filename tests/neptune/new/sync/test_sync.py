@@ -17,11 +17,11 @@
 from unittest.mock import MagicMock
 
 import pytest
-
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import Operation
-from neptune.new.sync import SyncRunner
 from neptune.new.sync.utils import get_qualified_name
+
+from neptune.new.sync import SyncRunner
 from tests.neptune.new.sync.utils import (
     execute_operations,
     generate_get_metadata_container,

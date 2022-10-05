@@ -18,7 +18,6 @@ from typing import Dict, Tuple
 
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
-
 from neptune.new.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper

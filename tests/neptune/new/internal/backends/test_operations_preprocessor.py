@@ -36,6 +36,7 @@ from neptune.new.internal.operation import (
     TrackFilesToArtifact,
     UploadFileSet,
 )
+
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 FLog = LogFloats.ValueType

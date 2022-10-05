@@ -32,11 +32,10 @@ import plotly.express as px
 from bokeh.plotting import figure
 from matplotlib import pyplot
 from matplotlib.figure import Figure
-from PIL import Image
-from vega_datasets import data
-
 from neptune.new.internal.utils.images import get_html_content, get_image_content
 from neptune.utils import IS_MACOS, IS_WINDOWS
+from PIL import Image
+from vega_datasets import data
 
 matplotlib.use("agg")
 

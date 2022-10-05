@@ -21,7 +21,6 @@ import uuid
 from typing import Optional
 
 from mock import MagicMock
-
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import UniqueId
@@ -31,8 +30,9 @@ from neptune.new.internal.operation_processors.operation_processor import (
 from neptune.new.internal.operation_processors.sync_operation_processor import (
     SyncOperationProcessor,
 )
-from neptune.new.metadata_containers import Run
 from neptune.new.types.mode import Mode
+
+from neptune.new.metadata_containers import Run
 
 _now = time.time()
 

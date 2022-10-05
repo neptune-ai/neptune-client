@@ -30,6 +30,7 @@ from neptune.new.internal.artifacts.types import (
     ArtifactFileData,
     ArtifactFileType,
 )
+
 from tests.neptune.new.internal.artifacts.utils import md5
 
 

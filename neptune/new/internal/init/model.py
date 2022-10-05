@@ -17,7 +17,6 @@ import os
 import threading
 from typing import Optional
 
-from neptune.new.attributes import constants as attr_consts
 from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
@@ -26,7 +25,6 @@ from neptune.new.exceptions import (
     NeptuneModelKeyAlreadyExistsError,
     NeptuneObjectCreationConflict,
 )
-from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
@@ -37,11 +35,14 @@ from neptune.new.internal.init.parameters import (
     OFFLINE_PROJECT_QUALIFIED_NAME,
 )
 from neptune.new.internal.operation_processors.factory import get_operation_processor
-from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.deprecation import deprecated_parameter
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
-from neptune.new.metadata_containers import Model
 from neptune.new.types.mode import Mode
+
+from neptune.new.attributes import constants as attr_consts
+from neptune.new.internal import id_formats
+from neptune.new.internal.utils import verify_type
+from neptune.new.metadata_containers import Model
 
 
 @deprecated_parameter(deprecated_kwarg_name="model", required_kwarg_name="with_id")

@@ -19,9 +19,6 @@ import os
 import unittest
 
 from mock import patch
-
-from neptune.new import ANONYMOUS, Run, get_last_run, init_run
-from neptune.new.attributes.atoms import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import MissingFieldException, NeptuneUninitializedException
 from neptune.new.internal.backends.api_model import (
@@ -31,6 +28,9 @@ from neptune.new.internal.backends.api_model import (
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.utils import IS_WINDOWS
+
+from neptune.new import ANONYMOUS, Run, get_last_run, init_run
+from neptune.new.attributes.atoms import String
 from tests.neptune.new.client.abstract_experiment_test_mixin import (
     AbstractExperimentTestMixin,
 )

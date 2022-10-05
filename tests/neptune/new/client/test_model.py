@@ -19,9 +19,6 @@ import os
 import unittest
 
 from mock import patch
-
-from neptune.new import ANONYMOUS, init_model
-from neptune.new.attributes import String
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     NeptuneException,
@@ -34,6 +31,9 @@ from neptune.new.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
+
+from neptune.new import ANONYMOUS, init_model
+from neptune.new.attributes import String
 from tests.neptune.new.client.abstract_experiment_test_mixin import (
     AbstractExperimentTestMixin,
 )

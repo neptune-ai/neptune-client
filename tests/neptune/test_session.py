@@ -18,9 +18,9 @@ import unittest
 from collections import OrderedDict
 
 from mock import MagicMock, patch
-
 from neptune.projects import Project
 from neptune.sessions import Session
+
 from tests.neptune.api_objects_factory import a_project
 
 

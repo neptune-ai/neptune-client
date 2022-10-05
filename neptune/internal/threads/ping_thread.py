@@ -16,7 +16,6 @@
 import logging
 
 from bravado.exception import HTTPUnprocessableEntity
-
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
 _logger = logging.getLogger(__name__)

@@ -21,7 +21,6 @@ import traceback
 from logging import StreamHandler
 
 from neptune.internal.abort import CustomAbortImpl, DefaultAbortImpl
-from neptune.internal.channels.channels import ChannelNamespace
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.metrics.service.metric_service_factory import (
     MetricServiceFactory,
@@ -37,6 +36,8 @@ from neptune.internal.threads.hardware_metric_reporting_thread import (
 )
 from neptune.internal.threads.ping_thread import PingThread
 from neptune.utils import in_docker, is_ipython, is_notebook
+
+from neptune.internal.channels.channels import ChannelNamespace
 
 _logger = logging.getLogger(__name__)
 

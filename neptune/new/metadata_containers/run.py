@@ -23,8 +23,9 @@ from neptune.new.internal.id_formats import SysId, UniqueId
 from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
-from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types.mode import Mode
+
+from neptune.new.metadata_containers import MetadataContainer
 
 
 class Run(MetadataContainer):

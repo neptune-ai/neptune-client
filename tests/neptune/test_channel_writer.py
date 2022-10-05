@@ -18,7 +18,6 @@ import unittest
 from datetime import datetime
 
 import mock
-
 from neptune.internal.streams.channel_writer import ChannelWriter
 
 

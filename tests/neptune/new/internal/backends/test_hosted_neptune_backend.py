@@ -20,8 +20,6 @@ from unittest.mock import call
 
 from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
 from mock import MagicMock, patch
-from packaging.version import Version
-
 from neptune.new.exceptions import (
     CannotResolveHostname,
     FileUploadError,
@@ -50,6 +48,8 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileContent,
 )
+from packaging.version import Version
+
 from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 from tests.neptune.new.utils import response_mock

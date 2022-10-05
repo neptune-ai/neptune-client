@@ -20,8 +20,9 @@ from neptune.new.internal.utils.paths import parse_path
 from neptune.new.types.value import Value
 
 if TYPE_CHECKING:
-    from neptune.new.metadata_containers import Handler
     from neptune.new.types.value_visitor import ValueVisitor
+
+    from neptune.new.metadata_containers import Handler
 
 Ret = TypeVar("Ret")
 

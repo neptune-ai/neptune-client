@@ -17,9 +17,10 @@ import logging
 import os
 import unittest
 
-from neptune.new import ANONYMOUS, init
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.integrations.python_logger import NeptuneHandler
+
+from neptune.new import ANONYMOUS, init
 
 
 class TestLogHandler(unittest.TestCase):

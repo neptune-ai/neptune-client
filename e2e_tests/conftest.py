@@ -21,6 +21,7 @@ from datetime import datetime
 import boto3
 import pytest
 from faker import Faker
+from neptune.management.internal.utils import normalize_project_name
 
 from e2e_tests.utils import (
     Environment,
@@ -33,7 +34,6 @@ from neptune.management import (
     add_project_service_account,
     create_project,
 )
-from neptune.management.internal.utils import normalize_project_name
 from neptune.new import get_project, init_project
 
 fake = Faker()

@@ -15,8 +15,9 @@
 #
 import sys
 
-from neptune.internal.channels.channels import ChannelNamespace
 from neptune.internal.streams.channel_writer import ChannelWriter
+
+from neptune.internal.channels.channels import ChannelNamespace
 
 
 class StdStreamWithUpload(object):

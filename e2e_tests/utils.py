@@ -36,12 +36,12 @@ from time import perf_counter
 
 import numpy
 from attr import dataclass
+from neptune.new.internal.container_type import ContainerType
 from PIL import Image
 from PIL.PngImagePlugin import PngImageFile
 
 import neptune.new as neptune
 from e2e_tests.exceptions import MissingEnvironmentVariable
-from neptune.new.internal.container_type import ContainerType
 
 
 def _remove_file_if_exists(filepath):

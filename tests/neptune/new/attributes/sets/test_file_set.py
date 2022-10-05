@@ -18,9 +18,9 @@
 import os
 
 from mock import MagicMock
-
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.internal.operation import DeleteFiles, UploadFileSet
+
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

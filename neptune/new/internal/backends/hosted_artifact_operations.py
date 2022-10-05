@@ -16,7 +16,6 @@
 from typing import Dict, List, Optional, Tuple, Type
 
 from bravado.exception import HTTPNotFound
-
 from neptune.new.exceptions import (
     ArtifactNotFoundException,
     ArtifactUploadingError,

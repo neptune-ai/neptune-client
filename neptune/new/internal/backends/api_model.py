@@ -18,10 +18,9 @@ from datetime import datetime
 from enum import Enum
 from typing import Any, FrozenSet, List, Optional, Set
 
-from packaging import version
-
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import SysId, UniqueId
+from packaging import version
 
 
 @dataclass

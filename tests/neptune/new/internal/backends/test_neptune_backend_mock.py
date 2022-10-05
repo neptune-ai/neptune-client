@@ -42,6 +42,7 @@ from neptune.new.internal.operation import (
     LogFloats,
     LogStrings,
 )
+
 from tests.neptune.random_utils import a_string
 
 

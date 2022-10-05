@@ -38,9 +38,6 @@ from bravado.exception import (
     HTTPTooManyRequests,
     HTTPUnauthorized,
 )
-from urllib3.exceptions import NewConnectionError
-
-from neptune import envs
 from neptune.api_exceptions import (
     ConnectionLost,
     Forbidden,
@@ -58,6 +55,9 @@ from neptune.exceptions import (
 )
 from neptune.git_info import GitInfo
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from urllib3.exceptions import NewConnectionError
+
+from neptune import envs
 
 _logger = logging.getLogger(__name__)
 

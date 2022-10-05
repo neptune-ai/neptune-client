@@ -24,8 +24,6 @@ from urllib.parse import urlencode
 
 from bravado.exception import HTTPPaymentRequired, HTTPUnprocessableEntity
 from bravado.requests_client import RequestsClient
-from requests import Request, Response
-
 from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
 from neptune.internal.storage.datastream import (
     FileChunk,
@@ -57,8 +55,10 @@ from neptune.new.internal.backends.utils import (
     handle_server_raw_response_messages,
     with_api_exceptions_handler,
 )
-from neptune.new.internal.utils import get_absolute_paths, get_common_root
 from neptune.new.internal.utils.logger import logger
+from requests import Request, Response
+
+from neptune.new.internal.utils import get_absolute_paths, get_common_root
 
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB
 DEFAULT_UPLOAD_CONFIG = AttributeUploadConfiguration(chunk_size=DEFAULT_CHUNK_SIZE)

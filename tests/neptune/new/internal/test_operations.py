@@ -17,8 +17,9 @@ import json
 import unittest
 import uuid
 
-from neptune.new.attributes import Integer
 from neptune.new.internal.operation import *
+
+from neptune.new.attributes import Integer
 
 # pylint: disable=protected-access
 

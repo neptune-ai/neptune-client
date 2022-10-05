@@ -22,6 +22,7 @@ from neptune.management.internal.types import (
     ProjectVisibility,
     WorkspaceMemberRole,
 )
+
 from neptune.new.internal.utils import verify_type
 
 

@@ -19,8 +19,9 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation_processors.offline_operation_processor import (
     OfflineOperationProcessor,
 )
-from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types.model_version_stage import ModelVersionStage
+
+from neptune.new.metadata_containers import MetadataContainer
 
 
 class ModelVersion(MetadataContainer):

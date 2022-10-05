@@ -26,7 +26,6 @@ from functools import wraps
 from typing import Any, Dict, Iterable, List, Optional, Union
 
 from neptune.exceptions import UNIX_STYLES
-from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import Namespace as NamespaceAttr
 from neptune.new.attributes.namespace import NamespaceBuilder
@@ -51,6 +50,23 @@ from neptune.new.internal.operation_processors.operation_processor import (
     OperationProcessor,
 )
 from neptune.new.internal.state import ContainerState
+from neptune.new.internal.utils.logger import logger
+from neptune.new.internal.utils.paths import parse_path
+from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
+from neptune.new.internal.utils.uncaught_exception_handler import (
+    instance as uncaught_exception_handler,
+)
+from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
+from neptune.new.metadata_containers.metadata_containers_table import Table
+from neptune.new.types.atoms.datetime import Datetime
+from neptune.new.types.atoms.float import Float
+from neptune.new.types.atoms.string import String
+from neptune.new.types.mode import Mode
+from neptune.new.types.namespace import Namespace
+from neptune.new.types.value import Value
+from neptune.new.types.value_copy import ValueCopy
+
+from neptune.new.attributes import create_attribute_from_type
 from neptune.new.internal.utils import (
     is_bool,
     is_dict_like,
@@ -61,22 +77,7 @@ from neptune.new.internal.utils import (
     is_string_like,
     verify_type,
 )
-from neptune.new.internal.utils.logger import logger
-from neptune.new.internal.utils.paths import parse_path
-from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
-from neptune.new.internal.utils.uncaught_exception_handler import (
-    instance as uncaught_exception_handler,
-)
-from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
-from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.types import Boolean, Integer
-from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.float import Float
-from neptune.new.types.atoms.string import String
-from neptune.new.types.mode import Mode
-from neptune.new.types.namespace import Namespace
-from neptune.new.types.value import Value
-from neptune.new.types.value_copy import ValueCopy
 
 
 def ensure_not_stopped(fun):

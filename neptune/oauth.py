@@ -19,12 +19,11 @@ import time
 import jwt
 from bravado.exception import HTTPUnauthorized
 from bravado.requests_client import Authenticator
+from neptune.new.exceptions import NeptuneInvalidApiTokenException
+from neptune.utils import update_session_proxies, with_api_exceptions_handler
 from oauthlib.oauth2 import OAuth2Error, TokenExpiredError
 from requests.auth import AuthBase
 from requests_oauthlib import OAuth2Session
-
-from neptune.new.exceptions import NeptuneInvalidApiTokenException
-from neptune.utils import update_session_proxies, with_api_exceptions_handler
 
 _decoding_options = {
     "verify_signature": False,

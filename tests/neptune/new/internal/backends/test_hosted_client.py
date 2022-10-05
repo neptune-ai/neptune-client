@@ -25,17 +25,6 @@ from bravado.exception import (
 )
 from bravado.testing.response_mocks import BravadoResponseMock
 from mock import MagicMock, Mock, patch
-
-from neptune.management import (
-    MemberRole,
-    add_project_member,
-    create_project,
-    delete_project,
-    get_project_list,
-    get_project_member_list,
-    get_workspace_member_list,
-    remove_project_member,
-)
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
@@ -57,6 +46,17 @@ from neptune.new.internal.backends.hosted_client import (
     get_client_config,
 )
 from neptune.new.internal.backends.utils import verify_host_resolution
+
+from neptune.management import (
+    MemberRole,
+    add_project_member,
+    create_project,
+    delete_project,
+    get_project_list,
+    get_project_member_list,
+    get_workspace_member_list,
+    remove_project_member,
+)
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 from tests.neptune.new.utils import response_mock
 

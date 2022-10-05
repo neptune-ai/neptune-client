@@ -25,8 +25,6 @@ import click
 import urllib3
 from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
-from packaging import version
-
 from neptune.api_exceptions import ProjectNotFound, WorkspaceNotFound
 from neptune.backend import BackendApiClient, LeaderboardApiClient
 from neptune.exceptions import STYLES, UnsupportedClientVersion
@@ -43,6 +41,7 @@ from neptune.utils import (
     update_session_proxies,
     with_api_exceptions_handler,
 )
+from packaging import version
 
 _logger = logging.getLogger(__name__)
 

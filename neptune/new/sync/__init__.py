@@ -20,7 +20,6 @@ from pathlib import Path
 from typing import List, Optional
 
 import click
-
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.exceptions import (
     CannotSynchronizeOfflineRunsWithoutProject,
@@ -37,6 +36,7 @@ from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.status import StatusRunner
+
 from neptune.new.sync.sync import SyncRunner
 
 # backwards compatibility

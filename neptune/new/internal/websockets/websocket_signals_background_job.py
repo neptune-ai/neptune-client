@@ -19,8 +19,6 @@ import threading
 from json.decoder import JSONDecodeError
 from typing import TYPE_CHECKING, Optional
 
-from websocket import WebSocketConnectionClosedException
-
 from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
 from neptune.new.attributes.constants import (
     SIGNAL_TYPE_ABORT,
@@ -29,9 +27,11 @@ from neptune.new.attributes.constants import (
 )
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon
-from neptune.new.internal.utils import process_killer
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
+from websocket import WebSocketConnectionClosedException
+
+from neptune.new.internal.utils import process_killer
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer

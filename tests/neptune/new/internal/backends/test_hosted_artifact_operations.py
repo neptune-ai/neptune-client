@@ -17,7 +17,6 @@ import unittest
 import uuid
 
 from mock import MagicMock, patch
-
 from neptune.new.exceptions import ArtifactUploadingError
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import ArtifactModel

@@ -25,7 +25,6 @@ from bravado.exception import (
     HTTPPaymentRequired,
     HTTPUnprocessableEntity,
 )
-
 from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
     AmbiguousProjectName,
@@ -115,19 +114,19 @@ from neptune.new.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import (
     map_attribute_result_to_value,
 )
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
-from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
+from neptune.new.internal.utils import base64_decode
+from neptune.new.types.atoms import GitRef
+
 if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient
-
     from neptune.new.internal.backends.api_model import ClientConfig
 
 

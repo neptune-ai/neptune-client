@@ -18,8 +18,9 @@ from typing import Iterable, Optional, Union
 
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.internal.operation import DeleteFiles, UploadFileSet
-from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.types.file_set import FileSet as FileSetVal
+
+from neptune.new.internal.utils import verify_collection_type, verify_type
 
 # pylint: disable=protected-access
 

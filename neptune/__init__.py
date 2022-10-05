@@ -17,19 +17,20 @@ import logging
 import os
 import threading
 
-from neptune import constants, envs
 from neptune._version import get_versions
 from neptune.exceptions import (
     InvalidNeptuneBackend,
     NeptuneIncorrectImportException,
     NeptuneUninitializedException,
 )
-from neptune.internal.api_clients import backend_factory
 from neptune.internal.api_clients.offline_backend import OfflineBackend
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.projects import Project
 from neptune.sessions import Session
 from neptune.utils import assure_project_qualified_name
+
+from neptune import constants, envs
+from neptune.internal.api_clients import backend_factory
 
 __version__ = get_versions()["version"]
 

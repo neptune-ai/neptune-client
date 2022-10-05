@@ -17,15 +17,6 @@ import os
 import unittest
 from datetime import datetime
 
-from neptune.new import (
-    ANONYMOUS,
-    Run,
-    init,
-    init_model,
-    init_model_version,
-    init_project,
-    init_run,
-)
 from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     InactiveModelException,
@@ -35,9 +26,19 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneProtectedPathException,
 )
-from neptune.new.metadata_containers import Model, ModelVersion, Project
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
+
+from neptune.new import (
+    ANONYMOUS,
+    Run,
+    init,
+    init_model,
+    init_model_version,
+    init_project,
+    init_run,
+)
+from neptune.new.metadata_containers import Model, ModelVersion, Project
 from neptune.new.types.series import FloatSeries, StringSeries
 
 

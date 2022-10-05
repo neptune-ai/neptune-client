@@ -17,10 +17,10 @@
 
 
 from mock import MagicMock
-
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.internal.operation import AssignArtifact
 from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
+
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

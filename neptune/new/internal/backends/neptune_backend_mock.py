@@ -90,12 +90,8 @@ from neptune.new.internal.operation import (
     UploadFileSet,
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
-from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
-from neptune.new.metadata_containers import Model
-from neptune.new.types import Boolean, Integer
-from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.file import File
@@ -109,6 +105,11 @@ from neptune.new.types.series.string_series import StringSeries
 from neptune.new.types.sets.string_set import StringSet
 from neptune.new.types.value import Value
 from neptune.new.types.value_visitor import ValueVisitor
+
+from neptune.new.internal.utils import base64_decode
+from neptune.new.metadata_containers import Model
+from neptune.new.types import Boolean, Integer
+from neptune.new.types.atoms import GitRef
 
 Val = TypeVar("Val", bound=Value)
 

@@ -20,7 +20,6 @@ from urllib.parse import urlparse
 
 import boto3
 from botocore.exceptions import NoCredentialsError
-
 from neptune.new.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,

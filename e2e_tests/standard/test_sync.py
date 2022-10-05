@@ -19,6 +19,7 @@ from pathlib import Path
 
 import pytest
 from click.testing import CliRunner
+from neptune.new.exceptions import NeptuneException
 
 import neptune.new as neptune
 from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
@@ -28,7 +29,6 @@ from e2e_tests.utils import (
     reinitialize_container,
     tmp_context,
 )
-from neptune.new.exceptions import NeptuneException
 from neptune.new.sync import sync
 
 runner = CliRunner()

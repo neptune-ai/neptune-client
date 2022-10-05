@@ -16,12 +16,11 @@
 
 import random
 
-from websocket import WebSocketConnectionClosedException, WebSocketTimeoutException
-
 from neptune.internal.websockets.websocket_client_adapter import (
     WebsocketClientAdapter,
     WebsocketNotConnectedException,
 )
+from websocket import WebSocketConnectionClosedException, WebSocketTimeoutException
 
 
 class ReconnectingWebsocket(object):

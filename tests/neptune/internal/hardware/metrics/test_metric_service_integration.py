@@ -21,7 +21,6 @@ import uuid
 
 import psutil
 from mock import ANY, MagicMock, call
-
 from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
 from neptune.internal.hardware.gauges.cpu import SystemCpuUsageGauge
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode

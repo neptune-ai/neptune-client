@@ -26,12 +26,14 @@ You may also want to check `Neptune docs page`_.
 
 from typing import Optional
 
-from neptune.new import types
 from neptune.new.constants import ANONYMOUS, ANONYMOUS_API_TOKEN
 from neptune.new.exceptions import (
     NeptunePossibleLegacyUsageException,
     NeptuneUninitializedException,
 )
+from neptune.new.version import version
+
+from neptune.new import types
 from neptune.new.internal.init import (
     get_project,
     init,
@@ -41,7 +43,6 @@ from neptune.new.internal.init import (
     init_run,
 )
 from neptune.new.metadata_containers import Run
-from neptune.new.version import version
 
 __version__ = str(version)
 

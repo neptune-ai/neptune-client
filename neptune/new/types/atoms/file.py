@@ -17,7 +17,6 @@ import os
 from io import IOBase
 from typing import TYPE_CHECKING, Optional, TypeVar, Union
 
-from neptune.new.internal.utils import get_stream_content, limits, verify_type
 from neptune.new.internal.utils.images import (
     get_html_content,
     get_image_content,
@@ -31,6 +30,8 @@ from neptune.new.internal.utils.images import (
     is_plotly_figure,
 )
 from neptune.new.types.atoms.atom import Atom
+
+from neptune.new.internal.utils import get_stream_content, limits, verify_type
 
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor

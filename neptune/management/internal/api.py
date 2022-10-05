@@ -39,7 +39,6 @@ from bravado.exception import (
     HTTPNotFound,
     HTTPUnprocessableEntity,
 )
-
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
@@ -81,9 +80,10 @@ from neptune.new.internal.backends.utils import (
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.id_formats import QualifiedName
-from neptune.new.internal.utils import verify_collection_type, verify_type
 from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.logger import logger
+
+from neptune.new.internal.utils import verify_collection_type, verify_type
 
 TRASH_BATCH_SIZE = 100
 

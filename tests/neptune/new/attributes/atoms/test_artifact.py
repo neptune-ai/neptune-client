@@ -21,7 +21,6 @@ from unittest.mock import Mock
 
 from _pytest.monkeypatch import MonkeyPatch
 from mock import MagicMock, call
-
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.exceptions import NeptuneUnhandledArtifactTypeException
 from neptune.new.internal.artifacts.types import (
@@ -33,6 +32,7 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import TrackFilesToArtifact
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.types.atoms.artifact import Artifact as ArtifactAttr
+
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

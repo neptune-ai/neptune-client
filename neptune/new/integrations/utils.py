@@ -13,8 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.compatibility import expect_not_an_experiment
 from neptune.new.internal.utils.paths import join_paths
+
+from neptune.new.internal.utils import verify_type
 
 __all__ = ["expect_not_an_experiment", "join_paths", "verify_type"]

@@ -20,10 +20,9 @@ from http.client import (  # pylint:disable=no-name-in-module
     UNPROCESSABLE_ENTITY,
 )
 
-from requests.exceptions import HTTPError
-
 from neptune.api_exceptions import ExperimentNotFound, StorageLimitReached
 from neptune.exceptions import NeptuneException
+from requests.exceptions import HTTPError
 
 _logger = logging.getLogger(__name__)
 

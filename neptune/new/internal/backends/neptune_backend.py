@@ -44,6 +44,7 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import QualifiedName, UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
+
 from neptune.new.types.atoms import GitRef
 
 

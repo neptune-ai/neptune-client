@@ -16,12 +16,10 @@
 from functools import wraps
 from typing import TYPE_CHECKING, Iterable, List, Optional, Union
 
-from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
 from neptune.new.attributes.file_set import FileSet
 from neptune.new.attributes.namespace import Namespace
-from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
@@ -34,6 +32,12 @@ from neptune.new.exceptions import (
     NeptuneException,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
+from neptune.new.internal.utils.paths import join_paths, parse_path
+from neptune.new.types.atoms.file import File as FileVal
+from neptune.new.types.value_copy import ValueCopy
+
+from neptune.new.attributes import File
+from neptune.new.attributes.series import FileSeries
 from neptune.new.internal.utils import (
     is_collection,
     is_float,
@@ -43,9 +47,6 @@ from neptune.new.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.new.internal.utils.paths import join_paths, parse_path
-from neptune.new.types.atoms.file import File as FileVal
-from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer

@@ -31,7 +31,6 @@ from typing import TYPE_CHECKING, Dict, List
 import requests
 import six
 from bravado.exception import HTTPNotFound
-
 from neptune.api_exceptions import (
     ExperimentNotFound,
     ExperimentOperationErrors,
@@ -51,11 +50,6 @@ from neptune.exceptions import (
 )
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
-from neptune.internal.channels.channels import (
-    ChannelNamespace,
-    ChannelType,
-    ChannelValueType,
-)
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.internal.utils.alpha_integration import (
     AlphaChannelDTO,
@@ -71,17 +65,11 @@ from neptune.internal.websockets.reconnecting_websocket_factory import (
     ReconnectingWebsocketFactory,
 )
 from neptune.model import ChannelWithLastValue, LeaderboardEntry
-from neptune.new import exceptions as alpha_exceptions
-from neptune.new.attributes import constants as alpha_consts
 from neptune.new.attributes.constants import (
     MONITORING_TRACEBACK_ATTRIBUTE_PATH,
     SYSTEM_FAILED_ATTRIBUTE_PATH,
 )
 from neptune.new.exceptions import ClientHttpError
-from neptune.new.internal import operation as alpha_operation
-from neptune.new.internal.backends import (
-    hosted_file_operations as alpha_hosted_file_operations,
-)
 from neptune.new.internal.backends.api_model import AttributeType
 from neptune.new.internal.backends.operation_api_name_visitor import (
     OperationApiNameVisitor as AlphaOperationApiNameVisitor,
@@ -97,8 +85,6 @@ from neptune.new.internal.operation import (
     LogFloats,
     LogStrings,
 )
-from neptune.new.internal.utils import base64_decode, base64_encode
-from neptune.new.internal.utils import paths as alpha_path_utils
 from neptune.new.internal.utils.paths import parse_path
 from neptune.notebook import Notebook
 from neptune.utils import (
@@ -106,6 +92,20 @@ from neptune.utils import (
     assure_directory_exists,
     with_api_exceptions_handler,
 )
+
+from neptune.internal.channels.channels import (
+    ChannelNamespace,
+    ChannelType,
+    ChannelValueType,
+)
+from neptune.new import exceptions as alpha_exceptions
+from neptune.new.attributes import constants as alpha_consts
+from neptune.new.internal import operation as alpha_operation
+from neptune.new.internal.backends import (
+    hosted_file_operations as alpha_hosted_file_operations,
+)
+from neptune.new.internal.utils import base64_decode, base64_encode
+from neptune.new.internal.utils import paths as alpha_path_utils
 
 _logger = logging.getLogger(__name__)
 

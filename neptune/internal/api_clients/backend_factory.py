@@ -16,6 +16,7 @@
 
 from neptune.backend import BackendApiClient
 from neptune.exceptions import InvalidNeptuneBackend
+
 from neptune.internal.api_clients import (
     HostedNeptuneBackendApiClient,
     OfflineBackendApiClient,

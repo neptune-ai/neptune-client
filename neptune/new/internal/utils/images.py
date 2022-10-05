@@ -21,12 +21,12 @@ import warnings
 from io import BytesIO, StringIO
 from typing import Optional
 
+from neptune.new.exceptions import PlotlyIncompatibilityException
+from neptune.new.internal.utils.logger import logger
 from packaging import version
 from pandas import DataFrame
 
-from neptune.new.exceptions import PlotlyIncompatibilityException
 from neptune.new.internal.utils import limits
-from neptune.new.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
 

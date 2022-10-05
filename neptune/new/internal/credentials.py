@@ -20,11 +20,12 @@ import os
 from dataclasses import dataclass
 from typing import Dict, Optional
 
-from neptune.new import ANONYMOUS, ANONYMOUS_API_TOKEN, envs
 from neptune.new.exceptions import (
     NeptuneInvalidApiTokenException,
     NeptuneMissingApiTokenException,
 )
+
+from neptune.new import ANONYMOUS, ANONYMOUS_API_TOKEN, envs
 
 
 @dataclass(frozen=True)

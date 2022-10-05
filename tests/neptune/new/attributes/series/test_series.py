@@ -17,7 +17,6 @@
 # pylint: disable=protected-access
 
 from mock import MagicMock, call, patch
-
 from neptune.new.attributes.series.float_series import FloatSeries, FloatSeriesVal
 from neptune.new.attributes.series.string_series import StringSeries, StringSeriesVal
 from neptune.new.internal.operation import (
@@ -26,6 +25,7 @@ from neptune.new.internal.operation import (
     ConfigFloatSeries,
     LogFloats,
 )
+
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

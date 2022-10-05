@@ -18,9 +18,8 @@ import os
 
 import numpy
 import six
-from PIL import Image
-
 from neptune.exceptions import FileNotFound, InvalidChannelValue
+from PIL import Image
 
 
 def get_image_content(image):

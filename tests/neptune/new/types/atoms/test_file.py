@@ -19,9 +19,9 @@ import pickle
 from io import BytesIO, StringIO
 
 import numpy
+from neptune.new.internal.utils.images import _get_pil_image_data
 from PIL import Image
 
-from neptune.new.internal.utils.images import _get_pil_image_data
 from neptune.new.types import File
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
