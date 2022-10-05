@@ -5,6 +5,7 @@
 
 ### Changes
 - More consistent and strict way of git repository, source files and entrypoint detection ([#1007](https://github.com/neptune-ai/neptune-client/pull/1007))
+- Moved neptune and neptune_cli to src dir ([#1027](https://github.com/neptune-ai/neptune-client/pull/1027))
 
 ## neptune-client 0.16.9
 
