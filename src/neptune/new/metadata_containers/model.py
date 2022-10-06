@@ -16,8 +16,10 @@
 from typing import Iterable, Optional
 
 from neptune.new.internal.backends.nql import (
+    NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
+    NQLQueryAggregate,
     NQLQueryAttribute,
 )
 from neptune.new.internal.container_type import ContainerType
@@ -102,11 +104,22 @@ class Model(MetadataContainer):
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL_VERSION,
-            query=NQLQueryAttribute(
-                name="sys/model_id",
-                value=self._sys_id,
-                operator=NQLAttributeOperator.EQUALS,
-                type=NQLAttributeType.STRING,
+            query=NQLQueryAggregate(
+                items=[
+                    NQLQueryAttribute(
+                        name="sys/model_id",
+                        value=self._sys_id,
+                        operator=NQLAttributeOperator.EQUALS,
+                        type=NQLAttributeType.STRING,
+                    ),
+                    NQLQueryAttribute(
+                        name="sys/trashed",
+                        type=NQLAttributeType.BOOLEAN,
+                        operator=NQLAttributeOperator.EQUALS,
+                        value=False,
+                    ),
+                ],
+                aggregator=NQLAggregator.AND,
             ),
             columns=columns,
         )

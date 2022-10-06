@@ -22,6 +22,7 @@ __all__ = [
     "NQLQueryAttribute",
 ]
 
+import typing
 from dataclasses import dataclass
 from enum import Enum
 from typing import Iterable
@@ -62,6 +63,7 @@ class NQLAttributeType(str, Enum):
     STRING = "string"
     STRING_SET = "stringSet"
     EXPERIMENT_STATE = "experimentState"
+    BOOLEAN = "bool"
 
 
 @dataclass
@@ -69,7 +71,14 @@ class NQLQueryAttribute(NQLQuery):
     name: str
     type: NQLAttributeType
     operator: NQLAttributeOperator
-    value: str
+    value: typing.Union[str, bool]
 
     def __str__(self) -> str:
-        return f'(`{self.name}`:{self.type.value} {self.operator.value} "{self.value}")'
+        if isinstance(self.value, bool):
+            value = str(self.value).lower()
+        elif isinstance(self.value, str):
+            value = self.value
+        else:
+            value = f'"{self.value}"'
+
+        return f"(`{self.name}`:{self.type.value} {self.operator.value} {value})"
