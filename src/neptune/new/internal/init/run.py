@@ -200,8 +200,8 @@ def init_run(
         ... run = neptune.init_run(with_id="SAN-4", mode="read-only")
         ... learning_rate = run["parameters/lr"].fetch()
 
-    You may also want to check the init_run() docs page:
-    https://docs.neptune.ai/api-reference/neptune#.init_run
+    For more, see the API reference:
+    https://docs.neptune.ai/api/neptune#init_run
     """
     _check_for_extra_kwargs(init_run.__name__, kwargs)
 
