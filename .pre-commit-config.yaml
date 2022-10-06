@@ -20,12 +20,12 @@ repos:
     rev: v1.3.1
     hooks:
       - id: insert-license
-        files: ^neptune/new/.*\.py$
-        args: ["--license-filepath", "neptune/license_header.txt"]
+        files: ^src/neptune/new/.*\.py$
+        args: ["--license-filepath", "src/neptune/license_header.txt"]
 exclude: |
   (?x)(
      ^tests/data/|
-     ^neptune/license_header\.txt
+     ^src/neptune/license_header\.txt
   )
 default_language_version:
     python: python3

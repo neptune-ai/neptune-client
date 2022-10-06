@@ -33,7 +33,7 @@ def main():
             long_description_content_type="text/markdown",
             license="Apache License 2.0",
             install_requires=requirements,
-            packages=find_packages(),
+            packages=find_packages(where="src"),
             cmdclass=versioneer.get_cmdclass(),
             extras_require={
                 "kedro": ["kedro-neptune"],
@@ -81,6 +81,7 @@ def main():
                 "ML Model Store",
                 "ML Metadata Store",
             ],
+            package_dir={"": "src"},
         )
 
 
