@@ -57,6 +57,8 @@ class TestDeprecatedParameter:
     def test_passing_deprecated_parameter_as_none(self):
         # pylint: disable=unexpected-keyword-arg
         # pylint: disable=missing-kwoa
+        assert fun_with_deprecated_param(deprecated_param=None) is None
+
         with pytest.raises(NeptuneParametersCollision):
             value = fun_with_deprecated_param(new_param=None, deprecated_param=None)
             assert value is None
