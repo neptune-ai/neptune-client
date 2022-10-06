@@ -76,8 +76,6 @@ class NQLQueryAttribute(NQLQuery):
     def __str__(self) -> str:
         if isinstance(self.value, bool):
             value = str(self.value).lower()
-        elif isinstance(self.value, str):
-            value = self.value
         else:
             value = f'"{self.value}"'
 

@@ -21,7 +21,6 @@ from neptune.new.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
-    NQLEmptyQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
