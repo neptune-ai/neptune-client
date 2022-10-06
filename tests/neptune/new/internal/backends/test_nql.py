@@ -59,6 +59,17 @@ class TestNQL(unittest.TestCase):
             ),
             '(`sys/state`:experimentState = "running")',
         )
+        self.assertEqual(
+            str(
+                NQLQueryAttribute(
+                    name="sys/trashed",
+                    type=NQLAttributeType.BOOLEAN,
+                    operator=NQLAttributeOperator.EQUALS,
+                    value=False,
+                )
+            ),
+            "(`sys/trashed`:bool = false)",
+        )
 
     def test_multiple_attribute_values(self):
         self.assertEqual(
