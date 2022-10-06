@@ -128,6 +128,7 @@ def init_run(
             You can edit the tags after the run is created, either through the app or the API.
         source_files: List of source files to be uploaded.
             Uploaded source files are displayed in the 'Source code' tab of the run view.
+            To not upload anything, pass an empty list (`[]`).
             Unix style pathname pattern expansion is supported. For example, you can pass `*.py` to upload
             all Python files from the current directory.
             If None is passed, the Python file from which the run was created will be uploaded.
@@ -143,13 +144,14 @@ def init_run(
             An exception is always logged.
         monitoring_namespace: Namespace inside which all hardware monitoring logs are stored.
             Defaults to 'monitoring'.
-        flush_period: In the asynchronous (default) connection mode, in seconds, how often the asynchronous thread
-            should synchronize data with Neptune servers. Defaults to 5 (every 5 seconds).
+        flush_period: In the asynchronous (default) connection mode, how often disk flushing is triggered.
+            Defaults to 5 (every 5 seconds).
         proxies: Argument passed to HTTP calls made via the Requests library, as dictionary of strings.
             For more information, see the 'Proxies' section in the Requests documentation.
         capture_traceback:  Whether to log the traceback of the run in case of an exception.
             Defaults to True.
             Tracked metadata will be stored in the 'monitoring/traceback' namespace.
+        run: ID of an existing run to resume. Deprecated - see with_id.
 
     Returns:
         Run object that is used to manage the tracked run and log metadata to it.
