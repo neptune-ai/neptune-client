@@ -9,7 +9,14 @@ repos:
     rev: 5.10.1
     hooks:
       - id: isort
-        args: ["--profile", "black", "--filter-files", "--skip", "tests/neptune/test_imports.py", "--line-length=120"]
+        args:
+          - "--profile"
+          - "black"
+          - "--filter-files"
+          - "--skip"
+          - "tests/neptune/test_imports.py"
+          - "--line-length=120"
+          - "--force-grid-wrap=2"
   - repo: https://github.com/psf/black
     rev: 22.3.0
     hooks:

@@ -30,16 +30,32 @@ import os
 import textwrap
 import threading
 from pathlib import Path
-from typing import Iterator, List, Optional, Tuple, Union
+from typing import (
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from neptune.new.constants import OFFLINE_DIRECTORY
 from neptune.new.envs import PROJECT_ENV_NAME
-from neptune.new.exceptions import MetadataContainerNotFound, NeptuneException, ProjectNotFound
-from neptune.new.internal.backends.api_model import ApiExperiment, Project
+from neptune.new.exceptions import (
+    MetadataContainerNotFound,
+    NeptuneException,
+    ProjectNotFound,
+)
+from neptune.new.internal.backends.api_model import (
+    ApiExperiment,
+    Project,
+)
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.id_formats import QualifiedName, UniqueId
+from neptune.new.internal.id_formats import (
+    QualifiedName,
+    UniqueId,
+)
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.logger import logger
 

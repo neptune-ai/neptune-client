@@ -15,7 +15,12 @@
 #
 from dataclasses import dataclass
 from datetime import datetime
-from typing import TYPE_CHECKING, List, Optional, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+    TypeVar,
+)
 
 from neptune.new.types.atoms.atom import Atom
 

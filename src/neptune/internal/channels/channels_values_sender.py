@@ -18,12 +18,20 @@ import threading
 import time
 from collections import namedtuple
 from itertools import groupby
-from queue import Empty, Queue
+from queue import (
+    Empty,
+    Queue,
+)
 
 from bravado.exception import HTTPUnprocessableEntity
 
 from neptune.exceptions import NeptuneException
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNamespace, ChannelType, ChannelValue
+from neptune.internal.channels.channels import (
+    ChannelIdWithValues,
+    ChannelNamespace,
+    ChannelType,
+    ChannelValue,
+)
 from neptune.internal.threads.neptune_thread import NeptuneThread
 
 _logger = logging.getLogger(__name__)

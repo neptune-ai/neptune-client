@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 import platform
-from typing import Dict, Tuple
+from typing import (
+    Dict,
+    Tuple,
+)
 
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient

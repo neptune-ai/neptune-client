@@ -16,12 +16,18 @@
 import unittest
 import uuid
 
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.new.exceptions import ArtifactUploadingError
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import ArtifactModel
-from neptune.new.internal.backends.hosted_artifact_operations import track_to_existing_artifact, track_to_new_artifact
+from neptune.new.internal.backends.hosted_artifact_operations import (
+    track_to_existing_artifact,
+    track_to_new_artifact,
+)
 
 
 class TestHostedArtifactOperations(unittest.TestCase):

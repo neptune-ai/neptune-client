@@ -17,7 +17,10 @@
 import unittest
 from collections import OrderedDict
 
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.projects import Project
 from neptune.sessions import Session

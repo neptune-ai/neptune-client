@@ -21,13 +21,25 @@ from io import StringIO
 
 import mock
 import pandas as pd
-from mock import MagicMock, call
+from mock import (
+    MagicMock,
+    call,
+)
 from munch import Munch
 from pandas.testing import assert_frame_equal
 
 from neptune.experiments import Experiment
-from neptune.internal.channels.channels import ChannelType, ChannelValue
-from tests.neptune.random_utils import a_project, a_string, a_uuid_string, an_experiment_id, sort_df_by_columns
+from neptune.internal.channels.channels import (
+    ChannelType,
+    ChannelValue,
+)
+from tests.neptune.random_utils import (
+    a_project,
+    a_string,
+    a_uuid_string,
+    an_experiment_id,
+    sort_df_by_columns,
+)
 
 
 class TestExperiment(unittest.TestCase):

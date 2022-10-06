@@ -16,8 +16,14 @@
 import time
 import unittest
 
-from neptune.internal.hardware.gauges.cpu import CGroupCpuUsageGauge, SystemCpuUsageGauge
-from neptune.utils import IS_MACOS, IS_WINDOWS
+from neptune.internal.hardware.gauges.cpu import (
+    CGroupCpuUsageGauge,
+    SystemCpuUsageGauge,
+)
+from neptune.utils import (
+    IS_MACOS,
+    IS_WINDOWS,
+)
 
 
 class TestCpuGauges(unittest.TestCase):

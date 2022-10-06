@@ -17,11 +17,17 @@ import unittest
 import uuid
 from unittest.mock import Mock
 
-from neptune.new.attributes import Integer, String
+from neptune.new.attributes import (
+    Integer,
+    String,
+)
 from neptune.new.exceptions import FetchAttributeNotFoundException
 from neptune.new.internal import operation
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-from neptune.new.internal.backends.utils import ExecuteOperationsBatchingManager, build_operation_url
+from neptune.new.internal.backends.utils import (
+    ExecuteOperationsBatchingManager,
+    build_operation_url,
+)
 from neptune.new.internal.container_type import ContainerType
 
 

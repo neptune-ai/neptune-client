@@ -19,15 +19,33 @@ import json
 import os
 import time
 from io import BytesIO
-from typing import AnyStr, Dict, Iterable, List, Optional, Set, Union
+from typing import (
+    AnyStr,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Set,
+    Union,
+)
 from urllib.parse import urlencode
 
-from bravado.exception import HTTPPaymentRequired, HTTPUnprocessableEntity
+from bravado.exception import (
+    HTTPPaymentRequired,
+    HTTPUnprocessableEntity,
+)
 from bravado.requests_client import RequestsClient
-from requests import Request, Response
+from requests import (
+    Request,
+    Response,
+)
 
 from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
-from neptune.internal.storage.datastream import FileChunk, FileChunker, compress_to_tar_gz_in_memory
+from neptune.internal.storage.datastream import (
+    FileChunk,
+    FileChunker,
+    compress_to_tar_gz_in_memory,
+)
 from neptune.internal.storage.storage_utils import (
     AttributeUploadConfiguration,
     UploadEntry,
@@ -44,13 +62,19 @@ from neptune.new.exceptions import (
     UploadedFileChanged,
 )
 from neptune.new.internal.backends.api_model import MultipartConfig
-from neptune.new.internal.backends.swagger_client_wrapper import ApiMethodWrapper, SwaggerClientWrapper
+from neptune.new.internal.backends.swagger_client_wrapper import (
+    ApiMethodWrapper,
+    SwaggerClientWrapper,
+)
 from neptune.new.internal.backends.utils import (
     build_operation_url,
     handle_server_raw_response_messages,
     with_api_exceptions_handler,
 )
-from neptune.new.internal.utils import get_absolute_paths, get_common_root
+from neptune.new.internal.utils import (
+    get_absolute_paths,
+    get_common_root,
+)
 from neptune.new.internal.utils.logger import logger
 
 DEFAULT_CHUNK_SIZE = 5 * BYTES_IN_ONE_MB

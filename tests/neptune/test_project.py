@@ -21,16 +21,29 @@ import unittest
 from random import randint
 
 import pandas as pd
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 from munch import Munch
 
 from neptune.exceptions import NeptuneNoExperimentContextException
 from neptune.experiments import Experiment
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
-from tests.neptune.api_objects_factory import a_registered_project_member, an_invited_project_member
-from tests.neptune.project_test_fixture import some_exp_entry_dto, some_exp_entry_row
-from tests.neptune.random_utils import a_string, a_string_list, a_uuid_string
+from tests.neptune.api_objects_factory import (
+    a_registered_project_member,
+    an_invited_project_member,
+)
+from tests.neptune.project_test_fixture import (
+    some_exp_entry_dto,
+    some_exp_entry_row,
+)
+from tests.neptune.random_utils import (
+    a_string,
+    a_string_list,
+    a_uuid_string,
+)
 
 
 class TestProject(unittest.TestCase):

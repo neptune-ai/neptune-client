@@ -17,8 +17,14 @@ import os
 from typing import Optional
 
 from neptune.new.attributes.atoms.atom import Atom
-from neptune.new.internal.operation import UploadFile, UploadFileContent
-from neptune.new.internal.utils import base64_encode, verify_type
+from neptune.new.internal.operation import (
+    UploadFile,
+    UploadFileContent,
+)
+from neptune.new.internal.utils import (
+    base64_encode,
+    verify_type,
+)
 from neptune.new.types.atoms.file import File as FileVal
 
 # pylint: disable=protected-access

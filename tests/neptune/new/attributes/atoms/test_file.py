@@ -17,13 +17,26 @@
 # pylint: disable=protected-access
 import os
 import unittest
-from io import BytesIO, StringIO
+from io import (
+    BytesIO,
+    StringIO,
+)
 
 from mock import MagicMock
 
-from neptune.new.attributes.atoms.file import File, FileVal
-from neptune.new.attributes.file_set import FileSet, FileSetVal
-from neptune.new.internal.operation import UploadFile, UploadFileContent, UploadFileSet
+from neptune.new.attributes.atoms.file import (
+    File,
+    FileVal,
+)
+from neptune.new.attributes.file_set import (
+    FileSet,
+    FileSetVal,
+)
+from neptune.new.internal.operation import (
+    UploadFile,
+    UploadFileContent,
+    UploadFileSet,
+)
 from neptune.new.internal.utils import base64_encode
 from neptune.utils import IS_WINDOWS
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase

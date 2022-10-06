@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 import abc
-from typing import TYPE_CHECKING, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    TypeVar,
+)
 
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor

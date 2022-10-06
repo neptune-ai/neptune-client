@@ -23,7 +23,14 @@ import traceback
 from contextlib import AbstractContextManager
 from datetime import datetime
 from functools import wraps
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Union,
+)
 
 from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
@@ -45,7 +52,10 @@ from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import SysId, UniqueId
+from neptune.new.internal.id_formats import (
+    SysId,
+    UniqueId,
+)
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.state import ContainerState
@@ -61,11 +71,17 @@ from neptune.new.internal.utils import (
 )
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
-from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
+from neptune.new.internal.utils.runningmode import (
+    in_interactive,
+    in_notebook,
+)
 from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.metadata_containers.metadata_containers_table import Table
-from neptune.new.types import Boolean, Integer
+from neptune.new.types import (
+    Boolean,
+    Integer,
+)
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String

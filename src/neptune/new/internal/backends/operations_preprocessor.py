@@ -16,9 +16,16 @@
 import dataclasses
 import typing
 from enum import Enum
-from typing import Callable, List, TypeVar
+from typing import (
+    Callable,
+    List,
+    TypeVar,
+)
 
-from neptune.new.exceptions import InternalClientError, MetadataInconsistency
+from neptune.new.exceptions import (
+    InternalClientError,
+    MetadataInconsistency,
+)
 from neptune.new.internal.operation import (
     AddStrings,
     AssignArtifact,

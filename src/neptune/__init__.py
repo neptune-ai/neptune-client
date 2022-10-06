@@ -17,9 +17,16 @@ import logging
 import os
 import threading
 
-from neptune import constants, envs
+from neptune import (
+    constants,
+    envs,
+)
 from neptune._version import get_versions
-from neptune.exceptions import InvalidNeptuneBackend, NeptuneIncorrectImportException, NeptuneUninitializedException
+from neptune.exceptions import (
+    InvalidNeptuneBackend,
+    NeptuneIncorrectImportException,
+    NeptuneUninitializedException,
+)
 from neptune.internal.api_clients import backend_factory
 from neptune.internal.api_clients.offline_backend import OfflineBackend
 from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend

@@ -20,14 +20,24 @@ import unittest
 import uuid
 
 import psutil
-from mock import ANY, MagicMock, call
+from mock import (
+    ANY,
+    MagicMock,
+    call,
+)
 
 from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
 from neptune.internal.hardware.gauges.cpu import SystemCpuUsageGauge
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.internal.hardware.gauges.memory import SystemMemoryUsageGauge
-from neptune.internal.hardware.metrics.metric import Metric, MetricResourceType
-from neptune.internal.hardware.metrics.reports.metric_report import MetricReport, MetricValue
+from neptune.internal.hardware.metrics.metric import (
+    Metric,
+    MetricResourceType,
+)
+from neptune.internal.hardware.metrics.reports.metric_report import (
+    MetricReport,
+    MetricValue,
+)
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.utils import IS_MACOS
 

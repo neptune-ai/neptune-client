@@ -21,15 +21,33 @@ import os
 import threading
 import time
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence
+from typing import (
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+)
 
-from neptune.new.constants import ASYNC_DIRECTORY, OFFLINE_DIRECTORY, OFFLINE_NAME_PREFIX
+from neptune.new.constants import (
+    ASYNC_DIRECTORY,
+    OFFLINE_DIRECTORY,
+    OFFLINE_NAME_PREFIX,
+)
 from neptune.new.envs import NEPTUNE_SYNC_BATCH_TIMEOUT_ENV
-from neptune.new.exceptions import CannotSynchronizeOfflineRunsWithoutProject, NeptuneConnectionLostException
-from neptune.new.internal.backends.api_model import ApiExperiment, Project
+from neptune.new.exceptions import (
+    CannotSynchronizeOfflineRunsWithoutProject,
+    NeptuneConnectionLostException,
+)
+from neptune.new.internal.backends.api_model import (
+    ApiExperiment,
+    Project,
+)
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.id_formats import QualifiedName, UniqueId
+from neptune.new.internal.id_formats import (
+    QualifiedName,
+    UniqueId,
+)
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner

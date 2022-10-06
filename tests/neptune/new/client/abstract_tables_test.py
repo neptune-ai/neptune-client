@@ -21,14 +21,28 @@ from abc import abstractmethod
 from datetime import datetime
 from typing import List
 
-from mock import Mock, patch
+from mock import (
+    Mock,
+    patch,
+)
 
 from neptune.new import ANONYMOUS
-from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
+from neptune.new.envs import (
+    API_TOKEN_ENV_NAME,
+    PROJECT_ENV_NAME,
+)
 from neptune.new.exceptions import MetadataInconsistency
-from neptune.new.internal.backends.api_model import Attribute, AttributeType, AttributeWithProperties, LeaderboardEntry
+from neptune.new.internal.backends.api_model import (
+    Attribute,
+    AttributeType,
+    AttributeWithProperties,
+    LeaderboardEntry,
+)
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.new.metadata_containers.metadata_containers_table import Table, TableEntry
+from neptune.new.metadata_containers.metadata_containers_table import (
+    Table,
+    TableEntry,
+)
 
 
 @patch(

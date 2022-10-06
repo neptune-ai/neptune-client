@@ -14,7 +14,13 @@
 # limitations under the License.
 #
 from functools import wraps
-from typing import TYPE_CHECKING, Iterable, List, Optional, Union
+from typing import (
+    TYPE_CHECKING,
+    Iterable,
+    List,
+    Optional,
+    Union,
+)
 
 from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
@@ -28,7 +34,11 @@ from neptune.new.attributes.sets.string_set import StringSet
 
 # backwards compatibility
 # pylint: disable=unused-import
-from neptune.new.exceptions import MissingFieldException, NeptuneCannotChangeStageManually, NeptuneException
+from neptune.new.exceptions import (
+    MissingFieldException,
+    NeptuneCannotChangeStageManually,
+    NeptuneException,
+)
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     is_collection,
@@ -39,7 +49,10 @@ from neptune.new.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.new.internal.utils.paths import join_paths, parse_path
+from neptune.new.internal.utils.paths import (
+    join_paths,
+    parse_path,
+)
 from neptune.new.types.atoms.file import File as FileVal
 from neptune.new.types.value_copy import ValueCopy
 

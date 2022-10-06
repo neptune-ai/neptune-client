@@ -19,10 +19,17 @@ import random
 import unittest
 import uuid
 from collections import namedtuple
-from tempfile import NamedTemporaryFile, TemporaryDirectory
+from tempfile import (
+    NamedTemporaryFile,
+    TemporaryDirectory,
+)
 
 import mock
-from mock import MagicMock, call, patch
+from mock import (
+    MagicMock,
+    call,
+    patch,
+)
 
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.hosted_file_operations import (

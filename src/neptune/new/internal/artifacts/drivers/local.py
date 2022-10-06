@@ -19,9 +19,16 @@ import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
-from neptune.new.exceptions import NeptuneLocalStorageAccessException, NeptuneUnsupportedArtifactFunctionalityException
+from neptune.new.exceptions import (
+    NeptuneLocalStorageAccessException,
+    NeptuneUnsupportedArtifactFunctionalityException,
+)
 from neptune.new.internal.artifacts.file_hasher import FileHasher
-from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactFileData, ArtifactFileType
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriver,
+    ArtifactFileData,
+    ArtifactFileType,
+)
 
 
 class LocalArtifactDriver(ArtifactDriver):

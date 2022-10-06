@@ -18,14 +18,20 @@ import threading
 from pathlib import Path
 from typing import Optional
 
-from neptune.new.constants import ASYNC_DIRECTORY, OFFLINE_DIRECTORY
+from neptune.new.constants import (
+    ASYNC_DIRECTORY,
+    OFFLINE_DIRECTORY,
+)
 from neptune.new.exceptions import MetadataContainerNotFound
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 from neptune.new.sync.utils import get_qualified_name
-from tests.neptune.new.utils.api_experiments_factory import api_metadata_container, api_run
+from tests.neptune.new.utils.api_experiments_factory import (
+    api_metadata_container,
+    api_run,
+)
 
 
 def generate_get_metadata_container(registered_containers):

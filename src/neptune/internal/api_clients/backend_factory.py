@@ -16,7 +16,10 @@
 
 from neptune.backend import BackendApiClient
 from neptune.exceptions import InvalidNeptuneBackend
-from neptune.internal.api_clients import HostedNeptuneBackendApiClient, OfflineBackendApiClient
+from neptune.internal.api_clients import (
+    HostedNeptuneBackendApiClient,
+    OfflineBackendApiClient,
+)
 
 
 def backend_factory(*, backend_name, api_token=None, proxies=None) -> BackendApiClient:

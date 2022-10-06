@@ -17,7 +17,10 @@
 __all__ = []
 
 from pathlib import Path
-from typing import List, Optional
+from typing import (
+    List,
+    Optional,
+)
 
 import click
 
@@ -29,7 +32,10 @@ from neptune.new.exceptions import (
     ProjectNotFound,
     RunNotFound,
 )
-from neptune.new.internal.backends.api_model import ApiExperiment, Project
+from neptune.new.internal.backends.api_model import (
+    ApiExperiment,
+    Project,
+)
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.credentials import Credentials

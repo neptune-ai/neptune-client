@@ -18,7 +18,10 @@
 
 import unittest
 
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.new.internal.websockets.websocket_signals_background_job import WebsocketSignalsBackgroundJob
 

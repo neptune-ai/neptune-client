@@ -18,7 +18,17 @@ import uuid
 from collections import defaultdict
 from datetime import datetime
 from shutil import copyfile
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Type, TypeVar, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Type,
+    TypeVar,
+    Union,
+)
 from zipfile import ZipFile
 
 from neptune.new.exceptions import (
@@ -59,7 +69,11 @@ from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import QualifiedName, SysId, UniqueId
+from neptune.new.internal.id_formats import (
+    QualifiedName,
+    SysId,
+    UniqueId,
+)
 from neptune.new.internal.operation import (
     AddStrings,
     AssignArtifact,
@@ -92,7 +106,10 @@ from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.metadata_containers import Model
-from neptune.new.types import Boolean, Integer
+from neptune.new.types import (
+    Boolean,
+    Integer,
+)
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime

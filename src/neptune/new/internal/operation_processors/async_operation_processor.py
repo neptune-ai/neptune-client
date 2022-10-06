@@ -17,8 +17,14 @@ import logging
 import os
 import sys
 import threading
-from time import monotonic, time
-from typing import List, Optional
+from time import (
+    monotonic,
+    time,
+)
+from typing import (
+    List,
+    Optional,
+)
 
 from neptune.new.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend

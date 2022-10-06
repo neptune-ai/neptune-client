@@ -16,7 +16,10 @@
 
 # pylint: disable=protected-access
 import pickle
-from io import BytesIO, StringIO
+from io import (
+    BytesIO,
+    StringIO,
+)
 
 import numpy
 from PIL import Image

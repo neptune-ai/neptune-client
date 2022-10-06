@@ -15,11 +15,17 @@
 #
 import logging
 from functools import wraps
-from http.client import NOT_FOUND, UNPROCESSABLE_ENTITY  # pylint:disable=no-name-in-module
+from http.client import (  # pylint:disable=no-name-in-module
+    NOT_FOUND,
+    UNPROCESSABLE_ENTITY,
+)
 
 from requests.exceptions import HTTPError
 
-from neptune.api_exceptions import ExperimentNotFound, StorageLimitReached
+from neptune.api_exceptions import (
+    ExperimentNotFound,
+    StorageLimitReached,
+)
 from neptune.exceptions import NeptuneException
 
 _logger = logging.getLogger(__name__)

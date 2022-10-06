@@ -17,7 +17,11 @@ import os
 import threading
 import typing
 from platform import node as get_hostname
-from typing import List, Optional, Union
+from typing import (
+    List,
+    Optional,
+    Union,
+)
 
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.envs import (
@@ -39,16 +43,26 @@ from neptune.new.internal.backends.project_name_lookup import project_name_looku
 from neptune.new.internal.backgroud_job_list import BackgroundJobList
 from neptune.new.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.new.internal.id_formats import QualifiedName
-from neptune.new.internal.init.parameters import DEFAULT_FLUSH_PERIOD, DEFAULT_NAME, OFFLINE_PROJECT_QUALIFIED_NAME
+from neptune.new.internal.init.parameters import (
+    DEFAULT_FLUSH_PERIOD,
+    DEFAULT_NAME,
+    OFFLINE_PROJECT_QUALIFIED_NAME,
+)
 from neptune.new.internal.notebooks.notebooks import create_checkpoint
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.streams.std_capture_background_job import (
     StderrCaptureBackgroundJob,
     StdoutCaptureBackgroundJob,
 )
-from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.internal.utils import (
+    verify_collection_type,
+    verify_type,
+)
 from neptune.new.internal.utils.deprecation import deprecated_parameter
-from neptune.new.internal.utils.git import discover_git_repo_location, get_git_info
+from neptune.new.internal.utils.git import (
+    discover_git_repo_location,
+    get_git_info,
+)
 from neptune.new.internal.utils.limits import custom_run_id_exceeds_length
 from neptune.new.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.new.internal.utils.source_code import upload_source_code

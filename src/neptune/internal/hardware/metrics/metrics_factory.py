@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
-from neptune.internal.hardware.metrics.metric import Metric, MetricResourceType
+from neptune.internal.hardware.metrics.metric import (
+    Metric,
+    MetricResourceType,
+)
 from neptune.internal.hardware.metrics.metrics_container import MetricsContainer
 
 

@@ -18,7 +18,11 @@ import random
 
 import pytest
 
-from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
+from e2e_tests.base import (
+    AVAILABLE_CONTAINERS,
+    BaseE2ETest,
+    fake,
+)
 from neptune.new.metadata_containers import MetadataContainer
 
 # List of every possible container type pair for instance: "run-run, run-model, model-model_version, ..."

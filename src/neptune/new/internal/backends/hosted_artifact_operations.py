@@ -13,17 +13,34 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Dict, List, Optional, Tuple, Type
+from typing import (
+    Dict,
+    List,
+    Optional,
+    Tuple,
+    Type,
+)
 
 from bravado.exception import HTTPNotFound
 
-from neptune.new.exceptions import ArtifactNotFoundException, ArtifactUploadingError, NeptuneEmptyLocationException
+from neptune.new.exceptions import (
+    ArtifactNotFoundException,
+    ArtifactUploadingError,
+    NeptuneEmptyLocationException,
+)
 from neptune.new.internal.artifacts.file_hasher import FileHasher
-from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriver,
+    ArtifactDriversMap,
+    ArtifactFileData,
+)
 from neptune.new.internal.backends.api_model import ArtifactModel
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
 from neptune.new.internal.backends.utils import with_api_exceptions_handler
-from neptune.new.internal.operation import AssignArtifact, Operation
+from neptune.new.internal.operation import (
+    AssignArtifact,
+    Operation,
+)
 
 
 def _compute_artifact_size(artifact_file_list: List[ArtifactFileData]):

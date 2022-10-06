@@ -18,8 +18,15 @@ from typing import Dict
 
 import pytest
 
-from e2e_tests.base import BaseE2ETest, fake
-from e2e_tests.utils import Environment, a_project_name, initialize_container
+from e2e_tests.base import (
+    BaseE2ETest,
+    fake,
+)
+from e2e_tests.utils import (
+    Environment,
+    a_project_name,
+    initialize_container,
+)
 from neptune.management import (
     add_project_member,
     add_project_service_account,

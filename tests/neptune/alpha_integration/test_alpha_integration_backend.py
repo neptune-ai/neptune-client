@@ -26,7 +26,12 @@ from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import (
     HostedAlphaLeaderboardApiClient,
 )
-from neptune.internal.channels.channels import ChannelIdWithValues, ChannelNamespace, ChannelType, ChannelValue
+from neptune.internal.channels.channels import (
+    ChannelIdWithValues,
+    ChannelNamespace,
+    ChannelType,
+    ChannelValue,
+)
 from tests.neptune.new.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
 API_TOKEN = (

@@ -19,9 +19,16 @@ __all__ = ["StatusRunner"]
 import sys
 import textwrap
 from pathlib import Path
-from typing import List, Sequence, Tuple
+from typing import (
+    List,
+    Sequence,
+    Tuple,
+)
 
-from neptune.new.constants import ASYNC_DIRECTORY, OFFLINE_NAME_PREFIX
+from neptune.new.constants import (
+    ASYNC_DIRECTORY,
+    OFFLINE_NAME_PREFIX,
+)
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.utils.logger import logger

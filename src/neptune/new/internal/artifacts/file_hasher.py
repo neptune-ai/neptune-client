@@ -19,7 +19,10 @@ import typing
 from pathlib import Path
 
 from neptune.new.internal.artifacts.local_file_hash_storage import LocalFileHashStorage
-from neptune.new.internal.artifacts.types import ArtifactFileData, ArtifactMetadataSerializer
+from neptune.new.internal.artifacts.types import (
+    ArtifactFileData,
+    ArtifactMetadataSerializer,
+)
 from neptune.new.internal.artifacts.utils import sha1
 
 

@@ -16,9 +16,19 @@
 import unittest
 import uuid
 
-from bravado.exception import HTTPBadRequest, HTTPConflict, HTTPForbidden, HTTPNotFound, HTTPUnprocessableEntity
+from bravado.exception import (
+    HTTPBadRequest,
+    HTTPConflict,
+    HTTPForbidden,
+    HTTPNotFound,
+    HTTPUnprocessableEntity,
+)
 from bravado.testing.response_mocks import BravadoResponseMock
-from mock import MagicMock, Mock, patch
+from mock import (
+    MagicMock,
+    Mock,
+    patch,
+)
 
 from neptune.management import (
     MemberRole,

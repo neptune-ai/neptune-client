@@ -30,9 +30,21 @@ __all__ = (
 )
 
 import os
-from typing import Dict, Iterable, List, Optional, Union
+from typing import (
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Union,
+)
 
-from bravado.exception import HTTPBadRequest, HTTPConflict, HTTPForbidden, HTTPNotFound, HTTPUnprocessableEntity
+from bravado.exception import (
+    HTTPBadRequest,
+    HTTPConflict,
+    HTTPForbidden,
+    HTTPNotFound,
+    HTTPUnprocessableEntity,
+)
 
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
@@ -56,7 +68,10 @@ from neptune.management.internal.dto import (
     WorkspaceMemberRoleDTO,
 )
 from neptune.management.internal.types import *
-from neptune.management.internal.utils import extract_project_and_workspace, normalize_project_name
+from neptune.management.internal.utils import (
+    extract_project_and_workspace,
+    normalize_project_name,
+)
 from neptune.new.envs import API_TOKEN_ENV_NAME
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
@@ -65,10 +80,17 @@ from neptune.new.internal.backends.hosted_client import (
     create_leaderboard_client,
 )
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
-from neptune.new.internal.backends.utils import parse_validation_errors, ssl_verify, with_api_exceptions_handler
+from neptune.new.internal.backends.utils import (
+    parse_validation_errors,
+    ssl_verify,
+    with_api_exceptions_handler,
+)
 from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.id_formats import QualifiedName
-from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.internal.utils import (
+    verify_collection_type,
+    verify_type,
+)
 from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.logger import logger
 

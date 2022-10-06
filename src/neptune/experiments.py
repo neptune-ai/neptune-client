@@ -21,13 +21,28 @@ import pandas as pd
 import six
 from pandas.errors import EmptyDataError
 
-from neptune.api_exceptions import ChannelDoesNotExist, ExperimentAlreadyFinished
-from neptune.exceptions import InvalidChannelValue, NeptuneIncorrectImportException, NoChannelValue
-from neptune.internal.channels.channels import ChannelNamespace, ChannelType, ChannelValue
+from neptune.api_exceptions import (
+    ChannelDoesNotExist,
+    ExperimentAlreadyFinished,
+)
+from neptune.exceptions import (
+    InvalidChannelValue,
+    NeptuneIncorrectImportException,
+    NoChannelValue,
+)
+from neptune.internal.channels.channels import (
+    ChannelNamespace,
+    ChannelType,
+    ChannelValue,
+)
 from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.internal.execution.execution_context import ExecutionContext
 from neptune.internal.utils.image import get_image_content
-from neptune.utils import align_channels_on_x, is_float, is_nan_or_inf
+from neptune.utils import (
+    align_channels_on_x,
+    is_float,
+    is_nan_or_inf,
+)
 
 _logger = logging.getLogger(__name__)
 

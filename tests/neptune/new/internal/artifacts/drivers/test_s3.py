@@ -24,7 +24,11 @@ from moto import mock_s3
 
 from neptune.new.exceptions import NeptuneUnsupportedArtifactFunctionalityException
 from neptune.new.internal.artifacts.drivers.s3 import S3ArtifactDriver
-from neptune.new.internal.artifacts.types import ArtifactDriversMap, ArtifactFileData, ArtifactFileType
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriversMap,
+    ArtifactFileData,
+    ArtifactFileType,
+)
 from tests.neptune.new.internal.artifacts.utils import md5
 
 

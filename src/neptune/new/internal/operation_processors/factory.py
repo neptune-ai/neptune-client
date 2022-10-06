@@ -21,7 +21,11 @@ import threading
 from datetime import datetime
 from pathlib import Path
 
-from neptune.new.constants import ASYNC_DIRECTORY, NEPTUNE_DATA_DIRECTORY, OFFLINE_DIRECTORY
+from neptune.new.constants import (
+    ASYNC_DIRECTORY,
+    NEPTUNE_DATA_DIRECTORY,
+    OFFLINE_DIRECTORY,
+)
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue

@@ -41,7 +41,13 @@ from bravado.exception import (
 from urllib3.exceptions import NewConnectionError
 
 from neptune import envs
-from neptune.api_exceptions import ConnectionLost, Forbidden, NeptuneSSLVerificationError, ServerError, Unauthorized
+from neptune.api_exceptions import (
+    ConnectionLost,
+    Forbidden,
+    NeptuneSSLVerificationError,
+    ServerError,
+    Unauthorized,
+)
 from neptune.exceptions import (
     FileNotFound,
     InvalidNotebookPath,

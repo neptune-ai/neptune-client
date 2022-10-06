@@ -19,7 +19,11 @@ from __future__ import unicode_literals
 import re
 from datetime import datetime
 
-from neptune.internal.channels.channels import ChannelNamespace, ChannelType, ChannelValue
+from neptune.internal.channels.channels import (
+    ChannelNamespace,
+    ChannelType,
+    ChannelValue,
+)
 
 
 class ChannelWriter(object):

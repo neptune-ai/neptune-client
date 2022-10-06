@@ -19,7 +19,10 @@ from typing import Optional
 from bravado.client import SwaggerClient
 from bravado.exception import HTTPError
 
-from neptune.new.exceptions import NeptuneFieldCountLimitExceedException, NeptuneLimitExceedException
+from neptune.new.exceptions import (
+    NeptuneFieldCountLimitExceedException,
+    NeptuneLimitExceedException,
+)
 
 
 class ApiMethodWrapper:

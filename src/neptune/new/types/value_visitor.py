@@ -15,7 +15,10 @@
 #
 import abc
 import typing
-from typing import Generic, TypeVar
+from typing import (
+    Generic,
+    TypeVar,
+)
 
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.types.atoms import GitRef

@@ -14,7 +14,14 @@
 # limitations under the License.
 #
 import abc
-from typing import Any, Iterable, List, Optional, Tuple, Union
+from typing import (
+    Any,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -41,7 +48,10 @@ from neptune.new.internal.backends.api_model import (
 )
 from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import QualifiedName, UniqueId
+from neptune.new.internal.id_formats import (
+    QualifiedName,
+    UniqueId,
+)
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef

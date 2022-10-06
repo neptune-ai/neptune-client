@@ -20,11 +20,18 @@ import uuid
 from unittest.mock import Mock
 
 from _pytest.monkeypatch import MonkeyPatch
-from mock import MagicMock, call
+from mock import (
+    MagicMock,
+    call,
+)
 
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.exceptions import NeptuneUnhandledArtifactTypeException
-from neptune.new.internal.artifacts.types import ArtifactDriver, ArtifactDriversMap, ArtifactFileData
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriver,
+    ArtifactDriversMap,
+    ArtifactFileData,
+)
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import TrackFilesToArtifact
 from neptune.new.internal.utils.paths import path_to_str

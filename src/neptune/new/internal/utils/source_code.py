@@ -15,13 +15,23 @@
 #
 import logging
 import os
-from typing import TYPE_CHECKING, List, Optional
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+)
 
 from neptune.internal.storage.storage_utils import normalize_file_name
 from neptune.new.attributes import constants as attr_consts
-from neptune.new.internal.utils import get_absolute_paths, get_common_root
+from neptune.new.internal.utils import (
+    get_absolute_paths,
+    get_common_root,
+)
 from neptune.utils import is_ipython
-from neptune.vendor.lib_programname import empty_path, get_path_executed_script
+from neptune.vendor.lib_programname import (
+    empty_path,
+    get_path_executed_script,
+)
 
 if TYPE_CHECKING:
     from neptune.new import Run

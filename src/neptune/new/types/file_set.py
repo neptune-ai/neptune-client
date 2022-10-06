@@ -13,9 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import TYPE_CHECKING, Iterable, List, TypeVar, Union
+from typing import (
+    TYPE_CHECKING,
+    Iterable,
+    List,
+    TypeVar,
+    Union,
+)
 
-from neptune.new.internal.utils import verify_collection_type, verify_type
+from neptune.new.internal.utils import (
+    verify_collection_type,
+    verify_type,
+)
 from neptune.new.types.value import Value
 
 if TYPE_CHECKING:

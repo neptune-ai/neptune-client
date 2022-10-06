@@ -18,12 +18,24 @@ import time
 import unittest
 
 import jwt
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 from oauthlib.oauth2 import TokenExpiredError
 
-from neptune.oauth import NeptuneAuth, NeptuneAuthenticator, _decoding_options, _no_token_updater
+from neptune.oauth import (
+    NeptuneAuth,
+    NeptuneAuthenticator,
+    _decoding_options,
+    _no_token_updater,
+)
 from tests.neptune.http_objects_factory import a_request
-from tests.neptune.oauth_objects_factory import SECRET, a_refresh_token, an_access_token
+from tests.neptune.oauth_objects_factory import (
+    SECRET,
+    a_refresh_token,
+    an_access_token,
+)
 
 
 class TestNeptuneAuth(unittest.TestCase):

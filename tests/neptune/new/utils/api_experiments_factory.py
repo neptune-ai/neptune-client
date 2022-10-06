@@ -28,7 +28,10 @@ from random import randint
 
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import SysId, UniqueId
+from neptune.new.internal.id_formats import (
+    SysId,
+    UniqueId,
+)
 
 
 def api_metadata_container(container_type: ContainerType) -> ApiExperiment:

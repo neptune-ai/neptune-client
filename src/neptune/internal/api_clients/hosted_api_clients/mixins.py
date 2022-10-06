@@ -26,8 +26,15 @@ from bravado_core.formatter import SwaggerFormat
 from packaging import version
 from six.moves import urllib
 
-from neptune.exceptions import CannotResolveHostname, DeprecatedApiToken, UnsupportedClientVersion
-from neptune.internal.api_clients.client_config import ClientConfig, MultipartConfig
+from neptune.exceptions import (
+    CannotResolveHostname,
+    DeprecatedApiToken,
+    UnsupportedClientVersion,
+)
+from neptune.internal.api_clients.client_config import (
+    ClientConfig,
+    MultipartConfig,
+)
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)

@@ -18,9 +18,16 @@ import io
 import math
 import os
 import tarfile
-from typing import Any, Generator, Optional
+from typing import (
+    Any,
+    Generator,
+    Optional,
+)
 
-from neptune.new.exceptions import InternalClientError, UploadedFileChanged
+from neptune.new.exceptions import (
+    InternalClientError,
+    UploadedFileChanged,
+)
 from neptune.new.internal.backends.api_model import MultipartConfig
 
 

@@ -42,7 +42,10 @@ from neptune.new.internal.operation import (
     UploadFileContent,
     UploadFileSet,
 )
-from neptune.new.internal.operation_visitor import OperationVisitor, Ret
+from neptune.new.internal.operation_visitor import (
+    OperationVisitor,
+    Ret,
+)
 
 
 class OperationApiObjectConverter(OperationVisitor[dict]):

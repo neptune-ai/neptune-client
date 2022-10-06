@@ -15,10 +15,16 @@
 #
 import unittest
 
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
-from neptune.internal.hardware.gauges.gpu import GpuMemoryGauge, GpuUsageGauge
+from neptune.internal.hardware.gauges.gpu import (
+    GpuMemoryGauge,
+    GpuUsageGauge,
+)
 
 
 @patch("neptune.internal.hardware.gpu.gpu_monitor.nvmlInit", MagicMock())

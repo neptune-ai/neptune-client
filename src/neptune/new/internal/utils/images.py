@@ -18,7 +18,10 @@ import io
 import logging
 import pickle
 import warnings
-from io import BytesIO, StringIO
+from io import (
+    BytesIO,
+    StringIO,
+)
 from typing import Optional
 
 from packaging import version

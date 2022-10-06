@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 
-from typing import TYPE_CHECKING, List, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    List,
+    TypeVar,
+)
 
 from neptune.new.internal.utils import is_collection
 from neptune.new.internal.utils.logger import logger

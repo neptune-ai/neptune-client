@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, Optional, Union
+from typing import (
+    List,
+    Optional,
+    Union,
+)
 from urllib.parse import urlparse
 
 from packaging.version import Version
@@ -21,7 +25,10 @@ from packaging.version import Version
 from neptune.exceptions import STYLES
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
-from neptune.new.internal.backends.api_model import Project, Workspace
+from neptune.new.internal.backends.api_model import (
+    Project,
+    Workspace,
+)
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.utils import replace_patch_version

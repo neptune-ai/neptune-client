@@ -19,9 +19,24 @@ import logging
 import os
 import socket
 import time
-from functools import lru_cache, wraps
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Mapping, Optional, Text
-from urllib.parse import urljoin, urlparse
+from functools import (
+    lru_cache,
+    wraps,
+)
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Text,
+)
+from urllib.parse import (
+    urljoin,
+    urlparse,
+)
 
 import requests
 import urllib3
@@ -44,10 +59,16 @@ from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsResponseAdapter
 from bravado_core.formatter import SwaggerFormat
 from packaging.version import Version
-from requests import Response, Session
+from requests import (
+    Response,
+    Session,
+)
 from urllib3.exceptions import NewConnectionError
 
-from neptune.new.envs import NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE, NEPTUNE_RETRIES_TIMEOUT_ENV
+from neptune.new.envs import (
+    NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE,
+    NEPTUNE_RETRIES_TIMEOUT_ENV,
+)
 from neptune.new.exceptions import (
     CannotResolveHostname,
     ClientHttpError,
@@ -62,7 +83,10 @@ from neptune.new.exceptions import (
 )
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
-from neptune.new.internal.operation import CopyAttribute, Operation
+from neptune.new.internal.operation import (
+    CopyAttribute,
+    Operation,
+)
 from neptune.new.internal.utils import replace_patch_version
 from neptune.new.internal.utils.logger import logger
 

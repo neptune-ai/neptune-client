@@ -18,8 +18,15 @@ import unittest
 import uuid
 from unittest.mock import call
 
-from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
-from mock import MagicMock, patch
+from bravado.exception import (
+    HTTPNotFound,
+    HTTPPaymentRequired,
+    HTTPUnprocessableEntity,
+)
+from mock import (
+    MagicMock,
+    patch,
+)
 from packaging.version import Version
 
 from neptune.new.exceptions import (
@@ -43,7 +50,13 @@ from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWr
 from neptune.new.internal.backends.utils import verify_host_resolution
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.operation import AssignString, LogFloats, TrackFilesToArtifact, UploadFile, UploadFileContent
+from neptune.new.internal.operation import (
+    AssignString,
+    LogFloats,
+    TrackFilesToArtifact,
+    UploadFile,
+    UploadFileContent,
+)
 from neptune.new.internal.utils import base64_encode
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 from tests.neptune.new.utils import response_mock

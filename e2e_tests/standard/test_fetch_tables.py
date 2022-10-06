@@ -20,7 +20,10 @@ import uuid
 import pytest
 
 import neptune.new as neptune
-from e2e_tests.base import BaseE2ETest, fake
+from e2e_tests.base import (
+    BaseE2ETest,
+    fake,
+)
 from e2e_tests.utils import a_key
 from neptune.new.metadata_containers import Model
 

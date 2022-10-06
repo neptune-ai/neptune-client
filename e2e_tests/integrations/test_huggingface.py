@@ -21,12 +21,24 @@ import numpy as np
 import pytest
 import torch
 from faker import Faker
-from transformers import PretrainedConfig, PreTrainedModel, Trainer, TrainingArguments
-from transformers.integrations import NeptuneCallback, NeptuneMissingConfiguration
+from transformers import (
+    PretrainedConfig,
+    PreTrainedModel,
+    Trainer,
+    TrainingArguments,
+)
+from transformers.integrations import (
+    NeptuneCallback,
+    NeptuneMissingConfiguration,
+)
 from transformers.utils import logging
 
 from e2e_tests.base import BaseE2ETest
-from e2e_tests.utils import catch_time, modified_environ, tmp_context
+from e2e_tests.utils import (
+    catch_time,
+    modified_environ,
+    tmp_context,
+)
 from neptune.new import init_run
 
 MAX_OVERWHELMING_FACTOR = 1.2

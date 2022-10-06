@@ -35,8 +35,14 @@ from matplotlib.figure import Figure
 from PIL import Image
 from vega_datasets import data
 
-from neptune.new.internal.utils.images import get_html_content, get_image_content
-from neptune.utils import IS_MACOS, IS_WINDOWS
+from neptune.new.internal.utils.images import (
+    get_html_content,
+    get_image_content,
+)
+from neptune.utils import (
+    IS_MACOS,
+    IS_WINDOWS,
+)
 
 matplotlib.use("agg")
 

@@ -20,8 +20,15 @@ from pathlib import Path
 
 import pytest
 
-from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
-from e2e_tests.utils import tmp_context, with_check_if_file_appears
+from e2e_tests.base import (
+    AVAILABLE_CONTAINERS,
+    BaseE2ETest,
+    fake,
+)
+from e2e_tests.utils import (
+    tmp_context,
+    with_check_if_file_appears,
+)
 from neptune.new.metadata_containers import MetadataContainer
 
 

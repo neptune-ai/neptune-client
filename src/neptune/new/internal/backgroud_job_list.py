@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 import time
-from typing import TYPE_CHECKING, List, Optional
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Optional,
+)
 
 from neptune.new.internal.background_job import BackgroundJob
 

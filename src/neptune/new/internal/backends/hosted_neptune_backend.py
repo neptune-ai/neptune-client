@@ -17,9 +17,23 @@ import logging
 import os
 import re
 import typing
-from typing import TYPE_CHECKING, Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import (
+    TYPE_CHECKING,
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
-from bravado.exception import HTTPConflict, HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
+from bravado.exception import (
+    HTTPConflict,
+    HTTPNotFound,
+    HTTPPaymentRequired,
+    HTTPUnprocessableEntity,
+)
 
 from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
@@ -65,7 +79,10 @@ from neptune.new.internal.backends.api_model import (
     StringSetAttribute,
     Workspace,
 )
-from neptune.new.internal.backends.hosted_artifact_operations import track_to_existing_artifact, track_to_new_artifact
+from neptune.new.internal.backends.hosted_artifact_operations import (
+    track_to_existing_artifact,
+    track_to_new_artifact,
+)
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_artifacts_client,
@@ -94,7 +111,10 @@ from neptune.new.internal.backends.utils import (
 )
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.id_formats import QualifiedName, UniqueId
+from neptune.new.internal.id_formats import (
+    QualifiedName,
+    UniqueId,
+)
 from neptune.new.internal.operation import (
     DeleteAttribute,
     Operation,

@@ -18,7 +18,11 @@ import logging
 import os
 import time
 from itertools import groupby
-from typing import TYPE_CHECKING, Dict, Optional
+from typing import (
+    TYPE_CHECKING,
+    Dict,
+    Optional,
+)
 
 from neptune.internal.hardware.gauges.gauge_factory import GaugeFactory
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode

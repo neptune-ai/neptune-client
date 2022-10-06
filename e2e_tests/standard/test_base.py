@@ -14,11 +14,18 @@
 # limitations under the License.
 #
 import random
-from datetime import datetime, timezone
+from datetime import (
+    datetime,
+    timezone,
+)
 
 import pytest
 
-from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
+from e2e_tests.base import (
+    AVAILABLE_CONTAINERS,
+    BaseE2ETest,
+    fake,
+)
 from neptune.new.metadata_containers import MetadataContainer
 
 

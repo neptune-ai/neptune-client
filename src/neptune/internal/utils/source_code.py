@@ -17,10 +17,17 @@
 import os
 import os.path
 import sys
-from typing import List, Optional, Tuple
+from typing import (
+    List,
+    Optional,
+    Tuple,
+)
 
 from neptune.internal.storage.storage_utils import normalize_file_name
-from neptune.utils import glob, is_ipython
+from neptune.utils import (
+    glob,
+    is_ipython,
+)
 
 
 def get_source_code_to_upload(
