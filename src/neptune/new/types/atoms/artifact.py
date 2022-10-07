@@ -14,7 +14,11 @@
 # limitations under the License.
 #
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Optional, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+    TypeVar,
+)
 
 from neptune.new.internal.artifacts.file_hasher import FileHasher
 from neptune.new.types.atoms.atom import Atom

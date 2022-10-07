@@ -20,9 +20,15 @@ import unittest
 
 from mock import patch
 
-from neptune.new import ANONYMOUS, init_model_version
+from neptune.new import (
+    ANONYMOUS,
+    init_model_version,
+)
 from neptune.new.attributes import String
-from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
+from neptune.new.envs import (
+    API_TOKEN_ENV_NAME,
+    PROJECT_ENV_NAME,
+)
 from neptune.new.exceptions import (
     NeptuneException,
     NeptuneOfflineModeChangeStageException,
@@ -37,10 +43,11 @@ from neptune.new.internal.backends.api_model import (
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
 from neptune.new.internal.container_type import ContainerType
-from tests.neptune.new.client.abstract_experiment_test_mixin import (
-    AbstractExperimentTestMixin,
+from tests.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
+from tests.neptune.new.utils.api_experiments_factory import (
+    api_model,
+    api_model_version,
 )
-from tests.neptune.new.utils.api_experiments_factory import api_model, api_model_version
 
 AN_API_MODEL = api_model()
 AN_API_MODEL_VERSION = api_model_version()

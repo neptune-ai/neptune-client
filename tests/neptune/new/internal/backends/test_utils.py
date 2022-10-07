@@ -17,7 +17,10 @@ import unittest
 import uuid
 from unittest.mock import Mock
 
-from neptune.new.attributes import Integer, String
+from neptune.new.attributes import (
+    Integer,
+    String,
+)
 from neptune.new.exceptions import FetchAttributeNotFoundException
 from neptune.new.internal import operation
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -31,9 +34,7 @@ from neptune.new.internal.container_type import ContainerType
 class TestNeptuneBackendMock(unittest.TestCase):
     def test_building_operation_url(self):
         urls = {
-            build_operation_url(
-                "https://app.stage.neptune.ai", "api/leaderboard/v1/attributes/download"
-            ),
+            build_operation_url("https://app.stage.neptune.ai", "api/leaderboard/v1/attributes/download"),
             build_operation_url(
                 "https://app.stage.neptune.ai",
                 "/api/leaderboard/v1/attributes/download",
@@ -131,9 +132,7 @@ class TestExecuteOperationsBatchingManager(unittest.TestCase):
         ]
 
         batch = manager.get_batch(operations)
-        expected_batch = [
-            operation.AssignInt(operations[0].path, backend.get_int_attribute.return_value.value)
-        ]
+        expected_batch = [operation.AssignInt(operations[0].path, backend.get_int_attribute.return_value.value)]
         self.assertEqual(expected_batch, batch.operations)
         self.assertEqual([], batch.errors)
         self.assertEqual(0, batch.dropped_operations_count)

@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 
-from abc import ABC, abstractmethod
+from abc import (
+    ABC,
+    abstractmethod,
+)
 from typing import Dict
 
 from neptune.model import ChannelWithLastValue

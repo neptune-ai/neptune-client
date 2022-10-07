@@ -17,13 +17,26 @@
 # pylint: disable=protected-access
 import os
 import unittest
-from io import BytesIO, StringIO
+from io import (
+    BytesIO,
+    StringIO,
+)
 
 from mock import MagicMock
 
-from neptune.new.attributes.atoms.file import File, FileVal
-from neptune.new.attributes.file_set import FileSet, FileSetVal
-from neptune.new.internal.operation import UploadFile, UploadFileContent, UploadFileSet
+from neptune.new.attributes.atoms.file import (
+    File,
+    FileVal,
+)
+from neptune.new.attributes.file_set import (
+    FileSet,
+    FileSetVal,
+)
+from neptune.new.internal.operation import (
+    UploadFile,
+    UploadFileContent,
+    UploadFileSet,
+)
 from neptune.new.internal.utils import base64_encode
 from neptune.utils import IS_WINDOWS
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
@@ -79,9 +92,7 @@ class TestFile(TestAttributeBase):
             )
             var = File(exp, path)
             var.upload(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(
-                UploadFile(path=path, ext="", file_path=expected), wait
-            )
+            processor.enqueue_operation.assert_called_once_with(UploadFile(path=path, ext="", file_path=expected), wait)
 
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_save_files(self):
@@ -96,9 +107,7 @@ class TestFile(TestAttributeBase):
             )
             var = FileSet(exp, path)
             var.upload_files(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(
-                UploadFileSet(path, expected, False), wait
-            )
+            processor.enqueue_operation.assert_called_once_with(UploadFileSet(path, expected, False), wait)
 
     def test_save_type_error(self):
         values = [55, None, [], FileVal]

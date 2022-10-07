@@ -19,7 +19,10 @@ import unittest
 
 import matplotlib
 
-from neptune.utils import IS_MACOS, IS_WINDOWS
+from neptune.utils import (
+    IS_MACOS,
+    IS_WINDOWS,
+)
 
 matplotlib.use("agg")
 from uuid import uuid4
@@ -104,9 +107,7 @@ class TestImage(unittest.TestCase):
         pyplot.ylabel("some interesting numbers")
         figure = pyplot.gcf()
         figure.canvas.draw()
-        expected_image = Image.frombytes(
-            "RGB", figure.canvas.get_width_height(), figure.canvas.tostring_rgb()
-        )
+        expected_image = Image.frombytes("RGB", figure.canvas.get_width_height(), figure.canvas.tostring_rgb())
 
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))

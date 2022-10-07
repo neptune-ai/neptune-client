@@ -20,23 +20,26 @@ import time
 import traceback
 from logging import StreamHandler
 
-from neptune.internal.abort import CustomAbortImpl, DefaultAbortImpl
+from neptune.internal.abort import (
+    CustomAbortImpl,
+    DefaultAbortImpl,
+)
 from neptune.internal.channels.channels import ChannelNamespace
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.internal.hardware.metrics.service.metric_service_factory import (
-    MetricServiceFactory,
-)
+from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.internal.streams.channel_writer import ChannelWriter
 from neptune.internal.streams.stdstream_uploader import (
     StdErrWithUpload,
     StdOutWithUpload,
 )
 from neptune.internal.threads.aborting_thread import AbortingThread
-from neptune.internal.threads.hardware_metric_reporting_thread import (
-    HardwareMetricReportingThread,
-)
+from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
-from neptune.utils import in_docker, is_ipython, is_notebook
+from neptune.utils import (
+    in_docker,
+    is_ipython,
+    is_notebook,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -88,9 +91,7 @@ class ExecutionContext(object):
         if abortable:
             self._run_aborting_thread(abort_callback)
         else:
-            _logger.warning(
-                "psutil is not installed. You will not be able to abort this experiment from the UI."
-            )
+            _logger.warning("psutil is not installed. You will not be able to abort this experiment from the UI.")
 
         if run_monitoring_thread:
             self._run_monitoring_thread()

@@ -18,7 +18,10 @@ from neptune.internal.hardware.gauges.cpu import (
     SystemCpuUsageGauge,
 )
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.internal.hardware.gauges.gpu import GpuMemoryGauge, GpuUsageGauge
+from neptune.internal.hardware.gauges.gpu import (
+    GpuMemoryGauge,
+    GpuUsageGauge,
+)
 from neptune.internal.hardware.gauges.memory import (
     CGroupMemoryUsageGauge,
     SystemMemoryUsageGauge,

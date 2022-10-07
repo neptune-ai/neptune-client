@@ -18,7 +18,10 @@ import threading
 import time
 from collections import namedtuple
 from itertools import groupby
-from queue import Empty, Queue
+from queue import (
+    Empty,
+    Queue,
+)
 
 from bravado.exception import HTTPUnprocessableEntity
 
@@ -79,9 +82,7 @@ class ChannelsValuesSender(object):
         if channel_name in namespaced_channel_map:
             channel_id = namespaced_channel_map[channel_name]
         else:
-            response = self._experiment._create_channel(
-                channel_name, channel_type, channel_namespace
-            )
+            response = self._experiment._create_channel(channel_name, channel_type, channel_namespace)
             channel_id = response.id
             namespaced_channel_map[channel_name] = channel_id
 
@@ -104,11 +105,7 @@ class ChannelsValuesSender(object):
                 self._values_queue = None
 
     def _is_running(self):
-        return (
-            self._values_queue is not None
-            and self._sending_thread is not None
-            and self._sending_thread.is_alive()
-        )
+        return self._values_queue is not None and self._sending_thread is not None and self._sending_thread.is_alive()
 
     def _start(self):
         self._values_queue = Queue()

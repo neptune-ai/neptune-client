@@ -31,7 +31,10 @@ from neptune.exceptions import (
     DeprecatedApiToken,
     UnsupportedClientVersion,
 )
-from neptune.internal.api_clients.client_config import ClientConfig, MultipartConfig
+from neptune.internal.api_clients.client_config import (
+    ClientConfig,
+    MultipartConfig,
+)
 from neptune.utils import with_api_exceptions_handler
 
 _logger = logging.getLogger(__name__)

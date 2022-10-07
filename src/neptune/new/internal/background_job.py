@@ -15,7 +15,10 @@
 #
 
 import abc
-from typing import TYPE_CHECKING, Optional
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+)
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer

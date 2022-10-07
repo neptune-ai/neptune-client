@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 from datetime import datetime
-from typing import TYPE_CHECKING, TypeVar
+from typing import (
+    TYPE_CHECKING,
+    TypeVar,
+)
 
 from neptune.new.types.atoms.atom import Atom
 

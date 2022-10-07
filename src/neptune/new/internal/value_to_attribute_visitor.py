@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import TYPE_CHECKING, List, Type
+from typing import (
+    TYPE_CHECKING,
+    List,
+    Type,
+)
 
 from neptune.new.attributes.atoms.artifact import Artifact as ArtifactAttr
 from neptune.new.attributes.atoms.boolean import Boolean as BooleanAttr
@@ -30,7 +34,10 @@ from neptune.new.attributes.series.float_series import FloatSeries as FloatSerie
 from neptune.new.attributes.series.string_series import StringSeries as StringSeriesAttr
 from neptune.new.attributes.sets.string_set import StringSet as StringSetAttr
 from neptune.new.exceptions import OperationNotSupported
-from neptune.new.types import Boolean, Integer
+from neptune.new.types import (
+    Boolean,
+    Integer,
+)
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime

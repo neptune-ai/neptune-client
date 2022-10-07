@@ -18,7 +18,10 @@ import threading
 from pathlib import Path
 from typing import Optional
 
-from neptune.new.constants import ASYNC_DIRECTORY, OFFLINE_DIRECTORY
+from neptune.new.constants import (
+    ASYNC_DIRECTORY,
+    OFFLINE_DIRECTORY,
+)
 from neptune.new.exceptions import MetadataContainerNotFound
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.container_type import ContainerType

@@ -24,7 +24,11 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 from bravado.testing.response_mocks import BravadoResponseMock
-from mock import MagicMock, Mock, patch
+from mock import (
+    MagicMock,
+    Mock,
+    patch,
+)
 
 from neptune.management import (
     MemberRole,
@@ -46,9 +50,7 @@ from neptune.management.exceptions import (
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
 )
-from neptune.new.internal.backends.hosted_client import (
-    _get_token_client,  # pylint:disable=protected-access
-)
+from neptune.new.internal.backends.hosted_client import _get_token_client  # pylint:disable=protected-access
 from neptune.new.internal.backends.hosted_client import (
     create_artifacts_client,
     create_backend_client,
@@ -86,9 +88,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # given:
-        swagger_client.api.listProjects.return_value.response = BravadoResponseMock(
-            result=Mock(entries=[])
-        )
+        swagger_client.api.listProjects.return_value.response = BravadoResponseMock(result=Mock(entries=[]))
 
         # when:
         returned_projects = get_project_list(api_token=API_TOKEN)
@@ -152,9 +152,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
 
         # when:
-        swagger_client.api.listOrganizationMembers.side_effect = HTTPNotFound(
-            response=response_mock()
-        )
+        swagger_client.api.listOrganizationMembers.side_effect = HTTPNotFound(response=response_mock())
 
         # then:
         with self.assertRaises(WorkspaceNotFound):
@@ -319,9 +317,7 @@ class TestHostedClient(unittest.TestCase, BackendTestMixin):
         )
 
         # then:
-        self.assertEqual(
-            "org/proj", create_project(name="org/proj", key="PRJ", api_token=API_TOKEN)
-        )
+        self.assertEqual("org/proj", create_project(name="org/proj", key="PRJ", api_token=API_TOKEN))
 
     def test_add_project_member_project_not_found(self, swagger_client_factory):
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)

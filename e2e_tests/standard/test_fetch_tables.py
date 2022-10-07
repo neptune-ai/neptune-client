@@ -20,7 +20,10 @@ import uuid
 import pytest
 
 import neptune.new as neptune
-from e2e_tests.base import BaseE2ETest, fake
+from e2e_tests.base import (
+    BaseE2ETest,
+    fake,
+)
 from e2e_tests.utils import a_key
 from neptune.new.metadata_containers import Model
 
@@ -62,9 +65,7 @@ class TestFetchTable(BaseE2ETest):
         )
         assert len(versions_table) == versions_to_initialize
         for index in range(versions_to_initialize):
-            assert (
-                versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
-            )
+            assert versions_table[index].get_attribute_value("sys/id") == f"{model_sys_id}-{index + 1}"
 
     def _test_fetch_from_container(self, init_container, get_containers_as_rows):
         container_id1, container_id2 = None, None
@@ -88,12 +89,8 @@ class TestFetchTable(BaseE2ETest):
         time.sleep(5)
 
         containers_as_rows = get_containers_as_rows()
-        container1 = next(
-            filter(lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows)
-        )
-        container2 = next(
-            filter(lambda m: m.get_attribute_value("sys/id") == container_id2, containers_as_rows)
-        )
+        container1 = next(filter(lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows))
+        container2 = next(filter(lambda m: m.get_attribute_value("sys/id") == container_id2, containers_as_rows))
 
         assert container1.get_attribute_value(key1) == value1
         assert container1.get_attribute_value(key2) == value2
@@ -103,11 +100,7 @@ class TestFetchTable(BaseE2ETest):
 
         def get_container1(**kwargs):
             containers_as_rows = get_containers_as_rows(**kwargs)
-            return next(
-                filter(
-                    lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows
-                )
-            )
+            return next(filter(lambda m: m.get_attribute_value("sys/id") == container_id1, containers_as_rows))
 
         non_filtered = get_container1()
         assert non_filtered.get_attribute_value(key1) == value1

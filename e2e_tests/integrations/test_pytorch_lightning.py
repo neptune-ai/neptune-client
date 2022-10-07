@@ -19,10 +19,16 @@ import re
 import pytest
 import pytorch_lightning
 import torch
-from pytorch_lightning import LightningModule, Trainer
+from pytorch_lightning import (
+    LightningModule,
+    Trainer,
+)
 from pytorch_lightning.callbacks import ModelCheckpoint
 from pytorch_lightning.loggers.neptune import NeptuneLogger
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import (
+    DataLoader,
+    Dataset,
+)
 
 import neptune.new as neptune
 from e2e_tests.base import BaseE2ETest

@@ -15,10 +15,20 @@
 #
 
 # pylint: disable=protected-access
-from mock import MagicMock, call
+from mock import (
+    MagicMock,
+    call,
+)
 
-from neptune.new.attributes.sets.string_set import StringSet, StringSetVal
-from neptune.new.internal.operation import AddStrings, ClearStringSet, RemoveStrings
+from neptune.new.attributes.sets.string_set import (
+    StringSet,
+    StringSetVal,
+)
+from neptune.new.internal.operation import (
+    AddStrings,
+    ClearStringSet,
+    RemoveStrings,
+)
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -66,9 +76,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.add(["a", "bb", "ccc"], wait=wait)
-        processor.enqueue_operation.assert_called_once_with(
-            AddStrings(path, {"a", "bb", "ccc"}), wait
-        )
+        processor.enqueue_operation.assert_called_once_with(AddStrings(path, {"a", "bb", "ccc"}), wait)
 
     def test_add_single_value(self):
         processor = MagicMock()
@@ -90,9 +98,7 @@ class TestStringSet(TestAttributeBase):
         )
         var = StringSet(exp, path)
         var.remove(["a", "bb", "ccc"], wait=wait)
-        processor.enqueue_operation.assert_called_once_with(
-            RemoveStrings(path, {"a", "bb", "ccc"}), wait
-        )
+        processor.enqueue_operation.assert_called_once_with(RemoveStrings(path, {"a", "bb", "ccc"}), wait)
 
     def test_remove_single_value(self):
         processor = MagicMock()

@@ -17,8 +17,14 @@ import logging
 import os
 import sys
 import threading
-from time import monotonic, time
-from typing import List, Optional
+from time import (
+    monotonic,
+    time,
+)
+from typing import (
+    List,
+    Optional,
+)
 
 from neptune.new.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
@@ -26,9 +32,7 @@ from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
-from neptune.new.internal.operation_processors.operation_processor import (
-    OperationProcessor,
-)
+from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.threading.daemon import Daemon
 from neptune.new.internal.utils.logger import logger
 
@@ -91,8 +95,7 @@ class AsyncOperationProcessor(OperationProcessor):
         # Probably reentering lock just for sure
         with self._waiting_cond:
             self._waiting_cond.wait_for(
-                lambda: self._consumed_version >= waiting_for_version
-                or not self._consumer.is_running()
+                lambda: self._consumed_version >= waiting_for_version or not self._consumer.is_running()
             )
         if not self._consumer.is_running():
             raise NeptuneSynchronizationAlreadyStoppedException()
@@ -106,9 +109,7 @@ class AsyncOperationProcessor(OperationProcessor):
     def _wait_for_queue_empty(self, initial_queue_size: int, seconds: Optional[float]):
         waiting_start = monotonic()
         time_elapsed = 0
-        max_reconnect_wait_time = (
-            self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
-        )
+        max_reconnect_wait_time = self.STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS if seconds is None else seconds
         if initial_queue_size > 0:
             if self._consumer.last_backoff_time > 0:
                 logger.warning(
@@ -121,8 +122,7 @@ class AsyncOperationProcessor(OperationProcessor):
                 )
             else:
                 logger.warning(
-                    "Waiting for the remaining %s operations to synchronize with Neptune."
-                    " Do not kill this process.",
+                    "Waiting for the remaining %s operations to synchronize with Neptune." " Do not kill this process.",
                     initial_queue_size,
                 )
 
@@ -140,9 +140,7 @@ class AsyncOperationProcessor(OperationProcessor):
             self._queue.wait_for_empty(wait_time)
             size_remaining = self._queue.size()
             already_synced = initial_queue_size - size_remaining
-            already_synced_proc = (
-                (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
-            )
+            already_synced_proc = (already_synced / initial_queue_size) * 100 if initial_queue_size else 100
             if size_remaining == 0:
                 logger.info("All %s operations synced, thanks for waiting!", initial_queue_size)
                 return

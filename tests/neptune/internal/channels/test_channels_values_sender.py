@@ -50,9 +50,7 @@ class TestChannelsValuesSender(unittest.TestCase):
 
     _OTHER_CHANNEL = a_channel()
 
-    _CHANNELS = {
-        c.name: c for c in [_NUMERIC_CHANNEL, _TEXT_CHANNEL, _IMAGE_CHANNEL, _OTHER_CHANNEL]
-    }
+    _CHANNELS = {c.name: c for c in [_NUMERIC_CHANNEL, _TEXT_CHANNEL, _IMAGE_CHANNEL, _OTHER_CHANNEL]}
 
     # pylint: disable=protected-access
     _BATCH_SIZE = ChannelsValuesSendingThread._MAX_VALUES_BATCH_LENGTH
@@ -88,9 +86,7 @@ class TestChannelsValuesSender(unittest.TestCase):
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
 
         # when
-        channels_values_sender.send(
-            self._TEXT_CHANNEL.name, self._TEXT_CHANNEL.channelType, channel_value
-        )
+        channels_values_sender.send(self._TEXT_CHANNEL.name, self._TEXT_CHANNEL.channelType, channel_value)
         # and
         channels_values_sender.join()
 
@@ -111,17 +107,14 @@ class TestChannelsValuesSender(unittest.TestCase):
     def test_send_values_in_multiple_batches(self):
         # given
         channels_values = [
-            ChannelValue(x=i, y="value{}".format(i), ts=self._TS + i)
-            for i in range(0, self._BATCH_SIZE * 3)
+            ChannelValue(x=i, y="value{}".format(i), ts=self._TS + i) for i in range(0, self._BATCH_SIZE * 3)
         ]
         # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
 
         # when
         for channel_value in channels_values:
-            channels_values_sender.send(
-                self._TEXT_CHANNEL.name, self._TEXT_CHANNEL.channelType, channel_value
-            )
+            channels_values_sender.send(self._TEXT_CHANNEL.name, self._TEXT_CHANNEL.channelType, channel_value)
         # and
         channels_values_sender.join()
 
@@ -159,9 +152,7 @@ class TestChannelsValuesSender(unittest.TestCase):
                             channel_name=self._TEXT_CHANNEL.name,
                             channel_type=self._TEXT_CHANNEL.channelType,
                             channel_namespace=ChannelNamespace.USER,
-                            channel_values=channels_values[
-                                self._BATCH_SIZE * 2 : self._BATCH_SIZE * 3
-                            ],
+                            channel_values=channels_values[self._BATCH_SIZE * 2 : self._BATCH_SIZE * 3],
                         )
                     ]
                 ),
@@ -174,11 +165,7 @@ class TestChannelsValuesSender(unittest.TestCase):
         channels_values = [
             ChannelValue(
                 x=i,
-                y={
-                    "image_value": {
-                        "data": value + value * int(self._IMAGES_BATCH_IMAGE_SIZE / (len(value)))
-                    }
-                },
+                y={"image_value": {"data": value + value * int(self._IMAGES_BATCH_IMAGE_SIZE / (len(value)))}},
                 ts=self._TS + i,
             )
             for i in range(0, self._IMAGES_BATCH_SIZE * 3)
@@ -188,9 +175,7 @@ class TestChannelsValuesSender(unittest.TestCase):
 
         # when
         for channel_value in channels_values:
-            channels_values_sender.send(
-                self._IMAGE_CHANNEL.name, self._IMAGE_CHANNEL.channelType, channel_value
-            )
+            channels_values_sender.send(self._IMAGE_CHANNEL.name, self._IMAGE_CHANNEL.channelType, channel_value)
         # and
         channels_values_sender.join()
 
@@ -217,9 +202,7 @@ class TestChannelsValuesSender(unittest.TestCase):
                             channel_name=self._IMAGE_CHANNEL.name,
                             channel_type=self._IMAGE_CHANNEL.channelType,
                             channel_namespace=ChannelNamespace.USER,
-                            channel_values=channels_values[
-                                self._IMAGES_BATCH_SIZE : self._IMAGES_BATCH_SIZE * 2
-                            ],
+                            channel_values=channels_values[self._IMAGES_BATCH_SIZE : self._IMAGES_BATCH_SIZE * 2],
                         )
                     ]
                 ),
@@ -244,8 +227,7 @@ class TestChannelsValuesSender(unittest.TestCase):
         text_values = [ChannelValue(x=i, y="text", ts=self._TS + i) for i in range(0, 3)]
 
         image_values = [
-            ChannelValue(x=i, y={"image_value": {"data": "base64Image=="}}, ts=self._TS + i)
-            for i in range(0, 3)
+            ChannelValue(x=i, y={"image_value": {"data": "base64Image=="}}, ts=self._TS + i) for i in range(0, 3)
         ]
         # and
         channels_values_sender = ChannelsValuesSender(experiment=self._EXPERIMENT)
@@ -259,14 +241,10 @@ class TestChannelsValuesSender(unittest.TestCase):
             )
 
         for channel_value in text_values:
-            channels_values_sender.send(
-                self._TEXT_CHANNEL.name, self._TEXT_CHANNEL.channelType, channel_value
-            )
+            channels_values_sender.send(self._TEXT_CHANNEL.name, self._TEXT_CHANNEL.channelType, channel_value)
 
         for channel_value in image_values:
-            channels_values_sender.send(
-                self._IMAGE_CHANNEL.name, self._IMAGE_CHANNEL.channelType, channel_value
-            )
+            channels_values_sender.send(self._IMAGE_CHANNEL.name, self._IMAGE_CHANNEL.channelType, channel_value)
 
         # and
         channels_values_sender.join()

@@ -17,8 +17,19 @@ import base64
 import logging
 import os
 from glob import glob
-from io import BytesIO, IOBase
-from typing import Iterable, List, Mapping, Optional, Set, TypeVar, Union
+from io import (
+    BytesIO,
+    IOBase,
+)
+from typing import (
+    Iterable,
+    List,
+    Mapping,
+    Optional,
+    Set,
+    TypeVar,
+    Union,
+)
 
 from neptune.new.internal.utils import limits
 

@@ -20,9 +20,15 @@ from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
 from neptune.internal.hardware.gauges.cpu import SystemCpuUsageGauge
 from neptune.internal.hardware.gauges.gauge_factory import GaugeFactory
 from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.internal.hardware.gauges.gpu import GpuMemoryGauge, GpuUsageGauge
+from neptune.internal.hardware.gauges.gpu import (
+    GpuMemoryGauge,
+    GpuUsageGauge,
+)
 from neptune.internal.hardware.gauges.memory import SystemMemoryUsageGauge
-from neptune.internal.hardware.metrics.metric import Metric, MetricResourceType
+from neptune.internal.hardware.metrics.metric import (
+    Metric,
+    MetricResourceType,
+)
 from neptune.internal.hardware.metrics.metrics_factory import MetricsFactory
 from neptune.internal.hardware.resources.system_resource_info import SystemResourceInfo
 

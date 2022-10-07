@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 import abc
-from typing import Generic, TypeVar
+from typing import (
+    Generic,
+    TypeVar,
+)
 
 from neptune.new.internal.operation import (
     AddStrings,

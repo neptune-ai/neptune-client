@@ -16,7 +16,10 @@
 import unittest
 import uuid
 
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.new.exceptions import ArtifactUploadingError
 from neptune.new.internal.artifacts.types import ArtifactFileData
@@ -75,9 +78,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
     @patch("neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash")
     @patch("neptune.new.internal.backends.hosted_artifact_operations._extract_file_list")
     @patch("neptune.new.internal.backends.hosted_artifact_operations.create_new_artifact")
-    @patch(
-        "neptune.new.internal.backends.hosted_artifact_operations.upload_artifact_files_metadata"
-    )
+    @patch("neptune.new.internal.backends.hosted_artifact_operations.upload_artifact_files_metadata")
     def test_track_to_new_artifact_calls_upload(
         self,
         upload_artifact_files_metadata,
@@ -114,9 +115,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
 
     @patch("neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash")
     @patch("neptune.new.internal.backends.hosted_artifact_operations._extract_file_list")
-    def test_track_to_new_artifact_raises_exception(
-        self, _extract_file_list, _compute_artifact_hash
-    ):
+    def test_track_to_new_artifact_raises_exception(self, _extract_file_list, _compute_artifact_hash):
         # given
         swagger_mock = self._get_swagger_mock()
         _compute_artifact_hash.return_value = self.artifact_hash
@@ -166,9 +165,7 @@ class TestHostedArtifactOperations(unittest.TestCase):
 
     @patch("neptune.new.internal.backends.hosted_artifact_operations._compute_artifact_hash")
     @patch("neptune.new.internal.backends.hosted_artifact_operations._extract_file_list")
-    def test_track_to_existing_artifact_raises_exception(
-        self, _extract_file_list, _compute_artifact_hash
-    ):
+    def test_track_to_existing_artifact_raises_exception(self, _extract_file_list, _compute_artifact_hash):
         # given
         swagger_mock = self._get_swagger_mock()
         _compute_artifact_hash.return_value = self.artifact_hash
@@ -192,7 +189,5 @@ class TestHostedArtifactOperations(unittest.TestCase):
         swagger_mock.swagger_spec.http_client = MagicMock()
         swagger_mock.swagger_spec.api_url = "ui.neptune.ai"
         swagger_mock.api.createNewArtifact.operation.path_name = "/createNewArtifact"
-        swagger_mock.api.uploadArtifactFilesMetadata.operation.path_name = (
-            "/uploadArtifactFilesMetadata"
-        )
+        swagger_mock.api.uploadArtifactFilesMetadata.operation.path_name = "/uploadArtifactFilesMetadata"
         return swagger_mock

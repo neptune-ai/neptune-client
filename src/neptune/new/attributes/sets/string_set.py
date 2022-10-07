@@ -15,10 +15,17 @@
 #
 
 import typing
-from typing import Iterable, Union
+from typing import (
+    Iterable,
+    Union,
+)
 
 from neptune.new.attributes.sets.set import Set
-from neptune.new.internal.operation import AddStrings, ClearStringSet, RemoveStrings
+from neptune.new.internal.operation import (
+    AddStrings,
+    ClearStringSet,
+    RemoveStrings,
+)
 from neptune.new.internal.utils import (
     is_collection,
     verify_collection_type,
@@ -53,9 +60,7 @@ class StringSet(Set):
 
     def fetch(self) -> typing.Set[str]:
         # pylint: disable=protected-access
-        val = self._backend.get_string_set_attribute(
-            self._container_id, self._container_type, self._path
-        )
+        val = self._backend.get_string_set_attribute(self._container_id, self._container_type, self._path)
         return val.values
 
     @staticmethod

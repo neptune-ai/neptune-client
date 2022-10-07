@@ -20,7 +20,10 @@ import uuid
 from unittest.mock import Mock
 
 from _pytest.monkeypatch import MonkeyPatch
-from mock import MagicMock, call
+from mock import (
+    MagicMock,
+    call,
+)
 
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.exceptions import NeptuneUnhandledArtifactTypeException

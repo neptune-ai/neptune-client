@@ -28,6 +28,4 @@ from neptune.new.metadata_containers.metadata_containers_table import (
     LeaderboardHandler,
 )
 from neptune.new.metadata_containers.metadata_containers_table import Table as RunsTable
-from neptune.new.metadata_containers.metadata_containers_table import (
-    TableEntry as RunsTableEntry,
-)
+from neptune.new.metadata_containers.metadata_containers_table import TableEntry as RunsTableEntry

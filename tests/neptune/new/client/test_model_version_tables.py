@@ -19,7 +19,10 @@ from typing import List
 
 from neptune.new import init_model
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.metadata_containers.metadata_containers_table import Table, TableEntry
+from neptune.new.metadata_containers.metadata_containers_table import (
+    Table,
+    TableEntry,
+)
 from tests.neptune.new.client.abstract_tables_test import AbstractTablesTestMixin
 
 

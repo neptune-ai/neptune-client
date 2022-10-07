@@ -19,7 +19,14 @@ import os
 import threading
 from glob import glob
 from pathlib import Path
-from typing import Callable, Generic, List, Optional, Tuple, TypeVar
+from typing import (
+    Callable,
+    Generic,
+    List,
+    Optional,
+    Tuple,
+    TypeVar,
+)
 
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter

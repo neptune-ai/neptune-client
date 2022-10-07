@@ -18,9 +18,16 @@ import io
 import math
 import os
 import tarfile
-from typing import Any, Generator, Optional
+from typing import (
+    Any,
+    Generator,
+    Optional,
+)
 
-from neptune.new.exceptions import InternalClientError, UploadedFileChanged
+from neptune.new.exceptions import (
+    InternalClientError,
+    UploadedFileChanged,
+)
 from neptune.new.internal.backends.api_model import MultipartConfig
 
 
@@ -32,9 +39,7 @@ class FileChunk:
 
 
 class FileChunker:
-    def __init__(
-        self, filename: Optional[str], fobj, total_size, multipart_config: MultipartConfig
-    ):
+    def __init__(self, filename: Optional[str], fobj, total_size, multipart_config: MultipartConfig):
         self._filename: Optional[str] = filename
         self._fobj = fobj
         self._total_size = total_size

@@ -114,9 +114,7 @@ def get_channel_name_stems(columns):
 
 
 def merge_dataframes(dataframes, on, how="outer"):
-    merged_df = functools.reduce(
-        lambda left, right: pd.merge(left, right, on=on, how=how), dataframes
-    )
+    merged_df = functools.reduce(lambda left, right: pd.merge(left, right, on=on, how=how), dataframes)
     return merged_df
 
 
@@ -143,9 +141,7 @@ def file_contains(filename, text):
 
 def in_docker():
     cgroup_file = "/proc/self/cgroup"
-    return os.path.exists("./dockerenv") or (
-        os.path.exists(cgroup_file) and file_contains(cgroup_file, text="docker")
-    )
+    return os.path.exists("./dockerenv") or (os.path.exists(cgroup_file) and file_contains(cgroup_file, text="docker"))
 
 
 def is_notebook():
@@ -255,9 +251,7 @@ def with_api_exceptions_handler(func):
                 raise NeptuneSSLVerificationError()
             except HTTPServiceUnavailable as e:
                 if retry >= 6:
-                    _logger.warning(
-                        "Experiencing connection interruptions. Reestablishing communication with Neptune."
-                    )
+                    _logger.warning("Experiencing connection interruptions. Reestablishing communication with Neptune.")
                 time.sleep(2**retry)
                 retry += 1
                 continue
@@ -274,9 +268,7 @@ def with_api_exceptions_handler(func):
                 NewConnectionError,
             ):
                 if retry >= 6:
-                    _logger.warning(
-                        "Experiencing connection interruptions. Reestablishing communication with Neptune."
-                    )
+                    _logger.warning("Experiencing connection interruptions. Reestablishing communication with Neptune.")
                 time.sleep(2**retry)
                 retry += 1
                 continue

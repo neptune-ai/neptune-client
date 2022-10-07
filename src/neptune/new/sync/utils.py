@@ -30,7 +30,13 @@ import os
 import textwrap
 import threading
 from pathlib import Path
-from typing import Iterator, List, Optional, Tuple, Union
+from typing import (
+    Iterator,
+    List,
+    Optional,
+    Tuple,
+    Union,
+)
 
 from neptune.new.constants import OFFLINE_DIRECTORY
 from neptune.new.envs import PROJECT_ENV_NAME
@@ -39,11 +45,17 @@ from neptune.new.exceptions import (
     NeptuneException,
     ProjectNotFound,
 )
-from neptune.new.internal.backends.api_model import ApiExperiment, Project
+from neptune.new.internal.backends.api_model import (
+    ApiExperiment,
+    Project,
+)
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.id_formats import QualifiedName, UniqueId
+from neptune.new.internal.id_formats import (
+    QualifiedName,
+    UniqueId,
+)
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.logger import logger
 
@@ -59,9 +71,7 @@ def get_metadata_container(
     except MetadataContainerNotFound:
         logger.warning("Can't fetch %s %s. Skipping.", public_container_type, container_id)
     except NeptuneException as e:
-        logger.warning(
-            "Exception while fetching %s %s. Skipping.", public_container_type, container_id
-        )
+        logger.warning("Exception while fetching %s %s. Skipping.", public_container_type, container_id)
         logging.exception(e)
 
     return None
@@ -82,9 +92,7 @@ def _project_not_found_message(project_name: QualifiedName) -> str:
     )
 
 
-def get_project(
-    project_name_flag: Optional[QualifiedName], backend: NeptuneBackend
-) -> Optional[Project]:
+def get_project(project_name_flag: Optional[QualifiedName], backend: NeptuneBackend) -> Optional[Project]:
     project_name = project_name_flag or QualifiedName(os.getenv(PROJECT_ENV_NAME))
     if not project_name:
         logger.warning(textwrap.fill(_project_name_missing_message))

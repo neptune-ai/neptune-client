@@ -15,10 +15,16 @@
 #
 import unittest
 
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
-from neptune.internal.hardware.gauges.gpu import GpuMemoryGauge, GpuUsageGauge
+from neptune.internal.hardware.gauges.gpu import (
+    GpuMemoryGauge,
+    GpuUsageGauge,
+)
 
 
 @patch("neptune.internal.hardware.gpu.gpu_monitor.nvmlInit", MagicMock())
@@ -41,9 +47,7 @@ class TestGPUGauges(unittest.TestCase):
         # and
         util_info = MagicMock()
         util_info.gpu = 40
-        nvmlDeviceGetMemoryInfo.side_effect = (
-            lambda handle: util_info if handle == self.gpu_card_handle else None
-        )
+        nvmlDeviceGetMemoryInfo.side_effect = lambda handle: util_info if handle == self.gpu_card_handle else None
 
         # when
         usage_percent = gauge.value()
@@ -59,9 +63,7 @@ class TestGPUGauges(unittest.TestCase):
         # and
         memory_info = MagicMock()
         memory_info.used = 3 * BYTES_IN_ONE_GB
-        nvmlDeviceGetMemoryInfo.side_effect = (
-            lambda handle: memory_info if handle == self.gpu_card_handle else None
-        )
+        nvmlDeviceGetMemoryInfo.side_effect = lambda handle: memory_info if handle == self.gpu_card_handle else None
 
         # when
         memory_gb = gauge.value()

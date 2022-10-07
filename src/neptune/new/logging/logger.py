@@ -16,7 +16,10 @@
 
 # backwards compatibility
 # pylint: disable=unused-import
-from neptune.new.metadata_containers import MetadataContainer, Run
+from neptune.new.metadata_containers import (
+    MetadataContainer,
+    Run,
+)
 
 
 class Logger(object):

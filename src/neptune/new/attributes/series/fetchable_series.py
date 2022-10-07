@@ -15,7 +15,12 @@
 #
 import abc
 from datetime import datetime
-from typing import Dict, Generic, TypeVar, Union
+from typing import (
+    Dict,
+    Generic,
+    TypeVar,
+    Union,
+)
 
 from neptune.new.internal.backends.api_model import (
     FloatSeriesValues,

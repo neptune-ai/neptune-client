@@ -33,11 +33,7 @@ class TestDiskQueue(unittest.TestCase):
             self.txt = txt
 
         def __eq__(self, other):
-            return (
-                isinstance(other, TestDiskQueue.Obj)
-                and self.num == other.num
-                and self.txt == other.txt
-            )
+            return isinstance(other, TestDiskQueue.Obj) and self.num == other.num and self.txt == other.txt
 
     def test_put(self):
         with TemporaryDirectory() as dirpath:
@@ -125,9 +121,7 @@ class TestDiskQueue(unittest.TestCase):
             self.assertTrue(queue._write_file_version > 450)
             data_files = glob(dirpath + "/data-*.log")
             self.assertTrue(len(data_files) > 10)
-            data_files_versions = [
-                int(file[len(dirpath + "/data-") : -len(".log")]) for file in data_files
-            ]
+            data_files_versions = [int(file[len(dirpath + "/data-") : -len(".log")]) for file in data_files]
             self.assertTrue(len([ver for ver in data_files_versions if ver <= version_to_ack]) == 1)
             queue.close()
 

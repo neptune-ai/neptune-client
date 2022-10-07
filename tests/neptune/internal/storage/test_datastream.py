@@ -52,9 +52,7 @@ class TestFileChunker:
         ),
     )
     def test_chunk_size_for_small_file(self, file_size, expected_chunk_size, expected_chunk_count):
-        chunker = FileChunker(
-            Mock(), Mock(), total_size=file_size, multipart_config=self.multipart_config
-        )
+        chunker = FileChunker(Mock(), Mock(), total_size=file_size, multipart_config=self.multipart_config)
 
         chunk_size = chunker._get_chunk_size()
 
@@ -68,9 +66,7 @@ class TestFileChunker:
     def test_too_large_file(self):
         file_size = 1_073_741_824_001
 
-        chunker = FileChunker(
-            Mock(), Mock(), total_size=file_size, multipart_config=self.multipart_config
-        )
+        chunker = FileChunker(Mock(), Mock(), total_size=file_size, multipart_config=self.multipart_config)
 
         with pytest.raises(InternalClientError):
             chunker._get_chunk_size()

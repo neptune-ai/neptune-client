@@ -17,10 +17,17 @@
 import os
 import os.path
 import sys
-from typing import List, Optional, Tuple
+from typing import (
+    List,
+    Optional,
+    Tuple,
+)
 
 from neptune.internal.storage.storage_utils import normalize_file_name
-from neptune.utils import glob, is_ipython
+from neptune.utils import (
+    glob,
+    is_ipython,
+)
 
 
 def get_source_code_to_upload(
@@ -46,17 +53,11 @@ def get_source_code_to_upload(
         expanded_source_files = set()
         for filepath in upload_source_files:
             expanded_source_files |= set(glob(filepath))
-        if sys.version_info.major < 3 or (
-            sys.version_info.major == 3 and sys.version_info.minor < 5
-        ):
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
             for filepath in expanded_source_files:
                 if filepath.startswith(".."):
-                    raise ValueError(
-                        "You need to have Python 3.5 or later to use paths outside current directory."
-                    )
-                source_target_pairs.append(
-                    (os.path.abspath(filepath), normalize_file_name(filepath))
-                )
+                    raise ValueError("You need to have Python 3.5 or later to use paths outside current directory.")
+                source_target_pairs.append((os.path.abspath(filepath), normalize_file_name(filepath)))
         else:
             absolute_paths = []
             for filepath in expanded_source_files:

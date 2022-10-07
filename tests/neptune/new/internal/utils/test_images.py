@@ -35,8 +35,14 @@ from matplotlib.figure import Figure
 from PIL import Image
 from vega_datasets import data
 
-from neptune.new.internal.utils.images import get_html_content, get_image_content
-from neptune.utils import IS_MACOS, IS_WINDOWS
+from neptune.new.internal.utils.images import (
+    get_html_content,
+    get_image_content,
+)
+from neptune.utils import (
+    IS_MACOS,
+    IS_WINDOWS,
+)
 
 matplotlib.use("agg")
 
@@ -244,9 +250,7 @@ class TestImage(unittest.TestCase):
 
         # then
         self.assertTrue(
-            result.startswith(
-                '<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">'
-            )
+            result.startswith('<table border="1" class="dataframe">\n  <thead>\n    <tr style="text-align: right;">')
         )
 
     def test_get_oversize_html_from_pandas(self):

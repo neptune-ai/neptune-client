@@ -23,7 +23,14 @@ import traceback
 from contextlib import AbstractContextManager
 from datetime import datetime
 from functools import wraps
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import (
+    Any,
+    Dict,
+    Iterable,
+    List,
+    Optional,
+    Union,
+)
 
 from neptune.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
@@ -45,11 +52,12 @@ from neptune.new.internal.backends.nql import NQLQuery
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import SysId, UniqueId
-from neptune.new.internal.operation import DeleteAttribute
-from neptune.new.internal.operation_processors.operation_processor import (
-    OperationProcessor,
+from neptune.new.internal.id_formats import (
+    SysId,
+    UniqueId,
 )
+from neptune.new.internal.operation import DeleteAttribute
+from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.state import ContainerState
 from neptune.new.internal.utils import (
     is_bool,
@@ -63,13 +71,17 @@ from neptune.new.internal.utils import (
 )
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
-from neptune.new.internal.utils.runningmode import in_interactive, in_notebook
-from neptune.new.internal.utils.uncaught_exception_handler import (
-    instance as uncaught_exception_handler,
+from neptune.new.internal.utils.runningmode import (
+    in_interactive,
+    in_notebook,
 )
+from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.metadata_containers.metadata_containers_table import Table
-from neptune.new.types import Boolean, Integer
+from neptune.new.types import (
+    Boolean,
+    Integer,
+)
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
@@ -126,9 +138,7 @@ class MetadataContainer(AbstractContextManager):
         self._backend = backend
         self._op_processor = op_processor
         self._bg_job = background_job
-        self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(
-            NamespaceBuilder(self)
-        )
+        self._structure: ContainerStructure[Attribute, NamespaceAttr] = ContainerStructure(NamespaceBuilder(self))
         self._lock = lock
         self._state = ContainerState.CREATED
         self._sys_id = sys_id
@@ -231,11 +241,7 @@ class MetadataContainer(AbstractContextManager):
         for key in sorted(struct.keys()):
             print("    " * indent, end="")
             if isinstance(struct[key], dict):
-                print(
-                    "{blue}'{key}'{end}:".format(
-                        blue=UNIX_STYLES["blue"], key=key, end=UNIX_STYLES["end"]
-                    )
-                )
+                print("{blue}'{key}'{end}:".format(blue=UNIX_STYLES["blue"], key=key, end=UNIX_STYLES["end"]))
                 self._print_structure_impl(struct[key], indent=indent + 1)
             else:
                 print(
@@ -282,9 +288,7 @@ class MetadataContainer(AbstractContextManager):
         with self._lock:
             old_attr = self._structure.get(parsed_path)
             if old_attr:
-                raise MetadataInconsistency(
-                    "Attribute or namespace {} is already defined".format(path)
-                )
+                raise MetadataInconsistency("Attribute or namespace {} is already defined".format(path))
             attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
             self._structure.set(parsed_path, attr)
             attr.process_assignment(value, wait)
@@ -362,9 +366,7 @@ class MetadataContainer(AbstractContextManager):
     def _shutdown_hook(self):
         self.stop()
 
-    def _fetch_entries(
-        self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]]
-    ) -> Table:
+    def _fetch_entries(self, child_type: ContainerType, query: NQLQuery, columns: Optional[Iterable[str]]) -> Table:
         if columns is not None:
             # always return entries with `sys/id` column when filter applied
             columns = set(columns)

@@ -28,7 +28,10 @@ from random import randint
 
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.id_formats import SysId, UniqueId
+from neptune.new.internal.id_formats import (
+    SysId,
+    UniqueId,
+)
 
 
 def api_metadata_container(container_type: ContainerType) -> ApiExperiment:
@@ -49,15 +52,11 @@ def api_project() -> ApiExperiment:
 
 
 def api_run() -> ApiExperiment:
-    return _api_metadata_container(
-        sys_id=f"{_random_key()}-{randint(42, 12342)}", container_type=ContainerType.RUN
-    )
+    return _api_metadata_container(sys_id=f"{_random_key()}-{randint(42, 12342)}", container_type=ContainerType.RUN)
 
 
 def api_model() -> ApiExperiment:
-    return _api_metadata_container(
-        sys_id=f"{_random_key()}-{_random_key()}", container_type=ContainerType.MODEL
-    )
+    return _api_metadata_container(sys_id=f"{_random_key()}-{_random_key()}", container_type=ContainerType.MODEL)
 
 
 def api_model_version() -> ApiExperiment:

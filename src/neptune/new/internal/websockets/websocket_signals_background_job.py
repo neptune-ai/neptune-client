@@ -17,7 +17,10 @@ import json
 import logging
 import threading
 from json.decoder import JSONDecodeError
-from typing import TYPE_CHECKING, Optional
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+)
 
 from websocket import WebSocketConnectionClosedException
 
@@ -88,9 +91,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
                     logger.error("Malformed websocket signal: missing type")
                     return
                 if not isinstance(msg_type, str):
-                    logger.error(
-                        "Malformed websocket signal: type is %s, should be str", type(msg_type)
-                    )
+                    logger.error("Malformed websocket signal: type is %s, should be str", type(msg_type))
                     return
                 if msg_type.lower() == SIGNAL_TYPE_STOP:
                     self._handle_stop(msg_body)
@@ -102,9 +103,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         def _handle_stop(self, msg_body):
             msg_body = msg_body or dict()
             if not isinstance(msg_body, dict):
-                logger.error(
-                    "Malformed websocket signal: body is %s, should be dict", type(msg_body)
-                )
+                logger.error("Malformed websocket signal: body is %s, should be dict", type(msg_body))
                 return
             run_id = self._container["sys/id"].fetch()
             logger.error("Run %s received stop signal. Exiting", run_id)
@@ -115,9 +114,7 @@ class WebsocketSignalsBackgroundJob(BackgroundJob):
         def _handle_abort(self, msg_body):
             msg_body = msg_body or dict()
             if not isinstance(msg_body, dict):
-                logger.error(
-                    "Malformed websocket signal: body is %s, should be dict", type(msg_body)
-                )
+                logger.error("Malformed websocket signal: body is %s, should be dict", type(msg_body))
                 return
             run_id = self._container["sys/id"].fetch()
             logger.error("Run %s received abort signal. Exiting", run_id)

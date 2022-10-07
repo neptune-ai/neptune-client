@@ -32,9 +32,7 @@ from neptune.internal.channels.channels import (
     ChannelType,
     ChannelValue,
 )
-from tests.neptune.new.backend_test_mixin import (
-    BackendTestMixin as AlphaBackendTestMixin,
-)
+from tests.neptune.new.backend_test_mixin import BackendTestMixin as AlphaBackendTestMixin
 
 API_TOKEN = (
     "eyJhcGlfYWRkcmVzcyI6Imh0dHBzOi8vYWxwaGEuc3RhZ2UubmVwdHVuZS5haSIsImFwaV91cmwiOiJodHRwczovL2FscG"

@@ -33,8 +33,7 @@ class LocalFileHashStorage:
         self.session = sql.connect(str(db_path))
         self.cursor: sql.Cursor = self.session.cursor()
         self.cursor.execute(
-            "CREATE TABLE IF NOT EXISTS local_file_hashes"
-            " (file_path text, file_hash text, modification_date text)"
+            "CREATE TABLE IF NOT EXISTS local_file_hashes" " (file_path text, file_hash text, modification_date text)"
         )
         self.session.commit()
 

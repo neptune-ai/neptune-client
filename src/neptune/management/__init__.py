@@ -27,7 +27,10 @@ from .internal.api import (
     remove_project_service_account,
     trash_objects,
 )
-from .internal.types import MemberRole, ProjectVisibility
+from .internal.types import (
+    MemberRole,
+    ProjectVisibility,
+)
 
 __all__ = [
     "get_project_list",

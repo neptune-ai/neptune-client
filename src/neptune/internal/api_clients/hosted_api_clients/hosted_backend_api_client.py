@@ -27,9 +27,18 @@ from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
 from packaging import version
 
-from neptune.api_exceptions import ProjectNotFound, WorkspaceNotFound
-from neptune.backend import BackendApiClient, LeaderboardApiClient
-from neptune.exceptions import STYLES, UnsupportedClientVersion
+from neptune.api_exceptions import (
+    ProjectNotFound,
+    WorkspaceNotFound,
+)
+from neptune.backend import (
+    BackendApiClient,
+    LeaderboardApiClient,
+)
+from neptune.exceptions import (
+    STYLES,
+    UnsupportedClientVersion,
+)
 from neptune.internal.api_clients.credentials import Credentials
 from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import (
     HostedAlphaLeaderboardApiClient,
@@ -67,9 +76,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
             urllib3.disable_warnings()
             ssl_verify = False
 
-        self._http_client = RequestsClient(
-            ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
-        )
+        self._http_client = RequestsClient(ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter)
         # for session re-creation we need to keep an authenticator-free version of http client
         self._http_client_for_token = RequestsClient(
             ssl_verify=ssl_verify, response_adapter_class=NeptuneResponseAdapter
@@ -144,9 +151,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     @with_api_exceptions_handler
     def get_project(self, project_qualified_name):
         try:
-            response = self.backend_swagger_client.api.getProject(
-                projectIdentifier=project_qualified_name
-            ).response()
+            response = self.backend_swagger_client.api.getProject(projectIdentifier=project_qualified_name).response()
             warning = response.metadata.headers.get("X-Server-Warning")
             if warning:
                 click.echo("{warning}{content}{end}".format(content=warning, **STYLES))
@@ -164,9 +169,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     @with_api_exceptions_handler
     def get_projects(self, namespace):
         try:
-            r = self.backend_swagger_client.api.listProjects(
-                organizationIdentifier=namespace
-            ).response()
+            r = self.backend_swagger_client.api.listProjects(organizationIdentifier=namespace).response()
             return r.result.entries
         except HTTPNotFound:
             raise WorkspaceNotFound(namespace_name=namespace)
@@ -186,10 +189,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
     def _verify_version(self):
         parsed_version = version.parse(self.client_lib_version)
 
-        if (
-            self._client_config.min_compatible_version
-            and self._client_config.min_compatible_version > parsed_version
-        ):
+        if self._client_config.min_compatible_version and self._client_config.min_compatible_version > parsed_version:
             click.echo(
                 "ERROR: Minimal supported client version is {} (installed: {}). Please upgrade neptune-client".format(
                     self._client_config.min_compatible_version, self.client_lib_version
@@ -201,10 +201,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
                 self._client_config.min_compatible_version,
                 self._client_config.max_compatible_version,
             )
-        if (
-            self._client_config.max_compatible_version
-            and self._client_config.max_compatible_version < parsed_version
-        ):
+        if self._client_config.max_compatible_version and self._client_config.max_compatible_version < parsed_version:
             click.echo(
                 "ERROR: Maximal supported client version is {} (installed: {}). Please downgrade neptune-client".format(
                     self._client_config.max_compatible_version, self.client_lib_version
@@ -216,10 +213,7 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
                 self._client_config.min_compatible_version,
                 self._client_config.max_compatible_version,
             )
-        if (
-            self._client_config.min_recommended_version
-            and self._client_config.min_recommended_version > parsed_version
-        ):
+        if self._client_config.min_recommended_version and self._client_config.min_recommended_version > parsed_version:
             click.echo(
                 "WARNING: We recommend an upgrade to a new version of neptune-client - {} (installed - {}).".format(
                     self._client_config.min_recommended_version, self.client_lib_version

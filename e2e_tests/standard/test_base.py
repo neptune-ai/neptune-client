@@ -14,19 +14,24 @@
 # limitations under the License.
 #
 import random
-from datetime import datetime, timezone
+from datetime import (
+    datetime,
+    timezone,
+)
 
 import pytest
 
-from e2e_tests.base import AVAILABLE_CONTAINERS, BaseE2ETest, fake
+from e2e_tests.base import (
+    AVAILABLE_CONTAINERS,
+    BaseE2ETest,
+    fake,
+)
 from neptune.new.metadata_containers import MetadataContainer
 
 
 class TestAtoms(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    @pytest.mark.parametrize(
-        "value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()]
-    )
+    @pytest.mark.parametrize("value", [random.randint(0, 100), random.random(), fake.boolean(), fake.word()])
     def test_simple_assign_and_fetch(self, container: MetadataContainer, value):
         key = self.gen_key()
 
@@ -43,9 +48,7 @@ class TestAtoms(BaseE2ETest):
         container.sync()
 
         # expect truncate to milliseconds and add UTC timezone
-        expected_now = now.astimezone(timezone.utc).replace(
-            microsecond=int(now.microsecond / 1000) * 1000
-        )
+        expected_now = now.astimezone(timezone.utc).replace(microsecond=int(now.microsecond / 1000) * 1000)
         assert container[key].fetch() == expected_now
 
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)

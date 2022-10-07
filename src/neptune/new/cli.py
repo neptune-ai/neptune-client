@@ -17,7 +17,10 @@
 
 import click
 
-from .sync import status, sync
+from .sync import (
+    status,
+    sync,
+)
 
 
 @click.group()

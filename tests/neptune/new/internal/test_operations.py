@@ -83,12 +83,8 @@ class TestOperations(unittest.TestCase):
             LogImages(
                 TestOperations._random_path(),
                 [
-                    LogImages.ValueType(
-                        ImageValue("base64_image_1", "name1", "description1"), None, 2
-                    ),
-                    LogImages.ValueType(
-                        ImageValue("base64_image_2", "name2", "description2"), 0, 5
-                    ),
+                    LogImages.ValueType(ImageValue("base64_image_1", "name1", "description1"), None, 2),
+                    LogImages.ValueType(ImageValue("base64_image_2", "name2", "description2"), 0, 5),
                 ],
             ),
             ClearFloatLog(TestOperations._random_path()),

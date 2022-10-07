@@ -16,7 +16,10 @@
 
 # pylint: disable=protected-access
 
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 
 from neptune.new.attributes.series.string_series import StringSeries
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase

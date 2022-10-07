@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 from neptune import envs
-from neptune.exceptions import STYLES, NeptuneException
+from neptune.exceptions import (
+    STYLES,
+    NeptuneException,
+)
 
 
 class NeptuneApiException(NeptuneException):
@@ -173,9 +176,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs-legacy.neptune.ai/getting-started/getting-help.html
 """
-        super(InvalidApiKey, self).__init__(
-            message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES)
-        )
+        super(InvalidApiKey, self).__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
 
 
 class WorkspaceNotFound(NeptuneApiException):
@@ -264,27 +265,21 @@ class ExperimentValidationError(NeptuneApiException):
 class ChannelAlreadyExists(NeptuneApiException):
     def __init__(self, experiment_short_id, channel_name):
         super(ChannelAlreadyExists, self).__init__(
-            "Channel with name '{}' already exists in experiment '{}'.".format(
-                channel_name, experiment_short_id
-            )
+            "Channel with name '{}' already exists in experiment '{}'.".format(channel_name, experiment_short_id)
         )
 
 
 class ChannelDoesNotExist(NeptuneApiException):
     def __init__(self, experiment_short_id, channel_name):
         super(ChannelDoesNotExist, self).__init__(
-            "Channel with name '{}' does not exist in experiment '{}'.".format(
-                channel_name, experiment_short_id
-            )
+            "Channel with name '{}' does not exist in experiment '{}'.".format(channel_name, experiment_short_id)
         )
 
 
 class ChannelsValuesSendBatchError(NeptuneApiException):
     @staticmethod
     def _format_error(error):
-        return "{msg} (metricId: '{channelId}', x: {x})".format(
-            msg=error.error, channelId=error.channelId, x=error.x
-        )
+        return "{msg} (metricId: '{channelId}', x: {x})".format(msg=error.error, channelId=error.channelId, x=error.x)
 
     def __init__(self, experiment_short_id, batch_errors):
         super(ChannelsValuesSendBatchError, self).__init__(

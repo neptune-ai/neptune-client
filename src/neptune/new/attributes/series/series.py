@@ -15,11 +15,21 @@
 #
 import abc
 import time
-from typing import Generic, Iterable, List, Optional, TypeVar, Union
+from typing import (
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    TypeVar,
+    Union,
+)
 
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.internal.operation import Operation
-from neptune.new.internal.utils import is_collection, verify_type
+from neptune.new.internal.utils import (
+    is_collection,
+    verify_type,
+)
 from neptune.new.types.series.series import Series as SeriesVal
 
 Val = TypeVar("Val", bound=SeriesVal)
@@ -31,9 +41,7 @@ class Series(Attribute, Generic[Val, Data]):
         self._clear_impl(wait)
 
     @abc.abstractmethod
-    def _get_log_operations_from_value(
-        self, value: Val, step: Optional[float], timestamp: float
-    ) -> List[Operation]:
+    def _get_log_operations_from_value(self, value: Val, step: Optional[float], timestamp: float) -> List[Operation]:
         pass
 
     # pylint: disable=unused-argument
@@ -80,9 +88,7 @@ class Series(Attribute, Generic[Val, Data]):
     ) -> None:
         if is_collection(value):
             if step is not None and len(value) > 1:
-                raise ValueError(
-                    "Collection of values are not supported for explicitly defined 'step'."
-                )
+                raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
             value = self._data_to_value(value, **kwargs)
         else:
             value = self._data_to_value([value], **kwargs)

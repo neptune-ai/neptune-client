@@ -20,18 +20,25 @@ import unittest
 
 from mock import patch
 
-from neptune.new import ANONYMOUS, init_project
-from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
-from neptune.new.exceptions import NeptuneException, NeptuneMissingProjectNameException
+from neptune.new import (
+    ANONYMOUS,
+    init_project,
+)
+from neptune.new.envs import (
+    API_TOKEN_ENV_NAME,
+    PROJECT_ENV_NAME,
+)
+from neptune.new.exceptions import (
+    NeptuneException,
+    NeptuneMissingProjectNameException,
+)
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from tests.neptune.new.client.abstract_experiment_test_mixin import (
-    AbstractExperimentTestMixin,
-)
+from tests.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 
 
 @patch(

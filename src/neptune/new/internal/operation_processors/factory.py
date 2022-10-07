@@ -50,10 +50,7 @@ def get_operation_processor(
     flush_period: float,
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
-        data_path = (
-            f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}"
-            f"/{create_dir_name(container_type, container_id)}"
-        )
+        data_path = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}" f"/{create_dir_name(container_type, container_id)}"
         try:
             execution_id = len(os.listdir(data_path))
         except FileNotFoundError:
@@ -79,10 +76,7 @@ def get_operation_processor(
         return SyncOperationProcessor(container_id, container_type, backend)
     elif mode == Mode.OFFLINE:
         # the object was returned by mocked backend and has some random ID.
-        data_path = (
-            f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}"
-            f"/{create_dir_name(container_type, container_id)}"
-        )
+        data_path = f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}" f"/{create_dir_name(container_type, container_id)}"
         storage_queue = DiskQueue(
             dir_path=Path(data_path),
             to_dict=lambda x: x.to_dict(),

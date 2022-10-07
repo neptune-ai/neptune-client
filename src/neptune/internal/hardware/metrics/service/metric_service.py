@@ -24,6 +24,4 @@ class MetricService(object):
 
     def report_and_send(self, timestamp):
         metric_reports = self.__metric_reporter.report(timestamp)
-        self.__backend.send_hardware_metric_reports(
-            self.experiment, self.metrics_container.metrics(), metric_reports
-        )
+        self.__backend.send_hardware_metric_reports(self.experiment, self.metrics_container.metrics(), metric_reports)

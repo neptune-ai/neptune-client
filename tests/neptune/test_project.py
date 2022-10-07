@@ -21,7 +21,10 @@ import unittest
 from random import randint
 
 import pandas as pd
-from mock import MagicMock, patch
+from mock import (
+    MagicMock,
+    patch,
+)
 from munch import Munch
 
 from neptune.exceptions import NeptuneNoExperimentContextException
@@ -32,8 +35,15 @@ from tests.neptune.api_objects_factory import (
     a_registered_project_member,
     an_invited_project_member,
 )
-from tests.neptune.project_test_fixture import some_exp_entry_dto, some_exp_entry_row
-from tests.neptune.random_utils import a_string, a_string_list, a_uuid_string
+from tests.neptune.project_test_fixture import (
+    some_exp_entry_dto,
+    some_exp_entry_row,
+)
+from tests.neptune.random_utils import (
+    a_string,
+    a_string_list,
+    a_uuid_string,
+)
 
 
 class TestProject(unittest.TestCase):
@@ -89,8 +99,7 @@ class TestProject(unittest.TestCase):
 
         # and
         expected_experiments = [
-            Experiment(self.backend, self.project, entry.id, entry.internal_id)
-            for entry in leaderboard_entries
+            Experiment(self.backend, self.project, entry.id, entry.internal_id) for entry in leaderboard_entries
         ]
         self.assertEqual(expected_experiments, experiments)
 
@@ -124,8 +133,7 @@ class TestProject(unittest.TestCase):
 
         # and
         expected_experiments = [
-            Experiment(self.backend, self.project, entry.id, entry.internal_id)
-            for entry in leaderboard_entries
+            Experiment(self.backend, self.project, entry.id, entry.internal_id) for entry in leaderboard_entries
         ]
         self.assertEqual(expected_experiments, experiments)
 
@@ -159,8 +167,7 @@ class TestProject(unittest.TestCase):
 
         # and
         expected_experiments = [
-            Experiment(self.backend, self.project, entry.id, entry.internal_id)
-            for entry in leaderboard_entries
+            Experiment(self.backend, self.project, entry.id, entry.internal_id) for entry in leaderboard_entries
         ]
         self.assertEqual(expected_experiments, experiments)
 
@@ -267,9 +274,7 @@ class TestProject(unittest.TestCase):
 
     def test_create_experiment_with_relative_upload_sources(self):
         # skip if
-        if sys.version_info.major < 3 or (
-            sys.version_info.major == 3 and sys.version_info.minor < 5
-        ):
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
             self.skipTest("not supported in this Python version")
 
         # given
@@ -298,9 +303,7 @@ class TestProject(unittest.TestCase):
 
     def test_create_experiment_with_absolute_upload_sources(self):
         # skip if
-        if sys.version_info.major < 3 or (
-            sys.version_info.major == 3 and sys.version_info.minor < 5
-        ):
+        if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
             self.skipTest("not supported in this Python version")
 
         # given
@@ -310,9 +313,7 @@ class TestProject(unittest.TestCase):
         self.backend.create_experiment.return_value = anExperiment
 
         # when
-        self.project.create_experiment(
-            upload_source_files=[os.path.abspath("test_project.py"), "../../*.md"]
-        )
+        self.project.create_experiment(upload_source_files=[os.path.abspath("test_project.py"), "../../*.md"])
 
         # then
         self.backend.upload_source_code.assert_called_once()
@@ -359,9 +360,7 @@ class TestProject(unittest.TestCase):
         source_target_pairs_targets = [
             target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
         ]
-        self.assertTrue(
-            all(target_p.startswith("tests/neptune/") for target_p in source_target_pairs_targets)
-        )
+        self.assertTrue(all(target_p.startswith("tests/neptune/") for target_p in source_target_pairs_targets))
 
     @patch(
         "neptune.internal.utils.source_code.glob",
@@ -385,9 +384,7 @@ class TestProject(unittest.TestCase):
         source_target_pairs_targets = [
             target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
         ]
-        self.assertTrue(
-            set(source_target_pairs_targets) == {"c:/test1/file.txt", "d:/test2/file.txt"}
-        )
+        self.assertTrue(set(source_target_pairs_targets) == {"c:/test1/file.txt", "d:/test2/file.txt"})
 
 
 if __name__ == "__main__":

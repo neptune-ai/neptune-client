@@ -14,7 +14,10 @@
 # limitations under the License.
 #
 
-from typing import TYPE_CHECKING, Optional
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+)
 
 from neptune.new.attributes.constants import (
     MONITORING_STDERR_ATTRIBUTE_PATH,

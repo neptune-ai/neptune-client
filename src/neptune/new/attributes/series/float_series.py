@@ -13,7 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Iterable, List, Optional, Union
+from typing import (
+    Iterable,
+    List,
+    Optional,
+    Union,
+)
 
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
 from neptune.new.attributes.series.series import Series
@@ -49,9 +54,7 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
         with self._container.lock():
             self._enqueue_operation(ConfigFloatSeries(self._path, min, max, unit), wait)
 
-    def _get_log_operations_from_value(
-        self, value: Val, step: Optional[float], timestamp: float
-    ) -> List[Operation]:
+    def _get_log_operations_from_value(self, value: Val, step: Optional[float], timestamp: float) -> List[Operation]:
         values = [LogFloats.ValueType(val, step=step, ts=timestamp) for val in value.values]
         return [LogFloats(self._path, chunk) for chunk in get_batches(values, batch_size=100)]
 
@@ -71,9 +74,7 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
 
     def fetch_last(self) -> float:
         # pylint: disable=protected-access
-        val = self._backend.get_float_series_attribute(
-            self._container_id, self._container_type, self._path
-        )
+        val = self._backend.get_float_series_attribute(self._container_id, self._container_type, self._path)
         return val.last
 
     def _fetch_values_from_backend(self, offset, limit) -> FloatSeriesValues:

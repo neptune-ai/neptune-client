@@ -26,7 +26,10 @@ from neptune.new import (
     init_project,
     init_run,
 )
-from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
+from neptune.new.envs import (
+    API_TOKEN_ENV_NAME,
+    PROJECT_ENV_NAME,
+)
 from neptune.new.exceptions import (
     InactiveModelException,
     InactiveModelVersionException,
@@ -35,10 +38,17 @@ from neptune.new.exceptions import (
     MetadataInconsistency,
     NeptuneProtectedPathException,
 )
-from neptune.new.metadata_containers import Model, ModelVersion, Project
+from neptune.new.metadata_containers import (
+    Model,
+    ModelVersion,
+    Project,
+)
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
-from neptune.new.types.series import FloatSeries, StringSeries
+from neptune.new.types.series import (
+    FloatSeries,
+    StringSeries,
+)
 
 
 class TestExperiment(unittest.TestCase):
@@ -69,9 +79,7 @@ class TestExperiment(unittest.TestCase):
         for exp in self.get_experiments(flush_period=0.5):
             with self.subTest(msg=f"For type {exp.container_type}"):
                 exp.define("some/path/value", String("Some string"), wait=True)
-                self.assertEqual(
-                    exp.get_structure()["some"]["path"]["value"].fetch(), "Some string"
-                )
+                self.assertEqual(exp.get_structure()["some"]["path"]["value"].fetch(), "Some string")
 
     def test_define_few_variables(self):
         for exp in self.get_experiments(flush_period=0.5):

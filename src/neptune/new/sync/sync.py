@@ -21,7 +21,12 @@ import os
 import threading
 import time
 from pathlib import Path
-from typing import Iterable, List, Optional, Sequence
+from typing import (
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+)
 
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
@@ -33,10 +38,16 @@ from neptune.new.exceptions import (
     CannotSynchronizeOfflineRunsWithoutProject,
     NeptuneConnectionLostException,
 )
-from neptune.new.internal.backends.api_model import ApiExperiment, Project
+from neptune.new.internal.backends.api_model import (
+    ApiExperiment,
+    Project,
+)
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.id_formats import QualifiedName, UniqueId
+from neptune.new.internal.id_formats import (
+    QualifiedName,
+    UniqueId,
+)
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
@@ -136,13 +147,9 @@ class SyncRunner(AbstractBackendRunner):
                 elif run_path_deprecated.exists():
                     self.sync_run(run_path=run_path_deprecated, run=run)
                 else:
-                    logger.warning(
-                        "Warning: Run '%s' does not exist in location %s", name, base_path
-                    )
+                    logger.warning("Warning: Run '%s' does not exist in location %s", name, base_path)
 
-    def _register_offline_run(
-        self, project: Project, container_type: ContainerType
-    ) -> Optional[ApiExperiment]:
+    def _register_offline_run(self, project: Project, container_type: ContainerType) -> Optional[ApiExperiment]:
         try:
             if container_type == ContainerType.RUN:
                 return self._backend.create_run(project.id)
@@ -150,8 +157,7 @@ class SyncRunner(AbstractBackendRunner):
                 raise ValueError("Only runs are supported in offline mode")
         except Exception as e:
             logger.warning(
-                "Exception occurred while trying to create a run"
-                " on the Neptune server. Please try again later",
+                "Exception occurred while trying to create a run" " on the Neptune server. Please try again later",
             )
             logging.exception(e)
             return None
@@ -187,9 +193,7 @@ class SyncRunner(AbstractBackendRunner):
                         server_id=run.id,
                         server_type=run.type,
                     )
-                    logger.info(
-                        "Offline run %s registered as %s", offline_dir, get_qualified_name(run)
-                    )
+                    logger.info("Offline run %s registered as %s", offline_dir, get_qualified_name(run))
                     result.append(run)
             else:
                 logger.warning("Offline run %s not found on disk.", offline_dir)
@@ -221,9 +225,7 @@ class SyncRunner(AbstractBackendRunner):
         container_names: Sequence[str],
     ) -> None:
         non_offline_container_names = [
-            QualifiedName(name)
-            for name in container_names
-            if not name.startswith(OFFLINE_NAME_PREFIX)
+            QualifiedName(name) for name in container_names if not name.startswith(OFFLINE_NAME_PREFIX)
         ]
         self.sync_selected_registered_containers(base_path, non_offline_container_names)
 

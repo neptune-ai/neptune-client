@@ -15,7 +15,10 @@
 #
 
 import logging
-from typing import TYPE_CHECKING, Optional
+from typing import (
+    TYPE_CHECKING,
+    Optional,
+)
 
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.threading.daemon import Daemon

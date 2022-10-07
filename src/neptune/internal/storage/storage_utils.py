@@ -18,11 +18,20 @@ import logging
 import os
 import stat
 import time
-from abc import ABCMeta, abstractmethod
+from abc import (
+    ABCMeta,
+    abstractmethod,
+)
 from dataclasses import dataclass
 from io import BytesIO
 from pprint import pformat
-from typing import BinaryIO, Generator, List, Set, Union
+from typing import (
+    BinaryIO,
+    Generator,
+    List,
+    Set,
+    Union,
+)
 
 import six
 
@@ -219,9 +228,7 @@ def scan_unique_upload_entries(upload_entries):
         else:
             for root, _, files in os.walk(entry.source):
                 path_relative_to_entry_source = os.path.relpath(root, entry.source)
-                target_root = os.path.normpath(
-                    os.path.join(entry.target_path, path_relative_to_entry_source)
-                )
+                target_root = os.path.normpath(os.path.join(entry.target_path, path_relative_to_entry_source))
                 for filename in files:
                     walked_entries.add(
                         UploadEntry(
@@ -251,8 +258,7 @@ def split_upload_files(
         else:
             size = os.path.getsize(entry.source)
             if (
-                size + current_package.size > upload_configuration.chunk_size
-                or current_package.len > max_files
+                size + current_package.size > upload_configuration.chunk_size or current_package.len > max_files
             ) and not current_package.is_empty():
                 yield current_package
                 current_package.reset()

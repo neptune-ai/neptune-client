@@ -86,9 +86,7 @@ def init_model(
         # with_id (resume existing model) has priority over key (creating a new model)
         #  additional creation parameters (e.g. name) are simply ignored in this scenario
         model_id = QualifiedName(project + "/" + with_id)
-        api_model = backend.get_metadata_container(
-            container_id=model_id, expected_container_type=Model.container_type
-        )
+        api_model = backend.get_metadata_container(container_id=model_id, expected_container_type=Model.container_type)
     elif key is not None:
         if mode == Mode.READ_ONLY:
             raise NeedExistingModelForReadOnlyMode()

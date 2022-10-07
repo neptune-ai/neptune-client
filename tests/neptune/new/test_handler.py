@@ -19,14 +19,23 @@ import unittest
 
 # pylint: disable=protected-access
 from dataclasses import dataclass
-from datetime import datetime, timedelta
-from io import BytesIO, StringIO
+from datetime import (
+    datetime,
+    timedelta,
+)
+from io import (
+    BytesIO,
+    StringIO,
+)
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
 
 import PIL
 
-from neptune.new import ANONYMOUS, init
+from neptune.new import (
+    ANONYMOUS,
+    init,
+)
 from neptune.new.attributes.atoms.boolean import Boolean
 from neptune.new.attributes.atoms.datetime import Datetime
 from neptune.new.attributes.atoms.file import File
@@ -35,7 +44,10 @@ from neptune.new.attributes.atoms.integer import Integer
 from neptune.new.attributes.atoms.string import String
 from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.sets.string_set import StringSet
-from neptune.new.envs import API_TOKEN_ENV_NAME, PROJECT_ENV_NAME
+from neptune.new.envs import (
+    API_TOKEN_ENV_NAME,
+    PROJECT_ENV_NAME,
+)
 from neptune.new.exceptions import FileNotFound
 from neptune.new.types import File as FileVal
 from neptune.new.types.atoms.artifact import Artifact
@@ -123,9 +135,7 @@ class TestHandler(unittest.TestCase):
         copy_mock.reset_mock()
 
         exp["some/num/file"].download()
-        copy_mock.assert_called_with(
-            os.path.abspath("path/to/other/file.txt"), os.path.abspath("file.txt")
-        )
+        copy_mock.assert_called_with(os.path.abspath("path/to/other/file.txt"), os.path.abspath("file.txt"))
         copy_mock.reset_mock()
 
         exp["some/num/file"].download("path/to/other/file.txt")
@@ -154,9 +164,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()["some"]["num"]["attr_name"], File)
 
         with TemporaryDirectory() as temp_dir:
-            with patch(
-                "neptune.new.internal.backends.neptune_backend_mock.os.path.abspath"
-            ) as abspath_mock:
+            with patch("neptune.new.internal.backends.neptune_backend_mock.os.path.abspath") as abspath_mock:
                 abspath_mock.side_effect = lambda path: os.path.normpath(temp_dir + "/" + path)
                 exp["some/num/attr_name"].download()
             with open(temp_dir + "/attr_name.bin", "rb") as file:
@@ -177,17 +185,13 @@ class TestHandler(unittest.TestCase):
             exp["some/artifacts"].download(temp_dir)
 
         zip_write_mock.assert_any_call(os.path.abspath("path/to/file.txt"), "path/to/file.txt")
-        zip_write_mock.assert_any_call(
-            os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt"
-        )
+        zip_write_mock.assert_any_call(os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt")
 
     def test_assign_series(self):
         exp = init(mode="debug", flush_period=0.5)
         exp["some/num/val"].assign(FloatSeriesVal([1, 2, 0, 10]))
         exp["some/str/val"].assign(StringSeriesVal(["text1", "text2"]), wait=True)
-        exp["some/img/val"].assign(
-            FileSeriesVal([FileVal.as_image(PIL.Image.new("RGB", (10, 15), color="red"))])
-        )
+        exp["some/img/val"].assign(FileSeriesVal([FileVal.as_image(PIL.Image.new("RGB", (10, 15), color="red"))]))
         self.assertEqual(exp["some"]["num"]["val"].fetch_last(), 10)
         self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "text2")
         self.assertIsInstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
@@ -275,22 +279,14 @@ class TestHandler(unittest.TestCase):
         )
         self.assertEqual(exp["some/namespace/sub-namespace/val1"].fetch(), 1.0)
         self.assertEqual(exp["some/namespace/sub-namespace/val2"].fetch(), {"tag1", "tag2"})
-        self.assertIsInstance(
-            exp.get_structure()["some"]["namespace"]["sub-namespace"]["val1"], Float
-        )
-        self.assertIsInstance(
-            exp.get_structure()["some"]["namespace"]["sub-namespace"]["val2"], StringSet
-        )
+        self.assertIsInstance(exp.get_structure()["some"]["namespace"]["sub-namespace"]["val1"], Float)
+        self.assertIsInstance(exp.get_structure()["some"]["namespace"]["sub-namespace"]["val2"], StringSet)
 
         exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": 2.0}))
         self.assertEqual(exp["some/namespace/sub-namespace/val1"].fetch(), 2.0)
         self.assertEqual(exp["some/namespace/sub-namespace/val2"].fetch(), {"tag1", "tag2"})
-        self.assertIsInstance(
-            exp.get_structure()["some"]["namespace"]["sub-namespace"]["val1"], Float
-        )
-        self.assertIsInstance(
-            exp.get_structure()["some"]["namespace"]["sub-namespace"]["val2"], StringSet
-        )
+        self.assertIsInstance(exp.get_structure()["some"]["namespace"]["sub-namespace"]["val1"], Float)
+        self.assertIsInstance(exp.get_structure()["some"]["namespace"]["sub-namespace"]["val2"], StringSet)
 
         with self.assertRaises(TypeError):
             exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": {"tagA", "tagB"}}))
@@ -407,9 +403,7 @@ class TestHandler(unittest.TestCase):
 
     def test_convertable_to_dict(self):
         exp = init(mode="debug", flush_period=0.5)
-        exp["params"] = argparse.Namespace(
-            foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55)
-        )
+        exp["params"] = argparse.Namespace(foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55))
         self.assertEqual(exp["params/foo"].fetch(), "bar")
         self.assertEqual(exp["params/baz"].fetch(), 42)
         self.assertEqual(exp["params/nested/nested_attr"].fetch(), "[1, 2, 3]")
@@ -510,14 +504,10 @@ class TestHandler(unittest.TestCase):
         self.assertEqual('<Float field at "params/float">', repr(exp["params/float"]))
         self.assertEqual('<Boolean field at "params/bool">', repr(exp["params/bool"]))
         self.assertEqual('<Datetime field at "params/datetime">', repr(exp["params/datetime"]))
-        self.assertEqual(
-            '<Unassigned field at "params/unassigned">', repr(exp["params/unassigned"])
-        )
+        self.assertEqual('<Unassigned field at "params/unassigned">', repr(exp["params/unassigned"]))
 
         sub_namespace = exp["params/sub-namespace"]
-        self.assertEqual(
-            '<Integer field at "params/sub-namespace/int">', repr(sub_namespace["int"])
-        )
+        self.assertEqual('<Integer field at "params/sub-namespace/int">', repr(sub_namespace["int"]))
         self.assertEqual(
             '<String field at "params/sub-namespace/string">',
             repr(sub_namespace["string"]),

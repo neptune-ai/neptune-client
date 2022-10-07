@@ -71,11 +71,7 @@ class ChannelValue(object):
     def value_type(self) -> ChannelValueType:
         """We expect that exactly one of `y` values is not None, and according to that we try to determine value type"""
         unique_channel_value_types = set(
-            [
-                ch_value_type
-                for ch_value_type in ChannelValueType
-                if self.y.get(ch_value_type.value) is not None
-            ]
+            [ch_value_type for ch_value_type in ChannelValueType if self.y.get(ch_value_type.value) is not None]
         )
         if len(unique_channel_value_types) > 1:
             raise NeptuneException(f"There are mixed value types in {self}")

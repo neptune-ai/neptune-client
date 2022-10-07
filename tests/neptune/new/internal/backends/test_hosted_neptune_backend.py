@@ -18,8 +18,15 @@ import unittest
 import uuid
 from unittest.mock import call
 
-from bravado.exception import HTTPNotFound, HTTPPaymentRequired, HTTPUnprocessableEntity
-from mock import MagicMock, patch
+from bravado.exception import (
+    HTTPNotFound,
+    HTTPPaymentRequired,
+    HTTPUnprocessableEntity,
+)
+from mock import (
+    MagicMock,
+    patch,
+)
 from packaging.version import Version
 
 from neptune.new.exceptions import (
@@ -289,9 +296,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations.return_value.response.return_value.result = [
-            response_error
-        ]
+        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
         swagger_client.api.getArtifactAttribute.side_effect = HTTPNotFound(response=response_mock())
         swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
 
@@ -370,9 +375,7 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
     @patch("neptune.new.internal.backends.hosted_neptune_backend.track_to_existing_artifact")
     @patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
-    def test_track_to_existing_artifact(
-        self, track_to_existing_artifact_mock, swagger_client_factory
-    ):
+    def test_track_to_existing_artifact(self, track_to_existing_artifact_mock, swagger_client_factory):
         # given
         swagger_client = self._get_swagger_client_mock(swagger_client_factory)
         backend = HostedNeptuneBackend(credentials)
@@ -381,12 +384,8 @@ class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
 
         response_error = MagicMock()
         response_error.errorDescription = "error1"
-        swagger_client.api.executeOperations.return_value.response.return_value.result = [
-            response_error
-        ]
-        swagger_client.api.getArtifactAttribute.return_value.response.return_value.result.hash = (
-            "dummyHash"
-        )
+        swagger_client.api.executeOperations.return_value.response.return_value.result = [response_error]
+        swagger_client.api.getArtifactAttribute.return_value.response.return_value.result.hash = "dummyHash"
         swagger_client_wrapper = SwaggerClientWrapper(swagger_client)
 
         for container_type in self.container_types:

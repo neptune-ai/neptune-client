@@ -17,7 +17,10 @@ import logging
 import os
 import threading
 
-from neptune import constants, envs
+from neptune import (
+    constants,
+    envs,
+)
 from neptune._version import get_versions
 from neptune.exceptions import (
     InvalidNeptuneBackend,

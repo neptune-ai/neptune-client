@@ -23,9 +23,7 @@ from neptune.internal.hardware.metrics.reports.metric_report import (
     MetricReport,
     MetricValue,
 )
-from neptune.internal.hardware.metrics.reports.metric_reporter_factory import (
-    MetricReporterFactory,
-)
+from neptune.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
 from neptune.internal.hardware.resources.system_resource_info import SystemResourceInfo
 from tests.neptune.internal.hardware.gauges.gauges_fixture import GaugesFixture
 
@@ -46,9 +44,7 @@ class TestMetricReporterIntegration(unittest.TestCase):
         ).create_metrics_container()
 
         self.reference_timestamp = time.time()
-        metric_reporter_factory = MetricReporterFactory(
-            reference_timestamp=self.reference_timestamp
-        )
+        metric_reporter_factory = MetricReporterFactory(reference_timestamp=self.reference_timestamp)
         self.metric_reporter = metric_reporter_factory.create(self.metrics_container.metrics())
 
     def test_report_metrics(self):

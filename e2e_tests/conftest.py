@@ -34,7 +34,10 @@ from neptune.management import (
     create_project,
 )
 from neptune.management.internal.utils import normalize_project_name
-from neptune.new import get_project, init_project
+from neptune.new import (
+    get_project,
+    init_project,
+)
 
 fake = Faker()
 
