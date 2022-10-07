@@ -16,7 +16,10 @@
 import pytest
 
 from neptune.new.exceptions import NeptuneParametersCollision
-from neptune.new.internal.utils.deprecation import deprecated, deprecated_parameter
+from neptune.new.internal.utils.deprecation import (
+    deprecated,
+    deprecated_parameter,
+)
 
 
 @deprecated_parameter(deprecated_kwarg_name="deprecated_param", required_kwarg_name="new_param")
