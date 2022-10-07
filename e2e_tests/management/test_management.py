@@ -395,10 +395,7 @@ class TestTrashObjects(BaseE2ETest):
 
         # THEN expect this version to be trashed
         model_versions = model.fetch_model_versions_table().to_pandas()
-        assert (
-            model_version2
-            in model_versions[model_versions["sys/trashed"] == False]["sys/id"].tolist()
-        )
+        assert model_version2 in model_versions[model_versions["sys/trashed"] == False]["sys/id"].tolist()
         assert len(model_versions) == 1
 
         # WHEN whole model is trashed
