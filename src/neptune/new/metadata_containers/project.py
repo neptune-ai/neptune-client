@@ -27,7 +27,6 @@ from neptune.new.internal.backends.nql import (
     NQLAggregator,
     NQLAttributeOperator,
     NQLAttributeType,
-    NQLEmptyQuery,
     NQLQueryAggregate,
     NQLQueryAttribute,
 )
@@ -103,7 +102,14 @@ class Project(MetadataContainer):
 
     @staticmethod
     def _prepare_nql_query(ids, states, owners, tags):
-        query_items = []
+        query_items = [
+            NQLQueryAttribute(
+                name="sys/trashed",
+                type=NQLAttributeType.BOOLEAN,
+                operator=NQLAttributeOperator.EQUALS,
+                value=False,
+            )
+        ]
 
         if ids:
             query_items.append(
@@ -311,7 +317,12 @@ class Project(MetadataContainer):
         return MetadataContainer._fetch_entries(
             self,
             child_type=ContainerType.MODEL,
-            query=NQLEmptyQuery(),
+            query=NQLQueryAttribute(
+                name="sys/trashed",
+                type=NQLAttributeType.BOOLEAN,
+                operator=NQLAttributeOperator.EQUALS,
+                value=False,
+            ),
             columns=columns,
         )
 
