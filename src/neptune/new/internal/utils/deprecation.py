@@ -67,9 +67,7 @@ def deprecated(*, alternative: Optional[str] = None):
     def deco(func):
         @wraps(func)
         def inner(*args, **kwargs):
-            additional_info = (
-                f", use `{alternative}` instead" if alternative else " and will be removed"
-            )
+            additional_info = f", use `{alternative}` instead" if alternative else " and will be removed"
 
             warnings.simplefilter("once", DeprecationWarning)
             warnings.warn(

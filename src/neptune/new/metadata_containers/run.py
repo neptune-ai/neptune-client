@@ -28,7 +28,6 @@ from neptune.new.internal.id_formats import (
     SysId,
     UniqueId,
 )
-from neptune.new.internal.utils.deprecation import deprecated
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.utils.deprecation import deprecated
 from neptune.new.metadata_containers import MetadataContainer
