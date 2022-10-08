@@ -41,7 +41,7 @@ class LocalFileHashStorage:
         self.cursor.execute(
             f"INSERT INTO local_file_hashes"
             f" (file_path, file_hash, modification_date)"
-            f" VALUES ('{str(path)}', '{computed_hash}', '{modification_date}')"
+            f" VALUES (?, ?, ?)", (str(path), computed_hash, modification_date)
         )
         self.session.commit()
 
@@ -51,7 +51,7 @@ class LocalFileHashStorage:
             for row in self.cursor.execute(
                 f"SELECT file_path, file_hash, modification_date"
                 f" FROM local_file_hashes"
-                f" WHERE file_path = '{str(path)}'"
+                f" WHERE file_path = ?", (str(path),)
             )
         ]
 
@@ -60,7 +60,7 @@ class LocalFileHashStorage:
     def update(self, path: Path, computed_hash: str, modification_date: str):
         self.cursor.execute(
             f"UPDATE local_file_hashes"
-            f" SET file_hash='{computed_hash}', modification_date='{modification_date}'"
-            f" WHERE file_path = '{str(path)}'"
+            f" SET file_hash=?, modification_date=?"
+            f" WHERE file_path = ?", (computed_hash, modification_date, str(path))
         )
         self.session.commit()
