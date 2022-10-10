@@ -371,13 +371,15 @@ class TestTrashObjects(BaseE2ETest):
 
         # THEN trashed runs are marked as trashed
         runs = project.fetch_runs_table().to_pandas()
-        assert run2_id in runs[runs["sys/trashed"] == False]["sys/id"].tolist()
-        assert len(runs) == 1
+        runs_ids = runs["sys/id"].tolist()
+        assert run1_id not in runs_ids
+        assert run2_id in runs_ids
 
         # AND trashed models are marked as trashed
         models = project.fetch_models_table().to_pandas()
-        assert model2_id in models[models["sys/trashed"] == False]["sys/id"].tolist()
-        assert len(models) == 1
+        models_ids = models["sys/id"].tolist()
+        assert model1_id not in models_ids
+        assert model2_id in models_ids
 
     def test_trash_model_version(self, environment):
         # WITH model
@@ -395,8 +397,9 @@ class TestTrashObjects(BaseE2ETest):
 
         # THEN expect this version to be trashed
         model_versions = model.fetch_model_versions_table().to_pandas()
-        assert model_version2 in model_versions[model_versions["sys/trashed"] == False]["sys/id"].tolist()
-        assert len(model_versions) == 1
+        model_versions_ids = model_versions["sys/id"].tolist()
+        assert model_version1 not in model_versions_ids
+        assert model_version2 in model_versions_ids
 
         # WHEN whole model is trashed
         trash_objects(environment.project, model_id)
