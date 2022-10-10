@@ -279,9 +279,9 @@ class Handler:
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string_like(first_value):
                     warn_once(
-                        message="You're logging an object with an implicit cast to a string."
-                        " Use `.log(str(object))` instead."
-                        " We'll end support of this behavior in `neptune-client==1.0.0`.",
+                        message="The object you're logging will be implicitly cast to a string."
+                        " We'll end support of this behavior in `neptune-client==1.0.0`."
+                        " To log the object as a string, use `.log(str(object))` instead.",
                         stack_level=2,
                     )
                     attr = StringSeries(self._container, parse_path(self._path))
