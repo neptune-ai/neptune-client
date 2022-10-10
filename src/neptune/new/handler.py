@@ -37,6 +37,7 @@ from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
+    NeptuneException,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
