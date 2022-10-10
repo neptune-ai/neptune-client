@@ -62,21 +62,27 @@ def deprecated(*, alternative: Optional[str] = None, stack_level: int = 1):
 
 __all__ = ["deprecated", "deprecated_parameter"]
 
+def warn_once(message: str, stack_level: int = 1):
+    if message not in warned_once.keys():
+        warnings.warn(
+            message=message,
+            category=NeptuneDeprecationWarning,
+            stacklevel=stack_level + 1,
+        )
+        warned_once[message] = 1
 
-def deprecated(*, alternative: Optional[str] = None):
+
+def deprecated(*, alternative: Optional[str] = None, stack_level: int = 1):
     def deco(func):
         @wraps(func)
         def inner(*args, **kwargs):
             additional_info = f", use `{alternative}` instead" if alternative else " and will be removed"
 
-            warnings.simplefilter("once", DeprecationWarning)
-            warnings.warn(
-                f"`{func.__name__}` is deprecated{additional_info}."
-                f" We'll end support of it in `neptune-client==1.0.0`.",
-                category=DeprecationWarning,
-                stacklevel=2,
+            warn_once(
+                message=f"`{func.__name__}` is deprecated{additional_info}."
+                        f" We'll end support of it in `neptune-client==1.0.0`.",
+                stack_level=stack_level + 1,
             )
-            warnings.simplefilter("default", DeprecationWarning)
 
             return func(*args, **kwargs)
 
@@ -98,6 +104,7 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
                     " We'll end support of it in `neptune-client==1.0.0`.",
                     stack_level=2,
                 )
+                warnings.simplefilter("default", DeprecationWarning)
 
                 kwargs[required_kwarg_name] = kwargs[deprecated_kwarg_name]
                 del kwargs[deprecated_kwarg_name]
