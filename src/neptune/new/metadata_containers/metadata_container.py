@@ -282,9 +282,9 @@ class MetadataContainer(AbstractContextManager):
             value = Namespace(value)
         elif is_string_like(value):
             warn_once(
-                "You're assigning an object with an implicit cast to a string."
-                " Use `... = str(object)` instead."
-                " We'll end support of this behavior in `neptune-client==1.0.0`.",
+                message="The object you're logging will be implicitly cast to a string."
+                " We'll end support of this behavior in `neptune-client==1.0.0`."
+                " To log the object as a string, use `... = str(object)` instead.",
                 stack_level=2,
             )
             value = String(str(value))
