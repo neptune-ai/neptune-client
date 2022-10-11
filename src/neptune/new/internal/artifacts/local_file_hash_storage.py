@@ -33,13 +33,13 @@ class LocalFileHashStorage:
         self.session = sql.connect(str(db_path))
         self.cursor: sql.Cursor = self.session.cursor()
         self.cursor.execute(
-            "CREATE TABLE IF NOT EXISTS local_file_hashes" " (file_path text, file_hash text, modification_date text)"
+            "CREATE TABLE IF NOT EXISTS local_file_hashes (file_path text, file_hash text, modification_date text)"
         )
         self.session.commit()
 
     def insert(self, path: Path, computed_hash: str, modification_date: str):
         self.cursor.execute(
-            f"INSERT INTO local_file_hashes" f" (file_path, file_hash, modification_date)" f" VALUES (?, ?, ?)",
+            "INSERT INTO local_file_hashes (file_path, file_hash, modification_date) VALUES (?, ?, ?)",
             (str(path), computed_hash, modification_date),
         )
         self.session.commit()
@@ -48,7 +48,7 @@ class LocalFileHashStorage:
         found = [
             LocalFileHashStorage.LocalFileHash(*row)
             for row in self.cursor.execute(
-                f"SELECT file_path, file_hash, modification_date" f" FROM local_file_hashes" f" WHERE file_path = ?",
+                "SELECT file_path, file_hash, modification_date FROM local_file_hashes WHERE file_path = ?",
                 (str(path),),
             )
         ]
@@ -57,7 +57,7 @@ class LocalFileHashStorage:
 
     def update(self, path: Path, computed_hash: str, modification_date: str):
         self.cursor.execute(
-            f"UPDATE local_file_hashes" f" SET file_hash=?, modification_date=?" f" WHERE file_path = ?",
+            "UPDATE local_file_hashes SET file_hash=?, modification_date=? WHERE file_path = ?",
             (computed_hash, modification_date, str(path)),
         )
         self.session.commit()
