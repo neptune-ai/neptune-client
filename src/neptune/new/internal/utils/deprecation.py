@@ -63,13 +63,13 @@ def deprecated(*, alternative: Optional[str] = None, stack_level: int = 1):
 __all__ = ["deprecated", "deprecated_parameter"]
 
 def warn_once(message: str, stack_level: int = 1):
-    if message not in warned_once.keys():
+    if message not in warned_once:
         warnings.warn(
             message=message,
             category=NeptuneDeprecationWarning,
             stacklevel=stack_level + 1,
         )
-        warned_once[message] = 1
+        warned_once.add(message)
 
 
 def deprecated(*, alternative: Optional[str] = None, stack_level: int = 1):
