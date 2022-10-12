@@ -164,14 +164,6 @@ class Handler:
                 if isinstance(value, Handler):
                     value = ValueCopy(value)
                 attr.process_assignment(value, wait)
-            elif not is_string(value) and is_string_like(value):
-                warn_once(
-                    message="The object you're logging will be implicitly cast to a string."
-                    " We'll end support of this behavior in `neptune-client==1.0.0`."
-                    " To log the object as a string, use `... = str(object)` instead.",
-                    stack_level=3,
-                )
-                self._container.define(self._path, str(value), wait)
             else:
                 self._container.define(self._path, value, wait)
 
