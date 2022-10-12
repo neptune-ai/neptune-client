@@ -284,7 +284,7 @@ class MetadataContainer(AbstractContextManager):
             warn_once(
                 message="The object you're logging will be implicitly cast to a string."
                 " We'll end support of this behavior in `neptune-client==1.0.0`."
-                " To log the object as a string, use `... = str(object)` instead.",
+                " To log the object as a string, use `define(str(object))` instead.",
                 stack_level=2,
             )
             value = String(str(value))

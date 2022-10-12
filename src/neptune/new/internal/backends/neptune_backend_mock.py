@@ -173,7 +173,7 @@ class NeptuneBackendMock(NeptuneBackend):
         container.set(["sys", "modification_time"], Datetime(datetime.now()))
         container.set(["sys", "failed"], Boolean(False))
         if container_type == ContainerType.MODEL_VERSION:
-            container.set(["sys", "model_id"], String(self.MODEL_SYS_ID))
+            container.set(["sys", "model_id"], String(str(self.MODEL_SYS_ID)))
             container.set(["sys", "stage"], String("none"))
         return container
 
