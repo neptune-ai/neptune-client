@@ -13,12 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from unittest.mock import patch
+
 import pytest
 
 from neptune.new.exceptions import NeptuneParametersCollision
 from neptune.new.internal.utils.deprecation import (
+    NeptuneDeprecationWarning,
     deprecated,
     deprecated_parameter,
+    warn_once,
 )
 
 
@@ -80,3 +84,10 @@ class TestDeprecatedParameter:
             "`neptune-client==1.0.0`."
         ):
             deprecated_func_with_alternative()
+
+    @patch("warnings.warn")
+    def test_warn_once(self, warn):
+        warn_once(message="Deprecation message 1")
+        warn_once(message="Deprecation message 1")
+
+        warn.assert_called_once_with(message="Deprecation message 1", category=NeptuneDeprecationWarning, stacklevel=2)
