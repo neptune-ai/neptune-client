@@ -34,10 +34,7 @@ from neptune.management import (
     create_project,
 )
 from neptune.management.internal.utils import normalize_project_name
-from neptune.new import (
-    get_project,
-    init_project,
-)
+from neptune.new import init_project
 
 fake = Faker()
 
@@ -131,4 +128,4 @@ def common_tag():
 
 @pytest.fixture(scope="session")
 def project(environment):
-    yield get_project(name=environment.project, api_token=environment.user_token)
+    yield init_project(mode="read-only", name=environment.project, api_token=environment.user_token)

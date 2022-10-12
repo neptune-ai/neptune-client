@@ -227,7 +227,7 @@ class Project(MetadataContainer):
             >>> import neptune.new as neptune
 
             >>> # Fetch project "jackie/sandbox"
-            ... project = neptune.get_project(name="jackie/sandbox")
+            ... project = neptune.init_project(mode="read-only", name="jackie/sandbox")
 
             >>> # Fetch the metadata of all runs as a pandas DataFrame
             ... runs_table_df = project.fetch_runs_table().to_pandas()
@@ -293,7 +293,7 @@ class Project(MetadataContainer):
             >>> import neptune.new as neptune
 
             >>> # Fetch project "jackie/sandbox"
-            ... project = neptune.get_project(name="jackie/sandbox")
+            ... project = neptune.init_project(mode="read-only", name="jackie/sandbox")
 
             >>> # Fetch the metadata of all models as a pandas DataFrame
             ... models_table_df = project.fetch_models_table().to_pandas()

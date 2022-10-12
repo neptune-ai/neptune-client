@@ -107,7 +107,7 @@ class TestSync(BaseE2ETest):
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
             # create run in offline mode
-            run = neptune.init(
+            run = neptune.init_run(
                 mode="offline",
                 project=environment.project,
                 **DISABLE_SYSLOG_KWARGS,

@@ -13,10 +13,52 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import warnings
 from functools import wraps
+from typing import Optional
 
 from neptune.new.exceptions import NeptuneParametersCollision
-from neptune.new.internal.utils.logger import logger
+
+__all__ = ["deprecated", "deprecated_parameter", "NeptuneDeprecationWarning", "warn_once"]
+
+
+class NeptuneDeprecationWarning(DeprecationWarning):
+    pass
+
+
+warnings.simplefilter("always", category=NeptuneDeprecationWarning)
+
+
+warned_once = set()
+
+
+def warn_once(message: str, stack_level: int = 1):
+    if message not in warned_once:
+        warnings.warn(
+            message=message,
+            category=NeptuneDeprecationWarning,
+            stacklevel=stack_level + 1,
+        )
+        warned_once.add(message)
+
+
+def deprecated(*, alternative: Optional[str] = None, stack_level: int = 1):
+    def deco(func):
+        @wraps(func)
+        def inner(*args, **kwargs):
+            additional_info = f", use `{alternative}` instead" if alternative else " and will be removed"
+
+            warn_once(
+                message=f"`{func.__name__}` is deprecated{additional_info}."
+                f" We'll end support of it in `neptune-client==1.0.0`.",
+                stack_level=stack_level + 1,
+            )
+
+            return func(*args, **kwargs)
+
+        return inner
+
+    return deco
 
 
 def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
@@ -27,11 +69,10 @@ def deprecated_parameter(*, deprecated_kwarg_name, required_kwarg_name):
                 if required_kwarg_name in kwargs:
                     raise NeptuneParametersCollision(required_kwarg_name, deprecated_kwarg_name, method_name=f.__name__)
 
-                logger.warning(
-                    "parameter `%s` is deprecated, use `%s` instead."
+                warn_once(
+                    message=f"Parameter `{deprecated_kwarg_name}` is deprecated, use `{required_kwarg_name}` instead."
                     " We'll end support of it in `neptune-client==1.0.0`.",
-                    deprecated_kwarg_name,
-                    required_kwarg_name,
+                    stack_level=2,
                 )
 
                 kwargs[required_kwarg_name] = kwargs[deprecated_kwarg_name]

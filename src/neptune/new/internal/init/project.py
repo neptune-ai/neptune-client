@@ -27,6 +27,7 @@ from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.init.parameters import DEFAULT_FLUSH_PERIOD
 from neptune.new.internal.operation_processors.factory import get_operation_processor
 from neptune.new.internal.utils import verify_type
+from neptune.new.internal.utils.deprecation import deprecated
 from neptune.new.metadata_containers import Project
 from neptune.new.types.mode import Mode
 
@@ -88,6 +89,7 @@ def init_project(
     return project
 
 
+@deprecated(alternative='init_project(mode="read-only")')
 def get_project(
     name: Optional[str] = None,
     api_token: Optional[str] = None,

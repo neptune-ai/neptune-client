@@ -160,14 +160,14 @@ class TestHuggingFace(BaseE2ETest):
         callback = NeptuneCallback(api_token=environment.user_token, project=environment.project)
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
-        assert callback.run.get_run_url() == NeptuneCallback.get_run(trainer).get_run_url()
+        assert callback.run.get_url() == NeptuneCallback.get_run(trainer).get_url()
 
     def test_initialization_with_run_provided(self, environment):
         run = init_run(project=environment.project, api_token=environment.user_token)
         callback = NeptuneCallback(run=run)
         trainer = Trainer(**self._trainer_default_attributes, callbacks=[callback])
 
-        assert run.get_run_url() == NeptuneCallback.get_run(trainer).get_run_url()
+        assert run.get_url() == NeptuneCallback.get_run(trainer).get_url()
 
     def test_run_reinitialization_failure(self, environment):
         run = init_run(project=environment.project, api_token=environment.user_token)

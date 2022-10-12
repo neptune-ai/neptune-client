@@ -329,7 +329,7 @@ There are two options two add it:
 
 {h2}CODE{end}
 Pass it to the {bold}init(){end} method via the {bold}project{end} argument:
-    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 {h2}ENVIRONMENT VARIABLE{end}
 or export or set an environment variable depending on your operating system:
@@ -343,7 +343,7 @@ or export or set an environment variable depending on your operating system:
        {bash}set {env_project}=WORKSPACE_NAME/PROJECT_NAME{end}
 
 and skip the {bold}project{end} argument of the {bold}init(){end} method:
-    {python}neptune.init(){end}
+    {python}neptune.init_run(){end}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/administration/projects
@@ -451,7 +451,7 @@ There are two options to add it:
 
 {h2}CODE{end}
 Pass the token to the {bold}init(){end} method via the {bold}api_token{end} argument:
-    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
+    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
 or export or set an environment variable depending on your operating system:
@@ -465,7 +465,7 @@ or export or set an environment variable depending on your operating system:
         {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
 
 and skip the {bold}api_token{end} argument of the {bold}init(){end} method:
-    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
     - https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
@@ -493,7 +493,7 @@ There are two options to add it:
 
 {h2}CODE{end}
 Pass the token to the {bold}init(){end} method via the {bold}api_token{end} argument:
-    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
+    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 {h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
 or export or set an environment variable depending on your operating system:
@@ -507,7 +507,7 @@ or export or set an environment variable depending on your operating system:
         {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
 
 and skip the {bold}api_token{end} argument of the {bold}init(){end} method:
-    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME'){end}
+    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs page:
     - https://docs.neptune.ai/getting-started/installation#authentication-neptune-api-token
@@ -761,7 +761,7 @@ If the connection is not re-established, you can upload your data later with the
 What should I do?
     - Check if your computer is connected to the internet.
     - If your connection is unstable, consider working in offline mode:
-        {python}run = neptune.init(mode="offline"){end}
+        {python}run = neptune.init_run(mode="offline"){end}
 
 You can find detailed instructions on the following doc pages:
     - https://docs.neptune.ai/you-should-know/connection-modes#offline
@@ -856,7 +856,7 @@ It seems you are trying to fetch data from the server while working in offline m
 You need to work in a non-offline connection mode to fetch data from the server.
 
 You can set the connection mode when creating a new run:
-    {python}run = neptune.init(mode="async"){end}
+    {python}run = neptune.init_run(mode="async"){end}
 
 You may also want to check the following docs page:
     - https://docs.neptune.ai/you-should-know/connection-modes
@@ -940,7 +940,7 @@ class NeptuneUninitializedException(NeptuneException):
 You must initialize the Neptune client library before you can access `get_last_run`.
 
 Looks like you forgot to add:
-    {python}neptune.init(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
+    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
 
 before you ran:
     {python}neptune.get_last_run(){end}

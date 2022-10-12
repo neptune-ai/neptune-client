@@ -162,7 +162,7 @@ class File(Atom):
         Examples:
             >>> import neptune.new as neptune
             >>> from neptune.new.types import File
-            >>> run = neptune.init()
+            >>> run = neptune.init_run()
 
             Convert NumPy array to File value object and upload it
 
@@ -203,7 +203,7 @@ class File(Atom):
         Examples:
             >>> import neptune.new as neptune
             >>> from neptune.new.types import File
-            >>> run = neptune.init()
+            >>> run = neptune.init_run()
 
             Convert Pandas DataFrame to File value object and upload it
 
@@ -243,7 +243,7 @@ class File(Atom):
         Examples:
             >>> import neptune.new as neptune
             >>> from neptune.new.types import File
-            >>> run = neptune.init()
+            >>> run = neptune.init_run()
 
             Pickle model object and upload it
 
