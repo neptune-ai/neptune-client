@@ -77,6 +77,11 @@ from neptune.legacy.model import (
     LeaderboardEntry,
 )
 from neptune.legacy.notebook import Notebook
+from neptune.legacy.utils import (
+    NoopObject,
+    assure_directory_exists,
+    with_api_exceptions_handler,
+)
 from neptune.new import exceptions as alpha_exceptions
 from neptune.new.attributes import constants as alpha_consts
 from neptune.new.attributes.constants import (
@@ -107,11 +112,6 @@ from neptune.new.internal.utils import (
 )
 from neptune.new.internal.utils import paths as alpha_path_utils
 from neptune.new.internal.utils.paths import parse_path
-from neptune.utils import (
-    NoopObject,
-    assure_directory_exists,
-    with_api_exceptions_handler,
-)
 
 _logger = logging.getLogger(__name__)
 

@@ -34,7 +34,7 @@ from neptune.legacy.envs import (
 )
 from neptune.legacy.exceptions import NeptuneNoExperimentContextException
 from neptune.legacy.experiments import Experiment
-from neptune.utils import (
+from neptune.legacy.utils import (
     as_list,
     discover_git_repo_location,
     get_git_info,

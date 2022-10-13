@@ -20,7 +20,7 @@ from neptune.legacy.backend import (
     BackendApiClient,
     LeaderboardApiClient,
 )
-from neptune.utils import NoopObject
+from neptune.legacy.utils import NoopObject
 
 _logger = logging.getLogger(__name__)
 

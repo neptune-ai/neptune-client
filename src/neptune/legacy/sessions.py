@@ -19,7 +19,7 @@ from collections import OrderedDict
 
 from neptune.internal.api_clients import HostedNeptuneBackendApiClient
 from neptune.legacy.projects import Project
-from neptune.utils import assure_project_qualified_name
+from neptune.legacy.utils import assure_project_qualified_name
 
 _logger = logging.getLogger(__name__)
 

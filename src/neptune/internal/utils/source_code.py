@@ -24,7 +24,7 @@ from typing import (
 )
 
 from neptune.internal.storage.storage_utils import normalize_file_name
-from neptune.utils import (
+from neptune.legacy.utils import (
     glob,
     is_ipython,
 )

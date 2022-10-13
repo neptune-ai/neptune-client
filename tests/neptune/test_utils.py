@@ -20,7 +20,7 @@ import numpy as np
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from neptune.utils import (
+from neptune.legacy.utils import (
     align_channels_on_x,
     as_list,
     get_channel_name_stems,

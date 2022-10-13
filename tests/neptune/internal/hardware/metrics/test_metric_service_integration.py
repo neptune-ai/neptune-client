@@ -39,7 +39,7 @@ from neptune.internal.hardware.metrics.reports.metric_report import (
     MetricValue,
 )
 from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
-from neptune.utils import IS_MACOS
+from neptune.legacy.utils import IS_MACOS
 
 
 class TestMetricServiceIntegration(unittest.TestCase):

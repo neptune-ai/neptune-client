@@ -24,6 +24,7 @@ from io import (
 
 from mock import MagicMock
 
+from neptune.legacy.utils import IS_WINDOWS
 from neptune.new.attributes.atoms.file import (
     File,
     FileVal,
@@ -38,7 +39,6 @@ from neptune.new.internal.operation import (
     UploadFileSet,
 )
 from neptune.new.internal.utils import base64_encode
-from neptune.utils import IS_WINDOWS
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

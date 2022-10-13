@@ -35,7 +35,7 @@ from neptune.internal.streams.stdstream_uploader import (
 from neptune.internal.threads.aborting_thread import AbortingThread
 from neptune.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.internal.threads.ping_thread import PingThread
-from neptune.utils import (
+from neptune.legacy.utils import (
     in_docker,
     is_ipython,
     is_notebook,

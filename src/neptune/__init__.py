@@ -32,7 +32,7 @@ from neptune.legacy.exceptions import (
 )
 from neptune.legacy.projects import Project
 from neptune.legacy.sessions import Session
-from neptune.utils import assure_project_qualified_name
+from neptune.legacy.utils import assure_project_qualified_name
 
 __version__ = get_versions()["version"]
 

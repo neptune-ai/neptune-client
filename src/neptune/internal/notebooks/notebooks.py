@@ -17,7 +17,7 @@ import logging
 import threading
 
 from neptune.internal.notebooks.comm import send_checkpoint_created
-from neptune.utils import is_ipython
+from neptune.legacy.utils import is_ipython
 
 _logger = logging.getLogger(__name__)
 

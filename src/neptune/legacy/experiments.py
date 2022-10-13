@@ -38,7 +38,7 @@ from neptune.legacy.exceptions import (
     NeptuneIncorrectImportException,
     NoChannelValue,
 )
-from neptune.utils import (
+from neptune.legacy.utils import (
     align_channels_on_x,
     is_float,
     is_nan_or_inf,

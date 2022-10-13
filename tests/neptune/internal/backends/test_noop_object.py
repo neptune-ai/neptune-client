@@ -16,7 +16,7 @@
 
 import unittest
 
-from neptune.utils import NoopObject
+from neptune.legacy.utils import NoopObject
 
 
 class TestHostedNeptuneObject(unittest.TestCase):

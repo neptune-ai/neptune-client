@@ -46,12 +46,12 @@ from neptune.legacy.exceptions import (
 )
 from neptune.legacy.oauth import NeptuneAuthenticator
 from neptune.legacy.projects import Project
-from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
-from neptune.utils import (
+from neptune.legacy.utils import (
     NoopObject,
     update_session_proxies,
     with_api_exceptions_handler,
 )
+from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
 
 _logger = logging.getLogger(__name__)
 
