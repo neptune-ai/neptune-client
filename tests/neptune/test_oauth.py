@@ -24,7 +24,7 @@ from mock import (
 )
 from oauthlib.oauth2 import TokenExpiredError
 
-from neptune.oauth import (
+from neptune.legacy.oauth import (
     NeptuneAuth,
     NeptuneAuthenticator,
     _decoding_options,
