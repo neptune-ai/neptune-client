@@ -18,7 +18,7 @@ import time
 import unittest
 
 from neptune.common.hardware.constants import BYTES_IN_ONE_GB
-from neptune.common.hardware.metrics import MetricsFactory
+from neptune.common.hardware.metrics.metrics_factory import MetricsFactory
 from neptune.common.hardware.metrics.reports.metric_report import (
     MetricReport,
     MetricValue,

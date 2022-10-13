@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["BYTES_IN_ONE_MB", "BYTES_IN_ONE_GB"]
 
 BYTES_IN_ONE_MB = 2**20
 BYTES_IN_ONE_GB = 2**30

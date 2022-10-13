@@ -13,5 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.common.hardware.gauges.gauge_factory import GaugeFactory
-from neptune.common.hardware.gauges.gauge_mode import GaugeMode

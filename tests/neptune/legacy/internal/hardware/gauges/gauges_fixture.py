@@ -15,9 +15,11 @@
 #
 from mock import MagicMock
 
-from neptune.common.hardware import GaugeFactory
 from neptune.common.hardware.gauges.cpu import SystemCpuUsageGauge
-from neptune.common.hardware.gauges.gauge_factory import SystemMemoryUsageGauge
+from neptune.common.hardware.gauges.gauge_factory import (
+    GaugeFactory,
+    SystemMemoryUsageGauge,
+)
 from neptune.common.hardware.gauges.gpu import (
     GpuMemoryGauge,
     GpuUsageGauge,

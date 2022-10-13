@@ -16,17 +16,15 @@
 
 import unittest
 
-from neptune.common.hardware import (
-    GaugeFactory,
-    GaugeMode,
-)
 from neptune.common.hardware.constants import BYTES_IN_ONE_GB
 from neptune.common.hardware.gauges.cpu import SystemCpuUsageGauge
 from neptune.common.hardware.gauges.gauge_factory import (
+    GaugeFactory,
     GpuMemoryGauge,
     GpuUsageGauge,
     SystemMemoryUsageGauge,
 )
+from neptune.common.hardware.gauges.gauge_mode import GaugeMode
 from neptune.common.hardware.metrics.metric import (
     Metric,
     MetricResourceType,

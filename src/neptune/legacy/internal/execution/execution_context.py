@@ -20,8 +20,8 @@ import time
 import traceback
 from logging import StreamHandler
 
-from neptune.common.hardware import GaugeMode
-from neptune.common.hardware.metrics import MetricServiceFactory
+from neptune.common.hardware.gauges.gauge_mode import GaugeMode
+from neptune.common.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.legacy.internal.abort import (
     CustomAbortImpl,
     DefaultAbortImpl,

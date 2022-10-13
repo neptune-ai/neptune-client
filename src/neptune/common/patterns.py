@@ -13,6 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
 PROJECT_QUALIFIED_NAME_PATTERN = "^((?P<workspace>[^/]+)/){0,1}(?P<project>[^/]+)$"
+
+__all__ = ["PROJECT_QUALIFIED_NAME_PATTERN"]
