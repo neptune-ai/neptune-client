@@ -278,13 +278,13 @@ class TestProject(unittest.TestCase):
             self.skipTest("not supported in this Python version")
 
         # given
-        os.chdir("tests/neptune")
+        os.chdir("tests/neptune/legacy")
         # and
         anExperiment = MagicMock()
         self.backend.create_experiment.return_value = anExperiment
 
         # when
-        self.project.create_experiment(upload_source_files=["test_project.*", "../../*.md"])
+        self.project.create_experiment(upload_source_files=["test_project.*", "../../../*.md"])
 
         # then
         self.backend.upload_source_code.assert_called_once()
@@ -297,7 +297,7 @@ class TestProject(unittest.TestCase):
                 "CODE_OF_CONDUCT.md",
                 "CHANGELOG.md",
                 "README.md",
-                "tests/neptune/test_project.py",
+                "tests/neptune/legacy/test_project.py",
             }
         )
 
@@ -307,32 +307,32 @@ class TestProject(unittest.TestCase):
             self.skipTest("not supported in this Python version")
 
         # given
-        os.chdir("tests/neptune")
+        os.chdir("tests/neptune/legacy")
         # and
         anExperiment = MagicMock()
         self.backend.create_experiment.return_value = anExperiment
 
         # when
-        self.project.create_experiment(upload_source_files=[os.path.abspath("test_project.py"), "../../*.md"])
+        self.project.create_experiment(upload_source_files=[os.path.abspath("test_project.py"), "../../../*.md"])
 
         # then
         self.backend.upload_source_code.assert_called_once()
         source_target_pairs_targets = [
             target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
         ]
-        self.assertTrue(
-            set(source_target_pairs_targets)
-            == {
+        self.assertSetEqual(
+            set(source_target_pairs_targets),
+            {
                 "CODE_OF_CONDUCT.md",
                 "CHANGELOG.md",
                 "README.md",
-                "tests/neptune/test_project.py",
-            }
+                "tests/neptune/legacy/test_project.py",
+            },
         )
 
     def test_create_experiment_with_upload_single_sources(self):
         # given
-        os.chdir("tests/neptune")
+        os.chdir("tests/neptune/legacy")
         # and
         anExperiment = MagicMock()
         self.backend.create_experiment.return_value = anExperiment
@@ -353,14 +353,14 @@ class TestProject(unittest.TestCase):
         self.backend.create_experiment.return_value = anExperiment
 
         # when
-        self.project.create_experiment(upload_source_files=["tests/neptune/*.*"])
+        self.project.create_experiment(upload_source_files=["tests/neptune/legacy/*.*"])
 
         # then
         self.backend.upload_source_code.assert_called_once()
         source_target_pairs_targets = [
             target_p for source_p, target_p in self.backend.upload_source_code.call_args[0][1]
         ]
-        self.assertTrue(all(target_p.startswith("tests/neptune/") for target_p in source_target_pairs_targets))
+        self.assertTrue(all(target_p.startswith("tests/neptune/legacy") for target_p in source_target_pairs_targets))
 
     @patch(
         "neptune.legacy.internal.utils.source_code.glob",

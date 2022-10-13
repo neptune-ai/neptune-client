@@ -26,7 +26,7 @@ from neptune.utils import get_git_info
 class TestGitInfo(unittest.TestCase):
     def test_getting_some_git_info_from_current_repository(self):
         # when
-        git_info = get_git_info("..")
+        git_info = get_git_info(".")
 
         # then
         self.assertNotEqual(git_info, None)
@@ -46,7 +46,7 @@ class TestGitInfo(unittest.TestCase):
         repo.remotes = []
 
         # when
-        git_info = get_git_info("..")
+        git_info = get_git_info(".")
 
         # then
         self.assertEqual(
