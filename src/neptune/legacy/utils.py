@@ -131,19 +131,6 @@ def is_nan_or_inf(value):
     return math.isnan(value) or math.isinf(value)
 
 
-def file_contains(filename, text):
-    with open(filename) as f:
-        for line in f:
-            if text in line:
-                return True
-        return False
-
-
-def in_docker():
-    cgroup_file = "/proc/self/cgroup"
-    return os.path.exists("./dockerenv") or (os.path.exists(cgroup_file) and file_contains(cgroup_file, text="docker"))
-
-
 def is_notebook():
     try:
         # pylint: disable=pointless-statement,undefined-variable
@@ -314,17 +301,6 @@ def glob(pathname):
         return globlib.glob(pathname)
     else:
         return globlib.glob(pathname, recursive=True)
-
-
-def is_ipython():
-    try:
-        # pylint:disable=bad-option-value,import-outside-toplevel
-        import IPython
-
-        ipython = IPython.core.getipython.get_ipython()
-        return ipython is not None
-    except ImportError:
-        return False
 
 
 def assure_project_qualified_name(project_qualified_name):

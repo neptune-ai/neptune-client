@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ from websocket import (
     WebSocketTimeoutException,
 )
 
-from neptune.legacy.internal.websockets.websocket_client_adapter import (
+from neptune.common.websockets.websocket_client_adapter import (
     WebsocketClientAdapter,
     WebsocketNotConnectedException,
 )

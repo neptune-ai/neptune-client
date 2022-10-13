@@ -22,6 +22,10 @@ from logging import StreamHandler
 
 from neptune.common.hardware.gauges.gauge_mode import GaugeMode
 from neptune.common.hardware.metrics.service.metric_service_factory import MetricServiceFactory
+from neptune.common.utils import (
+    in_docker,
+    is_ipython,
+)
 from neptune.legacy.internal.abort import (
     CustomAbortImpl,
     DefaultAbortImpl,
@@ -35,11 +39,7 @@ from neptune.legacy.internal.streams.stdstream_uploader import (
 from neptune.legacy.internal.threads.aborting_thread import AbortingThread
 from neptune.legacy.internal.threads.hardware_metric_reporting_thread import HardwareMetricReportingThread
 from neptune.legacy.internal.threads.ping_thread import PingThread
-from neptune.legacy.utils import (
-    in_docker,
-    is_ipython,
-    is_notebook,
-)
+from neptune.legacy.utils import is_notebook
 
 _logger = logging.getLogger(__name__)
 

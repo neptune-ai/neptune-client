@@ -23,11 +23,9 @@ from typing import (
     Tuple,
 )
 
+from neptune.common.utils import is_ipython
 from neptune.legacy.internal.storage.storage_utils import normalize_file_name
-from neptune.legacy.utils import (
-    glob,
-    is_ipython,
-)
+from neptune.legacy.utils import glob
 
 
 def get_source_code_to_upload(

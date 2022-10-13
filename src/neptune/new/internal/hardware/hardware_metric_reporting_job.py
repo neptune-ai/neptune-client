@@ -31,7 +31,7 @@ from neptune.common.hardware.metrics.reports.metric_reporter import MetricReport
 from neptune.common.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
 from neptune.common.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
 from neptune.common.hardware.system.system_monitor import SystemMonitor
-from neptune.legacy.utils import in_docker
+from neptune.common.utils import in_docker
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.new.internal.threading.daemon import Daemon

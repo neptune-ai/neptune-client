@@ -14,6 +14,11 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
+from neptune.common.utils import (
+    file_contains,
+    in_docker,
+    is_ipython,
+)
 from neptune.legacy.utils import (
     IS_MACOS,
     IS_WINDOWS,
@@ -23,13 +28,10 @@ from neptune.legacy.utils import (
     assure_directory_exists,
     assure_project_qualified_name,
     discover_git_repo_location,
-    file_contains,
     get_channel_name_stems,
     get_git_info,
     glob,
-    in_docker,
     is_float,
-    is_ipython,
     is_nan_or_inf,
     is_notebook,
     map_keys,
