@@ -31,7 +31,7 @@ from neptune.legacy.exceptions import (
     NeptuneUninitializedException,
 )
 from neptune.legacy.projects import Project
-from neptune.sessions import Session
+from neptune.legacy.sessions import Session
 from neptune.utils import assure_project_qualified_name
 
 __version__ = get_versions()["version"]

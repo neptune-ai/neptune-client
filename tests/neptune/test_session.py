@@ -23,7 +23,7 @@ from mock import (
 )
 
 from neptune.legacy.projects import Project
-from neptune.sessions import Session
+from neptune.legacy.sessions import Session
 from tests.neptune.api_objects_factory import a_project
 
 
