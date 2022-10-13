@@ -36,13 +36,6 @@ import requests
 import six
 from bravado.exception import HTTPNotFound
 
-from neptune.api_exceptions import (
-    ExperimentNotFound,
-    ExperimentOperationErrors,
-    NotebookNotFound,
-    PathInExperimentNotFound,
-    ProjectNotFound,
-)
 from neptune.backend import LeaderboardApiClient
 from neptune.checkpoint import Checkpoint
 from neptune.exceptions import (
@@ -72,6 +65,13 @@ from neptune.internal.utils.alpha_integration import (
     deprecated_img_to_alpha_image,
 )
 from neptune.internal.websockets.reconnecting_websocket_factory import ReconnectingWebsocketFactory
+from neptune.legacy.api_exceptions import (
+    ExperimentNotFound,
+    ExperimentOperationErrors,
+    NotebookNotFound,
+    PathInExperimentNotFound,
+    ProjectNotFound,
+)
 from neptune.model import (
     ChannelWithLastValue,
     LeaderboardEntry,

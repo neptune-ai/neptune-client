@@ -41,13 +41,6 @@ from bravado.exception import (
 from urllib3.exceptions import NewConnectionError
 
 from neptune import envs
-from neptune.api_exceptions import (
-    ConnectionLost,
-    Forbidden,
-    NeptuneSSLVerificationError,
-    ServerError,
-    Unauthorized,
-)
 from neptune.exceptions import (
     FileNotFound,
     InvalidNotebookPath,
@@ -57,6 +50,13 @@ from neptune.exceptions import (
     NotAFile,
 )
 from neptune.git_info import GitInfo
+from neptune.legacy.api_exceptions import (
+    ConnectionLost,
+    Forbidden,
+    NeptuneSSLVerificationError,
+    ServerError,
+    Unauthorized,
+)
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 _logger = logging.getLogger(__name__)

@@ -27,10 +27,6 @@ from bravado.exception import HTTPNotFound
 from bravado.requests_client import RequestsClient
 from packaging import version
 
-from neptune.api_exceptions import (
-    ProjectNotFound,
-    WorkspaceNotFound,
-)
 from neptune.backend import (
     BackendApiClient,
     LeaderboardApiClient,
@@ -44,6 +40,10 @@ from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_ap
     HostedAlphaLeaderboardApiClient,
 )
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
+from neptune.legacy.api_exceptions import (
+    ProjectNotFound,
+    WorkspaceNotFound,
+)
 from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
 from neptune.oauth import NeptuneAuthenticator
 from neptune.projects import Project
