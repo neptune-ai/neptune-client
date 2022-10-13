@@ -14,27 +14,4 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
-from neptune.legacy.api_exceptions import (
-    ChannelAlreadyExists,
-    ChannelDoesNotExist,
-    ChannelNotFound,
-    ChannelsValuesSendBatchError,
-    ConnectionLost,
-    ExperimentAlreadyFinished,
-    ExperimentLimitReached,
-    ExperimentNotFound,
-    ExperimentOperationErrors,
-    ExperimentValidationError,
-    Forbidden,
-    InvalidApiKey,
-    NeptuneApiException,
-    NeptuneSSLVerificationError,
-    NotebookNotFound,
-    PathInExperimentNotFound,
-    PathInProjectNotFound,
-    ProjectNotFound,
-    ServerError,
-    StorageLimitReached,
-    Unauthorized,
-    WorkspaceNotFound,
-)
+from neptune.legacy.notebook import Notebook
