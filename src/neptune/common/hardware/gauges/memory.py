@@ -14,40 +14,42 @@
 # limitations under the License.
 #
 
-from neptune.legacy.internal.hardware.cgroup.cgroup_monitor import CGroupMonitor
-from neptune.legacy.internal.hardware.gauges.gauge import Gauge
-from neptune.legacy.internal.hardware.system.system_monitor import SystemMonitor
+from neptune.common.hardware.cgroup.cgroup_monitor import CGroupMonitor
+from neptune.common.hardware.constants import BYTES_IN_ONE_GB
+from neptune.common.hardware.gauges.gauge import Gauge
+from neptune.common.hardware.system.system_monitor import SystemMonitor
 
 
-class SystemCpuUsageGauge(Gauge):
+class SystemMemoryUsageGauge(Gauge):
     def __init__(self):
         self.__system_monitor = SystemMonitor()
 
     def name(self):
-        return "cpu"
+        return "ram"
 
     def value(self):
-        return self.__system_monitor.cpu_percent()
+        virtual_mem = self.__system_monitor.virtual_memory()
+        return (virtual_mem.total - virtual_mem.available) / float(BYTES_IN_ONE_GB)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__
 
     def __repr__(self):
-        return str("SystemCpuUsageGauge")
+        return str("SystemMemoryUsageGauge")
 
 
-class CGroupCpuUsageGauge(Gauge):
+class CGroupMemoryUsageGauge(Gauge):
     def __init__(self):
         self.__cgroup_monitor = CGroupMonitor.create()
 
     def name(self):
-        return "cpu"
+        return "ram"
 
     def value(self):
-        return self.__cgroup_monitor.get_cpu_usage_percentage()
+        return self.__cgroup_monitor.get_memory_usage_in_bytes() / float(BYTES_IN_ONE_GB)
 
     def __eq__(self, other):
         return self.__class__ == other.__class__
 
     def __repr__(self):
-        return str("CGroupCpuUsageGauge")
+        return str("CGroupMemoryUsageGauge")

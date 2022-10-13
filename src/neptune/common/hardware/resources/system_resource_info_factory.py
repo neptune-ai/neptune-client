@@ -14,10 +14,10 @@
 # limitations under the License.
 #
 
-from neptune.legacy.internal.hardware.cgroup.cgroup_monitor import CGroupMonitor
-from neptune.legacy.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.legacy.internal.hardware.resources.gpu_card_indices_provider import GPUCardIndicesProvider
-from neptune.legacy.internal.hardware.resources.system_resource_info import SystemResourceInfo
+from neptune.common.hardware.cgroup.cgroup_monitor import CGroupMonitor
+from neptune.common.hardware.gauges.gauge_mode import GaugeMode
+from neptune.common.hardware.resources.gpu_card_indices_provider import GPUCardIndicesProvider
+from neptune.common.hardware.resources.system_resource_info import SystemResourceInfo
 
 
 class SystemResourceInfoFactory(object):

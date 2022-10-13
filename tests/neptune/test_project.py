@@ -27,8 +27,8 @@ from mock import (
 )
 from munch import Munch
 
-from neptune.exceptions import NeptuneNoExperimentContextException
 from neptune.experiments import Experiment
+from neptune.legacy.exceptions import NeptuneNoExperimentContextException
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
 from tests.neptune.api_objects_factory import (
@@ -366,7 +366,7 @@ class TestProject(unittest.TestCase):
         "neptune.legacy.internal.utils.source_code.glob",
         new=lambda path: [path.replace("*", "file.txt")],
     )
-    @patch("neptune.projects.os.path", new=ntpath)
+    @patch("neptune.legacy.projects.os.path", new=ntpath)
     @patch("neptune.legacy.internal.storage.storage_utils.os.sep", new=ntpath.sep)
     def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(
         self,

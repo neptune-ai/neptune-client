@@ -17,15 +17,15 @@
 import time
 import unittest
 
-from neptune.legacy.internal.hardware.constants import BYTES_IN_ONE_GB
-from neptune.legacy.internal.hardware.metrics import MetricsFactory
-from neptune.legacy.internal.hardware.metrics.reports import (
+from neptune.common.hardware.constants import BYTES_IN_ONE_GB
+from neptune.common.hardware.metrics import MetricsFactory
+from neptune.common.hardware.metrics.reports.metric_report import (
     MetricReport,
     MetricValue,
 )
-from neptune.legacy.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
-from neptune.legacy.internal.hardware.resources.system_resource_info import SystemResourceInfo
-from tests.neptune.legacy.internal.hardware.gauges.gauges_fixture import GaugesFixture
+from neptune.common.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
+from neptune.common.hardware.resources.system_resource_info import SystemResourceInfo
+from tests.neptune.internal.hardware.gauges.gauges_fixture import GaugesFixture
 
 
 class TestMetricReporterIntegration(unittest.TestCase):

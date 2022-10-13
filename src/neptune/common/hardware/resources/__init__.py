@@ -13,3 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.common.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory

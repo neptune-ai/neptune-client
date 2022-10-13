@@ -13,3 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.common.hardware.metrics.metrics_factory import MetricsFactory
+from neptune.common.hardware.metrics.service.metric_service_factory import MetricServiceFactory

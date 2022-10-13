@@ -20,13 +20,13 @@ import time
 import traceback
 from logging import StreamHandler
 
+from neptune.common.hardware import GaugeMode
+from neptune.common.hardware.metrics import MetricServiceFactory
 from neptune.legacy.internal.abort import (
     CustomAbortImpl,
     DefaultAbortImpl,
 )
 from neptune.legacy.internal.channels.channels import ChannelNamespace
-from neptune.legacy.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.legacy.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.legacy.internal.streams.channel_writer import ChannelWriter
 from neptune.legacy.internal.streams.stdstream_uploader import (
     StdErrWithUpload,

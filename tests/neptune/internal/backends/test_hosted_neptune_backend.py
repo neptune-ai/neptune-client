@@ -19,7 +19,7 @@ import unittest
 import mock
 from mock import MagicMock
 
-from neptune.exceptions import (
+from neptune.legacy.exceptions import (
     CannotResolveHostname,
     DeprecatedApiToken,
     UnsupportedClientVersion,

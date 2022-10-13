@@ -43,8 +43,8 @@ from tests.neptune.random_utils import (
 
 
 class TestExperiment(unittest.TestCase):
-    @mock.patch("neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
-    @mock.patch("neptune.experiments.ExecutionContext", new=mock.MagicMock)
+    @mock.patch("neptune.legacy.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
+    @mock.patch("neptune.legacy.experiments.ExecutionContext", new=mock.MagicMock)
     def test_send_metric(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
@@ -61,8 +61,8 @@ class TestExperiment(unittest.TestCase):
         # then
         channels_values_sender.send.assert_called_with("loss", ChannelType.NUMERIC.value, channel_value)
 
-    @mock.patch("neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
-    @mock.patch("neptune.experiments.ExecutionContext", new=mock.MagicMock)
+    @mock.patch("neptune.legacy.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
+    @mock.patch("neptune.legacy.experiments.ExecutionContext", new=mock.MagicMock)
     def test_send_text(self, ChannelsValuesSender):
         # given
         channels_values_sender = ChannelsValuesSender.return_value
@@ -75,9 +75,9 @@ class TestExperiment(unittest.TestCase):
         # then
         channels_values_sender.send.assert_called_with("stdout", ChannelType.TEXT.value, channel_value)
 
-    @mock.patch("neptune.experiments.get_image_content", return_value=b"content")
-    @mock.patch("neptune.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
-    @mock.patch("neptune.experiments.ExecutionContext", new=mock.MagicMock)
+    @mock.patch("neptune.legacy.experiments.get_image_content", return_value=b"content")
+    @mock.patch("neptune.legacy.experiments.ChannelsValuesSender", return_value=mock.MagicMock())
+    @mock.patch("neptune.legacy.experiments.ExecutionContext", new=mock.MagicMock)
     def test_send_image(self, ChannelsValuesSender, content):
         # given
         channels_values_sender = ChannelsValuesSender.return_value

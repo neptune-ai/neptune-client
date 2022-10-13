@@ -40,7 +40,7 @@ from requests import (
     Response,
 )
 
-from neptune.legacy.internal.hardware.constants import BYTES_IN_ONE_MB
+from neptune.common.hardware.constants import BYTES_IN_ONE_MB
 from neptune.legacy.internal.storage.datastream import (
     FileChunk,
     FileChunker,

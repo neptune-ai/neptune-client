@@ -13,9 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.legacy.internal.hardware.constants import BYTES_IN_ONE_GB
-from neptune.legacy.internal.hardware.gauges.gauge import Gauge
-from neptune.legacy.internal.hardware.gpu.gpu_monitor import GPUMonitor
+from neptune.common.hardware.constants import BYTES_IN_ONE_GB
+from neptune.common.hardware.gauges.gauge import Gauge
+from neptune.common.hardware.gpu.gpu_monitor import GPUMonitor
 
 
 class GpuUsageGauge(Gauge):

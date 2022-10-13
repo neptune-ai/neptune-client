@@ -24,13 +24,15 @@ from typing import (
     Optional,
 )
 
-from neptune.legacy.internal.hardware.gauges.gauge_factory import GaugeFactory
-from neptune.legacy.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.legacy.internal.hardware.metrics import MetricsFactory
-from neptune.legacy.internal.hardware.metrics.reports.metric_reporter import MetricReporter
-from neptune.legacy.internal.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
-from neptune.legacy.internal.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
-from neptune.legacy.internal.hardware.system.system_monitor import SystemMonitor
+from neptune.common.hardware import (
+    GaugeFactory,
+    GaugeMode,
+)
+from neptune.common.hardware.metrics import MetricsFactory
+from neptune.common.hardware.metrics.reports.metric_reporter import MetricReporter
+from neptune.common.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
+from neptune.common.hardware.resources import SystemResourceInfoFactory
+from neptune.common.hardware.system.system_monitor import SystemMonitor
 from neptune.legacy.utils import in_docker
 from neptune.new.internal.background_job import BackgroundJob
 from neptune.new.internal.hardware.gpu.gpu_monitor import GPUMonitor

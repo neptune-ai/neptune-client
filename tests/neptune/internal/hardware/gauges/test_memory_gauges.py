@@ -17,7 +17,7 @@ import unittest
 
 import psutil
 
-from neptune.legacy.internal.hardware.gauges.memory import (
+from neptune.common.hardware.gauges.gauge_factory import (
     CGroupMemoryUsageGauge,
     SystemMemoryUsageGauge,
 )

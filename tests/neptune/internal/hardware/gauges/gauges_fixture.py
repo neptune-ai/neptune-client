@@ -15,13 +15,13 @@
 #
 from mock import MagicMock
 
-from neptune.legacy.internal.hardware.gauges.cpu import SystemCpuUsageGauge
-from neptune.legacy.internal.hardware.gauges.gauge_factory import GaugeFactory
-from neptune.legacy.internal.hardware.gauges.gpu import (
+from neptune.common.hardware import GaugeFactory
+from neptune.common.hardware.gauges.cpu import SystemCpuUsageGauge
+from neptune.common.hardware.gauges.gauge_factory import SystemMemoryUsageGauge
+from neptune.common.hardware.gauges.gpu import (
     GpuMemoryGauge,
     GpuUsageGauge,
 )
-from neptune.legacy.internal.hardware.gauges.memory import SystemMemoryUsageGauge
 
 
 class GaugesFixture(object):

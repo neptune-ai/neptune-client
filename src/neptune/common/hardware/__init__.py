@@ -13,12 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.legacy.internal.hardware.metrics.reports.metric_reporter import MetricReporter
-
-
-class MetricReporterFactory(object):
-    def __init__(self, reference_timestamp):
-        self.__reference_timestamp = reference_timestamp
-
-    def create(self, metrics):
-        return MetricReporter(metrics=metrics, reference_timestamp=self.__reference_timestamp)
+from neptune.common.hardware.gauges.gauge_factory import GaugeFactory
+from neptune.common.hardware.gauges.gauge_mode import GaugeMode
