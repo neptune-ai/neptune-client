@@ -25,15 +25,15 @@ import click
 import pandas as pd
 import six
 
-from neptune.envs import (
-    NOTEBOOK_ID_ENV_NAME,
-    NOTEBOOK_PATH_ENV_NAME,
-)
 from neptune.exceptions import NeptuneNoExperimentContextException
 from neptune.experiments import Experiment
 from neptune.internal.abort import DefaultAbortImpl
 from neptune.internal.notebooks.notebooks import create_checkpoint
 from neptune.internal.utils.source_code import get_source_code_to_upload
+from neptune.legacy.envs import (
+    NOTEBOOK_ID_ENV_NAME,
+    NOTEBOOK_PATH_ENV_NAME,
+)
 from neptune.utils import (
     as_list,
     discover_git_repo_location,

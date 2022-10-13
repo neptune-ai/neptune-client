@@ -15,7 +15,7 @@
 #
 import platform
 
-from neptune import envs
+from neptune.legacy import envs
 
 UNIX_STYLES = {
     "h1": "\033[95m",
