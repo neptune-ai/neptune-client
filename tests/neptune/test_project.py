@@ -30,7 +30,7 @@ from munch import Munch
 from neptune.legacy.exceptions import NeptuneNoExperimentContextException
 from neptune.legacy.experiments import Experiment
 from neptune.legacy.model import LeaderboardEntry
-from neptune.projects import Project
+from neptune.legacy.projects import Project
 from tests.neptune.api_objects_factory import (
     a_registered_project_member,
     an_invited_project_member,

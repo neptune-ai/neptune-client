@@ -30,7 +30,7 @@ from neptune.legacy.exceptions import (
     NeptuneIncorrectImportException,
     NeptuneUninitializedException,
 )
-from neptune.projects import Project
+from neptune.legacy.projects import Project
 from neptune.sessions import Session
 from neptune.utils import assure_project_qualified_name
 

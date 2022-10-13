@@ -45,8 +45,8 @@ from neptune.legacy.exceptions import (
     UnsupportedClientVersion,
 )
 from neptune.legacy.oauth import NeptuneAuthenticator
+from neptune.legacy.projects import Project
 from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
-from neptune.projects import Project
 from neptune.utils import (
     NoopObject,
     update_session_proxies,
