@@ -14,25 +14,15 @@
 # limitations under the License.
 #
 
-import time
+from mock import MagicMock
 
-import jwt
-
-from tests.neptune.random_utils import a_string
-
-SECRET = "secret"
+from tests.neptune.legacy.random_utils import a_string
 
 
-def an_access_token():
-    return jwt.encode(
-        {
-            "exp": time.time(),
-            "azp": a_string(),
-            "iss": "http://{}.com".format(a_string()),
-        },
-        SECRET,
-    )
-
-
-def a_refresh_token():
-    return jwt.encode({"exp": 0, "azp": a_string(), "iss": "http://{}.com".format(a_string())}, SECRET)
+def a_request():
+    request = MagicMock()
+    request.method = "post"
+    request.url = "http://{}.com".format(a_string())
+    request.headers = {a_string(): a_string()}
+    request.body = a_string()
+    return request

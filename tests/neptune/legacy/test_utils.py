@@ -28,7 +28,7 @@ from neptune.utils import (
     map_values,
     merge_dataframes,
 )
-from tests.neptune.random_utils import sort_df_by_columns
+from tests.neptune.legacy.random_utils import sort_df_by_columns
 
 
 class TestMapValues(unittest.TestCase):

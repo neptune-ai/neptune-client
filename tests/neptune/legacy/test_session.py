@@ -24,7 +24,7 @@ from mock import (
 
 from neptune.projects import Project
 from neptune.sessions import Session
-from tests.neptune.api_objects_factory import a_project
+from tests.neptune.legacy.api_objects_factory import a_project
 
 
 @patch(

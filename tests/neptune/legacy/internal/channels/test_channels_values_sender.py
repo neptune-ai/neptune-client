@@ -31,7 +31,7 @@ from neptune.legacy.internal.channels.channels_values_sender import (
     ChannelsValuesSender,
     ChannelsValuesSendingThread,
 )
-from tests.neptune.experiments_object_factory import a_channel
+from tests.neptune.legacy.experiments_object_factory import a_channel
 
 
 class TestChannelsValuesSender(unittest.TestCase):

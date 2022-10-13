@@ -25,7 +25,7 @@ from neptune.common.hardware.metrics.reports.metric_report import (
 )
 from neptune.common.hardware.metrics.reports.metric_reporter_factory import MetricReporterFactory
 from neptune.common.hardware.resources.system_resource_info import SystemResourceInfo
-from tests.neptune.internal.hardware.gauges.gauges_fixture import GaugesFixture
+from tests.neptune.legacy.internal.hardware.gauges.gauges_fixture import GaugesFixture
 
 
 class TestMetricReporterIntegration(unittest.TestCase):

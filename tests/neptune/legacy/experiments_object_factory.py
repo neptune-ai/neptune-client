@@ -17,7 +17,7 @@ import random
 
 from munch import Munch
 
-from tests.neptune.random_utils import (
+from tests.neptune.legacy.random_utils import (
     a_string,
     a_uuid_string,
 )

@@ -30,8 +30,8 @@ from neptune.legacy.oauth import (
     _decoding_options,
     _no_token_updater,
 )
-from tests.neptune.http_objects_factory import a_request
-from tests.neptune.oauth_objects_factory import (
+from tests.neptune.legacy.http_objects_factory import a_request
+from tests.neptune.legacy.oauth_objects_factory import (
     SECRET,
     a_refresh_token,
     an_access_token,
@@ -108,8 +108,8 @@ class TestNeptuneAuth(unittest.TestCase):
 
 
 class TestNeptuneAuthenticator(unittest.TestCase):
-    @patch("neptune.oauth.OAuth2Session")
-    @patch("neptune.oauth.time")
+    @patch("neptune.legacy.oauth.OAuth2Session")
+    @patch("neptune.legacy.oauth.time")
     def test_apply_oauth2_session_to_request(self, time_mock, session_mock):
         # given
         api_token = MagicMock()

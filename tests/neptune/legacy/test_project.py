@@ -31,15 +31,15 @@ from neptune.experiments import Experiment
 from neptune.legacy.exceptions import NeptuneNoExperimentContextException
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
-from tests.neptune.api_objects_factory import (
+from tests.neptune.legacy.api_objects_factory import (
     a_registered_project_member,
     an_invited_project_member,
 )
-from tests.neptune.project_test_fixture import (
+from tests.neptune.legacy.project_test_fixture import (
     some_exp_entry_dto,
     some_exp_entry_row,
 )
-from tests.neptune.random_utils import (
+from tests.neptune.legacy.random_utils import (
     a_string,
     a_string_list,
     a_uuid_string,

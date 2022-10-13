@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from tests.neptune.api_objects_factory import an_experiment_leaderboard_entry_dto
+from tests.neptune.legacy.api_objects_factory import an_experiment_leaderboard_entry_dto
 
 some_exp_entry_dto = an_experiment_leaderboard_entry_dto()
 
