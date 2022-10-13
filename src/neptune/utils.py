@@ -40,14 +40,6 @@ from bravado.exception import (
 )
 from urllib3.exceptions import NewConnectionError
 
-from neptune.exceptions import (
-    FileNotFound,
-    InvalidNotebookPath,
-    NeptuneIncorrectProjectQualifiedNameException,
-    NeptuneMissingProjectQualifiedNameException,
-    NotADirectory,
-    NotAFile,
-)
 from neptune.git_info import GitInfo
 from neptune.legacy import envs
 from neptune.legacy.api_exceptions import (
@@ -56,6 +48,14 @@ from neptune.legacy.api_exceptions import (
     NeptuneSSLVerificationError,
     ServerError,
     Unauthorized,
+)
+from neptune.legacy.exceptions import (
+    FileNotFound,
+    InvalidNotebookPath,
+    NeptuneIncorrectProjectQualifiedNameException,
+    NeptuneMissingProjectQualifiedNameException,
+    NotADirectory,
+    NotAFile,
 )
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 

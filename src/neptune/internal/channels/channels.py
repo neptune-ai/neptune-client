@@ -18,7 +18,7 @@ from collections import namedtuple
 from enum import Enum
 from typing import List
 
-from neptune.exceptions import NeptuneException
+from neptune.legacy.exceptions import NeptuneException
 
 ChannelNameWithTypeAndNamespace = namedtuple(
     "ChannelNameWithType",

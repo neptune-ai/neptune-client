@@ -16,11 +16,11 @@
 import abc
 from collections import namedtuple
 
-from neptune.exceptions import NeptuneException
 from neptune.internal.channels.channels import (
     ChannelType,
     ChannelValueType,
 )
+from neptune.legacy.exceptions import NeptuneException
 from neptune.new.attributes import constants as alpha_consts
 from neptune.new.internal import operation as alpha_operation
 from neptune.new.internal.backends.api_model import AttributeType as AlphaAttributeType

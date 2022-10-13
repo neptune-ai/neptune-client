@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from neptune import envs
-from neptune.exceptions import (
+from neptune.legacy.exceptions import (
     STYLES,
     NeptuneException,
 )

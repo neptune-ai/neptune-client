@@ -18,8 +18,8 @@ import time
 
 from bravado.exception import HTTPError
 
-from neptune.exceptions import NeptuneException
 from neptune.internal.threads.neptune_thread import NeptuneThread
+from neptune.legacy.exceptions import NeptuneException
 
 _logger = logging.getLogger(__name__)
 

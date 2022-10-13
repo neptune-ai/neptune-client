@@ -20,7 +20,7 @@ import numpy
 import six
 from PIL import Image
 
-from neptune.exceptions import (
+from neptune.legacy.exceptions import (
     FileNotFound,
     InvalidChannelValue,
 )

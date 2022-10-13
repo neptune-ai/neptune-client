@@ -25,7 +25,6 @@ from queue import (
 
 from bravado.exception import HTTPUnprocessableEntity
 
-from neptune.exceptions import NeptuneException
 from neptune.internal.channels.channels import (
     ChannelIdWithValues,
     ChannelNamespace,
@@ -33,6 +32,7 @@ from neptune.internal.channels.channels import (
     ChannelValue,
 )
 from neptune.internal.threads.neptune_thread import NeptuneThread
+from neptune.legacy.exceptions import NeptuneException
 
 _logger = logging.getLogger(__name__)
 

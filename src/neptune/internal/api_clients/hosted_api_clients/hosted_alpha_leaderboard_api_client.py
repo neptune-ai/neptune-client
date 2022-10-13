@@ -36,14 +36,6 @@ import requests
 import six
 from bravado.exception import HTTPNotFound
 
-from neptune.exceptions import (
-    DeleteArtifactUnsupportedInAlphaException,
-    DownloadArtifactsUnsupportedException,
-    DownloadArtifactUnsupportedException,
-    DownloadSourcesException,
-    FileNotFound,
-    NeptuneException,
-)
 from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.internal.channels.channels import (
@@ -72,6 +64,14 @@ from neptune.legacy.api_exceptions import (
 )
 from neptune.legacy.backend import LeaderboardApiClient
 from neptune.legacy.checkpoint import Checkpoint
+from neptune.legacy.exceptions import (
+    DeleteArtifactUnsupportedInAlphaException,
+    DownloadArtifactsUnsupportedException,
+    DownloadArtifactUnsupportedException,
+    DownloadSourcesException,
+    FileNotFound,
+    NeptuneException,
+)
 from neptune.model import (
     ChannelWithLastValue,
     LeaderboardEntry,

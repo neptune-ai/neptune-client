@@ -19,13 +19,13 @@ import json
 import logging
 import os
 
-from neptune.exceptions import NeptuneMissingApiTokenException
 from neptune.legacy import envs
 from neptune.legacy.api_exceptions import InvalidApiKey
 from neptune.legacy.constants import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
 )
+from neptune.legacy.exceptions import NeptuneMissingApiTokenException
 
 _logger = logging.getLogger(__name__)
 
