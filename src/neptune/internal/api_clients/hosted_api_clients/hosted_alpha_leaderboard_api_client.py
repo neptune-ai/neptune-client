@@ -72,7 +72,7 @@ from neptune.legacy.exceptions import (
     NeptuneException,
 )
 from neptune.legacy.experiments import Experiment
-from neptune.model import (
+from neptune.legacy.model import (
     ChannelWithLastValue,
     LeaderboardEntry,
 )

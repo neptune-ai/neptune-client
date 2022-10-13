@@ -20,7 +20,7 @@ from abc import (
 )
 from typing import Dict
 
-from neptune.model import ChannelWithLastValue
+from neptune.legacy.model import ChannelWithLastValue
 
 
 class ApiClient(ABC):
