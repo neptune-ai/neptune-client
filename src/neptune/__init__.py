@@ -18,9 +18,6 @@ import os
 import threading
 
 from neptune._version import get_versions
-from neptune.internal.api_clients import backend_factory
-from neptune.internal.api_clients.offline_backend import OfflineBackend
-from neptune.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
 from neptune.legacy import (
     constants,
     envs,
@@ -30,6 +27,7 @@ from neptune.legacy.exceptions import (
     NeptuneIncorrectImportException,
     NeptuneUninitializedException,
 )
+from neptune.legacy.internal.api_clients import backend_factory
 from neptune.legacy.projects import Project
 from neptune.legacy.sessions import Session
 from neptune.legacy.utils import assure_project_qualified_name

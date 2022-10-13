@@ -25,15 +25,15 @@ import click
 import pandas as pd
 import six
 
-from neptune.internal.abort import DefaultAbortImpl
-from neptune.internal.notebooks.notebooks import create_checkpoint
-from neptune.internal.utils.source_code import get_source_code_to_upload
 from neptune.legacy.envs import (
     NOTEBOOK_ID_ENV_NAME,
     NOTEBOOK_PATH_ENV_NAME,
 )
 from neptune.legacy.exceptions import NeptuneNoExperimentContextException
 from neptune.legacy.experiments import Experiment
+from neptune.legacy.internal.abort import DefaultAbortImpl
+from neptune.legacy.internal.notebooks.notebooks import create_checkpoint
+from neptune.legacy.internal.utils.source_code import get_source_code_to_upload
 from neptune.legacy.utils import (
     as_list,
     discover_git_repo_location,

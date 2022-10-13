@@ -21,14 +21,6 @@ import pandas as pd
 import six
 from pandas.errors import EmptyDataError
 
-from neptune.internal.channels.channels import (
-    ChannelNamespace,
-    ChannelType,
-    ChannelValue,
-)
-from neptune.internal.channels.channels_values_sender import ChannelsValuesSender
-from neptune.internal.execution.execution_context import ExecutionContext
-from neptune.internal.utils.image import get_image_content
 from neptune.legacy.api_exceptions import (
     ChannelDoesNotExist,
     ExperimentAlreadyFinished,
@@ -38,6 +30,14 @@ from neptune.legacy.exceptions import (
     NeptuneIncorrectImportException,
     NoChannelValue,
 )
+from neptune.legacy.internal.channels.channels import (
+    ChannelNamespace,
+    ChannelType,
+    ChannelValue,
+)
+from neptune.legacy.internal.channels.channels_values_sender import ChannelsValuesSender
+from neptune.legacy.internal.execution.execution_context import ExecutionContext
+from neptune.legacy.internal.utils.image import get_image_content
 from neptune.legacy.utils import (
     align_channels_on_x,
     is_float,

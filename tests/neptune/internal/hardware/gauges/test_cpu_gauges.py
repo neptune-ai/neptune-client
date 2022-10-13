@@ -16,7 +16,7 @@
 import time
 import unittest
 
-from neptune.internal.hardware.gauges.cpu import (
+from neptune.legacy.internal.hardware.gauges.cpu import (
     CGroupCpuUsageGauge,
     SystemCpuUsageGauge,
 )

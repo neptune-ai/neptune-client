@@ -26,19 +26,19 @@ from mock import (
     call,
 )
 
-from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
-from neptune.internal.hardware.gauges.cpu import SystemCpuUsageGauge
-from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.internal.hardware.gauges.memory import SystemMemoryUsageGauge
-from neptune.internal.hardware.metrics.metric import (
+from neptune.legacy.internal.hardware.constants import BYTES_IN_ONE_GB
+from neptune.legacy.internal.hardware.gauges.cpu import SystemCpuUsageGauge
+from neptune.legacy.internal.hardware.gauges.gauge_mode import GaugeMode
+from neptune.legacy.internal.hardware.gauges.memory import SystemMemoryUsageGauge
+from neptune.legacy.internal.hardware.metrics import (
     Metric,
     MetricResourceType,
 )
-from neptune.internal.hardware.metrics.reports.metric_report import (
+from neptune.legacy.internal.hardware.metrics.reports import (
     MetricReport,
     MetricValue,
 )
-from neptune.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
+from neptune.legacy.internal.hardware.metrics.service.metric_service_factory import MetricServiceFactory
 from neptune.legacy.utils import IS_MACOS
 
 

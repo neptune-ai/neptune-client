@@ -31,7 +31,7 @@ import numpy
 from matplotlib import pyplot
 from PIL import Image
 
-from neptune.internal.utils.image import (
+from neptune.legacy.internal.utils.image import (
     _get_figure_as_image,
     _get_pil_image_data,
     get_image_content,

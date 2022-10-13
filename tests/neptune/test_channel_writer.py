@@ -19,7 +19,7 @@ from datetime import datetime
 
 import mock
 
-from neptune.internal.streams.channel_writer import ChannelWriter
+from neptune.legacy.internal.streams.channel_writer import ChannelWriter
 
 
 class TestChannelWriter(unittest.TestCase):

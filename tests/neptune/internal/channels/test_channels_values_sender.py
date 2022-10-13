@@ -21,13 +21,13 @@ import unittest
 
 import mock
 
-from neptune.internal.channels.channels import (
+from neptune.legacy.internal.channels.channels import (
     ChannelIdWithValues,
     ChannelNamespace,
     ChannelType,
     ChannelValue,
 )
-from neptune.internal.channels.channels_values_sender import (
+from neptune.legacy.internal.channels.channels_values_sender import (
     ChannelsValuesSender,
     ChannelsValuesSendingThread,
 )

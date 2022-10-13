@@ -16,21 +16,21 @@
 
 import unittest
 
-from neptune.internal.hardware.constants import BYTES_IN_ONE_GB
-from neptune.internal.hardware.gauges.cpu import SystemCpuUsageGauge
-from neptune.internal.hardware.gauges.gauge_factory import GaugeFactory
-from neptune.internal.hardware.gauges.gauge_mode import GaugeMode
-from neptune.internal.hardware.gauges.gpu import (
+from neptune.legacy.internal.hardware.constants import BYTES_IN_ONE_GB
+from neptune.legacy.internal.hardware.gauges.cpu import SystemCpuUsageGauge
+from neptune.legacy.internal.hardware.gauges.gauge_factory import GaugeFactory
+from neptune.legacy.internal.hardware.gauges.gauge_mode import GaugeMode
+from neptune.legacy.internal.hardware.gauges.gpu import (
     GpuMemoryGauge,
     GpuUsageGauge,
 )
-from neptune.internal.hardware.gauges.memory import SystemMemoryUsageGauge
-from neptune.internal.hardware.metrics.metric import (
+from neptune.legacy.internal.hardware.gauges.memory import SystemMemoryUsageGauge
+from neptune.legacy.internal.hardware.metrics import (
     Metric,
     MetricResourceType,
+    MetricsFactory,
 )
-from neptune.internal.hardware.metrics.metrics_factory import MetricsFactory
-from neptune.internal.hardware.resources.system_resource_info import SystemResourceInfo
+from neptune.legacy.internal.hardware.resources.system_resource_info import SystemResourceInfo
 
 
 class TestMetricsFactory(unittest.TestCase):

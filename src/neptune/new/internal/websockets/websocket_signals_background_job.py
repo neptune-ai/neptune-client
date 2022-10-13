@@ -24,7 +24,7 @@ from typing import (
 
 from websocket import WebSocketConnectionClosedException
 
-from neptune.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
+from neptune.legacy.internal.websockets.reconnecting_websocket import ReconnectingWebsocket
 from neptune.new.attributes.constants import (
     SIGNAL_TYPE_ABORT,
     SIGNAL_TYPE_STOP,

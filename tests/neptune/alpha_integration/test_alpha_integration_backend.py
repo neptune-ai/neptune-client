@@ -22,11 +22,11 @@ import mock
 from freezegun import freeze_time
 from mock import MagicMock
 
-from neptune.internal.api_clients import HostedNeptuneBackendApiClient
-from neptune.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import (
+from neptune.legacy.internal.api_clients import HostedNeptuneBackendApiClient
+from neptune.legacy.internal.api_clients.hosted_api_clients.hosted_alpha_leaderboard_api_client import (
     HostedAlphaLeaderboardApiClient,
 )
-from neptune.internal.channels.channels import (
+from neptune.legacy.internal.channels.channels import (
     ChannelIdWithValues,
     ChannelNamespace,
     ChannelType,
