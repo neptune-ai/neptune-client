@@ -28,11 +28,11 @@ from mock import (
 from munch import Munch
 from pandas.testing import assert_frame_equal
 
-from neptune.experiments import Experiment
 from neptune.internal.channels.channels import (
     ChannelType,
     ChannelValue,
 )
+from neptune.legacy.experiments import Experiment
 from tests.neptune.random_utils import (
     a_project,
     a_string,

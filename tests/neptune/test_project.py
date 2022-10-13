@@ -27,8 +27,8 @@ from mock import (
 )
 from munch import Munch
 
-from neptune.experiments import Experiment
 from neptune.legacy.exceptions import NeptuneNoExperimentContextException
+from neptune.legacy.experiments import Experiment
 from neptune.model import LeaderboardEntry
 from neptune.projects import Project
 from tests.neptune.api_objects_factory import (

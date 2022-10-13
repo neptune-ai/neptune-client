@@ -36,7 +36,6 @@ import requests
 import six
 from bravado.exception import HTTPNotFound
 
-from neptune.experiments import Experiment
 from neptune.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.internal.channels.channels import (
     ChannelNamespace,
@@ -72,6 +71,7 @@ from neptune.legacy.exceptions import (
     FileNotFound,
     NeptuneException,
 )
+from neptune.legacy.experiments import Experiment
 from neptune.model import (
     ChannelWithLastValue,
     LeaderboardEntry,
