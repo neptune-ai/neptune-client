@@ -16,7 +16,7 @@
 import logging
 from io import StringIO
 
-from neptune.backend import (
+from neptune.legacy.backend import (
     BackendApiClient,
     LeaderboardApiClient,
 )
