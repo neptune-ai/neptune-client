@@ -57,7 +57,7 @@ from neptune.legacy.exceptions import (
     NotAFile,
 )
 from neptune.legacy.git_info import GitInfo
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.legacy.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 _logger = logging.getLogger(__name__)
 
