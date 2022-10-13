@@ -36,7 +36,6 @@ import requests
 import six
 from bravado.exception import HTTPNotFound
 
-from neptune.checkpoint import Checkpoint
 from neptune.exceptions import (
     DeleteArtifactUnsupportedInAlphaException,
     DownloadArtifactsUnsupportedException,
@@ -72,6 +71,7 @@ from neptune.legacy.api_exceptions import (
     ProjectNotFound,
 )
 from neptune.legacy.backend import LeaderboardApiClient
+from neptune.legacy.checkpoint import Checkpoint
 from neptune.model import (
     ChannelWithLastValue,
     LeaderboardEntry,
