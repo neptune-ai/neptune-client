@@ -15,3 +15,7 @@
 #
 
 # isort: skip_file
+from neptune.legacy.internal.api_clients.hosted_api_clients.hosted_backend_api_client import (
+    HostedNeptuneBackendApiClient,
+)
+from neptune.legacy.internal.api_clients.offline_backend import OfflineBackendApiClient

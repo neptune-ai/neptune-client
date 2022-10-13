@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from neptune._version import get_versions
+from neptune.common import patterns
 from neptune.legacy import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
@@ -45,7 +46,6 @@ from neptune.legacy import (
     model,
     notebook,
     oauth,
-    patterns,
     project,
     projects,
     remove_property,

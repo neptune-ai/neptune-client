@@ -283,7 +283,7 @@ class TestChannelsValuesSender(unittest.TestCase):
         )
 
     @mock.patch(
-        "neptune.internal.channels.channels_values_sender.ChannelsValuesSendingThread._SLEEP_TIME",
+        "neptune.legacy.internal.channels.channels_values_sender.ChannelsValuesSendingThread._SLEEP_TIME",
         0.1,
     )
     def test_send_when_waiting_for_next_value_timed_out(self):

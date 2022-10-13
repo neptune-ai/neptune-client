@@ -19,7 +19,7 @@ import unittest
 import mock
 from mock import MagicMock
 
-from neptune.legacy.exceptions import (
+from neptune.exceptions import (
     CannotResolveHostname,
     DeprecatedApiToken,
     UnsupportedClientVersion,
@@ -33,7 +33,7 @@ API_TOKEN = (
 
 
 @mock.patch(
-    "neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator",
+    "neptune.legacy.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator",
     new=MagicMock,
 )
 class TestHostedNeptuneBackend(unittest.TestCase):
@@ -87,7 +87,7 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
     # pylint: disable=unused-argument
     @mock.patch("bravado.client.SwaggerClient.from_url")
-    @mock.patch("neptune.internal.api_clients.credentials.os.getenv", return_value=API_TOKEN)
+    @mock.patch("neptune.legacy.internal.api_clients.credentials.os.getenv", return_value=API_TOKEN)
     @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def test_should_take_default_credentials_from_env(self, env, swagger_client_factory):
         # given

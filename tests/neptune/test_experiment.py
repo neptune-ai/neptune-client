@@ -28,7 +28,7 @@ from mock import (
 from munch import Munch
 from pandas.testing import assert_frame_equal
 
-from neptune.legacy.experiments import Experiment
+from neptune.experiments import Experiment
 from neptune.legacy.internal.channels.channels import (
     ChannelType,
     ChannelValue,

@@ -19,7 +19,7 @@ import unittest
 
 import matplotlib
 
-from neptune.legacy.utils import (
+from neptune.utils import (
     IS_MACOS,
     IS_WINDOWS,
 )

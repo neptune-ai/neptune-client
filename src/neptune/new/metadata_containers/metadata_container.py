@@ -32,7 +32,7 @@ from typing import (
     Union,
 )
 
-from neptune.exceptions import UNIX_STYLES
+from neptune.common.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import Namespace as NamespaceAttr

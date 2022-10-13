@@ -37,7 +37,7 @@ class TestChannelWriter(unittest.TestCase):
         # pylint: disable=protected-access
         experiment._channels_values_sender.send.assert_called_once()
 
-    @mock.patch("neptune.internal.streams.channel_writer.datetime")
+    @mock.patch("neptune.legacy.internal.streams.channel_writer.datetime")
     def test_write_data_with_low_resolution_datetime_now(self, dt):
         # given
         experiment = mock.MagicMock()
@@ -56,7 +56,7 @@ class TestChannelWriter(unittest.TestCase):
         x_to_text = self._extract_x_to_text_from_calls(experiment._channels_values_sender.send.call_args_list)
         self.assertEqual(x_to_text, {0.001: "text1", 0.002: "text2"})
 
-    @mock.patch("neptune.internal.streams.channel_writer.datetime")
+    @mock.patch("neptune.legacy.internal.streams.channel_writer.datetime")
     def test_write_data_with_high_resolution_datetime_now(self, dt):
         # given
         experiment = mock.MagicMock()

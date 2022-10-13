@@ -50,7 +50,7 @@ API_TOKEN = (
 class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixin):
     @mock.patch("bravado.client.SwaggerClient.from_url")
     @mock.patch(
-        "neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator",
+        "neptune.legacy.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator",
         new=MagicMock,
     )
     @mock.patch(

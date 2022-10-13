@@ -23,7 +23,7 @@ from neptune.legacy.internal.hardware.gauges.gauge_mode import GaugeMode
 from neptune.legacy.internal.hardware.gpu.gpu_monitor import GPUMonitor
 from neptune.legacy.internal.hardware.resources.system_resource_info_factory import SystemResourceInfoFactory
 from neptune.legacy.internal.hardware.system.system_monitor import SystemMonitor
-from neptune.legacy.utils import (
+from neptune.utils import (
     IS_MACOS,
     IS_WINDOWS,
 )

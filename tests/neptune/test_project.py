@@ -27,10 +27,10 @@ from mock import (
 )
 from munch import Munch
 
-from neptune.legacy.exceptions import NeptuneNoExperimentContextException
-from neptune.legacy.experiments import Experiment
-from neptune.legacy.model import LeaderboardEntry
-from neptune.legacy.projects import Project
+from neptune.exceptions import NeptuneNoExperimentContextException
+from neptune.experiments import Experiment
+from neptune.model import LeaderboardEntry
+from neptune.projects import Project
 from tests.neptune.api_objects_factory import (
     a_registered_project_member,
     an_invited_project_member,
@@ -363,11 +363,11 @@ class TestProject(unittest.TestCase):
         self.assertTrue(all(target_p.startswith("tests/neptune/") for target_p in source_target_pairs_targets))
 
     @patch(
-        "neptune.internal.utils.source_code.glob",
+        "neptune.legacy.internal.utils.source_code.glob",
         new=lambda path: [path.replace("*", "file.txt")],
     )
     @patch("neptune.projects.os.path", new=ntpath)
-    @patch("neptune.internal.storage.storage_utils.os.sep", new=ntpath.sep)
+    @patch("neptune.legacy.internal.storage.storage_utils.os.sep", new=ntpath.sep)
     def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(
         self,
     ):

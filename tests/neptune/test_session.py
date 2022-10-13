@@ -22,17 +22,17 @@ from mock import (
     patch,
 )
 
-from neptune.legacy.projects import Project
-from neptune.legacy.sessions import Session
+from neptune.projects import Project
+from neptune.sessions import Session
 from tests.neptune.api_objects_factory import a_project
 
 
 @patch(
-    "neptune.internal.api_clients.hosted_api_clients.mixins.SwaggerClient.from_url",
+    "neptune.legacy.internal.api_clients.hosted_api_clients.mixins.SwaggerClient.from_url",
     MagicMock(),
 )
 @patch(
-    "neptune.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator",
+    "neptune.legacy.internal.api_clients.hosted_api_clients.hosted_backend_api_client.NeptuneAuthenticator",
     MagicMock(),
 )
 class TestSession(unittest.TestCase):

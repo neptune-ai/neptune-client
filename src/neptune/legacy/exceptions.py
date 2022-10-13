@@ -13,56 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import platform
-
+from neptune.common.exceptions import STYLES
 from neptune.legacy import envs
-
-UNIX_STYLES = {
-    "h1": "\033[95m",
-    "h2": "\033[94m",
-    "blue": "\033[94m",
-    "python": "\033[96m",
-    "bash": "\033[95m",
-    "warning": "\033[93m",
-    "correct": "\033[92m",
-    "fail": "\033[91m",
-    "bold": "\033[1m",
-    "underline": "\033[4m",
-    "end": "\033[0m",
-}
-
-WINDOWS_STYLES = {
-    "h1": "",
-    "h2": "",
-    "python": "",
-    "bash": "",
-    "warning": "",
-    "correct": "",
-    "fail": "",
-    "bold": "",
-    "underline": "",
-    "end": "",
-}
-
-EMPTY_STYLES = {
-    "h1": "",
-    "h2": "",
-    "python": "",
-    "bash": "",
-    "warning": "",
-    "correct": "",
-    "fail": "",
-    "bold": "",
-    "underline": "",
-    "end": "",
-}
-
-if platform.system() in ["Linux", "Darwin"]:
-    STYLES = UNIX_STYLES
-elif platform.system() == "Windows":
-    STYLES = WINDOWS_STYLES
-else:
-    STYLES = EMPTY_STYLES
 
 
 class NeptuneException(Exception):

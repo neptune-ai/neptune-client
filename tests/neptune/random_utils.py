@@ -20,7 +20,7 @@ import uuid
 
 import mock
 
-from neptune.legacy.projects import Project
+from neptune.projects import Project
 
 
 def a_string():

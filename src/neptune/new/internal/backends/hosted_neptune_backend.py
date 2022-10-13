@@ -35,7 +35,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
-from neptune.legacy.patterns import PROJECT_QUALIFIED_NAME_PATTERN
+from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
     AmbiguousProjectName,
