@@ -40,7 +40,6 @@ from bravado.exception import (
 )
 from urllib3.exceptions import NewConnectionError
 
-from neptune.git_info import GitInfo
 from neptune.legacy import envs
 from neptune.legacy.api_exceptions import (
     ConnectionLost,
@@ -57,6 +56,7 @@ from neptune.legacy.exceptions import (
     NotADirectory,
     NotAFile,
 )
+from neptune.legacy.git_info import GitInfo
 from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 _logger = logging.getLogger(__name__)

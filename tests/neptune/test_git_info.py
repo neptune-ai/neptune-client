@@ -19,7 +19,7 @@ import unittest
 
 import mock
 
-from neptune.git_info import GitInfo
+from neptune.legacy.git_info import GitInfo
 from neptune.utils import get_git_info
 
 
