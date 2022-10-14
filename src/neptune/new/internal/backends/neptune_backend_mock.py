@@ -164,7 +164,7 @@ class NeptuneBackendMock(NeptuneBackend):
 
     def _create_container(self, container_id: UniqueId, container_type: ContainerType, sys_id: SysId):
         container = self._containers.setdefault((container_id, container_type), ContainerStructure[Value, dict]())
-        container.set(["sys", "id"], String(sys_id))
+        container.set(["sys", "id"], String(str(sys_id)))
         container.set(["sys", "state"], String("running"))
         container.set(["sys", "owner"], String("offline_user"))
         container.set(["sys", "size"], Float(0))
@@ -173,7 +173,7 @@ class NeptuneBackendMock(NeptuneBackend):
         container.set(["sys", "modification_time"], Datetime(datetime.now()))
         container.set(["sys", "failed"], Boolean(False))
         if container_type == ContainerType.MODEL_VERSION:
-            container.set(["sys", "model_id"], String(self.MODEL_SYS_ID))
+            container.set(["sys", "model_id"], String(str(self.MODEL_SYS_ID)))
             container.set(["sys", "stage"], String("none"))
         return container
 

@@ -19,6 +19,8 @@ from typing import (
     TypeVar,
 )
 
+from neptune.new.internal.utils import is_string
+from neptune.new.internal.utils.deprecation import warn_once
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:
@@ -33,6 +35,14 @@ class String(Atom):
     value: str
 
     def __init__(self, value):
+        if not is_string(value):
+            warn_once(
+                message="The object you're logging will be implicitly cast to a string."
+                " We'll end support of this behavior in `neptune-client==1.0.0`."
+                " To log the object as a string, use `String(str(object))` instead.",
+                stack_level=2,
+            )
+
         self.value = str(value)
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:

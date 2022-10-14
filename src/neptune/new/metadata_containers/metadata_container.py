@@ -69,6 +69,7 @@ from neptune.new.internal.utils import (
     is_string_like,
     verify_type,
 )
+from neptune.new.internal.utils.deprecation import warn_once
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.utils.runningmode import (
@@ -280,6 +281,12 @@ class MetadataContainer(AbstractContextManager):
         elif is_dict_like(value):
             value = Namespace(value)
         elif is_string_like(value):
+            warn_once(
+                message="The object you're logging will be implicitly cast to a string."
+                " We'll end support of this behavior in `neptune-client==1.0.0`."
+                " To log the object as a string, use `str(object)` instead.",
+                stack_level=2,
+            )
             value = String(str(value))
         else:
             raise TypeError("Value of unsupported type {}".format(type(value)))

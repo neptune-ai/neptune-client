@@ -49,6 +49,7 @@ from neptune.new.internal.utils import (
     verify_collection_type,
     verify_type,
 )
+from neptune.new.internal.utils.deprecation import warn_once
 from neptune.new.internal.utils.paths import (
     join_paths,
     parse_path,
@@ -277,6 +278,12 @@ class Handler:
                 elif is_float_like(first_value):
                     attr = FloatSeries(self._container, parse_path(self._path))
                 elif is_string_like(first_value):
+                    warn_once(
+                        message="The object you're logging will be implicitly cast to a string."
+                        " We'll end support of this behavior in `neptune-client==1.0.0`."
+                        " To log the object as a string, use `.log(str(object))` instead.",
+                        stack_level=3,
+                    )
                     attr = StringSeries(self._container, parse_path(self._path))
                 else:
                     raise TypeError("Value of unsupported type {}".format(type(first_value)))
