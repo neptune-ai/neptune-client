@@ -36,6 +36,7 @@ import requests
 import six
 from bravado.exception import HTTPNotFound
 
+from neptune.common.experiments import Experiment
 from neptune.legacy.api_exceptions import (
     ExperimentNotFound,
     ExperimentOperationErrors,
@@ -53,7 +54,6 @@ from neptune.legacy.exceptions import (
     FileNotFound,
     NeptuneException,
 )
-from neptune.legacy.experiments import Experiment
 from neptune.legacy.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.legacy.internal.channels.channels import (
     ChannelNamespace,

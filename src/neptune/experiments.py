@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
-from neptune.legacy.experiments import Experiment
+from neptune.common.experiments import Experiment
