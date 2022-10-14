@@ -41,17 +41,17 @@ from requests import (
 )
 
 from neptune.common.hardware.constants import BYTES_IN_ONE_MB
+from neptune.common.storage.datastream import (
+    FileChunk,
+    FileChunker,
+    compress_to_tar_gz_in_memory,
+)
 from neptune.common.storage.storage_utils import (
     AttributeUploadConfiguration,
     UploadEntry,
     normalize_file_name,
     scan_unique_upload_entries,
     split_upload_files,
-)
-from neptune.legacy.internal.storage.datastream import (
-    FileChunk,
-    FileChunker,
-    compress_to_tar_gz_in_memory,
 )
 from neptune.new.exceptions import (
     FileUploadError,

@@ -20,8 +20,8 @@ import unittest
 import pytest
 from mock import Mock
 
+from neptune.common.storage.datastream import FileChunker
 from neptune.legacy.internal.api_clients.client_config import MultipartConfig
-from neptune.legacy.internal.storage.datastream import FileChunker
 from neptune.new.exceptions import InternalClientError
 
 
