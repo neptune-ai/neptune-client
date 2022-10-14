@@ -108,8 +108,8 @@ class TestNeptuneAuth(unittest.TestCase):
 
 
 class TestNeptuneAuthenticator(unittest.TestCase):
-    @patch("neptune.legacy.oauth.OAuth2Session")
-    @patch("neptune.legacy.oauth.time")
+    @patch("neptune.common.oauth.OAuth2Session")
+    @patch("neptune.common.oauth.time")
     def test_apply_oauth2_session_to_request(self, time_mock, session_mock):
         # given
         api_token = MagicMock()

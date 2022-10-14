@@ -367,7 +367,7 @@ class TestProject(unittest.TestCase):
         new=lambda path: [path.replace("*", "file.txt")],
     )
     @patch("neptune.legacy.projects.os.path", new=ntpath)
-    @patch("neptune.legacy.internal.storage.storage_utils.os.sep", new=ntpath.sep)
+    @patch("neptune.common.storage.storage_utils.os.sep", new=ntpath.sep)
     def test_create_experiment_with_upload_sources_from_multiple_drives_on_windows(
         self,
     ):
