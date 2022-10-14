@@ -26,6 +26,7 @@ from typing import (
 
 from packaging import version
 
+from neptune.common.backends.api_model import MultipartConfig
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import (
     SysId,
@@ -90,23 +91,6 @@ class VersionInfo:
             min_recommended=version.parse(min_recommended) if min_recommended else None,
             min_compatible=version.parse(min_compatible) if min_compatible else None,
             max_compatible=version.parse(max_compatible) if max_compatible else None,
-        )
-
-
-@dataclass(frozen=True)
-class MultipartConfig:
-    min_chunk_size: int
-    max_chunk_size: int
-    max_chunk_count: int
-    max_single_part_size: int
-
-    @staticmethod
-    def get_default() -> "MultipartConfig":
-        return MultipartConfig(
-            min_chunk_size=5242880,
-            max_chunk_size=1073741824,
-            max_chunk_count=1000,
-            max_single_part_size=5242880,
         )
 
 

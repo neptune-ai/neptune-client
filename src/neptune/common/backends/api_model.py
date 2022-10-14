@@ -13,3 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class MultipartConfig:
+    min_chunk_size: int
+    max_chunk_size: int
+    max_chunk_count: int
+    max_single_part_size: int
+
+    @staticmethod
+    def get_default() -> "MultipartConfig":
+        return MultipartConfig(
+            min_chunk_size=5242880,
+            max_chunk_size=1073741824,
+            max_chunk_count=1000,
+            max_single_part_size=5242880,
+        )

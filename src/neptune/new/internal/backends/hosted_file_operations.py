@@ -40,6 +40,7 @@ from requests import (
     Response,
 )
 
+from neptune.common.backends.api_model import MultipartConfig
 from neptune.common.hardware.constants import BYTES_IN_ONE_MB
 from neptune.common.storage.datastream import (
     FileChunk,
@@ -61,7 +62,6 @@ from neptune.new.exceptions import (
     NeptuneLimitExceedException,
     UploadedFileChanged,
 )
-from neptune.new.internal.backends.api_model import MultipartConfig
 from neptune.new.internal.backends.swagger_client_wrapper import (
     ApiMethodWrapper,
     SwaggerClientWrapper,

@@ -24,11 +24,11 @@ from typing import (
     Optional,
 )
 
+from neptune.common.backends.api_model import MultipartConfig
 from neptune.new.exceptions import (
     InternalClientError,
     UploadedFileChanged,
 )
-from neptune.new.internal.backends.api_model import MultipartConfig
 
 
 @dataclasses.dataclass
