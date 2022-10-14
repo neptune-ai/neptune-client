@@ -27,14 +27,14 @@ class ModelVersion(MetadataContainer):
     You may also want to check `ModelVersion docs page`_.
 
     .. _ModelVersion docs page:
-       https://docs.neptune.ai/api-reference/model-version
+       https://docs.neptune.ai/api/model_version
     """
 
     container_type = ContainerType.MODEL_VERSION
 
     @property
     def _docs_url_stop(self) -> str:
-        return "https://docs.neptune.ai/api-reference/model-version#.stop"
+        return "https://docs.neptune.ai/api/model_version#stop"
 
     @property
     def _label(self) -> str:

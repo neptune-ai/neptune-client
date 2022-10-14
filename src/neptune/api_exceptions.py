@@ -67,10 +67,10 @@ In your code cell:
     {bash}%env NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE='TRUE'{end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/api-reference/environment-variables#neptune_allow_self_signed_certificate
+    - https://docs.neptune.ai/api/environment_variables/#neptune_allow_self_signed_certificate
 
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
 

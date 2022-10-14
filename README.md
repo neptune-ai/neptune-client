@@ -64,7 +64,7 @@ Learn more in the [documentation](https://docs.neptune.ai/) or check our [video 
 
 ***Log and display***
 
-Neptune [supports log and display](https://docs.neptune.ai/you-should-know/what-can-you-log-and-display) for many different types of metadata generated during the ML model lifecycle:
+Neptune [supports log and display](https://docs.neptune.ai/logging/what_you_can_log) for many different types of metadata generated during the ML model lifecycle:
 * metrics and learning curves
 * parameters, tags, and properties
 * code, Git info, files, and Jupyter notebooks
@@ -72,7 +72,7 @@ Neptune [supports log and display](https://docs.neptune.ai/you-should-know/what-
 * images, interactive charts, and HTML objects
 * audio and video files
 * tables and CSV files
-* and [more](https://docs.neptune.ai/you-should-know/what-can-you-log-and-display)
+* and [more](https://docs.neptune.ai/logging/what_you_can_log)
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Log-and-display.gif" width="600">
@@ -81,7 +81,7 @@ Neptune [supports log and display](https://docs.neptune.ai/you-should-know/what-
 
 ***Compare***
 
-You can [compare model-building runs](https://docs.neptune.ai/you-should-know/comparing-runs) you log to Neptune using various comparison views:
+You can [compare model-building runs](https://docs.neptune.ai/app/comparison) you log to Neptune using various comparison views:
 * **Charts:** where you can compare learning curves for metrics or losses
 * **Images:** where you can compare images across runs
 * **Parallel coordinates:** where you can see parameters and metrics displayed on a parallel coordinates plot
@@ -96,7 +96,7 @@ You can [compare model-building runs](https://docs.neptune.ai/you-should-know/co
 
 ***Filter and organize***
 
-Filter, sort, and group model training runs using [highly configurable dashboards](https://docs.neptune.ai/you-should-know/organizing-and-filtering-runs).
+Filter, sort, and group model training runs using [highly configurable dashboards](https://docs.neptune.ai/app/custom_dashboard/).
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Filter-and-organize-3688604602-1644927778194.png" width="600">
@@ -105,7 +105,7 @@ Filter, sort, and group model training runs using [highly configurable dashboard
 
 ***Collaborate***
 
-Improve [team management and collaboration](https://docs.neptune.ai/you-should-know/collaboration-in-neptune) by grouping all experiments into projects and workspaces and quickly sharing any result or visualization within the team.
+Improve [team management and collaboration](https://docs.neptune.ai/about/collaboration/) by grouping all experiments into projects and workspaces and quickly sharing any result or visualization within the team.
 
 <div align="center">
      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/Collaboration.gif" width="600">
@@ -120,7 +120,7 @@ Available integrations:
 * Scikit-learn, LightGBM, and XGBoost
 * Optuna, Scikit-Optimize, and Keras Tuner
 * Bokeh, Altair, Plotly, and Matplotlib
-* and [more](https://docs.neptune.ai/integrations-and-supported-tools/intro)
+* and [more](https://docs.neptune.ai/integrations)
 
 #### PyTorch Lightning
 
@@ -152,7 +152,7 @@ trainer.fit(my_model, my_dataloader)
 [![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/pytorch-lightning/scripts)
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/examples/blob/main/integrations-and-supported-tools/pytorch-lightning/notebooks/Neptune_PyTorch_Lightning.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/main/integrations-and-supported-tools/pytorch-lightning/notebooks/Neptune_PyTorch_Lightning.ipynb)
-[<img src="https://img.shields.io/badge/docs-PyTorch%20Lightning-yellow">](https://docs.neptune.ai/integrations-and-supported-tools/model-training/pytorch-lightning)
+[<img src="https://img.shields.io/badge/docs-PyTorch%20Lightning-yellow">](https://docs.neptune.ai/integrations/lightning/)
 
 #### TensorFow/Keras
 
@@ -202,7 +202,7 @@ model.fit(x_train, y_train, epochs=5, batch_size=64, callbacks=[neptune_cbk])
 [![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/tensorflow-keras/scripts)
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/examples/blob/main/integrations-and-supported-tools/tensorflow-keras/notebooks/Neptune_TensorFlow_Keras.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/integrations-and-supported-tools/tensorflow-keras/notebooks/Neptune_TensorFlow_Keras.ipynb)
-[<img src="https://img.shields.io/badge/docs-TensorFow%2FKeras-yellow">](https://docs.neptune.ai/integrations-and-supported-tools/model-training/tensorflow-keras)
+[<img src="https://img.shields.io/badge/docs-TensorFow%2FKeras-yellow">](https://docs.neptune.ai/integrations/keras/)
 
 #### Scikit-learn
 
@@ -251,7 +251,7 @@ run["cls_summary"] = npt_utils.create_classifier_summary(
 [![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/sklearn/scripts)
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/examples/blob/main/integrations-and-supported-tools/sklearn/notebooks/Neptune_Scikit_learn.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/integrations-and-supported-tools/sklearn/notebooks/Neptune_Scikit_learn.ipynb)
-[<img src="https://img.shields.io/badge/docs-Scikit--learn-yellow">](https://docs.neptune.ai/integrations-and-supported-tools/model-training/sklearn)
+[<img src="https://img.shields.io/badge/docs-Scikit--learn-yellow">](https://docs.neptune.ai/integrations/sklearn/)
 
 #### fastai
 
@@ -290,7 +290,7 @@ run.stop()
 [![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/fastai/scripts)
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/examples/blob/main/integrations-and-supported-tools/fastai/notebooks/Neptune_fastai.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/main/integrations-and-supported-tools/fastai/notebooks/Neptune_fastai.ipynb)
-[<img src="https://img.shields.io/badge/docs-fastai-yellow">](https://docs.neptune.ai/integrations-and-supported-tools/model-training/fastai)
+[<img src="https://img.shields.io/badge/docs-fastai-yellow">](https://docs.neptune.ai/integrations/fastai/)
 
 #### Optuna
 
@@ -352,7 +352,7 @@ run.stop()
 [![github-code](https://img.shields.io/badge/GitHub-code-informational?logo=github)](https://github.com/neptune-ai/examples/tree/main/integrations-and-supported-tools/optuna/scripts)
 [![jupyter-code](https://img.shields.io/badge/Jupyter-code-informational?logo=jupyter)](https://github.com/neptune-ai/examples/blob/main/integrations-and-supported-tools/optuna/notebooks/Neptune_Optuna_integration.ipynb)
 [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/neptune-ai/examples/blob/master/integrations-and-supported-tools/optuna/notebooks/Neptune_Optuna_integration.ipynb)
-[<img src="https://img.shields.io/badge/docs-Optuna-yellow">](https://docs.neptune.ai/integrations-and-supported-tools/hyperparameter-optimization/optuna)
+[<img src="https://img.shields.io/badge/docs-Optuna-yellow">](https://docs.neptune.ai/integrations/optuna/)
 
 ### Neptune.ai is trusted by great companies
 &nbsp;
@@ -367,12 +367,12 @@ Read how various customers use Neptune to [improve their workflow](https://neptu
 ### Support
 
 If you get stuck or simply want to talk to us about something, here are your options:
-* Check our [FAQ page](https://docs.neptune.ai/getting-started/getting-help#frequently-asked-questions).
-* Chat! In the app, click the [blue message icon](https://docs.neptune.ai/getting-started/getting-help#chat) in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
+* Check our [FAQ page](https://docs.neptune.ai/getting_help/).
+* Chat! In the app, click the blue message icon in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
 * You can just shoot us an email at [support@neptune.ai](mailto:support@neptune.ai).
 
 ### People behind Neptune
 
 Created with :heart: by the [Neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Marcin, Jakub, Prince, Rafał, Dominika, Karolina, Parth, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, Kshiteej, Tomek, Tymoteusz, Piotr, Chaz, Michał, Siddhant, Karolina, Michał, Valentina, Bartosz, and [you?](https://neptune.ai/jobs)
+Piotr, Jakub, Paulina, Kamil, Magdalena, Małgorzata, Piotr, Aleksandra, Marcin, Hubert, Adam, Jakub, Paweł, Patrycja, Marcin, Jakub, Prince, Rafał, Dominika, Karolina, Parth, Rafał, Stephen, Sabine, Martyna, Artur, Franciszek, Aleksiej, Kshiteej, Tomasz, Tymoteusz, Piotr, Chaz, Michał, Siddhant, Karolina, Valentina, Bartosz, Alexandra, Patryk, Aleksander, and [you?](https://neptune.ai/jobs)

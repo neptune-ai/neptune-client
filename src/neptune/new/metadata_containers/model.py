@@ -36,14 +36,14 @@ class Model(MetadataContainer):
     You may also want to check `Model docs page`_.
 
     .. _Model docs page:
-       https://docs.neptune.ai/api-reference/model
+       https://docs.neptune.ai/api/model
     """
 
     container_type = ContainerType.MODEL
 
     @property
     def _docs_url_stop(self) -> str:
-        return "https://docs.neptune.ai/api-reference/model#.stop"
+        return "https://docs.neptune.ai/api/model#stop"
 
     @property
     def _label(self) -> str:
@@ -102,7 +102,7 @@ class Model(MetadataContainer):
             ... last_model_version_id = model_versions_df["sys/id"].values[0]
 
         You may also want to check the API referene in the docs:
-            https://docs.neptune.ai/api-reference/model#.fetch_model_versions_table
+            https://docs.neptune.ai/api/model/#fetch_model_versions_table
         """
         return MetadataContainer._fetch_entries(
             self,

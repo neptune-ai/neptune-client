@@ -119,9 +119,9 @@ def get_project(
         >>> # Fetch all Runs metadata as Pandas DataFrame
         ... runs_table_df = project.fetch_runs_table().to_pandas()
 
-    You may also want to check `get_project docs page`_.
+    You may also want to check `init_project docs page`_.
 
-    .. _get_project docs page:
-       https://docs.neptune.ai/api-reference/neptune#.get_project
+    .. _init_project docs page:
+       https://docs.neptune.ai/api/neptune/#init_project
     """
     return init_project(name=name, api_token=api_token, mode=Mode.READ_ONLY.value, proxies=proxies)

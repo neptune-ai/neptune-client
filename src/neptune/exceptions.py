@@ -343,7 +343,7 @@ Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
     Old version of `neptune-api` is not supporting downloading particular source files.
     We recommend you to use new version of api: `neptune.new`.
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 
 If you don't want to adapt your code to new api yet,
 you can use `download_sources` with `path` parameter set to None.
@@ -371,7 +371,7 @@ Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
     Old version of `neptune-api` is not supporting downloading artifact directories.
     We recommend you to use new version of api: `neptune.new`.
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 
 If you don't want to adapt your code to new api yet,
 you can use `download_artifact` and download files one by one.
@@ -399,7 +399,7 @@ Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
     Old version of `neptune-api` is not supporting downloading whole artifact directories.
     We recommend you to use new version of api: `neptune.new`.
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 
 If you don't want to adapt your code to new api yet:
     - Make sure that artifact "{artifact_path}" is present in experiment "{experiment}".
@@ -430,7 +430,7 @@ Why am I seeing this?
     Your project "{project}" has been migrated to new structure.
     Old version of `neptune-api` is not supporting deleting whole artifact directories.
     We recommend you to use new version of api: `neptune.new`.
-    {correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+    {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 
 If you don't want to adapt your code to new api yet:
     - Make sure that artifact "{artifact_path}" is present in experiment "{experiment}".
@@ -461,8 +461,8 @@ Simply update your import statement to:
     {python}import neptune.new as neptune{end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/migration-guide
+    - https://docs.neptune.ai/about/legacy/#migrating-to-neptunenew
 
-{correct}Need help?{end}-> https://docs.neptune.ai/getting-started/getting-help
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
