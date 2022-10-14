@@ -22,6 +22,7 @@ from urllib.parse import urlparse
 
 from packaging.version import Version
 
+from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.common.exceptions import (
     STYLES,
     InternalClientError,
@@ -441,7 +442,7 @@ You may also want to check the following docs pages:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
-        super().__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
+        super().__init__(message.format(env_api_token=API_TOKEN_ENV_NAME, **STYLES))
 
 
 class CannotSynchronizeOfflineRunsWithoutProject(NeptuneException):

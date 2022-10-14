@@ -13,13 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+# pylint: disable=unused-import
+from neptune.common.envs import API_TOKEN_ENV_NAME
 
 CONNECTION_MODE = "NEPTUNE_MODE"
 
 PROJECT_ENV_NAME = "NEPTUNE_PROJECT"
-
-API_TOKEN_ENV_NAME = "NEPTUNE_API_TOKEN"
 
 CUSTOM_RUN_ID_ENV_NAME = "NEPTUNE_CUSTOM_RUN_ID"
 

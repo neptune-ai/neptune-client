@@ -46,6 +46,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.common.envs import API_TOKEN_ENV_NAME
 from neptune.management.exceptions import (
     AccessRevokedOnDeletion,
     AccessRevokedOnMemberRemoval,
@@ -72,7 +73,6 @@ from neptune.management.internal.utils import (
     extract_project_and_workspace,
     normalize_project_name,
 )
-from neptune.new.envs import API_TOKEN_ENV_NAME
 from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     create_backend_client,

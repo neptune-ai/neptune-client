@@ -15,6 +15,8 @@
 #
 import platform
 
+from neptune.common.envs import API_TOKEN_ENV_NAME
+
 UNIX_STYLES = {
     "h1": "\033[95m",
     "h2": "\033[94m",
@@ -113,7 +115,7 @@ You may also want to check the following docs page:
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
-        super().__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
+        super().__init__(message.format(env_api_token=API_TOKEN_ENV_NAME, **STYLES))
 
 
 class UploadedFileChanged(NeptuneException):
