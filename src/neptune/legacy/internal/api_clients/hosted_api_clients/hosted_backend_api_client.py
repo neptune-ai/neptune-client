@@ -28,6 +28,7 @@ from bravado.requests_client import RequestsClient
 from packaging import version
 
 from neptune.common.exceptions import STYLES
+from neptune.common.oauth import NeptuneAuthenticator
 from neptune.legacy.api_exceptions import (
     ProjectNotFound,
     WorkspaceNotFound,
@@ -42,7 +43,6 @@ from neptune.legacy.internal.api_clients.hosted_api_clients.hosted_alpha_leaderb
     HostedAlphaLeaderboardApiClient,
 )
 from neptune.legacy.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
-from neptune.legacy.oauth import NeptuneAuthenticator
 from neptune.legacy.projects import Project
 from neptune.legacy.utils import (
     NoopObject,

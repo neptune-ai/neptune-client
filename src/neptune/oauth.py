@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
-from neptune.legacy.oauth import (
+from neptune.common.oauth import (
     NeptuneAuth,
     NeptuneAuthenticator,
 )
