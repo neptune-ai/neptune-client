@@ -38,11 +38,11 @@ from typing import (
     Union,
 )
 
+from neptune.common.exceptions import NeptuneException
 from neptune.new.constants import OFFLINE_DIRECTORY
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.exceptions import (
     MetadataContainerNotFound,
-    NeptuneException,
     ProjectNotFound,
 )
 from neptune.new.internal.backends.api_model import (

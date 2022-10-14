@@ -41,6 +41,7 @@ from requests import (
 )
 
 from neptune.common.backends.api_model import MultipartConfig
+from neptune.common.exceptions import NeptuneException
 from neptune.common.hardware.constants import BYTES_IN_ONE_MB
 from neptune.common.storage.datastream import (
     FileChunk,
@@ -58,7 +59,6 @@ from neptune.new.exceptions import (
     FileUploadError,
     InternalClientError,
     MetadataInconsistency,
-    NeptuneException,
     NeptuneLimitExceedException,
     UploadedFileChanged,
 )

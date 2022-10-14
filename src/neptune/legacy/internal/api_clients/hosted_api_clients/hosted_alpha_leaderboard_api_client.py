@@ -36,6 +36,7 @@ import requests
 import six
 from bravado.exception import HTTPNotFound
 
+from neptune.common import exceptions as common_exceptions
 from neptune.common.experiments import Experiment
 from neptune.common.storage.storage_utils import normalize_file_name
 from neptune.common.utils import (
@@ -815,7 +816,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 )
             else:
                 raise NeptuneException("Upload operation in neither File or FileSet")
-        except alpha_exceptions.NeptuneException as e:
+        except common_exceptions.NeptuneException as e:
             raise NeptuneException(e) from e
 
         return None

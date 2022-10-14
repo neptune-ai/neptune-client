@@ -22,7 +22,10 @@ from urllib.parse import urlparse
 
 from packaging.version import Version
 
-from neptune.common.exceptions import STYLES
+from neptune.common.exceptions import (
+    STYLES,
+    NeptuneException,
+)
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import (
@@ -32,17 +35,6 @@ from neptune.new.internal.backends.api_model import (
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import QualifiedName
 from neptune.new.internal.utils import replace_patch_version
-
-
-class NeptuneException(Exception):
-    def __eq__(self, other):
-        if type(other) is type(self):
-            return super().__eq__(other) and str(self).__eq__(str(other))
-        else:
-            return False
-
-    def __hash__(self):
-        return hash((super().__hash__(), str(self)))
 
 
 class NeptuneApiException(NeptuneException):
@@ -465,48 +457,6 @@ and skip the {bold}api_token{end} argument of the {bold}init(){end} method:
     {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
 
 You may also want to check the following docs pages:
-    - https://docs.neptune.ai/setup/setting_api_token/
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
-
-
-class NeptuneInvalidApiTokenException(NeptuneException):
-    def __init__(self):
-        message = """
-{h1}
-----NeptuneInvalidApiTokenException------------------------------------------------
-{end}
-The provided API token is invalid.
-Make sure you copied and provided your API token correctly.
-
-You can get it or check if it is correct here:
-    - https://app.neptune.ai/get_my_api_token
-
-There are two options to add it:
-    - specify it in your code
-    - set as an environment variable in your operating system.
-
-{h2}CODE{end}
-Pass the token to the {bold}init(){end} method via the {bold}api_token{end} argument:
-    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME', api_token='YOUR_API_TOKEN'){end}
-
-{h2}ENVIRONMENT VARIABLE{end} {correct}(Recommended option){end}
-or export or set an environment variable depending on your operating system:
-
-    {correct}Linux/Unix{end}
-    In your terminal run:
-        {bash}export {env_api_token}="YOUR_API_TOKEN"{end}
-
-    {correct}Windows{end}
-    In your CMD run:
-        {bash}set {env_api_token}="YOUR_API_TOKEN"{end}
-
-and skip the {bold}api_token{end} argument of the {bold}init(){end} method:
-    {python}neptune.init_run(project='WORKSPACE_NAME/PROJECT_NAME'){end}
-
-You may also want to check the following docs page:
     - https://docs.neptune.ai/setup/setting_api_token/
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help

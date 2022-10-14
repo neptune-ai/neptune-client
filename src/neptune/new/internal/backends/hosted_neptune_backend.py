@@ -35,6 +35,7 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.common.exceptions import NeptuneException
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
@@ -46,7 +47,6 @@ from neptune.new.exceptions import (
     InternalClientError,
     MetadataContainerNotFound,
     MetadataInconsistency,
-    NeptuneException,
     NeptuneFeatureNotAvailableException,
     NeptuneLegacyProjectException,
     NeptuneLimitExceedException,

@@ -31,12 +31,12 @@ from typing import (
 )
 from zipfile import ZipFile
 
+from neptune.common.exceptions import NeptuneException
 from neptune.new.exceptions import (
     ContainerUUIDNotFound,
     InternalClientError,
     MetadataInconsistency,
     ModelVersionNotFound,
-    NeptuneException,
     ProjectNotFound,
     RunNotFound,
 )

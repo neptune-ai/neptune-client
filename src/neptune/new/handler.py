@@ -22,6 +22,9 @@ from typing import (
     Union,
 )
 
+# backwards compatibility
+# pylint: disable=unused-import
+from neptune.common.exceptions import NeptuneException
 from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH
@@ -31,13 +34,9 @@ from neptune.new.attributes.series import FileSeries
 from neptune.new.attributes.series.float_series import FloatSeries
 from neptune.new.attributes.series.string_series import StringSeries
 from neptune.new.attributes.sets.string_set import StringSet
-
-# backwards compatibility
-# pylint: disable=unused-import
 from neptune.new.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
-    NeptuneException,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (

@@ -32,7 +32,7 @@ from e2e_tests.utils import (
     reinitialize_container,
     tmp_context,
 )
-from neptune.new.exceptions import NeptuneException
+from neptune.common.exceptions import NeptuneException
 from neptune.new.sync import sync
 
 runner = CliRunner()

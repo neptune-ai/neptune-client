@@ -17,11 +17,11 @@ import os
 import threading
 from typing import Optional
 
+from neptune.common.exceptions import NeptuneException
 from neptune.new.attributes import constants as attr_consts
 from neptune.new.envs import CONNECTION_MODE
 from neptune.new.exceptions import (
     NeedExistingModelForReadOnlyMode,
-    NeptuneException,
     NeptuneMissingRequiredInitParameter,
     NeptuneModelKeyAlreadyExistsError,
     NeptuneObjectCreationConflict,
