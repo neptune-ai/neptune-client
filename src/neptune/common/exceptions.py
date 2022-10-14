@@ -114,3 +114,24 @@ You may also want to check the following docs page:
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(env_api_token=envs.API_TOKEN_ENV_NAME, **STYLES))
+
+
+class UploadedFileChanged(NeptuneException):
+    def __init__(self, filename: str):
+        super().__init__("File {} changed during upload, restarting upload.".format(filename))
+
+
+class InternalClientError(NeptuneException):
+    def __init__(self, msg: str):
+        message = """
+{h1}
+----InternalClientError-----------------------------------------------------------------------
+{end}
+The Neptune client library encountered an unexpected internal error:
+{msg}
+
+Please contact Neptune support.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""
+        super().__init__(message.format(msg=msg, **STYLES))

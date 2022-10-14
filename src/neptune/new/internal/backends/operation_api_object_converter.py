@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from neptune.new.exceptions import InternalClientError
+from neptune.common.exceptions import InternalClientError
 from neptune.new.internal.operation import (
     AddStrings,
     AssignArtifact,

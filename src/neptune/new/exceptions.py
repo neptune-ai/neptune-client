@@ -24,6 +24,7 @@ from packaging.version import Version
 
 from neptune.common.exceptions import (
     STYLES,
+    InternalClientError,
     NeptuneException,
 )
 from neptune.new import envs
@@ -98,11 +99,6 @@ class FileNotFound(NeptuneException):
         super().__init__("File not found: {}".format(file))
 
 
-class UploadedFileChanged(NeptuneException):
-    def __init__(self, filename: str):
-        super().__init__("File {} changed during upload, restarting upload.".format(filename))
-
-
 class FileUploadError(NeptuneException):
     def __init__(self, filename: str, msg: str):
         super().__init__("Cannot upload file {}: {}".format(filename, msg))
@@ -111,22 +107,6 @@ class FileUploadError(NeptuneException):
 class FileSetUploadError(NeptuneException):
     def __init__(self, globs: List[str], msg: str):
         super().__init__("Cannot upload file set {}: {}".format(globs, msg))
-
-
-class InternalClientError(NeptuneException):
-    def __init__(self, msg: str):
-        message = """
-{h1}
-----InternalClientError-----------------------------------------------------------------------
-{end}
-The Neptune client library encountered an unexpected internal error:
-{msg}
-
-Please contact Neptune support.
-
-{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
-        super().__init__(message.format(msg=msg, **STYLES))
 
 
 class ClientHttpError(NeptuneException):

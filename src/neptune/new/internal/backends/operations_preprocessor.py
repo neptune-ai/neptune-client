@@ -22,10 +22,8 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.exceptions import (
-    InternalClientError,
-    MetadataInconsistency,
-)
+from neptune.common.exceptions import InternalClientError
+from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.operation import (
     AddStrings,
     AssignArtifact,
