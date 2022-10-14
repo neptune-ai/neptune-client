@@ -26,7 +26,7 @@ from neptune.legacy.exceptions import (
     NeptuneIncorrectImportException,
     NeptuneUninitializedException,
 )
-from neptune.legacy.internal.api_clients import backend_factory
+from neptune.legacy.internal.api_clients.backend_factory import backend_factory
 from neptune.legacy.projects import Project
 from neptune.legacy.sessions import Session
 from neptune.legacy.utils import assure_project_qualified_name
