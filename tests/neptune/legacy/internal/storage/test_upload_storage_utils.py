@@ -18,7 +18,7 @@ import unittest
 
 from mock import patch
 
-from neptune.legacy.internal.storage.storage_utils import (
+from neptune.common.storage.storage_utils import (
     AttributeUploadConfiguration,
     UploadEntry,
     UploadPackage,

@@ -37,6 +37,7 @@ import six
 from bravado.exception import HTTPNotFound
 
 from neptune.common.experiments import Experiment
+from neptune.common.storage.storage_utils import normalize_file_name
 from neptune.legacy.api_exceptions import (
     ExperimentNotFound,
     ExperimentOperationErrors,
@@ -60,7 +61,6 @@ from neptune.legacy.internal.channels.channels import (
     ChannelType,
     ChannelValueType,
 )
-from neptune.legacy.internal.storage.storage_utils import normalize_file_name
 from neptune.legacy.internal.utils.alpha_integration import (
     AlphaChannelDTO,
     AlphaChannelWithValueDTO,

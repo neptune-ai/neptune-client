@@ -23,8 +23,8 @@ from typing import (
     Tuple,
 )
 
+from neptune.common.storage.storage_utils import normalize_file_name
 from neptune.common.utils import is_ipython
-from neptune.legacy.internal.storage.storage_utils import normalize_file_name
 from neptune.legacy.utils import glob
 
 
