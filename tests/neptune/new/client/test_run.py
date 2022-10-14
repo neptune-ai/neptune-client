@@ -20,6 +20,7 @@ import unittest
 
 from mock import patch
 
+from neptune.common.utils import IS_WINDOWS
 from neptune.new import (
     ANONYMOUS,
     Run,
@@ -41,7 +42,6 @@ from neptune.new.internal.backends.api_model import (
     IntAttribute,
 )
 from neptune.new.internal.backends.neptune_backend_mock import NeptuneBackendMock
-from neptune.utils import IS_WINDOWS
 from tests.neptune.new.client.abstract_experiment_test_mixin import AbstractExperimentTestMixin
 from tests.neptune.new.utils.api_experiments_factory import api_run
 

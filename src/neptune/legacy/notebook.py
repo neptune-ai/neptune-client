@@ -16,7 +16,7 @@
 
 import os
 
-from neptune.legacy.utils import validate_notebook_path
+from neptune.common.utils import validate_notebook_path
 
 
 class Notebook(object):

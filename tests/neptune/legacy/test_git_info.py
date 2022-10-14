@@ -19,8 +19,8 @@ import unittest
 
 import mock
 
+from neptune.common.utils import get_git_info
 from neptune.git_info import GitInfo
-from neptune.utils import get_git_info
 
 
 class TestGitInfo(unittest.TestCase):

@@ -29,6 +29,11 @@ from packaging import version
 
 from neptune.common.exceptions import STYLES
 from neptune.common.oauth import NeptuneAuthenticator
+from neptune.common.utils import (
+    NoopObject,
+    update_session_proxies,
+    with_api_exceptions_handler,
+)
 from neptune.legacy.api_exceptions import (
     ProjectNotFound,
     WorkspaceNotFound,
@@ -44,11 +49,6 @@ from neptune.legacy.internal.api_clients.hosted_api_clients.hosted_alpha_leaderb
 )
 from neptune.legacy.internal.api_clients.hosted_api_clients.mixins import HostedNeptuneMixin
 from neptune.legacy.projects import Project
-from neptune.legacy.utils import (
-    NoopObject,
-    update_session_proxies,
-    with_api_exceptions_handler,
-)
 from neptune.new.internal.backends.hosted_client import NeptuneResponseAdapter
 
 _logger = logging.getLogger(__name__)

@@ -21,7 +21,7 @@ from neptune.common.hardware.gauges.gauge_factory import (
     CGroupMemoryUsageGauge,
     SystemMemoryUsageGauge,
 )
-from neptune.utils import (
+from neptune.common.utils import (
     IS_MACOS,
     IS_WINDOWS,
 )

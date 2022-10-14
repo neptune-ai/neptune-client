@@ -16,11 +16,11 @@
 import logging
 from io import StringIO
 
+from neptune.common.utils import NoopObject
 from neptune.legacy.backend import (
     BackendApiClient,
     LeaderboardApiClient,
 )
-from neptune.legacy.utils import NoopObject
 
 _logger = logging.getLogger(__name__)
 

@@ -24,8 +24,10 @@ from typing import (
 )
 
 from neptune.common.storage.storage_utils import normalize_file_name
-from neptune.common.utils import is_ipython
-from neptune.legacy.utils import glob
+from neptune.common.utils import (
+    glob,
+    is_ipython,
+)
 
 
 def get_source_code_to_upload(

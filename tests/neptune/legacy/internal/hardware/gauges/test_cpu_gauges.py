@@ -20,7 +20,7 @@ from neptune.common.hardware.gauges.cpu import (
     CGroupCpuUsageGauge,
     SystemCpuUsageGauge,
 )
-from neptune.utils import (
+from neptune.common.utils import (
     IS_MACOS,
     IS_WINDOWS,
 )
