@@ -21,7 +21,7 @@ It also provides some convenience functionalities like obtaining the last create
 You may also want to check `Neptune docs page`_.
 
 .. _Neptune docs page:
-   https://docs.neptune.ai/api-reference/neptune
+   https://docs.neptune.ai/api/neptune
 """
 
 from typing import Optional
@@ -97,7 +97,7 @@ def get_last_run() -> Optional[Run]:
     You may also want to check `get_last_run docs page`_.
 
     .. _get_last_run docs page:
-       https://docs.neptune.ai/api-reference/neptune#get_last_run
+       https://docs.neptune.ai/api/neptune/#get_last_run
     """
     last_run = Run.last_run
     if last_run is None:

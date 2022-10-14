@@ -73,7 +73,7 @@ class Run(MetadataContainer):
     You may also want to check `Run docs page`_.
 
     .. _Run docs page:
-       https://docs.neptune.ai/api-reference/run
+       https://docs.neptune.ai/api/run
     """
 
     last_run = None  # "static" instance of recently created Run
@@ -136,7 +136,7 @@ class Run(MetadataContainer):
 
     @property
     def _docs_url_stop(self) -> str:
-        return "https://docs.neptune.ai/api-reference/run#.stop"
+        return "https://docs.neptune.ai/api/run#stop"
 
     @property
     def _label(self) -> str:
@@ -187,7 +187,7 @@ class Run(MetadataContainer):
             >>> # This will log 10 under path "parameters/train/max_epochs"
         You may also want to check `assign docs page`_.
         .. _assign docs page:
-            https://docs.neptune.ai/api-reference/run#.assign
+            https://docs.neptune.ai/api/run#assign
         """
         return MetadataContainer.assign(self, value=value, wait=wait)
 
@@ -207,7 +207,7 @@ class Run(MetadataContainer):
             >>> # this will print out all Atom attributes stored in run as a dict
         You may also want to check `fetch docs page`_.
         .. _fetch docs page:
-            https://docs.neptune.ai/api-reference/run#.fetch
+            https://docs.neptune.ai/api/run#fetch
         """
         return MetadataContainer.fetch(self)
 
@@ -253,7 +253,7 @@ class Run(MetadataContainer):
             training and evaluation is done.
         You may also want to check `stop docs page`_.
         .. _stop docs page:
-            https://docs.neptune.ai/api-reference/run#.stop
+            https://docs.neptune.ai/api/run#stop
         """
         return MetadataContainer.stop(self, seconds=seconds)
 
@@ -293,7 +293,7 @@ class Run(MetadataContainer):
             ... run.pop('model_checkpoint')
         You may also want to check `pop docs page`_.
         .. _pop docs page:
-           https://docs.neptune.ai/api-reference/run#.pop
+           https://docs.neptune.ai/api/run#pop
         """
         return MetadataContainer.pop(self, path=path, wait=wait)
 
@@ -305,7 +305,7 @@ class Run(MetadataContainer):
                 Defaults to `False`.
         You may also want to check `wait docs page`_.
         .. _wait docs page:
-            https://docs.neptune.ai/api-reference/run#.wait
+            https://docs.neptune.ai/api/run#wait
         """
         return MetadataContainer.wait(self, disk_only=disk_only)
 
@@ -326,6 +326,6 @@ class Run(MetadataContainer):
             >>> worker_2_status = run['status/2'].fetch() # No error
         You may also want to check `sync docs page`_.
         .. _sync docs page:
-            https://docs.neptune.ai/api-reference/run#.sync
+            https://docs.neptune.ai/api/run#sync
         """
         return MetadataContainer.sync(self, wait=wait)

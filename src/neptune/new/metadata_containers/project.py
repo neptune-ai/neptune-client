@@ -49,7 +49,7 @@ class Project(MetadataContainer):
     You may also want to check `Project docs page`_.
 
     .. _Project docs page:
-       https://docs.neptune.ai/api-reference/project
+       https://docs.neptune.ai/api/project
     """
 
     container_type = ContainerType.PROJECT
@@ -82,7 +82,7 @@ class Project(MetadataContainer):
 
     @property
     def _docs_url_stop(self) -> str:
-        return "https://docs.neptune.ai/api-reference/project#.stop"
+        return "https://docs.neptune.ai/api/project#stop"
 
     @property
     def _label(self) -> str:
@@ -257,7 +257,7 @@ class Project(MetadataContainer):
             ... runs_table_df = project.fetch_runs_table(state="idle", tag="Exploration").to_pandas()
 
         You may also want to check the API reference in the docs:
-            https://docs.neptune.ai/api-reference/project#.fetch_runs_table
+            https://docs.neptune.ai/api/project#fetch_runs_table
         """
         ids = as_list("id", id)
         states = as_list("state", state)
@@ -312,7 +312,7 @@ class Project(MetadataContainer):
             ... last_model_id = models_table_df["sys/id"].values[0]
 
         You may also want to check the API referene in the docs:
-            https://docs.neptune.ai/api-reference/project#.fetch_models_table
+            https://docs.neptune.ai/api/project#fetch_models_table
         """
         return MetadataContainer._fetch_entries(
             self,
@@ -349,7 +349,7 @@ class Project(MetadataContainer):
             >>> # This will log the url under path "general/brief/url"
         You may also want to check `assign docs page`_.
         .. _assign docs page:
-            https://docs.neptune.ai/api-reference/project#.assign
+            https://docs.neptune.ai/api/project#assign
         """
         return MetadataContainer.assign(self, value=value, wait=wait)
 
@@ -366,7 +366,7 @@ class Project(MetadataContainer):
             >>> project_metrics = project["metrics"].fetch()
         You may also want to check `fetch docs page`_.
         .. _fetch docs page:
-            https://docs.neptune.ai/api-reference/project#.fetch
+            https://docs.neptune.ai/api/project#fetch
         """
         return MetadataContainer.fetch(self)
 
@@ -411,7 +411,7 @@ class Project(MetadataContainer):
             once the connection is not needed.
         You may also want to check `stop docs page`_.
         .. _stop docs page:
-            https://docs.neptune.ai/api-reference/project#.stop
+            https://docs.neptune.ai/api/project#stop
         """
         return MetadataContainer.stop(self, seconds=seconds)
 
@@ -456,7 +456,7 @@ class Project(MetadataContainer):
             ... project["datasets"].pop()
         You may also want to check `pop docs page`_.
         .. _pop docs page:
-           https://docs.neptune.ai/api-reference/project#.pop
+           https://docs.neptune.ai/api/project#pop
         """
         return MetadataContainer.pop(self, path=path, wait=wait)
 
@@ -468,7 +468,7 @@ class Project(MetadataContainer):
                 Defaults to `False`.
         You may also want to check `wait docs page`_.
         .. _wait docs page:
-            https://docs.neptune.ai/api-reference/project#.wait
+            https://docs.neptune.ai/api/project#wait
         """
         return MetadataContainer.wait(self, disk_only=disk_only)
 
@@ -480,6 +480,6 @@ class Project(MetadataContainer):
                 Defaults to `True`.
         You may also want to check `sync docs page`_.
         .. _sync docs page:
-            https://docs.neptune.ai/api-reference/project#.sync
+            https://docs.neptune.ai/api/project#sync
         """
         return MetadataContainer.sync(self, wait=wait)
