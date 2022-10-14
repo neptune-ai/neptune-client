@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# pylint: disable=wrong-import-order,wrong-import-position,unused-variable,no-member,no-value-for-parameter
 import os
 import sys
 import unittest
