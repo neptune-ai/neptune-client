@@ -377,7 +377,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
         val = self._get_attribute(container_id, container_type, path, File)
         return FileAttribute(
-            name=os.path.basename(val.path) if val.path else "",
+            name=os.path.basename(val.path) if val.file_type is FileType.LOCAL_FILE else "",
             ext=val.extension or "",
             size=0,
         )
