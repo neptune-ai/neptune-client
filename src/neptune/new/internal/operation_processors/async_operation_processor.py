@@ -19,6 +19,8 @@ import logging
 import os
 import sys
 import threading
+from datetime import datetime
+from pathlib import Path
 from time import (
     monotonic,
     time,
@@ -28,6 +30,10 @@ from typing import (
     Optional,
 )
 
+from neptune.new.constants import (
+    ASYNC_DIRECTORY,
+    NEPTUNE_DATA_DIRECTORY,
+)
 from neptune.new.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
@@ -35,15 +41,17 @@ from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from neptune.new.internal.threading.daemon import Daemon
 from neptune.new.internal.utils.logger import logger
+from neptune.new.sync.utils import create_dir_name
 
 # pylint: disable=protected-access
 
 _logger = logging.getLogger(__name__)
 
 
-class AsyncOperationProcessor(OperationProcessor):
+class AsyncOperationProcessor(OperationProcessor, OperationStorage):
     STOP_QUEUE_STATUS_UPDATE_FREQ_SECONDS = 30
     STOP_QUEUE_MAX_TIME_NO_CONNECTION_SECONDS = 300
 
@@ -51,15 +59,22 @@ class AsyncOperationProcessor(OperationProcessor):
         self,
         container_id: UniqueId,
         container_type: ContainerType,
-        queue: DiskQueue[Operation],
         backend: NeptuneBackend,
         lock: threading.RLock,
         sleep_time: float = 5,
         batch_size: int = 1000,
     ):
+        super().__init__(container_id, container_type)
+
+        self._queue = DiskQueue(
+            dir_path=Path(self.data_path),
+            to_dict=lambda x: x.to_dict(),
+            from_dict=Operation.from_dict,
+            lock=lock,
+        )
+
         self._container_id = container_id
         self._container_type = container_type
-        self._queue = queue
         self._backend = backend
         self._batch_size = batch_size
         self._last_version = 0
@@ -190,6 +205,13 @@ class AsyncOperationProcessor(OperationProcessor):
         sec_left = None if seconds is None else seconds - (time() - ts)
         self._consumer.join(sec_left)
         self._queue.close()
+
+    def init_data_path(self, container_id: UniqueId, container_type: ContainerType):
+        now = datetime.now()
+        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{create_dir_name(container_type, container_id)}"
+        data_path = "{}/exec-{}-{}".format(container_dir, now.timestamp(), now)
+        data_path = data_path.replace(" ", "_").replace(":", ".")
+        return data_path
 
     class ConsumerThread(Daemon):
         def __init__(

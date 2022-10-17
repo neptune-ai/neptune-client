@@ -15,16 +15,33 @@
 #
 __all__ = ("OfflineOperationProcessor",)
 
+import threading
+from pathlib import Path
 from typing import Optional
 
+from neptune.new.constants import (
+    NEPTUNE_DATA_DIRECTORY,
+    OFFLINE_DIRECTORY,
+)
+from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.disk_queue import DiskQueue
+from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
+from neptune.new.sync.utils import create_dir_name
 
 
-class OfflineOperationProcessor(OperationProcessor):
-    def __init__(self, queue: DiskQueue[Operation]):
-        self._queue = queue
+class OfflineOperationProcessor(OperationProcessor, OperationStorage):
+    def __init__(self, container_id: UniqueId, container_type: ContainerType, lock: threading.RLock):
+        super().__init__(container_id, container_type)
+
+        self._queue = DiskQueue(
+            dir_path=Path(self.data_path),
+            to_dict=lambda x: x.to_dict(),
+            from_dict=Operation.from_dict,
+            lock=lock,
+        )
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument
@@ -41,3 +58,6 @@ class OfflineOperationProcessor(OperationProcessor):
 
     def stop(self, seconds: Optional[float] = None):
         self._queue.close()
+
+    def init_data_path(self, container_id: UniqueId, container_type: ContainerType):
+        return f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}/{create_dir_name(container_type, container_id)}"

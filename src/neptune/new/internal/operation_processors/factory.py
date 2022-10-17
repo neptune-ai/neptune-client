@@ -16,22 +16,11 @@
 
 __all__ = ["get_operation_processor"]
 
-import os
 import threading
-from datetime import datetime
-from pathlib import Path
 
-from neptune.new.constants import (
-    ASYNC_DIRECTORY,
-    NEPTUNE_DATA_DIRECTORY,
-    OFFLINE_DIRECTORY,
-)
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.id_formats import UniqueId
-from neptune.new.internal.operation import Operation
-from neptune.new.sync.utils import create_dir_name
 from neptune.new.types.mode import Mode
 
 from .async_operation_processor import AsyncOperationProcessor
@@ -50,22 +39,9 @@ def get_operation_processor(
     flush_period: float,
 ) -> OperationProcessor:
     if mode == Mode.ASYNC:
-        data_path = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}" f"/{create_dir_name(container_type, container_id)}"
-        try:
-            execution_id = len(os.listdir(data_path))
-        except FileNotFoundError:
-            execution_id = 0
-        execution_path = "{}/exec-{}-{}".format(data_path, execution_id, datetime.now())
-        execution_path = execution_path.replace(" ", "_").replace(":", ".")
         return AsyncOperationProcessor(
             container_id,
             container_type,
-            DiskQueue(
-                dir_path=Path(execution_path),
-                to_dict=lambda x: x.to_dict(),
-                from_dict=Operation.from_dict,
-                lock=lock,
-            ),
             backend,
             lock,
             sleep_time=flush_period,
@@ -76,14 +52,7 @@ def get_operation_processor(
         return SyncOperationProcessor(container_id, container_type, backend)
     elif mode == Mode.OFFLINE:
         # the object was returned by mocked backend and has some random ID.
-        data_path = f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}" f"/{create_dir_name(container_type, container_id)}"
-        storage_queue = DiskQueue(
-            dir_path=Path(data_path),
-            to_dict=lambda x: x.to_dict(),
-            from_dict=Operation.from_dict,
-            lock=lock,
-        )
-        return OfflineOperationProcessor(storage_queue)
+        return OfflineOperationProcessor(container_id, container_type, lock)
     elif mode == Mode.READ_ONLY:
         return ReadOnlyOperationProcessor(container_id, backend)
     else:

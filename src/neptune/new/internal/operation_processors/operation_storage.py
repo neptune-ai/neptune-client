@@ -13,31 +13,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ("OperationProcessor",)
-
 import abc
-from typing import Optional
 
-from neptune.new.internal.operation import Operation
+from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import UniqueId
 
 
-class OperationProcessor(abc.ABC):
-    @abc.abstractmethod
-    def enqueue_operation(self, op: Operation, wait: bool) -> None:
-        pass
-
-    @abc.abstractmethod
-    def wait(self) -> None:
-        pass
+class OperationStorage(abc.ABC):
+    def __init__(self, container_id: UniqueId, container_type: ContainerType):
+        self._data_path = self.init_data_path(container_id, container_type)
 
     @abc.abstractmethod
-    def flush(self):
-        pass
+    def init_data_path(self, container_id: UniqueId, container_type: ContainerType):
+        raise NotImplementedError()
 
-    @abc.abstractmethod
-    def start(self):
-        pass
+    @property
+    def data_path(self):
+        return self._data_path
 
-    @abc.abstractmethod
-    def stop(self, seconds: Optional[float] = None):
-        pass
+    @property
+    def upload_path(self):
+        return f"{self.data_path}/upload_path"
