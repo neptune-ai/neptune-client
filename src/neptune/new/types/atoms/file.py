@@ -111,10 +111,12 @@ class File(Atom):
         return visitor.visit_file(self)
 
     def __str__(self):
-        if self.path is not None:
+        if self.file_type is FileType.LOCAL_FILE:
             return "File(path={})".format(str(self.path))
-        else:
+        elif self.file_type is FileType.IN_MEMORY:
             return "File(content=...)"
+        else:
+            raise ValueError(f"Unexpected FileType: {self.file_type}")
 
     @staticmethod
     def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> "File":
