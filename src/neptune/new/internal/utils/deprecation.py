@@ -17,29 +17,15 @@ import warnings
 from functools import wraps
 from typing import Optional
 
+from neptune.common.deprecation import (
+    NeptuneDeprecationWarning,
+    warn_once,
+)
 from neptune.new.exceptions import NeptuneParametersCollision
 
-__all__ = ["deprecated", "deprecated_parameter", "NeptuneDeprecationWarning", "warn_once"]
-
-
-class NeptuneDeprecationWarning(DeprecationWarning):
-    pass
-
+__all__ = ["deprecated", "deprecated_parameter"]
 
 warnings.simplefilter("always", category=NeptuneDeprecationWarning)
-
-
-warned_once = set()
-
-
-def warn_once(message: str, stack_level: int = 1):
-    if message not in warned_once:
-        warnings.warn(
-            message=message,
-            category=NeptuneDeprecationWarning,
-            stacklevel=stack_level + 1,
-        )
-        warned_once.add(message)
 
 
 def deprecated(*, alternative: Optional[str] = None, stack_level: int = 1):
