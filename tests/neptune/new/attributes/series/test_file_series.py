@@ -32,7 +32,6 @@ from neptune.new.internal.operation import (
     LogImages,
 )
 from neptune.new.internal.utils import base64_encode
-from neptune.new.internal.utils.limits import BYTES_IN_MB
 from neptune.new.types import File
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 from tests.neptune.new.utils.file_helpers import create_file
