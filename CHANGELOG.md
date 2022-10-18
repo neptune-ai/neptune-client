@@ -11,6 +11,7 @@
 - `get_last_run`, `get_run_url`, `get_project` and `neptune.init` marked as deprecated ([#1011](https://github.com/neptune-ai/neptune-client/pull/1011))
 - Deprecated implicit casting of objects to strings with `log` and `assign` operations ([#1028](https://github.com/neptune-ai/neptune-client/pull/1028))
 - Internally extracted legacy client to `legacy` submodule ([#1039](https://github.com/neptune-ai/neptune-client/pull/1039))
+- Marked legacy client as deprecated ([#1047](https://github.com/neptune-ai/neptune-client/pull/1047))
 
 ## neptune-client 0.16.9
 
