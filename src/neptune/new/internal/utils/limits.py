@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import logging
+import warnings
 
 _logger = logging.getLogger(__name__)
 
@@ -54,12 +55,11 @@ def image_size_exceeds_limit(content_size):
 
 def image_size_exceeds_limit_for_logging(content_size):
     if content_size > _LOGGED_IMAGE_SIZE_LIMIT_MB * BYTES_IN_MB:
-        _logger.warning(
-            "You are attempting to log an image that is %.2fMB large. "
-            "Neptune supports logging images smaller than %dMB. "
-            "Resize or increase compression of this image",
-            content_size / BYTES_IN_MB,
-            _LOGGED_IMAGE_SIZE_LIMIT_MB,
+        warnings.warn(
+            f"You are attempting to log an image that is {content_size / BYTES_IN_MB:.2f}MB large. "
+            f"Neptune supports logging images smaller than {_LOGGED_IMAGE_SIZE_LIMIT_MB}MB. "
+            "Resize or increase compression of this image.",
+            category=UserWarning,
         )
         return True
     return False

@@ -13,9 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from unittest import mock
 
 # pylint: disable=protected-access
 import numpy
+import pytest
 from mock import (
     MagicMock,
     call,
@@ -30,6 +32,7 @@ from neptune.new.internal.operation import (
     LogImages,
 )
 from neptune.new.internal.utils import base64_encode
+from neptune.new.internal.utils.limits import BYTES_IN_MB
 from neptune.new.types import File
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 from tests.neptune.new.utils.file_helpers import create_file
@@ -185,4 +188,23 @@ class TestFileSeries(TestAttributeBase):
             with self.assertRaises(OperationNotSupported):
                 attr.assign([file])
             with self.assertRaises(OperationNotSupported):
+                attr.assign([saved_file])
+
+    @mock.patch("neptune.new.internal.utils.limits._LOGGED_IMAGE_SIZE_LIMIT_MB", (10**-3))
+    def test_image_limit(self):
+        """Test if we prohibit logging images greater than mocked 1KB limit size"""
+        # given
+        path = self._random_path()
+        op_processor = MagicMock()
+        exp = self._create_run(processor=op_processor)
+        attr = FileSeries(exp, path)
+
+        file = File.as_image(numpy.random.rand(100, 100) * 255)
+        with create_file(file.content, binary_mode=True) as tmp_filename:
+            saved_file = File(tmp_filename)
+
+            # when
+            with pytest.warns(expected_warning=UserWarning, match=".* Neptune supports logging images smaller than .*"):
+                attr.assign([file])
+            with pytest.warns(expected_warning=UserWarning, match=".* Neptune supports logging images smaller than .*"):
                 attr.assign([saved_file])

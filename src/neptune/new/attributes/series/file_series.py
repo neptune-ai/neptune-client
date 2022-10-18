@@ -86,7 +86,7 @@ class FileSeries(Series[Val, Data]):
             )
 
         if image_size_exceeds_limit_for_logging(len(file_content)):
-            file_content = None
+            file_content = b""
 
         return base64_encode(file_content)
 
