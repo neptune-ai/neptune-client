@@ -13,6 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ("OperationStorage",)
+
 import abc
 
 from neptune.new.internal.container_type import ContainerType
