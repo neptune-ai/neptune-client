@@ -16,12 +16,12 @@
 import re
 from typing import Optional
 
+from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.management.exceptions import (
     ConflictingWorkspaceName,
     InvalidProjectName,
     MissingWorkspaceName,
 )
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 
 def extract_project_and_workspace(name: str, workspace: Optional[str] = None):

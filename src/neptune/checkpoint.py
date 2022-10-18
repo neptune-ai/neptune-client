@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,10 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-class Checkpoint(object):
-    def __init__(self, _id, name, path):
-        self.id = _id
-        self.name = name
-        self.path = path
+# pylint: disable=unused-import
+from neptune.legacy.checkpoint import Checkpoint

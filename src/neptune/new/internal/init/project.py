@@ -17,8 +17,8 @@ import os
 import threading
 from typing import Optional
 
+from neptune.common.exceptions import NeptuneException
 from neptune.new.envs import CONNECTION_MODE
-from neptune.new.exceptions import NeptuneException
 from neptune.new.internal import id_formats
 from neptune.new.internal.backends.factory import get_backend
 from neptune.new.internal.backends.project_name_lookup import project_name_lookup

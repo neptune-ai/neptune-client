@@ -65,6 +65,7 @@ from requests import (
 )
 from urllib3.exceptions import NewConnectionError
 
+from neptune.common.exceptions import NeptuneInvalidApiTokenException
 from neptune.new.envs import (
     NEPTUNE_ALLOW_SELF_SIGNED_CERTIFICATE,
     NEPTUNE_RETRIES_TIMEOUT_ENV,
@@ -77,7 +78,6 @@ from neptune.new.exceptions import (
     NeptuneClientUpgradeRequiredError,
     NeptuneConnectionLostException,
     NeptuneFeatureNotAvailableException,
-    NeptuneInvalidApiTokenException,
     NeptuneSSLVerificationError,
     Unauthorized,
 )

@@ -20,6 +20,7 @@ import unittest
 
 from mock import patch
 
+from neptune.common.exceptions import NeptuneException
 from neptune.new import (
     ANONYMOUS,
     init_model,
@@ -30,7 +31,6 @@ from neptune.new.envs import (
     PROJECT_ENV_NAME,
 )
 from neptune.new.exceptions import (
-    NeptuneException,
     NeptuneParametersCollision,
     NeptuneWrongInitParametersException,
 )

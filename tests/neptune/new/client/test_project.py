@@ -20,6 +20,7 @@ import unittest
 
 from mock import patch
 
+from neptune.common.exceptions import NeptuneException
 from neptune.new import (
     ANONYMOUS,
     init_project,
@@ -28,10 +29,7 @@ from neptune.new.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.exceptions import (
-    NeptuneException,
-    NeptuneMissingProjectNameException,
-)
+from neptune.new.exceptions import NeptuneMissingProjectNameException
 from neptune.new.internal.backends.api_model import (
     Attribute,
     AttributeType,

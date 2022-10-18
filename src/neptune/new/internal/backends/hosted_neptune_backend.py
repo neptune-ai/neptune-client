@@ -35,6 +35,11 @@ from bravado.exception import (
     HTTPUnprocessableEntity,
 )
 
+from neptune.common.exceptions import (
+    InternalClientError,
+    NeptuneException,
+)
+from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
     AmbiguousProjectName,
@@ -42,10 +47,8 @@ from neptune.new.exceptions import (
     ClientHttpError,
     ContainerUUIDNotFound,
     FetchAttributeNotFoundException,
-    InternalClientError,
     MetadataContainerNotFound,
     MetadataInconsistency,
-    NeptuneException,
     NeptuneFeatureNotAvailableException,
     NeptuneLegacyProjectException,
     NeptuneLimitExceedException,
@@ -129,7 +132,6 @@ from neptune.new.internal.utils.paths import path_to_str
 from neptune.new.internal.websockets.websockets_factory import WebsocketsFactory
 from neptune.new.types.atoms import GitRef
 from neptune.new.version import version as neptune_client_version
-from neptune.patterns import PROJECT_QUALIFIED_NAME_PATTERN
 
 if TYPE_CHECKING:
     from bravado.requests_client import RequestsClient

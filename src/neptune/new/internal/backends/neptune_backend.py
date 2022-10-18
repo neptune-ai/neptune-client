@@ -23,7 +23,7 @@ from typing import (
     Union,
 )
 
-from neptune.new.exceptions import NeptuneException
+from neptune.common.exceptions import NeptuneException
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.backends.api_model import (
     ApiExperiment,

@@ -27,10 +27,8 @@ from typing import (
     TypeVar,
 )
 
-from neptune.new.exceptions import (
-    InternalClientError,
-    MalformedOperation,
-)
+from neptune.common.exceptions import InternalClientError
+from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
 
 if TYPE_CHECKING:

@@ -40,13 +40,19 @@ from requests import (
     Response,
 )
 
-from neptune.internal.hardware.constants import BYTES_IN_ONE_MB
-from neptune.internal.storage.datastream import (
+from neptune.common.backends.api_model import MultipartConfig
+from neptune.common.exceptions import (
+    InternalClientError,
+    NeptuneException,
+    UploadedFileChanged,
+)
+from neptune.common.hardware.constants import BYTES_IN_ONE_MB
+from neptune.common.storage.datastream import (
     FileChunk,
     FileChunker,
     compress_to_tar_gz_in_memory,
 )
-from neptune.internal.storage.storage_utils import (
+from neptune.common.storage.storage_utils import (
     AttributeUploadConfiguration,
     UploadEntry,
     normalize_file_name,
@@ -55,13 +61,9 @@ from neptune.internal.storage.storage_utils import (
 )
 from neptune.new.exceptions import (
     FileUploadError,
-    InternalClientError,
     MetadataInconsistency,
-    NeptuneException,
     NeptuneLimitExceedException,
-    UploadedFileChanged,
 )
-from neptune.new.internal.backends.api_model import MultipartConfig
 from neptune.new.internal.backends.swagger_client_wrapper import (
     ApiMethodWrapper,
     SwaggerClientWrapper,

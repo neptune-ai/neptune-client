@@ -31,6 +31,7 @@ from mock import (
     patch,
 )
 
+from neptune.common.utils import IS_WINDOWS
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.hosted_file_operations import (
     _get_content_disposition_filename,
@@ -39,7 +40,6 @@ from neptune.new.internal.backends.hosted_file_operations import (
     upload_file_attribute,
     upload_file_set_attribute,
 )
-from neptune.utils import IS_WINDOWS
 from tests.neptune.new.backend_test_mixin import BackendTestMixin
 from tests.neptune.new.utils.file_helpers import create_file
 

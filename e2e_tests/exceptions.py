@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune.new.exceptions import NeptuneException
+from neptune.common.exceptions import NeptuneException
 
 
 class ConfigurationException(NeptuneException):

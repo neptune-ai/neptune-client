@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,14 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-PROJECT_ENV_NAME = "NEPTUNE_PROJECT"
-
-API_TOKEN_ENV_NAME = "NEPTUNE_API_TOKEN"
-
-NOTEBOOK_ID_ENV_NAME = "NEPTUNE_NOTEBOOK_ID"
-
-NOTEBOOK_PATH_ENV_NAME = "NEPTUNE_NOTEBOOK_PATH"
-
-BACKEND = "NEPTUNE_BACKEND"
+# pylint: disable=unused-import
+from neptune.legacy.envs import (
+    API_TOKEN_ENV_NAME,
+    BACKEND,
+    NOTEBOOK_ID_ENV_NAME,
+    NOTEBOOK_PATH_ENV_NAME,
+    PROJECT_ENV_NAME,
+)

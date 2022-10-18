@@ -22,6 +22,7 @@ from typing import (
 from bravado.http_client import HttpClient
 from bravado.requests_client import RequestsClient
 
+from neptune.common.oauth import NeptuneAuthenticator
 from neptune.new.exceptions import NeptuneClientUpgradeRequiredError
 from neptune.new.internal.backends.api_model import ClientConfig
 from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWrapper
@@ -37,9 +38,6 @@ from neptune.new.internal.backends.utils import (
 )
 from neptune.new.internal.credentials import Credentials
 from neptune.new.version import version as neptune_client_version
-
-# TODO: Do not use NeptuneAuthenticator from old_neptune. Move it to new package.
-from neptune.oauth import NeptuneAuthenticator
 
 BACKEND_SWAGGER_PATH = "/api/backend/swagger.json"
 LEADERBOARD_SWAGGER_PATH = "/api/leaderboard/swagger.json"

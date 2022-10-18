@@ -24,11 +24,11 @@ from typing import (
 
 import click
 
+from neptune.common.exceptions import NeptuneException
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.exceptions import (
     CannotSynchronizeOfflineRunsWithoutProject,
     NeptuneConnectionLostException,
-    NeptuneException,
     ProjectNotFound,
     RunNotFound,
 )

@@ -18,6 +18,7 @@ from typing import (
     List,
 )
 
+from neptune.common.exceptions import InternalClientError
 from neptune.new.attributes import (
     Artifact,
     Boolean,
@@ -35,7 +36,6 @@ from neptune.new.attributes import (
     StringSeries,
     StringSet,
 )
-from neptune.new.exceptions import InternalClientError
 from neptune.new.internal.backends.api_model import AttributeType
 
 if TYPE_CHECKING:

@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from neptune.experiments import Experiment
+from neptune.common.experiments import Experiment
 from neptune.new import Run
 from neptune.new.exceptions import NeptuneLegacyIncompatibilityException
 
