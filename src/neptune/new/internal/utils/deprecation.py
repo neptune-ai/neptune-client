@@ -13,19 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import warnings
 from functools import wraps
 from typing import Optional
 
-from neptune.common.deprecation import (
-    NeptuneDeprecationWarning,
-    warn_once,
-)
+from neptune.common.deprecation import warn_once
 from neptune.new.exceptions import NeptuneParametersCollision
 
 __all__ = ["deprecated", "deprecated_parameter"]
-
-warnings.simplefilter("always", category=NeptuneDeprecationWarning)
 
 
 def deprecated(*, alternative: Optional[str] = None, stack_level: int = 1):
