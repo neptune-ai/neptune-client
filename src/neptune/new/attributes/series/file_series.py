@@ -35,6 +35,7 @@ from neptune.new.internal.operation import (
 )
 from neptune.new.internal.utils import base64_encode
 from neptune.new.internal.utils.iteration import get_batches
+from neptune.new.internal.utils.limits import image_size_exceeds_limit_for_logging
 from neptune.new.types import File
 from neptune.new.types.atoms.file import FileType
 from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
@@ -74,15 +75,20 @@ class FileSeries(Series[Val, Data]):
             if not os.path.exists(file.path):
                 raise FileNotFound(file.path)
             with open(file.path, "rb") as image_file:
-                file = File.from_stream(image_file)
+                file_content = File.from_stream(image_file).content
+        else:
+            file_content = file.content
 
-        ext = imghdr.what("", h=file.content)
+        ext = imghdr.what("", h=file_content)
         if not ext:
             raise OperationNotSupported(
-                "FileSeries supports only image files for now. " "Other file types will be implemented in future."
+                "FileSeries supports only image files for now. Other file types will be implemented in future."
             )
 
-        return base64_encode(file.content)
+        if image_size_exceeds_limit_for_logging(len(file_content)):
+            file_content = None
+
+        return base64_encode(file_content)
 
     def download(self, destination: Optional[str]):
         target_dir = self._get_destination(destination)
