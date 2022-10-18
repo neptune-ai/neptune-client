@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import enum
 import os
 from io import IOBase
 from typing import (
@@ -22,6 +23,7 @@ from typing import (
     Union,
 )
 
+from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.utils import (
     get_stream_content,
     limits,
@@ -47,6 +49,11 @@ if TYPE_CHECKING:
 Ret = TypeVar("Ret")
 
 
+class FileType(enum.Enum):
+    LOCAL_FILE = "LOCAL_FILE"
+    IN_MEMORY = "IN_MEMORY"
+
+
 class File(Atom):
     def __init__(
         self,
@@ -62,9 +69,13 @@ class File(Atom):
             raise ValueError("path and content are mutually exclusive")
         if path is None and content is None:
             raise ValueError("path or content is required")
+        if path is not None:
+            self.file_type = FileType.LOCAL_FILE
+        else:
+            self.file_type = FileType.IN_MEMORY
 
-        self.path = path
-        self.content = content
+        self._path = path
+        self._content = content
 
         if extension is None and path is not None:
             try:
@@ -75,14 +86,37 @@ class File(Atom):
         else:
             self.extension = extension or ""
 
+    @property
+    def path(self):
+        if self.file_type is not FileType.LOCAL_FILE:
+            raise NeptuneException(f"`path` attribute is not supported for {self.file_type}")
+
+        return self._path
+
+    @property
+    def content(self):
+        if self.file_type is not FileType.IN_MEMORY:
+            raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
+
+        return self._content
+
+    def _save(self, path):
+        if self.file_type is not FileType.IN_MEMORY:
+            raise NeptuneException(f"`_save` method is not supported for {self.file_type}")
+
+        with open(path, "wb") as f:
+            f.write(self._content)
+
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_file(self)
 
     def __str__(self):
-        if self.path is not None:
+        if self.file_type is FileType.LOCAL_FILE:
             return "File(path={})".format(str(self.path))
-        else:
+        elif self.file_type is FileType.IN_MEMORY:
             return "File(content=...)"
+        else:
+            raise ValueError(f"Unexpected FileType: {self.file_type}")
 
     @staticmethod
     def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> "File":

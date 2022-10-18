@@ -36,6 +36,7 @@ from neptune.new.internal.operation import (
 from neptune.new.internal.utils import base64_encode
 from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.types import File
+from neptune.new.types.atoms.file import FileType
 from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 
 Val = FileSeriesVal
@@ -69,7 +70,7 @@ class FileSeries(Series[Val, Data]):
 
     @staticmethod
     def _get_base64_image_content(file: File) -> str:
-        if file.path is not None:
+        if file.file_type is FileType.LOCAL_FILE:
             if not os.path.exists(file.path):
                 raise FileNotFound(file.path)
             with open(file.path, "rb") as image_file:

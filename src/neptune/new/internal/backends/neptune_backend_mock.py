@@ -115,7 +115,10 @@ from neptune.new.types import (
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.file import File
+from neptune.new.types.atoms.file import (
+    File,
+    FileType,
+)
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.file_set import FileSet
@@ -329,11 +332,14 @@ class NeptuneBackendMock(NeptuneBackend):
         run = self._get_container(container_id, container_type)
         value: File = run.get(path)
         target_path = os.path.abspath(destination or (path[-1] + ("." + value.extension if value.extension else "")))
-        if value.content is not None:
+        if value.file_type is FileType.IN_MEMORY:
             with open(target_path, "wb") as target_file:
                 target_file.write(value.content)
-        elif value.path != target_path:
-            copyfile(value.path, target_path)
+        elif value.file_type is FileType.LOCAL_FILE:
+            if value.path != target_path:
+                copyfile(value.path, target_path)
+        else:
+            raise ValueError(f"Unexpected FileType: {value.file_type}")
 
     def download_file_set(
         self,
@@ -373,7 +379,7 @@ class NeptuneBackendMock(NeptuneBackend):
     def get_file_attribute(self, container_id: str, container_type: ContainerType, path: List[str]) -> FileAttribute:
         val = self._get_attribute(container_id, container_type, path, File)
         return FileAttribute(
-            name=os.path.basename(val.path) if val.path else "",
+            name=os.path.basename(val.path) if val.file_type is FileType.LOCAL_FILE else "",
             ext=val.extension or "",
             size=0,
         )

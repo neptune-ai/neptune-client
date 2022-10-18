@@ -26,6 +26,7 @@ from neptune.new.internal.utils import (
     verify_type,
 )
 from neptune.new.types.atoms.file import File as FileVal
+from neptune.new.types.atoms.file import FileType
 
 # pylint: disable=protected-access
 
@@ -34,16 +35,16 @@ class File(Atom):
     def assign(self, value: FileVal, wait: bool = False) -> None:
         verify_type("value", value, FileVal)
 
-        if value.path is not None:
+        if value.file_type is FileType.LOCAL_FILE:
             operation = UploadFile(self._path, ext=value.extension, file_path=os.path.abspath(value.path))
-        elif value.content is not None:
+        elif value.file_type is FileType.IN_MEMORY:
             operation = UploadFileContent(
                 self._path,
                 ext=value.extension,
                 file_content=base64_encode(value.content),
             )
         else:
-            raise ValueError("File path and content are None")
+            raise ValueError(f"Unexpected FileType: {value.file_type}")
 
         with self._container.lock():
             self._enqueue_operation(operation, wait)
