@@ -17,6 +17,7 @@
 import os
 
 from neptune.common.utils import validate_notebook_path
+from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 
 
 class Notebook(object):
@@ -36,6 +37,7 @@ class Notebook(object):
 
     """
 
+    @legacy_client_deprecation
     def __init__(self, backend, project, _id, owner):
         self._backend = backend
         self._project = project
