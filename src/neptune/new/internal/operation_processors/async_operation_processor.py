@@ -209,7 +209,7 @@ class AsyncOperationProcessor(OperationProcessor, OperationStorage):
     def init_data_path(self, container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
         container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{create_dir_name(container_type, container_id)}"
-        data_path = "{}/exec-{}-{}".format(container_dir, now.timestamp(), now)
+        data_path = f"{container_dir}/exec-{now.timestamp()}-{now}"
         data_path = data_path.replace(" ", "_").replace(":", ".")
         return data_path
 
