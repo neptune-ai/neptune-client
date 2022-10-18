@@ -13,16 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ("SyncOperationProcessor",)
+
 from typing import Optional
 
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 
 
 class SyncOperationProcessor(OperationProcessor):
-    def __init__(self, container_id: str, container_type: ContainerType, backend: NeptuneBackend):
+    def __init__(self, container_id: UniqueId, container_type: ContainerType, backend: NeptuneBackend):
         self._container_id = container_id
         self._container_type = container_type
         self._backend = backend
