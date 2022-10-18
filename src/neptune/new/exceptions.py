@@ -23,11 +23,18 @@ from urllib.parse import urlparse
 from packaging.version import Version
 
 from neptune.common.envs import API_TOKEN_ENV_NAME
+
+# Backward compatibility import
+# pylint: disable=unused-import
+# fmt: off
 from neptune.common.exceptions import (
     STYLES,
     InternalClientError,
     NeptuneException,
+    NeptuneInvalidApiTokenException,
 )
+
+# fmt: on
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import (
