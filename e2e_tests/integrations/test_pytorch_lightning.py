@@ -114,7 +114,6 @@ def pytorch_run(environment):
 
 
 @pytest.mark.integrations
-@pytest.mark.lightning
 class TestPytorchLightning(BaseE2ETest):
     def test_logging_values(self, pytorch_run):
         # correct integration version is logged
