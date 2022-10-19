@@ -67,7 +67,7 @@ class AsyncOperationProcessor(OperationProcessor):
         self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
 
         self._queue = DiskQueue(
-            dir_path=Path(self._operation_storage.data_path),
+            dir_path=self._operation_storage.data_path,
             to_dict=lambda x: x.to_dict(),
             from_dict=Operation.from_dict,
             lock=lock,

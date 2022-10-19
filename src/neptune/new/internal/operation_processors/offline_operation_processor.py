@@ -38,7 +38,7 @@ class OfflineOperationProcessor(OperationProcessor):
         self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
 
         self._queue = DiskQueue(
-            dir_path=Path(self._operation_storage.data_path),
+            dir_path=self._operation_storage.data_path,
             to_dict=lambda x: x.to_dict(),
             from_dict=Operation.from_dict,
             lock=lock,
@@ -46,11 +46,7 @@ class OfflineOperationProcessor(OperationProcessor):
 
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
-        now = datetime.now()
-        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}/{create_dir_name(container_type, container_id)}"
-        data_path = f"{container_dir}/exec-{now.timestamp()}-{now}"
-        data_path = data_path.replace(" ", "_").replace(":", ".")
-        return data_path
+        return f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}/{create_dir_name(container_type, container_id)}"
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         # pylint: disable=unused-argument

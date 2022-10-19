@@ -19,6 +19,7 @@ __all__ = [
 
 import abc
 from datetime import datetime
+from pathlib import Path
 
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.internal.container_type import ContainerType
@@ -27,16 +28,16 @@ from neptune.new.sync.utils import create_dir_name
 
 
 class OperationStorage:
-    def __init__(self, data_path):
-        self._data_path = data_path
+    def __init__(self, data_path: str):
+        self._data_path = Path(data_path)
 
     @property
-    def data_path(self):
+    def data_path(self) -> Path:
         return self._data_path
 
     @property
-    def upload_path(self):
-        return f"{self.data_path}/upload_path"
+    def upload_path(self) -> Path:
+        return self.data_path / "upload_path"
 
     @staticmethod
     def _get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType):
