@@ -46,7 +46,7 @@ def get_config():
     cfg.parentdir_prefix = ""
     cfg.versionfile_source = "src/neptune/_version.py"
     cfg.versionfile_build = "neptune/_version.py"
-    cfg.verbose = True
+    cfg.verbose = False
     return cfg
 
 
