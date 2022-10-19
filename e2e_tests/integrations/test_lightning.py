@@ -36,8 +36,12 @@ from e2e_tests.base import BaseE2ETest
 
 LIGHTNING_ECOSYSTEM_ENV_PROJECT = "NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"
 
-skip_if_on_regular_env = pytest.mark.skipif(LIGHTNING_ECOSYSTEM_ENV_PROJECT not in os.environ)
-skip_if_on_lightning_ecosystem = pytest.mark.skipif(LIGHTNING_ECOSYSTEM_ENV_PROJECT in os.environ)
+skip_if_on_regular_env = pytest.mark.skipif(
+    LIGHTNING_ECOSYSTEM_ENV_PROJECT not in os.environ, reason="Tests weren't invoked in Lightning Ecosystem CI"
+)
+skip_if_on_lightning_ecosystem = pytest.mark.skipif(
+    LIGHTNING_ECOSYSTEM_ENV_PROJECT in os.environ, reason="Tests invoked in Lightning Ecosystem CI"
+)
 
 
 class RandomDataset(Dataset):
