@@ -16,17 +16,25 @@
 __all__ = ("OperationStorage",)
 
 import abc
+from datetime import datetime
 
+from neptune.new.constants import (
+    ASYNC_DIRECTORY,
+    NEPTUNE_DATA_DIRECTORY,
+    OFFLINE_DIRECTORY,
+    SYNC_DIRECTORY,
+)
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import UniqueId
+from neptune.new.sync.utils import create_dir_name
 
 
 class OperationStorage(abc.ABC):
     def __init__(self, container_id: UniqueId, container_type: ContainerType):
-        self._data_path = self.init_data_path(container_id, container_type)
+        self._data_path = self._init_data_path(container_id, container_type)
 
     @abc.abstractmethod
-    def init_data_path(self, container_id: UniqueId, container_type: ContainerType):
+    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType):
         raise NotImplementedError()
 
     @property
@@ -36,3 +44,31 @@ class OperationStorage(abc.ABC):
     @property
     def upload_path(self):
         return f"{self.data_path}/upload_path"
+
+    @staticmethod
+    def _get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType):
+        return f"{NEPTUNE_DATA_DIRECTORY}/{type_dir}/{create_dir_name(container_type, container_id)}"
+
+
+class SyncOperationStorage(OperationStorage):
+    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType):
+        now = datetime.now()
+        container_dir = self._get_container_dir(SYNC_DIRECTORY, container_id, container_type)
+        data_path = f"{container_dir}/exec-{now.timestamp()}-{now}"
+        data_path = data_path.replace(" ", "_").replace(":", ".")
+        return data_path
+
+
+class AsyncOperationStorage(OperationStorage):
+    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType):
+        now = datetime.now()
+        container_dir = self._get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
+        data_path = f"{container_dir}/exec-{now.timestamp()}-{now}"
+        data_path = data_path.replace(" ", "_").replace(":", ".")
+        return data_path
+
+
+class OfflineOperationStorage(OperationStorage):
+    def _init_data_path(self, container_id: UniqueId, container_type: ContainerType):
+        container_dir = self._get_container_dir(ASYNC_DIRECTORY, container_id, container_type)
+        return container_dir
