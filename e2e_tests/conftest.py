@@ -33,7 +33,6 @@ from neptune.management import (
     add_project_service_account,
     create_project,
 )
-from neptune.management.exceptions import ProjectNameCollision
 from neptune.management.internal.utils import normalize_project_name
 from neptune.new import init_project
 
@@ -42,66 +41,48 @@ fake = Faker()
 
 @pytest.fixture(scope="session")
 def environment():
-    # check if lightning env variable is present
-    project_env_var = os.getenv("NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT", "")
+    raw_env = RawEnvironment()
+    workspace = raw_env.workspace_name
+    admin_token = raw_env.admin_neptune_api_token
+    user = raw_env.user_username
+    service_account_name = raw_env.service_account_name
 
-    if project_env_var:
-        workspace, project_name = project_env_var.split("/")
-        user_token = os.getenv("NEPTUNE_API_TOKEN")
-        admin_token = user_token
-        admin = ""
-        user = ""
-        service_account_name = ""
-
-    else:
-        raw_env = RawEnvironment()
-        workspace = raw_env.workspace_name
-        project_name = a_project_name(project_slug=fake.slug())
-        user_token = raw_env.neptune_api_token
-        admin_token = raw_env.admin_neptune_api_token
-        admin = raw_env.admin_username
-        user = raw_env.user_username
-        service_account_name = raw_env.service_account_name
-
+    project_name = a_project_name(project_slug=fake.slug())
     project_identifier = normalize_project_name(name=project_name, workspace=workspace)
 
-    try:
-        created_project_identifier = create_project(
-            name=project_name,
-            visibility="priv",
-            workspace=workspace,
-            api_token=admin_token,
-        )
+    created_project_identifier = create_project(
+        name=project_name,
+        visibility="priv",
+        workspace=workspace,
+        api_token=admin_token,
+    )
 
-        time.sleep(10)
+    time.sleep(10)
 
-        add_project_member(
-            name=created_project_identifier,
-            username=user,
-            # pylint: disable=no-member
-            role="contributor",
-            api_token=admin_token,
-        )
+    add_project_member(
+        name=created_project_identifier,
+        username=user,
+        # pylint: disable=no-member
+        role="contributor",
+        api_token=admin_token,
+    )
 
-        add_project_service_account(
-            name=created_project_identifier,
-            service_account_name=service_account_name,
-            # pylint: disable=no-member
-            role="contributor",
-            api_token=admin_token,
-        )
-
-    except ProjectNameCollision:
-        created_project_identifier = project_name
+    add_project_service_account(
+        name=created_project_identifier,
+        service_account_name=service_account_name,
+        # pylint: disable=no-member
+        role="contributor",
+        api_token=admin_token,
+    )
 
     yield Environment(
         workspace=workspace,
         project=project_identifier,
-        user_token=user_token,
+        user_token=raw_env.neptune_api_token,
         admin_token=admin_token,
-        admin=admin,
+        admin=raw_env.admin_username,
         user=user,
-        service_account=service_account_name,
+        service_account=raw_env.service_account_name,
     )
 
     project = init_project(name=created_project_identifier, api_token=admin_token)

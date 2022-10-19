@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 # pylint: disable=redefined-outer-name
+import os
 import re
 
 import pytest
@@ -76,10 +77,9 @@ class BoringModel(LightningModule):
         return torch.optim.SGD(self.layer.parameters(), lr=0.1)
 
 
-@pytest.fixture(scope="session")
-def pytorch_run(environment):
+def prepare(project):
     # given
-    run = neptune.init_run(name="Pytorch-Lightning integration", project=environment.project)
+    run = neptune.init_run(name="Pytorch-Lightning integration", project=project)
     # and
     model_checkpoint = ModelCheckpoint(
         dirpath="my_model/checkpoints/",
@@ -110,13 +110,33 @@ def pytorch_run(environment):
     trainer.test(model, dataloaders=test_data)
     run.sync()
 
-    yield run
+    return run
+
+
+LIGHTNING_ECOSYSTEM_ENV_PROJECT = "NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"
+
+
+skip_if_on_regular_env = pytest.mark.skipif(LIGHTNING_ECOSYSTEM_ENV_PROJECT not in os.environ, reason="Running")
+
+skip_if_on_lightning_ecosystem = pytest.mark.skipif(
+    LIGHTNING_ECOSYSTEM_ENV_PROJECT in os.environ, reason="at least mymodule-1.1 required"
+)
+
+
+@pytest.fixture(scope="session")
+def model_in_regular_env(environment):
+    yield prepare(project=environment.project)
+
+
+@pytest.fixture(scope="session")
+def model_in_lightning_ci_project():
+    yield prepare(project=os.getenv("NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"))
 
 
 @pytest.mark.integrations
 @pytest.mark.lightning
 class TestPytorchLightning(BaseE2ETest):
-    def test_logging_values(self, pytorch_run):
+    def _test_logging_values(self, pytorch_run):
         # correct integration version is logged
         if pytorch_run.exists("source_code/integrations/lightning"):
             logged_version = pytorch_run["source_code/integrations/lightning"].fetch()
@@ -127,7 +147,15 @@ class TestPytorchLightning(BaseE2ETest):
         assert pytorch_run.exists("custom_prefix/valid/loss")
         assert len(pytorch_run["custom_prefix/valid/loss"].fetch_values()) == 3
 
-    def test_saving_models(self, pytorch_run):
+    @skip_if_on_lightning_ecosystem
+    def test_logging_values(self, model_in_regular_env):
+        self._test_logging_values(model_in_regular_env)
+
+    @skip_if_on_regular_env
+    def test_logging_values_in_lightning_ci(self, model_in_lightning_ci_project):
+        self._test_logging_values(model_in_lightning_ci_project)
+
+    def _test_saving_models(self, pytorch_run):
         best_model_path = pytorch_run["custom_prefix/model/best_model_path"].fetch()
         assert re.match(
             r".*my_model/checkpoints/epoch=.*-valid/loss=.*\.ckpt$",
@@ -140,3 +168,11 @@ class TestPytorchLightning(BaseE2ETest):
         checkpoints = pytorch_run["custom_prefix/model/checkpoints"].fetch()
         assert all((checkpoint.startswith("epoch=") for checkpoint in checkpoints))
         assert len(checkpoints) == 2
+
+    @skip_if_on_lightning_ecosystem
+    def test_saving_models(self, model_in_regular_env):
+        self._test_saving_models(model_in_regular_env)
+
+    @skip_if_on_regular_env
+    def test_saving_models_in_lightning_ci(self, model_in_lightning_ci_project):
+        self._test_saving_models(model_in_lightning_ci_project)
