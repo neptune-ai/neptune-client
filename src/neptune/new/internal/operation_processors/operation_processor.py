@@ -21,7 +21,7 @@ from typing import Optional
 from neptune.new.internal.operation import Operation
 
 
-class OperationProcessor:
+class OperationProcessor(abc.ABC):
     @abc.abstractmethod
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
         pass
