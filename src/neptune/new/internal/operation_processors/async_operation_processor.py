@@ -20,7 +20,6 @@ import os
 import sys
 import threading
 from datetime import datetime
-from pathlib import Path
 from time import (
     monotonic,
     time,

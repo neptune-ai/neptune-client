@@ -16,8 +16,6 @@
 __all__ = ("OfflineOperationProcessor",)
 
 import threading
-from datetime import datetime
-from pathlib import Path
 from typing import Optional
 
 from neptune.new.constants import (

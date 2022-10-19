@@ -17,8 +17,6 @@ __all__ = [
     "OperationStorage",
 ]
 
-import abc
-from datetime import datetime
 from pathlib import Path
 
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
