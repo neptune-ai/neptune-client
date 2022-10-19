@@ -34,6 +34,11 @@ from torch.utils.data import (
 import neptune.new as neptune
 from e2e_tests.base import BaseE2ETest
 
+LIGHTNING_ECOSYSTEM_ENV_PROJECT = "NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"
+
+skip_if_on_regular_env = pytest.mark.skipif(LIGHTNING_ECOSYSTEM_ENV_PROJECT not in os.environ)
+skip_if_on_lightning_ecosystem = pytest.mark.skipif(LIGHTNING_ECOSYSTEM_ENV_PROJECT in os.environ)
+
 
 class RandomDataset(Dataset):
     def __init__(self, size, length):
@@ -111,16 +116,6 @@ def prepare(project):
     run.sync()
 
     return run
-
-
-LIGHTNING_ECOSYSTEM_ENV_PROJECT = "NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"
-
-
-skip_if_on_regular_env = pytest.mark.skipif(LIGHTNING_ECOSYSTEM_ENV_PROJECT not in os.environ, reason="Running")
-
-skip_if_on_lightning_ecosystem = pytest.mark.skipif(
-    LIGHTNING_ECOSYSTEM_ENV_PROJECT in os.environ, reason="at least mymodule-1.1 required"
-)
 
 
 @pytest.fixture(scope="session")
