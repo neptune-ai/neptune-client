@@ -1354,3 +1354,8 @@ For more, see https://docs.neptune.ai/api/field_types/#from_stream
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
+
+
+class NeptuneUserApiInputException(NeptuneException):
+    def __init__(self, message):
+        super().__init__(message)

@@ -18,13 +18,16 @@ from typing import (
     TYPE_CHECKING,
     Any,
     Dict,
+    Iterable,
     Iterator,
     List,
     Mapping,
+    Optional,
     Union,
 )
 
 from neptune.new.attributes.attribute import Attribute
+from neptune.new.attributes.series.series import Data
 from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.utils.generic_attribute_mapper import (
     NoValue,
@@ -62,6 +65,19 @@ class Namespace(Attribute, MutableMapping):
 
     def __iter__(self) -> Iterator[str]:
         yield from self._attributes.__iter__()
+
+    def log(
+        self,
+        value: Union[Data, Iterable[Data]],
+        step: Optional[float] = None,
+        timestamp: Optional[float] = None,
+        wait: bool = False,
+        **kwargs,
+    ) -> None:
+        if not isinstance(value, NamespaceVal):
+            value = NamespaceVal(value)
+        for k, v in value.value.items():
+            self._container[f"{self._str_path}/{k}"].log(v, step, timestamp, wait, **kwargs)
 
     def to_dict(self) -> Dict[str, Any]:
         result = {}

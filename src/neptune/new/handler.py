@@ -16,6 +16,8 @@
 from functools import wraps
 from typing import (
     TYPE_CHECKING,
+    Any,
+    Dict,
     Iterable,
     List,
     Optional,
@@ -38,14 +40,17 @@ from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
+    NeptuneUserApiInputException,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     is_collection,
+    is_dict_like,
     is_float,
     is_float_like,
     is_string,
     is_string_like,
+    iterable_size,
     verify_collection_type,
     verify_type,
 )
@@ -286,6 +291,118 @@ class Handler:
 
                 self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
+
+    def append(
+        self,
+        value: Union[dict, Any],
+        step: Optional[float] = None,
+        timestamp: Optional[float] = None,
+        wait: bool = False,
+        **kwargs,
+    ) -> None:
+        """
+        todo: NPT-12530
+        """
+        verify_type("step", step, (int, float, type(None)))
+        verify_type("timestamp", timestamp, (int, float, type(None)))
+        if is_collection(value):
+            raise NeptuneUserApiInputException("Value cannot be a collection")
+        if is_dict_like(value):
+            for element in value.values():
+                if is_collection(element):
+                    raise NeptuneUserApiInputException("Dict value cannot be a collection, use extend method")
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
+            if not attr:
+                attr = self._create_new_attribute(value)
+                self._container.set_attribute(self._path, attr)
+            attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
+
+    def _create_new_attribute(self, value):
+        if is_float(value):
+            return FloatSeries(self._container, parse_path(self._path))
+        elif is_dict_like(value):
+            return Namespace(self._container, parse_path(self._path))
+        elif is_string(value):
+            return StringSeries(self._container, parse_path(self._path))
+        elif FileVal.is_convertable(value):
+            return FileSeries(self._container, parse_path(self._path))
+        elif is_float_like(value):
+            return FloatSeries(self._container, parse_path(self._path))
+        elif is_string_like(value):
+            self._warn_casting_to_string()
+            return StringSeries(self._container, parse_path(self._path))
+        else:
+            raise NeptuneUserApiInputException("Value of unsupported type {}".format(type(value)))
+
+    def _warn_casting_to_string(self):
+        warn_once(
+            message="The object you're logging will be implicitly cast to a string."
+            " We'll end support of this behavior in `neptune-client==1.0.0`."
+            " To log the object as a string, use `.log(str(object))` instead.",
+            stack_level=3,
+        )
+
+    def extend(
+        self,
+        values: Union[Dict[str, Iterable[Any]], Iterable[Any]],
+        steps: Optional[Iterable[float]] = None,
+        timestamps: Optional[Iterable[float]] = None,
+        wait: bool = False,
+        **kwargs,
+    ) -> None:
+        """
+        todo: NPT-12530
+        """
+        if is_dict_like(values):
+            self._validate_dict_for_extend(values, steps, timestamps)
+            for dict_key in values.keys():
+                values_size = iterable_size(values[dict_key])
+                new_steps = steps if steps is not None else [None] * values_size
+                new_timestamps = timestamps if timestamps is not None else [None] * values_size
+                for (value, step, timestamp) in zip(values[dict_key], new_steps, new_timestamps):
+                    self.append({dict_key: value}, step, timestamp, wait, **kwargs)
+        elif is_collection(values):
+            values_size = iterable_size(values)
+            self._validate_iterable_for_extend(values_size, steps, timestamps)
+            new_steps = steps if steps is not None else [None] * values_size
+            new_timestamps = timestamps if timestamps is not None else [None] * values_size
+            for (value, step, timestamp) in zip(values, new_steps, new_timestamps):
+                if is_collection(value) or is_dict_like(value):
+                    self.append(str(value), step, timestamp, wait, **kwargs)
+                else:
+                    self.append(value, step, timestamp, wait, **kwargs)
+        else:
+            raise NeptuneUserApiInputException(
+                "Value cannot be a collection."
+                " To append multiple values at once, use extend() instead:"
+                " run['series'].extend(collection)"
+            )
+
+    def _validate_iterable_for_extend(
+        self, values_size: int, steps: Optional[Iterable[float]] = None, timestamps: Optional[Iterable[float]] = None
+    ) -> None:
+        if steps is not None and iterable_size(steps) != values_size:
+            raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
+        if timestamps is not None and iterable_size(timestamps) != values_size:
+            raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
+
+    def _validate_dict_for_extend(
+        self,
+        values: Union[Dict[str, Iterable[Any]], Iterable[Any]],
+        steps: Optional[Iterable[float]] = None,
+        timestamps: Optional[Iterable[float]] = None,
+    ) -> None:
+        timestamps_size = None if timestamps is None else iterable_size(timestamps)
+        steps_size = None if steps is None else iterable_size(steps)
+        for dict_key in values:
+            if not is_collection(values[dict_key]):
+                raise NeptuneUserApiInputException("If value is a dict, all values in dict should be a collection")
+            dict_iterables_size = iterable_size(values[dict_key])
+            if timestamps_size is not None and timestamps_size != dict_iterables_size:
+                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values in dict")
+            if steps_size is not None and steps_size != dict_iterables_size:
+                raise NeptuneUserApiInputException("Number of steps must be equal to number of values in dict")
 
     @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
