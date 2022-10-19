@@ -13,7 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = ("OperationStorage",)
+__all__ = [
+    "AsyncOperationStorage",
+    "SyncOperationStorage",
+    "OfflineOperationStorage",
+]
 
 import abc
 from datetime import datetime
@@ -21,7 +25,6 @@ from datetime import datetime
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
     NEPTUNE_DATA_DIRECTORY,
-    OFFLINE_DIRECTORY,
     SYNC_DIRECTORY,
 )
 from neptune.new.internal.container_type import ContainerType
