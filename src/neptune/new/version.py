@@ -13,9 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from packaging import version
+import packaging
 
-from neptune._version import get_versions
+try:
+    from importlib.metadata import (
+        PackageNotFoundError,
+        version,
+    )
+except ImportError:
+    from importlib_metadata import (
+        PackageNotFoundError,
+        version,
+    )
 
-version = version.parse(get_versions()["version"])
-del get_versions
+
+try:
+    __version__ = version("neptune-client")
+    version = packaging.version.parse(__version__)
+except PackageNotFoundError:
+    # package is not installed
+    pass
