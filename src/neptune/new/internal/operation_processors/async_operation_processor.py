@@ -19,6 +19,7 @@ import logging
 import os
 import sys
 import threading
+from datetime import datetime
 from pathlib import Path
 from time import (
     monotonic,
@@ -29,6 +30,10 @@ from typing import (
     Optional,
 )
 
+from neptune.new.constants import (
+    ASYNC_DIRECTORY,
+    NEPTUNE_DATA_DIRECTORY,
+)
 from neptune.new.exceptions import NeptuneSynchronizationAlreadyStoppedException
 from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 from neptune.new.internal.container_type import ContainerType
@@ -36,9 +41,10 @@ from neptune.new.internal.disk_queue import DiskQueue
 from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
-from neptune.new.internal.operation_processors.operation_storage import AsyncOperationStorage
+from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from neptune.new.internal.threading.daemon import Daemon
 from neptune.new.internal.utils.logger import logger
+from neptune.new.sync.utils import create_dir_name
 
 # pylint: disable=protected-access
 
@@ -58,7 +64,7 @@ class AsyncOperationProcessor(OperationProcessor):
         sleep_time: float = 5,
         batch_size: int = 1000,
     ):
-        self._operation_storage = AsyncOperationStorage(container_id, container_type)
+        self._operation_storage = OperationStorage(self._init_data_path(container_id, container_type))
 
         self._queue = DiskQueue(
             dir_path=Path(self._operation_storage.data_path),
@@ -85,6 +91,14 @@ class AsyncOperationProcessor(OperationProcessor):
                 os.register_at_fork(after_in_child=self._handle_fork_in_child)
             except AttributeError:
                 pass
+
+    @staticmethod
+    def _init_data_path(container_id: UniqueId, container_type: ContainerType):
+        now = datetime.now()
+        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{create_dir_name(container_type, container_id)}"
+        data_path = f"{container_dir}/exec-{now.timestamp()}-{now}"
+        data_path = data_path.replace(" ", "_").replace(":", ".")
+        return data_path
 
     def _handle_fork_in_child(self):
         self._drop_operations = True
