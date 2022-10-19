@@ -13,7 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune._version import get_versions
+try:
+    from importlib.metadata import (
+        PackageNotFoundError,
+        version,
+    )
+except ImportError:
+    from importlib_metadata import PackageNotFoundError, version
+
 from neptune.legacy import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
@@ -47,4 +54,8 @@ from neptune.legacy import (
     stop,
 )
 
-__version__ = get_versions()["version"]
+try:
+    __version__ = version("neptune-client")
+except PackageNotFoundError:
+    # package is not installed
+    pass
