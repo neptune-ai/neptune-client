@@ -59,7 +59,7 @@ def _run_post_processing(spec):
     processed_uris = {
         uri
         for uri in spec.resolver.store
-        if uri == spec.origin_url or re.match(r"http://json-schema.org/draft-\d+/schema", uri)
+        if uri == spec.origin_url or re.match(r"http(s)?://json-schema\.org/draft(/\d{4})?-\d+/(schema|meta/.*)", uri)
     }
     additional_uri = _get_unprocessed_uri(spec, processed_uris)
     while additional_uri is not None:
@@ -73,5 +73,9 @@ def _run_post_processing(spec):
         additional_uri = _get_unprocessed_uri(spec, processed_uris)
 
 
-def patch_bravado_spec():
+# Issue: https://github.com/Yelp/bravado-core/issues/388
+# Bravado currently makes additional requests to `json-schema.org` in order to gather mission schemas
+# This makes `neptune-client` unable to run without internet connection or with a many security policies
+def patch():
+    # pylint: disable=protected-access
     bravado_core.model._run_post_processing = _run_post_processing

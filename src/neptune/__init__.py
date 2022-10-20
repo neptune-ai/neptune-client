@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from neptune._version import get_versions
+from neptune.common.patches import apply_patches
 from neptune.legacy import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
@@ -48,3 +49,6 @@ from neptune.legacy import (
 )
 
 __version__ = get_versions()["version"]
+
+# Apply patches of external libraries
+apply_patches()
