@@ -39,13 +39,17 @@ class S3ArtifactDriver(ArtifactDriver):
 
     @staticmethod
     def get_boto_resource():
-        access_key_id = os.getenv("S3_ACCESS_KEY_ID")
-        secret_access_key = os.getenv("S3_SECRET_ACCESS_KEY")
+        """
+        User might want to use other than `AWS` `S3` providers, so we should be able to override `endpoint_url`.
+        Unfortunately `boto3` doesn't support this parameter in configuration, so we'll have to create our env variable.
+        boto3 supported config envs:
+         * https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables
+        boto3 `endpoint_url` support PR:
+         * https://github.com/boto/boto3/pull/2746
+        """
         endpoint_url = os.getenv("S3_ENDPOINT_URL")
         return boto3.resource(
             service_name="s3",
-            aws_access_key_id=access_key_id,
-            aws_secret_access_key=secret_access_key,
             endpoint_url=endpoint_url,
         )
 
