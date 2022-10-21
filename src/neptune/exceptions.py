@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
+# flake8: noqa
 from neptune.common.exceptions import (
     EMPTY_STYLES,
     UNIX_STYLES,

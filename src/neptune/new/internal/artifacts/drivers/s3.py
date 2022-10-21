@@ -81,7 +81,7 @@ class S3ArtifactDriver(ArtifactDriver):
 
                 remote_key = remote_object.key
                 destination = pathlib.PurePosixPath(destination or "")
-                relative_file_path = remote_key[len(prefix.lstrip(".")) :].lstrip("/")
+                relative_file_path = remote_key[len(prefix.lstrip(".")):].lstrip("/")
 
                 file_path = destination / relative_file_path
 

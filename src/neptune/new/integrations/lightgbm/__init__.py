@@ -16,7 +16,7 @@
 
 try:
     # pylint: disable=import-error
-    from neptune_lightgbm.impl import *
+    from neptune_lightgbm.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_lightgbm":
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException

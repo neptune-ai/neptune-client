@@ -130,7 +130,7 @@ class TestChannelsValuesSender(unittest.TestCase):
                             channel_name=self._TEXT_CHANNEL.name,
                             channel_type=self._TEXT_CHANNEL.channelType,
                             channel_namespace=ChannelNamespace.USER,
-                            channel_values=channels_values[0 : self._BATCH_SIZE],
+                            channel_values=channels_values[0: self._BATCH_SIZE],
                         )
                     ]
                 ),
@@ -141,7 +141,7 @@ class TestChannelsValuesSender(unittest.TestCase):
                             channel_name=self._TEXT_CHANNEL.name,
                             channel_type=self._TEXT_CHANNEL.channelType,
                             channel_namespace=ChannelNamespace.USER,
-                            channel_values=channels_values[self._BATCH_SIZE : self._BATCH_SIZE * 2],
+                            channel_values=channels_values[self._BATCH_SIZE: self._BATCH_SIZE * 2],
                         )
                     ]
                 ),
@@ -152,7 +152,7 @@ class TestChannelsValuesSender(unittest.TestCase):
                             channel_name=self._TEXT_CHANNEL.name,
                             channel_type=self._TEXT_CHANNEL.channelType,
                             channel_namespace=ChannelNamespace.USER,
-                            channel_values=channels_values[self._BATCH_SIZE * 2 : self._BATCH_SIZE * 3],
+                            channel_values=channels_values[self._BATCH_SIZE * 2: self._BATCH_SIZE * 3],
                         )
                     ]
                 ),
@@ -191,7 +191,7 @@ class TestChannelsValuesSender(unittest.TestCase):
                             channel_name=self._IMAGE_CHANNEL.name,
                             channel_type=self._IMAGE_CHANNEL.channelType,
                             channel_namespace=ChannelNamespace.USER,
-                            channel_values=channels_values[0 : self._IMAGES_BATCH_SIZE],
+                            channel_values=channels_values[0: self._IMAGES_BATCH_SIZE],
                         )
                     ]
                 ),
@@ -202,7 +202,7 @@ class TestChannelsValuesSender(unittest.TestCase):
                             channel_name=self._IMAGE_CHANNEL.name,
                             channel_type=self._IMAGE_CHANNEL.channelType,
                             channel_namespace=ChannelNamespace.USER,
-                            channel_values=channels_values[self._IMAGES_BATCH_SIZE : self._IMAGES_BATCH_SIZE * 2],
+                            channel_values=channels_values[self._IMAGES_BATCH_SIZE: self._IMAGES_BATCH_SIZE * 2],
                         )
                     ]
                 ),
@@ -213,7 +213,7 @@ class TestChannelsValuesSender(unittest.TestCase):
                             channel_name=self._IMAGE_CHANNEL.name,
                             channel_type=self._IMAGE_CHANNEL.channelType,
                             channel_namespace=ChannelNamespace.USER,
-                            channel_values=channels_values[self._IMAGES_BATCH_SIZE * 2 :],
+                            channel_values=channels_values[self._IMAGES_BATCH_SIZE * 2:],
                         )
                     ]
                 ),

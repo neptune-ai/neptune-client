@@ -37,42 +37,42 @@ class TestFile(TestAttributeBase):
         self.assertIs(file.file_type, FileType.LOCAL_FILE)
         self.assertEqual("some/path.ext", file.path)
         with self.assertRaises(NeptuneException):
-            dummy = file.content
+            _ = file.content
         self.assertEqual("ext", file.extension)
 
         file = File("some/path.txt.ext")
         self.assertIs(file.file_type, FileType.LOCAL_FILE)
         self.assertEqual("some/path.txt.ext", file.path)
         with self.assertRaises(NeptuneException):
-            dummy = file.content
+            _ = file.content
         self.assertEqual("ext", file.extension)
 
         file = File("so.me/path")
         self.assertIs(file.file_type, FileType.LOCAL_FILE)
         self.assertEqual("so.me/path", file.path)
         with self.assertRaises(NeptuneException):
-            dummy = file.content
+            _ = file.content
         self.assertEqual("", file.extension)
 
         file = File("some/path.ext", extension="txt")
         self.assertIs(file.file_type, FileType.LOCAL_FILE)
         self.assertEqual("some/path.ext", file.path)
         with self.assertRaises(NeptuneException):
-            dummy = file.content
+            _ = file.content
         self.assertEqual("txt", file.extension)
 
     def test_create_from_string_content(self):
         file = File.from_content("some_content")
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual("some_content".encode("utf-8"), file.content)
         self.assertEqual("txt", file.extension)
 
         file = File.from_content("some_content", extension="png")
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual("some_content".encode("utf-8"), file.content)
         self.assertEqual("png", file.extension)
 
@@ -80,14 +80,14 @@ class TestFile(TestAttributeBase):
         file = File.from_content(b"some_content")
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"some_content", file.content)
         self.assertEqual("bin", file.extension)
 
         file = File.from_content(b"some_content", extension="png")
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"some_content", file.content)
         self.assertEqual("png", file.extension)
 
@@ -95,7 +95,7 @@ class TestFile(TestAttributeBase):
         file = File.from_stream(StringIO("aaabbbccc"))
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"aaabbbccc", file.content)
         self.assertEqual("txt", file.extension)
 
@@ -104,21 +104,21 @@ class TestFile(TestAttributeBase):
         file = File.from_stream(stream)
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"aaabbbccc", file.content)
         self.assertEqual("txt", file.extension)
 
         file = File.from_stream(StringIO("aaabbbccc"), extension="png")
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"aaabbbccc", file.content)
         self.assertEqual("png", file.extension)
 
         file = File.from_stream(StringIO("aaabbbccc"), seek=5)
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"bccc", file.content)
         self.assertEqual("txt", file.extension)
 
@@ -126,7 +126,7 @@ class TestFile(TestAttributeBase):
         file = File.from_stream(BytesIO(b"aaabbbccc"))
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"aaabbbccc", file.content)
         self.assertEqual("bin", file.extension)
 
@@ -135,21 +135,21 @@ class TestFile(TestAttributeBase):
         file = File.from_stream(stream)
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"aaabbbccc", file.content)
         self.assertEqual("bin", file.extension)
 
         file = File.from_stream(BytesIO(b"aaabbbccc"), extension="png")
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"aaabbbccc", file.content)
         self.assertEqual("png", file.extension)
 
         file = File.from_stream(BytesIO(b"aaabbbccc"), seek=5)
         self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            dummy = file.path
+            _ = file.path
         self.assertEqual(b"bccc", file.content)
         self.assertEqual("bin", file.extension)
 

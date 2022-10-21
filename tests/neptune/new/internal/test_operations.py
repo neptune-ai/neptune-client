@@ -18,7 +18,37 @@ import unittest
 import uuid
 
 from neptune.new.attributes import Integer
-from neptune.new.internal.operation import *
+from neptune.new.internal.operation import (
+    all_subclasses,
+    Operation,
+    datetime,
+    AssignFloat,
+    AssignInt,
+    AssignBool,
+    AssignString,
+    AssignDatetime,
+    AssignArtifact,
+    UploadFile,
+    UploadFileContent,
+    UploadFileSet,
+    DeleteFiles,
+    LogFloats,
+    LogStrings,
+    LogImages,
+    ImageValue,
+    ClearFloatLog,
+    ClearStringLog,
+    ClearImageLog,
+    ConfigFloatSeries,
+    AddStrings,
+    RemoveStrings,
+    ClearStringSet,
+    DeleteAttribute,
+    TrackFilesToArtifact,
+    ClearArtifact,
+    CopyAttribute,
+    ContainerType
+)
 
 # pylint: disable=protected-access
 

@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
-from neptune.legacy.sessions import Session
+from neptune.legacy.sessions import Session  # noqa: F401

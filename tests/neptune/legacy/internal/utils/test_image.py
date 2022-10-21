@@ -25,7 +25,6 @@ from neptune.common.utils import (
     IS_WINDOWS,
 )
 
-matplotlib.use("agg")
 from uuid import uuid4
 
 import numpy
@@ -37,6 +36,7 @@ from neptune.legacy.internal.utils.image import (
     _get_pil_image_data,
     get_image_content,
 )
+matplotlib.use("agg")
 
 
 class TestImage(unittest.TestCase):
@@ -108,7 +108,6 @@ class TestImage(unittest.TestCase):
         pyplot.ylabel("some interesting numbers")
         figure = pyplot.gcf()
         figure.canvas.draw()
-        expected_image = Image.frombytes("RGB", figure.canvas.get_width_height(), figure.canvas.tostring_rgb())
 
         # expect
         self.assertEqual(get_image_content(figure), _get_figure_as_image(figure))

@@ -13,6 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "MetadataContainer",
+    "Model",
+    "ModelVersion",
+    "Project",
+    "Run",
+]
 
 from neptune.new.metadata_containers.metadata_container import MetadataContainer
 from neptune.new.metadata_containers.model import Model

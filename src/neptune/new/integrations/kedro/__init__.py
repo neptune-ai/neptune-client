@@ -16,7 +16,7 @@
 
 try:
     # pylint: disable=import-error
-    from kedro_neptune import *
+    from kedro_neptune import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "kedro_neptune":
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException

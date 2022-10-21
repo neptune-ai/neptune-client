@@ -14,4 +14,5 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
+# flake8: noqa
 from neptune.common.experiments import Experiment

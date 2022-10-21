@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
+# flake8: noqa
 from neptune.common.utils import (
     IS_MACOS,
     IS_WINDOWS,

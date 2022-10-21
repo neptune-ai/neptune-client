@@ -13,6 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "init",
+    "init_model",
+    "init_model_version",
+    "get_project",
+    "init_project",
+    "init_run",
+    "Mode",
+    "RunMode",
+]
+
+
 from neptune.new.internal.init.model import init_model
 from neptune.new.internal.init.model_version import init_model_version
 from neptune.new.internal.init.project import (

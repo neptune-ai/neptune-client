@@ -24,7 +24,7 @@ from typing import (
 
 # backwards compatibility
 # pylint: disable=unused-import
-from neptune.common.exceptions import NeptuneException
+from neptune.common.exceptions import NeptuneException  # noqa: F401
 from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
 from neptune.new.attributes.constants import SYSTEM_STAGE_ATTRIBUTE_PATH

@@ -13,5 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "Logger"
+]
 
 from neptune.new.logging.logger import Logger

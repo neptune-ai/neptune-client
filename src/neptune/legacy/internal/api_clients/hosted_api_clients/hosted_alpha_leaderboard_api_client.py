@@ -570,7 +570,7 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 data_transformer = deprecated_img_to_alpha_image
             else:
                 # otherwise use identity function as transformer
-                data_transformer = lambda e: e
+                data_transformer = lambda e: e  # noqa: E731
 
             ch_values = [
                 alpha_operation.LogSeriesValue(

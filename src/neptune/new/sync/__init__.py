@@ -24,23 +24,23 @@ from typing import (
 
 import click
 
-from neptune.common.exceptions import NeptuneException
+from neptune.common.exceptions import NeptuneException  # noqa: F401
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
-from neptune.new.exceptions import (
+from neptune.new.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
     NeptuneConnectionLostException,
     ProjectNotFound,
     RunNotFound,
 )
-from neptune.new.internal.backends.api_model import (
+from neptune.new.internal.backends.api_model import (  # noqa: F401
     ApiExperiment,
     Project,
 )
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend  # noqa: F401
 from neptune.new.internal.credentials import Credentials
-from neptune.new.internal.disk_queue import DiskQueue
-from neptune.new.internal.operation import Operation
+from neptune.new.internal.disk_queue import DiskQueue  # noqa: F401
+from neptune.new.internal.operation import Operation  # noqa: F401
 from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.status import StatusRunner
 from neptune.new.sync.sync import SyncRunner

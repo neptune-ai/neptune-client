@@ -134,7 +134,7 @@ def is_nan_or_inf(value):
 def is_notebook():
     try:
         # pylint: disable=pointless-statement,undefined-variable
-        get_ipython
+        get_ipython  # noqa: F821
         return True
     except Exception:
         return False
@@ -222,7 +222,8 @@ def get_git_info(repo_path=None):
             active_branch=active_branch,
             remote_urls=remote_urls,
         )
-    except:  # pylint: disable=bare-except
+    # pylint: disable=bare-except
+    except:  # noqa: E722
         return None
 
 
@@ -260,7 +261,7 @@ def with_api_exceptions_handler(func):
                 return func(*args, **kwargs)
             except requests.exceptions.SSLError:
                 raise NeptuneSSLVerificationError()
-            except HTTPServiceUnavailable as e:
+            except HTTPServiceUnavailable:
                 if retry >= 6:
                     _logger.warning("Experiencing connection interruptions. Reestablishing communication with Neptune.")
                 time.sleep(2**retry)

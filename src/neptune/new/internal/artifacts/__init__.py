@@ -13,4 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .drivers import *
+__all__ = [
+    "LocalArtifactDriver",
+    "S3ArtifactDriver",
+]
+
+from neptune.new.internal.artifacts.drivers import (
+    S3ArtifactDriver,
+    LocalArtifactDriver
+)

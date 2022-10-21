@@ -16,7 +16,7 @@
 
 try:
     # pylint: disable=import-error
-    from neptune_sacred.impl import *
+    from neptune_sacred.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_sacred":
         from neptune.new.exceptions import NeptuneIntegrationNotInstalledException
