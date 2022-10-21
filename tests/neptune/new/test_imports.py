@@ -290,10 +290,7 @@ from neptune.new.integrations.python_logger import (
     Run,
     RunState,
 )
-from neptune.new.logging.logger import (
-    Logger,
-    Run,
-)
+from neptune.new.logging.logger import Logger
 from neptune.new.project import Project
 from neptune.new.run import (
     Attribute,
