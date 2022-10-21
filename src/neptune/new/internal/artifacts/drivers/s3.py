@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import pathlib
 import typing
 from datetime import datetime
@@ -35,6 +36,18 @@ from neptune.new.internal.artifacts.types import (
 
 class S3ArtifactDriver(ArtifactDriver):
     DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+    @staticmethod
+    def get_boto_resource():
+        access_key_id = os.getenv("S3_ACCESS_KEY_ID")
+        secret_access_key = os.getenv("S3_SECRET_ACCESS_KEY")
+        endpoint_url = os.getenv("S3_ENDPOINT_URL")
+        return boto3.resource(
+            service_name="s3",
+            aws_access_key_id=access_key_id,
+            aws_secret_access_key=secret_access_key,
+            endpoint_url=endpoint_url,
+        )
 
     @staticmethod
     def get_type() -> str:
@@ -69,7 +82,7 @@ class S3ArtifactDriver(ArtifactDriver):
             )
 
         # pylint: disable=no-member
-        remote_storage = boto3.resource("s3").Bucket(bucket_name)
+        remote_storage = cls.get_boto_resource().Bucket(bucket_name)
 
         stored_files: typing.List[ArtifactFileData] = list()
 
@@ -115,7 +128,7 @@ class S3ArtifactDriver(ArtifactDriver):
         url = urlparse(location)
         bucket_name, path = url.netloc, url.path.lstrip("/")
 
-        remote_storage = boto3.resource("s3")
+        remote_storage = cls.get_boto_resource()
         try:
             # pylint: disable=no-member
             bucket = remote_storage.Bucket(bucket_name)
