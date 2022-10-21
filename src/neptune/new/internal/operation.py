@@ -14,8 +14,10 @@
 # limitations under the License.
 #
 import abc
+import os
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Generic,
@@ -30,6 +32,11 @@ from typing import (
 from neptune.common.exceptions import InternalClientError
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.internal.utils import base64_encode
+from neptune.new.types.atoms.file import (
+    File,
+    FileType,
+)
 
 if TYPE_CHECKING:
     from neptune.new.attributes.attribute import Attribute
@@ -180,6 +187,25 @@ class UploadFile(Operation):
 
     ext: str
     file_path: str
+    clean_after_upload: bool = False
+
+    @staticmethod
+    def of_file(value: File, attribute_path: List[str], upload_path: Path):
+        if value.file_type is FileType.LOCAL_FILE:
+            operation = UploadFile(attribute_path, ext=value.extension, file_path=os.path.abspath(value.path))
+        elif value.file_type is FileType.IN_MEMORY:
+            operation = UploadFileContent(
+                attribute_path,
+                ext=value.extension,
+                file_content=base64_encode(value.content),
+            )
+        else:
+            raise ValueError(f"Unexpected FileType: {value.file_type}")
+        return operation
+
+    def clean(self):
+        if self.clean_after_upload:
+            os.remove(self.file_path)
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_upload_file(self)
