@@ -108,7 +108,6 @@ from neptune.common.exceptions import (
     NeptuneException,
     NeptuneInvalidApiTokenException,
 )
-
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import (

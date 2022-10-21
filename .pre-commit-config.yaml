@@ -1,22 +1,22 @@
 repos:
-#  - repo: https://github.com/pre-commit/pre-commit-hooks
-#    rev: v2.3.0
-#    hooks:
-#      - id: check-yaml
-#      - id: end-of-file-fixer
-#      - id: trailing-whitespace
-#  - repo: https://github.com/pycqa/isort
-#    rev: 5.10.1
-#    hooks:
-#      - id: isort
-#        args:
-#          - "--profile"
-#          - "black"
-#          - "--filter-files"
-#          - "--skip"
-#          - "tests/neptune/test_imports.py"
-#          - "--line-length=120"
-#          - "--force-grid-wrap=2"
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v2.3.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+  - repo: https://github.com/pycqa/isort
+    rev: 5.10.1
+    hooks:
+      - id: isort
+        args:
+          - "--profile"
+          - "black"
+          - "--filter-files"
+          - "--skip"
+          - "tests/neptune/test_imports.py"
+          - "--line-length=120"
+          - "--force-grid-wrap=2"
 #  - repo: https://github.com/psf/black
 #    rev: 22.3.0
 #    hooks:
