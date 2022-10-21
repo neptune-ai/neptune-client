@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "HostedNeptuneBackendApiClient",
-    "OfflineBackendApiClient"
-]
+__all__ = ["HostedNeptuneBackendApiClient", "OfflineBackendApiClient"]
 
 from neptune.legacy.internal.api_clients.hosted_api_clients.hosted_backend_api_client import (
     HostedNeptuneBackendApiClient,

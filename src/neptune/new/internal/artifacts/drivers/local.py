@@ -60,7 +60,7 @@ class LocalArtifactDriver(ArtifactDriver):
     def get_tracked_files(cls, path: str, destination: str = None) -> typing.List[ArtifactFileData]:
         file_protocol_prefix = "file://"
         if path.startswith(file_protocol_prefix):
-            path = path[len(file_protocol_prefix):]
+            path = path[len(file_protocol_prefix) :]
 
         if "*" in path:
             raise NeptuneUnsupportedArtifactFunctionalityException(

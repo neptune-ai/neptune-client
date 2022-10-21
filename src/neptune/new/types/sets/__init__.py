@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "StringSet"
-]
+__all__ = ["StringSet"]
 
 from .string_set import StringSet

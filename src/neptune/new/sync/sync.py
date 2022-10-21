@@ -230,7 +230,7 @@ class SyncRunner(AbstractBackendRunner):
         self.sync_selected_registered_containers(base_path, non_offline_container_names)
 
         offline_dirs = [
-            UniqueId(name[len(OFFLINE_NAME_PREFIX):])
+            UniqueId(name[len(OFFLINE_NAME_PREFIX) :])
             for name in container_names
             if name.startswith(OFFLINE_NAME_PREFIX)
         ]

@@ -13,10 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-__all__ = [
-    "LocalArtifactDriver",
-    "S3ArtifactDriver"
-]
+__all__ = ["LocalArtifactDriver", "S3ArtifactDriver"]
 
 from neptune.new.internal.artifacts.drivers.local import LocalArtifactDriver
 from neptune.new.internal.artifacts.drivers.s3 import S3ArtifactDriver

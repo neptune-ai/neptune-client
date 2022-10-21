@@ -16,8 +16,6 @@
 
 # backwards compatibility
 # pylint: disable=unused-import
-__all__ = [
-    "Project"
-]
+__all__ = ["Project"]
 
 from neptune.new.metadata_containers import Project

@@ -190,7 +190,7 @@ class DiskQueue(Generic[T]):
         log_files = glob("{}/data-*.log".format(self._dir_path))
         if not log_files:
             return 1, 1
-        return sorted([int(file[len(str(self._dir_path)) + 6: -4]) for file in log_files])
+        return sorted([int(file[len(str(self._dir_path)) + 6 : -4]) for file in log_files])
 
     def _get_first_and_last_log_file_version(self) -> (int, int):
         log_versions = self._get_all_log_file_versions()
