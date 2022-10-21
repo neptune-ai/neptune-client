@@ -17,6 +17,7 @@ __all__ = [
     "OperationStorage",
 ]
 
+import os
 from pathlib import Path
 
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
@@ -28,6 +29,10 @@ from neptune.new.sync.utils import create_dir_name
 class OperationStorage:
     def __init__(self, data_path: str):
         self._data_path = Path(data_path)
+
+        # initialize directories
+        os.makedirs(self.data_path)
+        os.makedirs(self.upload_path)
 
     @property
     def data_path(self) -> Path:

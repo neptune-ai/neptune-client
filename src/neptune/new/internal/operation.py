@@ -60,6 +60,9 @@ class Operation:
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         pass
 
+    def clean(self):
+        pass
+
     # pylint: disable=unused-argument
     def to_dict(self) -> dict:
         return {"type": self.__class__.__name__, "path": self.path}
@@ -189,15 +192,22 @@ class UploadFile(Operation):
     file_path: str
     clean_after_upload: bool = False
 
-    @staticmethod
-    def of_file(value: File, attribute_path: List[str], upload_path: Path):
+    @classmethod
+    def of_file(cls, value: File, attribute_path: List[str], upload_path: Path):
         if value.file_type is FileType.LOCAL_FILE:
-            operation = UploadFile(attribute_path, ext=value.extension, file_path=os.path.abspath(value.path))
-        elif value.file_type is FileType.IN_MEMORY:
-            operation = UploadFileContent(
-                attribute_path,
+            operation = UploadFile(
+                path=attribute_path,
                 ext=value.extension,
-                file_content=base64_encode(value.content),
+                file_path=os.path.abspath(value.path),
+            )
+        elif value.file_type is FileType.IN_MEMORY:
+            tmp_file_path = cls.get_upload_path(attribute_path, value.extension, upload_path)
+            value._save(tmp_file_path)
+            operation = UploadFile(
+                path=attribute_path,
+                ext=value.extension,
+                file_path=os.path.abspath(tmp_file_path),
+                clean_after_upload=True,
             )
         else:
             raise ValueError(f"Unexpected FileType: {value.file_type}")
@@ -214,11 +224,19 @@ class UploadFile(Operation):
         ret = super().to_dict()
         ret["ext"] = self.ext
         ret["file_path"] = self.file_path
+        ret["clean_after_upload"] = self.clean_after_upload
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> "UploadFile":
-        return UploadFile(data["path"], data["ext"], data["file_path"])
+        return UploadFile(data["path"], data["ext"], data["file_path"], data.get("clean_after_upload", False))
+
+    @staticmethod
+    def get_upload_path(attribute_path: List[str], extension: str, upload_path: Path):
+        now = datetime.now()
+        tmp_file_name = f"{'_'.join(attribute_path)}-{now.timestamp()}-{now}.{extension}"
+        tmp_file_name = tmp_file_name.replace(" ", "_").replace(":", ".")
+        return upload_path / tmp_file_name
 
 
 @dataclass

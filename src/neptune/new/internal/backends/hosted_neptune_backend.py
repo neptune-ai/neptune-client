@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import itertools
 import logging
 import os
 import re
@@ -472,15 +473,21 @@ class HostedNeptuneBackend(NeptuneBackend):
         )
 
         errors.extend(artifact_operations_errors)
-        preprocessed_operations.other_operations.extend(assign_artifact_operations)
 
         errors.extend(
             self._execute_operations(
                 container_id,
                 container_type,
-                operations=preprocessed_operations.other_operations,
+                operations=itertools.chain(assign_artifact_operations, preprocessed_operations.other_operations),
             )
         )
+
+        for op in itertools.chain(
+            preprocessed_operations.upload_operations,
+            assign_artifact_operations,
+            preprocessed_operations.other_operations,
+        ):
+            op.clean()
 
         return (
             operations_preprocessor.processed_ops_count + dropped_count,
@@ -607,7 +614,7 @@ class HostedNeptuneBackend(NeptuneBackend):
         self,
         container_id: UniqueId,
         container_type: ContainerType,
-        operations: List[Operation],
+        operations: Iterable[Operation],
     ) -> List[MetadataInconsistency]:
         kwargs = {
             "experimentId": container_id,
