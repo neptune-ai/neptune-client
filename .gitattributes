@@ -1,1 +1,1 @@
-neptune/_version.py export-subst
+src/neptune/_version.py export-subst

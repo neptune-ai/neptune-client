@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune._version import get_versions
 from neptune.common.patches import apply_patches
 from neptune.legacy import (
     ANONYMOUS,
@@ -47,8 +46,8 @@ from neptune.legacy import (
     set_property,
     stop,
 )
-
-__version__ = get_versions()["version"]
+from neptune.version import __version__
 
 # Apply patches of external libraries
 apply_patches()
+
