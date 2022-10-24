@@ -32,7 +32,6 @@ from typing import (
 from neptune.common.exceptions import InternalClientError
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.internal.utils import base64_encode
 from neptune.new.types.atoms.file import (
     File,
     FileType,
@@ -202,6 +201,7 @@ class UploadFile(Operation):
             )
         elif value.file_type is FileType.IN_MEMORY:
             tmp_file_path = cls.get_upload_path(attribute_path, value.extension, upload_path)
+            # pylint: disable=protected-access
             value._save(tmp_file_path)
             operation = UploadFile(
                 path=attribute_path,
