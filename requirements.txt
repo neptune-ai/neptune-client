@@ -17,3 +17,4 @@ dataclasses>=0.6; python_version<"3.7"
 swagger-spec-validator>=2.7.4
 psutil
 jsonschema[format]<4.0.0
+importlib-metadata<4; python_version<"3.8.0"

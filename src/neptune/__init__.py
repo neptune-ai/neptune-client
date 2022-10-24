@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neptune._version import get_versions
 from neptune.legacy import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
@@ -46,5 +45,4 @@ from neptune.legacy import (
     set_property,
     stop,
 )
-
-__version__ = get_versions()["version"]
+from neptune.version import __version__

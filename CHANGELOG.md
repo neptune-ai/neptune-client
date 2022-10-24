@@ -3,6 +3,7 @@
 ### Fixes
 - Update jsonschema requirement with explicit `format` specifier ([#1010](https://github.com/neptune-ai/neptune-client/pull/1010))
 - Escape inputs to SQL in Artifact LocalFileHashStorage ([#1034](https://github.com/neptune-ai/neptune-client/pull/1034))
+- Version checking with importlib and versioneer config update ([#1048](https://github.com/neptune-ai/neptune-client/pull/1048))
 
 ### Changes
 - More consistent and strict way of git repository, source files and entrypoint detection ([#1007](https://github.com/neptune-ai/neptune-client/pull/1007))
