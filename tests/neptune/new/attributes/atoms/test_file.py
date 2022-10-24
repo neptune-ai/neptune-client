@@ -38,19 +38,18 @@ from neptune.new.attributes.file_set import (
 )
 from neptune.new.internal.operation import (
     UploadFile,
-    UploadFileContent,
     UploadFileSet,
 )
-from neptune.new.internal.utils import base64_encode
+from neptune.new.types.atoms.file import FileType
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFile(TestAttributeBase):
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_assign(self):
-        def get_tmp_file(tmp_upload_dir):
+        def get_tmp_uploaded_file(tmp_upload_dir):
             """Get tmp file to uploaded from `upload_path`
-            - here's assumption that we upload only one file per one path intest"""
+            - here's assumption that we upload only one file per one path in test"""
             uploaded_files = os.listdir(tmp_upload_dir)
             assert len(uploaded_files) == 1
             return f"{tmp_upload_dir}/{uploaded_files[0]}"
@@ -66,14 +65,14 @@ class TestFile(TestAttributeBase):
             ),
             (
                 FileVal.from_stream(StringIO(a_text)),
-                lambda attribute_path, tmp_path: UploadFile(
-                    attribute_path, ext="txt", file_path=get_tmp_file(tmp_path), clean_after_upload=True
+                lambda attribute_path, tmp_uploaded_file: UploadFile(
+                    attribute_path, ext="txt", file_path=tmp_uploaded_file, clean_after_upload=True
                 ),
             ),
             (
                 FileVal.from_stream(BytesIO(a_binary)),
-                lambda attribute_path, tmp_path: UploadFile(
-                    attribute_path, ext="bin", file_path=get_tmp_file(tmp_upload_dir), clean_after_upload=True
+                lambda attribute_path, tmp_uploaded_file: UploadFile(
+                    attribute_path, ext="bin", file_path=tmp_uploaded_file, clean_after_upload=True
                 ),
             ),
         ]
@@ -89,7 +88,14 @@ class TestFile(TestAttributeBase):
                 )
                 var = File(exp, path)
                 var.assign(value, wait=wait)
-                processor.enqueue_operation.assert_called_once_with(operation_factory(path, tmp_upload_dir), wait)
+
+                if value.file_type is not FileType.LOCAL_FILE:
+                    tmp_uploaded_file = get_tmp_uploaded_file(tmp_upload_dir)
+                    self.assertTrue(os.path.exists(tmp_uploaded_file))
+                else:
+                    tmp_uploaded_file = None
+
+                processor.enqueue_operation.assert_called_once_with(operation_factory(path, tmp_uploaded_file), wait)
 
     def test_assign_type_error(self):
         values = [55, None, []]
