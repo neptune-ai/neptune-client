@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from neptune.common.patches import apply_patches
 from neptune.legacy import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
@@ -46,3 +47,6 @@ from neptune.legacy import (
     stop,
 )
 from neptune.version import __version__
+
+# Apply patches of external libraries
+apply_patches()
