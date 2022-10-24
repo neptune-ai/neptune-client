@@ -50,4 +50,3 @@ from neptune.version import __version__
 
 # Apply patches of external libraries
 apply_patches()
-
