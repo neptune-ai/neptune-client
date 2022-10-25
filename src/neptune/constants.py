@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
+# flake8: noqa
 from neptune.legacy.constants import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,

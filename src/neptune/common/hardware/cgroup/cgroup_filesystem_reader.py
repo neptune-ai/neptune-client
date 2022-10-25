@@ -56,8 +56,8 @@ class CGroupFilesystemReader(object):
         :return: directory where given subsystem is mounted
         """
         with open("/proc/mounts", "r") as f:
-            for l in f.readlines():
-                split_line = re.split(r"\s+", l)
+            for line in f.readlines():
+                split_line = re.split(r"\s+", line)
                 mount_dir = split_line[1]
 
                 if "cgroup" in mount_dir:

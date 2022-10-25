@@ -30,8 +30,8 @@ class StdStreamWithUpload(object):
         self._stream.write(data)
         try:
             self._channel_writer.write(data)
-        # pylint:disable=bare-except
-        except:
+        # pylint: disable=bare-except
+        except:  # noqa: E722
             pass
 
     def isatty(self):

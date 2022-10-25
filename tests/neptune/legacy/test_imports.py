@@ -16,6 +16,7 @@
 # isort:skip
 # pylint: disable=unused-import,reimported,import-error,no-name-in-module
 # fmt: off
+# flake8: noqa
 import unittest
 
 from neptune.api_exceptions import (

@@ -16,6 +16,7 @@
 # isort:skip
 # pylint: disable=unused-import,reimported,import-error,no-name-in-module
 # fmt: off
+# flake8: noqa
 import unittest
 
 from neptune.management.exceptions import (
@@ -289,10 +290,7 @@ from neptune.new.integrations.python_logger import (
     Run,
     RunState,
 )
-from neptune.new.logging.logger import (
-    Logger,
-    Run,
-)
+from neptune.new.logging.logger import Logger
 from neptune.new.project import Project
 from neptune.new.run import (
     Attribute,

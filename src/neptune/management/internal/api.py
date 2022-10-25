@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-__all__ = (
+__all__ = [
     "get_project_list",
     "create_project",
     "delete_project",
@@ -27,7 +27,7 @@ __all__ = (
     "get_project_service_account_list",
     "get_workspace_service_account_list",
     "trash_objects",
-)
+]
 
 import os
 from typing import (
@@ -68,7 +68,7 @@ from neptune.management.internal.dto import (
     ServiceAccountDTO,
     WorkspaceMemberRoleDTO,
 )
-from neptune.management.internal.types import *
+from neptune.management.internal.types import ProjectVisibility
 from neptune.management.internal.utils import (
     extract_project_and_workspace,
     normalize_project_name,

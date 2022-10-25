@@ -28,6 +28,11 @@ repos:
       - id: insert-license
         files: ^src/neptune/new/.*\.py$
         args: ["--license-filepath", "src/neptune/license_header.txt"]
+  - repo: https://github.com/pycqa/flake8
+    rev: 5.0.4
+    hooks:
+      - id: flake8
+        args: ["--max-line-length", "120", "--extend-ignore", "E203"]
 exclude: |
   (?x)(
      ^tests/data/|

@@ -14,4 +14,5 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
+# flake8: noqa
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN

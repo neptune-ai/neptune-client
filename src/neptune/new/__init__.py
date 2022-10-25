@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# flake8: noqa
 
 """``neptune`` is a global object that you can use to start new tracked runs or re-connect to already existing ones.
 

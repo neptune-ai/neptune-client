@@ -16,6 +16,7 @@
 
 # backwards compatibility
 # pylint: disable=unused-import
+# flake8: noqa
 
 from neptune.new.attributes.attribute import Attribute
 from neptune.new.attributes.namespace import Namespace as NamespaceAttr

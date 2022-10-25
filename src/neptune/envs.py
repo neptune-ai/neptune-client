@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 # pylint: disable=unused-import
+# flake8: noqa
 from neptune.legacy.envs import (
     API_TOKEN_ENV_NAME,
     BACKEND,

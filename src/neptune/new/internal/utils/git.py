@@ -64,14 +64,16 @@ def get_git_info(repo_path=None):
             branch=active_branch,
             remotes=remote_urls,
         )
-    except:  # pylint: disable=bare-except
+    # pylint: disable=bare-except
+    except:  # noqa: E722
         return None
 
 
 def get_git_repo_path(initial_path: str) -> Optional[str]:
     try:
         return get_git_repo(initial_path).git_dir
-    except:  # pylint: disable=bare-except
+    # pylint: disable=bare-except
+    except:  # noqa: E722
         pass
 
 

@@ -13,6 +13,83 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "InternalClientError",
+    "NeptuneException",
+    "NeptuneInvalidApiTokenException",
+    "NeptuneApiException",
+    "MetadataInconsistency",
+    "MissingFieldException",
+    "TypeDoesNotSupportAttributeException",
+    "MalformedOperation",
+    "FileNotFound",
+    "FileUploadError",
+    "FileSetUploadError",
+    "ClientHttpError",
+    "MetadataContainerNotFound",
+    "ProjectNotFound",
+    "RunNotFound",
+    "ModelNotFound",
+    "ModelVersionNotFound",
+    "ExceptionWithProjectsWorkspacesListing",
+    "ContainerUUIDNotFound",
+    "RunUUIDNotFound",
+    "ProjectNotFoundWithSuggestions",
+    "AmbiguousProjectName",
+    "NeptuneMissingProjectNameException",
+    "InactiveContainerException",
+    "InactiveRunException",
+    "InactiveModelException",
+    "InactiveModelVersionException",
+    "InactiveProjectException",
+    "NeptuneMissingApiTokenException",
+    "CannotSynchronizeOfflineRunsWithoutProject",
+    "NeedExistingExperimentForReadOnlyMode",
+    "NeedExistingRunForReadOnlyMode",
+    "NeedExistingModelForReadOnlyMode",
+    "NeedExistingModelVersionForReadOnlyMode",
+    "NeptuneParametersCollision",
+    "NeptuneWrongInitParametersException",
+    "NeptuneRunResumeAndCustomIdCollision",
+    "NeptuneClientUpgradeRequiredError",
+    "NeptuneMissingRequiredInitParameter",
+    "CannotResolveHostname",
+    "NeptuneSSLVerificationError",
+    "NeptuneConnectionLostException",
+    "InternalServerError",
+    "Unauthorized",
+    "Forbidden",
+    "NeptuneOfflineModeException",
+    "NeptuneOfflineModeFetchException",
+    "NeptuneOfflineModeChangeStageException",
+    "NeptuneProtectedPathException",
+    "NeptuneCannotChangeStageManually",
+    "OperationNotSupported",
+    "NeptuneLegacyProjectException",
+    "NeptuneUninitializedException",
+    "NeptuneIntegrationNotInstalledException",
+    "NeptuneLimitExceedException",
+    "NeptuneFieldCountLimitExceedException",
+    "NeptuneStorageLimitException",
+    "FetchAttributeNotFoundException",
+    "ArtifactNotFoundException",
+    "PlotlyIncompatibilityException",
+    "NeptunePossibleLegacyUsageException",
+    "NeptuneLegacyIncompatibilityException",
+    "NeptuneUnhandledArtifactSchemeException",
+    "NeptuneUnhandledArtifactTypeException",
+    "NeptuneLocalStorageAccessException",
+    "NeptuneRemoteStorageCredentialsException",
+    "NeptuneRemoteStorageAccessException",
+    "ArtifactUploadingError",
+    "NeptuneUnsupportedArtifactFunctionalityException",
+    "NeptuneEmptyLocationException",
+    "NeptuneFeatureNotAvailableException",
+    "NeptuneObjectCreationConflict",
+    "NeptuneModelKeyAlreadyExistsError",
+    "NeptuneSynchronizationAlreadyStoppedException",
+]
+
 from typing import (
     List,
     Optional,
@@ -25,16 +102,12 @@ from packaging.version import Version
 from neptune.common.envs import API_TOKEN_ENV_NAME
 
 # Backward compatibility import
-# pylint: disable=unused-import
-# fmt: off
 from neptune.common.exceptions import (
     STYLES,
     InternalClientError,
     NeptuneException,
     NeptuneInvalidApiTokenException,
 )
-
-# fmt: on
 from neptune.new import envs
 from neptune.new.envs import CUSTOM_RUN_ID_ENV_NAME
 from neptune.new.internal.backends.api_model import (
@@ -71,7 +144,7 @@ There are two possible reasons:
         {python}run.sync(){end}
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
+"""  # noqa: E501
         self._msg = message.format(field_path=field_path, **STYLES)
         super().__init__(self._msg)
 
@@ -522,7 +595,7 @@ You may also want to check the following docs page:
     - https://docs.neptune.ai/api/universal/#initialization-methods
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
+"""  # noqa: E501
         super().__init__(
             message.format(
                 parameter1=parameter1,
@@ -554,7 +627,7 @@ You may also want to check the following docs page:
     - https://docs.neptune.ai/logging/custom_run_id/
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
+"""  # noqa: E501
         super().__init__(message.format(custom_id_env=CUSTOM_RUN_ID_ENV_NAME, **STYLES))
 
 
@@ -683,7 +756,7 @@ You may also want to check the following docs page:
 
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
+"""  # noqa: E501
         super().__init__(message.format(**STYLES))
 
 
@@ -712,7 +785,7 @@ You may also want to check the following docs page:
     - https://docs.neptune.ai/api/connection_modes/#connectivity-issues
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
+"""  # noqa: E501
         super().__init__(message.format(**STYLES))
 
 
@@ -964,7 +1037,7 @@ To continue uploading the metadata:
        {bash}neptune sync -p project_name{end}
 
 For more details, see https://docs.neptune.ai/usage/best_practices
-"""
+"""  # noqa: E501
         super().__init__(
             message.format(
                 **STYLES,
@@ -991,7 +1064,7 @@ What should I do?
 You may also want to check the following docs page:
     - https://docs.neptune.ai/api/connection_modes
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
+"""  # noqa: E501
         super().__init__(message.format(**STYLES))
 
 
@@ -1097,7 +1170,7 @@ What can I do?
     https://neptune.ai/blog/neptune-new
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
-"""
+"""  # noqa: E501
         super().__init__(message.format(**STYLES))
 
 
