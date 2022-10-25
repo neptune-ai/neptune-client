@@ -13,8 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from packaging.version import parse
+__all__ = ["apply_patches"]
 
-from neptune.version import __version__
+from neptune.common.patches.bravado import patch as bravado_patch
 
-version = parse(__version__)
+patches = [bravado_patch]
+
+
+# Apply patches when importing a patching module
+# Should be called before usages of patched objects
+def apply_patches():
+    for patch in patches:
+        patch()

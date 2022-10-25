@@ -3,6 +3,8 @@
 ### Fixes
 - Update jsonschema requirement with explicit `format` specifier ([#1010](https://github.com/neptune-ai/neptune-client/pull/1010))
 - Escape inputs to SQL in Artifact LocalFileHashStorage ([#1034](https://github.com/neptune-ai/neptune-client/pull/1034))
+- `jsonschema` requirements unpined and patched related Bravado issue ([#1051](https://github.com/neptune-ai/neptune-client/pull/1051))
+- Version checking with importlib and versioneer config update ([#1048](https://github.com/neptune-ai/neptune-client/pull/1048))
 
 ### Changes
 - More consistent and strict way of git repository, source files and entrypoint detection ([#1007](https://github.com/neptune-ai/neptune-client/pull/1007))
@@ -11,6 +13,7 @@
 - `get_last_run`, `get_run_url`, `get_project` and `neptune.init` marked as deprecated ([#1011](https://github.com/neptune-ai/neptune-client/pull/1011))
 - Deprecated implicit casting of objects to strings with `log` and `assign` operations ([#1028](https://github.com/neptune-ai/neptune-client/pull/1028))
 - Internally extracted legacy client to `legacy` submodule ([#1039](https://github.com/neptune-ai/neptune-client/pull/1039))
+- Marked legacy client as deprecated ([#1047](https://github.com/neptune-ai/neptune-client/pull/1047))
 
 ## neptune-client 0.16.9
 

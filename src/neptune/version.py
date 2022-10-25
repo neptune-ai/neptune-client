@@ -13,8 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from packaging.version import parse
+import sys
 
-from neptune.version import __version__
+if sys.version_info >= (3, 8):
+    from importlib.metadata import (
+        PackageNotFoundError,
+        version,
+    )
+else:
+    from importlib_metadata import (
+        PackageNotFoundError,
+        version,
+    )
 
-version = parse(__version__)
+try:
+    __version__ = version("neptune-client")
+except PackageNotFoundError:
+    # package is not installed
+    pass

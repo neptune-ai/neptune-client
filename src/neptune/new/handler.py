@@ -22,6 +22,8 @@ from typing import (
     Union,
 )
 
+from neptune.common.deprecation import warn_once
+
 # backwards compatibility
 # pylint: disable=unused-import
 from neptune.common.exceptions import NeptuneException  # noqa: F401
@@ -48,7 +50,6 @@ from neptune.new.internal.utils import (
     verify_collection_type,
     verify_type,
 )
-from neptune.new.internal.utils.deprecation import warn_once
 from neptune.new.internal.utils.paths import (
     join_paths,
     parse_path,

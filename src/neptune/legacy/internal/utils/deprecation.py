@@ -13,8 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from packaging.version import parse
+from functools import wraps
 
-from neptune.version import __version__
+from neptune.common.deprecation import warn_once
 
-version = parse(__version__)
+
+def legacy_client_deprecation(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        warn_once(
+            message="You're using a legacy version of Neptune client."
+            " It will be moved to `neptune.legacy` since `neptune-client==1.0.0`.",
+            stack_level=2,
+        )
+        return func(*args, **kwargs)
+
+    return inner

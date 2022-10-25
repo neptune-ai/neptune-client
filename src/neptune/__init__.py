@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 # flake8: noqa
-from neptune._version import get_versions
+from neptune.common.patches import apply_patches
 from neptune.legacy import (
     ANONYMOUS,
     ANONYMOUS_API_TOKEN,
@@ -47,5 +47,7 @@ from neptune.legacy import (
     set_property,
     stop,
 )
+from neptune.version import __version__
 
-__version__ = get_versions()["version"]
+# Apply patches of external libraries
+apply_patches()
