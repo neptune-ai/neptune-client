@@ -32,6 +32,7 @@ from typing import (
     Union,
 )
 
+from neptune.common.deprecation import warn_once
 from neptune.common.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
@@ -69,7 +70,6 @@ from neptune.new.internal.utils import (
     is_string_like,
     verify_type,
 )
-from neptune.new.internal.utils.deprecation import warn_once
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.utils.runningmode import (

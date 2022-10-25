@@ -19,8 +19,8 @@ from typing import (
     TypeVar,
 )
 
+from neptune.common.deprecation import warn_once
 from neptune.new.internal.utils import is_string
-from neptune.new.internal.utils.deprecation import warn_once
 from neptune.new.types.atoms.atom import Atom
 
 if TYPE_CHECKING:

@@ -42,6 +42,7 @@ from neptune.legacy.internal.channels.channels import (
 )
 from neptune.legacy.internal.channels.channels_values_sender import ChannelsValuesSender
 from neptune.legacy.internal.execution.execution_context import ExecutionContext
+from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 from neptune.legacy.internal.utils.image import get_image_content
 
 _logger = logging.getLogger(__name__)
@@ -80,6 +81,7 @@ class Experiment(object):
 
     IMAGE_SIZE_LIMIT_MB = 15
 
+    @legacy_client_deprecation
     def __init__(self, backend, project, _id, internal_id):
         self._backend = backend
         self._project = project

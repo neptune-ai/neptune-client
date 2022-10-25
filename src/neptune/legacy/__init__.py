@@ -28,6 +28,7 @@ from neptune.legacy.exceptions import (
     NeptuneUninitializedException,
 )
 from neptune.legacy.internal.api_clients.backend_factory import backend_factory
+from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 from neptune.legacy.projects import Project
 from neptune.legacy.sessions import Session
 
@@ -76,6 +77,7 @@ def _check_for_extra_kwargs(caller_name, kwargs: dict):
         raise TypeError(f"{caller_name}() got an unexpected keyword argument '{first_key}'")
 
 
+@legacy_client_deprecation
 def init(project_qualified_name=None, api_token=None, proxies=None, backend=None, **kwargs):
     """Initialize `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with
     specific project.
@@ -183,6 +185,7 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
         return project
 
 
+@legacy_client_deprecation
 def set_project(project_qualified_name):
     """Setups `Neptune client library <https://github.com/neptune-ai/neptune-client>`_ to work with specific project.
 
@@ -222,6 +225,7 @@ def set_project(project_qualified_name):
         return project
 
 
+@legacy_client_deprecation
 def create_experiment(
     name=None,
     description=None,
@@ -270,6 +274,7 @@ def create_experiment(
     )
 
 
+@legacy_client_deprecation
 def get_experiment():
     # pylint: disable=global-statement
     global project
@@ -280,6 +285,7 @@ def get_experiment():
     return project._get_current_experiment()
 
 
+@legacy_client_deprecation
 def append_tag(tag, *tags):
     """Append tag(s) to the experiment on the top of experiments view.
 
@@ -288,6 +294,7 @@ def append_tag(tag, *tags):
     get_experiment().append_tag(tag, *tags)
 
 
+@legacy_client_deprecation
 def append_tags(tag, *tags):
     """Append tag(s) to the experiment on the top of experiments view.
 
@@ -296,6 +303,7 @@ def append_tags(tag, *tags):
     get_experiment().append_tag(tag, *tags)
 
 
+@legacy_client_deprecation
 def remove_tag(tag):
     """Removes single tag from experiment.
 
@@ -304,6 +312,7 @@ def remove_tag(tag):
     get_experiment().remove_tag(tag)
 
 
+@legacy_client_deprecation
 def set_property(key, value):
     """Set `key-value` pair as an experiment property.
 
@@ -314,6 +323,7 @@ def set_property(key, value):
     get_experiment().set_property(key, value)
 
 
+@legacy_client_deprecation
 def remove_property(key):
     """Removes a property with given key.
 
@@ -322,6 +332,7 @@ def remove_property(key):
     get_experiment().remove_property(key)
 
 
+@legacy_client_deprecation
 def send_metric(channel_name, x, y=None, timestamp=None):
     """Log metrics (numeric values) in Neptune.
 
@@ -330,6 +341,7 @@ def send_metric(channel_name, x, y=None, timestamp=None):
     return get_experiment().send_metric(channel_name, x, y, timestamp)
 
 
+@legacy_client_deprecation
 def log_metric(log_name, x, y=None, timestamp=None):
     """Log metrics (numeric values) in Neptune.
 
@@ -338,6 +350,7 @@ def log_metric(log_name, x, y=None, timestamp=None):
     return get_experiment().log_metric(log_name, x, y, timestamp)
 
 
+@legacy_client_deprecation
 def send_text(channel_name, x, y=None, timestamp=None):
     """Log text data in Neptune.
 
@@ -346,6 +359,7 @@ def send_text(channel_name, x, y=None, timestamp=None):
     return get_experiment().send_text(channel_name, x, y, timestamp)
 
 
+@legacy_client_deprecation
 def log_text(log_name, x, y=None, timestamp=None):
     """Log text data in Neptune.
 
@@ -354,6 +368,7 @@ def log_text(log_name, x, y=None, timestamp=None):
     return get_experiment().send_text(log_name, x, y, timestamp)
 
 
+@legacy_client_deprecation
 def send_image(channel_name, x, y=None, name=None, description=None, timestamp=None):
     """Log image data in Neptune.
 
@@ -362,6 +377,7 @@ def send_image(channel_name, x, y=None, name=None, description=None, timestamp=N
     return get_experiment().send_image(channel_name, x, y, name, description, timestamp)
 
 
+@legacy_client_deprecation
 def log_image(log_name, x, y=None, image_name=None, description=None, timestamp=None):
     """Log image data in Neptune.
 
@@ -370,6 +386,7 @@ def log_image(log_name, x, y=None, image_name=None, description=None, timestamp=
     return get_experiment().send_image(log_name, x, y, image_name, description, timestamp)
 
 
+@legacy_client_deprecation
 def send_artifact(artifact, destination=None):
     """Save an artifact (file) in experiment storage.
 
@@ -378,6 +395,7 @@ def send_artifact(artifact, destination=None):
     return get_experiment().log_artifact(artifact, destination)
 
 
+@legacy_client_deprecation
 def delete_artifacts(path):
     """Delete an artifact (file/directory) from experiment storage.
 
@@ -386,6 +404,7 @@ def delete_artifacts(path):
     return get_experiment().delete_artifacts(path)
 
 
+@legacy_client_deprecation
 def log_artifact(artifact, destination=None):
     """Save an artifact (file) in experiment storage.
 
@@ -394,6 +413,7 @@ def log_artifact(artifact, destination=None):
     return get_experiment().log_artifact(artifact, destination)
 
 
+@legacy_client_deprecation
 def stop(traceback=None):
     """Marks experiment as finished (succeeded or failed).
 

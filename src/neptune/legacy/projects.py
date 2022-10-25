@@ -39,6 +39,7 @@ from neptune.legacy.envs import (
 from neptune.legacy.exceptions import NeptuneNoExperimentContextException
 from neptune.legacy.internal.abort import DefaultAbortImpl
 from neptune.legacy.internal.notebooks.notebooks import create_checkpoint
+from neptune.legacy.internal.utils.deprecation import legacy_client_deprecation
 from neptune.legacy.internal.utils.source_code import get_source_code_to_upload
 
 _logger = logging.getLogger(__name__)
@@ -59,6 +60,7 @@ class Project(object):
         ``namespace`` and ``name`` joined together with ``/`` form ``project_qualified_name``.
     """
 
+    @legacy_client_deprecation
     def __init__(self, backend, internal_id, namespace, name):
         self._backend = backend
         self.internal_id = internal_id
