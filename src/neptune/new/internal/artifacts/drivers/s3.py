@@ -22,6 +22,7 @@ from urllib.parse import urlparse
 import boto3
 from botocore.exceptions import NoCredentialsError
 
+from neptune.new.envs import S3_ENDPOINT_URL
 from neptune.new.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,
@@ -47,7 +48,7 @@ class S3ArtifactDriver(ArtifactDriver):
         boto3 `endpoint_url` support PR:
          * https://github.com/boto/boto3/pull/2746
         """
-        endpoint_url = os.getenv("S3_ENDPOINT_URL")
+        endpoint_url = os.getenv(S3_ENDPOINT_URL)
         return boto3.resource(
             service_name="s3",
             endpoint_url=endpoint_url,
