@@ -1,5 +1,8 @@
 ## [UNRELEASED] neptune-client 0.16.10
 
+### Features
+- Track artifacts on S3 compatible storage ([#1053](https://github.com/neptune-ai/neptune-client/pull/1053))
+
 ### Fixes
 - Update jsonschema requirement with explicit `format` specifier ([#1010](https://github.com/neptune-ai/neptune-client/pull/1010))
 - Escape inputs to SQL in Artifact LocalFileHashStorage ([#1034](https://github.com/neptune-ai/neptune-client/pull/1034))
@@ -11,7 +14,6 @@
 - `get_last_run`, `get_run_url`, `get_project` and `neptune.init` marked as deprecated ([#1011](https://github.com/neptune-ai/neptune-client/pull/1011))
 - Deprecated implicit casting of objects to strings with `log` and `assign` operations ([#1028](https://github.com/neptune-ai/neptune-client/pull/1028))
 - Internally extracted legacy client to `legacy` submodule ([#1039](https://github.com/neptune-ai/neptune-client/pull/1039))
-- Track artifacts on S3 compatible storage ([#1053](https://github.com/neptune-ai/neptune-client/pull/1053))
 
 ## neptune-client 0.16.9
 
