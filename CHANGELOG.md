@@ -1,5 +1,8 @@
 ## [UNRELEASED] neptune-client 0.16.10
 
+### Features
+- Track artifacts on S3 compatible storage ([#1053](https://github.com/neptune-ai/neptune-client/pull/1053))
+
 ### Fixes
 - Update jsonschema requirement with explicit `format` specifier ([#1010](https://github.com/neptune-ai/neptune-client/pull/1010))
 - Escape inputs to SQL in Artifact LocalFileHashStorage ([#1034](https://github.com/neptune-ai/neptune-client/pull/1034))
