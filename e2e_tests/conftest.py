@@ -18,7 +18,6 @@ import os
 import time
 from datetime import datetime
 
-import boto3
 import pytest
 from faker import Faker
 
@@ -111,7 +110,7 @@ def containers_pair(request, environment):
 
 
 @pytest.fixture(scope="session")
-def bucket(environment):
+def bucket():
     bucket_name = os.environ.get("BUCKET_NAME")
 
     s3_client = get_boto_s3_client()
