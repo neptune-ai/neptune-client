@@ -119,7 +119,8 @@ def bucket(environment):
 
     yield bucket_name, s3_client
 
-    s3_bucket.objects.filter(Prefix=environment.project).delete()
+    # not compatible with `GCS`
+    # s3_bucket.objects.filter(Prefix=environment.project).delete()
 
 
 @pytest.fixture()

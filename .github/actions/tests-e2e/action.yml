@@ -38,15 +38,15 @@ runs:
           pip list
         shell: bash
 
-#      - name: E2E - Service Accounts
-#        env:
-#          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
-#        run: |
-#          pytest -v ./e2e_tests -m "not s3 and not integrations" \
-#          --timeout=600 --timeout_method=thread \
-#          --junitxml="./test-results/test-e2e-base-${{ matrix.os }}-${{ matrix.python-version }}.xml"
-#        shell: bash
-#
+      - name: E2E - Service Accounts
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
+        run: |
+          pytest -v ./e2e_tests -m "not s3 and not integrations" \
+          --timeout=600 --timeout_method=thread \
+          --junitxml="./test-results/test-e2e-base-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+        shell: bash
+
       - name: E2E - AWS S3
         env:
           NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
