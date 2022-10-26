@@ -115,11 +115,11 @@ def bucket(environment):
     bucket_name = os.environ.get("BUCKET_NAME")
 
     s3_client = get_boto_s3_client()
-    s3_bucket = s3_client.Bucket(bucket_name)
 
     yield bucket_name, s3_client
 
     # not compatible with `GCS`
+    # s3_bucket = s3_client.Bucket(bucket_name)
     # s3_bucket.objects.filter(Prefix=environment.project).delete()
 
 
