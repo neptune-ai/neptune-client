@@ -8,6 +8,18 @@ inputs:
   user-api-token:
      description: "Api token for regular user"
      required: true
+  aws-access-key-id:
+     description: "S3 access key for AWS service"
+     required: true
+  aws-secret-access-key:
+     description: "S3 access key for AWS service"
+     required: true
+  gcs-access-key-id:
+     description: "S3 access key for GCS service"
+     required: true
+  gcs-secret-access-key:
+     description: "S3 access key for GCS service"
+     required: true
 runs:
     using: "composite"
     steps:
@@ -28,20 +40,52 @@ runs:
 
       - name: E2E - Service Accounts
         env:
-          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token}}
+          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
         run: |
-          pytest -v ./e2e_tests -m "not integrations" \
+          pytest -v ./e2e_tests -m "not s3 and not integrations" \
           --timeout=600 --timeout_method=thread \
           --junitxml="./test-results/test-e2e-base-${{ matrix.os }}-${{ matrix.python-version }}.xml"
         shell: bash
 
-      - name: E2E - Integrations
+      - name: E2E - AWS S3
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
+          AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+        run: |
+          pytest -v ./e2e_tests -m s3 \
+          --timeout=600 --timeout_method=thread \
+          --junitxml="./test-results/test-e2e-s3-aws-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+        shell: bash
+
+      - name: E2E - GCS S3
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
+          AWS_ACCESS_KEY_ID: ${{ inputs.gcs-access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ inputs.gcs-secret-access-key }}
+          S3_ENDPOINT_URL: "https://storage.googleapis.com/"
+        run: |
+          pytest -v ./e2e_tests -m s3 \
+          --timeout=600 --timeout_method=thread \
+          --junitxml="./test-results/test-e2e-s3-gcs-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+        shell: bash
+
+      - name: E2E - Management (as regular user)
         env:
           NEPTUNE_API_TOKEN: ${{ inputs.user-api-token }}
         run: |
-          pytest -v ./e2e_tests -m integrations \
+          pytest -v ./e2e_tests -m management \
           --timeout=600  --timeout_method=thread \
           --junitxml="./test-results/test-e2e-management-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+        shell: bash
+
+      - name: E2E - Integrations
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
+        run: |
+          pytest -v ./e2e_tests -m integrations \
+          --timeout=600  --timeout_method=thread \
+          --junitxml="./test-results/test-e2e-integrations-${{ matrix.os }}-${{ matrix.python-version }}.xml"
         shell: bash
 
       - name: Test Fast.ai integration

@@ -18,7 +18,6 @@ import os
 import time
 from datetime import datetime
 
-import boto3
 import pytest
 from faker import Faker
 
@@ -35,6 +34,7 @@ from neptune.management import (
 )
 from neptune.management.internal.utils import normalize_project_name
 from neptune.new import init_project
+from neptune.new.internal.utils.s3 import get_boto_s3_client
 
 fake = Faker()
 
@@ -110,15 +110,16 @@ def containers_pair(request, environment):
 
 
 @pytest.fixture(scope="session")
-def bucket(environment):
+def bucket():
     bucket_name = os.environ.get("BUCKET_NAME")
 
-    s3_client = boto3.resource("s3")
-    s3_bucket = s3_client.Bucket(bucket_name)
+    s3_client = get_boto_s3_client()
 
     yield bucket_name, s3_client
 
-    s3_bucket.objects.filter(Prefix=environment.project).delete()
+    # not compatible with `GCS`
+    # s3_bucket = s3_client.Bucket(bucket_name)
+    # s3_bucket.objects.filter(Prefix=environment.project).delete()
 
 
 @pytest.fixture()

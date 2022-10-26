@@ -13,16 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 import pathlib
 import typing
 from datetime import datetime
 from urllib.parse import urlparse
 
-import boto3
 from botocore.exceptions import NoCredentialsError
 
-from neptune.new.envs import S3_ENDPOINT_URL
 from neptune.new.exceptions import (
     NeptuneRemoteStorageAccessException,
     NeptuneRemoteStorageCredentialsException,
@@ -33,26 +30,11 @@ from neptune.new.internal.artifacts.types import (
     ArtifactFileData,
     ArtifactFileType,
 )
+from neptune.new.internal.utils.s3 import get_boto_s3_client
 
 
 class S3ArtifactDriver(ArtifactDriver):
     DATETIME_FORMAT = "%Y-%m-%d %H:%M:%S"
-
-    @staticmethod
-    def get_boto_resource():
-        """
-        User might want to use other than `AWS` `S3` providers, so we should be able to override `endpoint_url`.
-        Unfortunately `boto3` doesn't support this parameter in configuration, so we'll have to create our env variable.
-        boto3 supported config envs:
-         * https://boto3.amazonaws.com/v1/documentation/api/latest/guide/configuration.html#using-environment-variables
-        boto3 `endpoint_url` support PR:
-         * https://github.com/boto/boto3/pull/2746
-        """
-        endpoint_url = os.getenv(S3_ENDPOINT_URL)
-        return boto3.resource(
-            service_name="s3",
-            endpoint_url=endpoint_url,
-        )
 
     @staticmethod
     def get_type() -> str:
@@ -87,7 +69,7 @@ class S3ArtifactDriver(ArtifactDriver):
             )
 
         # pylint: disable=no-member
-        remote_storage = cls.get_boto_resource().Bucket(bucket_name)
+        remote_storage = get_boto_s3_client().Bucket(bucket_name)
 
         stored_files: typing.List[ArtifactFileData] = list()
 
@@ -133,7 +115,7 @@ class S3ArtifactDriver(ArtifactDriver):
         url = urlparse(location)
         bucket_name, path = url.netloc, url.path.lstrip("/")
 
-        remote_storage = cls.get_boto_resource()
+        remote_storage = get_boto_s3_client()
         try:
             # pylint: disable=no-member
             bucket = remote_storage.Bucket(bucket_name)
