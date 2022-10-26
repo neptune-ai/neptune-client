@@ -14,8 +14,10 @@
 # limitations under the License.
 #
 import abc
+import os
 from dataclasses import dataclass
 from datetime import datetime
+from pathlib import Path
 from typing import (
     TYPE_CHECKING,
     Generic,
@@ -30,6 +32,10 @@ from typing import (
 from neptune.common.exceptions import InternalClientError
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
+from neptune.new.types.atoms.file import (
+    File,
+    FileType,
+)
 
 if TYPE_CHECKING:
     from neptune.new.attributes.attribute import Attribute
@@ -51,6 +57,9 @@ class Operation:
 
     @abc.abstractmethod
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
+        pass
+
+    def clean(self):
         pass
 
     # pylint: disable=unused-argument
@@ -180,6 +189,33 @@ class UploadFile(Operation):
 
     ext: str
     file_path: str
+    clean_after_upload: bool = False
+
+    @classmethod
+    def of_file(cls, value: File, attribute_path: List[str], upload_path: Path):
+        if value.file_type is FileType.LOCAL_FILE:
+            operation = UploadFile(
+                path=attribute_path,
+                ext=value.extension,
+                file_path=os.path.abspath(value.path),
+            )
+        elif value.file_type is FileType.IN_MEMORY:
+            tmp_file_path = cls.get_upload_path(attribute_path, value.extension, upload_path)
+            # pylint: disable=protected-access
+            value._save(tmp_file_path)
+            operation = UploadFile(
+                path=attribute_path,
+                ext=value.extension,
+                file_path=os.path.abspath(tmp_file_path),
+                clean_after_upload=True,
+            )
+        else:
+            raise ValueError(f"Unexpected FileType: {value.file_type}")
+        return operation
+
+    def clean(self):
+        if self.clean_after_upload:
+            os.remove(self.file_path)
 
     def accept(self, visitor: "OperationVisitor[Ret]") -> Ret:
         return visitor.visit_upload_file(self)
@@ -188,11 +224,20 @@ class UploadFile(Operation):
         ret = super().to_dict()
         ret["ext"] = self.ext
         ret["file_path"] = self.file_path
+        ret["clean_after_upload"] = self.clean_after_upload
         return ret
 
     @staticmethod
     def from_dict(data: dict) -> "UploadFile":
-        return UploadFile(data["path"], data["ext"], data["file_path"])
+        return UploadFile(data["path"], data["ext"], data["file_path"], data.get("clean_after_upload", False))
+
+    @staticmethod
+    def get_upload_path(attribute_path: List[str], extension: str, upload_path: Path):
+        now = datetime.now()
+        tmp_file_name = (
+            f"{'_'.join(attribute_path)}-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}.{extension}"
+        )
+        return upload_path / tmp_file_name
 
 
 @dataclass

@@ -66,7 +66,6 @@ from neptune.new.attributes.atoms.file import (
     File,
     FileVal,
     UploadFile,
-    UploadFileContent,
 )
 from neptune.new.attributes.atoms.float import (
     AssignFloat,

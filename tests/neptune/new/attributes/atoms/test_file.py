@@ -21,9 +21,12 @@ from io import (
     BytesIO,
     StringIO,
 )
+from pathlib import Path
+from unittest.mock import PropertyMock
 
 from mock import MagicMock
 
+from e2e_tests.utils import tmp_context
 from neptune.common.utils import IS_WINDOWS
 from neptune.new.attributes.atoms.file import (
     File,
@@ -35,43 +38,64 @@ from neptune.new.attributes.file_set import (
 )
 from neptune.new.internal.operation import (
     UploadFile,
-    UploadFileContent,
     UploadFileSet,
 )
-from neptune.new.internal.utils import base64_encode
+from neptune.new.types.atoms.file import FileType
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFile(TestAttributeBase):
     @unittest.skipIf(IS_WINDOWS, "Windows behaves strangely")
     def test_assign(self):
+        def get_tmp_uploaded_file(tmp_upload_dir):
+            """Get tmp file to uploaded from `upload_path`
+            - here's assumption that we upload only one file per one path in test"""
+            uploaded_files = os.listdir(tmp_upload_dir)
+            assert len(uploaded_files) == 1
+            return f"{tmp_upload_dir}/{uploaded_files[0]}"
+
         a_text = "Some text stream"
         a_binary = b"Some binary stream"
         value_and_operation_factory = [
             (
                 FileVal("other/../other/file.txt"),
-                lambda _: UploadFile(_, "txt", os.getcwd() + "/other/file.txt"),
+                lambda attribute_path, _: UploadFile(
+                    attribute_path, ext="txt", file_path=os.getcwd() + "/other/file.txt"
+                ),
             ),
             (
                 FileVal.from_stream(StringIO(a_text)),
-                lambda _: UploadFileContent(_, "txt", base64_encode(a_text.encode("utf-8"))),
+                lambda attribute_path, tmp_uploaded_file: UploadFile(
+                    attribute_path, ext="txt", file_path=tmp_uploaded_file, clean_after_upload=True
+                ),
             ),
             (
                 FileVal.from_stream(BytesIO(a_binary)),
-                lambda _: UploadFileContent(_, "bin", base64_encode(a_binary)),
+                lambda attribute_path, tmp_uploaded_file: UploadFile(
+                    attribute_path, ext="bin", file_path=tmp_uploaded_file, clean_after_upload=True
+                ),
             ),
         ]
 
         for value, operation_factory in value_and_operation_factory:
-            processor = MagicMock()
-            exp, path, wait = (
-                self._create_run(processor),
-                self._random_path(),
-                self._random_wait(),
-            )
-            var = File(exp, path)
-            var.assign(value, wait=wait)
-            processor.enqueue_operation.assert_called_once_with(operation_factory(path), wait)
+            with tmp_context() as tmp_upload_dir:
+                processor = MagicMock()
+                processor._operation_storage = PropertyMock(upload_path=Path(tmp_upload_dir))
+                exp, path, wait = (
+                    self._create_run(processor),
+                    self._random_path(),
+                    self._random_wait(),
+                )
+                var = File(exp, path)
+                var.assign(value, wait=wait)
+
+                if value.file_type is not FileType.LOCAL_FILE:
+                    tmp_uploaded_file = get_tmp_uploaded_file(tmp_upload_dir)
+                    self.assertTrue(os.path.exists(tmp_uploaded_file))
+                else:
+                    tmp_uploaded_file = None
+
+                processor.enqueue_operation.assert_called_once_with(operation_factory(path, tmp_uploaded_file), wait)
 
     def test_assign_type_error(self):
         values = [55, None, []]
