@@ -234,8 +234,9 @@ class UploadFile(Operation):
     @staticmethod
     def get_upload_path(attribute_path: List[str], extension: str, upload_path: Path):
         now = datetime.now()
-        tmp_file_name = f"{'_'.join(attribute_path)}-{now.timestamp()}-{now}.{extension}"
-        tmp_file_name = tmp_file_name.replace(" ", "_").replace(":", ".")
+        tmp_file_name = (
+            f"{'_'.join(attribute_path)}-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}.{extension}"
+        )
         return upload_path / tmp_file_name
 
 

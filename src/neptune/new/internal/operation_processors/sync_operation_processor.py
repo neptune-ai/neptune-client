@@ -42,8 +42,7 @@ class SyncOperationProcessor(OperationProcessor):
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
         container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{create_dir_name(container_type, container_id)}"
-        data_path = f"{container_dir}/exec-{now.timestamp()}-{now}"
-        data_path = data_path.replace(" ", "_").replace(":", ".")
+        data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
         return data_path
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:

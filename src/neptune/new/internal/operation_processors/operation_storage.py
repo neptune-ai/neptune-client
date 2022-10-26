@@ -31,8 +31,8 @@ class OperationStorage:
         self._data_path = Path(data_path)
 
         # initialize directories
-        os.makedirs(self.data_path)
-        os.makedirs(self.upload_path)
+        os.makedirs(self.data_path, exist_ok=True)
+        os.makedirs(self.upload_path, exist_ok=True)
 
     @property
     def data_path(self) -> Path:
