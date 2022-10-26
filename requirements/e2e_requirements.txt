@@ -1,7 +1,6 @@
 -r ./test_requirements.txt
 
 Faker
-pytest-tap
 
 # integrations
 pytorch-lightning
