@@ -1,4 +1,4 @@
-## [UNRELEASED] neptune-client 0.16.10
+## neptune-client 0.16.10
 
 ### Features
 - Track artifacts on S3 compatible storage ([#1053](https://github.com/neptune-ai/neptune-client/pull/1053))
