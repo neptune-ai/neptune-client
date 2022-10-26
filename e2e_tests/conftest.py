@@ -117,10 +117,6 @@ def bucket():
 
     yield bucket_name, s3_client
 
-    # not compatible with `GCS`
-    # s3_bucket = s3_client.Bucket(bucket_name)
-    # s3_bucket.objects.filter(Prefix=environment.project).delete()
-
 
 @pytest.fixture()
 def common_tag():
