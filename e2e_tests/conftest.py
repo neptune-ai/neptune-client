@@ -19,6 +19,7 @@ import time
 from datetime import datetime
 
 import pytest
+from botocore.exceptions import ClientError
 from faker import Faker
 
 from e2e_tests.utils import (
@@ -110,16 +111,21 @@ def containers_pair(request, environment):
 
 
 @pytest.fixture(scope="session")
-def bucket():
+def bucket(environment):
     bucket_name = os.environ.get("BUCKET_NAME")
 
     s3_client = get_boto_s3_client()
 
     yield bucket_name, s3_client
 
-    # not compatible with `GCS`
-    # s3_bucket = s3_client.Bucket(bucket_name)
-    # s3_bucket.objects.filter(Prefix=environment.project).delete()
+    s3_bucket = s3_client.Bucket(bucket_name)
+    try:
+        s3_bucket.objects.filter(Prefix=environment.project).delete()
+    except ClientError:
+        # GCS does not support batch actions
+        # https://stackoverflow.com/q/74206244/1565454
+        for obj in s3_bucket.objects.filter(Prefix=environment.project):
+            obj.delete()
 
 
 @pytest.fixture()
