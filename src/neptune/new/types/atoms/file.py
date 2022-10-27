@@ -26,6 +26,7 @@ from typing import (
     Union,
 )
 
+from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.images import (
     get_html_content,
