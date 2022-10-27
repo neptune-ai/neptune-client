@@ -32,23 +32,25 @@ from neptune.new.types.atoms.file import FileType
 
 
 class TestFile(unittest.TestCase):
+    def _test_local_file(self, path: str, expected_ext: str, custom_ext=None):
+        file = File(path, extension=custom_ext)
+        self.assertIs(file.file_type, FileType.LOCAL_FILE)
+        self.assertEqual(path, file.path)
+        with self.assertRaises(NeptuneException):
+            _ = file.content
+        with self.assertRaises(NeptuneException):
+            file._save(None)
+        self.assertEqual(expected_ext, file.extension)
+
     def test_create_from_path(self):
-        def _test_local_file(path: str, expected_ext: str, custom_ext=None):
-            file = File(path, extension=custom_ext)
-            self.assertIs(file.file_type, FileType.LOCAL_FILE)
-            self.assertEqual(path, file.path)
-            with self.assertRaises(NeptuneException):
-                _ = file.content
-            with self.assertRaises(NeptuneException):
-                file._save(None)
-            self.assertEqual(expected_ext, file.extension)
+        self._test_local_file("some/path.ext", expected_ext="ext")
+        self._test_local_file("some/path.txt.ext", expected_ext="ext")
+        self._test_local_file("so.me/path", expected_ext="")
+        self._test_local_file("some/path.ext", expected_ext="txt", custom_ext="txt")
 
-        _test_local_file("some/path.ext", expected_ext="ext")
-        _test_local_file("some/path.txt.ext", expected_ext="ext")
-        _test_local_file("so.me/path", expected_ext="")
-        _test_local_file("some/path.ext", expected_ext="txt", custom_ext="txt")
-
-    def _save_and_return_content(self, file: File):
+    @staticmethod
+    def _save_and_return_content(file: File):
+        """Saves content in tmp location and returns saved data"""
         with tmp_context() as tmp:
             file_name = "saved_file"
             file_path = f"{tmp}/{file_name}.{file.extension}"
@@ -64,7 +66,7 @@ class TestFile(unittest.TestCase):
         with self.assertRaises(NeptuneException):
             _ = file.path
         self.assertEqual(bin_content, file.content)
-        self.assertEqual(self._save_and_return_content(file), file.content)
+        self.assertEqual(bin_content, self._save_and_return_content(file))
         self.assertEqual(expected_ext, file.extension)
 
     def test_create_from_string_content(self):
@@ -86,18 +88,17 @@ class TestFile(unittest.TestCase):
         file = file_producer()
         self.assertEqual(expected_content, file.content)
         file = file_producer()
-        self.assertEqual(self._save_and_return_content(file), expected_content)
+        self.assertEqual(expected_content, self._save_and_return_content(file))
 
     def test_create_from_string_io(self):
-        self._test_stream_content(
-            lambda: File.from_stream(StringIO("aaabbbccc")), expected_content=b"aaabbbccc", expected_ext="txt"
-        )
-
         def _file_from_seeked_stream():
             stream = StringIO("aaabbbccc")
             stream.seek(3)  # should not affect created `File`
             return File.from_stream(stream)
 
+        self._test_stream_content(
+            lambda: File.from_stream(StringIO("aaabbbccc")), expected_content=b"aaabbbccc", expected_ext="txt"
+        )
         self._test_stream_content(_file_from_seeked_stream, expected_content=b"aaabbbccc", expected_ext="txt")
         self._test_stream_content(
             lambda: File.from_stream(StringIO("aaabbbccc"), extension="png"),
@@ -109,15 +110,14 @@ class TestFile(unittest.TestCase):
         )
 
     def test_create_from_bytes_io(self):
-        self._test_stream_content(
-            lambda: File.from_stream(BytesIO(b"aaabbbccc")), expected_content=b"aaabbbccc", expected_ext="bin"
-        )
-
         def _file_from_seeked_stream():
             stream = BytesIO(b"aaabbbccc")
             stream.seek(3)  # should not affect created `File`
             return File.from_stream(stream)
 
+        self._test_stream_content(
+            lambda: File.from_stream(BytesIO(b"aaabbbccc")), expected_content=b"aaabbbccc", expected_ext="bin"
+        )
         self._test_stream_content(_file_from_seeked_stream, expected_content=b"aaabbbccc", expected_ext="bin")
         self._test_stream_content(
             lambda: File.from_stream(BytesIO(b"aaabbbccc"), extension="png"),
