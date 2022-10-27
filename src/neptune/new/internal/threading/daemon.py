@@ -69,7 +69,6 @@ class Daemon(threading.Thread):
         def __call__(self, func):
             @functools.wraps(func)
             def wrapper(self_: Daemon, *args, **kwargs):
-                # pylint: disable=protected-access
                 while not self_._interrupted:
                     try:
                         result = func(self_, *args, **kwargs)

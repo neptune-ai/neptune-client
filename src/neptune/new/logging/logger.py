@@ -15,7 +15,6 @@
 #
 
 # backwards compatibility
-# pylint: disable=unused-import
 __all__ = [
     "Logger",
 ]

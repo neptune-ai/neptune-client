@@ -25,7 +25,6 @@ from typing import (
 from neptune.common.deprecation import warn_once
 
 # backwards compatibility
-# pylint: disable=unused-import
 from neptune.common.exceptions import NeptuneException  # noqa: F401
 from neptune.new.attributes import File
 from neptune.new.attributes.atoms.artifact import Artifact
@@ -62,7 +61,6 @@ if TYPE_CHECKING:
 
 
 def validate_path_not_protected(target_path: str, handler: "Handler"):
-    # pylint: disable=protected-access
     path_protection_exception = handler._PROTECTED_PATHS.get(target_path)
     if path_protection_exception:
         raise path_protection_exception(target_path)
@@ -71,7 +69,6 @@ def validate_path_not_protected(target_path: str, handler: "Handler"):
 def check_protected_paths(fun):
     @wraps(fun)
     def inner_fun(self: "Handler", *args, **kwargs):
-        # pylint: disable=protected-access
         validate_path_not_protected(self._path, self)
         return fun(self, *args, **kwargs)
 
@@ -95,7 +92,6 @@ class Handler:
         return f'<{formal_type} field at "{self._path}">'
 
     def _ipython_key_completions_(self):
-        # pylint: disable=protected-access
         return self._container._get_subpath_suggestions(path_prefix=self._path)
 
     def __getitem__(self, path: str) -> "Handler":
@@ -318,7 +314,6 @@ class Handler:
 
     @check_protected_paths
     def pop(self, path: str = None, wait: bool = False) -> None:
-        # pylint: disable=protected-access
         with self._container.lock():
             handler = self
             if path:

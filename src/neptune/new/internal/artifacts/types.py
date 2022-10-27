@@ -93,7 +93,6 @@ class ArtifactDriversMap:
 
 class ArtifactDriver(abc.ABC):
     def __init_subclass__(cls):
-        # pylint: disable=protected-access
         ArtifactDriversMap._implementations.append(cls)
 
     @staticmethod

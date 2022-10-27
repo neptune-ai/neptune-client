@@ -62,7 +62,6 @@ class RegressionPreTrainedModel(PreTrainedModel):
 
     def __init__(self, config):
         super().__init__(config)
-        # pylint: disable=no-member
         self.a = torch.nn.Parameter(torch.tensor(config.a).float())
         self.b = torch.nn.Parameter(torch.tensor(config.b).float())
 
@@ -178,7 +177,6 @@ class TestHuggingFace(BaseE2ETest):
 
             trainer.train()
 
-            # pylint: disable=no-member
             with pytest.raises(NeptuneMissingConfiguration):
                 trainer.train()
 

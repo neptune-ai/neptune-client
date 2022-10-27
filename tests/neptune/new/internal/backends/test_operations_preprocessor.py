@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-# pylint: disable=protected-access
-
 import uuid
 
 from neptune.new.exceptions import MetadataInconsistency

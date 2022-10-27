@@ -46,7 +46,6 @@ class SyncOperationProcessor(OperationProcessor):
         return data_path
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
-        # pylint: disable=unused-argument
         _, errors = self._backend.execute_operations(self._container_id, self._container_type, [op])
         if errors:
             raise errors[0]

@@ -15,7 +15,6 @@
 #
 
 try:
-    # pylint: disable=import-error
     from neptune_optuna.impl import *  # noqa: F401,F403
 except ModuleNotFoundError as e:
     if e.name == "neptune_optuna":

@@ -174,7 +174,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
 
         if sys.version_info >= (3, 7):
             try:
-                # pylint: disable=no-member
                 os.register_at_fork(after_in_child=self._handle_fork_in_child)
             except AttributeError:
                 pass
@@ -520,7 +519,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 if AlphaChannelDTO.is_valid_attribute(attr)
             ]
         except HTTPNotFound:
-            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
                 project_qualified_name=experiment._project.full_id,
@@ -611,7 +609,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
         try:
             self.leaderboard_swagger_client.api.ping(experimentId=str(experiment.internal_id)).response().result
         except HTTPNotFound:
-            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
                 project_qualified_name=experiment._project.full_id,
@@ -862,7 +859,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
                 raise ExperimentOperationErrors(errors=errors)
             return None
         except HTTPNotFound as e:
-            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
                 project_qualified_name=experiment._project.full_id,
@@ -956,7 +952,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             lines = csv.split("\n")[:-1]
             return [line.split(",") for line in lines]
         except HTTPNotFound:
-            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
                 project_qualified_name=experiment._project.full_id,
@@ -974,7 +969,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             csv.seek(0)
             return csv
         except HTTPNotFound:
-            # pylint: disable=protected-access
             raise ExperimentNotFound(
                 experiment_short_id=experiment.id,
                 project_qualified_name=experiment._project.full_id,
@@ -1158,7 +1152,6 @@ class HostedAlphaLeaderboardApiClient(HostedNeptuneMixin, LeaderboardApiClient):
             return (string_type, str(parameter))
 
     def _convert_to_experiment(self, api_experiment, project):
-        # pylint: disable=protected-access
         return Experiment(
             backend=project._backend,
             project=project,

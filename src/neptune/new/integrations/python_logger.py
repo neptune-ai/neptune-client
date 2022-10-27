@@ -71,7 +71,6 @@ class NeptuneHandler(logging.Handler):
         if not hasattr(self._thread_local, "inside_write"):
             self._thread_local.inside_write = False
 
-        # pylint: disable=protected-access
         if self._run._state == RunState.STARTED and not self._thread_local.inside_write:
             try:
                 self._thread_local.inside_write = True

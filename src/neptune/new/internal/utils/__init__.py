@@ -175,7 +175,6 @@ def get_stream_content(stream: IOBase, seek: Optional[int] = None) -> (Optional[
 
 def is_ipython() -> bool:
     try:
-        # pylint:disable=bad-option-value,import-outside-toplevel
         import IPython
 
         ipython = IPython.core.getipython.get_ipython()

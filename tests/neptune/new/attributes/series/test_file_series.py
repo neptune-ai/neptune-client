@@ -15,7 +15,6 @@
 #
 from unittest import mock
 
-# pylint: disable=protected-access
 import numpy
 import pytest
 from mock import (

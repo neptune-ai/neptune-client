@@ -16,7 +16,6 @@
 __all__ = ["NeptuneLogger"]
 
 try:
-    # pylint: disable=import-error
     from pytorch_lightning.loggers import NeptuneLogger
 except ModuleNotFoundError as e:
     if e.name == "pytorch_lightning":

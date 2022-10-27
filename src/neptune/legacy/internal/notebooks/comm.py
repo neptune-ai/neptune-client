@@ -48,7 +48,6 @@ def send_checkpoint_created(notebook_id, notebook_path, checkpoint_id):
 
 
 def _get_comm():
-    # pylint: disable=import-error
     from ipykernel.comm import Comm
 
     return Comm(target_name="neptune_comm")

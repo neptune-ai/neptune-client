@@ -135,7 +135,6 @@ def _to_html(chart) -> str:
 
 
 def _matplotlib_to_plotly(chart):
-    # pylint: disable=import-outside-toplevel
     import matplotlib
     import plotly
 

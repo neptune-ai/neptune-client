@@ -28,7 +28,6 @@ _checkpoints = dict()
 
 def create_checkpoint(backend: NeptuneBackend, notebook_id: str, notebook_path: str):
     if is_ipython():
-        # pylint:disable=bad-option-value,import-outside-toplevel,import-error
         import IPython
 
         ipython = IPython.core.getipython.get_ipython()

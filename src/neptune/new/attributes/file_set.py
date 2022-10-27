@@ -31,8 +31,6 @@ from neptune.new.internal.utils import (
 )
 from neptune.new.types.file_set import FileSet as FileSetVal
 
-# pylint: disable=protected-access
-
 
 class FileSet(Attribute):
     def assign(self, value: Union[FileSetVal, str, Iterable[str]], wait: bool = False) -> None:

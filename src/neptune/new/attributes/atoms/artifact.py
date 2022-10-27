@@ -32,7 +32,6 @@ from neptune.new.types.atoms.artifact import Artifact as ArtifactVal
 
 class Artifact(Atom):
     def _check_feature(self):
-        # pylint: disable=protected-access
         self._container._backend.verify_feature_available(OptionalFeatures.ARTIFACTS)
 
     def assign(self, value: ArtifactVal, wait: bool = False):
@@ -57,7 +56,7 @@ class Artifact(Atom):
         self._check_feature()
         artifact_hash = self.fetch_hash()
         return self._backend.list_artifact_files(
-            self._container._project_id,  # pylint: disable=protected-access
+            self._container._project_id,
             artifact_hash,
         )
 
@@ -75,7 +74,7 @@ class Artifact(Atom):
             self._enqueue_operation(
                 TrackFilesToArtifact(
                     self._path,
-                    self._container._project_id,  # pylint: disable=protected-access
+                    self._container._project_id,
                     [(path, destination)],
                 ),
                 wait,

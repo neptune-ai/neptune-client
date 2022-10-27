@@ -172,7 +172,6 @@ class Table:
         ]
 
     def to_pandas(self):
-        # pylint:disable=import-outside-toplevel
         import pandas as pd
 
         def make_attribute_value(

@@ -71,7 +71,6 @@ class NeptuneBackend:
         it makes sure that a feature is supported in the backend version client interacts with
         """
 
-    # pylint: disable=unused-argument
     def websockets_factory(self, project_id: str, run_id: str) -> Optional[WebsocketsFactory]:
         return None
 

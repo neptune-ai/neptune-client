@@ -68,7 +68,6 @@ class S3ArtifactDriver(ArtifactDriver):
                 f"Wildcard characters (*,?) in location URI ({path}) are not supported."
             )
 
-        # pylint: disable=no-member
         remote_storage = get_boto_s3_client().Bucket(bucket_name)
 
         stored_files: typing.List[ArtifactFileData] = list()
@@ -117,7 +116,6 @@ class S3ArtifactDriver(ArtifactDriver):
 
         remote_storage = get_boto_s3_client()
         try:
-            # pylint: disable=no-member
             bucket = remote_storage.Bucket(bucket_name)
             bucket.download_file(path, str(destination))
         except NoCredentialsError:

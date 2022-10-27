@@ -30,7 +30,6 @@ class CopiableAtom(Atom):
     supports_copy = True
 
     def copy(self, value: ValueCopy, wait: bool = False):
-        # pylint: disable=protected-access
         with self._container.lock():
             source_path = value.source_handler._path
             source_attr = value.source_handler._get_attribute()

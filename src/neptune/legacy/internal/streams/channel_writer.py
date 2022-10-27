@@ -44,7 +44,6 @@ class ChannelWriter(object):
         lines = self.__SPLIT_PATTERN.split(self._data)
         for line in lines[:-1]:
             value = ChannelValue(x=self._x_offset.next(), y=dict(text_value=str(line)), ts=None)
-            # pylint: disable=protected-access
             self._experiment._channels_values_sender.send(
                 channel_name=self._channel_name,
                 channel_type=ChannelType.TEXT.value,

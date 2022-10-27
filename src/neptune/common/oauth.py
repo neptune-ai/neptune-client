@@ -58,7 +58,6 @@ class NeptuneAuth(AuthBase):
             return self._add_token(r)
 
     def _add_token(self, r):
-        # pylint: disable=protected-access
         r.url, r.headers, r.body = self.session._client.add_token(
             r.url, http_method=r.method, body=r.body, headers=r.headers
         )

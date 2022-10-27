@@ -59,7 +59,6 @@ class StringSet(Set):
             self._enqueue_operation(ClearStringSet(self._path), wait)
 
     def fetch(self) -> typing.Set[str]:
-        # pylint: disable=protected-access
         val = self._backend.get_string_set_attribute(self._container_id, self._container_type, self._path)
         return val.values
 

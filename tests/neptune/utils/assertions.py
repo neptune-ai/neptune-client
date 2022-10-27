@@ -16,8 +16,6 @@
 
 
 class AssertionExtensions(object):
-    # pylint:disable=no-member
-
     def assert_int_greater_than(self, x, y):
         self.assertGreater(x, y)
         self.assertNotEqual(float, type(x))

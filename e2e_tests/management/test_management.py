@@ -355,8 +355,6 @@ class TestTrashObjects(BaseE2ETest):
     Test trash_objects
     """
 
-    # pylint: disable=singleton-comparison
-
     def test_trash_runs_and_models(self, project, environment):
         # WITH runs and models
         run1_id = initialize_container(ContainerType.RUN, project=environment.project)["sys/id"].fetch()

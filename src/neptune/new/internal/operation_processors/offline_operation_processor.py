@@ -47,7 +47,6 @@ class OfflineOperationProcessor(OperationProcessor):
         return f"{NEPTUNE_DATA_DIRECTORY}/{OFFLINE_DIRECTORY}/{create_dir_name(container_type, container_id)}"
 
     def enqueue_operation(self, op: Operation, wait: bool) -> None:
-        # pylint: disable=unused-argument
         self._queue.put(op)
 
     def wait(self):

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pylint: disable=redefined-outer-name
 import os
 import re
 
@@ -47,7 +46,6 @@ skip_if_on_lightning_ecosystem = pytest.mark.skipif(
 class RandomDataset(Dataset):
     def __init__(self, size, length):
         self.len = length
-        # pylint: disable=no-member
         self.data = torch.randn(length, size)
 
     def __getitem__(self, index):
@@ -58,7 +56,6 @@ class RandomDataset(Dataset):
 
 
 class BoringModel(LightningModule):
-    # pylint: disable=abstract-method
     def __init__(self):
         super().__init__()
         self.layer = torch.nn.Linear(32, 2)
@@ -141,7 +138,7 @@ class TestPytorchLightning(BaseE2ETest):
             logged_version = pytorch_run["source_code/integrations/lightning"].fetch()
         else:
             logged_version = pytorch_run["source_code/integrations/pytorch-lightning"].fetch()
-        assert logged_version == pytorch_lightning.__version__  # pylint: disable=E1101
+        assert logged_version == pytorch_lightning.__version__
 
         assert pytorch_run.exists("custom_prefix/valid/loss")
         assert len(pytorch_run["custom_prefix/valid/loss"].fetch_values()) == 3

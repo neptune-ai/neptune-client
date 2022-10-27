@@ -117,7 +117,6 @@ class MessageType(object):
 
 
 class MessageClassRegistry(object):
-    # pylint:disable=no-member
     def __init__(self):
         pass
 

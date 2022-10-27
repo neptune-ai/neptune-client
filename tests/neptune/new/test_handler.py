@@ -16,8 +16,6 @@
 import argparse
 import os
 import unittest
-
-# pylint: disable=protected-access
 from dataclasses import dataclass
 from datetime import (
     datetime,
@@ -347,7 +345,6 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(ns["some/value"].fetch(), 3)
 
     def test_attribute_error(self):
-        # pylint: disable=no-member
         exp = init(mode="debug", flush_period=0.5)
         with self.assertRaises(AttributeError):
             exp["var"].something()
@@ -451,8 +448,6 @@ class TestHandler(unittest.TestCase):
         exp["params/sub-namespace/int_series"].log(100)
         exp["some/num/attr_name"] = FileVal.from_stream(BytesIO(b"Some stream"))
 
-        # pylint: disable=assignment-from-no-return
-        # that's a false positive, pylint looks at Handler.fetch()
         params_dict = exp["params"].fetch()
         self.assertDictEqual(
             params_dict,
@@ -479,8 +474,6 @@ class TestHandler(unittest.TestCase):
         exp["params/sub-namespace/int"] = 42
         exp["params/sub-namespace/string"] = "Some text"
 
-        # pylint: disable=assignment-from-no-return
-        # that's a false positive, pylint looks at Handler.fetch()
         params_dict = exp["params/sub-namespace"].fetch()
         self.assertDictEqual(
             params_dict,

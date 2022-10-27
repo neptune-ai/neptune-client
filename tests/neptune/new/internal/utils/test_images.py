@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# pylint: disable=protected-access
 import contextlib
 import io
 import os
@@ -127,10 +125,10 @@ class TestImage(unittest.TestCase):
         "No torch for 3.10 on Mac",
     )
     def test_get_image_content_from_torch_tensor(self):
-        import torch  # pylint: disable=C0415
+        import torch
 
         # given
-        image_tensor = torch.rand(200, 300, 3)  # pylint: disable=no-member
+        image_tensor = torch.rand(200, 300, 3)
         expected_array = image_tensor.numpy() * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))
 
@@ -141,10 +139,9 @@ class TestImage(unittest.TestCase):
         self.assertFalse((image_tensor.numpy() * 255 - expected_array).any())
 
     def test_get_image_content_from_tensorflow_tensor(self):
-        import tensorflow as tf  # pylint: disable=C0415
+        import tensorflow as tf
 
         # given
-        # pylint: disable=E1120 # false positive
         image_tensor = tf.random.uniform(shape=[200, 300, 3])
         expected_array = image_tensor.numpy() * 255
         expected_image = Image.fromarray(expected_array.astype(numpy.uint8))

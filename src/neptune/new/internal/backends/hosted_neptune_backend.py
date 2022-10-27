@@ -978,7 +978,6 @@ class HostedNeptuneBackend(NeptuneBackend):
         except HTTPNotFound as e:
             raise ContainerUUIDNotFound(container_id, container_type) from e
 
-    # pylint: disable=unused-argument
     @with_api_exceptions_handler
     def _get_file_set_download_request(self, container_id: str, container_type: ContainerType, path: List[str]):
         params = {

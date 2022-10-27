@@ -29,8 +29,6 @@ from neptune.new.internal.artifacts.types import (
 
 
 class TestArtifactDriversMap(unittest.TestCase):
-    # pylint:disable=protected-access
-
     def setUp(self):
         self._impl_backup = ArtifactDriversMap._implementations
         ArtifactDriversMap._implementations = []

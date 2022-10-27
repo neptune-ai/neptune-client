@@ -140,7 +140,6 @@ class NeptuneBackendMock(NeptuneBackend):
     MODEL_SYS_ID = SysId("OFFLINE-MOD")
 
     def __init__(self, credentials=None, proxies=None):
-        # pylint: disable=unused-argument
         self._project_id: UniqueId = UniqueId(str(uuid.uuid4()))
         self._containers: Dict[(UniqueId, ContainerType), ContainerStructure[Value, dict]] = dict()
         self._next_run = 1  # counter for runs
@@ -685,7 +684,6 @@ class NeptuneBackendMock(NeptuneBackend):
             return FileSeries(self._current_value.values + raw_values)
 
         def visit_clear_float_log(self, op: ClearFloatLog) -> Optional[Value]:
-            # pylint: disable=unused-argument
             if self._current_value is None:
                 return FloatSeries([])
             if not isinstance(self._current_value, FloatSeries):
@@ -698,7 +696,6 @@ class NeptuneBackendMock(NeptuneBackend):
             )
 
         def visit_clear_string_log(self, op: ClearStringLog) -> Optional[Value]:
-            # pylint: disable=unused-argument
             if self._current_value is None:
                 return StringSeries([])
             if not isinstance(self._current_value, StringSeries):
@@ -706,7 +703,6 @@ class NeptuneBackendMock(NeptuneBackend):
             return StringSeries([])
 
         def visit_clear_image_log(self, op: ClearImageLog) -> Optional[Value]:
-            # pylint: disable=unused-argument
             if self._current_value is None:
                 return FileSeries([])
             if not isinstance(self._current_value, FileSeries):
@@ -735,7 +731,6 @@ class NeptuneBackendMock(NeptuneBackend):
             return StringSet(self._current_value.values.difference(op.values))
 
         def visit_clear_string_set(self, op: ClearStringSet) -> Optional[Value]:
-            # pylint: disable=unused-argument
             if self._current_value is None:
                 return StringSet(set())
             if not isinstance(self._current_value, StringSet):
@@ -743,7 +738,6 @@ class NeptuneBackendMock(NeptuneBackend):
             return StringSet(set())
 
         def visit_delete_files(self, op: DeleteFiles) -> Optional[Value]:
-            # pylint: disable=unused-argument
             if self._current_value is None:
                 return FileSet([])
             if not isinstance(self._current_value, FileSet):
@@ -752,7 +746,6 @@ class NeptuneBackendMock(NeptuneBackend):
             return self._current_value
 
         def visit_delete_attribute(self, op: DeleteAttribute) -> Optional[Value]:
-            # pylint: disable=unused-argument
             if self._current_value is None:
                 raise MetadataInconsistency(
                     "Cannot perform delete operation on {}. Attribute is undefined.".format(self._path)

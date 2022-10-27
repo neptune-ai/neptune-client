@@ -45,11 +45,7 @@ from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.status import StatusRunner
 from neptune.new.sync.sync import SyncRunner
 
-# backwards compatibility
-# pylint: disable=unused-import,wrong-import-order
 
-
-# pylint: disable=unused-argument
 def get_neptune_path(ctx, param, path: str) -> Path:
     # check if path exists and contains a '.neptune' folder
     path = Path(path)

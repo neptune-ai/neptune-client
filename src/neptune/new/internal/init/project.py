@@ -84,7 +84,6 @@ def init_project(
     if mode != Mode.OFFLINE:
         project.sync(wait=False)
 
-    # pylint: disable=protected-access
     project._startup(debug_mode=mode == Mode.DEBUG)
     return project
 

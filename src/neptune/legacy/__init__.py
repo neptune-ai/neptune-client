@@ -202,7 +202,6 @@ def init(project_qualified_name=None, api_token=None, proxies=None, backend=None
     _check_for_extra_kwargs(init.__name__, kwargs)
     project_qualified_name = assure_project_qualified_name(project_qualified_name)
 
-    # pylint: disable=global-statement
     with __lock:
         global session, project
 
@@ -248,7 +247,6 @@ def set_project(project_qualified_name):
             neptune.set_project('jack/sandbox')
     """
 
-    # pylint: disable=global-statement
     with __lock:
         global session, project
 
@@ -284,7 +282,6 @@ def create_experiment(
     Alias for: :meth:`~neptune.projects.Project.create_experiment`
     """
 
-    # pylint: disable=global-statement
     global project
     if project is None:
         raise NeptuneUninitializedException()
@@ -311,12 +308,10 @@ def create_experiment(
 
 @legacy_client_deprecation
 def get_experiment():
-    # pylint: disable=global-statement
     global project
     if project is None:
         raise NeptuneUninitializedException()
 
-    # pylint: disable=protected-access
     return project._get_current_experiment()
 
 

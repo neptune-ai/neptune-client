@@ -20,8 +20,6 @@ from neptune.new.internal.operation import UploadFile
 from neptune.new.internal.utils import verify_type
 from neptune.new.types.atoms.file import File as FileVal
 
-# pylint: disable=protected-access
-
 
 class File(Atom):
     def assign(self, value: FileVal, wait: bool = False) -> None:
@@ -44,6 +42,5 @@ class File(Atom):
         self._backend.download_file(self._container_id, self._container_type, self._path, destination)
 
     def fetch_extension(self) -> str:
-        # pylint: disable=protected-access
         val = self._backend.get_file_attribute(self._container_id, self._container_type, self._path)
         return val.ext

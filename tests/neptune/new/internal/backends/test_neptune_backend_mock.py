@@ -49,8 +49,6 @@ from tests.neptune.legacy.random_utils import a_string
 
 
 class TestNeptuneBackendMock(unittest.TestCase):
-    # pylint:disable=protected-access
-
     def setUp(self) -> None:
         self.backend = NeptuneBackendMock()
         project_id = self.backend._project_id

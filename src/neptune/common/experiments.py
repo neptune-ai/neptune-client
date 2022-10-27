@@ -48,7 +48,6 @@ from neptune.legacy.internal.utils.image import get_image_content
 _logger = logging.getLogger(__name__)
 
 
-# pylint: disable=too-many-lines
 class Experiment(object):
     """A class for managing Neptune experiment.
 
@@ -995,7 +994,6 @@ class Experiment(object):
 
         self._execution_context.stop()
 
-        # pylint: disable=protected-access
         self._project._remove_stopped_experiment(self)
 
     def __enter__(self):
@@ -1014,7 +1012,6 @@ class Experiment(object):
         return str(self)
 
     def __eq__(self, o):
-        # pylint: disable=protected-access
         return self._id == o._id and self._internal_id == o._internal_id and self._project == o._project
 
     def __ne__(self, o):

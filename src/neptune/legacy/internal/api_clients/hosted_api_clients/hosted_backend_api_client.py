@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# pylint: disable=too-many-lines
-
 import logging
 import os
 import platform
@@ -122,7 +119,6 @@ class HostedNeptuneBackendApiClient(HostedNeptuneMixin, BackendApiClient):
 
         if sys.version_info >= (3, 7):
             try:
-                # pylint: disable=no-member
                 os.register_at_fork(after_in_child=self._handle_fork_in_child)
             except AttributeError:
                 pass

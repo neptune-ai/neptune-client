@@ -46,8 +46,6 @@ _logger = logging.getLogger(__name__)
 
 
 class Project(object):
-    # pylint: disable=redefined-builtin
-
     """A class for storing information and managing Neptune project.
 
     Args:
@@ -450,7 +448,6 @@ class Project(object):
 
         self._backend.upload_source_code(experiment, source_target_pairs)
 
-        # pylint: disable=protected-access
         experiment._start(
             abort_callback=abort_callback,
             logger=logger,

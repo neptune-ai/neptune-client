@@ -17,7 +17,6 @@ __all__ = ["NeptuneCallback"]
 
 
 try:
-    # pylint: disable=import-error
     from transformers.integrations import NeptuneCallback
 except ModuleNotFoundError as e:
     if e.name == "transformers":

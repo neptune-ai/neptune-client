@@ -136,7 +136,6 @@ def init_model_version(
         if name is not None:
             _model_version[attr_consts.SYSTEM_NAME_ATTRIBUTE_PATH] = name
 
-    # pylint: disable=protected-access
     _model_version._startup(debug_mode=mode == Mode.DEBUG)
 
     return _model_version

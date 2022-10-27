@@ -30,7 +30,6 @@ T = TypeVar("T")
 Node = TypeVar("Node")
 
 
-# pylint: disable=unused-argument
 def _default_node_factory(path):
     return {}
 

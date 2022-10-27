@@ -178,7 +178,6 @@ class Project(MetadataContainer):
         query = NQLQueryAggregate(items=query_items, aggregator=NQLAggregator.AND)
         return query
 
-    # pylint:disable=redefined-builtin
     def fetch_runs_table(
         self,
         id: Optional[Union[str, Iterable[str]]] = None,

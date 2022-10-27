@@ -45,8 +45,6 @@ from neptune.new.internal.threading.daemon import Daemon
 from neptune.new.internal.utils.logger import logger
 from neptune.new.sync.utils import create_dir_name
 
-# pylint: disable=protected-access
-
 _logger = logging.getLogger(__name__)
 
 
@@ -86,7 +84,6 @@ class AsyncOperationProcessor(OperationProcessor):
 
         if sys.version_info >= (3, 7):
             try:
-                # pylint: disable=no-member
                 os.register_at_fork(after_in_child=self._handle_fork_in_child)
             except AttributeError:
                 pass

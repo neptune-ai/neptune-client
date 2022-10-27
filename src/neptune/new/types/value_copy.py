@@ -38,7 +38,6 @@ class ValueCopy(Value):
         self.source_handler = source_handler
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
-        # pylint: disable=protected-access
         source_path = self.source_handler._path
         source_attr = self.source_handler._container.get_attribute(source_path)
         if source_attr and source_attr.supports_copy:
