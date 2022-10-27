@@ -26,7 +26,6 @@ from typing import (
 
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.utils import (
-    get_stream_content,
     limits,
     verify_type,
 )
@@ -106,7 +105,10 @@ class File(Atom):
         if self.file_type is FileType.IN_MEMORY:
             return self._content
         elif self.file_type is FileType.STREAM:
-            return self._stream.read()
+            val = self._stream.read()
+            if isinstance(self._stream, io.TextIOBase):
+                val = val.encode()
+            return val
         else:
             raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
 
@@ -119,6 +121,8 @@ class File(Atom):
                 buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
                 while buffer_:
                     # TODO: replace with Walrus Operator once python3.7 support is dropped
+                    if isinstance(self._stream, io.TextIOBase):
+                        buffer_ = buffer_.encode()
                     f.write(buffer_)
                     buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
         else:
@@ -171,6 +175,7 @@ class File(Atom):
 
     @staticmethod
     def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> "File":
+        # TODO: docs (update)
         """Factory method for creating File value objects directly from binary and text streams.
 
         In the case of text stream, UTF-8 encoding will be used.
@@ -195,8 +200,11 @@ class File(Atom):
             https://docs.python.org/3/library/io.html#io.IOBase
         """
         verify_type("stream", stream, IOBase)
-        content, stream_default_ext = get_stream_content(stream, seek)
-        return File(content=content, extension=extension or stream_default_ext)
+        if seek is not None and stream.seekable():
+            stream.seek(seek)
+        if extension is None:
+            extension = "txt" if isinstance(stream, io.TextIOBase) else "bin"
+        return File(stream=stream, extension=extension)
 
     @staticmethod
     def as_image(image) -> "File":

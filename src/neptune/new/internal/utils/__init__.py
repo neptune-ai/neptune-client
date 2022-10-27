@@ -17,10 +17,7 @@ import base64
 import logging
 import os
 from glob import glob
-from io import (
-    BytesIO,
-    IOBase,
-)
+from io import IOBase
 from typing import (
     Iterable,
     List,
@@ -30,8 +27,6 @@ from typing import (
     TypeVar,
     Union,
 )
-
-from neptune.new.internal.utils import limits
 
 T = TypeVar("T")
 
@@ -138,39 +133,6 @@ def get_common_root(absolute_paths: List[str]) -> Optional[str]:
         return common_root
     except ValueError:
         return None
-
-
-def get_stream_content(stream: IOBase, seek: Optional[int] = None) -> (Optional[str], str):
-    if seek is not None and stream.seekable():
-        stream.seek(seek)
-
-    content = stream.read(limits.STREAM_SIZE_LIMIT_BYTES + 1)
-    default_ext = "txt" if isinstance(content, str) else "bin"
-    if isinstance(content, str):
-        content = content.encode("utf-8")
-
-    if limits.stream_size_exceeds_limit(len(content)):
-        return None, default_ext
-
-    while True:
-        chunk = stream.read(1024 * 1024)
-        if chunk is None:
-            continue
-        elif not chunk:
-            break
-        else:
-            if not isinstance(content, BytesIO):
-                content = BytesIO(content)
-                content.seek(0, 2)
-            if isinstance(chunk, str):
-                chunk = chunk.encode("utf-8")
-            if limits.stream_size_exceeds_limit(content.tell() + len(chunk)):
-                return None, default_ext
-            content.write(chunk)
-    if isinstance(content, BytesIO):
-        content = content.getvalue()
-
-    return content, default_ext
 
 
 def is_ipython() -> bool:
