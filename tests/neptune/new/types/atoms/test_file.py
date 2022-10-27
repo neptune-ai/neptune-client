@@ -22,6 +22,7 @@ from io import (
 import numpy
 from PIL import Image
 
+from e2e_tests.utils import tmp_context
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.utils.images import _get_pil_image_data
 from neptune.new.types import File
@@ -31,125 +32,100 @@ from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 class TestFile(TestAttributeBase):
     def test_create_from_path(self):
-        file = File("some/path.ext")
-        self.assertIs(file.file_type, FileType.LOCAL_FILE)
-        self.assertEqual("some/path.ext", file.path)
-        with self.assertRaises(NeptuneException):
-            _ = file.content
-        self.assertEqual("ext", file.extension)
+        def _test_local_file(path: str, expected_ext: str, custom_ext=None):
+            file = File(path, extension=custom_ext)
+            self.assertIs(file.file_type, FileType.LOCAL_FILE)
+            self.assertEqual(path, file.path)
+            with self.assertRaises(NeptuneException):
+                _ = file.content
+            with self.assertRaises(NeptuneException):
+                file._save(None)
+            self.assertEqual(expected_ext, file.extension)
 
-        file = File("some/path.txt.ext")
-        self.assertIs(file.file_type, FileType.LOCAL_FILE)
-        self.assertEqual("some/path.txt.ext", file.path)
-        with self.assertRaises(NeptuneException):
-            _ = file.content
-        self.assertEqual("ext", file.extension)
+        _test_local_file("some/path.ext", expected_ext="ext")
+        _test_local_file("some/path.txt.ext", expected_ext="ext")
+        _test_local_file("so.me/path", expected_ext="")
+        _test_local_file("some/path.ext", expected_ext="txt", custom_ext="txt")
 
-        file = File("so.me/path")
-        self.assertIs(file.file_type, FileType.LOCAL_FILE)
-        self.assertEqual("so.me/path", file.path)
-        with self.assertRaises(NeptuneException):
-            _ = file.content
-        self.assertEqual("", file.extension)
+    def _save_and_return_content(self, file: File):
+        with tmp_context() as tmp:
+            file_name = "saved_file"
+            file_path = f"{tmp}/{file_name}.{file.extension}"
+            file._save(file_path)
+            with open(file_path, "rb") as f:
+                return f.read()
 
-        file = File("some/path.ext", extension="txt")
-        self.assertIs(file.file_type, FileType.LOCAL_FILE)
-        self.assertEqual("some/path.ext", file.path)
+    def _test_in_memory_file(self, content, expected_ext, custom_extension=None):
+        file = File.from_content(content, extension=custom_extension)
+        bin_content = content.encode() if isinstance(content, str) else content
+
+        self.assertIs(file.file_type, FileType.IN_MEMORY)
         with self.assertRaises(NeptuneException):
-            _ = file.content
-        self.assertEqual("txt", file.extension)
+            _ = file.path
+        self.assertEqual(bin_content, file.content)
+        self.assertEqual(self._save_and_return_content(file), file.content)
+        self.assertEqual(expected_ext, file.extension)
 
     def test_create_from_string_content(self):
-        file = File.from_content("some_content")
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual("some_content".encode("utf-8"), file.content)
-        self.assertEqual("txt", file.extension)
-
-        file = File.from_content("some_content", extension="png")
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual("some_content".encode("utf-8"), file.content)
-        self.assertEqual("png", file.extension)
+        self._test_in_memory_file("some_content", expected_ext="txt")
+        self._test_in_memory_file("some_content", expected_ext="png", custom_extension="png")
 
     def test_create_from_bytes_content(self):
-        file = File.from_content(b"some_content")
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"some_content", file.content)
-        self.assertEqual("bin", file.extension)
+        self._test_in_memory_file(b"some_content", expected_ext="bin")
+        self._test_in_memory_file(b"some_content", expected_ext="png", custom_extension="png")
 
-        file = File.from_content(b"some_content", extension="png")
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
+    def _test_stream_content(self, file_producer, expected_content, expected_ext):
+        """We can read content of the stream only once, so expect `stream_producer`"""
+        file = file_producer()
+        self.assertIs(file.file_type, FileType.STREAM)
         with self.assertRaises(NeptuneException):
             _ = file.path
-        self.assertEqual(b"some_content", file.content)
-        self.assertEqual("png", file.extension)
+        self.assertEqual(expected_ext, file.extension)
+
+        file = file_producer()
+        self.assertEqual(expected_content, file.content)
+        file = file_producer()
+        self.assertEqual(self._save_and_return_content(file), expected_content)
 
     def test_create_from_string_io(self):
-        file = File.from_stream(StringIO("aaabbbccc"))
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"aaabbbccc", file.content)
-        self.assertEqual("txt", file.extension)
+        self._test_stream_content(
+            lambda: File.from_stream(StringIO("aaabbbccc")), expected_content=b"aaabbbccc", expected_ext="txt"
+        )
 
-        stream = StringIO("aaabbbccc")
-        stream.seek(3)
-        file = File.from_stream(stream)
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"aaabbbccc", file.content)
-        self.assertEqual("txt", file.extension)
+        def _file_from_seeked_stream():
+            stream = StringIO("aaabbbccc")
+            stream.seek(3)  # should not affect created `File`
+            return File.from_stream(stream)
 
-        file = File.from_stream(StringIO("aaabbbccc"), extension="png")
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"aaabbbccc", file.content)
-        self.assertEqual("png", file.extension)
-
-        file = File.from_stream(StringIO("aaabbbccc"), seek=5)
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"bccc", file.content)
-        self.assertEqual("txt", file.extension)
+        self._test_stream_content(_file_from_seeked_stream, expected_content=b"aaabbbccc", expected_ext="txt")
+        self._test_stream_content(
+            lambda: File.from_stream(StringIO("aaabbbccc"), extension="png"),
+            expected_content=b"aaabbbccc",
+            expected_ext="png",
+        )
+        self._test_stream_content(
+            lambda: File.from_stream(StringIO("aaabbbccc"), seek=5), expected_content=b"bccc", expected_ext="txt"
+        )
 
     def test_create_from_bytes_io(self):
-        file = File.from_stream(BytesIO(b"aaabbbccc"))
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"aaabbbccc", file.content)
-        self.assertEqual("bin", file.extension)
+        self._test_stream_content(
+            lambda: File.from_stream(BytesIO(b"aaabbbccc")), expected_content=b"aaabbbccc", expected_ext="bin"
+        )
 
-        stream = BytesIO(b"aaabbbccc")
-        stream.seek(3)
-        file = File.from_stream(stream)
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"aaabbbccc", file.content)
-        self.assertEqual("bin", file.extension)
+        def _file_from_seeked_stream():
+            stream = BytesIO(b"aaabbbccc")
+            stream.seek(3)  # should not affect created `File`
+            return File.from_stream(stream)
 
-        file = File.from_stream(BytesIO(b"aaabbbccc"), extension="png")
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"aaabbbccc", file.content)
-        self.assertEqual("png", file.extension)
-
-        file = File.from_stream(BytesIO(b"aaabbbccc"), seek=5)
-        self.assertIs(file.file_type, FileType.IN_MEMORY)
-        with self.assertRaises(NeptuneException):
-            _ = file.path
-        self.assertEqual(b"bccc", file.content)
-        self.assertEqual("bin", file.extension)
+        self._test_stream_content(_file_from_seeked_stream, expected_content=b"aaabbbccc", expected_ext="bin")
+        self._test_stream_content(
+            lambda: File.from_stream(BytesIO(b"aaabbbccc"), extension="png"),
+            expected_content=b"aaabbbccc",
+            expected_ext="png",
+        )
+        self._test_stream_content(
+            lambda: File.from_stream(BytesIO(b"aaabbbccc"), seek=5), expected_content=b"bccc", expected_ext="bin"
+        )
 
     def test_as_image(self):
         # given

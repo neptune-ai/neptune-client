@@ -198,7 +198,7 @@ class UploadFile(Operation):
                 ext=value.extension,
                 file_path=os.path.abspath(value.path),
             )
-        elif value.file_type is FileType.IN_MEMORY:
+        elif value.file_type in (FileType.IN_MEMORY, FileType.STREAM):
             tmp_file_path = cls.get_upload_path(attribute_path, value.extension, upload_path)
             value._save(tmp_file_path)
             operation = UploadFile(
