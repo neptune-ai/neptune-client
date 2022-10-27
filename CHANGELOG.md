@@ -1,4 +1,7 @@
-## [UNRELEASED]  neptune-client 0.16.11
+## neptune-client 0.16.11
+
+### Fixes
+- Fixed versioneer configuration and version detection in conda package ([#1061](https://github.com/neptune-ai/neptune-client/pull/1061))
 
 ### Changes
 - Upload in-memory files using copy stored on disk ([#1052](https://github.com/neptune-ai/neptune-client/pull/1052))
