@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import io
 import os
 import random
 import uuid
@@ -29,6 +30,8 @@ from e2e_tests.base import (
     fake,
 )
 from e2e_tests.utils import (
+    SIZE_1KB,
+    SIZE_1MB,
     initialize_container,
     tmp_context,
 )
@@ -43,6 +46,7 @@ from neptune.new.types import (
     File,
     FileSet,
 )
+from neptune.new.types.atoms.file import FileType
 
 
 class TestUpload(BaseE2ETest):
@@ -52,66 +56,51 @@ class TestUpload(BaseE2ETest):
         assert container._backend._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD)
         assert isinstance(container._backend._client_config.multipart_config, MultipartConfig)
 
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    @pytest.mark.parametrize(
-        "file_size",
-        [
-            pytest.param(10 * 2**20, id="big"),  # 10 MB, multipart
-            pytest.param(100 * 2**10, id="small"),  # 100 kB, single upload
-        ],
-    )
-    def test_single_file(self, container: MetadataContainer, file_size: int):
+    def _test_upload(self, container: MetadataContainer, file_type: FileType, file_size: int):
         key = self.gen_key()
         extension = fake.file_extension()
-        filename = fake.file_name(extension=extension)
         downloaded_filename = fake.file_name()
+        content = os.urandom(file_size)
 
-        with tmp_context():
-            # create file_size file
+        if file_type is FileType.LOCAL_FILE:
+            filename = fake.file_name(extension=extension)
             with open(filename, "wb") as file:
-                file.write(b"\0" * file_size)
-            container[key].upload(filename)
+                file.write(content)
 
-            container.sync()
-            container[key].download(downloaded_filename)
+            file = File.from_path(filename)
+        elif file_type is FileType.IN_MEMORY:
+            file = File.from_content(content, extension)
+        elif file_type is FileType.STREAM:
+            file = File.from_stream(io.BytesIO(content), extension=extension)
+        else:
+            raise ValueError()
 
-            assert container[key].fetch_extension() == extension
-            assert os.path.getsize(downloaded_filename) == file_size
-            with open(downloaded_filename, "rb") as file:
-                content = file.read()
-                assert len(content) == file_size
-                assert content == b"\0" * file_size
-
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    @pytest.mark.parametrize(
-        "file_size",
-        [
-            pytest.param(10 * 2**20, id="big"),  # 10 MB, multipart
-            pytest.param(100 * 2**10, id="small"),  # 100 kB, single upload
-        ],
-    )
-    def test_in_memory_file(self, container: MetadataContainer, file_size: int):
-        key = self.gen_key()
-        extension = fake.file_extension()
-        downloaded_filename = fake.file_name()
-        expected_content = os.urandom(file_size)
-
-        container[key].upload(File.from_content(expected_content, extension))
-
+        container[key].upload(file)
         container.sync()
         container[key].download(downloaded_filename)
 
         assert container[key].fetch_extension() == extension
         assert os.path.getsize(downloaded_filename) == file_size
         with open(downloaded_filename, "rb") as file:
-            content = file.read()
+            downloaded_content = file.read()
             assert len(content) == file_size
-            assert content == expected_content
+            assert downloaded_content == content
 
-    def test_single_file_changed_during_upload(self, environment, monkeypatch):
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    @pytest.mark.parametrize("file_type", list(FileType))
+    def test_single_upload(self, container: MetadataContainer, file_type: FileType):
+        file_size = 100 * SIZE_1KB  # 100 kB, single upload
+        self._test_upload(container, file_type, file_size)
+
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_multipart_upload(self, container: MetadataContainer):
+        file_size = 10 * SIZE_1MB  # 10 MB, multipart
+        self._test_upload(container, FileType.IN_MEMORY, file_size)
+
+    def test_file_changed_during_upload(self, environment, monkeypatch):
         key = self.gen_key()
-        file_size = 11 * 2**20  # 11 MB, multipart with 3 parts
-        intermediate_size = 6 * 2**20  # 6 MB, second part < 5MB
+        file_size = 11 * SIZE_1MB  # 11 MB, multipart with 3 parts
+        intermediate_size = 6 * SIZE_1MB  # 6 MB, second part < 5MB
         filename = fake.file_name()
         downloaded_filename = fake.file_name()
 
@@ -167,7 +156,7 @@ class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_replace_float_attribute_with_uploaded_file(self, container: MetadataContainer):
         key = self.gen_key()
-        file_size = 100 * 2**10  # 100 kB
+        file_size = 100 * SIZE_1KB  # 100 kB
         filename = fake.file_name()
         downloaded_filename = fake.file_name()
 
@@ -193,17 +182,19 @@ class TestUpload(BaseE2ETest):
                 assert len(content) == file_size
                 assert content == b"\0" * file_size
 
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    def test_fileset(self, container: MetadataContainer):
+
+class TestFileSet(BaseE2ETest):
+    def _test_fileset(self, container: MetadataContainer, large_file_size: int, small_files_no: int):
         key = self.gen_key()
-        large_filesize = 10 * 2**20  # 10MB
         large_filename = fake.file_name()
-        small_files = [(f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8")) for _ in range(100)]
+        small_files = [
+            (f"{uuid.uuid4()}.{fake.file_extension()}", fake.sentence().encode("utf-8")) for _ in range(small_files_no)
+        ]
 
         with tmp_context():
             # create single large file (multipart) and a lot of very small files
             with open(large_filename, "wb") as file:
-                file.write(b"\0" * large_filesize)
+                file.write(b"\0" * large_file_size)
             for filename, contents in small_files:
                 with open(filename, "wb") as file:
                     file.write(contents)
@@ -223,8 +214,8 @@ class TestUpload(BaseE2ETest):
                 assert set(zipped.namelist()) == {large_filename, "/"}
                 with zipped.open(large_filename, "r") as file:
                     content = file.read()
-                    assert len(content) == large_filesize
-                    assert content == b"\0" * large_filesize
+                    assert len(content) == large_file_size
+                    assert content == b"\0" * large_file_size
 
             # when small files as fileset uploaded
             container[key].upload_files(small_filenames)
@@ -237,8 +228,8 @@ class TestUpload(BaseE2ETest):
                 assert set(zipped.namelist()) == {large_filename, "/", *small_filenames}
                 with zipped.open(large_filename, "r") as file:
                     content = file.read()
-                    assert len(content) == large_filesize
-                    assert content == b"\0" * large_filesize
+                    assert len(content) == large_file_size
+                    assert content == b"\0" * large_file_size
                 for filename, expected_content in small_files:
                     with zipped.open(filename, "r") as file:
                         content = file.read()
@@ -260,8 +251,22 @@ class TestUpload(BaseE2ETest):
                         assert len(content) == len(expected_content)
                         assert content == expected_content
 
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    def test_fileset(self, container: MetadataContainer):
+        # 100 kB, single upload for large file
+        large_file_size = 100 * SIZE_1KB
+        small_files_no = 10
+        self._test_fileset(container, large_file_size, small_files_no)
+
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_fileset_with_multipart(self, container: MetadataContainer):
+        # 10 MB, multipart upload for large file
+        large_file_size = 10 * SIZE_1MB
+        small_files_no = 100
+        self._test_fileset(container, large_file_size, small_files_no)
+
     @classmethod
-    def _gen_tree_paths(cls, depth, width=3) -> Set:
+    def _gen_tree_paths(cls, depth, width=2) -> Set:
         """Generates all subdirectories of some random tree directory structure"""
         this_level_dirs = (fake.word() + "/" for _ in range(width))
         if depth == 1:
@@ -272,7 +277,7 @@ class TestUpload(BaseE2ETest):
             subpaths.update(new_paths)
             return subpaths
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_fileset_nested_structure(self, container: MetadataContainer):
         key = self.gen_key()
         possible_paths = self._gen_tree_paths(depth=3)
@@ -280,7 +285,7 @@ class TestUpload(BaseE2ETest):
         small_files = [
             (
                 f"{path}{uuid.uuid4()}.{fake.file_extension()}",
-                os.urandom(random.randint(10**3, 10**6)),
+                os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB)),
             )
             for path in possible_paths
         ]
@@ -317,13 +322,13 @@ class TestUpload(BaseE2ETest):
                         assert len(content) == len(expected_content)
                         assert content == expected_content
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_reset_fileset(self, container: MetadataContainer):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = os.urandom(random.randint(10**3, 10**6))
-        content2 = os.urandom(random.randint(10**3, 10**6))
+        content1 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
+        content2 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
 
         with tmp_context():
             # create file1 and file2
@@ -348,14 +353,14 @@ class TestUpload(BaseE2ETest):
                     assert len(content) == len(content2)
                     assert content == content2
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
     def test_single_file_override(self, container: MetadataContainer, delete_attribute: bool):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = os.urandom(random.randint(10**3, 10**6))
-        content2 = os.urandom(random.randint(10**3, 10**6))
+        content1 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
+        content2 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
         downloaded_filename = fake.file_name()
 
         with tmp_context():
@@ -386,13 +391,13 @@ class TestUpload(BaseE2ETest):
                 assert len(content) == len(content2)
                 assert content == content2
 
-    @pytest.mark.parametrize("container", ["project", "run"], indirect=True)
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
     @pytest.mark.parametrize("delete_attribute", [True, False])
     def test_fileset_file_override(self, container: MetadataContainer, delete_attribute: bool):
         key = self.gen_key()
         filename = fake.file_name()
-        content1 = os.urandom(random.randint(10**3, 10**6))
-        content2 = os.urandom(random.randint(10**3, 10**6))
+        content1 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
+        content2 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
 
         with tmp_context():
             # create file

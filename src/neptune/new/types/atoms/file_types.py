@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 __all__ = [
-    "FileComposite",
-    "LocalFileComposite",
-    "InMemoryComposite",
-    "FileComposite",
-    "StreamComposite",
+    "_FileType",
+    "_FileComposite",
+    "_LocalFileComposite",
+    "_InMemoryComposite",
+    "_FileComposite",
+    "_StreamComposite",
 ]
 
 import abc
@@ -37,18 +38,14 @@ from neptune.new.exceptions import StreamAlreadyUsedException
 from neptune.new.internal.utils import verify_type
 
 
-class FileType(enum.Enum):
+class _FileType(enum.Enum):
     LOCAL_FILE = "LOCAL_FILE"
     IN_MEMORY = "IN_MEMORY"
     STREAM = "STREAM"
 
 
-class FileComposite(abc.ABC):
-    """
-    Composite class defining behaviour of neptune.new.types.atoms.file.File
-    """
-
-    file_type: FileType = None
+class _FileComposite(abc.ABC):
+    file_type: _FileType = None
 
     def __init__(self, extension: str):
         verify_type("extension", extension, str)
@@ -70,8 +67,8 @@ class FileComposite(abc.ABC):
         raise NeptuneException(f"`save` method is not supported for {self.file_type}")
 
 
-class LocalFileComposite(FileComposite):
-    file_type = FileType.LOCAL_FILE
+class _LocalFileComposite(_FileComposite):
+    file_type = _FileType.LOCAL_FILE
 
     def __init__(self, path: str, extension: Optional[str] = None):
         try:
@@ -91,8 +88,8 @@ class LocalFileComposite(FileComposite):
         return f"File(path={self.path})"
 
 
-class InMemoryComposite(FileComposite):
-    file_type = FileType.IN_MEMORY
+class _InMemoryComposite(_FileComposite):
+    file_type = _FileType.IN_MEMORY
 
     def __init__(self, content: Union[str, bytes], extension: Optional[str] = None):
         if isinstance(content, str):
@@ -120,7 +117,7 @@ def read_once(f):
     """Decorator for validating read once on STREAM objects"""
 
     @wraps(f)
-    def func(self: "StreamComposite", *args, **kwargs):
+    def func(self: "_StreamComposite", *args, **kwargs):
         if self._stream_read:
             raise StreamAlreadyUsedException()
         self._stream_read = True
@@ -129,8 +126,8 @@ def read_once(f):
     return func
 
 
-class StreamComposite(FileComposite):
-    file_type = FileType.STREAM
+class _StreamComposite(_FileComposite):
+    file_type = _FileType.STREAM
 
     def __init__(self, stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None):
         verify_type("stream", stream, (IOBase, type(None)))
