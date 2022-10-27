@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import enum
+import io
 import os
 from io import IOBase
 from typing import (
@@ -52,6 +53,7 @@ Ret = TypeVar("Ret")
 class FileType(enum.Enum):
     LOCAL_FILE = "LOCAL_FILE"
     IN_MEMORY = "IN_MEMORY"
+    STREAM = "STREAM"
 
 
 class File(Atom):
@@ -59,25 +61,31 @@ class File(Atom):
         self,
         path: Optional[str] = None,
         content: Optional[bytes] = None,
+        stream: Optional[IOBase] = None,
         extension: Optional[str] = None,
     ):
         verify_type("path", path, (str, type(None)))
         verify_type("content", content, (bytes, type(None)))
+        verify_type("stream", stream, (IOBase, type(None)))
         verify_type("extension", extension, (str, type(None)))
 
-        if path is not None and content is not None:
-            raise ValueError("path and content are mutually exclusive")
-        if path is None and content is None:
-            raise ValueError("path or content is required")
+        exclusive_parameters_no = sum(1 if paramter is not None else 0 for paramter in (path, content, stream))
+        if exclusive_parameters_no > 1:
+            raise ValueError("path, content and stream are mutually exclusive")
+        if exclusive_parameters_no == 0:
+            raise ValueError("path, content or stream is required")
         if path is not None:
             self.file_type = FileType.LOCAL_FILE
-        else:
+        elif content is not None:
             self.file_type = FileType.IN_MEMORY
+        else:
+            self.file_type = FileType.STREAM
 
         self._path = path
         self._content = content
+        self._stream = stream
 
-        if extension is None and path is not None:
+        if self.file_type is FileType.LOCAL_FILE and extension is None:
             try:
                 ext = os.path.splitext(path)[1]
                 self.extension = ext[1:] if ext else ""
@@ -88,33 +96,44 @@ class File(Atom):
 
     @property
     def path(self):
-        if self.file_type is not FileType.LOCAL_FILE:
+        if self.file_type is FileType.LOCAL_FILE:
+            return self._path
+        else:
             raise NeptuneException(f"`path` attribute is not supported for {self.file_type}")
-
-        return self._path
 
     @property
     def content(self):
-        if self.file_type is not FileType.IN_MEMORY:
+        if self.file_type is FileType.IN_MEMORY:
+            return self._content
+        elif self.file_type is FileType.STREAM:
+            return self._stream.read()
+        else:
             raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
 
-        return self._content
-
     def _save(self, path):
-        if self.file_type is not FileType.IN_MEMORY:
+        if self.file_type is FileType.IN_MEMORY:
+            with open(path, "wb") as f:
+                f.write(self._content)
+        elif self.file_type is FileType.STREAM:
+            with open(path, "wb") as f:
+                buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
+                while buffer_:
+                    # TODO: replace with Walrus Operator once python3.7 support is dropped
+                    f.write(buffer_)
+                    buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
+        else:
             raise NeptuneException(f"`_save` method is not supported for {self.file_type}")
-
-        with open(path, "wb") as f:
-            f.write(self._content)
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_file(self)
 
     def __str__(self):
         if self.file_type is FileType.LOCAL_FILE:
-            return "File(path={})".format(str(self.path))
+            return f"File(path={self.path})"
         elif self.file_type is FileType.IN_MEMORY:
             return "File(content=...)"
+        elif self.file_type is FileType.STREAM:
+            return f"File(stream={self._stream})"
         else:
             raise ValueError(f"Unexpected FileType: {self.file_type}")
 
