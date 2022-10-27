@@ -232,7 +232,7 @@ class TestImage(unittest.TestCase):
         result = get_html_content(p)
 
         # then
-        self.assertTrue(result.startswith('<!DOCTYPE html>\n<html lang="en">'))
+        self.assertTrue(result.lstrip().startswith('<!DOCTYPE html>\n<html lang="en">'))
 
     def test_get_html_from_pandas(self):
         # given
