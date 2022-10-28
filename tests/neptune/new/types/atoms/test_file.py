@@ -32,11 +32,13 @@ from neptune.new.exceptions import (
 from neptune.new.internal.utils.images import _get_pil_image_data
 from neptune.new.types import File
 from neptune.new.types.atoms.file import FileType
+from neptune.new.types.atoms.file_types import _InMemoryComposite
+from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFile(unittest.TestCase):
-    def _test_local_file(self, path: str, expected_ext: str, custom_ext=None):
-        file = File(path, extension=custom_ext)
+    def _test_local_file(self, path: str, expected_ext: str):
+        file = File(path)
         self.assertIs(file.file_type, FileType.LOCAL_FILE)
         self.assertEqual(path, file.path)
         with self.assertRaises(NeptuneException):
@@ -49,7 +51,6 @@ class TestFile(unittest.TestCase):
         self._test_local_file("some/path.ext", expected_ext="ext")
         self._test_local_file("some/path.txt.ext", expected_ext="ext")
         self._test_local_file("so.me/path", expected_ext="")
-        self._test_local_file("some/path.ext", expected_ext="txt", custom_ext="txt")
 
     @staticmethod
     def _save_and_return_content(file: File):
@@ -189,6 +190,6 @@ class TestFile(unittest.TestCase):
 
     def test_raise_exception_in_constructor(self):
         with self.assertRaises(ValueError):
-            File(path="path", content=b"some_content")
+            File(path="path", file_composite=_InMemoryComposite(b"some_content"))
         with self.assertRaises(ValueError):
             File()

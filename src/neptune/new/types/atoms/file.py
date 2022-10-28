@@ -18,10 +18,6 @@ __all__ = [
     "File",
 ]
 
-import enum
-import io
-import os
-from functools import wraps
 from io import IOBase
 from typing import (
     TYPE_CHECKING,
@@ -30,14 +26,7 @@ from typing import (
     Union,
 )
 
-from neptune.new.exceptions import (
-    NeptuneException,
-    StreamAlreadyUsedException,
-)
-from neptune.new.internal.utils import (
-    limits,
-    verify_type,
-)
+from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.images import (
     get_html_content,
     get_image_content,
@@ -51,6 +40,13 @@ from neptune.new.internal.utils.images import (
     is_plotly_figure,
 )
 from neptune.new.types.atoms.atom import Atom
+from neptune.new.types.atoms.file_types import _FileComposite
+from neptune.new.types.atoms.file_types import _FileType as FileType
+from neptune.new.types.atoms.file_types import (
+    _InMemoryComposite,
+    _LocalFileComposite,
+    _StreamComposite,
+)
 
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
@@ -58,127 +54,45 @@ if TYPE_CHECKING:
 Ret = TypeVar("Ret")
 
 
-class FileType(enum.Enum):
-    LOCAL_FILE = "LOCAL_FILE"
-    IN_MEMORY = "IN_MEMORY"
-    STREAM = "STREAM"
+class File(Atom):
+    def __init__(self, path: Optional[str] = None, file_composite: Optional[_FileComposite] = None):
+        """We have to support `path` parameter since almost all of `File` usages by our users look like `File(path)`."""
+        verify_type("path", path, (str, type(None)))
+        verify_type("file_composite", file_composite, (_FileComposite, type(None)))
 
-
-def read_once(f):
-    """Decorator for validating read once on STREAM objects"""
-
-    @wraps(f)
-    def func(self: "StreamComposite", *args, **kwargs):
-        if self._stream_read:
-            raise StreamAlreadyUsedException()
-        self._stream_read = True
-        return f(self, *args, **kwargs)
-
-    return func
-
-
-class StreamComposite:
-    def __init__(self, stream):
-        self._stream = stream
-        self._stream_read = False
+        if path is not None and file_composite is not None:
+            raise ValueError("path and file_composite are mutually exclusive")
+        if path is None and file_composite is None:
+            raise ValueError("path or file_composite is required")
+        if path is not None:
+            self._file_composite = _LocalFileComposite(path)
+        else:
+            self._file_composite = file_composite
 
     @property
-    @read_once
-    def content(self):
-        self._stream_read = True
-        val = self._stream.read()
-        if isinstance(self._stream, io.TextIOBase):
-            val = val.encode()
-        return val
+    def extension(self):
+        return self._file_composite.extension
 
-    @read_once
-    def save(self, path):
-        self._stream_read = True
-        with open(path, "wb") as f:
-            buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
-            while buffer_:
-                # TODO: replace with Walrus Operator once python3.7 support is dropped
-                if isinstance(self._stream, io.TextIOBase):
-                    buffer_ = buffer_.encode()
-                f.write(buffer_)
-                buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
-
-
-class File(Atom):
-    def __init__(
-        self,
-        path: Optional[str] = None,
-        content: Optional[bytes] = None,
-        stream: Optional[IOBase] = None,
-        extension: Optional[str] = None,
-    ):
-        verify_type("path", path, (str, type(None)))
-        verify_type("content", content, (bytes, type(None)))
-        verify_type("stream", stream, (IOBase, type(None)))
-        verify_type("extension", extension, (str, type(None)))
-
-        exclusive_parameters_no = sum(1 if paramter is not None else 0 for paramter in (path, content, stream))
-        if exclusive_parameters_no > 1:
-            raise ValueError("path, content and stream are mutually exclusive")
-        if exclusive_parameters_no == 0:
-            raise ValueError("path, content or stream is required")
-        if path is not None:
-            self.file_type = FileType.LOCAL_FILE
-        elif content is not None:
-            self.file_type = FileType.IN_MEMORY
-        else:
-            self.file_type = FileType.STREAM
-
-        self._path = path
-        self._content = content
-        self._stream = StreamComposite(stream)
-
-        if self.file_type is FileType.LOCAL_FILE and extension is None:
-            try:
-                ext = os.path.splitext(path)[1]
-                self.extension = ext[1:] if ext else ""
-            except ValueError:
-                self.extension = ""
-        else:
-            self.extension = extension or ""
+    @property
+    def file_type(self):
+        return self._file_composite.file_type
 
     @property
     def path(self):
-        if self.file_type is FileType.LOCAL_FILE:
-            return self._path
-        else:
-            raise NeptuneException(f"`path` attribute is not supported for {self.file_type}")
+        return self._file_composite.path
 
     @property
     def content(self):
-        if self.file_type is FileType.IN_MEMORY:
-            return self._content
-        elif self.file_type is FileType.STREAM:
-            return self._stream.content
-        else:
-            raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
+        return self._file_composite.content
 
     def _save(self, path):
-        if self.file_type is FileType.IN_MEMORY:
-            with open(path, "wb") as f:
-                f.write(self._content)
-        elif self.file_type is FileType.STREAM:
-            return self._stream.save(path)
-        else:
-            raise NeptuneException(f"`_save` method is not supported for {self.file_type}")
+        self._file_composite.save(path)
+
+    def __str__(self):
+        return str(self._file_composite)
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_file(self)
-
-    def __str__(self):
-        if self.file_type is FileType.LOCAL_FILE:
-            return f"File(path={self.path})"
-        elif self.file_type is FileType.IN_MEMORY:
-            return "File(content=...)"
-        elif self.file_type is FileType.STREAM:
-            return f"File(stream={self._stream})"
-        else:
-            raise ValueError(f"Unexpected FileType: {self.file_type}")
 
     @staticmethod
     def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> "File":
@@ -201,16 +115,11 @@ class File(Atom):
         .. _from_content docs page:
            https://docs.neptune.ai/api/field_types#from_content
         """
-        if isinstance(content, str):
-            ext = "txt"
-            content = content.encode("utf-8")
-        else:
-            ext = "bin"
+        verify_type("content", content, (bytes, str, type(None)))
+        verify_type("extension", extension, (str, type(None)))
 
-        if limits.file_size_exceeds_limit(len(content)):
-            content = b""
-
-        return File(content=content, extension=extension or ext)
+        file_composite = _InMemoryComposite(content, extension)
+        return File(file_composite=file_composite)
 
     @staticmethod
     def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> "File":
@@ -238,12 +147,12 @@ class File(Atom):
         .. _IOBase documentation:
             https://docs.python.org/3/library/io.html#io.IOBase
         """
-        verify_type("stream", stream, IOBase)
-        if seek is not None and stream.seekable():
-            stream.seek(seek)
-        if extension is None:
-            extension = "txt" if isinstance(stream, io.TextIOBase) else "bin"
-        return File(stream=stream, extension=extension)
+        verify_type("stream", stream, (IOBase, type(None)))
+        verify_type("seek", seek, (int, type(None)))
+        verify_type("extension", extension, (str, type(None)))
+
+        file_composite = _StreamComposite(stream, seek, extension)
+        return File(file_composite=file_composite)
 
     @staticmethod
     def as_image(image) -> "File":
