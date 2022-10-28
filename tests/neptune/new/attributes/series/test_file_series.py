@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import io
 from unittest import mock
 
 import numpy
@@ -127,31 +128,48 @@ class TestFileSeries(TestAttributeBase):
         attr = FileSeries(exp, path)
 
         file = File.as_image(numpy.random.rand(10, 10) * 255)
+        stream = File.from_stream(io.BytesIO(file.content))
         with create_file(file.content, binary_mode=True) as tmp_filename:
             saved_file = File(tmp_filename)
 
             # when
             attr.log(
-                saved_file,
+                file,
                 step=3,
+                timestamp=self._now(),
+                wait=wait,
+                description="something",
+            )
+            attr.log(
+                [stream, saved_file],
                 timestamp=self._now(),
                 wait=wait,
                 description="something",
             )
 
             # then
-            op_processor.enqueue_operation.assert_called_once_with(
-                LogImages(
-                    path,
-                    [
+            def generate_expected_call(wait, step):
+                log_operation = LogImages(
+                    path=path,
+                    values=[
                         LogImages.ValueType(
-                            ImageValue(base64_encode(file.content), None, "something"),
-                            3,
-                            self._now(),
+                            value=ImageValue(base64_encode(file.content), None, "something"),
+                            step=step,
+                            ts=self._now(),
                         )
                     ],
-                ),
-                wait,
+                )
+                return call(
+                    log_operation,
+                    wait,
+                )
+
+            op_processor.enqueue_operation.assert_has_calls(
+                [
+                    generate_expected_call(wait, step=3),
+                    generate_expected_call(wait, step=None),
+                    generate_expected_call(wait, step=None),
+                ]
             )
 
     def test_log_raise_not_image(self):
@@ -162,6 +180,7 @@ class TestFileSeries(TestAttributeBase):
         attr = FileSeries(exp, path)
 
         file = File.from_content("some text")
+        stream = File.from_stream(io.BytesIO(file.content))
         with create_file(file.content, binary_mode=True) as tmp_filename:
             saved_file = File(tmp_filename)
 
@@ -170,6 +189,8 @@ class TestFileSeries(TestAttributeBase):
                 attr.log(file)
             with self.assertRaises(OperationNotSupported):
                 attr.log(saved_file)
+            with self.assertRaises(OperationNotSupported):
+                attr.log(stream)
 
     def test_assign_raise_not_image(self):
         # given
@@ -179,6 +200,7 @@ class TestFileSeries(TestAttributeBase):
         attr = FileSeries(exp, path)
 
         file = File.from_content("some text")
+        stream = File.from_stream(io.BytesIO(file.content))
         with create_file(file.content, binary_mode=True) as tmp_filename:
             saved_file = File(tmp_filename)
 
@@ -187,6 +209,8 @@ class TestFileSeries(TestAttributeBase):
                 attr.assign([file])
             with self.assertRaises(OperationNotSupported):
                 attr.assign([saved_file])
+            with self.assertRaises(OperationNotSupported):
+                attr.assign([stream])
 
     @mock.patch("neptune.new.internal.utils.limits._LOGGED_IMAGE_SIZE_LIMIT_MB", (10**-3))
     def test_image_limit(self):
