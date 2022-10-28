@@ -1334,3 +1334,14 @@ If the issue persists, our support is happy to help.
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
+
+
+class StreamAlreadyUsedException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----StreamAlreadyUsedException---------------------------------------------------
+{end}
+TODO: add docs
+"""
+        super().__init__(message.format(**STYLES))

@@ -13,9 +13,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = [
+    "FileType",
+    "File",
+]
+
 import enum
 import io
 import os
+from functools import wraps
 from io import IOBase
 from typing import (
     TYPE_CHECKING,
@@ -24,7 +30,10 @@ from typing import (
     Union,
 )
 
-from neptune.new.exceptions import NeptuneException
+from neptune.new.exceptions import (
+    NeptuneException,
+    StreamAlreadyUsedException,
+)
 from neptune.new.internal.utils import (
     limits,
     verify_type,
@@ -55,6 +64,46 @@ class FileType(enum.Enum):
     STREAM = "STREAM"
 
 
+def read_once(f):
+    """Decorator for validating read once on STREAM objects"""
+
+    @wraps(f)
+    def func(self: "StreamComposite", *args, **kwargs):
+        if self._stream_read:
+            raise StreamAlreadyUsedException()
+        self._stream_read = True
+        return f(self, *args, **kwargs)
+
+    return func
+
+
+class StreamComposite:
+    def __init__(self, stream):
+        self._stream = stream
+        self._stream_read = False
+
+    @property
+    @read_once
+    def content(self):
+        self._stream_read = True
+        val = self._stream.read()
+        if isinstance(self._stream, io.TextIOBase):
+            val = val.encode()
+        return val
+
+    @read_once
+    def save(self, path):
+        self._stream_read = True
+        with open(path, "wb") as f:
+            buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
+            while buffer_:
+                # TODO: replace with Walrus Operator once python3.7 support is dropped
+                if isinstance(self._stream, io.TextIOBase):
+                    buffer_ = buffer_.encode()
+                f.write(buffer_)
+                buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
+
+
 class File(Atom):
     def __init__(
         self,
@@ -82,7 +131,7 @@ class File(Atom):
 
         self._path = path
         self._content = content
-        self._stream = stream
+        self._stream = StreamComposite(stream)
 
         if self.file_type is FileType.LOCAL_FILE and extension is None:
             try:
@@ -105,10 +154,7 @@ class File(Atom):
         if self.file_type is FileType.IN_MEMORY:
             return self._content
         elif self.file_type is FileType.STREAM:
-            val = self._stream.read()
-            if isinstance(self._stream, io.TextIOBase):
-                val = val.encode()
-            return val
+            return self._stream.content
         else:
             raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
 
@@ -117,14 +163,7 @@ class File(Atom):
             with open(path, "wb") as f:
                 f.write(self._content)
         elif self.file_type is FileType.STREAM:
-            with open(path, "wb") as f:
-                buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
-                while buffer_:
-                    # TODO: replace with Walrus Operator once python3.7 support is dropped
-                    if isinstance(self._stream, io.TextIOBase):
-                        buffer_ = buffer_.encode()
-                    f.write(buffer_)
-                    buffer_ = self._stream.read(io.DEFAULT_BUFFER_SIZE)
+            return self._stream.save(path)
         else:
             raise NeptuneException(f"`_save` method is not supported for {self.file_type}")
 
