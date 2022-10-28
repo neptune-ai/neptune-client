@@ -25,7 +25,10 @@ from bokeh.plotting import figure
 from PIL import Image
 
 from e2e_tests.utils import tmp_context
-from neptune.new.exceptions import NeptuneException
+from neptune.new.exceptions import (
+    NeptuneException,
+    StreamAlreadyUsedException,
+)
 from neptune.new.internal.utils.images import _get_pil_image_data
 from neptune.new.types import File
 from neptune.new.types.atoms.file import FileType
@@ -127,6 +130,27 @@ class TestFile(unittest.TestCase):
         self._test_stream_content(
             lambda: File.from_stream(BytesIO(b"aaabbbccc"), seek=5), expected_content=b"bccc", expected_ext="bin"
         )
+
+    def test_stream_read_once(self):
+        file = File.from_stream(StringIO("aaabbbccc"))
+        _ = file.content
+        with self.assertRaises(StreamAlreadyUsedException):
+            _ = file.content
+
+        file = File.from_stream(StringIO("aaabbbccc"))
+        self._save_and_return_content(file)
+        with self.assertRaises(StreamAlreadyUsedException):
+            self._save_and_return_content(file)
+
+        file = File.from_stream(StringIO("aaabbbccc"))
+        _ = file.content
+        with self.assertRaises(StreamAlreadyUsedException):
+            self._save_and_return_content(file)
+
+        file = File.from_stream(StringIO("aaabbbccc"))
+        self._save_and_return_content(file)
+        with self.assertRaises(StreamAlreadyUsedException):
+            _ = file.content
 
     def test_as_image(self):
         # given
