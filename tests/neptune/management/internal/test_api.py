@@ -58,7 +58,7 @@ class TestTrashObjects(unittest.TestCase):
                     "organization/project/MOD",
                     "organization/project/MOD-1",
                 ],
-                **DEFAULT_REQUEST_KWARGS
+                **DEFAULT_REQUEST_KWARGS,
             ),
             trash_experiments_mock.call_args,
         )

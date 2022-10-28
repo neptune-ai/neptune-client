@@ -82,7 +82,7 @@ class Series(Attribute, Generic[Val, Data]):
         step: Optional[float] = None,
         timestamp: Optional[float] = None,
         wait: bool = False,
-        **kwargs
+        **kwargs,
     ) -> None:
         if is_collection(value):
             if step is not None and len(value) > 1:
