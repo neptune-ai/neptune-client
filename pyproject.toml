@@ -17,8 +17,6 @@ exclude = '''
 profile = "black"
 line_length = 120
 force_grid_wrap = 2
-filter_files = true
-skip = ["tests/neptune/test_imports.py"]
 
 [tool.flake8]
 max-line-length = 120
