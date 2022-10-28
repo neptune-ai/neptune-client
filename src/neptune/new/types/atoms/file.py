@@ -95,6 +95,16 @@ class File(Atom):
         return visitor.visit_file(self)
 
     @staticmethod
+    def from_path(path: str, extension: Optional[str] = None) -> "File":
+        # TODO: add docs
+        # equivalent of `File(path)`, but extension can be added manually
+        verify_type("path", path, str)
+        verify_type("extension", extension, (str, type(None)))
+
+        file_composite = _LocalFileComposite(path, extension)
+        return File(file_composite=file_composite)
+
+    @staticmethod
     def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> "File":
         """Factory method for creating File value objects directly from binary and text content.
 

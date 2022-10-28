@@ -640,12 +640,12 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("save", File.__name__)
-            return File(path=op.file_path, extension=op.ext)
+            return File.from_path(path=op.file_path, extension=op.ext)
 
         def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("upload_files", File.__name__)
-            return File(content=base64_decode(op.file_content), extension=op.ext)
+            return File.from_content(content=base64_decode(op.file_content), extension=op.ext)
 
         def visit_upload_file_set(self, op: UploadFileSet) -> Optional[Value]:
             if self._current_value is None or op.reset:

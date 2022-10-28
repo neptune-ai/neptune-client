@@ -37,8 +37,18 @@ from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
 class TestFile(unittest.TestCase):
-    def _test_local_file(self, path: str, expected_ext: str):
-        file = File(path)
+    def test_file_constructor(self):
+        """Almost all usages of `File` class consists of passing `path` to `File` constructor"""
+        paths = ["some/path.png", "file.ext", "file/without/ext"]
+        for path in paths:
+            file1 = File(path)
+            file2 = File.from_path(path)
+            self.assertEqual(file1.path, file2.path)
+            self.assertEqual(file1.extension, file2.extension)
+            self.assertEqual(file1.file_type, file2.file_type)
+
+    def _test_local_file(self, path: str, expected_ext: str, custom_ext=None):
+        file = File.from_path(path, extension=custom_ext)
         self.assertIs(file.file_type, FileType.LOCAL_FILE)
         self.assertEqual(path, file.path)
         with self.assertRaises(NeptuneException):
@@ -51,6 +61,7 @@ class TestFile(unittest.TestCase):
         self._test_local_file("some/path.ext", expected_ext="ext")
         self._test_local_file("some/path.txt.ext", expected_ext="ext")
         self._test_local_file("so.me/path", expected_ext="")
+        self._test_local_file("some/path.ext", expected_ext="txt", custom_ext="txt")
 
     @staticmethod
     def _save_and_return_content(file: File):
