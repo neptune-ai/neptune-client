@@ -1,7 +1,7 @@
 ## neptune-client 0.16.12
 
 ### Changes
--  File.from_stream does not load content into memory ([#1065](https://github.com/neptune-ai/neptune-client/pull/1065))
+- File.from_stream does not load content into memory ([#1065](https://github.com/neptune-ai/neptune-client/pull/1065))
 
 ## neptune-client 0.16.11
 
