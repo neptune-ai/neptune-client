@@ -44,8 +44,6 @@ class Series(Attribute, Generic[Val, Data]):
     def _get_log_operations_from_value(self, value: Val, step: Optional[float], timestamp: float) -> List[Operation]:
         pass
 
-    # pylint: disable=unused-argument
-    # pylint: disable=assignment-from-none
     def _get_config_operation_from_value(self, value: Val) -> Optional[Operation]:
         return None
 

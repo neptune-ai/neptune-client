@@ -39,8 +39,6 @@ Data = Union[float, int]
 
 
 class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
-
-    # pylint: disable=redefined-builtin
     def configure(
         self,
         min: Optional[Union[float, int]] = None,
@@ -73,7 +71,6 @@ class FloatSeries(Series[Val, Data], FetchableSeries[FloatSeriesValues]):
         return isinstance(value, FloatSeriesVal)
 
     def fetch_last(self) -> float:
-        # pylint: disable=protected-access
         val = self._backend.get_float_series_attribute(self._container_id, self._container_type, self._path)
         return val.last
 

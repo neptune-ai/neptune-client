@@ -75,7 +75,6 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
         return isinstance(value, StringSeriesVal)
 
     def fetch_last(self) -> str:
-        # pylint: disable=protected-access
         val = self._backend.get_string_series_attribute(self._container_id, self._container_type, self._path)
         return val.last
 

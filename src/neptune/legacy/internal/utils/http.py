@@ -15,7 +15,7 @@
 #
 import logging
 from functools import wraps
-from http.client import (  # pylint:disable=no-name-in-module
+from http.client import (
     NOT_FOUND,
     UNPROCESSABLE_ENTITY,
 )
@@ -65,7 +65,6 @@ def handle_quota_limits(f):
             return f(*args, **kwargs)
         except HTTPError as e:
             if e.response.status_code == NOT_FOUND:
-                # pylint: disable=protected-access
                 raise ExperimentNotFound(
                     experiment_short_id=experiment.id,
                     project_qualified_name=experiment._project.full_id,

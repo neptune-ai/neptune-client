@@ -13,8 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# pylint: disable=protected-access
 import os
 import unittest
 
@@ -107,7 +105,6 @@ class TestClientModel(AbstractExperimentTestMixin, unittest.TestCase):
         with self.assertRaises(NeptuneWrongInitParametersException):
             init_model(with_id=None, key=None)
         with self.assertRaises(NeptuneParametersCollision):
-            # pylint: disable=unexpected-keyword-arg
             init_model(model="foo", with_id="foo")
 
     def test_name_parameter(self):

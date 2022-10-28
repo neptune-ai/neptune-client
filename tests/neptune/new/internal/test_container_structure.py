@@ -89,7 +89,6 @@ class TestRunStructure(unittest.TestCase):
 
 
 class TestIterateSubpaths(unittest.TestCase):
-    # pylint: disable=protected-access
     project_uuid = str(uuid.uuid4())
 
     def setUp(self):

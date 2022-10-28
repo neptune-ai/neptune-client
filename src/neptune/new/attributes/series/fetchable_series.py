@@ -36,7 +36,6 @@ class FetchableSeries(Generic[Row]):
         pass
 
     def fetch_values(self, include_timestamp=True):
-        # pylint: disable=import-outside-toplevel
         import pandas as pd
 
         limit = 1000

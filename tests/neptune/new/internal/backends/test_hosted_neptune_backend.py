@@ -36,7 +36,7 @@ from neptune.new.exceptions import (
     NeptuneClientUpgradeRequiredError,
     NeptuneLimitExceedException,
 )
-from neptune.new.internal.backends.hosted_client import (  # pylint:disable=protected-access
+from neptune.new.internal.backends.hosted_client import (
     DEFAULT_REQUEST_KWARGS,
     _get_token_client,
     create_artifacts_client,
@@ -75,8 +75,6 @@ credentials = Credentials.from_token(API_TOKEN)
 @patch("platform.platform", new=lambda: "testPlatform")
 @patch("platform.python_version", new=lambda: "3.9.test")
 class TestHostedNeptuneBackend(unittest.TestCase, BackendTestMixin):
-    # pylint:disable=protected-access
-
     def setUp(self) -> None:
         # Clear all LRU storage
         verify_host_resolution.cache_clear()

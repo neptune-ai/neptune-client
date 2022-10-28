@@ -74,7 +74,6 @@ class ExecutionContext(object):
             self._set_uncaught_exception_handler()
 
         if logger:
-            # pylint: disable=protected-access
             channel = self._experiment._get_channel("logger", "text", ChannelNamespace.SYSTEM)
             channel_writer = ChannelWriter(self._experiment, channel.name, ChannelNamespace.SYSTEM)
             self._logger_handler = StreamHandler(channel_writer)
@@ -143,7 +142,6 @@ class ExecutionContext(object):
             return
 
         websocket_factory = self._backend.websockets_factory(
-            # pylint: disable=protected-access
             project_id=self._experiment._project.internal_id,
             experiment_id=self._experiment.internal_id,
         )

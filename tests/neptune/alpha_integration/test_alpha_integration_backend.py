@@ -59,7 +59,6 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
     )
     @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
     def setUp(self, swagger_client_factory) -> None:
-        # pylint:disable=arguments-differ
         self._get_swagger_client_mock(swagger_client_factory)
         self.backend = HostedNeptuneBackendApiClient(API_TOKEN)
         self.leaderboard = HostedAlphaLeaderboardApiClient(self.backend)
@@ -109,7 +108,6 @@ class TestAlphaIntegrationNeptuneBackend(unittest.TestCase, AlphaBackendTestMixi
                 }
             ],
         }
-        # pylint:disable=protected-access
         execute_operations = self.leaderboard.leaderboard_swagger_client.api.executeOperations
         self.assertEqual(len(execute_operations.call_args_list), 1)
         self.assertDictEqual(execute_operations.call_args_list[0][1], expected_call_args)

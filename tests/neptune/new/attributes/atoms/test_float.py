@@ -13,9 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-# pylint: disable=protected-access
-
 from mock import MagicMock
 
 from neptune.new.attributes.atoms.float import (

@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pylint: disable=wrong-import-order,wrong-import-position,unused-variable,no-member,no-value-for-parameter
 import os
 import sys
 import unittest
@@ -116,7 +115,7 @@ class TestImage(unittest.TestCase):
         "No torch for 3.10 on Mac",
     )
     def test_get_image_content_from_torch_tensor(self):
-        import torch  # pylint: disable=C0415
+        import torch
 
         # given
         image_tensor = torch.rand(200, 300, 3)
@@ -127,7 +126,7 @@ class TestImage(unittest.TestCase):
         self.assertEqual(get_image_content(image_tensor), _get_pil_image_data(expected_image))
 
     def test_get_image_content_from_tensorflow_tensor(self):
-        import tensorflow as tf  # pylint: disable=C0415
+        import tensorflow as tf
 
         # given
         image_tensor = tf.random.uniform(shape=[200, 300, 3])

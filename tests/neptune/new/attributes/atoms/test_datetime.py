@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-# pylint: disable=protected-access
 from datetime import datetime
 
 from mock import MagicMock

@@ -37,8 +37,6 @@ API_TOKEN = (
     new=MagicMock,
 )
 class TestHostedNeptuneBackend(unittest.TestCase):
-    # pylint:disable=protected-access
-
     @mock.patch("bravado.client.SwaggerClient.from_url")
     @mock.patch("neptune.__version__", "0.5.13")
     @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))
@@ -85,7 +83,6 @@ class TestHostedNeptuneBackend(unittest.TestCase):
 
         self.assertTrue("Please install neptune-client==0.5.12" in str(ex.exception))
 
-    # pylint: disable=unused-argument
     @mock.patch("bravado.client.SwaggerClient.from_url")
     @mock.patch("neptune.legacy.internal.api_clients.credentials.os.getenv", return_value=API_TOKEN)
     @mock.patch("socket.gethostbyname", MagicMock(return_value="1.1.1.1"))

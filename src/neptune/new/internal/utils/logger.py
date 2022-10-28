@@ -31,7 +31,6 @@ class GrabbableStdoutHandler(logging.StreamHandler):
     """
 
     def __init__(self, level=logging.NOTSET):
-        # pylint: disable=non-parent-init-called,super-init-not-called
         logging.Handler.__init__(self, level)
 
     @property

@@ -133,7 +133,6 @@ def is_nan_or_inf(value):
 
 def is_notebook():
     try:
-        # pylint: disable=pointless-statement,undefined-variable
         get_ipython  # noqa: F821
         return True
     except Exception:
@@ -153,7 +152,6 @@ def _split_df_by_stems(df):
 
 
 def discover_git_repo_location():
-    # pylint:disable=bad-option-value,import-outside-toplevel
     import __main__
 
     if hasattr(__main__, "__file__"):
@@ -195,7 +193,6 @@ def get_git_info(repo_path=None):
 
     """
     try:
-        # pylint:disable=bad-option-value,import-outside-toplevel
         import git
 
         repo = git.Repo(repo_path, search_parent_directories=True)
@@ -222,7 +219,6 @@ def get_git_info(repo_path=None):
             active_branch=active_branch,
             remote_urls=remote_urls,
         )
-    # pylint: disable=bare-except
     except:  # noqa: E722
         return None
 
@@ -242,7 +238,6 @@ def in_docker():
 
 def is_ipython():
     try:
-        # pylint:disable=bad-option-value,import-outside-toplevel
         import IPython
 
         ipython = IPython.core.getipython.get_ipython()
@@ -253,7 +248,6 @@ def is_ipython():
 
 def with_api_exceptions_handler(func):
     def wrapper(*args, **kwargs):
-        # pylint: disable=global-statement
         retries = 11
         retry = 0
         while retry < retries:
@@ -321,7 +315,6 @@ def with_api_exceptions_handler(func):
 
 
 def glob(pathname):
-    # pylint: disable=unexpected-keyword-arg
     if sys.version_info.major < 3 or (sys.version_info.major == 3 and sys.version_info.minor < 5):
         return globlib.glob(pathname)
     else:

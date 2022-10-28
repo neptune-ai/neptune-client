@@ -23,8 +23,6 @@ from tempfile import TemporaryDirectory
 
 from neptune.new.internal.disk_queue import DiskQueue
 
-# pylint: disable=protected-access
-
 
 class TestDiskQueue(unittest.TestCase):
     class Obj:

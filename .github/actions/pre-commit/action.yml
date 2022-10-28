@@ -1,6 +1,6 @@
 ---
-name: Lint
-description: Check style for every file
+name: Pre-commit
+description: Check that pre-commit is required
 runs:
     using: "composite"
     steps:
@@ -16,8 +16,4 @@ runs:
 
       - name: Run pre-commit
         run: pre-commit run --all-files
-        shell: bash
-
-      - name: Lint
-        run: python -m pylint -j 0 -f parseable src tests e2e_tests
         shell: bash

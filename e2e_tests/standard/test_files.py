@@ -48,7 +48,6 @@ from neptune.new.types import (
 class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_using_new_api(self, container: MetadataContainer):
-        # pylint: disable=protected-access
         assert isinstance(container._backend, HostedNeptuneBackend)
         assert container._backend._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD)
         assert isinstance(container._backend._client_config.multipart_config, MultipartConfig)

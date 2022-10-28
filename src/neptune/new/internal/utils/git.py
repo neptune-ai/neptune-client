@@ -28,7 +28,6 @@ def get_git_repo(repo_path):
     # WARN: GitPython asserts the existence of `git` executable
     # which consists in failure during the preparation of conda package
     try:
-        # pylint:disable=import-outside-toplevel
         import git
 
         return git.Repo(repo_path, search_parent_directories=True)
@@ -38,8 +37,6 @@ def get_git_repo(repo_path):
 
 def get_git_info(repo_path=None):
     try:
-        # pylint:disable=bad-option-value
-
         repo = get_git_repo(repo_path)
 
         commit = repo.head.commit
@@ -64,7 +61,6 @@ def get_git_info(repo_path=None):
             branch=active_branch,
             remotes=remote_urls,
         )
-    # pylint: disable=bare-except
     except:  # noqa: E722
         return None
 
@@ -72,7 +68,6 @@ def get_git_info(repo_path=None):
 def get_git_repo_path(initial_path: str) -> Optional[str]:
     try:
         return get_git_repo(initial_path).git_dir
-    # pylint: disable=bare-except
     except:  # noqa: E722
         pass
 

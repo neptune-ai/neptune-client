@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# pylint: disable=redefined-outer-name
 import os
 import time
 from datetime import datetime
@@ -62,7 +61,6 @@ def environment():
     add_project_member(
         name=created_project_identifier,
         username=user,
-        # pylint: disable=no-member
         role="contributor",
         api_token=admin_token,
     )
@@ -70,7 +68,6 @@ def environment():
     add_project_service_account(
         name=created_project_identifier,
         service_account_name=service_account_name,
-        # pylint: disable=no-member
         role="contributor",
         api_token=admin_token,
     )

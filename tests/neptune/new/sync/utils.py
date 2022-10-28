@@ -48,7 +48,6 @@ def generate_get_metadata_container(registered_containers):
     return get_metadata_container
 
 
-# pylint: disable=unused-argument
 def execute_operations(container_id, container_type, operations):
     return len(operations), []
 

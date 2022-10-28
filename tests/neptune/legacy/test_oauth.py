@@ -63,7 +63,6 @@ class TestNeptuneAuth(unittest.TestCase):
 
     def test_add_valid_token(self):
         # given
-        # pylint: disable=protected-access
         self.session._client.add_token.return_value = (
             self.updated_url,
             self.updated_headers,
@@ -74,7 +73,6 @@ class TestNeptuneAuth(unittest.TestCase):
         updated_request = self.neptune_auth(self.request)
 
         # then
-        # pylint: disable=protected-access
         self.session._client.add_token.assert_called_once_with(
             self.url, http_method=self.method, body=self.body, headers=self.headers
         )
@@ -86,7 +84,6 @@ class TestNeptuneAuth(unittest.TestCase):
 
     def test_refresh_token_and_add(self):
         # given
-        # pylint: disable=protected-access
         self.session._client.add_token.side_effect = [
             TokenExpiredError,
             (self.updated_url, self.updated_headers, self.updated_body),
@@ -96,7 +93,6 @@ class TestNeptuneAuth(unittest.TestCase):
         updated_request = self.neptune_auth(self.request)
 
         # then
-        # pylint: disable=protected-access
         self.session._client.add_token.assert_called_with(
             self.url, http_method=self.method, body=self.body, headers=self.headers
         )

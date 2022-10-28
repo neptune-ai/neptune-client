@@ -20,8 +20,6 @@ from neptune.new.internal.backends.swagger_client_wrapper import SwaggerClientWr
 
 
 class TestSwaggerClientWrapper(unittest.TestCase):
-    # pylint:disable=protected-access
-
     def setUp(self) -> None:
         pass
 

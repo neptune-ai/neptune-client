@@ -15,7 +15,6 @@
 #
 
 # backwards compatibility
-# pylint: disable=unused-import,wrong-import-order
 # flake8: noqa
 from neptune.new.exceptions import MetadataInconsistency
 from neptune.new.internal.backends.api_model import (

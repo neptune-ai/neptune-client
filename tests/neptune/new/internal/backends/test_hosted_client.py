@@ -50,8 +50,8 @@ from neptune.management.exceptions import (
     UserNotExistsOrWithoutAccess,
     WorkspaceNotFound,
 )
-from neptune.new.internal.backends.hosted_client import _get_token_client  # pylint:disable=protected-access
 from neptune.new.internal.backends.hosted_client import (
+    _get_token_client,
     create_artifacts_client,
     create_backend_client,
     create_http_client_with_auth,

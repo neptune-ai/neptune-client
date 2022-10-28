@@ -53,7 +53,6 @@ class UncaughtExceptionHandler:
                 for _, handler in self._handlers.items():
                     handler(traceback_lines)
 
-                # pylint: disable=protected-access
                 this._previous_uncaught_exception_handler(exc_type, exc_val, exc_tb)
 
             if self._previous_uncaught_exception_handler is None:

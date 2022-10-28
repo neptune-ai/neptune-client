@@ -50,8 +50,6 @@ from neptune.new.internal.operation import (
     datetime,
 )
 
-# pylint: disable=protected-access
-
 
 class TestOperations(unittest.TestCase):
     def test_serialization_to_dict(self):

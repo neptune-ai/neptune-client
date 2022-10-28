@@ -52,17 +52,13 @@ class TestChannelsValuesSender(unittest.TestCase):
 
     _CHANNELS = {c.name: c for c in [_NUMERIC_CHANNEL, _TEXT_CHANNEL, _IMAGE_CHANNEL, _OTHER_CHANNEL]}
 
-    # pylint: disable=protected-access
     _BATCH_SIZE = ChannelsValuesSendingThread._MAX_VALUES_BATCH_LENGTH
-    # pylint: disable=protected-access
     _IMAGES_BATCH_IMAGE_SIZE = ChannelsValuesSendingThread._MAX_IMAGE_VALUES_BATCH_SIZE / 3
     _IMAGES_BATCH_SIZE = 3
 
     def setUp(self):
-        # pylint: disable=protected-access
         self._EXPERIMENT._get_channels.return_value = self._CHANNELS
 
-        # pylint: disable=unused-argument
         def create_channel_fun(channel_name, channel_type, channel_namespace=ChannelNamespace.USER):
             if channel_name == self._NUMERIC_CHANNEL.name:
                 return self._NUMERIC_CHANNEL
@@ -91,7 +87,6 @@ class TestChannelsValuesSender(unittest.TestCase):
         channels_values_sender.join()
 
         # then
-        # pylint: disable=protected-access
         self._EXPERIMENT._send_channels_values.assert_called_with(
             [
                 ChannelIdWithValues(
@@ -119,7 +114,6 @@ class TestChannelsValuesSender(unittest.TestCase):
         channels_values_sender.join()
 
         # then
-        # pylint: disable=protected-access
         self.assertEqual(
             self._EXPERIMENT._send_channels_values.mock_calls,
             [
@@ -180,7 +174,6 @@ class TestChannelsValuesSender(unittest.TestCase):
         channels_values_sender.join()
 
         # then
-        # pylint: disable=protected-access
         self.assertEqual(
             self._EXPERIMENT._send_channels_values.mock_calls,
             [
@@ -250,7 +243,6 @@ class TestChannelsValuesSender(unittest.TestCase):
         channels_values_sender.join()
 
         # then
-        # pylint: disable=protected-access
         (args, _) = self._EXPERIMENT._send_channels_values.call_args
         self.assertEqual(len(args), 1)
         self.assertEqual(
@@ -292,7 +284,6 @@ class TestChannelsValuesSender(unittest.TestCase):
 
         # and
         semaphore = threading.Semaphore(0)
-        # pylint: disable=protected-access
         self._EXPERIMENT._send_channels_values.side_effect = lambda _: semaphore.release()
 
         # and
@@ -307,7 +298,6 @@ class TestChannelsValuesSender(unittest.TestCase):
             )
 
         # then
-        # pylint: disable=protected-access
         semaphore.acquire()
         self._EXPERIMENT._send_channels_values.assert_called_with(
             [

@@ -84,7 +84,6 @@ class HostedFileOperationsHelper(unittest.TestCase):
 
 
 class TestCommonHostedFileOperations(HostedFileOperationsHelper):
-    # pylint:disable=protected-access
     def test_get_content_disposition_filename(self):
         # given
         response_mock = MagicMock()

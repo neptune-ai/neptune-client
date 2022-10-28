@@ -4,14 +4,14 @@ on:
     branches:
       - master
 jobs:
-  lint:
+  pre-commit:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Lint
-        uses: ./.github/actions/lint
+      - name: Pre-commit
+        uses: ./.github/actions/pre-commit
 
   test:
     runs-on: ${{ matrix.os }}
@@ -86,7 +86,7 @@ jobs:
         uses: ./.github/actions/publish-tests-result
 
   notify:
-    needs: [lint, test, test-e2e]
+    needs: [pre-commit, test, test-e2e]
     runs-on: ubuntu-latest
     if: always()
     env:

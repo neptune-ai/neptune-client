@@ -62,7 +62,6 @@ class Operation:
     def clean(self):
         pass
 
-    # pylint: disable=unused-argument
     def to_dict(self) -> dict:
         return {"type": self.__class__.__name__, "path": self.path}
 
@@ -201,7 +200,6 @@ class UploadFile(Operation):
             )
         elif value.file_type is FileType.IN_MEMORY:
             tmp_file_path = cls.get_upload_path(attribute_path, value.extension, upload_path)
-            # pylint: disable=protected-access
             value._save(tmp_file_path)
             operation = UploadFile(
                 path=attribute_path,

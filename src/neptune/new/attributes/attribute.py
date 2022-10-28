@@ -40,22 +40,18 @@ class Attribute:
         raise TypeDoesNotSupportAttributeException(type_=type(self), attribute=attr)
 
     def _enqueue_operation(self, operation: Operation, wait: bool):
-        # pylint: disable=protected-access
         self._container._op_processor.enqueue_operation(operation, wait)
 
     @property
     def _backend(self) -> NeptuneBackend:
-        # pylint: disable=protected-access
         return self._container._backend
 
     @property
     def _container_id(self) -> str:
-        # pylint: disable=protected-access
         return self._container._id
 
     @property
     def _container_type(self) -> "ContainerType":
-        # pylint: disable=protected-access
         return self._container.container_type
 
     def copy(self, value: ValueCopy, wait: bool = False):

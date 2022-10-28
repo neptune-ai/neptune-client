@@ -58,7 +58,6 @@ class ChannelsValuesSender(object):
         self._user_channel_name_to_id_map = dict()
         self._system_channel_name_to_id_map = dict()
 
-    # pylint:disable=protected-access
     def send(
         self,
         channel_name,
@@ -146,7 +145,7 @@ class ChannelsValuesSendingThread(NeptuneThread):
                 self._sleep_time <= 0
                 or len(self._values_batch) >= self._MAX_VALUES_BATCH_LENGTH
                 or image_values_batch_size >= self._MAX_IMAGE_VALUES_BATCH_SIZE
-            ):  # pylint:disable=line-too-long
+            ):
                 self._process_batch()
 
         self._process_batch()
@@ -191,7 +190,6 @@ class ChannelsValuesSendingThread(NeptuneThread):
             channels_with_values.append(ChannelIdWithValues(*channel_metadata, channel_values))
 
         try:
-            # pylint:disable=protected-access
             self._experiment._send_channels_values(channels_with_values)
         except HTTPUnprocessableEntity as e:
             message = "Maximum storage limit reached"

@@ -52,7 +52,6 @@ class TestSync(BaseE2ETest):
                 # assign original value
                 container[key] = original_value
                 container.wait()
-                # pylint: disable=protected-access
                 container_id = container._id
                 container_sys_id = container._sys_id
 

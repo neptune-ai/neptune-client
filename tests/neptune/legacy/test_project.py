@@ -192,7 +192,6 @@ class TestProject(unittest.TestCase):
         expected_data = {0: some_exp_entry_row}
         expected_leaderboard = pd.DataFrame.from_dict(data=expected_data, orient="index")
         expected_leaderboard = expected_leaderboard.reindex(
-            # pylint: disable=protected-access
             self.project._sort_leaderboard_columns(expected_leaderboard.columns),
             axis="columns",
         )
@@ -219,7 +218,6 @@ class TestProject(unittest.TestCase):
         ]
 
         # when
-        # pylint: disable=protected-access
         sorted_columns = self.project._sort_leaderboard_columns(reversed(columns_in_expected_order))
 
         # then
@@ -237,7 +235,6 @@ class TestProject(unittest.TestCase):
         # expect
         self.assertEqual("Project({})".format(self.project.full_id), repr(self.project))
 
-    # pylint: disable=protected-access
     def test_get_current_experiment_from_stack(self):
         # given
         experiment = Munch(internal_id=a_uuid_string())
@@ -248,7 +245,6 @@ class TestProject(unittest.TestCase):
         # then
         self.assertEqual(self.project._get_current_experiment(), experiment)
 
-    # pylint: disable=protected-access
     def test_pop_experiment_from_stack(self):
         # given
         first_experiment = Munch(internal_id=a_uuid_string())
@@ -266,7 +262,6 @@ class TestProject(unittest.TestCase):
         # and
         self.assertEqual(self.project._get_current_experiment(), first_experiment)
 
-    # pylint: disable=protected-access
     def test_empty_stack(self):
         # expect
         with self.assertRaises(NeptuneNoExperimentContextException):

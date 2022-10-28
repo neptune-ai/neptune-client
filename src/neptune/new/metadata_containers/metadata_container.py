@@ -95,7 +95,6 @@ from neptune.new.types.value_copy import ValueCopy
 def ensure_not_stopped(fun):
     @wraps(fun)
     def inner_fun(self: "MetadataContainer", *args, **kwargs):
-        # pylint: disable=protected-access
         if self._state == ContainerState.STOPPED:
             if self.container_type == ContainerType.RUN:
                 raise InactiveRunException(label=self._label)
@@ -231,8 +230,6 @@ class MetadataContainer(AbstractContextManager):
         self._state = ContainerState.STOPPED
 
     def get_structure(self) -> Dict[str, Any]:
-        # This is very weird pylint false-positive.
-        # pylint: disable=no-member
         return self._structure.get_structure().to_dict()
 
     def print_structure(self) -> None:

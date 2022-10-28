@@ -281,7 +281,7 @@ class NeptuneResponseAdapter(RequestsResponseAdapter):
 class MissingApiClient(SwaggerClientWrapper):
     """catch-all class to gracefully handle calls to unavailable API"""
 
-    def __init__(self, feature_name: str):  # pylint: disable=super-init-not-called
+    def __init__(self, feature_name: str):
         self.feature_name = feature_name
 
     def __getattr__(self, item):

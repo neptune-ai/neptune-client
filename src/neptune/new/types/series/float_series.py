@@ -31,8 +31,6 @@ Ret = TypeVar("Ret")
 
 
 class FloatSeries(Series):
-
-    # pylint: disable=redefined-builtin
     def __init__(
         self,
         values,
