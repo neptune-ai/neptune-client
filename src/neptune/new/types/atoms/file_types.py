@@ -35,10 +35,7 @@ from typing import (
 
 from neptune.common.exceptions import NeptuneException
 from neptune.new.exceptions import StreamAlreadyUsedException
-from neptune.new.internal.utils import (
-    limits,
-    verify_type,
-)
+from neptune.new.internal.utils import verify_type
 
 
 class _FileType(enum.Enum):
@@ -95,8 +92,6 @@ class _InMemoryComposite(_FileComposite):
     file_type = _FileType.IN_MEMORY
 
     def __init__(self, content: Union[str, bytes], extension: Optional[str] = None):
-        if limits.file_size_exceeds_limit(len(content)):
-            content = b""
         if isinstance(content, str):
             ext = "txt"
             content = content.encode("utf-8")

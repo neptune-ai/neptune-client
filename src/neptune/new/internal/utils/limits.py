@@ -20,14 +20,9 @@ _logger = logging.getLogger(__name__)
 
 
 _CUSTOM_RUN_ID_LENGTH = 36
-_IMAGE_SIZE_LIMIT_MB = 15
-_IN_MEMORY_SIZE_LIMIT_MB = 32
-_STREAM_SIZE_LIMIT_MB = 32
 _LOGGED_IMAGE_SIZE_LIMIT_MB = 15
 
 BYTES_IN_MB = 1024 * 1024
-
-STREAM_SIZE_LIMIT_BYTES = _STREAM_SIZE_LIMIT_MB * BYTES_IN_MB
 
 
 def custom_run_id_exceeds_length(custom_run_id):
@@ -40,19 +35,6 @@ def custom_run_id_exceeds_length(custom_run_id):
     return False
 
 
-def image_size_exceeds_limit(content_size):
-    if content_size > _IMAGE_SIZE_LIMIT_MB * BYTES_IN_MB:
-        _logger.warning(
-            "You are attempting to create an image that is %.2fMB large. "
-            "Neptune supports logging images smaller than %dMB. "
-            "Resize or increase compression of this image",
-            content_size / BYTES_IN_MB,
-            _IMAGE_SIZE_LIMIT_MB,
-        )
-        return True
-    return False
-
-
 def image_size_exceeds_limit_for_logging(content_size):
     if content_size > _LOGGED_IMAGE_SIZE_LIMIT_MB * BYTES_IN_MB:
         warnings.warn(
@@ -60,30 +42,6 @@ def image_size_exceeds_limit_for_logging(content_size):
             f"Neptune supports logging images smaller than {_LOGGED_IMAGE_SIZE_LIMIT_MB}MB. "
             "Resize or increase compression of this image.",
             category=UserWarning,
-        )
-        return True
-    return False
-
-
-def file_size_exceeds_limit(content_size):
-    if content_size > _IN_MEMORY_SIZE_LIMIT_MB * BYTES_IN_MB:
-        _logger.warning(
-            "You are attempting to create an in-memory file that is %.1fMB large. "
-            "Neptune supports logging in-memory file objects smaller than %dMB. "
-            "Resize or increase compression of this object",
-            content_size / BYTES_IN_MB,
-            _IN_MEMORY_SIZE_LIMIT_MB,
-        )
-        return True
-    return False
-
-
-def stream_size_exceeds_limit(content_size):
-    if content_size > _STREAM_SIZE_LIMIT_MB * BYTES_IN_MB:
-        _logger.warning(
-            "Your stream is larger than %dMB. " "Neptune supports saving files from streams smaller than %dMB.",
-            _STREAM_SIZE_LIMIT_MB,
-            _STREAM_SIZE_LIMIT_MB,
         )
         return True
     return False
