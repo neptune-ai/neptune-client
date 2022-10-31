@@ -31,6 +31,9 @@ wheels/
 MANIFEST
 VERSION
 
+# Poetry
+poetry.lock
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
@@ -124,3 +127,4 @@ venv.bak/
 .vscode
 
 stream.bin
+.DS_Store

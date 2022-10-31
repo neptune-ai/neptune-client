@@ -41,22 +41,33 @@ psutil = "*"
 pandas = "*"
 
 [tool.poetry.group.dev.dependencies]
-pre-commit = "*"
+altair = "*"
+bokeh = "*"
 freezegun = "*"
+matplotlib = "*"
 mock = "*"
+moto = { version = "*", extras = [ "s3" ] }
 munch = "*"
+plotly = "*"
+pre-commit = "*"
 pytest = "*"
 pytest-cov = "*"
-moto = { version = "*", extras = [ "s3" ] }
+pytest-mock = "*"
+pytest-timeout = "*"
 pytest-xdist = "*"
 tensorflow = "*"
-pytest-timeout = "*"
-matplotlib = "*"
-pytest-mock = "*"
-plotly = "*"
-altair = "*"
+torch = "*"
 vega_datasets = "*"
-bokeh = "*"
+
+[tool.poetry.group.e2e.dependencies]
+Faker = "*"
+
+# integrations
+optuna = "*"
+pytorch-lightning = "*"
+sklearn = "*"
+torchvision = "*"
+transformers = "*"
 
 [tool.poetry]
 authors = ["neptune.ai <contact@neptune.ai>"]
