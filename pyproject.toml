@@ -12,7 +12,7 @@ pattern = "default-unprefixed"
 python = "^3.7"
 
 # Python lack of functionalities from future versions
-importlib-metadata = { version = "^4.0.0", python = "<3.8" }
+importlib-metadata = { version = "<4", python = "<3.8" }
 dataclasses = { version = ">=0.6", python = "<3.7" }
 
 # Missing compatibility layer between Python 2 and Python 3
@@ -60,11 +60,12 @@ bokeh = "*"
 
 [tool.poetry]
 authors = ["neptune.ai <contact@neptune.ai>"]
-description = "Neptune.ai client"
+description = "Neptune Client"
 repository = "https://github.com/neptune-ai/neptune-client"
 homepage = "https://neptune.ai/"
 documentation = "https://docs.neptune.ai/"
 include = ["CHANGELOG.md"]
+exclude = ["src/neptune/license_header.txt"]
 license = "Apache License 2.0"
 name = "neptune-client"
 readme = "README.md"
@@ -80,11 +81,6 @@ classifiers = [
     "Operating System :: Microsoft :: Windows",
     "Operating System :: POSIX",
     "Operating System :: Unix",
-    "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Programming Language :: Python :: Implementation :: CPython",
     "Topic :: Scientific/Engineering :: Artificial Intelligence",
