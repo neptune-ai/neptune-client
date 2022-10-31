@@ -62,10 +62,8 @@ vega_datasets = { version = "*", optional = true }
 # e2e
 Faker = { version = "*", optional = true }
 optuna = { version = "*", optional = true }
-pytorch-lightning = { version = "*", optional = true }
 sklearn = { version = "*", optional = true }
 torchvision = { version = "*", optional = true }
-transformers = { version = "*", optional = true }
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true }
