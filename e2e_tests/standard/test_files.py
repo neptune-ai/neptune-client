@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import io
 import os
 import random
 import uuid
@@ -43,6 +44,7 @@ from neptune.new.types import (
     File,
     FileSet,
 )
+from neptune.new.types.atoms.file import FileType
 
 
 class TestUpload(BaseE2ETest):
@@ -52,61 +54,46 @@ class TestUpload(BaseE2ETest):
         assert container._backend._client_config.has_feature(OptionalFeatures.MULTIPART_UPLOAD)
         assert isinstance(container._backend._client_config.multipart_config, MultipartConfig)
 
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    @pytest.mark.parametrize(
-        "file_size",
-        [
-            pytest.param(10 * 2**20, id="big"),  # 10 MB, multipart
-            pytest.param(100 * 2**10, id="small"),  # 100 kB, single upload
-        ],
-    )
-    def test_single_file(self, container: MetadataContainer, file_size: int):
+    def _test_single_file_upload(self, container: MetadataContainer, file_type: FileType, file_size: int):
         key = self.gen_key()
         extension = fake.file_extension()
-        filename = fake.file_name(extension=extension)
         downloaded_filename = fake.file_name()
+        content = os.urandom(file_size)
 
-        with tmp_context():
-            # create file_size file
+        if file_type is FileType.LOCAL_FILE:
+            filename = fake.file_name(extension=extension)
             with open(filename, "wb") as file:
-                file.write(b"\0" * file_size)
-            container[key].upload(filename)
+                file.write(content)
 
-            container.sync()
-            container[key].download(downloaded_filename)
+            file = File.from_path(filename)
+        elif file_type is FileType.IN_MEMORY:
+            file = File.from_content(content, extension)
+        elif file_type is FileType.STREAM:
+            file = File.from_stream(io.BytesIO(content), extension=extension)
+        else:
+            raise ValueError()
 
-            assert container[key].fetch_extension() == extension
-            assert os.path.getsize(downloaded_filename) == file_size
-            with open(downloaded_filename, "rb") as file:
-                content = file.read()
-                assert len(content) == file_size
-                assert content == b"\0" * file_size
-
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
-    @pytest.mark.parametrize(
-        "file_size",
-        [
-            pytest.param(10 * 2**20, id="big"),  # 10 MB, multipart
-            pytest.param(100 * 2**10, id="small"),  # 100 kB, single upload
-        ],
-    )
-    def test_in_memory_file(self, container: MetadataContainer, file_size: int):
-        key = self.gen_key()
-        extension = fake.file_extension()
-        downloaded_filename = fake.file_name()
-        expected_content = os.urandom(file_size)
-
-        container[key].upload(File.from_content(expected_content, extension))
-
+        container[key].upload(file)
         container.sync()
         container[key].download(downloaded_filename)
 
         assert container[key].fetch_extension() == extension
         assert os.path.getsize(downloaded_filename) == file_size
         with open(downloaded_filename, "rb") as file:
-            content = file.read()
+            downloaded_content = file.read()
             assert len(content) == file_size
-            assert content == expected_content
+            assert downloaded_content == content
+
+    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    @pytest.mark.parametrize("file_type", list(FileType))
+    def test_single_file(self, container: MetadataContainer, file_type: FileType):
+        file_size = 100 * 2**10  # 100 kB, single upload
+        self._test_single_file_upload(container, file_type, file_size)
+
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_single_file_multipart_upload(self, container: MetadataContainer):
+        file_size = 10 * 2**20  # 10 MB, multipart
+        self._test_single_file_upload(container, FileType.IN_MEMORY, file_size)
 
     def test_single_file_changed_during_upload(self, environment, monkeypatch):
         key = self.gen_key()
