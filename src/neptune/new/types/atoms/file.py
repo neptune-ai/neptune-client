@@ -96,8 +96,19 @@ class File(Atom):
 
     @staticmethod
     def from_path(path: str, extension: Optional[str] = None) -> "File":
-        # TODO: add docs
-        # equivalent of `File(path)`, but extension can be added manually
+        """Creates a File value object from a given path.
+
+        Equivalent to `File(path)`, but you can specify the extension separately.
+
+        Args:
+            path: Path of the file to be stored in the File value object.
+            extension (optional): Extension of the file, if not included in the path argument.
+
+        Returns:
+            `File` value object created based on the path.
+
+        For more, see the documentation: https://docs.neptune.ai/api/field_types#from_path
+        """
         verify_type("path", path, str)
         verify_type("extension", extension, (str, type(None)))
 
@@ -133,29 +144,25 @@ class File(Atom):
 
     @staticmethod
     def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> "File":
-        # TODO: docs (update)
         """Factory method for creating File value objects directly from binary and text streams.
 
-        In the case of text stream, UTF-8 encoding will be used.
+        Note that you can only log content from the same stream once.
+        In the case of text streams, UTF-8 encoding will be used.
 
         Args:
             stream (IOBase): Stream to be converted.
-            seek (int, optional): See IOBase documentation.
-                Defaults to `0`.
-            extension (str, optional): Extension of the file created that will be used for interpreting the type
+            seek (optional): Change the stream position to the given byte offset. For details,
+                see the IOBase documentation.
+            extension (optional): Extension of the created file that will be used for interpreting the type
                 of content for visualization.
-                If `None` it will be bin for binary stream and txt for text stream.
-                Defaults to `None`.
+                If None (default), it will be 'bin' for binary streams and 'txt' for text streams.
 
         Returns:
-            ``File``: value object created from the stream.
+            `File` value object created from the stream.
 
-        You may also want to check `from_stream docs page`_ and `IOBase documentation`_.
-
-        .. _from_stream docs page:
-           https://docs.neptune.ai/api/field_types#from_stream
-        .. _IOBase documentation:
-            https://docs.python.org/3/library/io.html#io.IOBase
+        See also:
+        - from_stream() documentation: https://docs.neptune.ai/api/field_types#from_stream
+        - IOBase documentation: https://docs.python.org/3/library/io.html#io.IOBase
         """
         verify_type("stream", stream, (IOBase, type(None)))
         verify_type("seek", seek, (int, type(None)))

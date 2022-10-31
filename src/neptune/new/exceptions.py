@@ -1343,6 +1343,11 @@ class StreamAlreadyUsedException(NeptuneException):
 {h1}
 ----StreamAlreadyUsedException---------------------------------------------------
 {end}
-TODO: add docs
+A File object created with File.from_stream() has already been logged.
+You can only log content from the same stream once.
+
+For more, see https://docs.neptune.ai/api/field_types/#from_stream
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """
         super().__init__(message.format(**STYLES))
