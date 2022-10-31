@@ -11,7 +11,7 @@ runs:
 
       - name: Install dependencies
         run: |
-          pip install -e . && pip install -r requirements.txt -r requirements/e2e_requirements.txt
+          pip install poetry poetry-dynamic-versioning && poetry install --with dev
         shell: bash
 
       - name: Run pre-commit

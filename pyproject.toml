@@ -12,7 +12,7 @@ pattern = "default-unprefixed"
 python = "^3.7"
 
 # Python lack of functionalities from future versions
-importlib-metadata = { version = "<4", python = "<3.8" }
+importlib-metadata = { version = "*", python = "<3.8" }
 dataclasses = { version = ">=0.6", python = "<3.7" }
 
 # Missing compatibility layer between Python 2 and Python 3
