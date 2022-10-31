@@ -11,7 +11,7 @@ runs:
 
       - name: Install dependencies
         run: |
-          pip install pip install ".[dev]"
+          pip install ".[dev]"
         shell: bash
 
       - name: List dependencies

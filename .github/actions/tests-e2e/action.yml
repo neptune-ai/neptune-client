@@ -30,7 +30,7 @@ runs:
 
       - name: Install dependencies
         run: |
-          pip install pip install ".[dev,e2e]"
+          pip install ".[dev,e2e]"
         shell: bash
 
       - name: List dependencies
