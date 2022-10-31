@@ -286,7 +286,7 @@ class TestFileSet(BaseE2ETest):
         small_files = [
             (
                 f"{path}{uuid.uuid4()}.{fake.file_extension()}",
-                os.urandom(random.randint(10**3, 10**6)),
+                os.urandom(random.randint(_1KB, 100 * _1KB)),
             )
             for path in possible_paths
         ]
@@ -328,8 +328,8 @@ class TestFileSet(BaseE2ETest):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = os.urandom(random.randint(10**3, 10**6))
-        content2 = os.urandom(random.randint(10**3, 10**6))
+        content1 = os.urandom(random.randint(_1KB, 100 * _1KB))
+        content2 = os.urandom(random.randint(_1KB, 100 * _1KB))
 
         with tmp_context():
             # create file1 and file2
@@ -360,8 +360,8 @@ class TestFileSet(BaseE2ETest):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = os.urandom(random.randint(10**3, 10**6))
-        content2 = os.urandom(random.randint(10**3, 10**6))
+        content1 = os.urandom(random.randint(_1KB, 100 * _1KB))
+        content2 = os.urandom(random.randint(_1KB, 100 * _1KB))
         downloaded_filename = fake.file_name()
 
         with tmp_context():
@@ -397,8 +397,8 @@ class TestFileSet(BaseE2ETest):
     def test_fileset_file_override(self, container: MetadataContainer, delete_attribute: bool):
         key = self.gen_key()
         filename = fake.file_name()
-        content1 = os.urandom(random.randint(10**3, 10**6))
-        content2 = os.urandom(random.randint(10**3, 10**6))
+        content1 = os.urandom(random.randint(_1KB, 100 * _1KB))
+        content2 = os.urandom(random.randint(_1KB, 100 * _1KB))
 
         with tmp_context():
             # create file
