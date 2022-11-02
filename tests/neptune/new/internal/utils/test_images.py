@@ -225,7 +225,7 @@ class TestImage(unittest.TestCase):
 
     def test_get_html_from_bokeh(self):
         # given
-        p = figure(plot_width=400, plot_height=400)
+        p = figure(width=400, height=400)
         p.circle(size=20, color="navy", alpha=0.5)
 
         # when
