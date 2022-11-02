@@ -79,7 +79,10 @@ from neptune.new.internal.utils.runningmode import (
 from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.metadata_containers.metadata_containers_table import Table
-from neptune.new.types import (Boolean, File, Integer,
+from neptune.new.types import (
+    Boolean,
+    File,
+    Integer,
 )
 from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
