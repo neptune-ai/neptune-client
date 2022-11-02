@@ -30,12 +30,10 @@ from typing import (
 )
 
 from neptune.common.exceptions import InternalClientError
+from neptune.internal.file_types import FileType
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.types.atoms.file import (
-    File,
-    FileType,
-)
+from neptune.new.types.atoms.file import File
 
 if TYPE_CHECKING:
     from neptune.new.attributes.attribute import Attribute
