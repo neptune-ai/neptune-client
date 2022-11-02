@@ -30,6 +30,8 @@ from e2e_tests.base import (
     fake,
 )
 from e2e_tests.utils import (
+    SIZE_1KB,
+    SIZE_1MB,
     initialize_container,
     tmp_context,
 )
@@ -45,9 +47,6 @@ from neptune.new.types import (
     FileSet,
 )
 from neptune.new.types.atoms.file import FileType
-
-_1MB = 2**20
-_1KB = 1**10
 
 
 class TestUpload(BaseE2ETest):
@@ -90,18 +89,18 @@ class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     @pytest.mark.parametrize("file_type", list(FileType))
     def test_single_upload(self, container: MetadataContainer, file_type: FileType):
-        file_size = 100 * _1KB  # 100 kB, single upload
+        file_size = 100 * SIZE_1KB  # 100 kB, single upload
         self._test_upload(container, file_type, file_size)
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_multipart_upload(self, container: MetadataContainer):
-        file_size = 10 * _1MB  # 10 MB, multipart
+        file_size = 10 * SIZE_1MB  # 10 MB, multipart
         self._test_upload(container, FileType.IN_MEMORY, file_size)
 
     def test_file_changed_during_upload(self, environment, monkeypatch):
         key = self.gen_key()
-        file_size = 11 * _1MB  # 11 MB, multipart with 3 parts
-        intermediate_size = 6 * _1MB  # 6 MB, second part < 5MB
+        file_size = 11 * SIZE_1MB  # 11 MB, multipart with 3 parts
+        intermediate_size = 6 * SIZE_1MB  # 6 MB, second part < 5MB
         filename = fake.file_name()
         downloaded_filename = fake.file_name()
 
@@ -157,7 +156,7 @@ class TestUpload(BaseE2ETest):
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_replace_float_attribute_with_uploaded_file(self, container: MetadataContainer):
         key = self.gen_key()
-        file_size = 100 * _1KB  # 100 kB
+        file_size = 100 * SIZE_1KB  # 100 kB
         filename = fake.file_name()
         downloaded_filename = fake.file_name()
 
@@ -255,14 +254,14 @@ class TestFileSet(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_fileset(self, container: MetadataContainer):
         # 100 kB, single upload for large file
-        large_file_size = 100 * _1KB
+        large_file_size = 100 * SIZE_1KB
         small_files_no = 10
         self._test_fileset(container, large_file_size, small_files_no)
 
     @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_fileset_with_multipart(self, container: MetadataContainer):
         # 10 MB, multipart upload for large file
-        large_file_size = 10 * _1MB
+        large_file_size = 10 * SIZE_1MB
         small_files_no = 100
         self._test_fileset(container, large_file_size, small_files_no)
 
@@ -286,7 +285,7 @@ class TestFileSet(BaseE2ETest):
         small_files = [
             (
                 f"{path}{uuid.uuid4()}.{fake.file_extension()}",
-                os.urandom(random.randint(_1KB, 100 * _1KB)),
+                os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB)),
             )
             for path in possible_paths
         ]
@@ -328,8 +327,8 @@ class TestFileSet(BaseE2ETest):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = os.urandom(random.randint(_1KB, 100 * _1KB))
-        content2 = os.urandom(random.randint(_1KB, 100 * _1KB))
+        content1 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
+        content2 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
 
         with tmp_context():
             # create file1 and file2
@@ -360,8 +359,8 @@ class TestFileSet(BaseE2ETest):
         key = self.gen_key()
         filename1 = fake.file_name()
         filename2 = fake.file_name()
-        content1 = os.urandom(random.randint(_1KB, 100 * _1KB))
-        content2 = os.urandom(random.randint(_1KB, 100 * _1KB))
+        content1 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
+        content2 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
         downloaded_filename = fake.file_name()
 
         with tmp_context():
@@ -397,8 +396,8 @@ class TestFileSet(BaseE2ETest):
     def test_fileset_file_override(self, container: MetadataContainer, delete_attribute: bool):
         key = self.gen_key()
         filename = fake.file_name()
-        content1 = os.urandom(random.randint(_1KB, 100 * _1KB))
-        content2 = os.urandom(random.randint(_1KB, 100 * _1KB))
+        content1 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
+        content2 = os.urandom(random.randint(SIZE_1KB, 100 * SIZE_1KB))
 
         with tmp_context():
             # create file
