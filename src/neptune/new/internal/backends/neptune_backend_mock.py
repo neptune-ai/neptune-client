@@ -35,6 +35,7 @@ from neptune.common.exceptions import (
     InternalClientError,
     NeptuneException,
 )
+from neptune.internal.file_types import FileType
 from neptune.new.exceptions import (
     ContainerUUIDNotFound,
     MetadataInconsistency,
@@ -115,10 +116,7 @@ from neptune.new.types import (
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.file import (
-    File,
-    FileType,
-)
+from neptune.new.types.atoms.file import File
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.file_set import FileSet

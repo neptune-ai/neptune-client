@@ -25,14 +25,16 @@ from bokeh.plotting import figure
 from PIL import Image
 
 from e2e_tests.utils import tmp_context
+from neptune.internal.file_types import (
+    FileType,
+    InMemoryComposite,
+)
 from neptune.new.exceptions import (
     NeptuneException,
     StreamAlreadyUsedException,
 )
 from neptune.new.internal.utils.images import _get_pil_image_data
 from neptune.new.types import File
-from neptune.new.types.atoms.file import FileType
-from neptune.new.types.atoms.file_types import _InMemoryComposite
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
@@ -201,6 +203,6 @@ class TestFile(unittest.TestCase):
 
     def test_raise_exception_in_constructor(self):
         with self.assertRaises(ValueError):
-            File(path="path", file_composite=_InMemoryComposite(b"some_content"))
+            File(path="path", file_composite=InMemoryComposite(b"some_content"))
         with self.assertRaises(ValueError):
             File()

@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 __all__ = [
-    "FileType",
     "File",
 ]
 
@@ -26,6 +25,12 @@ from typing import (
     Union,
 )
 
+from neptune.internal.file_types import (
+    FileComposite,
+    InMemoryComposite,
+    LocalFileComposite,
+    StreamComposite,
+)
 from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.images import (
     get_html_content,
@@ -40,13 +45,6 @@ from neptune.new.internal.utils.images import (
     is_plotly_figure,
 )
 from neptune.new.types.atoms.atom import Atom
-from neptune.new.types.atoms.file_types import _FileComposite
-from neptune.new.types.atoms.file_types import _FileType as FileType
-from neptune.new.types.atoms.file_types import (
-    _InMemoryComposite,
-    _LocalFileComposite,
-    _StreamComposite,
-)
 
 if TYPE_CHECKING:
     from neptune.new.types.value_visitor import ValueVisitor
@@ -55,17 +53,17 @@ Ret = TypeVar("Ret")
 
 
 class File(Atom):
-    def __init__(self, path: Optional[str] = None, file_composite: Optional[_FileComposite] = None):
+    def __init__(self, path: Optional[str] = None, file_composite: Optional[FileComposite] = None):
         """We have to support `path` parameter since almost all of `File` usages by our users look like `File(path)`."""
         verify_type("path", path, (str, type(None)))
-        verify_type("file_composite", file_composite, (_FileComposite, type(None)))
+        verify_type("file_composite", file_composite, (FileComposite, type(None)))
 
         if path is not None and file_composite is not None:
             raise ValueError("path and file_composite are mutually exclusive")
         if path is None and file_composite is None:
             raise ValueError("path or file_composite is required")
         if path is not None:
-            self._file_composite = _LocalFileComposite(path)
+            self._file_composite = LocalFileComposite(path)
         else:
             self._file_composite = file_composite
 
@@ -112,7 +110,7 @@ class File(Atom):
         verify_type("path", path, str)
         verify_type("extension", extension, (str, type(None)))
 
-        file_composite = _LocalFileComposite(path, extension)
+        file_composite = LocalFileComposite(path, extension)
         return File(file_composite=file_composite)
 
     @staticmethod
@@ -139,7 +137,7 @@ class File(Atom):
         verify_type("content", content, (bytes, str, type(None)))
         verify_type("extension", extension, (str, type(None)))
 
-        file_composite = _InMemoryComposite(content, extension)
+        file_composite = InMemoryComposite(content, extension)
         return File(file_composite=file_composite)
 
     @staticmethod
@@ -168,7 +166,7 @@ class File(Atom):
         verify_type("seek", seek, (int, type(None)))
         verify_type("extension", extension, (str, type(None)))
 
-        file_composite = _StreamComposite(stream, seek, extension)
+        file_composite = StreamComposite(stream, seek, extension)
         return File(file_composite=file_composite)
 
     @staticmethod
