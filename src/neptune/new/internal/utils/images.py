@@ -271,7 +271,7 @@ def is_altair_chart(chart):
 
 
 def is_bokeh_figure(chart):
-    return chart.__class__.__module__.startswith("bokeh.") and chart.__class__.__name__ == "Figure"
+    return chart.__class__.__module__.startswith("bokeh.") and chart.__class__.__name__.lower() == "figure"
 
 
 def is_pandas_dataframe(table):
