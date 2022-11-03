@@ -14,22 +14,23 @@
 # limitations under the License.
 #
 import pickle
+import unittest
 from io import (
     BytesIO,
     StringIO,
 )
 
 import numpy
+from bokeh.plotting import figure
 from PIL import Image
 
 from neptune.new.exceptions import NeptuneException
 from neptune.new.internal.utils.images import _get_pil_image_data
 from neptune.new.types import File
 from neptune.new.types.atoms.file import FileType
-from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
-class TestFile(TestAttributeBase):
+class TestFile(unittest.TestCase):
     def test_create_from_path(self):
         file = File("some/path.ext")
         self.assertIs(file.file_type, FileType.LOCAL_FILE)
@@ -164,9 +165,6 @@ class TestFile(TestAttributeBase):
         self.assertEqual(file.content, _get_pil_image_data(expected_image))
 
     def test_as_html(self):
-        # given
-        from bokeh.plotting import figure
-
         # given
         p = figure(width=400, height=400)
         p.circle(size=20, color="navy", alpha=0.5)
