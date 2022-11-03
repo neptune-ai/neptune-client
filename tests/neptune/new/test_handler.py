@@ -60,13 +60,13 @@ from neptune.new.types.sets.string_set import StringSet as StringSetVal
 from tests.neptune.new.utils.file_helpers import create_file
 
 
-class TestHandler(unittest.TestCase):
+class TestBaseAssign(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
-    def test_set(self):
+    def test_assign_operator(self):
         exp = init(mode="debug", flush_period=0.5)
         now = datetime.now()
         exp["some/num/val"] = 5.0
@@ -83,7 +83,7 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], String)
         self.assertIsInstance(exp.get_structure()["some"]["datetime"]["val"], Datetime)
 
-    def test_assign_atom(self):
+    def test_assign(self):
         exp = init(mode="debug", flush_period=0.5)
         now = datetime.now()
         exp["some/num/val"].assign(5.0)
@@ -119,28 +119,24 @@ class TestHandler(unittest.TestCase):
         self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], String)
         self.assertIsInstance(exp.get_structure()["some"]["datetime"]["val"], Datetime)
 
-    @patch("neptune.new.internal.backends.neptune_backend_mock.copyfile")
-    def test_save_download_file(self, copy_mock):
+    def test_lookup(self):
         exp = init(mode="debug", flush_period=0.5)
-        exp["some/num/file"].upload("path/to/other/file.txt")
-        self.assertIsInstance(exp.get_structure()["some"]["num"]["file"], File)
+        ns = exp["some/ns"]
+        ns["val"] = 5
+        exp.wait()
+        self.assertEqual(exp["some/ns/val"].fetch(), 5)
 
-        exp["some/num/file"].download("path/to/download/alternative_file.txt")
-        copy_mock.assert_called_with(
-            os.path.abspath("path/to/other/file.txt"),
-            os.path.abspath("path/to/download/alternative_file.txt"),
-        )
-        copy_mock.reset_mock()
+        ns = exp["other/ns"]
+        exp["other/ns/some/value"] = 3
+        exp.wait()
+        self.assertEqual(ns["some/value"].fetch(), 3)
 
-        exp["some/num/file"].download()
-        copy_mock.assert_called_with(os.path.abspath("path/to/other/file.txt"), os.path.abspath("file.txt"))
-        copy_mock.reset_mock()
 
-        exp["some/num/file"].download("path/to/other/file.txt")
-        copy_mock.assert_not_called()
-
-        with self.assertRaises(TypeError):
-            exp["some/num/file"].download(123)
+class TestUpload(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     def test_save_download_text_stream_to_given_destination(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -184,6 +180,13 @@ class TestHandler(unittest.TestCase):
 
         zip_write_mock.assert_any_call(os.path.abspath("path/to/file.txt"), "path/to/file.txt")
         zip_write_mock.assert_any_call(os.path.abspath("path/to/other/file.txt"), "path/to/other/file.txt")
+
+
+class TestSeries(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
 
     def test_assign_series(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -255,6 +258,13 @@ class TestHandler(unittest.TestCase):
         self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "str")
         self.assertIsInstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
+
+class TestSet(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
     def test_assign_set(self):
         exp = init(mode="debug", flush_period=0.5)
         exp["some/str/val"].assign(StringSetVal(["tag1", "tag2"]), wait=True)
@@ -264,6 +274,46 @@ class TestHandler(unittest.TestCase):
         exp["some/str/val"].assign(StringSetVal(["other_1", "other_2", "other_3"]), wait=True)
         self.assertEqual(exp["some/str/val"].fetch(), {"other_1", "other_2", "other_3"})
         self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], StringSet)
+
+    def test_add(self):
+        exp = init(mode="debug", flush_period=0.5)
+
+        exp["some/str/val"].add(["some text", "something else"], wait=True)
+        self.assertEqual(exp["some/str/val"].fetch(), {"some text", "something else"})
+
+        exp["some/str/val"].add("one more", wait=True)
+        self.assertEqual(exp["some/str/val"].fetch(), {"some text", "something else", "one more"})
+
+        self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], StringSet)
+
+
+class TestNamespace(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
+    def test_assign_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["params"] = {
+            "x": 5,
+            "metadata": {"name": "Trol", "age": 376},
+            "toys": StringSeriesVal(["cudgel", "hat"]),
+            "nested": {"nested": {"deep_secret": FloatSeriesVal([13, 15])}},
+        }
+        self.assertEqual(exp["params/x"].fetch(), 5)
+        self.assertEqual(exp["params/metadata/name"].fetch(), "Trol")
+        self.assertEqual(exp["params/metadata/age"].fetch(), 376)
+        self.assertEqual(exp["params/toys"].fetch_last(), "hat")
+        self.assertEqual(exp["params/nested/nested/deep_secret"].fetch_last(), 15)
+
+    def test_argparse_namespace(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["params"] = argparse.Namespace(foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55))
+        self.assertEqual(exp["params/foo"].fetch(), "bar")
+        self.assertEqual(exp["params/baz"].fetch(), 42)
+        self.assertEqual(exp["params/nested/nested_attr"].fetch(), "[1, 2, 3]")
+        self.assertEqual(exp["params/nested/num"].fetch(), 55)
 
     def test_assign_namespace(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -288,149 +338,6 @@ class TestHandler(unittest.TestCase):
 
         with self.assertRaises(TypeError):
             exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": {"tagA", "tagB"}}))
-
-    def test_assign_distinct_types(self):
-        exp = init(mode="debug", flush_period=0.5)
-        exp["some/str/val"].assign(FloatVal(1.0), wait=True)
-        self.assertEqual(exp["some/str/val"].fetch(), 1.0)
-        self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], Float)
-
-        with self.assertRaises(TypeError):
-            exp["some/str/val"].assign(StringSetVal(["other_1", "other_2", "other_3"]), wait=True)
-
-    def test_add(self):
-        exp = init(mode="debug", flush_period=0.5)
-
-        exp["some/str/val"].add(["some text", "something else"], wait=True)
-        self.assertEqual(exp["some/str/val"].fetch(), {"some text", "something else"})
-
-        exp["some/str/val"].add("one more", wait=True)
-        self.assertEqual(exp["some/str/val"].fetch(), {"some text", "something else", "one more"})
-
-        self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], StringSet)
-
-    def test_pop(self):
-        exp = init(mode="debug", flush_period=0.5)
-        exp["some/num/val"].assign(3, wait=True)
-        self.assertIn("some", exp.get_structure())
-        ns = exp["some"]
-        ns.pop("num/val", wait=True)
-        self.assertNotIn("some", exp.get_structure())
-
-    def test_pop_self(self):
-        exp = init(mode="debug", flush_period=0.5)
-        exp["x"].assign(3, wait=True)
-        self.assertIn("x", exp.get_structure())
-        exp["x"].pop(wait=True)
-        self.assertNotIn("x", exp.get_structure())
-
-    def test_del(self):
-        exp = init(mode="debug", flush_period=0.5)
-        exp["some/num/val"].assign(3)
-        self.assertIn("some", exp.get_structure())
-        ns = exp["some"]
-        del ns["num/val"]
-        self.assertNotIn("some", exp.get_structure())
-
-    def test_lookup(self):
-        exp = init(mode="debug", flush_period=0.5)
-        ns = exp["some/ns"]
-        ns["val"] = 5
-        exp.wait()
-        self.assertEqual(exp["some/ns/val"].fetch(), 5)
-
-        ns = exp["other/ns"]
-        exp["other/ns/some/value"] = 3
-        exp.wait()
-        self.assertEqual(ns["some/value"].fetch(), 3)
-
-    def test_attribute_error(self):
-        exp = init(mode="debug", flush_period=0.5)
-        with self.assertRaises(AttributeError):
-            exp["var"].something()
-
-    def test_float_like_types(self):
-        exp = init(mode="debug", flush_period=0.5)
-
-        exp.define("attr1", self.FloatLike(5))
-        self.assertEqual(exp["attr1"].fetch(), 5)
-        exp["attr1"] = "234"
-        self.assertEqual(exp["attr1"].fetch(), 234)
-        with self.assertRaises(ValueError):
-            exp["attr1"] = "234a"
-
-        exp["attr2"].assign(self.FloatLike(34))
-        self.assertEqual(exp["attr2"].fetch(), 34)
-        exp["attr2"].assign("555")
-        self.assertEqual(exp["attr2"].fetch(), 555)
-        with self.assertRaises(ValueError):
-            exp["attr2"].assign("string")
-
-        exp["attr3"].log(self.FloatLike(34))
-        self.assertEqual(exp["attr3"].fetch_last(), 34)
-        exp["attr3"].log(["345", self.FloatLike(34), 4, 13.0])
-        self.assertEqual(exp["attr3"].fetch_last(), 13)
-        with self.assertRaises(ValueError):
-            exp["attr3"].log([4, "234a"])
-
-    def test_string_like_types(self):
-        exp = init(mode="debug", flush_period=0.5)
-
-        exp["attr1"] = "234"
-        exp["attr1"] = self.FloatLike(12356)
-        self.assertEqual(exp["attr1"].fetch(), "TestHandler.FloatLike(value=12356)")
-
-        exp["attr2"].log("xxx")
-        exp["attr2"].log(["345", self.FloatLike(34), 4, 13.0])
-        self.assertEqual(exp["attr2"].fetch_last(), "13.0")
-
-    def test_assign_dict(self):
-        exp = init(mode="debug", flush_period=0.5)
-        exp["params"] = {
-            "x": 5,
-            "metadata": {"name": "Trol", "age": 376},
-            "toys": StringSeriesVal(["cudgel", "hat"]),
-            "nested": {"nested": {"deep_secret": FloatSeriesVal([13, 15])}},
-        }
-        self.assertEqual(exp["params/x"].fetch(), 5)
-        self.assertEqual(exp["params/metadata/name"].fetch(), "Trol")
-        self.assertEqual(exp["params/metadata/age"].fetch(), 376)
-        self.assertEqual(exp["params/toys"].fetch_last(), "hat")
-        self.assertEqual(exp["params/nested/nested/deep_secret"].fetch_last(), 15)
-
-    def test_convertable_to_dict(self):
-        exp = init(mode="debug", flush_period=0.5)
-        exp["params"] = argparse.Namespace(foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55))
-        self.assertEqual(exp["params/foo"].fetch(), "bar")
-        self.assertEqual(exp["params/baz"].fetch(), 42)
-        self.assertEqual(exp["params/nested/nested_attr"].fetch(), "[1, 2, 3]")
-        self.assertEqual(exp["params/nested/num"].fetch(), 55)
-
-    def test_object(self):
-        class Dog:
-            def __init__(self, name, fierceness):
-                self.name = name
-                self.fierceness = fierceness
-
-            def __str__(self):
-                return f"{self.name} goes " + "Woof! " * self.fierceness
-
-        exp = init(mode="debug", flush_period=0.5)
-        exp["burek"] = Dog("Burek", 3)
-        self.assertEqual(exp["burek"].fetch(), "Burek goes Woof! Woof! Woof! ")
-
-    def test_artifacts(self):
-        exp = init(mode="debug", flush_period=0.5)
-        exp["art1"].track_files("s3://path/to/tracking/file", destination="/some/destination")
-        exp["art2"].track_files("s3://path/to/tracking/file2")
-        self.assertEqual(
-            exp["art1"].fetch(),
-            Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-        )
-        self.assertEqual(
-            exp["art2"].fetch(),
-            Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
-        )
 
     def test_fetch_dict(self):
         now = datetime.now()
@@ -482,6 +389,125 @@ class TestHandler(unittest.TestCase):
                 "string": "Some text",
             },
         )
+
+
+class TestDelete(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
+    def test_pop(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["some/num/val"].assign(3, wait=True)
+        self.assertIn("some", exp.get_structure())
+        ns = exp["some"]
+        ns.pop("num/val", wait=True)
+        self.assertNotIn("some", exp.get_structure())
+
+    def test_pop_self(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["x"].assign(3, wait=True)
+        self.assertIn("x", exp.get_structure())
+        exp["x"].pop(wait=True)
+        self.assertNotIn("x", exp.get_structure())
+
+    def test_del(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["some/num/val"].assign(3)
+        self.assertIn("some", exp.get_structure())
+        ns = exp["some"]
+        del ns["num/val"]
+        self.assertNotIn("some", exp.get_structure())
+
+
+class TestArtifacts(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
+    def test_artifacts(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["art1"].track_files("s3://path/to/tracking/file", destination="/some/destination")
+        exp["art2"].track_files("s3://path/to/tracking/file2")
+        self.assertEqual(
+            exp["art1"].fetch(),
+            Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+        )
+        self.assertEqual(
+            exp["art2"].fetch(),
+            Artifact(value="e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"),
+        )
+
+
+class TestOtherBehaviour(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        os.environ[PROJECT_ENV_NAME] = "organization/project"
+        os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
+    def test_assign_distinct_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["some/str/val"].assign(FloatVal(1.0), wait=True)
+        self.assertEqual(exp["some/str/val"].fetch(), 1.0)
+        self.assertIsInstance(exp.get_structure()["some"]["str"]["val"], Float)
+
+        with self.assertRaises(TypeError):
+            exp["some/str/val"].assign(StringSetVal(["other_1", "other_2", "other_3"]), wait=True)
+
+    def test_attribute_error(self):
+        exp = init(mode="debug", flush_period=0.5)
+        with self.assertRaises(AttributeError):
+            exp["var"].something()
+
+    def test_float_like_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+
+        exp.define("attr1", self.FloatLike(5))
+        self.assertEqual(exp["attr1"].fetch(), 5)
+        exp["attr1"] = "234"
+        self.assertEqual(exp["attr1"].fetch(), 234)
+        with self.assertRaises(ValueError):
+            exp["attr1"] = "234a"
+
+        exp["attr2"].assign(self.FloatLike(34))
+        self.assertEqual(exp["attr2"].fetch(), 34)
+        exp["attr2"].assign("555")
+        self.assertEqual(exp["attr2"].fetch(), 555)
+        with self.assertRaises(ValueError):
+            exp["attr2"].assign("string")
+
+        exp["attr3"].log(self.FloatLike(34))
+        self.assertEqual(exp["attr3"].fetch_last(), 34)
+        exp["attr3"].log(["345", self.FloatLike(34), 4, 13.0])
+        self.assertEqual(exp["attr3"].fetch_last(), 13)
+        with self.assertRaises(ValueError):
+            exp["attr3"].log([4, "234a"])
+
+    def test_string_like_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+
+        exp["attr1"] = "234"
+        exp["attr1"] = self.FloatLike(12356)
+        self.assertEqual(exp["attr1"].fetch(), "TestOtherBehaviour.FloatLike(value=12356)")
+
+        exp["attr2"].log("xxx")
+        exp["attr2"].log(["345", self.FloatLike(34), 4, 13.0])
+        self.assertEqual(exp["attr2"].fetch_last(), "13.0")
+
+    def test_object(self):
+        class Dog:
+            def __init__(self, name, fierceness):
+                self.name = name
+                self.fierceness = fierceness
+
+            def __str__(self):
+                return f"{self.name} goes " + "Woof! " * self.fierceness
+
+        exp = init(mode="debug", flush_period=0.5)
+        exp["burek"] = Dog("Burek", 3)
+        self.assertEqual(exp["burek"].fetch(), "Burek goes Woof! Woof! Woof! ")
 
     def test_representation(self):
         exp = init(mode="debug", flush_period=0.5)
