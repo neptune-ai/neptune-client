@@ -597,7 +597,7 @@ class TestOtherBehaviour(unittest.TestCase):
         with self.assertRaises(AttributeError):
             exp["var"].something()
 
-    def test_log_float_like_types(self):
+    def test_float_like_types(self):
         exp = init(mode="debug", flush_period=0.5)
 
         exp.define("attr1", self.FloatLike(5))
@@ -634,6 +634,15 @@ class TestOtherBehaviour(unittest.TestCase):
             exp["attr"].append(4)
             exp["attr"].append("234a")
 
+    def test_extend_float_like_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["attr"].extend([self.FloatLike(34)])
+        self.assertEqual(exp["attr"].fetch_last(), 34)
+        exp["attr"].extend(["345", self.FloatLike(34), 4, 13.0])
+        self.assertEqual(exp["attr"].fetch_last(), 13)
+        with self.assertRaises(ValueError):
+            exp["attr"].extend([4, "234a"])
+
     def test_string_like_types(self):
         exp = init(mode="debug", flush_period=0.5)
 
@@ -657,6 +666,34 @@ class TestOtherBehaviour(unittest.TestCase):
         exp["attr2"].append(4)
         exp["attr2"].append(13.0)
         self.assertEqual(exp["attr2"].fetch_last(), "13.0")
+
+    def test_extend_string_like_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["attr"].extend(["kebab"])
+        exp["attr"].extend(["345", self.FloatLike(34), 4, 13.0])
+        self.assertEqual(exp["attr"].fetch_last(), "13.0")
+
+    def test_assign_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["params"] = {
+            "x": 5,
+            "metadata": {"name": "Trol", "age": 376},
+            "toys": StringSeriesVal(["cudgel", "hat"]),
+            "nested": {"nested": {"deep_secret": FloatSeriesVal([13, 15])}},
+        }
+        self.assertEqual(exp["params/x"].fetch(), 5)
+        self.assertEqual(exp["params/metadata/name"].fetch(), "Trol")
+        self.assertEqual(exp["params/metadata/age"].fetch(), 376)
+        self.assertEqual(exp["params/toys"].fetch_last(), "hat")
+        self.assertEqual(exp["params/nested/nested/deep_secret"].fetch_last(), 15)
+
+    def test_convertable_to_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["params"] = argparse.Namespace(foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55))
+        self.assertEqual(exp["params/foo"].fetch(), "bar")
+        self.assertEqual(exp["params/baz"].fetch(), 42)
+        self.assertEqual(exp["params/nested/nested_attr"].fetch(), "[1, 2, 3]")
+        self.assertEqual(exp["params/nested/num"].fetch(), 55)
 
     def test_object(self):
         class Dog:
