@@ -1,3 +1,8 @@
+## neptune-client 0.16.12
+
+### Changes
+- Building a package with Poetry ([#1069](https://github.com/neptune-ai/neptune-client/pull/1069))
+
 ## neptune-client 0.16.11
 
 ### Fixes

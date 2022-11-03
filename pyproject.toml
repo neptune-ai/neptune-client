@@ -1,3 +1,171 @@
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"
+
+[tool.poetry-dynamic-versioning]
+enable = true
+vcs = "git"
+style = "semver"
+pattern = "default-unprefixed"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+
+# Python lack of functionalities from future versions
+importlib-metadata = { version = "*", python = "<3.8" }
+dataclasses = { version = ">=0.6", python = "<3.7" }
+
+# Missing compatibility layer between Python 2 and Python 3
+six = ">=1.12.0"
+future = ">=0.17.1"
+
+# Utility
+packaging = "*"
+click = ">=7.0"
+
+# Networking
+bravado = "^11.0.0"
+oauthlib = ">=2.1.0"
+PyJWT = "*"
+requests = ">=2.20.0"
+requests-oauthlib = ">=1.0.0"
+websocket-client = ">=0.35.0, !=1.0.0"
+urllib3 = "*"
+swagger-spec-validator = ">=2.7.4"
+
+# Built-in integrations
+boto3 = ">=1.16.0"
+Pillow = ">=1.1.6"
+GitPython = ">=2.0.8"
+psutil = "*"
+pandas = "*"
+
+# dev
+altair = { version = "*", optional = true }
+bokeh = { version = "*", optional = true }
+freezegun = { version = "*", optional = true }
+matplotlib = { version = "*", optional = true }
+mock = { version = "*", optional = true }
+moto = { version = "*", extras = [ "s3" ], optional = true }
+munch = { version = "*", optional = true }
+plotly = { version = "*", optional = true }
+pre-commit = { version = "*", optional = true }
+pytest = { version = "*", optional = true }
+pytest-cov = { version = "*", optional = true }
+pytest-mock = { version = "*", optional = true }
+pytest-timeout = { version = "*", optional = true }
+pytest-xdist = { version = "*", optional = true }
+tensorflow = { version = "*", optional = true }
+torch = { version = "*", optional = true }
+vega_datasets = { version = "*", optional = true }
+
+# e2e
+Faker = { version = "*", optional = true }
+optuna = { version = "*", optional = true }
+sklearn = { version = "*", optional = true }
+torchvision = { version = "*", optional = true }
+
+# Additional integrations
+kedro-neptune = { version = "*", optional = true }
+neptune-fastai = { version = "*", optional = true }
+neptune-lightgbm = { version = "*", optional = true }
+pytorch-lightning = { version = "*", optional = true }
+neptune-optuna = { version = "*", optional = true }
+neptune-prophet = { version = "*", optional = true }
+neptune-sacred = { version = "*", optional = true }
+neptune-sklearn = { version = "*", optional = true }
+neptune-tensorflow-keras = { version = "*", optional = true }
+neptune-xgboost = { version = "*", optional = true }
+transformers = { version = "*", optional = true }
+
+[tool.poetry.extras]
+fastai = ["neptune-fastai"]
+kedro = ["kedro-neptune"]
+lightgbm = ["neptune-lightgbm"]
+optuna = ["neptune-optuna"]
+prophet = ["neptune-prophet"]
+pytorch-lightning = ["pytorch-lightning"]
+sacred = ["neptune-sacred"]
+sklearn = ["neptune-sklearn"]
+tensorflow-keras = ["neptune-tensorflow-keras"]
+transformers = ["transformers"]
+xgboost = ["neptune-xgboost"]
+dev = [
+    "altair",
+    "bokeh",
+    "freezegun",
+    "matplotlib",
+    "mock",
+    "moto[s3]",
+    "munch",
+    "plotly",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-timeout",
+    "pytest-xdist",
+    "tensorflow",
+    "torch",
+    "vega_datasets",
+]
+e2e = [
+    "Faker",
+    # Integrations
+    "optuna",
+    "pytorch-lightning",
+    "sklearn",
+    "torchvision",
+    "transformers",
+]
+
+[tool.poetry]
+authors = ["neptune.ai <contact@neptune.ai>"]
+description = "Neptune Client"
+repository = "https://github.com/neptune-ai/neptune-client"
+homepage = "https://neptune.ai/"
+documentation = "https://docs.neptune.ai/"
+include = ["CHANGELOG.md"]
+exclude = ["src/neptune/license_header.txt"]
+license = "Apache License 2.0"
+name = "neptune-client"
+readme = "README.md"
+version = "0.0.0"
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: Apache Software License",
+    "Natural Language :: English",
+    "Operating System :: MacOS",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+keywords = [
+    "MLOps",
+    "ML Experiment Tracking",
+    "ML Model Registry",
+    "ML Model Store",
+    "ML Metadata Store",
+]
+packages = [
+    { include = "neptune", from = "src" },
+    { include = "neptune_cli", from = "src" },
+]
+
+[tool.poetry.urls]
+"Tracker" = "https://github.com/neptune-ai/neptune-client/issues"
+"Source" = "https://github.com/neptune-ai/neptune-client"
+"Documentation" = "https://docs.neptune.ai/"
+
+[tool.poetry.scripts]
+neptune = "neptune_cli.main:main"
+
 [tool.black]
 line-length = 120
 target-version = ['py37', 'py38', 'py39', 'py310']
