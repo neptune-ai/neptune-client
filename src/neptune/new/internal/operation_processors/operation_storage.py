@@ -20,7 +20,6 @@ __all__ = [
 import os
 from pathlib import Path
 
-from neptune.new.cli.utils import create_dir_name
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import UniqueId
@@ -44,4 +43,4 @@ class OperationStorage:
 
     @staticmethod
     def _get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType):
-        return f"{NEPTUNE_DATA_DIRECTORY}/{type_dir}/{create_dir_name(container_type, container_id)}"
+        return f"{NEPTUNE_DATA_DIRECTORY}/{type_dir}/{container_type.create_dir_name(container_id)}"

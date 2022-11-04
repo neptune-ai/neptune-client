@@ -30,7 +30,6 @@ from typing import (
 
 from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.cli.utils import (
-    create_dir_name,
     get_metadata_container,
     get_offline_dirs,
     get_project,
@@ -140,7 +139,7 @@ class SyncRunner(AbstractBackendRunner):
                 container_id=name,
             )
             if run:
-                run_path = base_path / ASYNC_DIRECTORY / f"{create_dir_name(run.type, run.id)}"
+                run_path = base_path / ASYNC_DIRECTORY / f"{run.type.create_dir_name(run.id)}"
                 run_path_deprecated = base_path / ASYNC_DIRECTORY / f"{run.id}"
                 if run_path.exists():
                     self.sync_run(run_path=run_path, run=run)
@@ -169,7 +168,7 @@ class SyncRunner(AbstractBackendRunner):
         server_id: UniqueId,
         server_type: ContainerType,
     ) -> None:
-        online_dir = create_dir_name(container_type=server_type, container_id=server_id)
+        online_dir = server_type.create_dir_name(container_id=server_id)
         # create async directory for run
         (base_path / ASYNC_DIRECTORY / online_dir).mkdir(parents=True)
         # mv offline directory inside async one

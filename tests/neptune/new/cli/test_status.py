@@ -17,7 +17,7 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from neptune.new.cli import StatusRunner
+from neptune.new.cli.status import StatusRunner
 from neptune.new.cli.utils import get_qualified_name
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import Operation

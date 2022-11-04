@@ -16,6 +16,8 @@
 
 import enum
 
+from neptune.new.internal.id_formats import UniqueId
+
 
 class ContainerType(str, enum.Enum):
     RUN = "run"
@@ -35,3 +37,6 @@ class ContainerType(str, enum.Enum):
             return ContainerType.MODEL_VERSION
         else:
             return ContainerType(api_type)
+
+    def create_dir_name(self, container_id: UniqueId) -> str:
+        return f"{self.value}__{container_id}"

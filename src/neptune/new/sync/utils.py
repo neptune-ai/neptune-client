@@ -21,14 +21,12 @@ __all__ = [
     "is_container_synced",
     "get_offline_dirs",
     "iterate_containers",
-    "create_dir_name",
     "split_dir_name",
 ]
 
 # backwards compatibility
 # flake8: noqa
 from neptune.new.cli.utils import (
-    create_dir_name,
     get_metadata_container,
     get_offline_dirs,
     get_project,

@@ -14,36 +14,9 @@
 # limitations under the License.
 #
 
-__all__ = [
-    "AbstractBackendRunner",
-    "sync",
-    "status",
-    "StatusRunner",
-    "SyncRunner",
-    "get_metadata_container",
-    "get_project",
-    "get_qualified_name",
-    "is_container_synced",
-    "get_offline_dirs",
-    "iterate_containers",
-    "create_dir_name",
-    "split_dir_name",
-]
+__all__ = ["sync", "status"]
 
-from .abstract_backend_runner import AbstractBackendRunner
-from .commands import (
+from neptune.new.cli.commands import (
     status,
     sync,
-)
-from .status import StatusRunner
-from .sync import SyncRunner
-from .utils import (
-    create_dir_name,
-    get_metadata_container,
-    get_offline_dirs,
-    get_project,
-    get_qualified_name,
-    is_container_synced,
-    iterate_containers,
-    split_dir_name,
 )

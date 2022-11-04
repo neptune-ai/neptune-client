@@ -18,7 +18,6 @@ __all__ = ("SyncOperationProcessor",)
 from datetime import datetime
 from typing import Optional
 
-from neptune.new.cli.utils import create_dir_name
 from neptune.new.constants import (
     NEPTUNE_DATA_DIRECTORY,
     SYNC_DIRECTORY,
@@ -41,7 +40,7 @@ class SyncOperationProcessor(OperationProcessor):
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
-        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{create_dir_name(container_type, container_id)}"
+        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
         return data_path
 

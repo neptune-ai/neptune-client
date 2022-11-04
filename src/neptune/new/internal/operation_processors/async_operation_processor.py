@@ -29,7 +29,6 @@ from typing import (
     Optional,
 )
 
-from neptune.new.cli.utils import create_dir_name
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
     NEPTUNE_DATA_DIRECTORY,
@@ -91,7 +90,7 @@ class AsyncOperationProcessor(OperationProcessor):
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
-        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{create_dir_name(container_type, container_id)}"
+        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{ASYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
         data_path = data_path.replace(" ", "_").replace(":", ".")
         return data_path

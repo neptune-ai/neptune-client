@@ -21,7 +21,6 @@ __all__ = [
     "is_container_synced",
     "get_offline_dirs",
     "iterate_containers",
-    "create_dir_name",
     "split_dir_name",
 ]
 
@@ -120,10 +119,6 @@ def _is_execution_synced(execution_path: Path) -> bool:
         threading.RLock(),
     )
     return disk_queue.is_empty()
-
-
-def create_dir_name(container_type: ContainerType, container_id: UniqueId) -> str:
-    return f"{container_type.value}__{container_id}"
 
 
 def split_dir_name(dir_name: str) -> Tuple[ContainerType, UniqueId]:

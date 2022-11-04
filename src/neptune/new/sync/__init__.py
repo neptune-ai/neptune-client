@@ -29,10 +29,10 @@ __all__ = [
     "is_container_synced",
     "get_offline_dirs",
     "iterate_containers",
-    "create_dir_name",
     "split_dir_name",
 ]
 
+from neptune.common.deprecation import warn_once
 from neptune.new.cli.commands import (
     ApiExperiment,
     CannotSynchronizeOfflineRunsWithoutProject,
@@ -49,12 +49,10 @@ from neptune.new.cli.commands import (
     status,
     sync,
 )
-
-from .abstract_backend_runner import AbstractBackendRunner
-from .status import StatusRunner
-from .sync import SyncRunner
-from .utils import (
-    create_dir_name,
+from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
+from neptune.new.sync.status import StatusRunner
+from neptune.new.sync.sync import SyncRunner
+from neptune.new.sync.utils import (
     get_metadata_container,
     get_offline_dirs,
     get_project,
@@ -62,4 +60,11 @@ from .utils import (
     is_container_synced,
     iterate_containers,
     split_dir_name,
+)
+
+warn_once(
+    message="You're using a legacy neptune.new.sync package."
+    " It will be removed since `neptune-client==1.0.0`."
+    " Please use neptune.new.cli",
+    stack_level=2,
 )
