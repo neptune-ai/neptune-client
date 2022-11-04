@@ -14,24 +14,8 @@
 # limitations under the License.
 #
 
-import click
-import pkg_resources
+__all__ = ["AbstractBackendRunner"]
 
-from neptune.new.cli.commands import (
-    status,
-    sync,
-)
-
-
-@click.group()
-def main():
-    pass
-
-
-main.add_command(sync)
-main.add_command(status)
-
-plugins = {entry_point.name: entry_point for entry_point in pkg_resources.iter_entry_points("neptune.plugins")}
-
-for name, entry_point in plugins.items():
-    main.add_command(entry_point.load(), name)
+# backwards compatibility
+# flake8: noqa
+from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner

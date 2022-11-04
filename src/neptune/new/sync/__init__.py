@@ -14,6 +14,9 @@
 # limitations under the License.
 #
 
+# backwards compatibility
+# flake8: noqa
+
 __all__ = [
     "AbstractBackendRunner",
     "sync",
@@ -30,11 +33,24 @@ __all__ = [
     "split_dir_name",
 ]
 
-from .abstract_backend_runner import AbstractBackendRunner
-from .commands import (
+from neptune.new.cli.commands import (
+    ApiExperiment,
+    CannotSynchronizeOfflineRunsWithoutProject,
+    DiskQueue,
+    HostedNeptuneBackend,
+    NeptuneBackend,
+    NeptuneConnectionLostException,
+    NeptuneException,
+    Operation,
+    Path,
+    Project,
+    ProjectNotFound,
+    RunNotFound,
     status,
     sync,
 )
+
+from .abstract_backend_runner import AbstractBackendRunner
 from .status import StatusRunner
 from .sync import SyncRunner
 from .utils import (

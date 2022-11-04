@@ -14,24 +14,26 @@
 # limitations under the License.
 #
 
-import click
-import pkg_resources
+__all__ = [
+    "get_metadata_container",
+    "get_project",
+    "get_qualified_name",
+    "is_container_synced",
+    "get_offline_dirs",
+    "iterate_containers",
+    "create_dir_name",
+    "split_dir_name",
+]
 
-from neptune.new.cli.commands import (
-    status,
-    sync,
+# backwards compatibility
+# flake8: noqa
+from neptune.new.cli.utils import (
+    create_dir_name,
+    get_metadata_container,
+    get_offline_dirs,
+    get_project,
+    get_qualified_name,
+    is_container_synced,
+    iterate_containers,
+    split_dir_name,
 )
-
-
-@click.group()
-def main():
-    pass
-
-
-main.add_command(sync)
-main.add_command(status)
-
-plugins = {entry_point.name: entry_point for entry_point in pkg_resources.iter_entry_points("neptune.plugins")}
-
-for name, entry_point in plugins.items():
-    main.add_command(entry_point.load(), name)
