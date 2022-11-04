@@ -29,6 +29,7 @@ from typing import (
     Optional,
 )
 
+from neptune.new.cli.utils import create_dir_name
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
     NEPTUNE_DATA_DIRECTORY,
@@ -43,7 +44,6 @@ from neptune.new.internal.operation_processors.operation_processor import Operat
 from neptune.new.internal.operation_processors.operation_storage import OperationStorage
 from neptune.new.internal.threading.daemon import Daemon
 from neptune.new.internal.utils.logger import logger
-from neptune.new.sync.utils import create_dir_name
 
 _logger = logging.getLogger(__name__)
 

@@ -155,7 +155,6 @@ keywords = [
 ]
 packages = [
     { include = "neptune", from = "src" },
-    { include = "neptune_cli", from = "src" },
 ]
 
 [tool.poetry.urls]
@@ -164,7 +163,7 @@ packages = [
 "Documentation" = "https://docs.neptune.ai/"
 
 [tool.poetry.scripts]
-neptune = "neptune_cli.main:main"
+neptune = "neptune.new.cli.__main__:main"
 
 [tool.black]
 line-length = 120

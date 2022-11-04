@@ -33,7 +33,7 @@ from e2e_tests.utils import (
     tmp_context,
 )
 from neptune.common.exceptions import NeptuneException
-from neptune.new.sync import sync
+from neptune.new.cli import sync
 
 runner = CliRunner()
 

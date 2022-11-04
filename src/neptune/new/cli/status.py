@@ -25,6 +25,14 @@ from typing import (
     Tuple,
 )
 
+from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
+from neptune.new.cli.utils import (
+    get_metadata_container,
+    get_offline_dirs,
+    get_qualified_name,
+    is_container_synced,
+    iterate_containers,
+)
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
     OFFLINE_NAME_PREFIX,
@@ -32,14 +40,6 @@ from neptune.new.constants import (
 from neptune.new.envs import PROJECT_ENV_NAME
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.utils.logger import logger
-from neptune.new.sync.abstract_backend_runner import AbstractBackendRunner
-from neptune.new.sync.utils import (
-    get_metadata_container,
-    get_offline_dirs,
-    get_qualified_name,
-    is_container_synced,
-    iterate_containers,
-)
 
 offline_run_explainer = """
 Runs which execute offline are not created on the server and they are not assigned to projects;

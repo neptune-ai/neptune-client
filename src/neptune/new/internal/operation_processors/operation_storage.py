@@ -20,10 +20,10 @@ __all__ = [
 import os
 from pathlib import Path
 
+from neptune.new.cli.utils import create_dir_name
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import UniqueId
-from neptune.new.sync.utils import create_dir_name
 
 
 class OperationStorage:

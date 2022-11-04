@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-__all__ = []
+__all__ = ["status", "sync", "StatusRunner"]
 
 from pathlib import Path
 from typing import (
@@ -25,6 +25,8 @@ from typing import (
 import click
 
 from neptune.common.exceptions import NeptuneException  # noqa: F401
+from neptune.new.cli.status import StatusRunner
+from neptune.new.cli.sync import SyncRunner
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
@@ -42,8 +44,6 @@ from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.disk_queue import DiskQueue  # noqa: F401
 from neptune.new.internal.operation import Operation  # noqa: F401
 from neptune.new.internal.utils.logger import logger
-from neptune.new.sync.status import StatusRunner
-from neptune.new.sync.sync import SyncRunner
 
 
 def get_neptune_path(ctx, param, path: str) -> Path:
