@@ -104,6 +104,7 @@ from neptune.new.internal.operation import (
     UploadFileSet,
 )
 from neptune.new.internal.operation_visitor import OperationVisitor
+from neptune.new.internal.types.file_types import FileType
 from neptune.new.internal.utils import base64_decode
 from neptune.new.internal.utils.generic_attribute_mapper import NoValue
 from neptune.new.internal.utils.paths import path_to_str
@@ -115,10 +116,7 @@ from neptune.new.types import (
 from neptune.new.types.atoms import GitRef
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.file import (
-    File,
-    FileType,
-)
+from neptune.new.types.atoms.file import File
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.file_set import FileSet
@@ -640,12 +638,12 @@ class NeptuneBackendMock(NeptuneBackend):
         def visit_upload_file(self, op: UploadFile) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("save", File.__name__)
-            return File(path=op.file_path, extension=op.ext)
+            return File.from_path(path=op.file_path, extension=op.ext)
 
         def visit_upload_file_content(self, op: UploadFileContent) -> Optional[Value]:
             if self._current_value is not None and not isinstance(self._current_value, File):
                 raise self._create_type_error("upload_files", File.__name__)
-            return File(content=base64_decode(op.file_content), extension=op.ext)
+            return File.from_content(content=base64_decode(op.file_content), extension=op.ext)
 
         def visit_upload_file_set(self, op: UploadFileSet) -> Optional[Value]:
             if self._current_value is None or op.reset:

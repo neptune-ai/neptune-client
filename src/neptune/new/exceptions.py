@@ -88,6 +88,7 @@ __all__ = [
     "NeptuneObjectCreationConflict",
     "NeptuneModelKeyAlreadyExistsError",
     "NeptuneSynchronizationAlreadyStoppedException",
+    "StreamAlreadyUsedException",
 ]
 
 from typing import (
@@ -1330,6 +1331,22 @@ For details, see https://docs.neptune.ai/api/neptune_sync/
 If the synchronization fails, you may want to check your connection and ensure that you're
 within limits by going to your Neptune project settings -> Usage.
 If the issue persists, our support is happy to help.
+
+{correct}Need help?{end}-> https://docs.neptune.ai/getting_help
+"""
+        super().__init__(message.format(**STYLES))
+
+
+class StreamAlreadyUsedException(NeptuneException):
+    def __init__(self):
+        message = """
+{h1}
+----StreamAlreadyUsedException---------------------------------------------------
+{end}
+A File object created with File.from_stream() has already been logged.
+You can only log content from the same stream once.
+
+For more, see https://docs.neptune.ai/api/field_types/#from_stream
 
 {correct}Need help?{end}-> https://docs.neptune.ai/getting_help
 """

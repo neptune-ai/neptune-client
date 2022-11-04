@@ -13,8 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import enum
-import os
+__all__ = [
+    "File",
+]
+
 from io import IOBase
 from typing import (
     TYPE_CHECKING,
@@ -23,12 +25,13 @@ from typing import (
     Union,
 )
 
-from neptune.new.exceptions import NeptuneException
-from neptune.new.internal.utils import (
-    get_stream_content,
-    limits,
-    verify_type,
+from neptune.new.internal.types.file_types import (
+    FileComposite,
+    InMemoryComposite,
+    LocalFileComposite,
+    StreamComposite,
 )
+from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.images import (
     get_html_content,
     get_image_content,
@@ -49,74 +52,66 @@ if TYPE_CHECKING:
 Ret = TypeVar("Ret")
 
 
-class FileType(enum.Enum):
-    LOCAL_FILE = "LOCAL_FILE"
-    IN_MEMORY = "IN_MEMORY"
-
-
 class File(Atom):
-    def __init__(
-        self,
-        path: Optional[str] = None,
-        content: Optional[bytes] = None,
-        extension: Optional[str] = None,
-    ):
+    def __init__(self, path: Optional[str] = None, file_composite: Optional[FileComposite] = None):
+        """We have to support `path` parameter since almost all of `File` usages by our users look like `File(path)`."""
         verify_type("path", path, (str, type(None)))
-        verify_type("content", content, (bytes, type(None)))
-        verify_type("extension", extension, (str, type(None)))
+        verify_type("file_composite", file_composite, (FileComposite, type(None)))
 
-        if path is not None and content is not None:
-            raise ValueError("path and content are mutually exclusive")
-        if path is None and content is None:
-            raise ValueError("path or content is required")
+        if path is not None and file_composite is not None:
+            raise ValueError("path and file_composite are mutually exclusive")
+        if path is None and file_composite is None:
+            raise ValueError("path or file_composite is required")
         if path is not None:
-            self.file_type = FileType.LOCAL_FILE
+            self._file_composite = LocalFileComposite(path)
         else:
-            self.file_type = FileType.IN_MEMORY
+            self._file_composite = file_composite
 
-        self._path = path
-        self._content = content
+    @property
+    def extension(self):
+        return self._file_composite.extension
 
-        if extension is None and path is not None:
-            try:
-                ext = os.path.splitext(path)[1]
-                self.extension = ext[1:] if ext else ""
-            except ValueError:
-                self.extension = ""
-        else:
-            self.extension = extension or ""
+    @property
+    def file_type(self):
+        return self._file_composite.file_type
 
     @property
     def path(self):
-        if self.file_type is not FileType.LOCAL_FILE:
-            raise NeptuneException(f"`path` attribute is not supported for {self.file_type}")
-
-        return self._path
+        return self._file_composite.path
 
     @property
     def content(self):
-        if self.file_type is not FileType.IN_MEMORY:
-            raise NeptuneException(f"`content` attribute is not supported for {self.file_type}")
-
-        return self._content
+        return self._file_composite.content
 
     def _save(self, path):
-        if self.file_type is not FileType.IN_MEMORY:
-            raise NeptuneException(f"`_save` method is not supported for {self.file_type}")
+        self._file_composite.save(path)
 
-        with open(path, "wb") as f:
-            f.write(self._content)
+    def __str__(self):
+        return str(self._file_composite)
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_file(self)
 
-    def __str__(self):
-        if self.file_type is FileType.LOCAL_FILE:
-            return "File(path={})".format(str(self.path))
-        elif self.file_type is FileType.IN_MEMORY:
-            return "File(content=...)"
-        else:
-            raise ValueError(f"Unexpected FileType: {self.file_type}")
+    @staticmethod
+    def from_path(path: str, extension: Optional[str] = None) -> "File":
+        """Creates a File value object from a given path.
+
+        Equivalent to `File(path)`, but you can specify the extension separately.
+
+        Args:
+            path: Path of the file to be stored in the File value object.
+            extension (optional): Extension of the file, if not included in the path argument.
+
+        Returns:
+            `File` value object created based on the path.
+
+        For more, see the documentation: https://docs.neptune.ai/api/field_types#from_path
+        """
+        verify_type("path", path, str)
+        verify_type("extension", extension, (str, type(None)))
+
+        file_composite = LocalFileComposite(path, extension)
+        return File(file_composite=file_composite)
 
     @staticmethod
     def from_content(content: Union[str, bytes], extension: Optional[str] = None) -> "File":
@@ -139,45 +134,40 @@ class File(Atom):
         .. _from_content docs page:
            https://docs.neptune.ai/api/field_types#from_content
         """
-        if isinstance(content, str):
-            ext = "txt"
-            content = content.encode("utf-8")
-        else:
-            ext = "bin"
+        verify_type("content", content, (bytes, str, type(None)))
+        verify_type("extension", extension, (str, type(None)))
 
-        if limits.file_size_exceeds_limit(len(content)):
-            content = b""
-
-        return File(content=content, extension=extension or ext)
+        file_composite = InMemoryComposite(content, extension)
+        return File(file_composite=file_composite)
 
     @staticmethod
     def from_stream(stream: IOBase, seek: Optional[int] = 0, extension: Optional[str] = None) -> "File":
         """Factory method for creating File value objects directly from binary and text streams.
 
-        In the case of text stream, UTF-8 encoding will be used.
+        Note that you can only log content from the same stream once.
+        In the case of text streams, UTF-8 encoding will be used.
 
         Args:
             stream (IOBase): Stream to be converted.
-            seek (int, optional): See IOBase documentation.
-                Defaults to `0`.
-            extension (str, optional): Extension of the file created that will be used for interpreting the type
+            seek (optional): Change the stream position to the given byte offset. For details,
+                see the IOBase documentation.
+            extension (optional): Extension of the created file that will be used for interpreting the type
                 of content for visualization.
-                If `None` it will be bin for binary stream and txt for text stream.
-                Defaults to `None`.
+                If None (default), it will be 'bin' for binary streams and 'txt' for text streams.
 
         Returns:
-            ``File``: value object created from the stream.
+            `File` value object created from the stream.
 
-        You may also want to check `from_stream docs page`_ and `IOBase documentation`_.
-
-        .. _from_stream docs page:
-           https://docs.neptune.ai/api/field_types#from_stream
-        .. _IOBase documentation:
-            https://docs.python.org/3/library/io.html#io.IOBase
+        See also:
+        - from_stream() documentation: https://docs.neptune.ai/api/field_types#from_stream
+        - IOBase documentation: https://docs.python.org/3/library/io.html#io.IOBase
         """
-        verify_type("stream", stream, IOBase)
-        content, stream_default_ext = get_stream_content(stream, seek)
-        return File(content=content, extension=extension or stream_default_ext)
+        verify_type("stream", stream, (IOBase, type(None)))
+        verify_type("seek", seek, (int, type(None)))
+        verify_type("extension", extension, (str, type(None)))
+
+        file_composite = StreamComposite(stream, seek, extension)
+        return File(file_composite=file_composite)
 
     @staticmethod
     def as_image(image) -> "File":

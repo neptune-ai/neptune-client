@@ -32,10 +32,8 @@ from typing import (
 from neptune.common.exceptions import InternalClientError
 from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.container_type import ContainerType
-from neptune.new.types.atoms.file import (
-    File,
-    FileType,
-)
+from neptune.new.internal.types.file_types import FileType
+from neptune.new.types.atoms.file import File
 
 if TYPE_CHECKING:
     from neptune.new.attributes.attribute import Attribute
@@ -198,7 +196,7 @@ class UploadFile(Operation):
                 ext=value.extension,
                 file_path=os.path.abspath(value.path),
             )
-        elif value.file_type is FileType.IN_MEMORY:
+        elif value.file_type in (FileType.IN_MEMORY, FileType.STREAM):
             tmp_file_path = cls.get_upload_path(attribute_path, value.extension, upload_path)
             value._save(tmp_file_path)
             operation = UploadFile(

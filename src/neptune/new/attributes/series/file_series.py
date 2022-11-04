@@ -33,11 +33,11 @@ from neptune.new.internal.operation import (
     LogImages,
     Operation,
 )
+from neptune.new.internal.types.file_types import FileType
 from neptune.new.internal.utils import base64_encode
 from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.limits import image_size_exceeds_limit_for_logging
 from neptune.new.types import File
-from neptune.new.types.atoms.file import FileType
 from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 
 Val = FileSeriesVal

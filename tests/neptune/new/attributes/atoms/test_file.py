@@ -38,7 +38,7 @@ from neptune.new.internal.operation import (
     UploadFile,
     UploadFileSet,
 )
-from neptune.new.types.atoms.file import FileType
+from neptune.new.internal.types.file_types import FileType
 from tests.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 
