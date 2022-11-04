@@ -25,7 +25,7 @@ from typing import (
     Union,
 )
 
-from neptune.internal.file_types import (
+from neptune.new.internal.types.file_types import (
     FileComposite,
     InMemoryComposite,
     LocalFileComposite,

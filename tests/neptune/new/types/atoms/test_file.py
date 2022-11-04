@@ -25,13 +25,13 @@ from bokeh.plotting import figure
 from PIL import Image
 
 from e2e_tests.utils import tmp_context
-from neptune.internal.file_types import (
-    FileType,
-    InMemoryComposite,
-)
 from neptune.new.exceptions import (
     NeptuneException,
     StreamAlreadyUsedException,
+)
+from neptune.new.internal.types.file_types import (
+    FileType,
+    InMemoryComposite,
 )
 from neptune.new.internal.utils.images import _get_pil_image_data
 from neptune.new.types import File
