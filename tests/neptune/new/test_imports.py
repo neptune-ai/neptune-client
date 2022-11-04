@@ -213,6 +213,20 @@ from neptune.new.attributes.utils import (
     StringSeries,
     StringSet,
 )
+from neptune.new.cli import (
+    ApiExperiment,
+    CannotSynchronizeOfflineRunsWithoutProject,
+    DiskQueue,
+    HostedNeptuneBackend,
+    NeptuneBackend,
+    NeptuneConnectionLostException,
+    NeptuneException,
+    Operation,
+    Path,
+    Project,
+    ProjectNotFound,
+    RunNotFound,
+)
 from neptune.new.exceptions import (
     AmbiguousProjectName,
     ArtifactNotFoundException,
@@ -316,20 +330,6 @@ from neptune.new.runs_table import (
     MetadataInconsistency,
     RunsTable,
     RunsTableEntry,
-)
-from neptune.new.sync import (
-    ApiExperiment,
-    CannotSynchronizeOfflineRunsWithoutProject,
-    DiskQueue,
-    HostedNeptuneBackend,
-    NeptuneBackend,
-    NeptuneConnectionLostException,
-    NeptuneException,
-    Operation,
-    Path,
-    Project,
-    ProjectNotFound,
-    RunNotFound,
 )
 from neptune.new.types.atoms.artifact import (
     Artifact,
