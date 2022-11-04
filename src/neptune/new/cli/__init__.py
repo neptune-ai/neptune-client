@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2019, Neptune Labs Sp. z o.o.
+# Copyright (c) 2022, Neptune Labs Sp. z o.o.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -14,24 +14,9 @@
 # limitations under the License.
 #
 
-import click
-import pkg_resources
+__all__ = ["sync", "status"]
 
-from neptune.new.cli import (
+from neptune.new.cli.commands import (
     status,
     sync,
 )
-
-
-@click.group()
-def main():
-    pass
-
-
-main.add_command(sync)
-main.add_command(status)
-
-plugins = {entry_point.name: entry_point for entry_point in pkg_resources.iter_entry_points("neptune.plugins")}
-
-for name, entry_point in plugins.items():
-    main.add_command(entry_point.load(), name)
