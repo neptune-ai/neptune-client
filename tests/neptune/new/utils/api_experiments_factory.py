@@ -34,11 +34,11 @@ from neptune.new.internal.id_formats import (
 )
 
 
-def api_metadata_container(container_type: ContainerType) -> ApiExperiment:
+def api_metadata_container(container_type: ContainerType, trashed: bool = False) -> ApiExperiment:
     if container_type == ContainerType.PROJECT:
         return api_project()
     elif container_type == ContainerType.RUN:
-        return api_run()
+        return api_run(trashed=trashed)
     elif container_type == ContainerType.MODEL:
         return api_model()
     elif container_type == ContainerType.MODEL_VERSION:
@@ -51,8 +51,10 @@ def api_project() -> ApiExperiment:
     return _api_metadata_container(sys_id=_random_key(), container_type=ContainerType.PROJECT)
 
 
-def api_run() -> ApiExperiment:
-    return _api_metadata_container(sys_id=f"{_random_key()}-{randint(42, 12342)}", container_type=ContainerType.RUN)
+def api_run(trashed: bool = False) -> ApiExperiment:
+    return _api_metadata_container(
+        sys_id=f"{_random_key()}-{randint(42, 12342)}", container_type=ContainerType.RUN, trashed=trashed
+    )
 
 
 def api_model() -> ApiExperiment:
@@ -66,14 +68,14 @@ def api_model_version() -> ApiExperiment:
     )
 
 
-def _api_metadata_container(sys_id: str, container_type: ContainerType) -> ApiExperiment:
+def _api_metadata_container(sys_id: str, container_type: ContainerType, trashed: bool = False) -> ApiExperiment:
     return ApiExperiment(
         id=UniqueId(str(uuid.uuid4())),
         type=container_type,
         sys_id=SysId(sys_id),
         workspace="workspace",
         project_name="sandbox",
-        trashed=False,
+        trashed=trashed,
     )
 
 

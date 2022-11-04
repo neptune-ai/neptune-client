@@ -83,6 +83,35 @@ def test_list_offline_runs(tmp_path, mocker, capsys, status_runner):
     assert "Unsynchronized offline objects:\n- offline/run__{}".format(offline_run.id) in captured.out
 
 
+def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runner):
+    # given
+    unsynced_container = prepare_metadata_container(
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=1, trashed=True
+    )
+    synced_container = prepare_metadata_container(
+        container_type=ContainerType.RUN, path=tmp_path, last_ack_version=3, trashed=True
+    )
+    get_container_impl = generate_get_metadata_container(registered_containers=(unsynced_container, synced_container))
+
+    # and
+    mocker.patch.object(backend, "get_metadata_container", get_container_impl)
+    mocker.patch.object(Operation, "from_dict")
+
+    # when
+    status_runner.synchronization_status(tmp_path)
+
+    # then
+    captured = capsys.readouterr()
+    assert captured.out.splitlines() == [
+        "Unsynchronized objects:",
+        f"- {get_qualified_name(unsynced_container)} (Trashed)",
+        "Synchronized objects:",
+        f"- {get_qualified_name(synced_container)} (Trashed)",
+        "",
+        "Please run with the `neptune sync --help` to see example commands.",
+    ]
+
+
 def test_list_runs_when_no_run(tmp_path, capsys, status_runner):
     (tmp_path / "async").mkdir()
     # when
