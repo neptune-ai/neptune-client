@@ -2,6 +2,7 @@
 
 ### Changes
 - Building a package with Poetry ([#1069](https://github.com/neptune-ai/neptune-client/pull/1069))
+- Automatically convert image and html like assignments to uploads  ([#1006](https://github.com/neptune-ai/neptune-client/pull/1006))
 
 ## neptune-client 0.16.11
 

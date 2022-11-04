@@ -295,9 +295,9 @@ class File(Atom):
     def create_from(value) -> "File":
         if isinstance(value, str):
             return File(path=value)
-        elif is_pil_image(value) or is_matplotlib_figure(value):
+        elif File.is_convertable_to_image(value):
             return File.as_image(value)
-        elif is_plotly_figure(value) or is_altair_chart(value) or is_bokeh_figure(value):
+        elif File.is_convertable_to_html(value):
             return File.as_html(value)
         elif is_numpy_array(value):
             raise TypeError("Value of type {} is not supported. Please use File.as_image().".format(type(value)))
@@ -319,3 +319,13 @@ class File(Atom):
             or is_pandas_dataframe(value)
             or isinstance(value, File)
         )
+
+    @staticmethod
+    def is_convertable_to_image(value):
+        convertable_to_img_predicates = (is_pil_image, is_matplotlib_figure)
+        return any(predicate(value) for predicate in convertable_to_img_predicates)
+
+    @staticmethod
+    def is_convertable_to_html(value):
+        convertable_to_html_predicates = (is_altair_chart, is_bokeh_figure, is_plotly_figure)
+        return any(predicate(value) for predicate in convertable_to_html_predicates)

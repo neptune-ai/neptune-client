@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from dataclasses import dataclass
 from datetime import datetime
 from typing import (
     TYPE_CHECKING,
@@ -27,7 +28,10 @@ if TYPE_CHECKING:
 Ret = TypeVar("Ret")
 
 
+@dataclass
 class Datetime(Atom):
+    value: datetime
+
     def __init__(self, value: datetime):
         self.value = value.replace(microsecond=1000 * int(value.microsecond / 1000))
 

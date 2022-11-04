@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 import abc
-import argparse
 import atexit
 import itertools
 import threading
 import time
 import traceback
 from contextlib import AbstractContextManager
-from datetime import datetime
 from functools import wraps
 from typing import (
     Any,
@@ -32,7 +30,6 @@ from typing import (
     Union,
 )
 
-from neptune.common.deprecation import warn_once
 from neptune.common.exceptions import UNIX_STYLES
 from neptune.new.attributes import create_attribute_from_type
 from neptune.new.attributes.attribute import Attribute
@@ -60,16 +57,7 @@ from neptune.new.internal.id_formats import (
 from neptune.new.internal.operation import DeleteAttribute
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.state import ContainerState
-from neptune.new.internal.utils import (
-    is_bool,
-    is_dict_like,
-    is_float,
-    is_float_like,
-    is_int,
-    is_string,
-    is_string_like,
-    verify_type,
-)
+from neptune.new.internal.utils import verify_type
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import parse_path
 from neptune.new.internal.utils.runningmode import (
@@ -79,17 +67,8 @@ from neptune.new.internal.utils.runningmode import (
 from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.metadata_containers.metadata_containers_table import Table
-from neptune.new.types import (
-    Boolean,
-    Integer,
-)
-from neptune.new.types.atoms.datetime import Datetime
-from neptune.new.types.atoms.float import Float
-from neptune.new.types.atoms.string import String
 from neptune.new.types.mode import Mode
-from neptune.new.types.namespace import Namespace
-from neptune.new.types.value import Value
-from neptune.new.types.value_copy import ValueCopy
+from neptune.new.types.type_casting import cast_value
 
 
 def ensure_not_stopped(fun):
@@ -254,39 +233,10 @@ class MetadataContainer(AbstractContextManager):
     def define(
         self,
         path: str,
-        value: Union[Value, int, float, str, datetime],
+        value: Any,
         wait: bool = False,
     ) -> Attribute:
-        if isinstance(value, Value):
-            pass
-        elif isinstance(value, Handler):
-            value = ValueCopy(value)
-        elif isinstance(value, argparse.Namespace):
-            value = Namespace(vars(value))
-        elif is_bool(value):
-            value = Boolean(value)
-        elif is_int(value):
-            value = Integer(value)
-        elif is_float(value):
-            value = Float(value)
-        elif is_string(value):
-            value = String(value)
-        elif isinstance(value, datetime):
-            value = Datetime(value)
-        elif is_float_like(value):
-            value = Float(float(value))
-        elif is_dict_like(value):
-            value = Namespace(value)
-        elif is_string_like(value):
-            warn_once(
-                message="The object you're logging will be implicitly cast to a string."
-                " We'll end support of this behavior in `neptune-client==1.0.0`."
-                " To log the object as a string, use `str(object)` instead.",
-                stack_level=2,
-            )
-            value = String(str(value))
-        else:
-            raise TypeError("Value of unsupported type {}".format(type(value)))
+        value = cast_value(value)
         parsed_path = parse_path(path)
 
         with self._lock:
