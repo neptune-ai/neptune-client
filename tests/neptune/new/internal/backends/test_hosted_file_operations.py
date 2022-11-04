@@ -252,7 +252,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
                 "errors": [],
             }
         )
-        data = self.get_random_bytes(8 * 2**20)  # 8 MB
+        data = self.get_random_bytes(201 * 2**10)  # 201 KB (200KB is multipart upload config)
         chunk_size = self.multipart_config.min_chunk_size
 
         # when
@@ -383,7 +383,7 @@ class TestNewUploadFileOperations(HostedFileOperationsHelper, BackendTestMixin):
                 "errors": [],
             }
         )
-        data = self.get_random_bytes(8 * 2**20)  # 8 MB
+        data = self.get_random_bytes(201 * 2**10)  # 201 KB (200KB is multipart upload config)
         chunk_size = self.multipart_config.min_chunk_size
 
         # when
