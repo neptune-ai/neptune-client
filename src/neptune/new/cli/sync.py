@@ -65,16 +65,16 @@ retries_timeout = int(os.getenv(NEPTUNE_SYNC_BATCH_TIMEOUT_ENV, "3600"))
 
 
 class SyncRunner(AbstractBackendRunner):
-    def sync_run(self, run_path: Path, run: ApiExperiment) -> None:
-        qualified_run_name = get_qualified_name(run)
-        logger.info("Synchronising %s", qualified_run_name)
-        for execution_path in run_path.iterdir():
+    def sync_container(self, container_path: Path, experiment: ApiExperiment) -> None:
+        qualified_container_name = get_qualified_name(experiment)
+        logger.info("Synchronising %s", qualified_container_name)
+        for execution_path in container_path.iterdir():
             self.sync_execution(
                 execution_path=execution_path,
-                container_id=run.id,
-                container_type=run.type,
+                container_id=experiment.id,
+                container_type=experiment.type,
             )
-        logger.info("Synchronization of %s %s completed.", run.type.value, qualified_run_name)
+        logger.info("Synchronization of %s %s completed.", experiment.type.value, qualified_container_name)
 
     def sync_execution(
         self,
@@ -122,33 +122,33 @@ class SyncRunner(AbstractBackendRunner):
         async_path = base_path / ASYNC_DIRECTORY
         for container_type, unique_id, path in iterate_containers(async_path):
             if not is_container_synced(path):
-                run = get_metadata_container(
+                container = get_metadata_container(
                     backend=self._backend,
                     container_id=unique_id,
                     container_type=container_type,
                 )
-                if run:
-                    self.sync_run(run_path=path, run=run)
+                if container:
+                    self.sync_container(container_path=path, experiment=container)
 
     def sync_selected_registered_containers(
         self, base_path: Path, qualified_container_names: Sequence[QualifiedName]
     ) -> None:
         for name in qualified_container_names:
-            run = get_metadata_container(
+            container = get_metadata_container(
                 backend=self._backend,
                 container_id=name,
             )
-            if run:
-                run_path = base_path / ASYNC_DIRECTORY / f"{run.type.create_dir_name(run.id)}"
-                run_path_deprecated = base_path / ASYNC_DIRECTORY / f"{run.id}"
-                if run_path.exists():
-                    self.sync_run(run_path=run_path, run=run)
-                elif run_path_deprecated.exists():
-                    self.sync_run(run_path=run_path_deprecated, run=run)
+            if container:
+                container_path = base_path / ASYNC_DIRECTORY / f"{container.type.create_dir_name(container.id)}"
+                container_path_deprecated = base_path / ASYNC_DIRECTORY / f"{container.id}"
+                if container_path.exists():
+                    self.sync_container(container_path=container_path, experiment=container)
+                elif container_path_deprecated.exists():
+                    self.sync_container(container_path=container_path_deprecated, experiment=container)
                 else:
                     logger.warning("Warning: Run '%s' does not exist in location %s", name, base_path)
 
-    def _register_offline_run(self, project: Project, container_type: ContainerType) -> Optional[ApiExperiment]:
+    def _register_offline_container(self, project: Project, container_type: ContainerType) -> Optional[ApiExperiment]:
         try:
             if container_type == ContainerType.RUN:
                 return self._backend.create_run(project.id)
@@ -162,7 +162,7 @@ class SyncRunner(AbstractBackendRunner):
             return None
 
     @staticmethod
-    def _move_offline_run(
+    def _move_offline_container(
         base_path: Path,
         offline_dir: str,
         server_id: UniqueId,
@@ -176,7 +176,7 @@ class SyncRunner(AbstractBackendRunner):
             base_path / ASYNC_DIRECTORY / online_dir / "exec-0-offline"
         )
 
-    def register_offline_runs(
+    def register_offline_containers(
         self, base_path: Path, project: Project, offline_dirs: Iterable[str]
     ) -> List[ApiExperiment]:
         result = []
@@ -184,21 +184,21 @@ class SyncRunner(AbstractBackendRunner):
             offline_path = base_path / OFFLINE_DIRECTORY / offline_dir
             if offline_path.is_dir():
                 container_type, _ = split_dir_name(dir_name=offline_dir)
-                run = self._register_offline_run(project, container_type=container_type)
-                if run:
-                    self._move_offline_run(
+                container = self._register_offline_container(project, container_type=container_type)
+                if container:
+                    self._move_offline_container(
                         base_path=base_path,
                         offline_dir=offline_dir,
-                        server_id=run.id,
-                        server_type=run.type,
+                        server_id=container.id,
+                        server_type=container.type,
                     )
-                    logger.info("Offline run %s registered as %s", offline_dir, get_qualified_name(run))
-                    result.append(run)
+                    logger.info("Offline container %s registered as %s", offline_dir, get_qualified_name(container))
+                    result.append(container)
             else:
-                logger.warning("Offline run %s not found on disk.", offline_dir)
+                logger.warning("Offline container %s not found on disk.", offline_dir)
         return result
 
-    def sync_offline_runs(
+    def sync_offline_containers(
         self,
         base_path: Path,
         project_name: Optional[QualifiedName],
@@ -208,14 +208,14 @@ class SyncRunner(AbstractBackendRunner):
             project = get_project(project_name, backend=self._backend)
             if not project:
                 raise CannotSynchronizeOfflineRunsWithoutProject
-            registered_runs = self.register_offline_runs(base_path, project, offline_dirs)
-            offline_runs_names = [get_qualified_name(exp) for exp in registered_runs]
-            self.sync_selected_registered_containers(base_path, offline_runs_names)
+            registered_containers = self.register_offline_containers(base_path, project, offline_dirs)
+            offline_containers_names = [get_qualified_name(exp) for exp in registered_containers]
+            self.sync_selected_registered_containers(base_path, offline_containers_names)
 
     def sync_all_offline_containers(self, base_path: Path, project_name: QualifiedName) -> None:
 
         offline_dirs = get_offline_dirs(base_path)
-        self.sync_offline_runs(base_path, project_name, offline_dirs)
+        self.sync_offline_containers(base_path, project_name, offline_dirs)
 
     def sync_selected_containers(
         self,
@@ -233,7 +233,7 @@ class SyncRunner(AbstractBackendRunner):
             for name in container_names
             if name.startswith(OFFLINE_NAME_PREFIX)
         ]
-        self.sync_offline_runs(base_path, project_name, offline_dirs)
+        self.sync_offline_containers(base_path, project_name, offline_dirs)
 
     def sync_all_containers(self, base_path: Path, project_name: Optional[str]) -> None:
         self.sync_all_registered_containers(base_path)
