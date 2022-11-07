@@ -17,10 +17,12 @@ import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
-from bokeh import sampledata
-from bokeh.models import LogColorMapper
-from bokeh.palettes import Viridis6 as palette
-from bokeh.plotting import figure
+from bokeh import (
+    models,
+    palettes,
+    plotting,
+    sampledata,
+)
 from PIL import Image
 from vega_datasets import data
 
@@ -56,13 +58,14 @@ def generate_altair_chart():
         .add_selection(brush)
     )
 
-    bars = (
-        alt.Chart(source).mark_bar().encode(y="Origin:N", color="Origin:N", x="count(Origin):Q").transform_filter(brush)
-    )
-
-    chart = points & bars
-
-    return chart
+    # TODO: return chart once problem with altair and JSONSchema is solved
+    # https://github.com/altair-viz/altair/issues/2705
+    # bars = (
+    #   alt.Chart(source).mark_bar().encode(y="Origin:N", color="Origin:N", x="count(Origin):Q").transform_filter(brush)
+    # )
+    # chart = points & bars
+    # return chart
+    return points
 
 
 def generate_brokeh_figure():
@@ -71,7 +74,7 @@ def generate_brokeh_figure():
     from bokeh.sampledata.unemployment import data as unemployment
     from bokeh.sampledata.us_counties import data as counties
 
-    palette2 = tuple(reversed(palette))
+    palette2 = tuple(reversed(palettes.Viridis6))
 
     cnts = {code: county for code, county in counties.items() if county["state"] == "tx"}
 
@@ -80,7 +83,7 @@ def generate_brokeh_figure():
 
     county_names = [county["name"] for county in cnts.values()]
     county_rates = [unemployment[county_id] for county_id in cnts]
-    color_mapper = LogColorMapper(palette=palette2)
+    color_mapper = models.LogColorMapper(palette=palette2)
 
     chart_data = dict(
         x=county_xs,
@@ -91,17 +94,17 @@ def generate_brokeh_figure():
 
     TOOLS = "pan,wheel_zoom,reset,hover,save"
 
-    p = figure(
+    bokeh_figure = plotting.figure(
         title="Texas Unemployment, 2009",
         tools=TOOLS,
         x_axis_location=None,
         y_axis_location=None,
         tooltips=[("Name", "@name"), ("Unemployment rate", "@rate%"), ("(Long, Lat)", "($x, $y)")],
     )
-    p.grid.grid_line_color = None
-    p.hover.point_policy = "follow_mouse"
+    bokeh_figure.grid.grid_line_color = None
+    bokeh_figure.hover.point_policy = "follow_mouse"
 
-    p.patches(
+    bokeh_figure.patches(
         "x",
         "y",
         source=chart_data,
@@ -111,7 +114,7 @@ def generate_brokeh_figure():
         line_width=0.5,
     )
 
-    return p
+    return bokeh_figure
 
 
 def generate_plotly_figure():
