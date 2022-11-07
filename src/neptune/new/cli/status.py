@@ -104,8 +104,8 @@ class StatusRunner(AbstractBackendRunner):
 
         if offline_dirs:
             logger.info("Unsynchronized offline objects:")
-            for run_id in offline_dirs:
-                logger.info("- %s", f"{OFFLINE_NAME_PREFIX}{run_id}")
+            for container_id in offline_dirs:
+                logger.info("- %s", f"{OFFLINE_NAME_PREFIX}{container_id}")
             logger.info("\n%s", textwrap.fill(offline_run_explainer, width=90))
 
         if not unsynced_containers:

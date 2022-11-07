@@ -103,12 +103,12 @@ def get_project(project_name_flag: Optional[QualifiedName], backend: NeptuneBack
         return None
 
 
-def get_qualified_name(run: ApiExperiment) -> QualifiedName:
-    return QualifiedName(f"{run.workspace}/{run.project_name}/{run.sys_id}")
+def get_qualified_name(experiment: ApiExperiment) -> QualifiedName:
+    return QualifiedName(f"{experiment.workspace}/{experiment.project_name}/{experiment.sys_id}")
 
 
-def is_container_synced(run_path: Path) -> bool:
-    return all(_is_execution_synced(execution_path) for execution_path in run_path.iterdir())
+def is_container_synced(experiment_path: Path) -> bool:
+    return all(_is_execution_synced(execution_path) for execution_path in experiment_path.iterdir())
 
 
 def _is_execution_synced(execution_path: Path) -> bool:
