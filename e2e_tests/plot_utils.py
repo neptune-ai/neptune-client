@@ -17,6 +17,7 @@ import altair as alt
 import matplotlib.pyplot as plt
 import numpy as np
 import plotly.express as px
+from bokeh import sampledata
 from bokeh.models import LogColorMapper
 from bokeh.palettes import Viridis6 as palette
 from bokeh.plotting import figure
@@ -67,6 +68,8 @@ def generate_altair_chart():
 
 
 def generate_brokeh_figure():
+    sampledata.download()
+
     palette2 = tuple(reversed(palette))
 
     cnts = {code: county for code, county in counties.items() if county["state"] == "tx"}
