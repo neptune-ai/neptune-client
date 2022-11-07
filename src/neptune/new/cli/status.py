@@ -72,9 +72,9 @@ class StatusRunner(AbstractBackendRunner):
             else:
                 unsynced_containers.append(metadata_container)
 
-        not_found = len([exp for exp in synced_containers + unsynced_containers if not exp or exp.trashed])
-        synced_containers = [obj for obj in synced_containers if obj and not obj.trashed]
-        unsynced_containers = [obj for obj in unsynced_containers if obj and not obj.trashed]
+        not_found = len([obj for obj in synced_containers + unsynced_containers if not obj])
+        synced_containers = [obj for obj in synced_containers if obj]
+        unsynced_containers = [obj for obj in unsynced_containers if obj]
 
         return synced_containers, unsynced_containers, not_found
 
@@ -85,6 +85,9 @@ class StatusRunner(AbstractBackendRunner):
         unsynced_containers: Sequence[ApiExperiment],
         offline_dirs: Sequence[str],
     ) -> None:
+        def trashed(cont: ApiExperiment):
+            return " (Trashed)" if cont.trashed else ""
+
         if not synced_containers and not unsynced_containers and not offline_dirs:
             logger.info("There are no Neptune objects in %s", base_path)
             sys.exit(1)
@@ -92,12 +95,12 @@ class StatusRunner(AbstractBackendRunner):
         if unsynced_containers:
             logger.info("Unsynchronized objects:")
             for container in unsynced_containers:
-                logger.info("- %s", get_qualified_name(container))
+                logger.info("- %s%s", get_qualified_name(container), trashed(container))
 
         if synced_containers:
             logger.info("Synchronized objects:")
             for container in synced_containers:
-                logger.info("- %s", get_qualified_name(container))
+                logger.info("- %s%s", get_qualified_name(container), trashed(container))
 
         if offline_dirs:
             logger.info("Unsynchronized offline objects:")
@@ -117,7 +120,7 @@ class StatusRunner(AbstractBackendRunner):
         synced_containers, unsynced_containers, not_found = self.partition_containers(base_path)
         if not_found > 0:
             logger.warning(
-                "WARNING: %s objects was skipped because they are in trash or do not exist anymore.",
+                "WARNING: %s objects was skipped because they do not exist anymore.",
                 not_found,
             )
         offline_dirs = get_offline_dirs(base_path)
