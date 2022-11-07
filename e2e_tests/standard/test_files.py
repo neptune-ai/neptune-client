@@ -41,12 +41,12 @@ from neptune.new.internal.backends.api_model import (
     OptionalFeatures,
 )
 from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.types.file_types import FileType
 from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types import (
     File,
     FileSet,
 )
-from neptune.new.types.atoms.file import FileType
 
 
 class TestUpload(BaseE2ETest):
