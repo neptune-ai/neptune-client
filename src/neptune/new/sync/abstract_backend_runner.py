@@ -16,13 +16,6 @@
 
 __all__ = ["AbstractBackendRunner"]
 
-import abc
-
-from neptune.new.internal.backends.neptune_backend import NeptuneBackend
-
-
-class AbstractBackendRunner(abc.ABC):
-    _backend: NeptuneBackend
-
-    def __init__(self, backend: NeptuneBackend):
-        self._backend = backend
+# backwards compatibility
+# flake8: noqa
+from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner

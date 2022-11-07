@@ -4,6 +4,7 @@
 - Building a package with Poetry ([#1069](https://github.com/neptune-ai/neptune-client/pull/1069))
 - Automatically convert image and html like assignments to uploads  ([#1006](https://github.com/neptune-ai/neptune-client/pull/1006))
 - File.from_stream does not load content into memory ([#1065](https://github.com/neptune-ai/neptune-client/pull/1065))
+- Move sync and status commands to `neptune.new.cli` package [#1078](https://github.com/neptune-ai/neptune-client/pull/1078)
 - Drop limits for in-memory Files ([#1070](https://github.com/neptune-ai/neptune-client/pull/1070))
 
 ## neptune-client 0.16.11

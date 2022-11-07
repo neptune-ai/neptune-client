@@ -28,7 +28,6 @@ from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.operation_processors.operation_processor import OperationProcessor
 from neptune.new.internal.operation_processors.operation_storage import OperationStorage
-from neptune.new.sync.utils import create_dir_name
 
 
 class SyncOperationProcessor(OperationProcessor):
@@ -41,7 +40,7 @@ class SyncOperationProcessor(OperationProcessor):
     @staticmethod
     def _init_data_path(container_id: UniqueId, container_type: ContainerType):
         now = datetime.now()
-        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{create_dir_name(container_type, container_id)}"
+        container_dir = f"{NEPTUNE_DATA_DIRECTORY}/{SYNC_DIRECTORY}/{container_type.create_dir_name(container_id)}"
         data_path = f"{container_dir}/exec-{now.timestamp()}-{now.strftime('%Y-%m-%d_%H.%M.%S.%f')}"
         return data_path
 

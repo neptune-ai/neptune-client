@@ -14,24 +14,15 @@
 # limitations under the License.
 #
 
+__all__ = ["AbstractBackendRunner"]
 
-import click
+import abc
 
-from .sync import (
-    status,
-    sync,
-)
+from neptune.new.internal.backends.neptune_backend import NeptuneBackend
 
 
-@click.group()
-def main():
-    pass
+class AbstractBackendRunner(abc.ABC):
+    _backend: NeptuneBackend
 
-
-main.add_command(sync)
-main.add_command(status)
-
-
-# TODO once the new client is released, this file should be registered as a command line entry point
-if __name__ == "__main__":
-    main()
+    def __init__(self, backend: NeptuneBackend):
+        self._backend = backend

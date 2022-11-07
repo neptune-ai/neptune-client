@@ -35,10 +35,10 @@ class BackendTestMixin:
 
         multipart_upload = type("multiPartUpload", (object,), {})()
         setattr(multipart_upload, "enabled", True)
-        setattr(multipart_upload, "minChunkSize", 5242880)
+        setattr(multipart_upload, "minChunkSize", 204800)  # 200KB
         setattr(multipart_upload, "maxChunkSize", 1073741824)
         setattr(multipart_upload, "maxChunkCount", 1000)
-        setattr(multipart_upload, "maxSinglePartSize", 5242880)
+        setattr(multipart_upload, "maxSinglePartSize", 204800)  # 200KB
 
         client_config = type("client_config_response_result", (object,), {})()
         setattr(client_config, "pyLibVersions", py_lib_versions)
