@@ -70,11 +70,11 @@ def _prepare_disk_queue(*, exp_path, last_ack_version):
 
 
 def prepare_metadata_container(
-    *, container_type: ContainerType, path: Path, last_ack_version: Optional[int]
+    *, container_type: ContainerType, path: Path, last_ack_version: Optional[int], trashed: Optional[bool] = False
 ) -> ApiExperiment:
     is_offline = last_ack_version is None
 
-    container = api_metadata_container(container_type)
+    container = api_metadata_container(container_type, trashed=trashed)
 
     if is_offline:
         exp_path = path / OFFLINE_DIRECTORY / f"{container.type.value}__{container.id}"
