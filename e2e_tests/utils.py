@@ -23,6 +23,8 @@ __all__ = [
     "reinitialize_container",
     "modified_environ",
     "catch_time",
+    "SIZE_1KB",
+    "SIZE_1MB",
 ]
 
 import io
@@ -32,6 +34,7 @@ import string
 import tempfile
 from contextlib import contextmanager
 from datetime import datetime
+from math import sqrt
 from time import perf_counter
 
 import numpy
@@ -50,6 +53,9 @@ def _remove_file_if_exists(filepath):
     except OSError:
         pass
 
+
+SIZE_1MB = 2**20
+SIZE_1KB = 2**10
 
 # init kwargs which significantly reduce operations noise
 DISABLE_SYSLOG_KWARGS = {
@@ -90,7 +96,9 @@ def tmp_context():
 
 
 def generate_image(*, size: int) -> Image:
-    random_numbers = numpy.random.rand(size, size, 3) * 255
+    """generate image of size in bytes"""
+    width = int(sqrt(size / 3))  # 3 bytes per one pixel in square image
+    random_numbers = numpy.random.rand(width, width, 3) * 255
     return Image.fromarray(random_numbers.astype("uint8")).convert("RGB")
 
 

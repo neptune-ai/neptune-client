@@ -6,6 +6,7 @@
 - File.from_stream does not load content into memory ([#1065](https://github.com/neptune-ai/neptune-client/pull/1065))
 - Move sync and status commands to `neptune.new.cli` package [#1078](https://github.com/neptune-ai/neptune-client/pull/1078)
 - `neptune status` - shows trashed containers [#1079](https://github.com/neptune-ai/neptune-client/pull/1079)
+- Drop limits for in-memory Files ([#1070](https://github.com/neptune-ai/neptune-client/pull/1070))
 
 ## neptune-client 0.16.11
 

@@ -28,7 +28,6 @@ from packaging import version
 from pandas import DataFrame
 
 from neptune.new.exceptions import PlotlyIncompatibilityException
-from neptune.new.internal.utils import limits
 from neptune.new.internal.utils.logger import logger
 
 _logger = logging.getLogger(__name__)
@@ -55,26 +54,17 @@ except ImportError:
 def get_image_content(image) -> Optional[bytes]:
     content = _image_to_bytes(image)
 
-    if limits.image_size_exceeds_limit(len(content)):
-        return None
-
     return content
 
 
 def get_html_content(chart) -> Optional[str]:
     content = _to_html(chart)
 
-    if limits.file_size_exceeds_limit(len(content)):
-        return None
-
     return content
 
 
 def get_pickle_content(obj) -> Optional[bytes]:
     content = _export_pickle(obj)
-
-    if limits.file_size_exceeds_limit(len(content)):
-        return None
 
     return content
 
