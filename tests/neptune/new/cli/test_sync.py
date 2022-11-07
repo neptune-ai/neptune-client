@@ -87,7 +87,7 @@ def test_sync_all_offline_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(backend, "get_metadata_container", get_run_impl)
     mocker.patch.object(
         sync_runner,
-        "_register_offline_run",
+        "_register_offline_container",
         lambda project, container_type: offline_run,
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
@@ -99,7 +99,7 @@ def test_sync_all_offline_runs(tmp_path, mocker, capsys, backend, sync_runner):
     captured = capsys.readouterr()
     assert captured.err == ""
     assert (
-        "Offline run run__{} registered as {}".format(f"{offline_run.id}", get_qualified_name(offline_run))
+        "Offline container run__{} registered as {}".format(f"{offline_run.id}", get_qualified_name(offline_run))
     ) in captured.out
 
     # and
@@ -134,7 +134,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(backend, "get_metadata_container", get_run_impl)
     mocker.patch.object(
         sync_runner,
-        "_register_offline_run",
+        "_register_offline_container",
         lambda project, container_type: offline_run,
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
@@ -160,7 +160,7 @@ def test_sync_selected_runs(tmp_path, mocker, capsys, backend, sync_runner):
 
     # expected output for offline container
     assert (
-        "Offline run run__{} registered as {}".format(f"{offline_run.id}", get_qualified_name(offline_run))
+        "Offline container run__{} registered as {}".format(f"{offline_run.id}", get_qualified_name(offline_run))
     ) in captured.out
     assert "Synchronising {}".format(get_qualified_name(offline_run)) in captured.out
     assert "Synchronization of run {} completed.".format(get_qualified_name(offline_run)) in captured.out
@@ -198,7 +198,7 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
     mocker.patch.object(backend, "get_metadata_container", get_container_impl)
     mocker.patch.object(
         sync_runner,
-        "_register_offline_run",
+        "_register_offline_container",
         lambda project, container_type: offline_old_run,
     )
     mocker.patch.object(Operation, "from_dict", lambda x: x)
@@ -211,7 +211,7 @@ def test_sync_deprecated_runs(tmp_path, mocker, capsys, backend, sync_runner):
     assert captured.err == ""
 
     assert (
-        "Offline run {} registered as {}".format(f"{offline_old_run.id}", get_qualified_name(offline_old_run))
+        "Offline container {} registered as {}".format(f"{offline_old_run.id}", get_qualified_name(offline_old_run))
     ) in captured.out
 
     assert "Synchronising {}".format(get_qualified_name(deprecated_unsynced_run)) in captured.out
@@ -253,5 +253,5 @@ def test_sync_non_existent_offline_containers(tmp_path, capsys, sync_runner):
 
     # then
     captured = capsys.readouterr()
-    assert "Offline run foo__bar not found on disk." in captured.out
-    assert "Offline run model__bar not found on disk." in captured.out
+    assert "Offline container foo__bar not found on disk." in captured.out
+    assert "Offline container model__bar not found on disk." in captured.out
