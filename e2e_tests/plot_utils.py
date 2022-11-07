@@ -21,8 +21,6 @@ from bokeh import sampledata
 from bokeh.models import LogColorMapper
 from bokeh.palettes import Viridis6 as palette
 from bokeh.plotting import figure
-from bokeh.sampledata.unemployment import data as unemployment
-from bokeh.sampledata.us_counties import data as counties
 from PIL import Image
 from vega_datasets import data
 
@@ -69,6 +67,9 @@ def generate_altair_chart():
 
 def generate_brokeh_figure():
     sampledata.download()
+
+    from bokeh.sampledata.unemployment import data as unemployment
+    from bokeh.sampledata.us_counties import data as counties
 
     palette2 = tuple(reversed(palette))
 
