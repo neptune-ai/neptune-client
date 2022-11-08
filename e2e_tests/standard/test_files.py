@@ -29,6 +29,13 @@ from e2e_tests.base import (
     BaseE2ETest,
     fake,
 )
+from e2e_tests.plot_utils import (
+    generate_altair_chart,
+    generate_brokeh_figure,
+    generate_matplotlib_figure,
+    generate_pil_image,
+    generate_plotly_figure,
+)
 from e2e_tests.utils import (
     SIZE_1KB,
     SIZE_1MB,
@@ -430,3 +437,30 @@ class TestFileSet(BaseE2ETest):
                     content = file.read()
                     assert len(content) == len(content2)
                     assert content == content2
+
+
+class TestPlotObjectsAssignment(BaseE2ETest):
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_pil_image(self, container: MetadataContainer):
+        pil_image = generate_pil_image()
+        container["pil_image"] = pil_image
+
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_matplotlib_figure(self, container: MetadataContainer):
+        figure = generate_matplotlib_figure()
+        container["matplotlib_figure"] = figure
+
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_altair_chart(self, container: MetadataContainer):
+        altair_chart = generate_altair_chart()
+        container["altair_chart"] = altair_chart
+
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_brokeh_figure(self, container: MetadataContainer):
+        brokeh_figure = generate_brokeh_figure()
+        container["brokeh_figure"] = brokeh_figure
+
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
+    def test_plotly_figure(self, container: MetadataContainer):
+        plotly_figure = generate_plotly_figure()
+        container["plotly_figure"] = plotly_figure
