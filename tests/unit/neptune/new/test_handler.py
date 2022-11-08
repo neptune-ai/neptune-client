@@ -659,7 +659,7 @@ class TestOtherBehaviour(unittest.TestCase):
 
         exp["attr1"] = "234"
         exp["attr1"] = self.FloatLike(12356)
-        self.assertEqual(exp["attr1"].fetch(), "TestHandler.FloatLike(value=12356)")
+        self.assertEqual(exp["attr1"].fetch(), "TestOtherBehaviour.FloatLike(value=12356)")
         exp["attr2"].append("xxx")
         exp["attr2"].append("345")
         exp["attr2"].append(self.FloatLike(34))
