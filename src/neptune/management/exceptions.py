@@ -163,3 +163,8 @@ class BadRequestException(ManagementOperationFailure):
 class IncorrectIdentifierException(ManagementOperationFailure):
     code = 21
     description = "Can not parse '{identifier}' as identifier."
+
+
+class ExperimentNotFound(ManagementOperationFailure):
+    code = 22
+    description = "Experiment not found."

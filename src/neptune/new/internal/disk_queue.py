@@ -16,6 +16,7 @@
 import json
 import logging
 import os
+import shutil
 import threading
 from glob import glob
 from pathlib import Path
@@ -151,6 +152,22 @@ class DiskQueue(Generic[T]):
         self._writer.close()
         self._last_ack_file.close()
         self._last_put_file.close()
+
+        if self.is_empty():
+            self._remove_data()
+
+    def _remove_data(self):
+        path = self._dir_path
+        shutil.rmtree(path)
+
+        parent = path.parent
+
+        files = os.listdir(parent)
+        if len(files) == 0:
+            try:
+                os.rmdir(parent)
+            except OSError:
+                _logger.info(f"Cannot remove directory: {parent}")
 
     def wait_for_empty(self, seconds: Optional[float] = None) -> bool:
         with self._empty_cond:
