@@ -10,8 +10,8 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        os: [ubuntu-latest] #, macos-latest]
+        python-version: ["3.7"] #, "3.8", "3.9", "3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
       BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
