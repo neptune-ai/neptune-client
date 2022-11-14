@@ -51,16 +51,15 @@ class DiskQueue(Generic[T]):
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
         max_file_size: int = 64 * 1024**2,
+        max_batch_size: int = None,
     ):
         self._dir_path = dir_path.resolve()
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
-        self._max_batch_size = os.environ.get("MAX_BATCH_SIZE")
-        if self._max_batch_size is not None:
-            self._max_batch_size = int(self._max_batch_size)
-        else:
-            self._max_batch_size = 100 * 1024**2
+        self._max_batch_size = max_batch_size
+        if max_batch_size is None:
+            self._max_batch_size = int(os.environ.get("MAX_BATCH_SIZE") or str(100 * 1024**2))
 
         try:
             os.makedirs(self._dir_path)

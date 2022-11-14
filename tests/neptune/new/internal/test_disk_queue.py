@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 import random
 import threading
 import unittest
@@ -99,7 +98,6 @@ class TestDiskQueue(unittest.TestCase):
             queue.close()
 
     def test_batch_limit(self):
-        os.environ["MAX_BATCH_SIZE"] = "3"
         with TemporaryDirectory() as dirpath:
             queue = DiskQueue[TestDiskQueue.Obj](
                 Path(dirpath),
@@ -107,6 +105,7 @@ class TestDiskQueue(unittest.TestCase):
                 self._deserializer,
                 threading.RLock(),
                 max_file_size=100,
+                max_batch_size=3,
             )
             for i in range(5):
                 obj = TestDiskQueue.Obj(i, str(i))
