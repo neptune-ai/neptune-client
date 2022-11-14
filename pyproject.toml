@@ -56,7 +56,7 @@ pytest-mock = { version = "*", optional = true }
 pytest-timeout = { version = "*", optional = true }
 pytest-xdist = { version = "*", optional = true }
 tensorflow = { version = "*", markers = "sys_platform == 'linux' or sys_platform == 'win32'", optional = true }
-tensorflow-macos = { version = "*", platform = "darwin", optional = true }
+tensorflow-macos = { version = "*", markers = "sys_platform == 'darwin'", optional = true }
 torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
 
