@@ -56,6 +56,9 @@ class DiskQueue(Generic[T]):
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
+        self._max_batch_size = os.environ.get("MAX_BATCH_SIZE")
+        if not self._max_batch_size:
+            self._max_batch_size = 100 * 1024**2
 
         try:
             os.makedirs(self._dir_path)
@@ -115,31 +118,45 @@ class DiskQueue(Generic[T]):
                 return obj, ver
 
     def _get(self) -> Tuple[Optional[T], int]:
+        serialized_obj = self._get_serialized()
+        if not serialized_obj:
+            return None, -1
+        try:
+            return self._deserialize(serialized_obj)
+        except Exception as e:
+            raise MalformedOperation from e
+
+    def _get_serialized(self) -> Optional[dict]:
         _json = self._reader.get()
         if not _json:
             if self._read_file_version >= self._write_file_version:
-                return None, -1
+                return None
             self._reader.close()
             self._read_file_version = self._next_log_file_version(self._read_file_version)
             self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
             # It is safe. Max recursion level is 2.
-            return self._get()
-        try:
-            return self._deserialize(_json)
-        except Exception as e:
-            raise MalformedOperation from e
+            return self._get_serialized()
+        return _json
 
     def get_batch(self, size: int) -> Tuple[List[T], int]:
         first, ver = self.get()
         if not first:
             return [], ver
+
         ret = [first]
+        cur_batch_size = 0
         for _ in range(0, size - 1):
-            obj, next_ver = self._get()
-            if not obj:
+            serialized_obj = self._get_serialized()
+            if not serialized_obj:
                 break
+            cur_batch_size += len(serialized_obj)
+            obj, next_ver = self._deserialize(serialized_obj)
+
             ver = next_ver
             ret.append(obj)
+
+            if cur_batch_size >= self._max_batch_size:
+                break
         return ret, ver
 
     def flush(self):
