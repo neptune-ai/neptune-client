@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import os
 import random
 import threading
 import unittest
@@ -97,6 +97,30 @@ class TestDiskQueue(unittest.TestCase):
                 ([TestDiskQueue.Obj(i, str(i)) for i in range(76, 91)], 90),
             )
             queue.close()
+
+    def test_batch_limit(self):
+        os.environ["MAX_BATCH_SIZE"] = "3"
+        with TemporaryDirectory() as dirpath:
+            queue = DiskQueue[TestDiskQueue.Obj](
+                Path(dirpath),
+                self._serializer,
+                self._deserializer,
+                threading.RLock(),
+                max_file_size=100,
+            )
+            for i in range(5):
+                obj = TestDiskQueue.Obj(i, str(i))
+                queue.put(obj)
+            queue.flush()
+
+            self.assertEqual(
+                queue.get_batch(5),
+                ([TestDiskQueue.Obj(i, str(i)) for i in range(3)], 3),
+            )
+            self.assertEqual(
+                queue.get_batch(2),
+                ([TestDiskQueue.Obj(i, str(i)) for i in range(3, 5)], 5),
+            )
 
     def test_resuming_queue(self):
         with TemporaryDirectory() as dirpath:

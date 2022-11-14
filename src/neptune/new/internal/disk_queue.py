@@ -57,7 +57,9 @@ class DiskQueue(Generic[T]):
         self._from_dict = from_dict
         self._max_file_size = max_file_size
         self._max_batch_size = os.environ.get("MAX_BATCH_SIZE")
-        if not self._max_batch_size:
+        if self._max_batch_size is not None:
+            self._max_batch_size = int(self._max_batch_size)
+        else:
             self._max_batch_size = 100 * 1024**2
 
         try:
