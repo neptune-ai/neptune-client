@@ -105,7 +105,7 @@ class TestDiskQueue(unittest.TestCase):
                 self._deserializer,
                 threading.RLock(),
                 max_file_size=100,
-                max_batch_size=3,
+                max_batch_size_bytes=6,
             )
             for i in range(5):
                 obj = TestDiskQueue.Obj(i, str(i))

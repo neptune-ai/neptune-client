@@ -51,15 +51,15 @@ class DiskQueue(Generic[T]):
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
         max_file_size: int = 64 * 1024**2,
-        max_batch_size: int = None,
+        max_batch_size_bytes: int = None,
     ):
         self._dir_path = dir_path.resolve()
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
-        self._max_batch_size = max_batch_size
-        if max_batch_size is None:
-            self._max_batch_size = int(os.environ.get("MAX_BATCH_SIZE") or str(100 * 1024**2))
+        self._max_batch_size_bytes = max_batch_size_bytes
+        if max_batch_size_bytes is None:
+            self._max_batch_size_bytes = int(os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(100 * 1024**2))
 
         try:
             os.makedirs(self._dir_path)
@@ -140,12 +140,13 @@ class DiskQueue(Generic[T]):
         return _json
 
     def get_batch(self, size: int) -> Tuple[List[T], int]:
-        first, ver = self.get()
-        if not first:
-            return [], ver
+        serialized_first = self._get_serialized()
+        if not serialized_first:
+            return [], -1
 
+        cur_batch_size = len(serialized_first)
+        first, ver = self._deserialize(serialized_first)
         ret = [first]
-        cur_batch_size = 0
         for _ in range(0, size - 1):
             serialized_obj = self._get_serialized()
             if not serialized_obj:
@@ -156,7 +157,7 @@ class DiskQueue(Generic[T]):
             ver = next_ver
             ret.append(obj)
 
-            if cur_batch_size >= self._max_batch_size:
+            if cur_batch_size >= self._max_batch_size_bytes:
                 break
         return ret, ver
 
