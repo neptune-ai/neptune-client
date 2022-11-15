@@ -35,7 +35,3 @@ def clear(path: Path):
     clear_runner = ClearRunner(backend=backend)
 
     clear_runner.clear(path)
-
-
-if __name__ == "__main__":
-    clear()
