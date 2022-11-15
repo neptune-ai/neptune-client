@@ -165,6 +165,6 @@ class IncorrectIdentifierException(ManagementOperationFailure):
     description = "Can not parse '{identifier}' as identifier."
 
 
-class ExperimentNotFound(ManagementOperationFailure):
+class ObjectNotFound(ManagementOperationFailure):
     code = 22
-    description = "Experiment not found."
+    description = "Object not found."

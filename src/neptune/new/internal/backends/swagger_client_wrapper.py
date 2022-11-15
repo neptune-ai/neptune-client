@@ -80,9 +80,9 @@ class ApiMethodWrapper:
                 name=body.get("name", "<unknown name>"), reason=body.get("reason", "Unknown reason")
             ) from exception
         elif error_type == ApiMethodWrapper.EXPERIMENT_NOT_FOUND:
-            from neptune.management.exceptions import ExperimentNotFound
+            from neptune.management.exceptions import ObjectNotFound
 
-            raise ExperimentNotFound() from exception
+            raise ObjectNotFound() from exception
         elif exception:
             raise exception
 

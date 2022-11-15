@@ -41,7 +41,7 @@ from neptune.common.exceptions import (
     NeptuneException,
 )
 from neptune.common.patterns import PROJECT_QUALIFIED_NAME_PATTERN
-from neptune.management.exceptions import ExperimentNotFound
+from neptune.management.exceptions import ObjectNotFound
 from neptune.new.envs import NEPTUNE_FETCH_TABLE_STEP_SIZE
 from neptune.new.exceptions import (
     AmbiguousProjectName,
@@ -304,7 +304,7 @@ class HostedNeptuneBackend(NeptuneBackend):
                 )
 
             return ApiExperiment.from_experiment(experiment)
-        except ExperimentNotFound:
+        except ObjectNotFound:
             raise MetadataContainerNotFound.of_container_type(
                 container_type=expected_container_type, container_id=container_id
             )

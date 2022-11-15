@@ -158,7 +158,7 @@ class DiskQueue(Generic[T]):
 
     def _remove_data(self):
         path = self._dir_path
-        shutil.rmtree(path)
+        shutil.rmtree(path, ignore_errors=True)
 
         parent = path.parent
 
