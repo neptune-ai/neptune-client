@@ -35,30 +35,29 @@ from neptune.new.internal.operation import (
 )
 from neptune.new.internal.types.file_types import FileType
 from neptune.new.internal.utils import base64_encode
-from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.limits import image_size_exceeds_limit_for_logging
 from neptune.new.types import File
 from neptune.new.types.series.file_series import FileSeries as FileSeriesVal
 
 Val = FileSeriesVal
 Data = File
+LogOperation = LogImages
 
 
-class FileSeries(Series[Val, Data]):
-    def _get_log_operations_from_value(self, value: Val, step: Optional[float], timestamp: float) -> List[Operation]:
-        values = [
-            LogImages.ValueType(
-                ImageValue(
-                    data=self._get_base64_image_content(val),
-                    name=value.name,
-                    description=value.description,
-                ),
-                step=step,
-                ts=timestamp,
+class FileSeries(Series[Val, Data, LogOperation]):
+    MAX_BATCH_SIZE = 1
+    operation_cls = LogOperation
+
+    @classmethod
+    def _map_series_val(cls, value: Val) -> List[ImageValue]:
+        return [
+            ImageValue(
+                data=cls._get_base64_image_content(val),
+                name=value.name,
+                description=value.description,
             )
             for val in value.values
         ]
-        return [LogImages(self._path, chunk) for chunk in get_batches(values, batch_size=1)]
 
     def _get_clear_operation(self) -> Operation:
         return ClearImageLog(self._path)
@@ -68,6 +67,11 @@ class FileSeries(Series[Val, Data]):
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, FileSeriesVal)
+
+    @classmethod
+    def _map_log_value(cls, value):
+        # TODO: maybe should be moved to operations
+        return cls._get_base64_image_content(value)
 
     @staticmethod
     def _get_base64_image_content(file: File) -> str:

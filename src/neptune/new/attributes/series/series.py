@@ -15,7 +15,9 @@
 #
 import abc
 import time
+from itertools import cycle
 from typing import (
+    Collection,
     Generic,
     Iterable,
     List,
@@ -30,25 +32,45 @@ from neptune.new.internal.utils import (
     is_collection,
     verify_type,
 )
+from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.types.series.series import Series as SeriesVal
 
 Val = TypeVar("Val", bound=SeriesVal)
 Data = TypeVar("Data")
+LogOperation = TypeVar("LogOperation", bound=Operation)
 
 
-class Series(Attribute, Generic[Val, Data]):
+class Series(Attribute, Generic[Val, Data, LogOperation]):
+    MAX_BATCH_SIZE = None
+    operation_cls: type(LogOperation) = None
+
     def clear(self, wait: bool = False) -> None:
         self._clear_impl(wait)
 
-    @abc.abstractmethod
-    def _get_log_operations_from_value(self, value: Val, step: Optional[float], timestamp: float) -> List[Operation]:
-        pass
+    def _get_log_operations_from_value(
+        self, value: Val, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
+    ) -> List[LogOperation]:
+        if steps is None:
+            steps = cycle([None])
+        if timestamps is None:
+            timestamps = cycle([time.time()])
 
-    def _get_config_operation_from_value(self, value: Val) -> Optional[Operation]:
+        mapped_values = self._map_series_val(value)
+        values_with_step_and_ts = zip(mapped_values, steps, timestamps)
+        log_values = [self.operation_cls.ValueType(val, step=step, ts=ts) for val, step, ts in values_with_step_and_ts]
+        return [
+            self.operation_cls(self._path, chunk) for chunk in get_batches(log_values, batch_size=self.MAX_BATCH_SIZE)
+        ]
+
+    @classmethod
+    def _map_series_val(cls, value: Val) -> List[Data]:
+        return [value for value in value.values]
+
+    def _get_config_operation_from_value(self, value: Val) -> Optional[LogOperation]:
         return None
 
     @abc.abstractmethod
-    def _get_clear_operation(self) -> Operation:
+    def _get_clear_operation(self) -> LogOperation:
         pass
 
     @abc.abstractmethod
@@ -71,8 +93,7 @@ class Series(Attribute, Generic[Val, Data]):
                 self._enqueue_operation(clear_op, wait=wait)
             else:
                 self._enqueue_operation(clear_op, wait=False)
-                ts = time.time()
-                ops = self._get_log_operations_from_value(value, None, ts)
+                ops = self._get_log_operations_from_value(value, steps=None, timestamps=None)
                 for op in ops:
                     self._enqueue_operation(op, wait=wait)
 
@@ -84,6 +105,7 @@ class Series(Attribute, Generic[Val, Data]):
         wait: bool = False,
         **kwargs,
     ) -> None:
+        """log is a deprecated method, this code should be removed in future"""
         if is_collection(value):
             if step is not None and len(value) > 1:
                 raise ValueError("Collection of values are not supported for explicitly defined 'step'.")
@@ -96,10 +118,35 @@ class Series(Attribute, Generic[Val, Data]):
         if timestamp is not None:
             verify_type("timestamp", timestamp, (float, int))
 
-        if not timestamp:
-            timestamp = time.time()
+        steps = None if step is None else [step]
+        timestamps = None if timestamp is None else [timestamp] * len(value)
 
-        ops = self._get_log_operations_from_value(value, step, timestamp)
+        ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
+
+        with self._container.lock():
+            for op in ops:
+                self._enqueue_operation(op, wait)
+
+    def extend(
+        self,
+        values: Collection[Data],
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
+        wait: bool = False,
+        **kwargs,
+    ) -> None:
+        value = self._data_to_value(values, **kwargs)
+
+        if steps is not None:
+            verify_type("step", steps, (float, int))
+            if len(steps) != len(values):
+                raise ValueError("Mismatch in len")
+        if timestamps is not None:
+            verify_type("timestamp", timestamps, (float, int))
+            if len(timestamps) != len(values):
+                raise ValueError("Mismatch in len")
+
+        ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
 
         with self._container.lock():
             for op in ops:
