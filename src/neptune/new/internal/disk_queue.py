@@ -43,6 +43,7 @@ _logger = logging.getLogger(__name__)
 class DiskQueue(Generic[T]):
 
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
+    DEFAULT_MAX_BATCH_SIZE_BYTES = 100 * 1024**2
 
     def __init__(
         self,
@@ -57,9 +58,9 @@ class DiskQueue(Generic[T]):
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
-        self._max_batch_size_bytes = max_batch_size_bytes
-        if max_batch_size_bytes is None:
-            self._max_batch_size_bytes = int(os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(100 * 1024**2))
+        self._max_batch_size_bytes = max_batch_size_bytes or int(
+            os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(self.DEFAULT_MAX_BATCH_SIZE_BYTES)
+        )
 
         try:
             os.makedirs(self._dir_path)
@@ -96,18 +97,24 @@ class DiskQueue(Generic[T]):
 
     def get(self) -> Tuple[Optional[T], int]:
         if self._should_skip_to_ack:
-            return self._skip_and_get()
+            serialized_obj = self._skip_and_get_serialized()
         else:
-            return self._get()
+            serialized_obj = self._get_serialized()
 
-    def _skip_and_get(self) -> Tuple[Optional[T], int]:
+        if not serialized_obj:
+            return None, -1
+        try:
+            return self._deserialize(serialized_obj)
+        except Exception as e:
+            raise MalformedOperation from e
+
+    def _skip_and_get_serialized(self) -> Optional[dict]:
         ack_version = self._last_ack_file.read_local()
-        ver = -1
         while True:
-            obj, next_ver = self._get()
-            if obj is None:
-                return None, ver
-            ver = next_ver
+            serialized = self._get_serialized()
+            if serialized is None:
+                return None
+            ver = serialized["version"]
             if ver > ack_version:
                 self._should_skip_to_ack = False
                 if ver > ack_version + 1:
@@ -116,16 +123,7 @@ class DiskQueue(Generic[T]):
                         ack_version,
                         ver,
                     )
-                return obj, ver
-
-    def _get(self) -> Tuple[Optional[T], int]:
-        serialized_obj = self._get_serialized()
-        if not serialized_obj:
-            return None, -1
-        try:
-            return self._deserialize(serialized_obj)
-        except Exception as e:
-            raise MalformedOperation from e
+                return serialized
 
     def _get_serialized(self) -> Optional[dict]:
         _json = self._reader.get()
@@ -140,7 +138,10 @@ class DiskQueue(Generic[T]):
         return _json
 
     def get_batch(self, size: int) -> Tuple[List[T], int]:
-        serialized_first = self._get_serialized()
+        if self._should_skip_to_ack:
+            serialized_first = self._skip_and_get_serialized()
+        else:
+            serialized_first = self._get_serialized()
         if not serialized_first:
             return [], -1
 
@@ -148,6 +149,8 @@ class DiskQueue(Generic[T]):
         first, ver = self._deserialize(serialized_first)
         ret = [first]
         for _ in range(0, size - 1):
+            if cur_batch_size >= self._max_batch_size_bytes:
+                break
             serialized_obj = self._get_serialized()
             if not serialized_obj:
                 break
@@ -156,9 +159,6 @@ class DiskQueue(Generic[T]):
 
             ver = next_ver
             ret.append(obj)
-
-            if cur_batch_size >= self._max_batch_size_bytes:
-                break
         return ret, ver
 
     def flush(self):
