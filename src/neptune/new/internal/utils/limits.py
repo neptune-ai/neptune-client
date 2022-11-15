@@ -20,7 +20,7 @@ _logger = logging.getLogger(__name__)
 
 
 _CUSTOM_RUN_ID_LENGTH = 36
-_LOGGED_IMAGE_SIZE_LIMIT_MB = 15
+_LOGGED_IMAGE_SIZE_LIMIT_MB = 32
 
 BYTES_IN_MB = 1024 * 1024
 
