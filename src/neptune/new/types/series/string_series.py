@@ -27,12 +27,16 @@ if TYPE_CHECKING:
 
 Ret = TypeVar("Ret")
 
+MAX_STRING_SERIES_VALUE_LENGTH = 1000
+
 
 class StringSeries(Series):
     def __init__(self, values):
         if not is_collection(values):
             raise TypeError("`values` is not a collection")
-        self._values = [str(value) for value in values]
+        values_str = [str(val) for val in values]
+        self._truncated = any([len(value) > MAX_STRING_SERIES_VALUE_LENGTH for value in values_str])
+        self._values = [str(value)[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values_str]
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_series(self)
@@ -40,6 +44,10 @@ class StringSeries(Series):
     @property
     def values(self):
         return self._values
+
+    @property
+    def truncated(self):
+        return self._truncated
 
     def __str__(self):
         return "StringSeries({})".format(str(self.values))

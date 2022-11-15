@@ -36,3 +36,6 @@ class Series(Value):
     @abc.abstractmethod
     def values(self):
         pass
+
+    def __len__(self):
+        return len(self.values)
