@@ -13,27 +13,29 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from pathlib import Path
 
 import click
-import pkg_resources
 
-from neptune.new.cli.clear_command import clear
-from neptune.new.cli.commands import (
-    status,
-    sync,
-)
+from neptune.new.cli.clear import ClearRunner
+from neptune.new.cli.path_option import path_option
+from neptune.new.internal.backends.hosted_neptune_backend import HostedNeptuneBackend
+from neptune.new.internal.credentials import Credentials
 
-
-@click.group()
-def main():
-    pass
+__all__ = ["clear"]
 
 
-main.add_command(sync)
-main.add_command(status)
-main.add_command(clear)
+@click.command()
+@path_option
+def clear(path: Path):
+    """
+    TODO NPT-12295
+    """
+    backend = HostedNeptuneBackend(Credentials.from_token())
+    clear_runner = ClearRunner(backend=backend)
 
-plugins = {entry_point.name: entry_point for entry_point in pkg_resources.iter_entry_points("neptune.plugins")}
+    clear_runner.clear(path)
 
-for name, entry_point in plugins.items():
-    main.add_command(entry_point.load(), name)
+
+if __name__ == "__main__":
+    clear()

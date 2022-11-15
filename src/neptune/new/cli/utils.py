@@ -18,7 +18,7 @@ __all__ = [
     "get_metadata_container",
     "get_project",
     "get_qualified_name",
-    "is_container_synced",
+    "is_container_synced_and_remove_junk",
     "get_offline_dirs",
     "iterate_containers",
     "split_dir_name",
@@ -107,18 +107,13 @@ def get_qualified_name(experiment: ApiExperiment) -> QualifiedName:
     return QualifiedName(f"{experiment.workspace}/{experiment.project_name}/{experiment.sys_id}")
 
 
-def is_container_synced(experiment_path: Path) -> bool:
+def is_container_synced_and_remove_junk(experiment_path: Path) -> bool:
     return all(_is_execution_synced(execution_path) for execution_path in experiment_path.iterdir())
 
 
 def _is_execution_synced(execution_path: Path) -> bool:
-    disk_queue = DiskQueue(
-        execution_path,
-        lambda x: x.to_dict(),
-        Operation.from_dict,
-        threading.RLock(),
-    )
-    return disk_queue.is_empty()
+    with DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock()) as disk_queue:
+        return disk_queue.is_empty()
 
 
 def split_dir_name(dir_name: str) -> Tuple[ContainerType, UniqueId]:

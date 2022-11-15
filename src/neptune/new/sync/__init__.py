@@ -26,7 +26,7 @@ __all__ = [
     "get_metadata_container",
     "get_project",
     "get_qualified_name",
-    "is_container_synced",
+    "is_container_synced_and_remove_junk",
     "get_offline_dirs",
     "iterate_containers",
     "split_dir_name",
@@ -57,7 +57,7 @@ from neptune.new.sync.utils import (
     get_offline_dirs,
     get_project,
     get_qualified_name,
-    is_container_synced,
+    is_container_synced_and_remove_junk,
     iterate_containers,
     split_dir_name,
 )

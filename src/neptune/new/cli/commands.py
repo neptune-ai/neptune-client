@@ -25,9 +25,9 @@ from typing import (
 import click
 
 from neptune.common.exceptions import NeptuneException  # noqa: F401
+from neptune.new.cli.path_option import path_option
 from neptune.new.cli.status import StatusRunner
 from neptune.new.cli.sync import SyncRunner
-from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.exceptions import (  # noqa: F401
     CannotSynchronizeOfflineRunsWithoutProject,
     NeptuneConnectionLostException,
@@ -44,27 +44,6 @@ from neptune.new.internal.credentials import Credentials
 from neptune.new.internal.disk_queue import DiskQueue  # noqa: F401
 from neptune.new.internal.operation import Operation  # noqa: F401
 from neptune.new.internal.utils.logger import logger
-
-
-def get_neptune_path(ctx, param, path: str) -> Path:
-    # check if path exists and contains a '.neptune' folder
-    path = Path(path)
-    if (path / NEPTUNE_DATA_DIRECTORY).is_dir():
-        return path / NEPTUNE_DATA_DIRECTORY
-    elif path.name == NEPTUNE_DATA_DIRECTORY and path.is_dir():
-        return path
-    else:
-        raise click.BadParameter("Path {} does not contain a '{}' folder.".format(path, NEPTUNE_DATA_DIRECTORY))
-
-
-path_option = click.option(
-    "--path",
-    type=click.Path(exists=True, file_okay=False, resolve_path=True),
-    default=Path.cwd(),
-    callback=get_neptune_path,
-    metavar="<location>",
-    help="path to a directory containing a '.neptune' folder with stored objects",
-)
 
 
 @click.command()
