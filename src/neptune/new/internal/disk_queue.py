@@ -97,9 +97,9 @@ class DiskQueue(Generic[T]):
 
     def get(self) -> Tuple[Optional[T], int]:
         if self._should_skip_to_ack:
-            serialized_obj = self._skip_and_get_serialized()
+            serialized_obj, _ = self._skip_and_get_serialized()
         else:
-            serialized_obj = self._get_serialized()
+            serialized_obj, _ = self._get_serialized()
 
         if not serialized_obj:
             return None, -1
@@ -108,12 +108,12 @@ class DiskQueue(Generic[T]):
         except Exception as e:
             raise MalformedOperation from e
 
-    def _skip_and_get_serialized(self) -> Optional[dict]:
+    def _skip_and_get_serialized(self) -> Tuple[Optional[dict], int]:
         ack_version = self._last_ack_file.read_local()
         while True:
-            serialized = self._get_serialized()
+            serialized, size = self._get_serialized()
             if serialized is None:
-                return None
+                return None, 0
             ver = serialized["version"]
             if ver > ack_version:
                 self._should_skip_to_ack = False
@@ -123,38 +123,37 @@ class DiskQueue(Generic[T]):
                         ack_version,
                         ver,
                     )
-                return serialized
+                return serialized, size
 
-    def _get_serialized(self) -> Optional[dict]:
-        _json = self._reader.get()
+    def _get_serialized(self) -> Tuple[Optional[dict], int]:
+        _json, size = self._reader.get_with_size()
         if not _json:
             if self._read_file_version >= self._write_file_version:
-                return None
+                return None, 0
             self._reader.close()
             self._read_file_version = self._next_log_file_version(self._read_file_version)
             self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
             # It is safe. Max recursion level is 2.
             return self._get_serialized()
-        return _json
+        return _json, size
 
     def get_batch(self, size: int) -> Tuple[List[T], int]:
         if self._should_skip_to_ack:
-            serialized_first = self._skip_and_get_serialized()
+            serialized_first, cur_batch_size = self._skip_and_get_serialized()
         else:
-            serialized_first = self._get_serialized()
+            serialized_first, cur_batch_size = self._get_serialized()
         if not serialized_first:
             return [], -1
 
-        cur_batch_size = len(serialized_first)
         first, ver = self._deserialize(serialized_first)
         ret = [first]
         for _ in range(0, size - 1):
             if cur_batch_size >= self._max_batch_size_bytes:
                 break
-            serialized_obj = self._get_serialized()
+            serialized_obj, obj_size = self._get_serialized()
             if not serialized_obj:
                 break
-            cur_batch_size += len(serialized_obj)
+            cur_batch_size += obj_size
             obj, next_ver = self._deserialize(serialized_obj)
 
             ver = next_ver

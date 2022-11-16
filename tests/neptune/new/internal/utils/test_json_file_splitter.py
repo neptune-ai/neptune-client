@@ -133,3 +133,45 @@ class TestJsonFileSplitter(unittest.TestCase):
             self.assertEqual(splitter.get(), {})
             self.assertEqual(splitter.get(), None)
             splitter.close()
+
+    def test_data_size(self):
+        object1 = """{
+                "a": 5,
+                "b": "text"
+            }"""
+        object2 = """{
+                "a": 155,
+                "r": "something"
+            }"""
+        object3 = """{
+                "a": {
+                    "b": [1, 2, 3]
+                }
+            }"""
+        content1 = """
+            {
+                "a": 5,
+                "b": "text"
+            }
+            {
+                "a": 1"""
+
+        content2 = """55,
+                "r": "something"
+            }
+            {
+                "a": {
+                    "b": [1, 2, 3]
+                }
+            }"""
+
+        with create_file(content1) as filename, open(filename, "a") as fp:
+            splitter = JsonFileSplitter(filename)
+            self.assertEqual(splitter.get_with_size(), ({"a": 5, "b": "text"}, len(object1)))
+            self.assertIsNone(splitter.get_with_size()[0])
+            fp.write(content2)
+            fp.flush()
+            self.assertEqual(splitter.get_with_size(), ({"a": 155, "r": "something"}, len(object2)))
+            self.assertEqual(splitter.get_with_size(), ({"a": {"b": [1, 2, 3]}}, len(object3)))
+            self.assertIsNone(splitter.get_with_size()[0])
+            splitter.close()
