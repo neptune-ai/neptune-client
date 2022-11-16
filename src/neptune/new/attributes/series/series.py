@@ -30,6 +30,7 @@ from neptune.new.attributes.attribute import Attribute
 from neptune.new.internal.operation import Operation
 from neptune.new.internal.utils import (
     is_collection,
+    verify_collection_type,
     verify_type,
 )
 from neptune.new.internal.utils.iteration import get_batches
@@ -138,11 +139,11 @@ class Series(Attribute, Generic[Val, Data, LogOperation]):
         value = self._data_to_value(values, **kwargs)
 
         if steps is not None:
-            verify_type("step", steps, (float, int))
+            verify_collection_type("steps", steps, (float, int))
             if len(steps) != len(values):
                 raise ValueError("Mismatch in len")
         if timestamps is not None:
-            verify_type("timestamp", timestamps, (float, int))
+            verify_collection_type("timestamps", timestamps, (float, int))
             if len(timestamps) != len(values):
                 raise ValueError("Mismatch in len")
 

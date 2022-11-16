@@ -18,6 +18,7 @@ from collections.abc import MutableMapping
 from typing import (
     TYPE_CHECKING,
     Any,
+    Collection,
     Dict,
     Iterable,
     Iterator,
@@ -67,18 +68,18 @@ class Namespace(Attribute, MutableMapping):
     def __iter__(self) -> Iterator[str]:
         yield from self._attributes.__iter__()
 
-    def log(
+    def extend(
         self,
         value: Union[Data, Iterable[Data]],
-        step: Optional[float] = None,
-        timestamp: Optional[float] = None,
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
         wait: bool = False,
         **kwargs,
     ) -> None:
         if not isinstance(value, NamespaceVal):
             value = NamespaceVal(value)
         for k, v in value.value.items():
-            self._container[f"{self._str_path}/{k}"].log(v, step, timestamp, wait, **kwargs)
+            self._container[f"{self._str_path}/{k}"].extend(v, steps, timestamps, wait, **kwargs)
 
     def to_dict(self) -> Dict[str, Any]:
         result = {}
