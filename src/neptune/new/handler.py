@@ -60,7 +60,10 @@ from neptune.new.internal.utils.paths import (
 )
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types.atoms.file import File as FileVal
-from neptune.new.types.type_casting import cast_value
+from neptune.new.types.type_casting import (
+    cast_value,
+    cast_value_for_extend,
+)
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
@@ -315,37 +318,28 @@ class Handler:
             for element in value.values():
                 if is_collection(element):
                     raise NeptuneUserApiInputException("Dict value cannot be a collection, use extend method")
+        if step is not None:
+            step = [step]
+        if timestamp is not None:
+            timestamp = [timestamp]
+        value = self._wrap_val(value)
+        self._do_extend(value, step, timestamp, wait, **kwargs)
+
+    def _wrap_val(self, value):
+        if not isinstance(value, Namespace) and not is_dict_like(value):
+            return [value]
+        else:
+            return {k: self._wrap_val(v) for k, v in value.items()}
+
+    def _do_extend(self, values, steps, timestamps, wait, **kwargs):
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
             if not attr:
-                attr = self._create_new_attribute(value)
+                neptune_value = cast_value_for_extend(values)
+                attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
                 self._container.set_attribute(self._path, attr)
-            attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
 
-    def _create_new_attribute(self, value):
-        if is_float(value):
-            return FloatSeries(self._container, parse_path(self._path))
-        elif is_dict_like(value):
-            return Namespace(self._container, parse_path(self._path))
-        elif is_string(value):
-            return StringSeries(self._container, parse_path(self._path))
-        elif FileVal.is_convertable(value):
-            return FileSeries(self._container, parse_path(self._path))
-        elif is_float_like(value):
-            return FloatSeries(self._container, parse_path(self._path))
-        elif is_string_like(value):
-            self._warn_casting_to_string()
-            return StringSeries(self._container, parse_path(self._path))
-        else:
-            raise NeptuneUserApiInputException("Value of unsupported type {}".format(type(value)))
-
-    def _warn_casting_to_string(self):
-        warn_once(
-            message="The object you're logging will be implicitly cast to a string."
-            " We'll end support of this behavior in `neptune-client==1.0.0`."
-            " To log the object as a string, use `.log(str(object))` instead.",
-            stack_level=3,
-        )
+            attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
 
     def extend(
         self,
@@ -360,22 +354,11 @@ class Handler:
         """
         if is_dict_like(values):
             self._validate_dict_for_extend(values, steps, timestamps)
-            for dict_key in values.keys():
-                values_size = iterable_size(values[dict_key])
-                new_steps = steps if steps is not None else [None] * values_size
-                new_timestamps = timestamps if timestamps is not None else [None] * values_size
-                for (value, step, timestamp) in zip(values[dict_key], new_steps, new_timestamps):
-                    self.append({dict_key: value}, step, timestamp, wait, **kwargs)
+            self._do_extend(values, steps, timestamps, wait, **kwargs)
         elif is_collection(values):
             values_size = iterable_size(values)
             self._validate_iterable_for_extend(values_size, steps, timestamps)
-            new_steps = steps if steps is not None else [None] * values_size
-            new_timestamps = timestamps if timestamps is not None else [None] * values_size
-            for (value, step, timestamp) in zip(values, new_steps, new_timestamps):
-                if is_collection(value) or is_dict_like(value):
-                    self.append(str(value), step, timestamp, wait, **kwargs)
-                else:
-                    self.append(value, step, timestamp, wait, **kwargs)
+            self._do_extend(values, steps, timestamps, wait, **kwargs)
         else:
             raise NeptuneUserApiInputException(
                 "Value cannot be a collection."

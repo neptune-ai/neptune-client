@@ -15,7 +15,11 @@
 #
 import argparse
 from datetime import datetime
-from typing import Any
+from typing import (
+    Any,
+    List,
+    Union,
+)
 
 from neptune.common.deprecation import warn_once
 from neptune.new.internal.utils import (
@@ -36,6 +40,12 @@ from neptune.new.types.atoms.datetime import Datetime
 from neptune.new.types.atoms.float import Float
 from neptune.new.types.atoms.string import String
 from neptune.new.types.namespace import Namespace
+from neptune.new.types.series import (
+    FileSeries,
+    FloatSeries,
+    StringSeries,
+)
+from neptune.new.types.series.series import Series
 from neptune.new.types.value import Value
 from neptune.new.types.value_copy import ValueCopy
 
@@ -77,3 +87,36 @@ def cast_value(value: Any) -> Value:
         return String(str(value))
     else:
         raise TypeError("Value of unsupported type {}".format(type(value)))
+
+
+def cast_value_for_extend(values: Union[Any, List[Any]]) -> Union[Series, Namespace]:
+    if isinstance(values, Namespace):
+        return values
+    if isinstance(values, Series):
+        return values
+    elif is_dict_like(values):
+        return Namespace(values)
+
+    assert values
+    sample_val = values[0]
+    if isinstance(sample_val, File):
+        return FileSeries(values=values)
+    elif File.is_convertable_to_image(sample_val):
+        return FileSeries(values=values)
+    elif File.is_convertable_to_html(sample_val):
+        return FileSeries(values=values)
+    elif is_string(sample_val):
+        return StringSeries(values=values)
+    elif is_float_like(sample_val):
+        return FloatSeries(values=values)
+    elif is_string_like(sample_val):
+        warn_once(
+            message="The object you're logging will be implicitly cast to a string."
+            " We'll end support of this behavior in `neptune-client==1.0.0`."
+            " To log the object as a string, use `str(object)` instead.",
+            stack_level=3,
+        )
+        return StringSeries(values=values)
+    else:
+        # TODO
+        raise TypeError("Value of unsupported type {}".format(type(sample_val)))
