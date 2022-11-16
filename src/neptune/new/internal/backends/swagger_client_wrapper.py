@@ -33,6 +33,7 @@ class ApiMethodWrapper:
     PROJECT_NAME_COLLISION = "PROJECT_NAME_COLLISION"
     PROJECT_KEY_INVALID = "PROJECT_KEY_INVALID"
     PROJECT_NAME_INVALID = "PROJECT_NAME_INVALID"
+    EXPERIMENT_NOT_FOUND = "EXPERIMENT_NOT_FOUND"
 
     def __init__(self, api_method):
         self._api_method = api_method
@@ -78,6 +79,10 @@ class ApiMethodWrapper:
             raise ProjectNameInvalid(
                 name=body.get("name", "<unknown name>"), reason=body.get("reason", "Unknown reason")
             ) from exception
+        elif error_type == ApiMethodWrapper.EXPERIMENT_NOT_FOUND:
+            from neptune.management.exceptions import ObjectNotFound
+
+            raise ObjectNotFound() from exception
         elif exception:
             raise exception
 

@@ -129,6 +129,17 @@ class AbstractExperimentTestMixin:
         with self.assertRaises(TypeDoesNotSupportAttributeException):
             exp["some/path"].download()
 
+    def test_clean_data_on_stop(self):
+        exp = self.call_init(mode="async", flush_period=0.5)
+        container_path = exp._op_processor._queue._dir_path
+
+        assert os.path.exists(container_path)
+
+        exp.stop()
+
+        assert not os.path.exists(container_path)
+        assert not os.path.exists(container_path.parent)
+
     @abstractmethod
     def test_read_only_mode(self):
         pass
