@@ -65,10 +65,8 @@ from neptune.new.internal.utils.runningmode import (
     in_notebook,
 )
 from neptune.new.internal.utils.uncaught_exception_handler import instance as uncaught_exception_handler
-from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.metadata_containers.metadata_containers_table import Table
 from neptune.new.types.mode import Mode
-from neptune.new.types.type_casting import cast_value
 
 
 def ensure_not_stopped(fun):
@@ -236,17 +234,12 @@ class MetadataContainer(AbstractContextManager):
         value: Any,
         wait: bool = False,
     ) -> Attribute:
-        value = cast_value(value)
-        parsed_path = parse_path(path)
-
         with self._lock:
-            old_attr = self._structure.get(parsed_path)
-            if old_attr:
+            old_attr = self.get_attribute(path)
+            if old_attr is not None:
                 raise MetadataInconsistency("Attribute or namespace {} is already defined".format(path))
-            attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
-            self._structure.set(parsed_path, attr)
-            attr.process_assignment(value, wait)
-            return attr
+
+            self[path].assign(value, wait=wait)
 
     def get_attribute(self, path: str) -> Optional[Attribute]:
         with self._lock:

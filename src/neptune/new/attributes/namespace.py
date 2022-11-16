@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import argparse
 from collections.abc import MutableMapping
 from typing import (
     TYPE_CHECKING,
@@ -89,7 +90,9 @@ class Namespace(Attribute, MutableMapping):
         return result
 
     def assign(self, value: Union[NamespaceVal, dict, Mapping], wait: bool = False):
-        if not isinstance(value, NamespaceVal):
+        if isinstance(value, argparse.Namespace):
+            value = NamespaceVal(vars(value))
+        elif not isinstance(value, NamespaceVal):
             value = NamespaceVal(value)
 
         for k, v in value.value.items():
