@@ -18,7 +18,6 @@ from datetime import datetime
 from typing import Any
 
 from neptune.common.deprecation import warn_once
-from neptune.new.handler import Handler
 from neptune.new.internal.utils import (
     is_bool,
     is_dict_like,
@@ -42,6 +41,8 @@ from neptune.new.types.value_copy import ValueCopy
 
 
 def cast_value(value: Any) -> Value:
+    from neptune.new.handler import Handler
+
     if isinstance(value, Value):
         return value
     elif isinstance(value, Handler):
