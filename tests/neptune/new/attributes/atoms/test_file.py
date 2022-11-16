@@ -161,3 +161,13 @@ class TestFile(TestAttributeBase):
             var = File(exp, path)
             var.assign(value, wait=wait)
             self.assertEqual(expected_ext, var.fetch_extension())
+
+    def test_clean_files_on_close(self):
+        run = self._create_run()
+        data_path = run._op_processor._operation_storage.data_path
+
+        assert os.path.exists(data_path)
+
+        run.stop()
+
+        assert not os.path.exists(data_path)

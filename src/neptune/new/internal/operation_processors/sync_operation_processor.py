@@ -59,4 +59,4 @@ class SyncOperationProcessor(OperationProcessor):
         pass
 
     def stop(self, seconds: Optional[float] = None):
-        pass
+        self._operation_storage.close()

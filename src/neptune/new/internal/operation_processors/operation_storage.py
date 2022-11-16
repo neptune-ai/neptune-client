@@ -18,11 +18,13 @@ __all__ = [
 ]
 
 import os
+import shutil
 from pathlib import Path
 
 from neptune.new.constants import NEPTUNE_DATA_DIRECTORY
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.id_formats import UniqueId
+from neptune.new.internal.utils.logger import logger
 
 
 class OperationStorage:
@@ -44,3 +46,15 @@ class OperationStorage:
     @staticmethod
     def _get_container_dir(type_dir: str, container_id: UniqueId, container_type: ContainerType):
         return f"{NEPTUNE_DATA_DIRECTORY}/{type_dir}/{container_type.create_dir_name(container_id)}"
+
+    def close(self):
+        shutil.rmtree(self.data_path, ignore_errors=True)
+
+        parent = self.data_path.parent
+
+        files = os.listdir(parent)
+        if len(files) == 0:
+            try:
+                os.rmdir(parent)
+            except OSError:
+                logger.debug(f"Cannot remove directory: {parent}")
