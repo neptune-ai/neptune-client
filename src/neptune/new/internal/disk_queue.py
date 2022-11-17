@@ -18,6 +18,7 @@ import logging
 import os
 import shutil
 import threading
+from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
 from typing import (
@@ -40,8 +41,14 @@ T = TypeVar("T")
 _logger = logging.getLogger(__name__)
 
 
-class DiskQueue(Generic[T]):
+@dataclass
+class QueueElement(Generic[T]):
+    obj: T
+    ver: int
+    size: int
 
+
+class DiskQueue(Generic[T]):
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
     DEFAULT_MAX_BATCH_SIZE_BYTES = 100 * 1024**2
 
@@ -97,67 +104,66 @@ class DiskQueue(Generic[T]):
 
     def get(self) -> Tuple[Optional[T], int]:
         if self._should_skip_to_ack:
-            serialized_obj, _ = self._skip_and_get_serialized()
+            top_element = self._skip_and_get()
         else:
-            serialized_obj, _ = self._get_serialized()
-
-        if not serialized_obj:
+            top_element = self._get()
+        if top_element is None:
             return None, -1
-        try:
-            return self._deserialize(serialized_obj)
-        except Exception as e:
-            raise MalformedOperation from e
+        return top_element.obj, top_element.ver
 
-    def _skip_and_get_serialized(self) -> Tuple[Optional[dict], int]:
+    def _skip_and_get(self) -> Optional[QueueElement[T]]:
         ack_version = self._last_ack_file.read_local()
         while True:
-            serialized, size = self._get_serialized()
-            if serialized is None:
-                return None, 0
-            ver = serialized["version"]
-            if ver > ack_version:
+            top_element = self._get()
+            if top_element is None:
+                return None
+            if top_element.ver > ack_version:
                 self._should_skip_to_ack = False
-                if ver > ack_version + 1:
+                if top_element.ver > ack_version + 1:
                     _logger.warning(
                         "Possible data loss. Last acknowledged operation version: %d, next: %d",
                         ack_version,
-                        ver,
+                        top_element.ver,
                     )
-                return serialized, size
+                return top_element
 
-    def _get_serialized(self) -> Tuple[Optional[dict], int]:
+    def _get(self) -> Optional[QueueElement[T]]:
         _json, size = self._reader.get_with_size()
         if not _json:
             if self._read_file_version >= self._write_file_version:
-                return None, 0
+                return None
             self._reader.close()
             self._read_file_version = self._next_log_file_version(self._read_file_version)
             self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
             # It is safe. Max recursion level is 2.
-            return self._get_serialized()
-        return _json, size
+            return self._get()
+        try:
+            obj, ver = self._deserialize(_json)
+            return QueueElement[T](obj, ver, size)
+        except Exception as e:
+            raise MalformedOperation from e
 
     def get_batch(self, size: int) -> Tuple[List[T], int]:
         if self._should_skip_to_ack:
-            serialized_first, cur_batch_size = self._skip_and_get_serialized()
+            first = self._skip_and_get()
         else:
-            serialized_first, cur_batch_size = self._get_serialized()
-        if not serialized_first:
+            first = self._get()
+        if not first:
             return [], -1
 
-        first, ver = self._deserialize(serialized_first)
-        ret = [first]
+        ret = [first.obj]
+        ver = first.ver
+        cur_batch_size = first.size
         for _ in range(0, size - 1):
             if cur_batch_size >= self._max_batch_size_bytes:
                 break
-            serialized_obj, obj_size = self._get_serialized()
-            if not serialized_obj:
+            next_obj = self._get()
+            if not next_obj:
                 break
-            cur_batch_size += obj_size
-            obj, next_ver = self._deserialize(serialized_obj)
 
-            ver = next_ver
-            ret.append(obj)
+            cur_batch_size += next_obj.size
+            ver = next_obj.ver
+            ret.append(next_obj.obj)
         return ret, ver
 
     def flush(self):
