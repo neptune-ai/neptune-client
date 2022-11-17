@@ -89,15 +89,15 @@ def cast_value(value: Any) -> Value:
         raise TypeError("Value of unsupported type {}".format(type(value)))
 
 
-def cast_value_for_extend(values: Union[Any, List[Any]]) -> Union[Series, Namespace]:
+def cast_value_for_extend(values: Union[Namespace, Series, List[Any]]) -> Union[Series, Namespace]:
     if isinstance(values, Namespace):
-        return values
-    if isinstance(values, Series):
         return values
     elif is_dict_like(values):
         return Namespace(values)
+    elif isinstance(values, Series):
+        return values
 
-    assert values
+    assert values  # assert some value was passed, otherwise we can't determine the type
     sample_val = values[0]
     if isinstance(sample_val, File):
         return FileSeries(values=values)
@@ -118,5 +118,4 @@ def cast_value_for_extend(values: Union[Any, List[Any]]) -> Union[Series, Namesp
         )
         return StringSeries(values=values)
     else:
-        # TODO
-        raise TypeError("Value of unsupported type {}".format(type(sample_val)))
+        raise TypeError("Value of unsupported type List[{}]".format(type(sample_val)))

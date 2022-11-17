@@ -140,12 +140,10 @@ class Series(Attribute, Generic[Val, Data, LogOperation]):
 
         if steps is not None:
             verify_collection_type("steps", steps, (float, int))
-            if len(steps) != len(values):
-                raise ValueError("Mismatch in len")
+            assert len(steps) == len(values)
         if timestamps is not None:
             verify_collection_type("timestamps", timestamps, (float, int))
-            if len(timestamps) != len(values):
-                raise ValueError("Mismatch in len")
+            assert len(timestamps) == len(values)
 
         ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
 

@@ -348,14 +348,17 @@ class Handler:
             step = [step]
         if timestamp is not None:
             timestamp = [timestamp]
-        value = self._wrap_val(value)
+        value = self._transform_to_extend_format(value)
         self._do_extend(value, step, timestamp, wait, **kwargs)
 
-    def _wrap_val(self, value):
-        if not isinstance(value, Namespace) and not is_dict_like(value):
-            return [value]
+    def _transform_to_extend_format(self, value, *, depth=1):
+        """Preserve nested structure created by `Namespaces` and `dict_like` objects,
+        but replace all other values with single-element lists,
+        so work can be delegated to `_do_extend` method."""
+        if depth == 1 and (isinstance(value, Namespace) or is_dict_like(value)):
+            return {k: self._transform_to_extend_format(v, depth=depth + 1) for k, v in value.items()}
         else:
-            return {k: self._wrap_val(v) for k, v in value.items()}
+            return [value]
 
     def _do_extend(self, values, steps, timestamps, wait, **kwargs):
         with self._container.lock():
@@ -405,8 +408,8 @@ class Handler:
             ...     ts = df["timestamp"]
             ...     run["data/example_series"].extend(ys, timestamps=ts)
         """
-        if is_dict_like(values):
-            self._validate_dict_for_extend(values, steps, timestamps)
+        if isinstance(values, Namespace) or is_dict_like(values):
+            # self._validate_dict_for_extend(values, steps, timestamps)
             self._do_extend(values, steps, timestamps, wait, **kwargs)
         elif is_collection(values):
             values_size = iterable_size(values)
