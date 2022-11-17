@@ -56,8 +56,6 @@ def test_list_containers(tmp_path, mocker, capsys, backend, status_runner, conta
     assert captured.out.splitlines() == [
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)}",
-        "Synchronized objects:",
-        f"- {get_qualified_name(synced_container)}",
         "",
         "Please run with the `neptune sync --help` to see example commands.",
     ]
@@ -105,8 +103,6 @@ def test_list_trashed_containers(tmp_path, mocker, capsys, backend, status_runne
     assert captured.out.splitlines() == [
         "Unsynchronized objects:",
         f"- {get_qualified_name(unsynced_container)} (Trashed)",
-        "Synchronized objects:",
-        f"- {get_qualified_name(synced_container)} (Trashed)",
         "",
         "Please run with the `neptune sync --help` to see example commands.",
     ]

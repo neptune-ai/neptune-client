@@ -34,7 +34,7 @@ from neptune.new.cli.utils import (
     get_offline_dirs,
     get_project,
     get_qualified_name,
-    is_container_synced,
+    is_container_synced_and_remove_junk,
     iterate_containers,
     split_dir_name,
 )
@@ -121,7 +121,7 @@ class SyncRunner(AbstractBackendRunner):
     def sync_all_registered_containers(self, base_path: Path) -> None:
         async_path = base_path / ASYNC_DIRECTORY
         for container_type, unique_id, path in iterate_containers(async_path):
-            if not is_container_synced(path):
+            if not is_container_synced_and_remove_junk(path):
                 container = get_metadata_container(
                     backend=self._backend,
                     container_id=unique_id,
