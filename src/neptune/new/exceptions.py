@@ -313,7 +313,10 @@ class ContainerUUIDNotFound(NeptuneException):
         self.container_id = container_id
         self.container_type = container_type
         super().__init__(
-            "{} with ID {} not found. It may have been deleted.".format(container_type.value.capitalize(), container_id)
+            "{} with ID {} not found. It may have been deleted. "
+            "You can use the 'neptune clear' command to delete junk objects from local storage.".format(
+                container_type.value.capitalize(), container_id
+            )
         )
 
 

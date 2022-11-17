@@ -43,7 +43,7 @@ class ClearRunner(AbstractBackendRunner):
         if offline_containers or unsynced_containers:
             self.log_junk_metadata(offline_containers, unsynced_containers)
 
-            if force or click.confirm("\nDo you want to delete listed metadata?"):  # TODO NPT-12295
+            if force or click.confirm("\nDo you want to delete the listed metadata?"):
                 self.remove_data(container_manager, offline_containers, unsynced_containers)
 
     @staticmethod

@@ -29,7 +29,19 @@ __all__ = ["clear"]
 @path_option
 def clear(path: Path):
     """
-    TODO NPT-12295
+    Clears metadata that has been synchronized or trashed, but is still present in local storage.
+
+    Lists objects and data to be cleared before deleting the data.
+
+    Examples:
+
+    \b
+    # Clear junk metadata from local storage
+    neptune clear
+
+    \b
+    # Clear junk metadata from directory "foo/bar"
+    neptune clear --path foo/bar
     """
     backend = HostedNeptuneBackend(Credentials.from_token())
     clear_runner = ClearRunner(backend=backend)
