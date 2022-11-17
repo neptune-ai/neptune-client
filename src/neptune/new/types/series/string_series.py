@@ -36,7 +36,7 @@ class StringSeries(Series):
             raise TypeError("`values` is not a collection")
         values_str = [str(val) for val in values]
         self._truncated = any([len(value) > MAX_STRING_SERIES_VALUE_LENGTH for value in values_str])
-        self._values = [str(value)[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values_str]
+        self._values = [value[:MAX_STRING_SERIES_VALUE_LENGTH] for value in values_str]
 
     def accept(self, visitor: "ValueVisitor[Ret]") -> Ret:
         return visitor.visit_string_series(self)
@@ -47,6 +47,7 @@ class StringSeries(Series):
 
     @property
     def truncated(self):
+        """True if any value had to be truncated to `MAX_STRING_SERIES_VALUE_LENGTH`"""
         return self._truncated
 
     def __str__(self):

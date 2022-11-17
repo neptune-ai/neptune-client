@@ -29,7 +29,7 @@ from typing import (
 )
 
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.attributes.series.series import Data
+from neptune.new.attributes.series.series import DataTV
 from neptune.new.internal.container_structure import ContainerStructure
 from neptune.new.internal.utils.generic_attribute_mapper import (
     NoValue,
@@ -70,7 +70,7 @@ class Namespace(Attribute, MutableMapping):
 
     def extend(
         self,
-        value: Union[Data, Iterable[Data]],
+        value: Union[DataTV, Iterable[DataTV]],
         steps: Optional[Collection[float]] = None,
         timestamps: Optional[Collection[float]] = None,
         wait: bool = False,

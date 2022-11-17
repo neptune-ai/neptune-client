@@ -86,10 +86,6 @@ def is_dict_like(var):
     return isinstance(var, (dict, Mapping))
 
 
-def iterable_size(var):
-    return len(var)
-
-
 def is_string_like(var):
     try:
         _ = str(var)

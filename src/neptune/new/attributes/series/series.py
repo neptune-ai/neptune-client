@@ -27,7 +27,7 @@ from typing import (
 )
 
 from neptune.new.attributes.attribute import Attribute
-from neptune.new.internal.operation import Operation
+from neptune.new.internal.operation import LogOperation
 from neptune.new.internal.utils import (
     is_collection,
     verify_collection_type,
@@ -36,21 +36,21 @@ from neptune.new.internal.utils import (
 from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.types.series.series import Series as SeriesVal
 
-Val = TypeVar("Val", bound=SeriesVal)
-Data = TypeVar("Data")
-LogOperation = TypeVar("LogOperation", bound=Operation)
+ValTV = TypeVar("ValTV", bound=SeriesVal)
+DataTV = TypeVar("DataTV")
+LogOperationTV = TypeVar("LogOperationTV", bound=LogOperation)
 
 
-class Series(Attribute, Generic[Val, Data, LogOperation]):
+class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     MAX_BATCH_SIZE = None
-    operation_cls: type(LogOperation) = None
+    operation_cls: type(LogOperationTV) = None
 
     def clear(self, wait: bool = False) -> None:
         self._clear_impl(wait)
 
     def _get_log_operations_from_value(
-        self, value: Val, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
-    ) -> List[LogOperation]:
+        self, value: ValTV, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
+    ) -> List[LogOperationTV]:
         if steps is None:
             steps = cycle([None])
         if timestamps is None:
@@ -64,18 +64,18 @@ class Series(Attribute, Generic[Val, Data, LogOperation]):
         ]
 
     @classmethod
-    def _map_series_val(cls, value: Val) -> List[Data]:
+    def _map_series_val(cls, value: ValTV) -> List[DataTV]:
         return [value for value in value.values]
 
-    def _get_config_operation_from_value(self, value: Val) -> Optional[LogOperation]:
+    def _get_config_operation_from_value(self, value: ValTV) -> Optional[LogOperationTV]:
         return None
 
     @abc.abstractmethod
-    def _get_clear_operation(self) -> LogOperation:
+    def _get_clear_operation(self) -> LogOperationTV:
         pass
 
     @abc.abstractmethod
-    def _data_to_value(self, values: Iterable, **kwargs) -> Val:
+    def _data_to_value(self, values: Iterable, **kwargs) -> ValTV:
         pass
 
     @abc.abstractmethod
@@ -100,7 +100,7 @@ class Series(Attribute, Generic[Val, Data, LogOperation]):
 
     def log(
         self,
-        value: Union[Data, Iterable[Data]],
+        value: Union[DataTV, Iterable[DataTV]],
         step: Optional[float] = None,
         timestamp: Optional[float] = None,
         wait: bool = False,
@@ -130,7 +130,7 @@ class Series(Attribute, Generic[Val, Data, LogOperation]):
 
     def extend(
         self,
-        values: Collection[Data],
+        values: Collection[DataTV],
         steps: Optional[Collection[float]] = None,
         timestamps: Optional[Collection[float]] = None,
         wait: bool = False,

@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import inspect
 import json
 import unittest
 import uuid
@@ -53,12 +54,20 @@ from neptune.new.internal.operation import (
 
 class TestOperations(unittest.TestCase):
     def test_serialization_to_dict(self):
-        classes = {cls.__name__ for cls in all_subclasses(Operation)}
+        classes = {cls for cls in all_subclasses(Operation)}
+        # drop abstract classes
+        for cls in classes.copy():
+            if inspect.isabstract(cls):
+                classes.remove(cls)
+
+        # test every Operation subclass and drop from `classes`
         for obj in self._list_objects():
-            if obj.__class__.__name__ in classes:
-                classes.remove(obj.__class__.__name__)
+            if obj.__class__ in classes:
+                classes.remove(obj.__class__)
             deserialized_obj = Operation.from_dict(json.loads(json.dumps(obj.to_dict())))
             self.assertEqual(obj.__dict__, deserialized_obj.__dict__)
+
+        # expect no Operation subclass left
         self.assertEqual(classes, set())
 
     @staticmethod

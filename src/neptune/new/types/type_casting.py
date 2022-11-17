@@ -17,7 +17,7 @@ import argparse
 from datetime import datetime
 from typing import (
     Any,
-    List,
+    Collection,
     Union,
 )
 
@@ -89,7 +89,7 @@ def cast_value(value: Any) -> Value:
         raise TypeError("Value of unsupported type {}".format(type(value)))
 
 
-def cast_value_for_extend(values: Union[Namespace, Series, List[Any]]) -> Union[Series, Namespace]:
+def cast_value_for_extend(values: Union[Namespace, Series, Collection[Any]]) -> Union[Series, Namespace]:
     if isinstance(values, Namespace):
         return values
     elif is_dict_like(values):
@@ -97,8 +97,7 @@ def cast_value_for_extend(values: Union[Namespace, Series, List[Any]]) -> Union[
     elif isinstance(values, Series):
         return values
 
-    assert values  # assert some value was passed, otherwise we can't determine the type
-    sample_val = values[0]
+    sample_val = next(iter(values))
     if isinstance(sample_val, File):
         return FileSeries(values=values)
     elif File.is_convertable_to_image(sample_val):
@@ -114,7 +113,7 @@ def cast_value_for_extend(values: Union[Namespace, Series, List[Any]]) -> Union[
             message="The object you're logging will be implicitly cast to a string."
             " We'll end support of this behavior in `neptune-client==1.0.0`."
             " To log the object as a string, use `str(object)` instead.",
-            stack_level=3,
+            stack_level=3,  # TODO: check
         )
         return StringSeries(values=values)
     else:
