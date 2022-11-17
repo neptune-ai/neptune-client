@@ -61,11 +61,6 @@ class StatusRunner(AbstractBackendRunner):
 
         StatusRunner.log_unsync_objects(unsynced_containers)
 
-        if synced_containers:
-            logger.info("Synchronized objects:")
-            for container in synced_containers:
-                logger.info("- %s%s", get_qualified_name(container), StatusRunner.trashed(container))
-
         StatusRunner.log_offline_objects(offline_dirs)
 
         if not unsynced_containers:

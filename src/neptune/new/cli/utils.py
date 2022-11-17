@@ -108,10 +108,13 @@ def get_qualified_name(experiment: ApiExperiment) -> QualifiedName:
 
 
 def is_container_synced_and_remove_junk(experiment_path: Path) -> bool:
-    return all(_is_execution_synced(execution_path) for execution_path in experiment_path.iterdir())
+    return all(_is_execution_synced_and_remove_junk(execution_path) for execution_path in experiment_path.iterdir())
 
 
-def _is_execution_synced(execution_path: Path) -> bool:
+def _is_execution_synced_and_remove_junk(execution_path: Path) -> bool:
+    """
+    The DiskQueue.close() method remove junk metadata from disk when queue is empty.
+    """
     with DiskQueue(execution_path, lambda x: x.to_dict(), Operation.from_dict, threading.RLock()) as disk_queue:
         return disk_queue.is_empty()
 

@@ -17,8 +17,8 @@
 import click
 import pkg_resources
 
-from neptune.new.cli.clear_command import clear
 from neptune.new.cli.commands import (
+    clear,
     status,
     sync,
 )

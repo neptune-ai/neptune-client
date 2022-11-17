@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-__all__ = ["status", "sync"]
+__all__ = ["status", "sync", "clear"]
 
 from pathlib import Path
 from typing import (
@@ -25,6 +25,7 @@ from typing import (
 import click
 
 from neptune.common.exceptions import NeptuneException  # noqa: F401
+from neptune.new.cli.clear import ClearRunner
 from neptune.new.cli.path_option import path_option
 from neptune.new.cli.status import StatusRunner
 from neptune.new.cli.sync import SyncRunner
@@ -169,3 +170,27 @@ def sync(
         sync_runner.sync_selected_containers(path, project_name, object_names)
     else:
         sync_runner.sync_all_containers(path, project_name)
+
+
+@click.command()
+@path_option
+def clear(path: Path):
+    """
+    Clears metadata that has been synchronized or trashed, but is still present in local storage.
+
+    Lists objects and data to be cleared before deleting the data.
+
+    Examples:
+
+    \b
+    # Clear junk metadata from local storage
+    neptune clear
+
+    \b
+    # Clear junk metadata from directory "foo/bar"
+    neptune clear --path foo/bar
+    """
+    backend = HostedNeptuneBackend(Credentials.from_token())
+    clear_runner = ClearRunner(backend=backend)
+
+    clear_runner.clear(path)
