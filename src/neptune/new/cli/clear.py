@@ -32,7 +32,7 @@ from neptune.new.internal.utils.logger import logger
 
 
 class ClearRunner(AbstractBackendRunner):
-    def clear(self, path: Path, force: bool = False):
+    def clear(self, path: Path, force: bool = False, clear_eventual: bool = True):
         container_manager = ContainersManager(self._backend, path)
         synced_containers, unsynced_containers, not_found = container_manager.partition_containers_and_clean_junk(path)
 
@@ -40,7 +40,7 @@ class ClearRunner(AbstractBackendRunner):
 
         ClearRunner.remove_containers(not_found)
 
-        if offline_containers or unsynced_containers:
+        if clear_eventual and (offline_containers or unsynced_containers):
             self.log_junk_metadata(offline_containers, unsynced_containers)
 
             if force or click.confirm("\nDo you want to delete the listed metadata?"):

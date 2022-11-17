@@ -150,7 +150,8 @@ def sync(
     neptune sync --project workspace/project --offline-only
     """
 
-    sync_runner = SyncRunner(backend=HostedNeptuneBackend(Credentials.from_token()))
+    backend = HostedNeptuneBackend(Credentials.from_token())
+    sync_runner = SyncRunner(backend=backend)
 
     if runs_names:
         logger.warning(
@@ -170,6 +171,10 @@ def sync(
         sync_runner.sync_selected_containers(path, project_name, object_names)
     else:
         sync_runner.sync_all_containers(path, project_name)
+
+    clear_runner = ClearRunner(backend=backend)
+
+    clear_runner.clear(path, clear_eventual=False)
 
 
 @click.command()
