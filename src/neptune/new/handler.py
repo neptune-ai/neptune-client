@@ -348,17 +348,8 @@ class Handler:
             step = [step]
         if timestamp is not None:
             timestamp = [timestamp]
-        value = self._transform_to_extend_format(value)
+        value = ExtendUtils.transform_to_extend_format(value)
         self._do_extend(value, step, timestamp, wait, **kwargs)
-
-    def _transform_to_extend_format(self, value, *, depth=1):
-        """Preserve nested structure (but only one level) created by `Namespaces` and `dict_like` objects,
-        but replace all other values with single-element lists,
-        so work can be delegated to `_do_extend` method."""
-        if depth == 1 and (isinstance(value, Namespace) or is_dict_like(value)):
-            return {k: self._transform_to_extend_format(v, depth=depth + 1) for k, v in value.items()}
-        else:
-            return [value]
 
     def _do_extend(self, values, steps, timestamps, wait, **kwargs):
         with self._container.lock():
@@ -409,11 +400,11 @@ class Handler:
             ...     run["data/example_series"].extend(ys, timestamps=ts)
         """
         if isinstance(values, Namespace) or is_dict_like(values):
-            # self._validate_dict_for_extend(values, steps, timestamps)
+            ExtendUtils.validate_dict_for_extend(values, steps, timestamps)
             self._do_extend(values, steps, timestamps, wait, **kwargs)
         elif is_collection(values):
             values_size = len(values)
-            self._validate_iterable_for_extend(values_size, steps, timestamps)
+            ExtendUtils.validate_iterable_for_extend(values_size, steps, timestamps)
             self._do_extend(values, steps, timestamps, wait, **kwargs)
         else:
             raise NeptuneUserApiInputException(
@@ -421,31 +412,6 @@ class Handler:
                 " To append multiple values at once, use extend() instead:"
                 " run['series'].extend(collection)"
             )
-
-    def _validate_iterable_for_extend(
-        self, values_size: int, steps: Optional[Iterable[float]] = None, timestamps: Optional[Iterable[float]] = None
-    ) -> None:
-        if steps is not None and len(steps) != values_size:
-            raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
-        if timestamps is not None and len(timestamps) != values_size:
-            raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
-
-    def _validate_dict_for_extend(
-        self,
-        values: Union[Dict[str, Iterable[Any]], Iterable[Any]],
-        steps: Optional[Collection[float]] = None,
-        timestamps: Optional[Collection[float]] = None,
-    ) -> None:
-        timestamps_size = None if timestamps is None else len(timestamps)
-        steps_size = None if steps is None else len(steps)
-        for dict_key in values:
-            if not is_collection(values[dict_key]):
-                raise NeptuneUserApiInputException("If value is a dict, all values in dict should be a collection")
-            dict_iterables_size = len(values[dict_key])
-            if timestamps_size is not None and timestamps_size != dict_iterables_size:
-                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values in dict")
-            if steps_size is not None and steps_size != dict_iterables_size:
-                raise NeptuneUserApiInputException("Number of steps must be equal to number of values in dict")
 
     @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
@@ -685,3 +651,42 @@ class Handler:
 
     def __delitem__(self, path) -> None:
         self.pop(path)
+
+
+class ExtendUtils:
+    @staticmethod
+    def transform_to_extend_format(value, *, depth=1):
+        """Preserve nested structure (but only one level) created by `Namespaces` and `dict_like` objects,
+        but replace all other values with single-element lists,
+        so work can be delegated to `_do_extend` method."""
+        if depth == 1 and (isinstance(value, Namespace) or is_dict_like(value)):
+            return {k: ExtendUtils.transform_to_extend_format(v, depth=depth + 1) for k, v in value.items()}
+        else:
+            return [value]
+
+    @staticmethod
+    def validate_iterable_for_extend(
+        values_size: int, steps: Optional[Collection[float]] = None, timestamps: Optional[Collection[float]] = None
+    ) -> None:
+        if steps is not None and len(steps) != values_size:
+            raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
+        if timestamps is not None and len(timestamps) != values_size:
+            raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
+
+    @staticmethod
+    def validate_dict_for_extend(
+        values: Union[Dict[str, Collection[Any]], Collection[Any]],
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
+    ) -> None:
+        """Here's business requirement that we'll support only one level of nesting when calling `extend` function"""
+        timestamps_size = None if timestamps is None else len(timestamps)
+        steps_size = None if steps is None else len(steps)
+        for dict_key in values:
+            if not is_collection(values[dict_key]):
+                raise NeptuneUserApiInputException("If value is a dict, all values in dict should be a collection")
+            dict_iterables_size = len(values[dict_key])
+            if timestamps_size is not None and timestamps_size != dict_iterables_size:
+                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values in dict")
+            if steps_size is not None and steps_size != dict_iterables_size:
+                raise NeptuneUserApiInputException("Number of steps must be equal to number of values in dict")
