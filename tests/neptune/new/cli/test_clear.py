@@ -23,6 +23,7 @@ from neptune.new.cli.utils import get_qualified_name
 from neptune.new.constants import (
     ASYNC_DIRECTORY,
     OFFLINE_DIRECTORY,
+    SYNC_DIRECTORY,
 )
 from neptune.new.internal.container_type import ContainerType
 from neptune.new.internal.operation import Operation
@@ -109,3 +110,17 @@ def test_clean_deleted_containers(tmp_path, mocker, capsys, backend, clear_runne
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(synced_container.id)}",
         f"Deleted: {tmp_path / ASYNC_DIRECTORY / container_type.create_dir_name(unsynced_container.id)}",
     }
+
+
+def test_clean_sync_directory(tmp_path, clear_runner):
+    # given
+    sync_directory = tmp_path / SYNC_DIRECTORY
+    sync_directory.mkdir(parents=True, exist_ok=True)
+
+    assert os.path.exists(sync_directory)
+
+    # when
+    clear_runner.clear(tmp_path)
+
+    # then
+    assert not os.path.exists(sync_directory)
