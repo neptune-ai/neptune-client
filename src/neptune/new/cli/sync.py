@@ -34,7 +34,7 @@ from neptune.new.cli.utils import (
     get_offline_dirs,
     get_project,
     get_qualified_name,
-    is_container_synced,
+    is_container_synced_and_remove_junk,
     iterate_containers,
     split_dir_name,
 )
@@ -82,48 +82,48 @@ class SyncRunner(AbstractBackendRunner):
         container_id: UniqueId,
         container_type: ContainerType,
     ) -> None:
-        disk_queue = DiskQueue(
+        with DiskQueue(
             dir_path=execution_path,
             to_dict=lambda x: x.to_dict(),
             from_dict=Operation.from_dict,
             lock=threading.RLock(),
-        )
-        while True:
-            batch = disk_queue.get_batch(1000)
-            if not batch:
-                break
-            version = batch[-1].ver
-            batch = [element.obj for element in batch]
-
-            start_time = time.monotonic()
-            expected_count = len(batch)
-            version_to_ack = version - expected_count
+        ) as disk_queue:
             while True:
-                try:
-                    processed_count, _ = self._backend.execute_operations(
-                        container_id=container_id,
-                        container_type=container_type,
-                        operations=batch,
-                    )
-                    version_to_ack += processed_count
-                    batch = batch[processed_count:]
-                    disk_queue.ack(version)
-                    if version_to_ack == version:
-                        break
-                except NeptuneConnectionLostException as ex:
-                    if time.monotonic() - start_time > retries_timeout:
-                        raise ex
-                    logger.warning(
-                        "Experiencing connection interruptions."
-                        " Will try to reestablish communication with Neptune."
-                        " Internal exception was: %s",
-                        ex.cause.__class__.__name__,
-                    )
+                batch = disk_queue.get_batch(1000)
+                if not batch:
+                    break
+                version = batch[-1].ver
+                batch = [element.obj for element in batch]
+
+                start_time = time.monotonic()
+                expected_count = len(batch)
+                version_to_ack = version - expected_count
+                while True:
+                    try:
+                        processed_count, _ = self._backend.execute_operations(
+                            container_id=container_id,
+                            container_type=container_type,
+                            operations=batch,
+                        )
+                        version_to_ack += processed_count
+                        batch = batch[processed_count:]
+                        disk_queue.ack(version)
+                        if version_to_ack == version:
+                            break
+                    except NeptuneConnectionLostException as ex:
+                        if time.monotonic() - start_time > retries_timeout:
+                            raise ex
+                        logger.warning(
+                            "Experiencing connection interruptions."
+                            " Will try to reestablish communication with Neptune."
+                            " Internal exception was: %s",
+                            ex.cause.__class__.__name__,
+                        )
 
     def sync_all_registered_containers(self, base_path: Path) -> None:
         async_path = base_path / ASYNC_DIRECTORY
         for container_type, unique_id, path in iterate_containers(async_path):
-            if not is_container_synced(path):
+            if not is_container_synced_and_remove_junk(path):
                 container = get_metadata_container(
                     backend=self._backend,
                     container_id=unique_id,
