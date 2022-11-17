@@ -26,6 +26,7 @@ from neptune.new.cli.abstract_backend_runner import AbstractBackendRunner
 from neptune.new.cli.container_manager import ContainersManager
 from neptune.new.cli.status import StatusRunner
 from neptune.new.cli.utils import get_offline_dirs
+from neptune.new.constants import SYNC_DIRECTORY
 from neptune.new.internal.backends.api_model import ApiExperiment
 from neptune.new.internal.id_formats import UniqueId
 from neptune.new.internal.utils.logger import logger
@@ -36,15 +37,23 @@ class ClearRunner(AbstractBackendRunner):
         container_manager = ContainersManager(self._backend, path)
         synced_containers, unsynced_containers, not_found = container_manager.partition_containers_and_clean_junk(path)
 
-        offline_containers = get_offline_dirs(path)
-
         ClearRunner.remove_containers(not_found)
 
+        ClearRunner.remove_sync_containers(path)
+
+        offline_containers = get_offline_dirs(path)
         if clear_eventual and (offline_containers or unsynced_containers):
             self.log_junk_metadata(offline_containers, unsynced_containers)
 
             if force or click.confirm("\nDo you want to delete the listed metadata?"):
                 self.remove_data(container_manager, offline_containers, unsynced_containers)
+
+    @staticmethod
+    def remove_sync_containers(path: Path):
+        """
+        Function can remove SYNC_DIRECTORY safely, Neptune client stores only files to upload in this location.
+        """
+        shutil.rmtree(path / SYNC_DIRECTORY, ignore_errors=True)
 
     @staticmethod
     def log_junk_metadata(offline_containers, unsynced_containers):
