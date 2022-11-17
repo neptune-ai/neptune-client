@@ -34,7 +34,7 @@ from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 
-__all__ = ["DiskQueue"]
+__all__ = ["QueueElement", "DiskQueue"]
 
 T = TypeVar("T")
 
@@ -102,14 +102,11 @@ class DiskQueue(Generic[T]):
         self._file_size += len(_json) + 1
         return version
 
-    def get(self) -> Tuple[Optional[T], int]:
+    def get(self) -> Optional[QueueElement[T]]:
         if self._should_skip_to_ack:
-            top_element = self._skip_and_get()
+            return self._skip_and_get()
         else:
-            top_element = self._get()
-        if top_element is None:
-            return None, -1
-        return top_element.obj, top_element.ver
+            return self._get()
 
     def _skip_and_get(self) -> Optional[QueueElement[T]]:
         ack_version = self._last_ack_file.read_local()
@@ -143,16 +140,15 @@ class DiskQueue(Generic[T]):
         except Exception as e:
             raise MalformedOperation from e
 
-    def get_batch(self, size: int) -> Tuple[List[T], int]:
+    def get_batch(self, size: int) -> List[QueueElement[T]]:
         if self._should_skip_to_ack:
             first = self._skip_and_get()
         else:
             first = self._get()
         if not first:
-            return [], -1
+            return []
 
-        ret = [first.obj]
-        ver = first.ver
+        ret = [first]
         cur_batch_size = first.size
         for _ in range(0, size - 1):
             if cur_batch_size >= self._max_batch_size_bytes:
@@ -162,9 +158,8 @@ class DiskQueue(Generic[T]):
                 break
 
             cur_batch_size += next_obj.size
-            ver = next_obj.ver
-            ret.append(next_obj.obj)
-        return ret, ver
+            ret.append(next_obj)
+        return ret
 
     def flush(self):
         self._writer.flush()

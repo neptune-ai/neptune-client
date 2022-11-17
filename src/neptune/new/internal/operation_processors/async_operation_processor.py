@@ -236,10 +236,10 @@ class AsyncOperationProcessor(OperationProcessor):
                 self._processor._queue.flush()
 
             while True:
-                batch, version = self._processor._queue.get_batch(self._batch_size)
+                batch = self._processor._queue.get_batch(self._batch_size)
                 if not batch:
                     return
-                self.process_batch(batch, version)
+                self.process_batch([element.obj for element in batch], batch[-1].ver)
 
         @Daemon.ConnectionRetryWrapper(
             kill_message=(
