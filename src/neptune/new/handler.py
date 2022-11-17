@@ -307,8 +307,34 @@ class Handler:
         wait: bool = False,
         **kwargs,
     ) -> None:
-        """
-        todo: NPT-12530
+        """Logs a series of values, such as a metric, by appending the provided value to the end of the series.
+
+        Available for following series field types:
+
+            * `FloatSeries` - series of float values
+            * `StringSeries` - series of strings
+            * `FileSeries` - series of files
+
+        When you log the first value, the type of the value determines what type of field is created.
+        For more, see the field types documentation: https://docs.neptune.ai/api/field_types
+
+        Args:
+            value: Value to be added to the series field.
+            step: Optional index of the entry being appended. Must be strictly increasing.
+            timestamp: Optional time index of the log entry being appended, in Unix time format.
+                If None, the current time (obtained with `time.time()`) is used.
+            wait: If True, the client sends all tracked metadata to the server before executing the call.
+                For details, see https://docs.neptune.ai/api/universal/#wait
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> run = neptune.init_run()
+            >>> for epoch in range(n_epochs):
+            ...     ... # Your training loop
+            ...     run["train/epoch/loss"].append(loss)  # FloatSeries
+            ...     token = str(...)
+            ...     run["train/tokens"].append(token)  # StringSeries
+            ...     run["train/distribution"].append(plt_histogram, step=epoch)  # FileSeries
         """
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", timestamp, (int, float, type(None)))
@@ -349,8 +375,35 @@ class Handler:
         wait: bool = False,
         **kwargs,
     ) -> None:
-        """
-        todo: NPT-12530
+        """Logs a series of values by appending the provided collection of values to the end of the series.
+
+        Available for following series field types:
+
+            * `FloatSeries` - series of float values
+            * `StringSeries` - series of strings
+            * `FileSeries` - series of files
+
+        When you log the first value, the type of the value determines what type of field is created.
+        For more, see the field types documentation: https://docs.neptune.ai/api/field_types
+
+        Args:
+            values: Values to be added to the series field, as a dictionary or collection.
+            steps: Optional collection of indeces for the entries being appended. Must be strictly increasing.
+            timestamps: Optional collection of time indeces for the entries being appended, in Unix time format.
+                If None, the current time (obtained with `time.time()`) is used.
+            wait: If True, the client sends all tracked metadata to the server before executing the call.
+                For details, see https://docs.neptune.ai/api/universal/#wait
+
+        Example:
+            The following example reads a CSV file into a pandas DataFrame and extracts the values
+            to create a Neptune series.
+            >>> import neptune.new as neptune
+            >>> run = neptune.init_run()
+            >>> for epoch in range(n_epochs):
+            ...     df = pandas.read_csv("time_series.csv")
+            ...     ys = df["value"]
+            ...     ts = df["timestamp"]
+            ...     run["data/example_series"].extend(ys, timestamps=ts)
         """
         if is_dict_like(values):
             self._validate_dict_for_extend(values, steps, timestamps)
