@@ -40,6 +40,31 @@ GitPython = ">=2.0.8"
 psutil = "*"
 pandas = "*"
 
+# dev
+altair = { version = "*", optional = true }
+bokeh = { version = "*", optional = true }
+freezegun = { version = "*", optional = true }
+matplotlib = { version = "*", optional = true }
+mock = { version = "*", optional = true }
+moto = { version = "*", extras = [ "s3" ], optional = true }
+munch = { version = "*", optional = true }
+plotly = { version = "*", optional = true }
+pre-commit = { version = "*", optional = true }
+pytest = { version = "*", optional = true }
+pytest-cov = { version = "*", optional = true }
+pytest-mock = { version = "*", optional = true }
+pytest-timeout = { version = "*", optional = true }
+pytest-xdist = { version = "*", optional = true }
+tensorflow = { version = "*", optional = true }
+torch = { version = "*", optional = true }
+vega_datasets = { version = "*", optional = true }
+
+# e2e
+Faker = { version = "*", optional = true }
+optuna = { version = "*", optional = true }
+sklearn = { version = "*", optional = true }
+torchvision = { version = "*", optional = true }
+
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
 neptune-fastai = { version = "*", optional = true }
@@ -53,29 +78,6 @@ neptune-tensorflow-keras = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
 
-[tool.poetry.dev-dependencies]
-altair = "*"
-bokeh = "*"
-freezegun = "*"
-matplotlib = "*"
-mock = "*"
-moto = { version = "*", extras = [ "s3" ] }
-munch = "*"
-plotly = "*"
-pre-commit = "*"
-pytest = "*"
-pytest-cov = "*"
-pytest-mock = "*"
-pytest-timeout = "*"
-pytest-xdist = "*"
-tensorflow = "*"
-torch = "*"
-vega_datasets = "*"
-Faker = "*"
-optuna = "*"
-sklearn = "*"
-torchvision = "*"
-
 [tool.poetry.extras]
 fastai = ["neptune-fastai"]
 kedro = ["kedro-neptune"]
@@ -88,9 +90,32 @@ sklearn = ["neptune-sklearn"]
 tensorflow-keras = ["neptune-tensorflow-keras"]
 transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
+dev = [
+    "altair",
+    "bokeh",
+    "freezegun",
+    "matplotlib",
+    "mock",
+    "moto",
+    "munch",
+    "plotly",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-timeout",
+    "pytest-xdist",
+    "tensorflow",
+    "torch",
+    "vega_datasets",
+]
 e2e = [
-    "neptune-optuna",
+    "Faker",
+    # Integrations
+    "optuna",
     "pytorch-lightning",
+    "sklearn",
+    "torchvision",
     "transformers",
 ]
 
