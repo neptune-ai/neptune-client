@@ -112,8 +112,8 @@ class TestDiskQueue(unittest.TestCase):
             queue.close()
 
     def test_batch_limit(self):
-        obj_size = self.get_obj_size_bytes(TestDiskQueue.Obj(1, "1"), 1)
         with TemporaryDirectory() as dirpath:
+            obj_size = self.get_obj_size_bytes(TestDiskQueue.Obj(1, "1"), 1)
             queue = DiskQueue[TestDiskQueue.Obj](
                 Path(dirpath),
                 self._serializer,
@@ -135,6 +135,8 @@ class TestDiskQueue(unittest.TestCase):
                 queue.get_batch(2),
                 [self.get_queue_element(TestDiskQueue.Obj(i, str(i)), i + 1) for i in range(3, 5)],
             )
+
+            queue.close()
 
     def test_resuming_queue(self):
         with TemporaryDirectory() as dirpath:
