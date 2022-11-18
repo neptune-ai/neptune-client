@@ -339,30 +339,13 @@ class Handler:
         """
         verify_type("step", step, (int, float, type(None)))
         verify_type("timestamp", timestamp, (int, float, type(None)))
-        if is_collection(value):
-            raise NeptuneUserApiInputException("Value cannot be a collection")
-        if is_dict_like(value):
-            for element in value.values():
-                if is_collection(element):
-                    raise NeptuneUserApiInputException("Dict value cannot be a collection, use extend method")
         if step is not None:
             step = [step]
         if timestamp is not None:
             timestamp = [timestamp]
-        value = ExtendUtils.transform_to_extend_format(value)
-        self._do_extend(value, step, timestamp, wait, **kwargs)
 
-    def _do_extend(self, values, steps, timestamps, wait, **kwargs):
-        ExtendUtils.validate_values_for_extend(values, steps, timestamps)
-
-        with self._container.lock():
-            attr = self._container.get_attribute(self._path)
-            if not attr:
-                neptune_value = cast_value_for_extend(values)
-                attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
-                self._container.set_attribute(self._path, attr)
-
-            attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
+        value = ExtendUtils.validate_and_transform_to_extend_format(value)
+        self.extend(value, step, timestamp, wait, **kwargs)
 
     def extend(
         self,
@@ -402,7 +385,16 @@ class Handler:
             ...     ts = df["timestamp"]
             ...     run["data/example_series"].extend(ys, timestamps=ts)
         """
-        self._do_extend(values, steps, timestamps, wait, **kwargs)
+        ExtendUtils.validate_values_for_extend(values, steps, timestamps)
+
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
+            if not attr:
+                neptune_value = cast_value_for_extend(values)
+                attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
+                self._container.set_attribute(self._path, attr)
+
+            attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
 
     @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
@@ -646,18 +638,24 @@ class Handler:
 
 class ExtendUtils:
     @staticmethod
-    def transform_to_extend_format(value):
+    def validate_and_transform_to_extend_format(value):
         """Preserve nested structure created by `Namespaces` and `dict_like` objects,
         but replace all other values with single-element lists,
-        so work can be delegated to `_do_extend` method."""
-        if not isinstance(value, Namespace) and not is_dict_like(value):
-            return [value]
+        so work can be delegated to `extend` method."""
+        if isinstance(value, Namespace) or is_dict_like(value):
+            return {k: ExtendUtils.validate_and_transform_to_extend_format(v) for k, v in value.items()}
+        elif is_collection(value):
+            raise NeptuneUserApiInputException(
+                "Value cannot be a collection, if you want to `append` multiple values at once use `extend` method."
+            )
         else:
-            return {k: ExtendUtils.transform_to_extend_format(v) for k, v in value.items()}
+            return [value]
 
     @staticmethod
     def validate_values_for_extend(values, steps, timestamps):
-        collections_lengths = list(ExtendUtils.generate_leaf_collection_lengths(values))
+        """Validates if input data is a collection or Namespace with collections leafs.
+        If steps or timestamps are passed, check if its length is equal to all given values."""
+        collections_lengths = set(ExtendUtils.generate_leaf_collection_lengths(values))
 
         if len(collections_lengths) > 1:
             if steps is not None:
@@ -679,8 +677,4 @@ class ExtendUtils:
         elif is_collection(values):
             yield len(values)
         else:
-            raise NeptuneUserApiInputException(
-                "Value must be a collection or dict of collections."
-                " To append multiple values at once, use extend() instead:"
-                " run['series'].extend(collection)"
-            )
+            raise NeptuneUserApiInputException("Values must be a collection or Namespace leafs must be collections")
