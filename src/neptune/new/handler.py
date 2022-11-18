@@ -17,6 +17,7 @@ from functools import wraps
 from typing import (
     TYPE_CHECKING,
     Any,
+    Collection,
     Dict,
     Iterable,
     Iterator,
@@ -83,6 +84,9 @@ def check_protected_paths(fun):
         return fun(self, *args, **kwargs)
 
     return inner_fun
+
+
+ExtendDictT = Union[Collection[Any], Dict[Any, "ExtendDictT"]]
 
 
 class Handler:
@@ -349,9 +353,9 @@ class Handler:
 
     def extend(
         self,
-        values: Union[Dict[str, Iterable[Any]], Iterable[Any]],
-        steps: Optional[Iterable[float]] = None,
-        timestamps: Optional[Iterable[float]] = None,
+        values: ExtendDictT,
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
         wait: bool = False,
         **kwargs,
     ) -> None:
