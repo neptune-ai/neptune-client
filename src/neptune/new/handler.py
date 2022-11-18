@@ -170,6 +170,7 @@ class Handler:
                 neptune_value = cast_value(value)
                 attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
                 self._container.set_attribute(self._path, attr)
+                value = neptune_value  # TODO: we should clean some rules regarding type casting in assignment
 
             if isinstance(value, Handler):
                 value = ValueCopy(value)
