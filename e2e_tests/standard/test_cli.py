@@ -95,8 +95,9 @@ class TestSync(BaseE2ETest):
             with open(queue_dir / "last_put_version", "w", encoding="utf-8") as last_put_version_f:
                 last_put_version_f.write(str(last_put_version + 2))
 
-            with reinitialize_container(container_sys_id, container_type, project=environment.project) as container:
-                self.stop_synchronization_process(container)
+            with reinitialize_container(
+                container_sys_id, container_type, project=environment.project, mode="read-only"
+            ) as container:
                 # server should have the original value
                 assert container[key].fetch() == original_value
 

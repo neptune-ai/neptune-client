@@ -175,19 +175,19 @@ def initialize_container(container_type, project, **extra_args):
     raise NotImplementedError(container_type)
 
 
-def reinitialize_container(sys_id: str, container_type: str, project: str):
+def reinitialize_container(sys_id: str, container_type: str, project: str, **kwargs):
     if container_type == "project":
         # exactly same as initialize_container(project), for convenience
-        return neptune.init_project(name=project)
+        return neptune.init_project(name=project, **kwargs)
 
     if container_type == "run":
-        return neptune.init_run(with_id=sys_id, project=project)
+        return neptune.init_run(with_id=sys_id, project=project, **kwargs)
 
     if container_type == "model":
-        return neptune.init_model(with_id=sys_id, project=project)
+        return neptune.init_model(with_id=sys_id, project=project, **kwargs)
 
     if container_type == "model_version":
-        return neptune.init_model_version(with_id=sys_id, project=project)
+        return neptune.init_model_version(with_id=sys_id, project=project, **kwargs)
 
     raise NotImplementedError()
 
