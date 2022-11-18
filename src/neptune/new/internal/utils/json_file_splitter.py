@@ -17,11 +17,13 @@ import json
 from collections import deque
 from io import StringIO
 from json import JSONDecodeError
-from typing import Optional
+from typing import (
+    Optional,
+    Tuple,
+)
 
 
 class JsonFileSplitter:
-
     BUFFER_SIZE = 64 * 1024
     MAX_PART_READ = 8 * 1024
 
@@ -37,11 +39,15 @@ class JsonFileSplitter:
         self._part_buffer.close()
 
     def get(self) -> Optional[dict]:
+        return (self.get_with_size() or (None, None))[0]
+
+    def get_with_size(self) -> Tuple[Optional[dict], int]:
         if self._parsed_queue:
             return self._parsed_queue.popleft()
         self._read_data()
         if self._parsed_queue:
             return self._parsed_queue.popleft()
+        return None, 0
 
     def _read_data(self):
         if self._part_buffer.tell() < self.MAX_PART_READ:
@@ -64,12 +70,14 @@ class JsonFileSplitter:
         start = self._json_start(data)
         while start is not None:
             try:
-                json_data, start = self._decoder.raw_decode(data, start)
+                json_data, new_start = self._decoder.raw_decode(data, start)
+                size = new_start - start
+                start = new_start
             except JSONDecodeError:
                 self._part_buffer.write(data[start:])
                 break
             else:
-                self._parsed_queue.append(json_data)
+                self._parsed_queue.append((json_data, size))
                 start = self._json_start(data, start)
 
     @staticmethod

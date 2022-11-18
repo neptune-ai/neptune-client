@@ -18,6 +18,7 @@ import logging
 import os
 import shutil
 import threading
+from dataclasses import dataclass
 from glob import glob
 from pathlib import Path
 from typing import (
@@ -33,16 +34,23 @@ from neptune.new.exceptions import MalformedOperation
 from neptune.new.internal.utils.json_file_splitter import JsonFileSplitter
 from neptune.new.internal.utils.sync_offset_file import SyncOffsetFile
 
-__all__ = ["DiskQueue"]
+__all__ = ["QueueElement", "DiskQueue"]
 
 T = TypeVar("T")
 
 _logger = logging.getLogger(__name__)
 
 
-class DiskQueue(Generic[T]):
+@dataclass
+class QueueElement(Generic[T]):
+    obj: T
+    ver: int
+    size: int
 
+
+class DiskQueue(Generic[T]):
     # NOTICE: This class is thread-safe as long as there is only one consumer and one producer.
+    DEFAULT_MAX_BATCH_SIZE_BYTES = 100 * 1024**2
 
     def __init__(
         self,
@@ -51,11 +59,15 @@ class DiskQueue(Generic[T]):
         from_dict: Callable[[dict], T],
         lock: threading.RLock,
         max_file_size: int = 64 * 1024**2,
+        max_batch_size_bytes: int = None,
     ):
         self._dir_path = dir_path.resolve()
         self._to_dict = to_dict
         self._from_dict = from_dict
         self._max_file_size = max_file_size
+        self._max_batch_size_bytes = max_batch_size_bytes or int(
+            os.environ.get("NEPTUNE_MAX_BATCH_SIZE_BYTES") or str(self.DEFAULT_MAX_BATCH_SIZE_BYTES)
+        )
 
         try:
             os.makedirs(self._dir_path)
@@ -90,57 +102,64 @@ class DiskQueue(Generic[T]):
         self._file_size += len(_json) + 1
         return version
 
-    def get(self) -> Tuple[Optional[T], int]:
+    def get(self) -> Optional[QueueElement[T]]:
         if self._should_skip_to_ack:
             return self._skip_and_get()
         else:
             return self._get()
 
-    def _skip_and_get(self) -> Tuple[Optional[T], int]:
+    def _skip_and_get(self) -> Optional[QueueElement[T]]:
         ack_version = self._last_ack_file.read_local()
-        ver = -1
         while True:
-            obj, next_ver = self._get()
-            if obj is None:
-                return None, ver
-            ver = next_ver
-            if ver > ack_version:
+            top_element = self._get()
+            if top_element is None:
+                return None
+            if top_element.ver > ack_version:
                 self._should_skip_to_ack = False
-                if ver > ack_version + 1:
+                if top_element.ver > ack_version + 1:
                     _logger.warning(
                         "Possible data loss. Last acknowledged operation version: %d, next: %d",
                         ack_version,
-                        ver,
+                        top_element.ver,
                     )
-                return obj, ver
+                return top_element
 
-    def _get(self) -> Tuple[Optional[T], int]:
-        _json = self._reader.get()
+    def _get(self) -> Optional[QueueElement[T]]:
+        _json, size = self._reader.get_with_size()
         if not _json:
             if self._read_file_version >= self._write_file_version:
-                return None, -1
+                return None
             self._reader.close()
             self._read_file_version = self._next_log_file_version(self._read_file_version)
             self._reader = JsonFileSplitter(self._get_log_file(self._read_file_version))
             # It is safe. Max recursion level is 2.
             return self._get()
         try:
-            return self._deserialize(_json)
+            obj, ver = self._deserialize(_json)
+            return QueueElement[T](obj, ver, size)
         except Exception as e:
             raise MalformedOperation from e
 
-    def get_batch(self, size: int) -> Tuple[List[T], int]:
-        first, ver = self.get()
+    def get_batch(self, size: int) -> List[QueueElement[T]]:
+        if self._should_skip_to_ack:
+            first = self._skip_and_get()
+        else:
+            first = self._get()
         if not first:
-            return [], ver
+            return []
+
         ret = [first]
+        cur_batch_size = first.size
         for _ in range(0, size - 1):
-            obj, next_ver = self._get()
-            if not obj:
+            if cur_batch_size >= self._max_batch_size_bytes:
                 break
-            ver = next_ver
-            ret.append(obj)
-        return ret, ver
+            next_obj = self._get()
+            if not next_obj:
+                break
+
+            cur_batch_size += next_obj.size
+            ret.append(next_obj)
+        return ret
 
     def flush(self):
         self._writer.flush()

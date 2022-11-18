@@ -89,9 +89,11 @@ class SyncRunner(AbstractBackendRunner):
             lock=threading.RLock(),
         ) as disk_queue:
             while True:
-                batch, version = disk_queue.get_batch(1000)
+                batch = disk_queue.get_batch(1000)
                 if not batch:
                     break
+                version = batch[-1].ver
+                batch = [element.obj for element in batch]
 
                 start_time = time.monotonic()
                 expected_count = len(batch)
