@@ -17,9 +17,9 @@ from functools import wraps
 from typing import (
     TYPE_CHECKING,
     Any,
-    Collection,
     Dict,
     Iterable,
+    Iterator,
     List,
     Optional,
     Union,
@@ -353,6 +353,8 @@ class Handler:
         self._do_extend(value, step, timestamp, wait, **kwargs)
 
     def _do_extend(self, values, steps, timestamps, wait, **kwargs):
+        ExtendUtils.validate_values_for_extend(values, steps, timestamps)
+
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
             if not attr:
@@ -400,19 +402,7 @@ class Handler:
             ...     ts = df["timestamp"]
             ...     run["data/example_series"].extend(ys, timestamps=ts)
         """
-        if isinstance(values, Namespace) or is_dict_like(values):
-            ExtendUtils.validate_dict_for_extend(values, steps, timestamps)
-            self._do_extend(values, steps, timestamps, wait, **kwargs)
-        elif is_collection(values):
-            values_size = len(values)
-            ExtendUtils.validate_iterable_for_extend(values_size, steps, timestamps)
-            self._do_extend(values, steps, timestamps, wait, **kwargs)
-        else:
-            raise NeptuneUserApiInputException(
-                "Value cannot be a collection."
-                " To append multiple values at once, use extend() instead:"
-                " run['series'].extend(collection)"
-            )
+        self._do_extend(values, steps, timestamps, wait, **kwargs)
 
     @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
@@ -656,38 +646,41 @@ class Handler:
 
 class ExtendUtils:
     @staticmethod
-    def transform_to_extend_format(value, *, depth=1):
-        """Preserve nested structure (but only one level) created by `Namespaces` and `dict_like` objects,
+    def transform_to_extend_format(value):
+        """Preserve nested structure created by `Namespaces` and `dict_like` objects,
         but replace all other values with single-element lists,
         so work can be delegated to `_do_extend` method."""
-        if depth == 1 and (isinstance(value, Namespace) or is_dict_like(value)):
-            return {k: ExtendUtils.transform_to_extend_format(v, depth=depth + 1) for k, v in value.items()}
-        else:
+        if not isinstance(value, Namespace) and not is_dict_like(value):
             return [value]
+        else:
+            return {k: ExtendUtils.transform_to_extend_format(v) for k, v in value.items()}
 
     @staticmethod
-    def validate_iterable_for_extend(
-        values_size: int, steps: Optional[Collection[float]] = None, timestamps: Optional[Collection[float]] = None
-    ) -> None:
-        if steps is not None and len(steps) != values_size:
-            raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
-        if timestamps is not None and len(timestamps) != values_size:
-            raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
+    def validate_values_for_extend(values, steps, timestamps):
+        collections_lengths = list(ExtendUtils.generate_leaf_collection_lengths(values))
+
+        if len(collections_lengths) > 1:
+            if steps is not None:
+                raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
+            if timestamps is not None:
+                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
+        else:
+            common_collections_length = next(iter(collections_lengths))
+            if steps is not None and common_collections_length != len(steps):
+                raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
+            if timestamps is not None and common_collections_length != len(timestamps):
+                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
 
     @staticmethod
-    def validate_dict_for_extend(
-        values: Union[Dict[str, Collection[Any]], Collection[Any]],
-        steps: Optional[Collection[float]] = None,
-        timestamps: Optional[Collection[float]] = None,
-    ) -> None:
-        """Here's business requirement that we'll support only one level of nesting when calling `extend` function"""
-        timestamps_size = None if timestamps is None else len(timestamps)
-        steps_size = None if steps is None else len(steps)
-        for dict_key in values:
-            if not is_collection(values[dict_key]):
-                raise NeptuneUserApiInputException("If value is a dict, all values in dict should be a collection")
-            dict_iterables_size = len(values[dict_key])
-            if timestamps_size is not None and timestamps_size != dict_iterables_size:
-                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values in dict")
-            if steps_size is not None and steps_size != dict_iterables_size:
-                raise NeptuneUserApiInputException("Number of steps must be equal to number of values in dict")
+    def generate_leaf_collection_lengths(values) -> Iterator[int]:
+        if isinstance(values, Namespace) or is_dict_like(values):
+            for val in values.values():
+                yield from ExtendUtils.generate_leaf_collection_lengths(val)
+        elif is_collection(values):
+            yield len(values)
+        else:
+            raise NeptuneUserApiInputException(
+                "Value must be a collection or dict of collections."
+                " To append multiple values at once, use extend() instead:"
+                " run['series'].extend(collection)"
+            )

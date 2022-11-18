@@ -15,6 +15,7 @@
 #
 import argparse
 import os
+import time
 import unittest
 from dataclasses import dataclass
 from datetime import (
@@ -258,8 +259,10 @@ class TestSeries(unittest.TestCase):
                 "key-b": {"ba": 33, "bb": 44},
             }
         )
-        self.assertEqual(exp["train"]["dictOfDicts"]["key-a"].fetch_last(), "{'aa': 11, 'ab': 22}")
-        self.assertEqual(exp["train"]["dictOfDicts"]["key-b"].fetch_last(), "{'ba': 33, 'bb': 44}")
+        self.assertEqual(exp["train"]["dictOfDicts"]["key-a"]["aa"].fetch_last(), 11)
+        self.assertEqual(exp["train"]["dictOfDicts"]["key-a"]["ab"].fetch_last(), 22)
+        self.assertEqual(exp["train"]["dictOfDicts"]["key-b"]["ba"].fetch_last(), 33)
+        self.assertEqual(exp["train"]["dictOfDicts"]["key-b"]["bb"].fetch_last(), 44)
 
     def test_log_many_values(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -315,24 +318,70 @@ class TestSeries(unittest.TestCase):
         self.assertEqual(exp["some"]["num"]["val"]["key-b"].fetch_last(), "value-bb")
         self.assertEqual(exp["some"]["num"]["val"]["key-c"].fetch_last(), "ccc")
 
-    def test_extend_complex_input(self):
+    def test_extend_dict_in_list(self):
+        """We expect that everything which is inside Collection is mapped to atoms"""
         exp = init(mode="debug", flush_period=0.5)
-        exp["train/listOfDicts"].extend([{"1a": 1, "1b": 1}, {"1a": 2, "1b": 2}])
+        exp["train/listOfDicts"].extend([{"1a": 1, "1b": 1}, {"1a": 2, "1b": 2}])  # inside list -> mapped to str
         exp["train/listOfDictOfDicts"].extend(
             [
-                {"key-a": {"a1": 11, "a2": 22}},
+                {"key-a": {"a1": 11, "a2": 22}},  # inside list -> mapped to str
                 {"key-b": {"b1": 33, "b2": 44}},
                 {"key-a": {"xx": 11, "yy": 22}},
             ]
         )
         exp["train/listOfListsOfDicts"].extend(
-            [[{"2a": 11, "2b": 11}, {"2a": 12, "2b": 12}], [{"2a": 21, "2b": 21}, {"2a": 22, "2b": 22}]]
+            [
+                [{"2a": 11, "2b": 11}, {"2a": 12, "2b": 12}],  # inside list -> mapped to str
+                [{"2a": 21, "2b": 21}, {"2a": 22, "2b": 22}],
+            ]
         )
         self.assertEqual(exp["train"]["listOfDicts"].fetch_last(), "{'1a': 2, '1b': 2}")
         self.assertEqual(exp["train"]["listOfDictOfDicts"].fetch_last(), "{'key-a': {'xx': 11, 'yy': 22}}")
         self.assertEqual(
             exp["train"]["listOfListsOfDicts"].fetch_last(), "[{'2a': 21, '2b': 21}, {'2a': 22, '2b': 22}]"
         )
+
+    def test_extend_nested(self):
+        """We expect that we are able to log arbitrary tre structure"""
+        exp = init(mode="debug", flush_period=0.5)
+
+        exp["train/simple_dict"].extend({"list1": [1, 2, 3], "list2": [10, 20, 30]})
+        exp["train/simple_dict"].extend(
+            {
+                "list1": [4, 5, 6],
+            }
+        )
+        self.assertEqual(exp["train"]["simple_dict"]["list1"].fetch_last(), 6)
+        self.assertEqual(list(exp["train"]["simple_dict"]["list1"].fetch_values().value), [1, 2, 3, 4, 5, 6])
+        self.assertEqual(exp["train"]["simple_dict"]["list2"].fetch_last(), 30)
+        self.assertEqual(list(exp["train"]["simple_dict"]["list2"].fetch_values().value), [10, 20, 30])
+
+        exp["train/different-depths"].extend(
+            {"lvl1": {"lvl1.1": [1, 2, 3], "lvl1.2": {"lvl1.2.1": [1]}}, "lvl2": [10, 20]}
+        )
+        exp["train/different-depths/lvl1"].extend({"lvl1.2": {"lvl1.2.1": [2, 3]}})
+        self.assertEqual(exp["train"]["different-depths"]["lvl1"]["lvl1.1"].fetch_last(), 3)
+        self.assertEqual(list(exp["train"]["different-depths"]["lvl1"]["lvl1.1"].fetch_values().value), [1, 2, 3])
+        self.assertEqual(exp["train"]["different-depths"]["lvl1"]["lvl1.2"]["lvl1.2.1"].fetch_last(), 3)
+        self.assertEqual(
+            list(exp["train"]["different-depths"]["lvl1"]["lvl1.2"]["lvl1.2.1"].fetch_values().value), [1, 2, 3]
+        )
+        self.assertEqual(exp["train"]["different-depths"]["lvl2"].fetch_last(), 20)
+        self.assertEqual(list(exp["train"]["different-depths"]["lvl2"].fetch_values().value), [10, 20])
+
+    def test_extend_nested_with_wrong_parameters(self):
+        """We expect that we are able to log arbitrary tre structure"""
+        exp = init(mode="debug", flush_period=0.5)
+
+        with self.assertRaises(NeptuneUserApiInputException):
+            # wrong number of steps
+            exp["train/simple_dict"].extend(values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, steps=[0, 1])
+
+        with self.assertRaises(NeptuneUserApiInputException):
+            # wrong number of timestamps
+            exp["train/simple_dict"].extend(
+                values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, timestamps=[time.time()] * 2
+            )
 
     def test_log_value_errors(self):
         exp = init(mode="debug", flush_period=0.5)
