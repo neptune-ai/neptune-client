@@ -16,6 +16,7 @@
 import json
 import re
 from pathlib import Path
+from unittest.mock import Mock
 
 import pytest
 from click.testing import CliRunner
@@ -55,6 +56,10 @@ class TestSync(BaseE2ETest):
                 container_id = container._id
                 container_sys_id = container._sys_id
 
+                self.stop_synchronization_process(container)
+                # add random property - the queue will not be empty on close
+                container[self.gen_key()] = fake.unique.word()
+
             # manually add operations to queue
             queue_dir = list(Path(f"./.neptune/async/{container_type}__{container_id}/").glob("exec-*"))[0]
             with open(queue_dir / "last_put_version", encoding="utf-8") as last_put_version_f:
@@ -90,7 +95,9 @@ class TestSync(BaseE2ETest):
             with open(queue_dir / "last_put_version", "w", encoding="utf-8") as last_put_version_f:
                 last_put_version_f.write(str(last_put_version + 2))
 
-            with reinitialize_container(container_sys_id, container_type, project=environment.project) as container:
+            with reinitialize_container(
+                container_sys_id, container_type, project=environment.project, mode="read-only"
+            ) as container:
                 # server should have the original value
                 assert container[key].fetch() == original_value
 
@@ -102,6 +109,10 @@ class TestSync(BaseE2ETest):
                 # and we should get the updated value from server
                 assert container[key].fetch() == updated_value
                 assert container["copy/" + key].fetch() == updated_value
+
+    @staticmethod
+    def stop_synchronization_process(container):
+        container._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
 
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
