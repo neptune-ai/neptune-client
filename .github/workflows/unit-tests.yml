@@ -1,4 +1,4 @@
-name: Unittests
+name: Unit Tests
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - "*"
 
 jobs:
-  test:
+  client:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
     strategy:
@@ -23,7 +23,63 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Prepare package
+      - name: Install package
         uses: ./.github/actions/install_package
         with:
           python-version: ${{ matrix.python-version }}
+
+      - name: Run tests
+        run: |
+          pytest -v ./tests/neptune/new \
+          --timeout=120 --timeout_method=thread
+        shell: bash
+
+  management:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ "3.7" ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install package
+        uses: ./.github/actions/install_package
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run tests
+        run: |
+          pytest -v ./tests/neptune/management \
+          --timeout=120 --timeout_method=thread
+        shell: bash
+
+  legacy:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ "3.7" ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Install package
+        uses: ./.github/actions/install_package
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Run tests
+        run: |
+          pytest -v ./tests/neptune/legacy \
+          --timeout=120 --timeout_method=thread
+        shell: bash
