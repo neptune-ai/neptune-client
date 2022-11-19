@@ -1,0 +1,29 @@
+name: Unittests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 75
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        python-version: [ "3.7" ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Prepare package
+        uses: ./.github/actions/install_package
+        with:
+          python-version: ${{ matrix.python-version }}

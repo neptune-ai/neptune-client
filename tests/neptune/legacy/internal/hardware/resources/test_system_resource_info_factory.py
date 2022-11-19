@@ -27,7 +27,7 @@ from neptune.common.utils import (
     IS_MACOS,
     IS_WINDOWS,
 )
-from tests.neptune.utils.assertions import AssertionExtensions
+from tests.neptune.legacy.utils.assertions import AssertionExtensions
 
 
 class TestSystemResourceInfoFactoryIntegration(unittest.TestCase, AssertionExtensions):

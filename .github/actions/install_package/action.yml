@@ -1,0 +1,24 @@
+---
+name: Install package
+description: Install package in a editable mode
+inputs:
+  python-version:
+     description: "Python version"
+     required: true
+runs:
+    using: "composite"
+    steps:
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ inputs.python-version }}
+
+      - name: Install dependencies
+        run: |
+          pip install ".[dev]"
+        shell: bash
+
+      - name: List dependencies
+        run: |
+          pip list
+        shell: bash
