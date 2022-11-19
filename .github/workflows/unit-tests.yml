@@ -2,6 +2,8 @@ name: Unit Tests
 
 on:
   workflow_dispatch:
+  repository_dispatch:
+    types: [ full-test-command ]
   pull_request:
   push:
     branches:

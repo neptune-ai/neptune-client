@@ -14,4 +14,4 @@ jobs:
           token: ${{ secrets.PAT }}
           issue-type: pull-request
           commands: |
-            full
+            full-test
