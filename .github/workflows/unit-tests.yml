@@ -1,12 +1,17 @@
 name: Unit Tests
 
 on:
+  workflow_dispatch:
   pull_request:
   push:
     branches:
       - master
     tags:
       - "*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
 jobs:
   client:
@@ -30,8 +35,10 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v ./tests/neptune/new \
-          --timeout=120 --timeout_method=thread
+          pytest -v \
+          ./tests/neptune/legacy \
+          --timeout=120 \
+          --timeout_method=thread
         shell: bash
 
   management:
@@ -55,8 +62,10 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v ./tests/neptune/management \
-          --timeout=120 --timeout_method=thread
+          pytest -v \
+          ./tests/neptune/legacy \
+          --timeout=120 \
+          --timeout_method=thread
         shell: bash
 
   legacy:
@@ -80,6 +89,8 @@ jobs:
 
       - name: Run tests
         run: |
-          pytest -v ./tests/neptune/legacy \
-          --timeout=120 --timeout_method=thread
+          pytest -v \
+          ./tests/neptune/legacy \
+          --timeout=120 \
+          --timeout_method=thread
         shell: bash
