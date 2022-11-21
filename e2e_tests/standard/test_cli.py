@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 import json
+import os
 import re
 from pathlib import Path
-from unittest.mock import Mock
 
 import pytest
 from click.testing import CliRunner
@@ -35,6 +35,7 @@ from e2e_tests.utils import (
 )
 from neptune.common.exceptions import NeptuneException
 from neptune.new.cli import sync
+from src.neptune.new.cli.commands import clear
 
 runner = CliRunner()
 
@@ -112,7 +113,7 @@ class TestSync(BaseE2ETest):
 
     @staticmethod
     def stop_synchronization_process(container):
-        container._op_processor._backend.execute_operations = Mock(side_effect=ValueError)
+        container._op_processor._consumer.interrupt()
 
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
@@ -141,6 +142,92 @@ class TestSync(BaseE2ETest):
 
             run2 = neptune.init_run(with_id=sys_id, project=environment.project)
             assert run2[key].fetch() == val
+
+    @pytest.mark.parametrize("container_type", ["run"])
+    def test_clear_command_offline_and_online_containers(self, environment, container_type):
+        with tmp_context() as tmp:
+            key = self.gen_key()
+
+            with initialize_container(container_type=container_type, project=environment.project) as container:
+                self.stop_synchronization_process(container)
+
+                container[key] = fake.unique.word()
+                container_path = container._op_processor._queue._dir_path
+                container_sys_id = container._sys_id
+
+            with initialize_container(
+                container_type=container_type, project=environment.project, mode="offline"
+            ) as container:
+                container[key] = fake.unique.word()
+                offline_container_path = container._op_processor._queue._dir_path
+                offline_container_id = container._id
+
+            assert os.path.exists(container_path)
+            assert os.path.exists(offline_container_path)
+
+            result = runner.invoke(clear, args=["--path", tmp], input="y")
+
+            assert result.exit_code == 0
+
+            assert not os.path.exists(container_path)
+            assert not os.path.exists(offline_container_path)
+            assert result.output.splitlines() == [
+                "",
+                "Unsynchronized objects:",
+                f"- {environment.project}/{container_sys_id}",
+                "",
+                "Unsynchronized offline objects:",
+                f"- offline/run__{offline_container_id}",
+                "",
+                "Do you want to delete the listed metadata? [y/N]: y",
+                f"Deleted: {offline_container_path}",
+                f"Deleted: {container_path.parent}",
+            ]
+
+    @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+    def test_clear_command_online_containers(self, environment, container_type):
+        with tmp_context() as tmp:
+            key = self.gen_key()
+
+            with initialize_container(container_type=container_type, project=environment.project) as container:
+                self.stop_synchronization_process(container)
+
+                container[key] = fake.unique.word()
+                container_path = container._op_processor._queue._dir_path
+                container_sys_id = container._sys_id
+
+            assert os.path.exists(container_path)
+
+            result = runner.invoke(clear, args=["--path", tmp], input="y")
+            assert result.exit_code == 0
+
+            assert not os.path.exists(container_path)
+            assert result.output.splitlines() == [
+                "",
+                "Unsynchronized objects:",
+                f"- {environment.project}/{container_sys_id}",
+                "",
+                "Do you want to delete the listed metadata? [y/N]: y",
+                f"Deleted: {container_path.parent}",
+            ]
+
+    @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+    def test_sync_should_delete_directories(self, environment, container_type):
+        with tmp_context() as tmp:
+            key = self.gen_key()
+
+            with initialize_container(container_type=container_type, project=environment.project) as container:
+                self.stop_synchronization_process(container)
+
+                container[key] = fake.unique.word()
+                container_path = container._op_processor._queue._dir_path
+
+            assert os.path.exists(container_path)
+
+            result = runner.invoke(sync, args=["--path", tmp])
+            assert result.exit_code == 0
+
+            assert not os.path.exists(container_path)
 
     @pytest.mark.parametrize("container_type", ["model", "model_version", "project"])
     def test_cannot_offline_non_runs(self, environment, container_type):
