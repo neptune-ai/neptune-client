@@ -199,9 +199,10 @@ class MetadataContainer(AbstractContextManager):
         self._bg_job.stop()
         self._bg_job.join(seconds)
         logger.info("Done!")
-        with self._lock:
-            sec_left = None if seconds is None else seconds - (time.time() - ts)
-            self._op_processor.stop(sec_left)
+
+        sec_left = None if seconds is None else seconds - (time.time() - ts)
+        self._op_processor.stop(sec_left)
+
         if self._mode != Mode.OFFLINE:
             logger.info("Explore the metadata in the Neptune app:")
             logger.info(self._metadata_url)
