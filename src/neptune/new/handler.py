@@ -86,7 +86,7 @@ def check_protected_paths(fun):
     return inner_fun
 
 
-ExtendDictT = Union[Collection[Any], Dict[Any, "ExtendDictT"]]
+ExtendDictT = Union[Collection[Any], Dict[str, "ExtendDictT"]]
 
 
 class Handler:
