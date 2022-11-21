@@ -166,8 +166,11 @@ class TestSync(BaseE2ETest):
             assert os.path.exists(offline_container_path)
 
             result = runner.invoke(clear, args=["--path", tmp], input="y")
+
             assert result.exit_code == 0
 
+            assert not os.path.exists(container_path)
+            assert not os.path.exists(offline_container_path)
             assert result.output.splitlines() == [
                 "",
                 "Unsynchronized objects:",
@@ -198,6 +201,7 @@ class TestSync(BaseE2ETest):
             result = runner.invoke(clear, args=["--path", tmp], input="y")
             assert result.exit_code == 0
 
+            assert not os.path.exists(container_path)
             assert result.output.splitlines() == [
                 "",
                 "Unsynchronized objects:",
@@ -206,6 +210,24 @@ class TestSync(BaseE2ETest):
                 "Do you want to delete the listed metadata? [y/N]: y",
                 f"Deleted: {container_path.parent}",
             ]
+
+    @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+    def test_sync_should_delete_directories(self, environment, container_type):
+        with tmp_context() as tmp:
+            key = self.gen_key()
+
+            with initialize_container(container_type=container_type, project=environment.project) as container:
+                self.stop_synchronization_process(container)
+
+                container[key] = fake.unique.word()
+                container_path = container._op_processor._queue._dir_path
+
+            assert os.path.exists(container_path)
+
+            result = runner.invoke(sync, args=["--path", tmp])
+            assert result.exit_code == 0
+
+            assert not os.path.exists(container_path)
 
     @pytest.mark.parametrize("container_type", ["model", "model_version", "project"])
     def test_cannot_offline_non_runs(self, environment, container_type):
