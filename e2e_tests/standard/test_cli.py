@@ -144,7 +144,7 @@ class TestSync(BaseE2ETest):
             assert run2[key].fetch() == val
 
     @pytest.mark.parametrize("container_type", ["run"])
-    def test_clear_command(self, environment, container_type):
+    def test_clear_command_offline_and_online_containers(self, environment, container_type):
         with tmp_context() as tmp:
             key = self.gen_key()
 
@@ -178,6 +178,32 @@ class TestSync(BaseE2ETest):
                 "",
                 "Do you want to delete the listed metadata? [y/N]: y",
                 f"Deleted: {offline_container_path}",
+                f"Deleted: {container_path.parent}",
+            ]
+
+    @pytest.mark.parametrize("container_type", AVAILABLE_CONTAINERS)
+    def test_clear_command_online_containers(self, environment, container_type):
+        with tmp_context() as tmp:
+            key = self.gen_key()
+
+            with initialize_container(container_type=container_type, project=environment.project) as container:
+                self.stop_synchronization_process(container)
+
+                container[key] = fake.unique.word()
+                container_path = container._op_processor._queue._dir_path
+                container_sys_id = container._sys_id
+
+            assert os.path.exists(container_path)
+
+            result = runner.invoke(clear, args=["--path", tmp], input="y")
+            assert result.exit_code == 0
+
+            assert result.output.splitlines() == [
+                "",
+                "Unsynchronized objects:",
+                f"- {environment.project}/{container_sys_id}",
+                "",
+                "Do you want to delete the listed metadata? [y/N]: y",
                 f"Deleted: {container_path.parent}",
             ]
 
