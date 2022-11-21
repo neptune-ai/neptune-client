@@ -1,3 +1,10 @@
+## neptune-client 0.16.13
+
+### Changes
+- Automatically Clean junk metadata on script runs ([#1083](https://github.com/neptune-ai/neptune-client/pull/1083), [#1093](https://github.com/neptune-ai/neptune-client/pull/1093))
+- New `neptune clear` command ([#1091](https://github.com/neptune-ai/neptune-client/pull/1091), [#1094](https://github.com/neptune-ai/neptune-client/pull/1094))
+- `neptune sync` removes junk metadata ([#1092](https://github.com/neptune-ai/neptune-client/pull/1092))
+
 ## neptune-client 0.16.12
 
 ### Changes
