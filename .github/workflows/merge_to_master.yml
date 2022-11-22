@@ -1,8 +1,6 @@
 name: Merge to master
 on:
-  push:
-    branches:
-      - master
+  pull_request:
 jobs:
   pre-commit:
     runs-on: ubuntu-latest

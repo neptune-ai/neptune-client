@@ -38,65 +38,64 @@ runs:
           pip list
         shell: bash
 
-      - name: E2E - Service Accounts
-        env:
-          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
-        run: |
-          pytest -v ./e2e_tests -m "not s3 and not integrations" \
-          --timeout=600 --timeout_method=thread \
-          --junitxml="./test-results/test-e2e-base-${{ matrix.os }}-${{ matrix.python-version }}.xml"
-        shell: bash
-
-      - name: E2E - AWS S3
-        env:
-          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
-          AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
-          AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
-        run: |
-          pytest -v ./e2e_tests -m s3 \
-          --timeout=600 --timeout_method=thread \
-          --junitxml="./test-results/test-e2e-s3-aws-${{ matrix.os }}-${{ matrix.python-version }}.xml"
-        shell: bash
-
-      - name: E2E - GCS S3
-        env:
-          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
-          AWS_ACCESS_KEY_ID: ${{ inputs.gcs-access-key-id }}
-          AWS_SECRET_ACCESS_KEY: ${{ inputs.gcs-secret-access-key }}
-          S3_ENDPOINT_URL: "https://storage.googleapis.com/"
-        run: |
-          pytest -v ./e2e_tests -m s3 \
-          --timeout=600 --timeout_method=thread \
-          --junitxml="./test-results/test-e2e-s3-gcs-${{ matrix.os }}-${{ matrix.python-version }}.xml"
-        shell: bash
-
-      - name: E2E - Management (as regular user)
-        env:
-          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token }}
-        run: |
-          pytest -v ./e2e_tests -m management \
-          --timeout=600  --timeout_method=thread \
-          --junitxml="./test-results/test-e2e-management-${{ matrix.os }}-${{ matrix.python-version }}.xml"
-        shell: bash
-
-      - name: E2E - Integrations
-        env:
-          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
-        run: |
-          pytest -v ./e2e_tests -m integrations \
-          --timeout=600  --timeout_method=thread \
-          --junitxml="./test-results/test-e2e-integrations-${{ matrix.os }}-${{ matrix.python-version }}.xml"
-        shell: bash
-
-# Disable due to further investigation
-#      - name: Test Fast.ai integration
-#        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
-#        with:
-#          working_directory: neptune_fastai
+#      - name: E2E - Service Accounts
 #        env:
-#          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
-#          NEPTUNE_PROJECT: e2e-tests/e2e
+#          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
+#        run: |
+#          pytest -v ./e2e_tests -m "not s3 and not integrations" \
+#          --timeout=600 --timeout_method=thread \
+#          --junitxml="./test-results/test-e2e-base-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+#        shell: bash
 #
+#      - name: E2E - AWS S3
+#        env:
+#          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
+#          AWS_ACCESS_KEY_ID: ${{ inputs.aws-access-key-id }}
+#          AWS_SECRET_ACCESS_KEY: ${{ inputs.aws-secret-access-key }}
+#        run: |
+#          pytest -v ./e2e_tests -m s3 \
+#          --timeout=600 --timeout_method=thread \
+#          --junitxml="./test-results/test-e2e-s3-aws-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+#        shell: bash
+#
+#      - name: E2E - GCS S3
+#        env:
+#          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
+#          AWS_ACCESS_KEY_ID: ${{ inputs.gcs-access-key-id }}
+#          AWS_SECRET_ACCESS_KEY: ${{ inputs.gcs-secret-access-key }}
+#          S3_ENDPOINT_URL: "https://storage.googleapis.com/"
+#        run: |
+#          pytest -v ./e2e_tests -m s3 \
+#          --timeout=600 --timeout_method=thread \
+#          --junitxml="./test-results/test-e2e-s3-gcs-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+#        shell: bash
+#
+#      - name: E2E - Management (as regular user)
+#        env:
+#          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token }}
+#        run: |
+#          pytest -v ./e2e_tests -m management \
+#          --timeout=600  --timeout_method=thread \
+#          --junitxml="./test-results/test-e2e-management-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+#        shell: bash
+
+#      - name: E2E - Integrations
+#        env:
+#          NEPTUNE_API_TOKEN: ${{ inputs.sa-api-token }}
+#        run: |
+#          pytest -v ./e2e_tests -m integrations \
+#          --timeout=600  --timeout_method=thread \
+#          --junitxml="./test-results/test-e2e-integrations-${{ matrix.os }}-${{ matrix.python-version }}.xml"
+#        shell: bash
+
+      - name: Test Fast.ai integration
+        uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
+        with:
+          working_directory: neptune_fastai
+        env:
+          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
+          NEPTUNE_PROJECT: e2e-tests/e2e
+
 # Disable due to further investigation
 #      - name: Test Kedro integration
 #        uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
@@ -105,15 +104,15 @@ runs:
 #        env:
 #          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
 #          NEPTUNE_PROJECT: e2e-tests/kedro-neptune-e2e
-
-      - name: Test Prophet integration
-        uses: neptune-ai/neptune-prophet/.github/actions/e2e@main
-        with:
-          working_directory: neptune_prophet
-        env:
-          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
-          NEPTUNE_PROJECT: e2e-tests/e2e
-
+#
+#      - name: Test Prophet integration
+#        uses: neptune-ai/neptune-prophet/.github/actions/e2e@main
+#        with:
+#          working_directory: neptune_prophet
+#        env:
+#          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
+#          NEPTUNE_PROJECT: e2e-tests/e2e
+#
 # Disable due to further investigation
 #      - name: Test Keras integration
 #        uses: neptune-ai/neptune-tensorflow-keras/.github/actions/e2e@master
@@ -122,14 +121,14 @@ runs:
 #        env:
 #          NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
 #          NEPTUNE_PROJECT: e2e-tests/e2e
-
-      - name: Display test artifacts
-        if: always()
-        run: ls -R ./test-results
-        shell: bash
-
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: test-artifacts
-          path: ./test-results
+#
+#      - name: Display test artifacts
+#        if: always()
+#        run: ls -R ./test-results
+#        shell: bash
+#
+#      - uses: actions/upload-artifact@v2
+#        if: always()
+#        with:
+#          name: test-artifacts
+#          path: ./test-results
