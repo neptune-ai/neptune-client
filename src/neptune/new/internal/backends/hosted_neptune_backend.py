@@ -1064,9 +1064,10 @@ class HostedNeptuneBackend(NeptuneBackend):
 
     @staticmethod
     def _get_all_items(get_portion, step):
+        max_server_offset = 10000
         items = []
         previous_items = None
-        while previous_items is None or len(previous_items) >= step:
+        while (previous_items is None or len(previous_items) >= step) and len(items) < max_server_offset:
             previous_items = get_portion(limit=step, offset=len(items))
             items += previous_items
         return items
