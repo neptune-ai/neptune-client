@@ -2,8 +2,8 @@ name: e2e tests
 
 on:
   push:
-    branches:
-      - master
+#    branches:
+#      - master
 
 env:
   WORKSPACE_NAME: e2e-tests
@@ -19,10 +19,10 @@ jobs:
     strategy:
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest]
         module:
           - "not s3 and not integrations"
-          - "integrations"
+#          - "integrations"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -38,70 +38,110 @@ jobs:
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
 
-  e2e_management:
-    strategy:
-      matrix:
-        python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest ]
-        module:
-          - "management"
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}|${{ matrix.os }})
-        uses: ./.github/actions/tests-e2e-new
-        env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
-        with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: ${{ matrix.module }}
+#  e2e_management:
+#    strategy:
+#      matrix:
+#        python-version: [ "3.7", "3.10" ]
+#        os: [ ubuntu-latest, macos-latest ]
+#        module:
+#          - "management"
+#    runs-on: ${{ matrix.os }}
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}|${{ matrix.os }})
+#        uses: ./.github/actions/tests-e2e-new
+#        env:
+#          NEPTUNE_API_TOKEN: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#          os: ${{ matrix.os }}
+#          module: ${{ matrix.module }}
+#
+#  e2e_s3_gcs:
+#    strategy:
+#      matrix:
+#        python-version: [ "3.7", "3.10" ]
+#        os: [ ubuntu-latest, macos-latest ]
+#    runs-on: ${{ matrix.os }}
+#
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#      - name: Tests S3(GCS) (${{ matrix.python-version }}|${{ matrix.os }})
+#        uses: ./.github/actions/tests-e2e-new
+#        env:
+#          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+#          AWS_ACCESS_KEY_ID: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
+#          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
+#          S3_ENDPOINT_URL: "https://storage.googleapis.com/"
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#          os: ${{ matrix.os }}
+#          module: s3
+#
+#  e2e_s3:
+#    strategy:
+#      matrix:
+#        python-version: [ "3.7", "3.10" ]
+#        os: [ ubuntu-latest, macos-latest ]
+#    runs-on: ${{ matrix.os }}
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#        with:
+#          fetch-depth: 0
+#      - name: Tests S3 (${{ matrix.python-version }}|${{ matrix.os }})
+#        uses: ./.github/actions/tests-e2e-new
+#        env:
+#          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+#          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
+#          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#          os: ${{ matrix.os }}
+#          module: s3
 
-  e2e_s3_gcs:
-    strategy:
-      matrix:
-        python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest ]
-    runs-on: ${{ matrix.os }}
-
+  junit_report:
+    runs-on: ubuntu-latest
+#    needs: [ e2e, e2e_management, e2e_s3, e2e_s3_gcs ]
+    needs: [ e2e ]
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - uses: actions/download-artifact@v3
+        if: always()
         with:
-          fetch-depth: 0
-      - name: Tests S3(GCS) (${{ matrix.python-version }}|${{ matrix.os }})
-        uses: ./.github/actions/tests-e2e-new
-        env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
-          AWS_ACCESS_KEY_ID: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
-          S3_ENDPOINT_URL: "https://storage.googleapis.com/"
-        with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: s3
+          name: test-artifacts
+          path: ./test-results
 
-  e2e_s3:
-    strategy:
-      matrix:
-        python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest ]
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      - name: Junit report
+        uses: mikepenz/action-junit-report@v2
+        if: always()
         with:
-          fetch-depth: 0
-      - name: Tests S3 (${{ matrix.python-version }}|${{ matrix.os }})
-        uses: ./.github/actions/tests-e2e-new
-        env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
-          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
-          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
-        with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: s3
+          report_paths: './test-results/test-*.xml'
+
+#  notify:
+#    needs: [ e2e, e2e_management, e2e_s3, e2e_s3_gcs ]
+#    runs-on: ubuntu-latest
+#    if: github.ref == 'refs/heads/master'
+#    env:
+#      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#    steps:
+#      - uses: technote-space/workflow-conclusion-action@v2
+#
+#      - name: Notify about failure
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION != 'success'
+#        with:
+#          status: failure
+#          fields: repo,message,author,job,eventName,took
+#
+#      - name: Notify about success
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION == 'success'
+#        with:
+#          status: success
+#          fields: repo,message,author,job,eventName,took

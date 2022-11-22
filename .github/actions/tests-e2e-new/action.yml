@@ -24,9 +24,6 @@ runs:
       with:
         path: ~/.cache/pip
         key: ${{ inputs.os }}-python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
-        restore-keys: |
-          ${{ runner.os }}-python-
-          ${{ runner.os }}-
 
     - name: Install Python ${{ inputs.python-version }}
       uses: actions/setup-python@v4
