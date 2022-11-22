@@ -24,9 +24,6 @@ runs:
       with:
         path: ~/.cache/pip
         key: ${{ inputs.os }}-python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
-        restore-keys: |
-          ${{ runner.os }}-python-
-          ${{ runner.os }}-
 
     - name: Install Python ${{ inputs.python-version }}
       uses: actions/setup-python@v4
@@ -49,11 +46,6 @@ runs:
         pytest -v ./e2e_tests -m "${{ inputs.module }}" \
         --timeout=600 --timeout_method=thread \
         --junitxml="./test-results/test-e2e-${{ inputs.module }}-${{ inputs.os }}-${{ matrix.python-version }}.xml"
-      shell: bash
-
-    - name: Display test artifacts
-      if: always()
-      run: ls -R ./test-results
       shell: bash
 
     - uses: actions/upload-artifact@v2
