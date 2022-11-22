@@ -29,5 +29,5 @@ jobs:
       - name: Install dependencies2
         run: |
           pip install --upgrade pip
-          pip install grpcio=1.50.0 --verbose
+          pip install grpcio==1.50.0 --verbose
         shell: bash
