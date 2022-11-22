@@ -6,6 +6,10 @@
 - `neptune sync` removes junk metadata ([#1092](https://github.com/neptune-ai/neptune-client/pull/1092))
 - Increase LOGGED_IMAGE_SIZE_LIMIT_MB to 32MB ([#1090](https://github.com/neptune-ai/neptune-client/pull/1090))
 
+### Fixes
+- Fix possible deadlock in `stop()` ([#1104](https://github.com/neptune-ai/neptune-client/pull/1104))
+- Add request size limit to avoid 403 error ([#1089](https://github.com/neptune-ai/neptune-client/pull/1089))
+
 ## neptune-client 0.16.12
 
 ### Changes
