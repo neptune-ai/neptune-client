@@ -27,7 +27,7 @@
 neptune.ai makes it easy to log, store, organize, compare, register, and share <b>all your ML model metadata in a single place</b>.
 
 * Automate and standardize as your modeling team grows.
-* Collaborate on models and results with your team and across the org. 
+* Collaborate on models and results with your team and across the org.
 * Use hosted, deploy on-premises, or in a private cloud. Integrate with any MLOps stack.
 &nbsp;
 
@@ -60,7 +60,7 @@ pip install neptune-client
 import neptune.new as neptune
 
 run = neptune.init_run("Me/MyProject")
-run["parameters"] = {"lr":0.1, 
+run["parameters"] = {"lr":0.1,
                     "dropout":0.4}
 run["test_accuracy"] = 0.84
 
@@ -191,8 +191,8 @@ from pytorch_lightning.loggers import NeptuneLogger
 # Create NeptuneLogger instance
 from neptune.new import ANONYMOUS_API_TOKEN
 neptune_logger = NeptuneLogger(
-    api_key=ANONYMOUS_API_TOKEN,  # 
-    project="common/pytorch-lightning-integration",  # 
+    api_key=ANONYMOUS_API_TOKEN,  #
+    project="common/pytorch-lightning-integration",  #
     tags=["training", "resnet"],  # optional
 )
 
