@@ -5,7 +5,7 @@ on:
       - "*"
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-20.04, macos-latest, windows-latest]  # Set back to ubuntu-latest after fixing it
         python-version: ["3.7", "3.8", "3.9", "3.10"]
     steps:
       - name: Checkout repository
@@ -38,7 +38,7 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-20.04, macos-latest]  # Set back to ubuntu-latest after fixing it
         python-version: ["3.7", "3.8", "3.9", "3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
@@ -73,7 +73,7 @@ jobs:
 
   publish-tests:
     needs: [test, test-e2e]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
     if: always()
     permissions:
       checks: write
@@ -87,7 +87,7 @@ jobs:
 
   notify:
     needs: [pre-commit, test, test-e2e]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
     if: always()
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
@@ -110,7 +110,7 @@ jobs:
 
   publish:
     needs: [pre-commit, test, test-e2e]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
     if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags')
     steps:
       - name: Checkout repository
