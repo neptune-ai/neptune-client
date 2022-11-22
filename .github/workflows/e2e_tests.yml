@@ -19,5 +19,5 @@ jobs:
       - name: Debug
         run: |
           pip install --upgrade pip
-          pip debug
+          pip debug --verbose
         shell: bash
