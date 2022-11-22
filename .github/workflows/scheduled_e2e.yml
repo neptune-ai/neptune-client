@@ -1,8 +1,6 @@
 name: Scheduled E2E
 on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+  pull_request:
 jobs:
   test-e2e:
     runs-on: ${{ matrix.os }}
@@ -42,39 +40,39 @@ jobs:
           gcs-access-key-id: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
           gcs-secret-access-key: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
 
-  publish-tests:
-    needs: [test-e2e]
-    runs-on: ubuntu-latest
-    if: always()
-    permissions:
-      checks: write
-      pull-requests: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
-      - name: Publish tests
-        uses: ./.github/actions/publish-tests-result
-
-  notify:
-    needs: [test-e2e]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/master'
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v2
-
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
-        with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
-
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
-        with:
-          status: success
-          fields: repo,message,author,job,eventName,took
+#  publish-tests:
+#    needs: [test-e2e]
+#    runs-on: ubuntu-latest
+#    if: always()
+#    permissions:
+#      checks: write
+#      pull-requests: write
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v2
+#
+#      - name: Publish tests
+#        uses: ./.github/actions/publish-tests-result
+#
+#  notify:
+#    needs: [test-e2e]
+#    runs-on: ubuntu-latest
+#    if: github.ref == 'refs/heads/master'
+#    env:
+#      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#    steps:
+#      - uses: technote-space/workflow-conclusion-action@v2
+#
+#      - name: Notify about failure
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION != 'success'
+#        with:
+#          status: failure
+#          fields: repo,message,author,job,eventName,took
+#
+#      - name: Notify about success
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION == 'success'
+#        with:
+#          status: success
+#          fields: repo,message,author,job,eventName,took
