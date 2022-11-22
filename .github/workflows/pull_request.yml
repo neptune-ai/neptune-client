@@ -3,7 +3,7 @@ on:
   pull_request:
 jobs:
   pre-commit:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
@@ -16,7 +16,7 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-20.04]  # Set back to ubuntu-latest after fixing it
         python-version: ["3.7", "3.10"] # minimum, maximum
     steps:
       - name: Checkout repository
@@ -27,7 +27,7 @@ jobs:
 
   publish-tests:
     needs: [test]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
     if: always()
     permissions:
       checks: write
