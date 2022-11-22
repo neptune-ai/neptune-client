@@ -217,7 +217,7 @@ trainer.fit(my_model, my_dataloader)
 &nbsp;
 
 <div align="center">
-    <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-customers.png" width="900" />
+    <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-customers.png" width="1500" />
 </div>
 &nbsp;
 
