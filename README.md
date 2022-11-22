@@ -1,5 +1,6 @@
 <div align="center">
-    <img src="https://neptune.ai/wp-content/uploads/2022/11/Twitter-cover-image.jpg" width="1500" /><br>
+    <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-banner.jpeg" width="1500" />
+    &nbsp;
  <h1>neptune.ai</h1>
 </div>
 
@@ -17,7 +18,7 @@
   <a href=https://neptune.ai/blog target=“_blank”>Blog</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href=https://neptune.ai/events target=“_blank”>Podcast</a>
-  <br />
+&nbsp;
   <hr />
 </div>
 
@@ -33,7 +34,7 @@ neptune.ai makes it easy to log, store, organize, compare, register, and share <
 &nbsp;
 <div align="center">
     <a href="https://youtu.be/9jN7RuPNEyc" target="_blank">
-      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/2022/11/github.png" width="600">
+      <img border="0" alt="neptune.ai explainer video" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-video.png" width="600">
     </a>
 </div>
 &nbsp;
@@ -84,8 +85,7 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 &nbsp;
 <div align="center">
-    <a href="https://neptune.ai/wp-content/uploads/2022/10/all-metadata-metrics_A-3.mp4" target="_blank">
-      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/2022/10/all-metadata-metrics_A-2.gif" width="600">
+      <img border="0" alt="all metadata metrics" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/all-metadata-metrics.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -105,8 +105,7 @@ Organize logs in a fully customizable nested structure. Display model metadata i
 
 &nbsp;
 <div align="center">
-    <a href="https://neptune.ai/wp-content/uploads/2022/10/organize-dashboards-2.mp4" target="_blank">
-      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/2022/10/organize-dashboards-1-3.gif" width="600">
+      <img border="0" alt="organize dashboards" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/organize-dashboards.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -130,8 +129,7 @@ Visualize training live in the neptune.ai web app. See how different parameters 
 
 &nbsp;
 <div align="center">
-    <a href="https://neptune.ai/wp-content/uploads/2022/10/compare-search-filter-1.mp4" target="_blank">
-      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/2022/10/compare-search-filter-1.gif" width="600">
+      <img border="0" alt="compare, search, filter" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/compare-search-filter.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -151,8 +149,7 @@ Version, review, and access production-ready models and metadata associated with
 
 &nbsp;
 <div align="center">
-    <a href="https://neptune.ai/wp-content/uploads/2022/10/register-stages-1.mp4" target="_blank">
-      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/2022/10/register-stages-1.gif" width="600">
+      <img border="0" alt="register stages" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/register-stages.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -174,8 +171,7 @@ Have a single place where your team can see the results and access all models an
 
 &nbsp;
 <div align="center">
-    <a href="https://neptune.ai/wp-content/uploads/2022/10/share-persistent-link.mp4" target="_blank">
-      <img border="0" alt="W3Schools" src="https://neptune.ai/wp-content/uploads/2022/10/share-persistent-link-1.gif" width="600">
+      <img border="0" alt="share persistent link" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/share-persistent-link.gif" width="600">
     </a>
 </div>
 &nbsp;
@@ -184,7 +180,7 @@ Have a single place where your team can see the results and access all models an
 ## Integrate with any MLOps stack
 neptune.ai integrates with <a href=https://docs.neptune.ai/integrations/ target=“_blank”><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, Sklearn, XGBoost, Optuna, Kedro, HuggingFace, fastai, Prophet, and more.
 
-#### <img src="https://neptune.ai/wp-content/uploads/2022/10/Pytorch-lightning-logo-1.png" width="60" /> <br> <br> PyTorch Lightning
+#### <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/Pytorch-lightning-logo.png" width="60" /> <br> <br> PyTorch Lightning
 
 Example:
 
@@ -221,7 +217,7 @@ trainer.fit(my_model, my_dataloader)
 &nbsp;
 
 <div align="center">
-    <img src="https://neptune.ai/wp-content/uploads/2022/11/github-customers.png" width="900" />
+    <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-customers.png" width="900" />
 </div>
 &nbsp;
 
@@ -243,4 +239,4 @@ If you get stuck or simply want to talk to us about something, here are your opt
 
 Created with :heart: by the [neptune.ai team](https://neptune.ai/about-us):
 
-Piotr, Valentina, Paulina, Chaz, Prince, Parth, Kshitij, Siddhant, Jakub, Patrycja, Dominika, Karolina, Stephen, Artur, Aleksiej, Martyna, Małgorzata, Magdalena, Karolina, Marcin, Michał, Tymoteusz, Rafał, Aleksandra, Sabine, Tomek, Piotr, Adam, Jakub, Rafał, Piotr, Hubert, Marcin, Jakub, Paweł, Jakub, Franciszek, Bartosz, Aleksander, Dawid, Pavel and [you?](https://neptune.ai/jobs)
+Piotr, Valentina, Paulina, Chaz, Prince, Parth, Kshitij, Siddhant, Jakub, Patrycja, Dominika, Karolina, Stephen, Artur, Aleksiej, Martyna, Małgorzata, Magdalena, Karolina, Marcin, Michał, Tymoteusz, Rafał, Aleksandra, Sabine, Tomek, Piotr, Adam, Jakub, Rafał, Piotr, Hubert, Marcin, Jakub, Paweł, Jakub, Franciszek, Bartosz, Aleksander, Dawid, Pavel, Patryk, and [you?](https://neptune.ai/jobs)
