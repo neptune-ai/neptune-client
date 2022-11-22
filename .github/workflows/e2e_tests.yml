@@ -3,30 +3,21 @@ name: Pip install debug
 on:
   push:
 
-
-
 jobs:
-
   e2e:
     runs-on: macos-12
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
-      - name: Install Python ${{ inputs.python-version }}
+      - name: Install Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"
-
-      - name: Install dependencies
-        run: |
-          pip install --upgrade pip
-          pip debug install grpcio --verbose
-        shell: bash
-
-      - name: Install dependencies2
+      - name: MacOS Version
         run: |
           sw_vers -productVersion
+        shell: bash
+
+      - name: Debug
+        run: |
+          pip install --upgrade pip
+          pip debug
         shell: bash
