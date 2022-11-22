@@ -37,13 +37,13 @@ runs:
 
     - name: Install dependencies
       run: |
-        pip install --upgrade pip
-        pip install ".[dev,e2e]"
+         pip3.10 install --upgrade pip
+         pip3.10 install ".[dev,e2e]"
       shell: bash
 
     - name: List dependencies
       run: |
-        pip list
+         pip3.10 list
       shell: bash
 
     - name: E2E - ${{ inputs.module }}
