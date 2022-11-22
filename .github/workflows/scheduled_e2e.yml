@@ -1,8 +1,6 @@
 name: Scheduled E2E
 on:
-  push:
-    branches:
-      - "*"
+  pull_request:
 jobs:
   test-e2e:
     runs-on: ${{ matrix.os }}
