@@ -4,6 +4,7 @@
 - Automatically Clean junk metadata on script runs ([#1083](https://github.com/neptune-ai/neptune-client/pull/1083), [#1093](https://github.com/neptune-ai/neptune-client/pull/1093))
 - New `neptune clear` command ([#1091](https://github.com/neptune-ai/neptune-client/pull/1091), [#1094](https://github.com/neptune-ai/neptune-client/pull/1094))
 - `neptune sync` removes junk metadata ([#1092](https://github.com/neptune-ai/neptune-client/pull/1092))
+- Increase LOGGED_IMAGE_SIZE_LIMIT_MB to 32MB ([#1090](https://github.com/neptune-ai/neptune-client/pull/1090))
 
 ## neptune-client 0.16.12
 
