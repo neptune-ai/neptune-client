@@ -11,6 +11,11 @@ inputs:
   os:
     description: "Operating system"
     required: true
+  name:
+    description: "Name"
+    required: false
+    default: ""
+
 runs:
   using: "composite"
   steps:
@@ -45,7 +50,7 @@ runs:
       run: |
         pytest -v ./e2e_tests -m "${{ inputs.module }}" \
         --timeout=600 --timeout_method=thread \
-        --junitxml="./test-results/test-e2e-${{ inputs.module }}-${{ inputs.os }}-${{ matrix.python-version }}.xml"
+        --junitxml="./test-results/test-e2e-${{ inputs.name }}${{ inputs.module }}-${{ inputs.os }}-${{ matrix.python-version }}.xml"
       shell: bash
 
     - uses: actions/upload-artifact@v2
