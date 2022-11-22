@@ -28,15 +28,24 @@ runs:
           ${{ runner.os }}-python-
           ${{ runner.os }}-
 
+
+
     - name: Install Python ${{ inputs.python-version }}
       uses: actions/setup-python@v4
       with:
         python-version: ${{ inputs.python-version }}
 
+
+    - name: Install dependencies
+      run: |
+        poetry export
+      shell: bash
+
     - name: Install dependencies
       run: |
         pip install ".[dev,e2e]"
       shell: bash
+
 
     - name: List dependencies
       run: |
