@@ -1,0 +1,60 @@
+---
+name: Test E2E
+description: Check client against production API
+inputs:
+  python-version:
+    description: "Python version"
+    required: true
+  module:
+    description: "Module"
+    required: true
+  os:
+    description: "Operating system"
+    required: true
+  name:
+    description: "Name"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get current date
+      id: date
+      run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+      shell: bash
+
+    - uses: actions/cache@v3
+      id: cache
+      with:
+        path: ~/.cache/pip
+        key: ${{ inputs.os }}-python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
+
+    - name: Install Python ${{ inputs.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install dependencies
+      run: |
+        pip install ".[dev,e2e]"
+      shell: bash
+
+    - name: List dependencies
+      run: |
+        pip list
+      shell: bash
+
+    - name: E2E - ${{ inputs.module }}
+
+      run: |
+        pytest -v ./e2e_tests -m "${{ inputs.module }}" \
+        --timeout=600 --timeout_method=thread \
+        --junitxml="./test-results/test-e2e-${{ inputs.name }}${{ inputs.module }}-${{ inputs.os }}-${{ matrix.python-version }}.xml"
+      shell: bash
+
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-artifacts
+        path: ./test-results

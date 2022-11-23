@@ -1,0 +1,150 @@
+name: e2e tests
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+
+env:
+  WORKSPACE_NAME: e2e-tests
+  BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+  USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+  ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+  ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+  SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+
+jobs:
+
+  e2e:
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+        module:
+          - "not s3 and not integrations"
+          - "integrations"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}|${{ matrix.os }})
+        uses: ./.github/actions/tests-e2e-new
+        env:
+          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: ${{ matrix.module }}
+
+  e2e_management:
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+        module:
+          - "management"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}|${{ matrix.os }})
+        uses: ./.github/actions/tests-e2e-new
+        env:
+          NEPTUNE_API_TOKEN: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: ${{ matrix.module }}
+
+  e2e_s3_gcs:
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Tests S3(GCS) (${{ matrix.python-version }}|${{ matrix.os }})
+        uses: ./.github/actions/tests-e2e-new
+        env:
+          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+          AWS_ACCESS_KEY_ID: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
+          S3_ENDPOINT_URL: "https://storage.googleapis.com/"
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: s3
+          name: s3-gcs
+
+  e2e_s3:
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: Tests S3 (${{ matrix.python-version }}|${{ matrix.os }})
+        uses: ./.github/actions/tests-e2e-new
+        env:
+          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+          AWS_ACCESS_KEY_ID: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
+          AWS_SECRET_ACCESS_KEY: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: s3
+
+  junit_report:
+    runs-on: ubuntu-latest
+    needs: [ e2e, e2e_management, e2e_s3, e2e_s3_gcs ]
+    steps:
+      - uses: actions/download-artifact@v3
+        if: always()
+        with:
+          name: test-artifacts
+          path: ./test-results
+
+      - name: Junit report
+        uses: mikepenz/action-junit-report@v2
+        if: always()
+        with:
+          report_paths: './test-results/test-*.xml'
+
+  notify:
+    needs: [ e2e, e2e_management, e2e_s3, e2e_s3_gcs ]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    env:
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v2
+
+      - name: Notify about failure
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION != 'success'
+        with:
+          status: failure
+          fields: repo,message,author,job,eventName,took
+
+      - name: Notify about success
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION == 'success'
+        with:
+          status: success
+          fields: repo,message,author,job,eventName,took
