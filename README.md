@@ -5,19 +5,19 @@
 </div>
 
 <div align="center">
-  <a href="https://docs.neptune.ai/getting-started/hello-world" target=“_blank”>Quickstart</a>
+  <a href="https://docs.neptune.ai/getting-started/hello-world" target="_blank">Quickstart</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://neptune.ai/" target=“_blank”>Website</a>
+  <a href="https://neptune.ai/" target="_blank">Website</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://docs.neptune.ai/" target=“_blank”>Docs</a>
+  <a href="https://docs.neptune.ai/" target="_blank">Docs</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://github.com/neptune-ai/examples" target=“_blank”>Examples</a>
+  <a href="https://github.com/neptune-ai/examples" target="_blank">Examples</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://neptune.ai/resources" target=“_blank”>Resource center</a>
+  <a href="https://neptune.ai/resources" target="_blank">Resource center</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://neptune.ai/blog" target=“_blank”>Blog</a>
+  <a href="https://neptune.ai/blog" target="_blank">Blog</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
-  <a href="https://neptune.ai/events" target=“_blank”>Podcast</a>
+  <a href="https://neptune.ai/events" target="_blank">Podcast</a>
 &nbsp;
   <hr />
 </div>
@@ -40,7 +40,7 @@ neptune.ai makes it easy to log, store, organize, compare, register, and share <
 &nbsp;
 
 &nbsp;
-<a href="https://app.neptune.ai/showcase/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=eccd5adf-42b3-497e-9cc2-9fa2655429b3" target=“_blank”><b>Play with a live neptune.ai app →</b></a>
+<a href="https://app.neptune.ai/showcase/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=eccd5adf-42b3-497e-9cc2-9fa2655429b3" target="_blank"><b>Play with a live neptune.ai app →</b></a>
 &nbsp;
 
 &nbsp;
@@ -76,11 +76,11 @@ run["test_accuracy"] = 0.84
 
 Add a snippet to any step of your ML pipeline once. Decide what and how you want to log. Run a million times.
 
-* <a href="https://docs.neptune.ai/integrations-and-supported-tools/intro" target=“_blank”><b>Any framework:</b></a> any code, PyTorch, PyTorch Lightning, TensorFlow/Keras, Sklearn, lightGBM, XGBoost, Optuna, Kedro.
+* <a href="https://docs.neptune.ai/integrations-and-supported-tools/intro" target="_blank"><b>Any framework:</b></a> any code, PyTorch, PyTorch Lightning, TensorFlow/Keras, Sklearn, lightGBM, XGBoost, Optuna, Kedro.
 
-* <a href="https://docs.neptune.ai/you-should-know/what-can-you-log-and-display" target=“_blank”><b>Any metadata type:</b></a> metrics, parameters, dataset and model versions, images, interactive plots, videos, hardware (GPU, CPU, memory), code state.
+* <a href="https://docs.neptune.ai/you-should-know/what-can-you-log-and-display" target="_blank"><b>Any metadata type:</b></a> metrics, parameters, dataset and model versions, images, interactive plots, videos, hardware (GPU, CPU, memory), code state.
 
-* <a href="https://docs.neptune.ai/how-to-guides/neptune-api" target=“_blank”><b>From anywhere in your ML pipeline:</b></a> multinode pipelines, distributed computing, log during or after execution, log offline, and sync when you are back online.
+* <a href="https://docs.neptune.ai/how-to-guides/neptune-api" target="_blank"><b>From anywhere in your ML pipeline:</b></a> multinode pipelines, distributed computing, log during or after execution, log offline, and sync when you are back online.
 &nbsp;
 
 &nbsp;
@@ -96,11 +96,11 @@ Add a snippet to any step of your ML pipeline once. Decide what and how you want
 
 Organize logs in a fully customizable nested structure. Display model metadata in user-defined dashboard templates.
 
-* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target=“_blank”><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Talk to a dictionary at the code level. See the folder structure in the app. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
+* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target="_blank"><b>Nested metadata structure:</b></a> flexible API lets you customize the metadata logging structure however you want. Talk to a dictionary at the code level. See the folder structure in the app. Organize nested parameter configs or the results on k-fold validation splits the way they should be.
 
-* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target=“_blank”><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
+* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target="_blank"><b>Custom dashboards:</b></a> combine different metadata types in one view. Define it for one run. Use anywhere. Look at GPU, memory consumption, and load times to debug training speed. See learning curves, image predictions, and confusion matrix to debug model quality.
 
-* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target=“_blank”><b>Table views:</b></a> create different views of the runs table and save them for later. You can have separate table views for debugging, comparing parameter sets, or best experiments.
+* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target="_blank"><b>Table views:</b></a> create different views of the runs table and save them for later. You can have separate table views for debugging, comparing parameter sets, or best experiments.
 &nbsp;
 
 &nbsp;
@@ -116,13 +116,13 @@ Organize logs in a fully customizable nested structure. Display model metadata i
 
 Visualize training live in the neptune.ai web app. See how different parameters and configs affect the results. Optimize models quicker.
 
-* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target=“_blank”><b>Compare:</b></a> learning curves, parameters, images, datasets.
+* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target="_blank"><b>Compare:</b></a> learning curves, parameters, images, datasets.
 
-* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target=“_blank”><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
+* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target="_blank"><b>Search, sort, and filter:</b></a> experiments by any field you logged. Use our query language to filter runs based on parameter values, metrics, execution times, or anything else.
 
-* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target=“_blank”><b>Visualize and display:</b></a> runs table, interactive display, folder structure, dashboards.
+* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target="_blank"><b>Visualize and display:</b></a> runs table, interactive display, folder structure, dashboards.
 
-* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target=“_blank”><b>Monitor live:</b></a> hardware consumption metrics, GPU, CPU, memory.
+* <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target="_blank"><b>Monitor live:</b></a> hardware consumption metrics, GPU, CPU, memory.
 
 * <a href="https://app.neptune.ai/o/common/org/example-project-tensorflow-keras/experiments?split=tbl&dash=charts&viewId=4a21e7e9-abab-4f9f-8723-41f5ae4f71e8&product_tour_id=314370" target=“_blank”><b>Group by:</b></a> dataset versions, parameters.
 &nbsp;
@@ -140,11 +140,11 @@ Visualize training live in the neptune.ai web app. See how different parameters 
 
 Version, review, and access production-ready models and metadata associated with them in a single place.
 
-* <a href="https://docs.neptune.ai/how-to-guides/model-registry" target=“_blank”><b>Version models:</b></a> register models, create model versions, version external model artifacts.
+* <a href="https://docs.neptune.ai/how-to-guides/model-registry" target="_blank"><b>Version models:</b></a> register models, create model versions, version external model artifacts.
 
-* <a href="https://docs.neptune.ai/how-to-guides/model-registry" target=“_blank”><b>Review and change stages:</b></a> look at the validation, test metrics and other model metadata. You can move models between None/Staging/Production/Archived.
+* <a href="https://docs.neptune.ai/how-to-guides/model-registry" target="_blank"><b>Review and change stages:</b></a> look at the validation, test metrics and other model metadata. You can move models between None/Staging/Production/Archived.
 
-* <a href="https://docs.neptune.ai/how-to-guides/model-registry" target=“_blank”><b>Access and share models:</b></a> every model and model version is accessible via the neptune.ai web app or through the API.
+* <a href="https://docs.neptune.ai/how-to-guides/model-registry" target="_blank"><b>Access and share models:</b></a> every model and model version is accessible via the neptune.ai web app or through the API.
 &nbsp;
 
 &nbsp;
@@ -160,13 +160,13 @@ Version, review, and access production-ready models and metadata associated with
 
 Have a single place where your team can see the results and access all models and experiments.
 
-* <a href="https://docs.neptune.ai/you-should-know/collaboration-in-neptune" target=“_blank”><b>Send a link:</b></a> share every chart, dashboard, table view, or anything else you see in the neptune.ai app by copying and sending persistent URLs.
+* <a href="https://docs.neptune.ai/you-should-know/collaboration-in-neptune" target="_blank"><b>Send a link:</b></a> share every chart, dashboard, table view, or anything else you see in the neptune.ai app by copying and sending persistent URLs.
 
-* <a href="https://docs.neptune.ai/usage/querying_metadata/" target=“_blank”><b>Query API:</b></a> access all model metadata via neptune.ai API. Whatever you logged, you can query in a similar way.
+* <a href="https://docs.neptune.ai/usage/querying_metadata/" target="_blank"><b>Query API:</b></a> access all model metadata via neptune.ai API. Whatever you logged, you can query in a similar way.
 
-* <a href="https://neptune.ai/pricing" target=“_blank”><b>Manage users and projects:</b></a> create different projects, add users to them, and grant different permissions levels.
+* <a href="https://neptune.ai/pricing" target="_blank"><b>Manage users and projects:</b></a> create different projects, add users to them, and grant different permissions levels.
 
-* <a href="https://neptune.ai/pricing" target=“_blank”><b>Add your entire org:</b></a> get unlimited users on every paid plan. So you can invite your entire organization, including product managers and subject matter experts at no extra cost.
+* <a href="https://neptune.ai/pricing" target="_blank"><b>Add your entire org:</b></a> get unlimited users on every paid plan. So you can invite your entire organization, including product managers and subject matter experts at no extra cost.
 &nbsp;
 
 &nbsp;
@@ -178,7 +178,7 @@ Have a single place where your team can see the results and access all models an
 
 &nbsp;
 ## Integrate with any MLOps stack
-neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/" target=“_blank”><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, Sklearn, XGBoost, Optuna, Kedro, HuggingFace, fastai, Prophet, and more.
+neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/" target="_blank"><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, Sklearn, XGBoost, Optuna, Kedro, HuggingFace, fastai, Prophet, and more.
 
 #### <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/Pytorch-lightning-logo.png" width="60" /> <br> <br> PyTorch Lightning
 
@@ -221,16 +221,16 @@ trainer.fit(my_model, my_dataloader)
 </div>
 &nbsp;
 
-Read how various customers use Neptune to [improve their workflow](https://neptune.ai/customers).
+Read how various customers use Neptune to <a href="https://neptune.ai/customers" target="_blank">improve their workflow</a>.
 &nbsp;
 
 &nbsp;
 ## Support
 
 If you get stuck or simply want to talk to us about something, here are your options:
-* Check our [FAQ page](https://docs.neptune.ai/getting_help/#frequently-asked-questions).
-* Take a look at our <a href="https://neptune.ai/resources" target=“_blank”>resource center</a>.
-* Chat! In the app, click the <a href="https://docs.neptune.ai/getting_help/#chat" target=“_blank”>blue message icon</a> in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
+* Check our <a href="https://docs.neptune.ai/getting_help/#frequently-asked-questions" target="_blank">FAQ page</a>.
+* Take a look at our <a href="https://neptune.ai/resources" target="_blank">resource center</a>.
+* Chat! In the app, click the <a href="https://docs.neptune.ai/getting_help/#chat" target="_blank">blue message icon</a> in the bottom-right corner and send a message. A real person will talk to you ASAP (typically very ASAP).
 * You can just shoot us an email at [support@neptune.ai](mailto:support@neptune.ai).
 &nbsp;
 
