@@ -34,7 +34,7 @@ neptune.ai makes it easy to log, store, organize, compare, register, and share <
 &nbsp;
 <div align="center">
     <a href="https://youtu.be/9jN7RuPNEyc">
-      <img border="0" alt="neptune.ai explainer video" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-video.png" width="600">
+      <img border="0" alt="neptune.ai explainer video" src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/github-explainer-video.png" width="600">
     </a>
 </div>
 &nbsp;
