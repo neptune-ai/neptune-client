@@ -64,15 +64,18 @@ class Series(Attribute, Generic[Val, Data]):
             value = self._data_to_value(value)
         clear_op = self._get_clear_operation()
         config_op = self._get_config_operation_from_value(value)
-        with self._container.lock():
-            if config_op:
+
+        if config_op:
+            with self._container.lock():
                 self._enqueue_operation(config_op, wait=False)
-            if not value.values:
+        if not value.values:
+            with self._container.lock():
                 self._enqueue_operation(clear_op, wait=wait)
-            else:
+        else:
+            ts = time.time()
+            ops = self._get_log_operations_from_value(value, None, ts)
+            with self._container.lock():
                 self._enqueue_operation(clear_op, wait=False)
-                ts = time.time()
-                ops = self._get_log_operations_from_value(value, None, ts)
                 for op in ops:
                     self._enqueue_operation(op, wait=wait)
 
