@@ -21,7 +21,7 @@ jobs:
       NEPTUNE_RETRIES_TIMEOUT: 1200
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           # Some tests are checking version of 'neptune' package.
           # To simplify deployment we're using 'versioneer' but
@@ -48,7 +48,7 @@ jobs:
       pull-requests: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Publish tests
         uses: ./.github/actions/publish-tests-result
