@@ -16,8 +16,16 @@ jobs:
           sw_vers -productVersion
         shell: bash
 
-      - name: Debug
+
+
+      - name: MacOS platforms
         run: |
-          pip install --upgrade pip
-          pip debug --verbose
+          pip install packaging
+          python -c "from packaging.tags import mac_platforms;print('\n'.join(list(mac_platforms())));"
         shell: bash
+
+#      - name: Debug
+#        run: |
+#          pip install --upgrade pip
+#          pip debug --verbose
+#        shell: bash
