@@ -1,5 +1,6 @@
 name: Merge to master
 on:
+  pull_request:
   push:
     branches:
       - master
@@ -38,7 +39,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-latest]  # Set back to ubuntu-latest after fixing it
+        os: [windows-latest]  # Set back to ubuntu-latest after fixing it
         python-version: ["3.7"]
     env:
       WORKSPACE_NAME: e2e-tests
