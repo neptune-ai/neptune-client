@@ -5,34 +5,34 @@ on:
     branches:
       - master
 jobs:
-  pre-commit:
-    runs-on: ubuntu-20.04   # Set back to ubuntu-latest after fixing it
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Pre-commit
-        uses: ./.github/actions/pre-commit
-
-  test:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 75
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, macos-latest, windows-latest]   # Set back to ubuntu-latest after fixing it
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          # Some tests are checking version of 'neptune' package.
-          # To simplify deployment we're using 'versioneer' but
-          # when working with branches it yields "0+unknown".
-          # Fetching all history fetches also last tag and helps versioneer
-          fetch-depth: 0
-
-      - name: Tests
-        uses: ./.github/actions/tests
+#  pre-commit:
+#    runs-on: ubuntu-20.04   # Set back to ubuntu-latest after fixing it
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#
+#      - name: Pre-commit
+#        uses: ./.github/actions/pre-commit
+#
+#  test:
+#    runs-on: ${{ matrix.os }}
+#    timeout-minutes: 75
+#    strategy:
+#      matrix:
+#        os: [ubuntu-20.04, macos-latest, windows-latest]   # Set back to ubuntu-latest after fixing it
+#        python-version: ["3.7", "3.8", "3.9", "3.10"]
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#        with:
+#          # Some tests are checking version of 'neptune' package.
+#          # To simplify deployment we're using 'versioneer' but
+#          # when working with branches it yields "0+unknown".
+#          # Fetching all history fetches also last tag and helps versioneer
+#          fetch-depth: 0
+#
+#      - name: Tests
+#        uses: ./.github/actions/tests
 
   test-e2e:
     runs-on: ${{ matrix.os }}
@@ -71,40 +71,40 @@ jobs:
           aws-secret-access-key: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
           gcs-access-key-id: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
           gcs-secret-access-key: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
-
-  publish-tests:
-    needs: [test, test-e2e]
-    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
-    if: always()
-    permissions:
-      checks: write
-      pull-requests: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Publish tests
-        uses: ./.github/actions/publish-tests-result
-
-  notify:
-    needs: [pre-commit, test, test-e2e]
-    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
-    if: always()
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v3
-
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
-        with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
-
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
-        with:
-          status: success
-          fields: repo,message,author,job,eventName,took
+#
+#  publish-tests:
+#    needs: [test, test-e2e]
+#    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
+#    if: always()
+#    permissions:
+#      checks: write
+#      pull-requests: write
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#
+#      - name: Publish tests
+#        uses: ./.github/actions/publish-tests-result
+#
+#  notify:
+#    needs: [pre-commit, test, test-e2e]
+#    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
+#    if: always()
+#    env:
+#      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#    steps:
+#      - uses: technote-space/workflow-conclusion-action@v3
+#
+#      - name: Notify about failure
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION != 'success'
+#        with:
+#          status: failure
+#          fields: repo,message,author,job,eventName,took
+#
+#      - name: Notify about success
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION == 'success'
+#        with:
+#          status: success
+#          fields: repo,message,author,job,eventName,took
