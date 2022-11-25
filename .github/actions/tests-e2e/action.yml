@@ -60,14 +60,3 @@ runs:
         env:
           NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
           NEPTUNE_PROJECT: e2e-tests/e2e
-
-      - name: Display test artifacts
-        if: always()
-        run: ls -R ./test-results
-        shell: bash
-
-      - uses: actions/upload-artifact@v2
-        if: always()
-        with:
-          name: test-artifacts
-          path: ./test-results

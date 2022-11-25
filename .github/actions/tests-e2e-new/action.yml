@@ -30,9 +30,3 @@ runs:
         --timeout=600 --timeout_method=thread \
         --junitxml="./test-results/test-e2e-${{ inputs.name }}${{ inputs.module }}-${{ inputs.os }}-${{ matrix.python-version }}.xml"
       shell: bash
-
-    - uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: test-artifacts
-        path: ./test-results
