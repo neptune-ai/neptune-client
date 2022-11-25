@@ -27,3 +27,9 @@ runs:
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
+
+    - uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-artifacts
+        path: ./test-results

@@ -28,3 +28,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
+
+      - name: Publish tests
+        uses: ./.github/actions/publish-tests-result
