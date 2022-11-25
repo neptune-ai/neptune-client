@@ -20,9 +20,10 @@ runs:
   using: "composite"
   steps:
     - name: Install package
-      uses: ./.github/actions/package
+      uses: ./.github/actions/install-package
       with:
         python-version: ${{ inputs.python-version }}
+        os: ${{ inputs.os }}
 
     - name: E2E - ${{ inputs.module }}
       run: |

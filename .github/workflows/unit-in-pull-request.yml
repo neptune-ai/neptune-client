@@ -1,0 +1,30 @@
+name: unit tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+
+jobs:
+  test:
+    timeout-minutes: 75
+    strategy:
+      matrix:
+        os: [ubuntu-20.04]  # Set back to ubuntu-latest after fixing it
+        python-version: ["3.7", "3.10"] # minimum, maximum
+        module:
+          - "legacy"
+          - "management"
+          - "new"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}|${{ matrix.os }})
+        uses: ./.github/actions/test-unit
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: ${{ matrix.module }}

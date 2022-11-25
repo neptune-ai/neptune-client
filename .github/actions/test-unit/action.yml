@@ -1,0 +1,29 @@
+---
+name: Test Unit
+description: Check unit tests
+inputs:
+  python-version:
+    description: "Python version"
+    required: true
+  module:
+    description: "Module"
+    required: true
+  os:
+    description: "Operating system"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install package
+      uses: ./.github/actions/install-package
+      with:
+        python-version: ${{ inputs.python-version }}
+        os: ${{ inputs.os }}
+
+    - name: Unit - ${{ inputs.module }}
+      run: |
+        pytest -v ./tests/unit/neptune/${{ inputs.module }} \
+        --timeout=120 --timeout_method=thread \
+        --junitxml="./test-results/test-unit-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
+      shell: bash

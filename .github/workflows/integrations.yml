@@ -1,0 +1,87 @@
+name: integrations tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+
+env:
+  NEPTUNE_API_TOKEN: ${{ inputs.user-api-token}}
+  NEPTUNE_PROJECT: e2e-tests/integrations
+
+jobs:
+  fastai:
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Tests Fast.ai integration (${{ matrix.python-version }}|${{ matrix.os }})
+      uses: ./.github/actions/test-integration-remote
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+        repository-name: neptune-fastai
+
+  kedro:
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Tests Kedro integration (${{ matrix.python-version }}|${{ matrix.os }})
+      uses: ./.github/actions/test-integration-remote
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+        repository-name: kedro-neptune
+
+  prophet:
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Tests Prophet integration (${{ matrix.python-version }}|${{ matrix.os }})
+      uses: ./.github/actions/test-integration-remote
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+        repository-name: neptune-prophet
+
+  keras:
+    strategy:
+      matrix:
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Tests Keras integration (${{ matrix.python-version }}|${{ matrix.os }})
+      uses: ./.github/actions/test-integration-remote
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+        repository-name: neptune-tensorflow-keras

@@ -1,0 +1,44 @@
+name: unit tests
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+
+jobs:
+  test:
+    timeout-minutes: 75
+    strategy:
+      matrix:
+        os:
+          - "ubuntu-20.04" # Set back to ubuntu-latest after fixing it
+          - "macos-latest"
+          - "windows-latest"
+        python-version:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+          - "3.11"
+        module:
+          - "legacy"
+          - "management"
+          - "new"
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}|${{ matrix.os }})
+        uses: ./.github/actions/test-unit
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: ${{ matrix.module }}
