@@ -20,6 +20,7 @@ env:
 
 jobs:
   e2e:
+    timeout-minutes: 75
     strategy:
       matrix:
         python-version: [ "3.7", "3.10" ]
@@ -43,6 +44,7 @@ jobs:
           module: ${{ matrix.module }}
 
   e2e_management:
+    timeout-minutes: 75
     strategy:
       matrix:
         python-version: [ "3.7", "3.10" ]
@@ -65,6 +67,7 @@ jobs:
           module: ${{ matrix.module }}
 
   e2e_s3_gcs:
+    timeout-minutes: 75
     strategy:
       matrix:
         python-version: [ "3.7", "3.10" ]
@@ -90,6 +93,7 @@ jobs:
           name: s3-gcs
 
   e2e_s3:
+    timeout-minutes: 75
     strategy:
       matrix:
         python-version: [ "3.7", "3.10" ]
