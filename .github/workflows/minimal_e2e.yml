@@ -38,17 +38,3 @@ jobs:
           aws-secret-access-key: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
           gcs-access-key-id: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
           gcs-secret-access-key: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
-
-  publish-tests:
-    needs: [test-e2e]
-    runs-on: ubuntu-20.04   # Set back to ubuntu-latest after fixing it
-    if: always()
-    permissions:
-      checks: write
-      pull-requests: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Publish tests
-        uses: ./.github/actions/publish-tests-result
