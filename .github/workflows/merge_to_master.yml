@@ -4,15 +4,6 @@ on:
     branches:
       - master
 jobs:
-  pre-commit:
-    runs-on: ubuntu-20.04   # Set back to ubuntu-latest after fixing it
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Pre-commit
-        uses: ./.github/actions/pre-commit
-
   test:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
@@ -86,7 +77,7 @@ jobs:
         uses: ./.github/actions/publish-tests-result
 
   notify:
-    needs: [pre-commit, test, test-e2e]
+    needs: [test, test-e2e]
     runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
     if: always()
     env:
