@@ -75,7 +75,7 @@ run["test_accuracy"] = 0.84
 
 Add a snippet to any step of your ML pipeline once. Decide what and how you want to log. Run a million times.
 
-* <a href="https://docs.neptune.ai/integrations/"><b>Any framework:</b></a> any code, PyTorch, PyTorch Lightning, TensorFlow/Keras, Sklearn, lightGBM, XGBoost, Optuna, Kedro.
+* <a href="https://docs.neptune.ai/integrations/"><b>Any framework:</b></a> any code, PyTorch, PyTorch Lightning, TensorFlow/Keras, scikit-learn, LightGBM, XGBoost, Optuna, Kedro.
 
 * <a href="https://docs.neptune.ai/logging/what_you_can_log/"><b>Any metadata type:</b></a> metrics, parameters, dataset and model versions, images, interactive plots, videos, hardware (GPU, CPU, memory), code state.
 
@@ -177,7 +177,7 @@ Have a single place where your team can see the results and access all models an
 
 &nbsp;
 ## Integrate with any MLOps stack
-neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/"><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, Sklearn, XGBoost, Optuna, Kedro, HuggingFace, fastai, Prophet, and more.
+neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/"><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, scikit-learn, XGBoost, Optuna, Kedro, 🤗 Transformers, fastai, Prophet, and more.
 
 #### <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/Pytorch-lightning-logo.png" width="60" /> <br> <br> PyTorch Lightning
 
