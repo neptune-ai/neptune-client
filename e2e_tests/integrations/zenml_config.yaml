@@ -1,0 +1,16 @@
+steps:
+  evaluator:
+    enable_cache: False
+    experiment_tracker: neptune_tracker
+  trainer:
+    enable_cache: False
+    experiment_tracker: neptune_tracker
+    outputs:
+      output:
+        materializer_source: zenml.integrations.tensorflow.materializers.keras_materializer.KerasMaterializer
+    parameters:
+      epochs: 3
+      lr: 0.0001
+    settings:
+      experiment_tracker.neptune:
+        tags: ['keras', 'mnist']
