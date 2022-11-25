@@ -1,0 +1,36 @@
+name: slash-integration
+
+on:
+  repository_dispatch:
+    types: [ run-integration-command ]
+
+jobs:
+  post-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Add reaction
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          reaction-type: hooray
+
+      - name: Create URL to the run output
+        id: vars
+        run: echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+      - name: Create comment
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
+          body: |
+            Hey @${{ github.event.client_payload.github.actor }}!
+            Looks like you're looking for something much demanding.
+            I've scheduled *client integrations on full matrix* for you.
+            Check it here: ${{ steps.vars.outputs.run-url }}
+  run:
+    uses: ./.github/workflows/integrations
