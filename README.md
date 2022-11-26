@@ -190,8 +190,8 @@ from pytorch_lightning.loggers import NeptuneLogger
 # Create NeptuneLogger instance
 from neptune.new import ANONYMOUS_API_TOKEN
 neptune_logger = NeptuneLogger(
-    api_key=ANONYMOUS_API_TOKEN,  #
-    project="common/pytorch-lightning-integration",  #
+    api_key=ANONYMOUS_API_TOKEN,  # replace with your own
+    project="common/pytorch-lightning-integration",  # "WORKSPACE_NAME/PROJECT_NAME"
     tags=["training", "resnet"],  # optional
 )
 
