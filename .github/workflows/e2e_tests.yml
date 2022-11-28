@@ -121,7 +121,7 @@ jobs:
           path: ./test-results
 
       - name: Junit report
-        uses: mikepenz/action-junit-report@v2
+        uses: mikepenz/action-junit-report@v3
         if: always()
         with:
           report_paths: './test-results/test-*.xml'
