@@ -26,7 +26,7 @@ jobs:
         os: [ windows-latest ]
         module:
           - "not s3 and not integrations"
-          - "integrations"
+#          - "integrations"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
