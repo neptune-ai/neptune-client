@@ -14,11 +14,7 @@ from zenml.integrations.neptune.experiment_trackers.run_state import get_neptune
 from zenml.models.component_model import ComponentModel
 from zenml.models.stack_models import StackModel
 from zenml.pipelines import pipeline
-from zenml.steps import (
-    BaseParameters,
-    Output,
-    step,
-)
+from zenml.steps import step
 
 import neptune.new as neptune
 from e2e_tests.base import BaseE2ETest
