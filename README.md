@@ -5,7 +5,7 @@
 </div>
 
 <div align="center">
-  <a href="https://docs.neptune.ai/getting-started/hello-world">Quickstart</a>
+  <a href="https://docs.neptune.ai/usage/quickstart/">Quickstart</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
   <a href="https://neptune.ai/">Website</a>
   <span>&nbsp;&nbsp;•&nbsp;&nbsp;</span>
@@ -75,11 +75,11 @@ run["test_accuracy"] = 0.84
 
 Add a snippet to any step of your ML pipeline once. Decide what and how you want to log. Run a million times.
 
-* <a href="https://docs.neptune.ai/integrations-and-supported-tools/intro"><b>Any framework:</b></a> any code, PyTorch, PyTorch Lightning, TensorFlow/Keras, Sklearn, lightGBM, XGBoost, Optuna, Kedro.
+* <a href="https://docs.neptune.ai/integrations/"><b>Any framework:</b></a> any code, PyTorch, PyTorch Lightning, TensorFlow/Keras, scikit-learn, LightGBM, XGBoost, Optuna, Kedro.
 
-* <a href="https://docs.neptune.ai/you-should-know/what-can-you-log-and-display"><b>Any metadata type:</b></a> metrics, parameters, dataset and model versions, images, interactive plots, videos, hardware (GPU, CPU, memory), code state.
+* <a href="https://docs.neptune.ai/logging/what_you_can_log/"><b>Any metadata type:</b></a> metrics, parameters, dataset and model versions, images, interactive plots, videos, hardware (GPU, CPU, memory), code state.
 
-* <a href="https://docs.neptune.ai/how-to-guides/neptune-api"><b>From anywhere in your ML pipeline:</b></a> multinode pipelines, distributed computing, log during or after execution, log offline, and sync when you are back online.
+* <a href="https://docs.neptune.ai/usage/pipelines/"><b>From anywhere in your ML pipeline:</b></a> multinode pipelines, distributed computing, log during or after execution, log offline, and sync when you are back online.
 &nbsp;
 
 &nbsp;
@@ -139,11 +139,11 @@ Visualize training live in the neptune.ai web app. See how different parameters 
 
 Version, review, and access production-ready models and metadata associated with them in a single place.
 
-* <a href="https://docs.neptune.ai/how-to-guides/model-registry"><b>Version models:</b></a> register models, create model versions, version external model artifacts.
+* <a href="https://docs.neptune.ai/model_registry/registering_model/"><b>Version models:</b></a> register models, create model versions, version external model artifacts.
 
-* <a href="https://docs.neptune.ai/how-to-guides/model-registry"><b>Review and change stages:</b></a> look at the validation, test metrics and other model metadata. You can move models between None/Staging/Production/Archived.
+* <a href="https://docs.neptune.ai/model_registry/managing_stage/"><b>Review and change stages:</b></a> look at the validation, test metrics and other model metadata. You can move models between None/Staging/Production/Archived.
 
-* <a href="https://docs.neptune.ai/how-to-guides/model-registry"><b>Access and share models:</b></a> every model and model version is accessible via the neptune.ai web app or through the API.
+* <a href="https://docs.neptune.ai/model_registry/overview/"><b>Access and share models:</b></a> every model and model version is accessible via the neptune.ai web app or through the API.
 &nbsp;
 
 &nbsp;
@@ -159,7 +159,7 @@ Version, review, and access production-ready models and metadata associated with
 
 Have a single place where your team can see the results and access all models and experiments.
 
-* <a href="https://docs.neptune.ai/you-should-know/collaboration-in-neptune"><b>Send a link:</b></a> share every chart, dashboard, table view, or anything else you see in the neptune.ai app by copying and sending persistent URLs.
+* <a href="https://docs.neptune.ai/about/collaboration/"><b>Send a link:</b></a> share every chart, dashboard, table view, or anything else you see in the neptune.ai app by copying and sending persistent URLs.
 
 * <a href="https://docs.neptune.ai/usage/querying_metadata/"><b>Query API:</b></a> access all model metadata via neptune.ai API. Whatever you logged, you can query in a similar way.
 
@@ -177,7 +177,7 @@ Have a single place where your team can see the results and access all models an
 
 &nbsp;
 ## Integrate with any MLOps stack
-neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/"><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, Sklearn, XGBoost, Optuna, Kedro, HuggingFace, fastai, Prophet, and more.
+neptune.ai integrates with <a href="https://docs.neptune.ai/integrations/"><b>25+ frameworks:</b></a> PyTorch, PyTorch Lightning, TensorFlow/Keras, LightGBM, scikit-learn, XGBoost, Optuna, Kedro, 🤗 Transformers, fastai, Prophet, and more.
 
 #### <img src="https://github.com/neptune-ai/neptune-client/blob/assets/readme/Pytorch-lightning-logo.png" width="60" /> <br> <br> PyTorch Lightning
 
@@ -190,8 +190,8 @@ from pytorch_lightning.loggers import NeptuneLogger
 # Create NeptuneLogger instance
 from neptune.new import ANONYMOUS_API_TOKEN
 neptune_logger = NeptuneLogger(
-    api_key=ANONYMOUS_API_TOKEN,  #
-    project="common/pytorch-lightning-integration",  #
+    api_key=ANONYMOUS_API_TOKEN,
+    project="common/pytorch-lightning-integration",
     tags=["training", "resnet"],  # optional
 )
 
