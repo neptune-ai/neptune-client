@@ -14,12 +14,27 @@
 # limitations under the License.
 #
 import sys
+import threading
 import unittest
 from contextlib import redirect_stdout
 from io import StringIO
 from unittest.mock import MagicMock
 
-from neptune.new.internal.streams.std_stream_capture_logger import StdoutCaptureLogger
+from neptune.new.internal.streams.std_stream_capture_logger import (
+    StdoutCaptureLogger,
+    StdStreamCaptureLogger,
+)
+from neptune.new.logging import Logger as NeptuneLogger
+
+
+class FakeLogger:
+    def __init__(self, event_to_wait: threading.Event, real_logger: NeptuneLogger):
+        self._event_to_wait = event_to_wait
+        self._real_logger = real_logger
+
+    def log(self, data):
+        self._event_to_wait.wait()
+        self._real_logger.log(data)
 
 
 class TestStdStreamCaptureLogger(unittest.TestCase):
@@ -56,3 +71,30 @@ class TestStdStreamCaptureLogger(unittest.TestCase):
             mock_run[attr_name].log.assert_not_called()
         stdout.seek(0)
         self.assertEqual(stdout.read(), "testing\n")
+
+    def test_logger_with_lock_does_not_cause_deadlock(self):
+        stream = StringIO()
+        mock_run = MagicMock()
+        attr_name = "sys/stdout"
+
+        logger = StdStreamCaptureLogger(mock_run, attr_name, stream)
+        done_waiting = threading.Event()
+        logger._logger = FakeLogger(done_waiting, logger._logger)
+
+        # The logger is blocked in background, the main thread is still awake
+        logger.write("testing")
+        self.assertListEqual(
+            mock_run[attr_name].log.call_args_list,
+            [],
+        )
+
+        done_waiting.set()
+        logger.close()
+        self.assertListEqual(
+            mock_run[attr_name].log.call_args_list,
+            [
+                (("testing",), {}),
+            ],
+        )
+        stream.seek(0)
+        self.assertEqual(stream.read(), "testing")
