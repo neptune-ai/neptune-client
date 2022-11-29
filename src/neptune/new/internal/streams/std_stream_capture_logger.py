@@ -41,7 +41,7 @@ class StdStreamCaptureLogger:
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
-    def close(self, wait_for_all_logs=False):
+    def close(self, wait_for_all_logs=True):
         if not wait_for_all_logs:
             self.enabled = False
         self._log_data_queue.put_nowait(None)
@@ -64,7 +64,7 @@ class StdoutCaptureLogger(StdStreamCaptureLogger):
         super().__init__(container, attribute_name, sys.stdout)
         sys.stdout = self
 
-    def close(self, wait_for_all_logs=False):
+    def close(self, wait_for_all_logs=True):
         sys.stdout = self.stream
         super().close(wait_for_all_logs)
 
@@ -74,6 +74,6 @@ class StderrCaptureLogger(StdStreamCaptureLogger):
         super().__init__(container, attribute_name, sys.stderr)
         sys.stderr = self
 
-    def close(self, wait_for_all_logs=False):
+    def close(self, wait_for_all_logs=True):
         sys.stderr = self.stream
         super().close(wait_for_all_logs)

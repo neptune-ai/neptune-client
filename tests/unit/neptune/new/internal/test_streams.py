@@ -46,7 +46,7 @@ class TestStdStreamCaptureLogger(unittest.TestCase):
             logger = StdoutCaptureLogger(mock_run, attr_name)
             stdout_fp = sys.stdout
             print("testing", file=stdout_fp)
-            logger.close(wait_for_all_logs=True)
+            logger.close()
 
             self.assertListEqual(
                 mock_run[attr_name].log.call_args_list,
