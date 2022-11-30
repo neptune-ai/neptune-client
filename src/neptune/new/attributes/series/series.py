@@ -53,8 +53,12 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
     ) -> List[LogOperationTV]:
         if steps is None:
             steps = cycle([None])
+        else:
+            assert len(value) == len(steps)
         if timestamps is None:
             timestamps = cycle([time.time()])
+        else:
+            assert len(value) == len(timestamps)
 
         mapped_values = self._map_series_val(value)
         values_with_step_and_ts = zip(mapped_values, steps, timestamps)
@@ -140,10 +144,14 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
 
         if steps is not None:
             verify_collection_type("steps", steps, (float, int))
-            assert len(steps) == len(values)
+            if len(steps) != len(values):
+                raise ValueError(f"Number of steps must be equal to number of values ({len(steps)} != {len(values)}")
         if timestamps is not None:
             verify_collection_type("timestamps", timestamps, (float, int))
-            assert len(timestamps) == len(values)
+            if len(timestamps) != len(values):
+                raise ValueError(
+                    f"Number of timestamps must be equal to number of values ({len(timestamps)} != {len(values)}"
+                )
 
         ops = self._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
 
