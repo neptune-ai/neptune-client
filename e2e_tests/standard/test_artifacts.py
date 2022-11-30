@@ -35,6 +35,16 @@ from e2e_tests.utils import (
 from neptune.new.metadata_containers import MetadataContainer
 
 
+def list_files(startpath):
+    for root, dirs, files in os.walk(startpath):
+        level = root.replace(startpath, "").count(os.sep)
+        indent = " " * 4 * (level)
+        print("{}{}/".format(indent, os.path.basename(root)))
+        subindent = " " * 4 * (level + 1)
+        for f in files:
+            print("{}{}".format(subindent, f))
+
+
 class TestArtifacts(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_creation(self, container: MetadataContainer):
@@ -97,6 +107,7 @@ class TestArtifacts(BaseE2ETest):
 
                 with with_check_if_file_appears(Path(filepath)):
                     container[second].download()
+                    list_files(".")
 
     @pytest.mark.s3
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
