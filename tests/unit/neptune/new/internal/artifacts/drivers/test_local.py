@@ -68,6 +68,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
     def test_match_by_path(self):
         self.assertEqual(ArtifactDriversMap.match_path("file:///path/to/"), LocalArtifactDriver)
         self.assertEqual(ArtifactDriversMap.match_path("/path/to/"), LocalArtifactDriver)
+        self.assertEqual(ArtifactDriversMap.match_path("file://C:\\Users\\Tester"), LocalArtifactDriver)
 
     def test_match_by_type(self):
         self.assertEqual(ArtifactDriversMap.match_type("Local"), LocalArtifactDriver)

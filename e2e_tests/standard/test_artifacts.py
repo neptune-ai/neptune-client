@@ -97,7 +97,7 @@ class TestArtifacts(BaseE2ETest):
             # Relative path
             container[first].track_files(filename)
             # Absolute path
-            container[second].track_files(tmp)
+            container[second].track_files(f"file://{tmp}")
 
             container.sync()
 
