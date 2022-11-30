@@ -24,9 +24,6 @@ jobs:
       matrix:
         python-version: [ "3.10" ]
         os: [ windows-latest ]
-        module:
-          - "not s3 and not integrations"
-          - "integrations"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -40,7 +37,27 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: ${{ matrix.module }}
+          module: not s3 and not integrations
+
+#  e2e_integrations:
+#    strategy:
+#      matrix:
+#        python-version: [ "3.10" ]
+#        os: [ windows-latest ]
+#    runs-on: ${{ matrix.os }}
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#        with:
+#          fetch-depth: 0
+#      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}|${{ matrix.os }})
+#        uses: ./.github/actions/tests-e2e-new
+#        env:
+#          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#          os: ${{ matrix.os }}
+#          module: integrations
 
   e2e_management:
     strategy:
