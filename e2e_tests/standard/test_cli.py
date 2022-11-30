@@ -143,6 +143,7 @@ class TestSync(BaseE2ETest):
 
             run2 = neptune.init_run(with_id=sys_id, project=environment.project)
             assert run2[key].fetch() == val
+            run2.stop()
 
     @pytest.mark.parametrize("container_type", ["run"])
     def test_clear_command_offline_and_online_containers(self, environment, container_type):
