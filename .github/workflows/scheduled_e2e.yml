@@ -9,7 +9,7 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-latest]  # Set back to ubuntu-latest after fixing it
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.7", "3.8", "3.9", "3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
@@ -44,7 +44,7 @@ jobs:
 
   notify:
     needs: [test-e2e]
-    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

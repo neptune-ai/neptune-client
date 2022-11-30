@@ -6,7 +6,7 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-20.04]  # Set back to ubuntu-latest after fixing it
+        os: [ubuntu-latest]
         python-version: ["3.10"]
     env:
       WORKSPACE_NAME: e2e-tests
@@ -41,7 +41,7 @@ jobs:
 
   publish-tests:
     needs: [test-e2e]
-    runs-on: ubuntu-20.04   # Set back to ubuntu-latest after fixing it
+    runs-on: ubuntu-latest
     if: always()
     permissions:
       checks: write
