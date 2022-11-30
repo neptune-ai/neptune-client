@@ -33,7 +33,6 @@ from neptune.new.metadata_containers import MetadataContainer
 
 
 class TestArtifacts(BaseE2ETest):
-    @pytest.mark.win
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_creation(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
@@ -51,7 +50,6 @@ class TestArtifacts(BaseE2ETest):
         assert container[first].fetch_hash() == container[second].fetch_hash()
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
 
-    @pytest.mark.win
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_assignment(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
@@ -97,7 +95,6 @@ class TestArtifacts(BaseE2ETest):
                 with with_check_if_file_appears(filepath):
                     container[second].download()
 
-    @pytest.mark.win
     @pytest.mark.s3
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_s3_creation(self, container: MetadataContainer, bucket, environment):
@@ -124,7 +121,6 @@ class TestArtifacts(BaseE2ETest):
         assert container[first].fetch_hash() == container[second].fetch_hash()
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
 
-    @pytest.mark.win
     @pytest.mark.s3
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_s3_download(self, container: MetadataContainer, bucket, environment):
@@ -159,7 +155,7 @@ class TestArtifacts(BaseE2ETest):
 
     @pytest.mark.win
     @pytest.mark.s3
-    @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
+    @pytest.mark.parametrize("container", ["run"], indirect=True)
     def test_s3_existing(self, container: MetadataContainer, bucket, environment):
         first, second, prefix = (
             self.gen_key(),
@@ -199,7 +195,6 @@ class TestArtifacts(BaseE2ETest):
         assert container[first].fetch_hash() == container[second].fetch_hash()
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
 
-    @pytest.mark.win
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_existing(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
@@ -228,7 +223,6 @@ class TestArtifacts(BaseE2ETest):
         assert container[first].fetch_hash() == container[second].fetch_hash()
         assert container[first].fetch_files_list() == container[second].fetch_files_list()
 
-    @pytest.mark.win
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_hash_cache(self, container: MetadataContainer):
         key = self.gen_key()
