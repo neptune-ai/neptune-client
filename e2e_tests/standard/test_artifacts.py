@@ -16,7 +16,10 @@
 import os
 import tempfile
 import time
-from pathlib import Path
+from pathlib import (
+    Path,
+    PurePosixPath,
+)
 
 import pytest
 
@@ -162,7 +165,7 @@ class TestArtifacts(BaseE2ETest):
             self.gen_key(),
             f"{environment.project}/{self.gen_key()}/{type(container).__name__}",
         )
-        filename, filepath = fake.file_name(), fake.file_path(depth=3).lstrip("/")
+        filename, filepath = fake.file_name(), fake.file_path(depth=3, absolute=False)
 
         bucket_name, s3_client = bucket
 
@@ -188,7 +191,7 @@ class TestArtifacts(BaseE2ETest):
         # so it should be now identical as first
         container[second].track_files(
             f"s3://{bucket_name}/{prefix}/{filepath}",
-            destination=str(Path(filepath).parent),
+            destination=str(PurePosixPath(filepath).parent),
         )
         container.sync()
 
