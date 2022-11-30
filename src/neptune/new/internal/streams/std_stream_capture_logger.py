@@ -40,15 +40,13 @@ class StdStreamCaptureLogger:
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
-    def close(self, wait_for_all_logs=True):
-        if not wait_for_all_logs:
-            self.enabled = False
+    def close(self):
+        self.enabled = False
         self._log_data_queue.put_nowait(None)
         self._logging_thread.join()
-        self.enabled = False
 
     def __proces_logs(self):
-        while self.enabled:
+        while True:
             data = self._log_data_queue.get()
             if data is None:
                 break
@@ -60,9 +58,9 @@ class StdoutCaptureLogger(StdStreamCaptureLogger):
         super().__init__(container, attribute_name, sys.stdout)
         sys.stdout = self
 
-    def close(self, wait_for_all_logs=True):
+    def close(self):
         sys.stdout = self.stream
-        super().close(wait_for_all_logs=wait_for_all_logs)
+        super().close()
 
 
 class StderrCaptureLogger(StdStreamCaptureLogger):
@@ -72,4 +70,4 @@ class StderrCaptureLogger(StdStreamCaptureLogger):
 
     def close(self, wait_for_all_logs=True):
         sys.stderr = self.stream
-        super().close(wait_for_all_logs=wait_for_all_logs)
+        super().close()
