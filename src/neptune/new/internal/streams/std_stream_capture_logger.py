@@ -16,6 +16,7 @@
 
 import sys
 import threading
+from queue import Queue
 from typing import TextIO
 
 from neptune.new.logging import Logger as NeptuneLogger
@@ -28,24 +29,30 @@ class StdStreamCaptureLogger:
         self.stream = stream
         self._thread_local = threading.local()
         self.enabled = True
+        self._log_data_queue = Queue()
+        self._logging_thread = threading.Thread(target=self.__proces_logs, daemon=True)
+        self._logging_thread.start()
 
     def write(self, data: str):
-        if not hasattr(self._thread_local, "inside_write"):
-            self._thread_local.inside_write = False
-
         self.stream.write(data)
-        if self.enabled and not self._thread_local.inside_write:
-            try:
-                self._thread_local.inside_write = True
-                self._logger.log(data)
-            finally:
-                self._thread_local.inside_write = False
+        self._log_data_queue.put_nowait(data)
 
     def __getattr__(self, attr):
         return getattr(self.stream, attr)
 
-    def close(self):
+    def close(self, wait_for_all_logs=True):
+        if not wait_for_all_logs:
+            self.enabled = False
+        self._log_data_queue.put_nowait(None)
+        self._logging_thread.join()
         self.enabled = False
+
+    def __proces_logs(self):
+        while self.enabled:
+            data = self._log_data_queue.get()
+            if data is None:
+                break
+            self._logger.log(data)
 
 
 class StdoutCaptureLogger(StdStreamCaptureLogger):
@@ -53,9 +60,9 @@ class StdoutCaptureLogger(StdStreamCaptureLogger):
         super().__init__(container, attribute_name, sys.stdout)
         sys.stdout = self
 
-    def close(self):
+    def close(self, wait_for_all_logs=True):
         sys.stdout = self.stream
-        super().close()
+        super().close(wait_for_all_logs=wait_for_all_logs)
 
 
 class StderrCaptureLogger(StdStreamCaptureLogger):
@@ -63,6 +70,6 @@ class StderrCaptureLogger(StdStreamCaptureLogger):
         super().__init__(container, attribute_name, sys.stderr)
         sys.stderr = self
 
-    def close(self):
+    def close(self, wait_for_all_logs=True):
         sys.stderr = self.stream
-        super().close()
+        super().close(wait_for_all_logs=wait_for_all_logs)
