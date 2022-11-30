@@ -92,7 +92,7 @@ class TestArtifacts(BaseE2ETest):
             container.sync()
 
             with tmp_context():
-                with with_check_if_file_appears(f"artifacts/{filename}"):
+                with with_check_if_file_appears(Path(f"artifacts/{filename}")):
                     container[first].download("artifacts/")
 
                 with with_check_if_file_appears(filepath):
