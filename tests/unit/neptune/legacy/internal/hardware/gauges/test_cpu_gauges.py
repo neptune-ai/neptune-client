@@ -20,11 +20,9 @@ from neptune.common.hardware.gauges.cpu import (
     CGroupCpuUsageGauge,
     SystemCpuUsageGauge,
 )
-from neptune.common.utils import IS_MACOS
 
 
 class TestCpuGauges(unittest.TestCase):
-    @unittest.skipIf(IS_MACOS, "MacOS behaves strangely")
     def test_system_cpu_gauge(self):
         # given
         gauge = SystemCpuUsageGauge()
