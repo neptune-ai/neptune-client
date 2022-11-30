@@ -20,4 +20,5 @@ jobs:
             > /run-unit | Run unittests on full matrix
             > /run-e2e | Run E2E tests on full matrix
             > /run-integrations | Run Client integrations on full matrix
+            > /run-all-test | Run all tests on full matrix
           reaction-type: hooray
