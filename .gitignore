@@ -1,7 +1,7 @@
 # Neptune data
 .neptune/
 tests/.neptune/
-tests/neptune/.neptune/
+tests/units/neptune/.neptune/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
