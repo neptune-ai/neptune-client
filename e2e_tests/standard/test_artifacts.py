@@ -74,7 +74,7 @@ class TestArtifacts(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_download(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
-        filename, filepath = fake.unique.file_name(), fake.unique.file_path(depth=3, absoulte=False)
+        filename, filepath = fake.unique.file_name(), fake.unique.file_path(depth=3, absolute=False)
 
         with tmp_context() as tmp:
             with open(filename, "w", encoding="utf-8") as handler:
@@ -129,7 +129,7 @@ class TestArtifacts(BaseE2ETest):
     def test_s3_download(self, container: MetadataContainer, bucket, environment):
         first = self.gen_key()
         prefix = f"{environment.project}/{self.gen_key()}/{type(container).__name__}"
-        filename, filepath = fake.unique.file_name(), fake.unique.file_path(depth=3).lstrip("/")
+        filename, filepath = fake.unique.file_name(), fake.unique.file_path(depth=3, absolute=True)
 
         bucket_name, s3_client = bucket
 
@@ -201,7 +201,7 @@ class TestArtifacts(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_existing(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
-        filename, filepath = fake.file_name(), fake.file_path(depth=3).lstrip("/")
+        filename, filepath = fake.file_name(), fake.file_path(depth=3, absolute=True)
 
         with tmp_context() as tmp:
             with open(filename, "w", encoding="utf-8") as handler:
