@@ -74,7 +74,7 @@ class TestArtifacts(BaseE2ETest):
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_local_download(self, container: MetadataContainer):
         first, second = self.gen_key(), self.gen_key()
-        filename, filepath = fake.unique.file_name(), fake.unique.file_path(depth=3).lstrip("/")
+        filename, filepath = fake.unique.file_name(), fake.unique.file_path(depth=3, absoulte=False)
 
         with tmp_context() as tmp:
             with open(filename, "w", encoding="utf-8") as handler:
@@ -95,7 +95,7 @@ class TestArtifacts(BaseE2ETest):
                 with with_check_if_file_appears(Path(f"artifacts/{filename}")):
                     container[first].download("artifacts/")
 
-                with with_check_if_file_appears(filepath):
+                with with_check_if_file_appears(Path(filepath)):
                     container[second].download()
 
     @pytest.mark.s3
