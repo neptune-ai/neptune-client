@@ -213,7 +213,7 @@ class TestArtifacts(BaseE2ETest):
             container[first].track_files(".")
 
             # Track only the "a" file to second artifact
-            container[second].track_files(f"file://{tmp}/{filename}")
+            container[second].track_files(f"file://{Path(tmp)}/{filename}")
             container.sync()
 
             # Add "b" file to existing second artifact

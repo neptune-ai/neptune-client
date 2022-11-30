@@ -22,8 +22,8 @@ jobs:
   e2e:
     strategy:
       matrix:
-        python-version: [ "3.10" ]
-        os: [ windows-latest ]
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         module:
           - "not s3 and not integrations"
           - "integrations"
@@ -45,8 +45,8 @@ jobs:
   e2e_management:
     strategy:
       matrix:
-        python-version: [ "3.10" ]
-        os: [ windows-latest ]
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
         module:
           - "management"
     runs-on: ${{ matrix.os }}
@@ -67,8 +67,8 @@ jobs:
   e2e_s3_gcs:
     strategy:
       matrix:
-        python-version: [ "3.10" ]
-        os: [ windows-latest ]
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -92,8 +92,8 @@ jobs:
   e2e_s3:
     strategy:
       matrix:
-        python-version: [ "3.10" ]
-        os: [ windows-latest ]
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -109,7 +109,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: s3 and win
+          module: s3
 
   junit_report:
     runs-on: ubuntu-latest
