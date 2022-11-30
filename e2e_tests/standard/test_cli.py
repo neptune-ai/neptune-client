@@ -115,7 +115,6 @@ class TestSync(BaseE2ETest):
     def stop_synchronization_process(container):
         container._op_processor._consumer.interrupt()
 
-    @pytest.mark.win
     def test_offline_sync(self, environment):
         with tmp_context() as tmp:
             # create run in offline mode
