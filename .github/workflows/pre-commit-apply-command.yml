@@ -1,0 +1,43 @@
+name: pre-commit-apply
+
+on:
+  repository_dispatch:
+    types: [pre-commit-apply-command]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+        ref: ${{ github.event.client_payload.pull_request.head.ref }}
+
+    - name: Install Python 3.10
+      uses: actions/setup-python@v3
+      with:
+        python-version: "3.10"
+
+    - name: Install pre-commit
+      run: pip install pre-commit
+
+    - name: Pre-commit
+      id: pre-commit
+      continue-on-error: true
+      run: pre-commit run --all-files
+
+    - name: Commit to the PR branch
+      if: steps.pre-commit.outcome != 'success'
+      run: |
+        git config --global user.name '${{ secrets.NEPTUNE_BOT_USERNAME }}'
+        git config --global user.email '${{ secrets.NEPTUNE_BOT_EMAIL }}'
+        git commit -am "pre-commit applied"
+        git push
+
+    - name: Add reaction
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        token: ${{ secrets.ACTIONS_BOT_TOKEN }}
+        comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+        reaction-type: hooray

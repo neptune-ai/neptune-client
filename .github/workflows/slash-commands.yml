@@ -1,0 +1,23 @@
+name: Slash Command Dispatch
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  slash-dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Slash Command Dispatch
+        uses: peter-evans/slash-command-dispatch@v3
+        with:
+          commands: |
+            pre-commit-apply
+            help
+            run-e2e
+            run-unit
+            run-integrations
+            run-all-test
+          reaction-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+          token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+          permission: write

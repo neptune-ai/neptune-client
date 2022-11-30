@@ -1,0 +1,24 @@
+name: help-command
+
+on:
+  repository_dispatch:
+    types: [help-command]
+
+jobs:
+  help:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update comment
+        uses: peter-evans/create-or-update-comment@v2
+        with:
+          token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+          comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+          body: |
+            > Command | Description
+            > --- | ---
+            > /pre-commit-apply | Commit a pre-commit suggestions
+            > /run-unit | Run unittests on full matrix *(win, mac, linux x py3.7-3.10)
+            > /run-e2e | Run E2E tests on full matrix *(win, mac, linux x py3.7-3.10)
+            > /run-integrations | Run Client integrations on full matrix *(win, mac, linux x py3.7-3.10)
+            > /run-all-test | Run all tests on full matrix *(win, mac, linux x py3.7-3.10)
+          reaction-type: hooray
