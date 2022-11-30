@@ -55,6 +55,7 @@ pytest-cov = { version = "*", optional = true }
 pytest-mock = { version = "*", optional = true }
 pytest-timeout = { version = "*", optional = true }
 pytest-xdist = { version = "*", optional = true }
+pytest-catchlog = { version = "*", optional = true }
 tensorflow = { version = "*", optional = true }
 torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
@@ -105,6 +106,7 @@ dev = [
     "pytest-mock",
     "pytest-timeout",
     "pytest-xdist",
+    "pytest-catchlog",
     "tensorflow",
     "torch",
     "vega_datasets",
