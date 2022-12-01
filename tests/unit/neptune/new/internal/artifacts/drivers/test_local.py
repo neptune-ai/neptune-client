@@ -74,7 +74,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         self.assertEqual(ArtifactDriversMap.match_type("Local"), LocalArtifactDriver)
 
     def test_file_download(self):
-        path = (self.test_dir / "data/file1.txt").as_posix()
+        path = (self.test_dir / "data" / "file1.txt").as_posix()
         artifact_file = ArtifactFileData(
             file_path="data/file1.txt",
             file_hash="??",

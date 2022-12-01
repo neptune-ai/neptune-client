@@ -10,7 +10,7 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [windows-latest]   # Set back to ubuntu-latest after fixing it
+        os: [windows-2019]   # Set back to ubuntu-latest after fixing it
         python-version: ["3.8"]
     steps:
       - name: Checkout repository
