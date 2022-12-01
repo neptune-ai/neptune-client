@@ -1,5 +1,6 @@
 name: Merge to master
 on:
+  pull_request:
   push:
     branches:
       - master
@@ -9,8 +10,8 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-20.04, macos-latest, windows-latest]   # Set back to ubuntu-latest after fixing it
-        python-version: ["3.7", "3.8", "3.9", "3.10"]
+        os: [windows-latest]   # Set back to ubuntu-latest after fixing it
+        python-version: [3.8"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -24,77 +25,77 @@ jobs:
       - name: Tests
         uses: ./.github/actions/tests
 
-  test-e2e:
-    runs-on: ${{ matrix.os }}
-    timeout-minutes: 120
-    strategy:
-      matrix:
-        os: [ubuntu-20.04, macos-latest]  # Set back to ubuntu-latest after fixing it
-        python-version: ["3.7"]
-    env:
-      WORKSPACE_NAME: e2e-tests
-      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
-      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
-      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
-      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
-      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
-      # Time before went into offline mode
-      # Default is 1 minute, and it made most of the tests to failure
-      # as it takes some time to create project and all internal structures
-      NEPTUNE_RETRIES_TIMEOUT: 1200
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          # Some tests are checking version of 'neptune' package.
-          # To simplify deployment we're using 'versioneer' but
-          # when working with branches it yields "0+unknown".
-          # Fetching all history fetches also last tag and helps versioneer
-          fetch-depth: 0
-
-      - name: Tests E2E
-        uses: ./.github/actions/tests-e2e
-        with:
-          sa-api-token: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
-          user-api-token: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
-          aws-access-key-id: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
-          aws-secret-access-key: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
-          gcs-access-key-id: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
-          gcs-secret-access-key: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
-
-  publish-tests:
-    needs: [test, test-e2e]
-    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
-    if: always()
-    permissions:
-      checks: write
-      pull-requests: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Publish tests
-        uses: ./.github/actions/publish-tests-result
-
-  notify:
-    needs: [test, test-e2e]
-    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
-    if: always()
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-    steps:
-      - uses: technote-space/workflow-conclusion-action@v3
-
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
-        with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
-
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
-        with:
-          status: success
-          fields: repo,message,author,job,eventName,took
+#  test-e2e:
+#    runs-on: ${{ matrix.os }}
+#    timeout-minutes: 120
+#    strategy:
+#      matrix:
+#        os: [ubuntu-20.04, macos-latest]  # Set back to ubuntu-latest after fixing it
+#        python-version: ["3.7"]
+#    env:
+#      WORKSPACE_NAME: e2e-tests
+#      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+#      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+#      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+#      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+#      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
+#      # Time before went into offline mode
+#      # Default is 1 minute, and it made most of the tests to failure
+#      # as it takes some time to create project and all internal structures
+#      NEPTUNE_RETRIES_TIMEOUT: 1200
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#        with:
+#          # Some tests are checking version of 'neptune' package.
+#          # To simplify deployment we're using 'versioneer' but
+#          # when working with branches it yields "0+unknown".
+#          # Fetching all history fetches also last tag and helps versioneer
+#          fetch-depth: 0
+#
+#      - name: Tests E2E
+#        uses: ./.github/actions/tests-e2e
+#        with:
+#          sa-api-token: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+#          user-api-token: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
+#          aws-access-key-id: ${{secrets.E2E_AWS_ACCESS_KEY_ID}}
+#          aws-secret-access-key: ${{secrets.E2E_AWS_SECRET_ACCESS_KEY}}
+#          gcs-access-key-id: ${{secrets.E2E_GCS_ACCESS_KEY_ID}}
+#          gcs-secret-access-key: ${{secrets.E2E_GCS_SECRET_ACCESS_KEY}}
+#
+#  publish-tests:
+#    needs: [test, test-e2e]
+#    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
+#    if: always()
+#    permissions:
+#      checks: write
+#      pull-requests: write
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#
+#      - name: Publish tests
+#        uses: ./.github/actions/publish-tests-result
+#
+#  notify:
+#    needs: [test, test-e2e]
+#    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
+#    if: always()
+#    env:
+#      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#    steps:
+#      - uses: technote-space/workflow-conclusion-action@v3
+#
+#      - name: Notify about failure
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION != 'success'
+#        with:
+#          status: failure
+#          fields: repo,message,author,job,eventName,took
+#
+#      - name: Notify about success
+#        uses: 8398a7/action-slack@v3
+#        if: env.WORKFLOW_CONCLUSION == 'success'
+#        with:
+#          status: success
+#          fields: repo,message,author,job,eventName,took
