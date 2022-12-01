@@ -11,7 +11,7 @@ runs:
 
       - name: Integration tests
         run: |
-          pytest -v ./tests \
+          pytest -v ./tests/unit -m win \
           --timeout=120 --timeout_method=thread \
           --junitxml="./test-results/test-integration-${{ matrix.os }}-${{ matrix.python-version }}.xml"
         shell: bash
