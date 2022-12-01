@@ -69,7 +69,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
 
     @classmethod
     def _map_series_val(cls, value: ValTV) -> List[DataTV]:
-        return [value for value in value.values]
+        return value.values
 
     def _get_config_operation_from_value(self, value: ValTV) -> Optional[LogOperationTV]:
         return None

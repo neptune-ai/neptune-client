@@ -15,8 +15,10 @@
 #
 from typing import (
     TYPE_CHECKING,
+    Collection,
     Iterable,
     List,
+    Union,
 )
 
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
@@ -48,14 +50,9 @@ class StringSeries(Series[Val, Data, LogOperation], FetchableSeries[StringSeries
         super().__init__(container, path)
         self._value_truncation_occurred = False
 
-    def _get_clear_operation(self) -> Operation:
-        return ClearStringLog(self._path)
-
-    def _data_to_value(self, values: Iterable, **kwargs) -> Val:
-        if kwargs:
-            logger.warning("Warning: unexpected arguments (%s) in StringSeries", kwargs)
-
-        value = StringSeriesVal(values)
+    def _get_log_operations_from_value(
+        self, value: Val, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
+    ) -> List[LogOperation]:
         if not self._value_truncation_occurred and value.truncated:
             # the first truncation
             self._value_truncation_occurred = True
@@ -66,7 +63,17 @@ class StringSeries(Series[Val, Data, LogOperation], FetchableSeries[StringSeries
                 path_to_str(self._path),
                 MAX_STRING_SERIES_VALUE_LENGTH,
             )
-        return value
+
+        return super()._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
+
+    def _get_clear_operation(self) -> Operation:
+        return ClearStringLog(self._path)
+
+    def _data_to_value(self, values: Iterable, **kwargs) -> Val:
+        if kwargs:
+            logger.warning("Warning: unexpected arguments (%s) in StringSeries", kwargs)
+
+        return StringSeriesVal(values)
 
     def _is_value_type(self, value) -> bool:
         return isinstance(value, StringSeriesVal)
