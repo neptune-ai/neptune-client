@@ -20,8 +20,6 @@ import tempfile
 import unittest
 from pathlib import Path
 
-import pytest
-
 from neptune.new.exceptions import (
     NeptuneLocalStorageAccessException,
     NeptuneUnsupportedArtifactFunctionalityException,
@@ -35,14 +33,13 @@ from neptune.new.internal.artifacts.types import (
 from tests.unit.neptune.new.internal.artifacts.utils import md5
 
 
-@pytest.mark.win
 class TestLocalArtifactDrivers(unittest.TestCase):
     test_dir = None
 
     def setUp(self):
         self.test_sources_dir = Path(str(tempfile.mktemp()))
         self.test_dir = Path(str(tempfile.mktemp()))
-        test_source_data = Path(__file__).parents[6] / "data" / "local_artifact_drivers_data"
+        test_source_data = Path(__file__).parents[5] / "data" / "local_artifact_drivers_data"
         test_data = self.test_dir / "data"
 
         # copy source data to temp dir (to prevent e.g. inter-fs symlinks)
