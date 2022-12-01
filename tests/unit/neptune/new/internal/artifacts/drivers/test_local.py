@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 import os
-
-# import pathlib
+import pathlib
 import shutil
 import tempfile
 import unittest
@@ -23,12 +22,16 @@ from pathlib import Path
 
 import pytest
 
-# from neptune.new.exceptions import (
-#     NeptuneLocalStorageAccessException,
-#     NeptuneUnsupportedArtifactFunctionalityException,
-# )
+from neptune.new.exceptions import (
+    NeptuneLocalStorageAccessException,
+    NeptuneUnsupportedArtifactFunctionalityException,
+)
 from neptune.new.internal.artifacts.drivers.local import LocalArtifactDriver
-from neptune.new.internal.artifacts.types import ArtifactFileData  # ArtifactFileType,; ArtifactDriversMap,
+from neptune.new.internal.artifacts.types import (
+    ArtifactDriversMap,
+    ArtifactFileData,
+    ArtifactFileType,
+)
 from tests.unit.neptune.new.internal.artifacts.utils import md5
 
 
@@ -38,23 +41,15 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
     def setUp(self):
         self.test_sources_dir = Path(str(tempfile.mktemp()))
-        print(f"test_sources_dir = {self.test_sources_dir}")
         self.test_dir = Path(str(tempfile.mktemp()))
-        print(f"test_dir = {self.test_dir}")
         test_source_data = Path(__file__).parents[6] / "data" / "local_artifact_drivers_data"
-        print(f"test_source_data = {test_source_data}")
         test_data = self.test_dir / "data"
-        print(f"test_data = {test_data}")
 
         # copy source data to temp dir (to prevent e.g. inter-fs symlinks)
         shutil.copytree(test_source_data, self.test_sources_dir)
 
-        print("test_sources_dir files =", os.listdir(self.test_sources_dir))
-
         # create files to track
         shutil.copytree(self.test_sources_dir / "files_to_track", test_data)
-
-        print("test_data files =", os.listdir(test_data))
 
         # symbolic and hard link files
         # `link_to` is new in python 3.8
@@ -73,17 +68,15 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         shutil.rmtree(self.test_dir, ignore_errors=True)
         shutil.rmtree(self.test_sources_dir, ignore_errors=True)
 
-    # def test_match_by_path(self):
-    #     self.assertEqual(ArtifactDriversMap.match_path("file:///path/to/"), LocalArtifactDriver)
-    #     self.assertEqual(ArtifactDriversMap.match_path("/path/to/"), LocalArtifactDriver)
-    #     self.assertEqual(ArtifactDriversMap.match_path("file://C:\\Users\\Tester"), LocalArtifactDriver)
-    #
-    # def test_match_by_type(self):
-    #     self.assertEqual(ArtifactDriversMap.match_type("Local"), LocalArtifactDriver)
+    def test_match_by_path(self):
+        self.assertEqual(ArtifactDriversMap.match_path("file:///path/to/"), LocalArtifactDriver)
+        self.assertEqual(ArtifactDriversMap.match_path("/path/to/"), LocalArtifactDriver)
+
+    def test_match_by_type(self):
+        self.assertEqual(ArtifactDriversMap.match_type("Local"), LocalArtifactDriver)
 
     def test_file_download(self):
         path = (self.test_dir / "data/file1.txt").as_posix()
-        print(f"path = {path}")
         artifact_file = ArtifactFileData(
             file_path="data/file1.txt",
             file_hash="??",
@@ -97,125 +90,123 @@ class TestLocalArtifactDrivers(unittest.TestCase):
             LocalArtifactDriver.download_file(destination=downloaded_file, file_definition=artifact_file)
 
             self.assertTrue(Path(downloaded_file).is_symlink())
-            self.assertEqual("6d615241ff583a4b67e14a4448aa08b6", md5(downloaded_file))
+            self.assertEqual("ad62f265e5b1a2dc51f531e44e748aa0", md5(downloaded_file))
 
-        assert False
+    def test_non_existing_file_download(self):
+        path = "/wrong/path"
+        artifact_file = ArtifactFileData(file_path=path, file_hash="??", type="??", metadata={"file_path": path})
 
-    # def test_non_existing_file_download(self):
-    #     path = "/wrong/path"
-    #     artifact_file = ArtifactFileData(file_path=path, file_hash="??", type="??", metadata={"file_path": path})
-    #
-    #     with self.assertRaises(NeptuneLocalStorageAccessException), tempfile.TemporaryDirectory() as temporary:
-    #         local_destination = Path(temporary)
-    #         LocalArtifactDriver.download_file(destination=local_destination, file_definition=artifact_file)
-    #
-    # def test_single_retrieval(self):
-    #     files = LocalArtifactDriver.get_tracked_files(str(self.test_dir / "data/file1.txt"))
-    #
-    #     self.assertEqual(1, len(files))
-    #     self.assertIsInstance(files[0], ArtifactFileData)
-    #     self.assertEqual(ArtifactFileType.LOCAL.value, files[0].type)
-    #     self.assertEqual("72fae1be9ff9c1d5fd7a0d97977bba9cc96d702d", files[0].file_hash)
-    #     self.assertEqual("file1.txt", files[0].file_path)
-    #     self.assertEqual(22, files[0].size)
-    #     self.assertEqual({"file_path", "last_modified"}, files[0].metadata.keys())
-    #     self.assertEqual(
-    #         f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
-    #         files[0].metadata["file_path"],
-    #     )
-    #     self.assertIsInstance(files[0].metadata["last_modified"], str)
-    #
-    # def test_multiple_retrieval(self):
-    #     files = LocalArtifactDriver.get_tracked_files(str(self.test_dir / "data"))
-    #     files = sorted(files, key=lambda file: file.file_path)
-    #
-    #     self.assertEqual(4, len(files))
-    #
-    #     self.assertEqual("file1.txt", files[0].file_path)
-    #     self.assertEqual("72fae1be9ff9c1d5fd7a0d97977bba9cc96d702d", files[0].file_hash)
-    #     self.assertEqual(22, files[0].size)
-    #     self.assertEqual(
-    #         f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
-    #         files[0].metadata["file_path"],
-    #     )
-    #
-    #     self.assertEqual("hardlinked_file.txt", files[1].file_path)
-    #     self.assertEqual("378adc0746d565696bcf07ef27f3e49332c0c626", files[1].file_hash)
-    #     self.assertEqual(45, files[1].size)
-    #     self.assertEqual(
-    #         f"file://{(self.test_dir.resolve() / 'data/hardlinked_file.txt').as_posix()}",
-    #         files[1].metadata["file_path"],
-    #     )
-    #
-    #     self.assertEqual("sub_dir/file_in_subdir.txt", files[2].file_path)
-    #     self.assertEqual("66ac94061f0932fcb1954df995477cdcbb6b70b0", files[2].file_hash)
-    #     self.assertEqual(25, files[2].size)
-    #     self.assertEqual(
-    #         f"file://{(self.test_dir.resolve() / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
-    #         files[2].metadata["file_path"],
-    #     )
-    #
-    #     self.assertEqual("symlinked_file.txt", files[3].file_path)
-    #     self.assertEqual("378adc0746d565696bcf07ef27f3e49332c0c626", files[3].file_hash)
-    #     self.assertEqual(45, files[3].size)
-    #     self.assertEqual(
-    #         f"file://{(self.test_sources_dir.resolve() / 'file_to_link.txt').as_posix()}",
-    #         files[3].metadata["file_path"],
-    #     )
-    #
-    # def test_multiple_retrieval_prefix(self):
-    #     files = LocalArtifactDriver.get_tracked_files((self.test_dir / "data").as_posix(), "my/custom_path")
-    #     files = sorted(files, key=lambda file: file.file_path)
-    #
-    #     self.assertEqual(4, len(files))
-    #
-    #     self.assertEqual("my/custom_path/file1.txt", files[0].file_path)
-    #     self.assertEqual("72fae1be9ff9c1d5fd7a0d97977bba9cc96d702d", files[0].file_hash)
-    #     self.assertEqual(22, files[0].size)
-    #     self.assertEqual(
-    #         f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
-    #         files[0].metadata["file_path"],
-    #     )
-    #
-    #     self.assertEqual("my/custom_path/hardlinked_file.txt", files[1].file_path)
-    #     self.assertEqual("378adc0746d565696bcf07ef27f3e49332c0c626", files[1].file_hash)
-    #     self.assertEqual(45, files[1].size)
-    #     self.assertEqual(
-    #         f"file://{(self.test_dir.resolve() / 'data/hardlinked_file.txt').as_posix()}",
-    #         files[1].metadata["file_path"],
-    #     )
-    #
-    #     self.assertEqual("my/custom_path/sub_dir/file_in_subdir.txt", files[2].file_path)
-    #     self.assertEqual("66ac94061f0932fcb1954df995477cdcbb6b70b0", files[2].file_hash)
-    #     self.assertEqual(25, files[2].size)
-    #     self.assertEqual(
-    #         f"file://{(self.test_dir.resolve() / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
-    #         files[2].metadata["file_path"],
-    #     )
-    #
-    #     self.assertEqual("my/custom_path/symlinked_file.txt", files[3].file_path)
-    #     self.assertEqual("378adc0746d565696bcf07ef27f3e49332c0c626", files[3].file_hash)
-    #     self.assertEqual(45, files[3].size)
-    #     self.assertEqual(
-    #         f"file://{(self.test_sources_dir.resolve() / 'file_to_link.txt').as_posix()}",
-    #         files[3].metadata["file_path"],
-    #     )
-    #
-    # def test_expand_user(self):
-    #     os.environ["HOME"] = str(self.test_dir.resolve())
-    #
-    #     with open(pathlib.Path("~/tmp_test_expand_user").expanduser(), "w") as f:
-    #         f.write("File to test ~ resolution")
-    #
-    #     files = LocalArtifactDriver.get_tracked_files("~/tmp_test_expand_user")
-    #
-    #     self.assertEqual(1, len(files))
-    #     file = files[0]
-    #
-    #     self.assertEqual("tmp_test_expand_user", file.file_path)
-    #     self.assertEqual("eb596bf2f5fd0461d3d0b432f805b3984786c721", file.file_hash)
-    #     self.assertEqual(25, file.size)
-    #
-    # def test_wildcards_not_supported(self):
-    #     with self.assertRaises(NeptuneUnsupportedArtifactFunctionalityException):
-    #         LocalArtifactDriver.get_tracked_files(str(self.test_dir / "data/*.txt"))
+        with self.assertRaises(NeptuneLocalStorageAccessException), tempfile.TemporaryDirectory() as temporary:
+            local_destination = Path(temporary)
+            LocalArtifactDriver.download_file(destination=local_destination, file_definition=artifact_file)
+
+    def test_single_retrieval(self):
+        files = LocalArtifactDriver.get_tracked_files(str(self.test_dir / "data/file1.txt"))
+
+        self.assertEqual(1, len(files))
+        self.assertIsInstance(files[0], ArtifactFileData)
+        self.assertEqual(ArtifactFileType.LOCAL.value, files[0].type)
+        self.assertEqual("d2c24d65e1d3870f4cf2dbbd8c994b4977a7c384", files[0].file_hash)
+        self.assertEqual("file1.txt", files[0].file_path)
+        self.assertEqual(21, files[0].size)
+        self.assertEqual({"file_path", "last_modified"}, files[0].metadata.keys())
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
+            files[0].metadata["file_path"],
+        )
+        self.assertIsInstance(files[0].metadata["last_modified"], str)
+
+    def test_multiple_retrieval(self):
+        files = LocalArtifactDriver.get_tracked_files(str(self.test_dir / "data"))
+        files = sorted(files, key=lambda file: file.file_path)
+
+        self.assertEqual(4, len(files))
+
+        self.assertEqual("file1.txt", files[0].file_path)
+        self.assertEqual("d2c24d65e1d3870f4cf2dbbd8c994b4977a7c384", files[0].file_hash)
+        self.assertEqual(21, files[0].size)
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
+            files[0].metadata["file_path"],
+        )
+
+        self.assertEqual("hardlinked_file.txt", files[1].file_path)
+        self.assertEqual("da3e6ddfa171e1ab5564609caa1dbbea9871886e", files[1].file_hash)
+        self.assertEqual(44, files[1].size)
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/hardlinked_file.txt').as_posix()}",
+            files[1].metadata["file_path"],
+        )
+
+        self.assertEqual("sub_dir/file_in_subdir.txt", files[2].file_path)
+        self.assertEqual("98181b1a4c880a462fcfa96b92c84b8e945ac335", files[2].file_hash)
+        self.assertEqual(24, files[2].size)
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
+            files[2].metadata["file_path"],
+        )
+
+        self.assertEqual("symlinked_file.txt", files[3].file_path)
+        self.assertEqual("da3e6ddfa171e1ab5564609caa1dbbea9871886e", files[3].file_hash)
+        self.assertEqual(44, files[3].size)
+        self.assertEqual(
+            f"file://{(self.test_sources_dir.resolve() / 'file_to_link.txt').as_posix()}",
+            files[3].metadata["file_path"],
+        )
+
+    def test_multiple_retrieval_prefix(self):
+        files = LocalArtifactDriver.get_tracked_files((self.test_dir / "data").as_posix(), "my/custom_path")
+        files = sorted(files, key=lambda file: file.file_path)
+
+        self.assertEqual(4, len(files))
+
+        self.assertEqual("my/custom_path/file1.txt", files[0].file_path)
+        self.assertEqual("d2c24d65e1d3870f4cf2dbbd8c994b4977a7c384", files[0].file_hash)
+        self.assertEqual(21, files[0].size)
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/file1.txt').as_posix()}",
+            files[0].metadata["file_path"],
+        )
+
+        self.assertEqual("my/custom_path/hardlinked_file.txt", files[1].file_path)
+        self.assertEqual("da3e6ddfa171e1ab5564609caa1dbbea9871886e", files[1].file_hash)
+        self.assertEqual(44, files[1].size)
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/hardlinked_file.txt').as_posix()}",
+            files[1].metadata["file_path"],
+        )
+
+        self.assertEqual("my/custom_path/sub_dir/file_in_subdir.txt", files[2].file_path)
+        self.assertEqual("98181b1a4c880a462fcfa96b92c84b8e945ac335", files[2].file_hash)
+        self.assertEqual(24, files[2].size)
+        self.assertEqual(
+            f"file://{(self.test_dir.resolve() / 'data/sub_dir/file_in_subdir.txt').as_posix()}",
+            files[2].metadata["file_path"],
+        )
+
+        self.assertEqual("my/custom_path/symlinked_file.txt", files[3].file_path)
+        self.assertEqual("da3e6ddfa171e1ab5564609caa1dbbea9871886e", files[3].file_hash)
+        self.assertEqual(44, files[3].size)
+        self.assertEqual(
+            f"file://{(self.test_sources_dir.resolve() / 'file_to_link.txt').as_posix()}",
+            files[3].metadata["file_path"],
+        )
+
+    def test_expand_user(self):
+        os.environ["HOME"] = str(self.test_dir.resolve())
+
+        with open(pathlib.Path("~/tmp_test_expand_user").expanduser(), "w") as f:
+            f.write("File to test ~ resolution")
+
+        files = LocalArtifactDriver.get_tracked_files("~/tmp_test_expand_user")
+
+        self.assertEqual(1, len(files))
+        file = files[0]
+
+        self.assertEqual("tmp_test_expand_user", file.file_path)
+        self.assertEqual("eb596bf2f5fd0461d3d0b432f805b3984786c721", file.file_hash)
+        self.assertEqual(25, file.size)
+
+    def test_wildcards_not_supported(self):
+        with self.assertRaises(NeptuneUnsupportedArtifactFunctionalityException):
+            LocalArtifactDriver.get_tracked_files(str(self.test_dir / "data/*.txt"))
