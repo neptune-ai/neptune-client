@@ -18,7 +18,7 @@ runs:
         id: cache
         with:
           path: ~/.cache/pip
-          key: ${{ inputs.os }}-python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}-${{ steps.date.outputs.date }}
+          key: python-${{ inputs.python-version }}-${{ hashFiles('pyproject.toml') }}
 
       - name: Install Python ${{ inputs.python-version }}
         uses: actions/setup-python@v4

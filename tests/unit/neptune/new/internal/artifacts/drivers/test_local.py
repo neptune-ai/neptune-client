@@ -39,11 +39,11 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
     def setUp(self):
         self.test_sources_dir = Path(str(tempfile.mktemp()))
-        logging.debug(f"test_sources_dir = {self.test_sources_dir}")
+        logging.info(f"test_sources_dir = {self.test_sources_dir}")
         self.test_dir = Path(str(tempfile.mktemp()))
-        logging.debug(f"test_dir = {self.test_dir}")
+        logging.info(f"test_dir = {self.test_dir}")
         test_source_data = Path(__file__).parents[6] / "data" / "local_artifact_drivers_data"
-        logging.debug(f"test_source_data = {test_source_data}")
+        logging.info(f"test_source_data = {test_source_data}")
         test_data = self.test_dir / "data"
         logging.debug(f"test_data = {test_data}")
 
