@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import logging
 import os
 
 # import pathlib
@@ -39,13 +38,13 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
     def setUp(self):
         self.test_sources_dir = Path(str(tempfile.mktemp()))
-        logging.info(f"test_sources_dir = {self.test_sources_dir}")
+        print(f"test_sources_dir = {self.test_sources_dir}")
         self.test_dir = Path(str(tempfile.mktemp()))
-        logging.info(f"test_dir = {self.test_dir}")
+        print(f"test_dir = {self.test_dir}")
         test_source_data = Path(__file__).parents[6] / "data" / "local_artifact_drivers_data"
-        logging.info(f"test_source_data = {test_source_data}")
+        print(f"test_source_data = {test_source_data}")
         test_data = self.test_dir / "data"
-        logging.debug(f"test_data = {test_data}")
+        print(f"test_data = {test_data}")
 
         # copy source data to temp dir (to prevent e.g. inter-fs symlinks)
         shutil.copytree(test_source_data, self.test_sources_dir)
@@ -80,6 +79,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
     def test_file_download(self):
         path = (self.test_dir / "data/file1.txt").as_posix()
+        print(f"path = {path}")
         artifact_file = ArtifactFileData(
             file_path="data/file1.txt",
             file_hash="??",
@@ -94,6 +94,8 @@ class TestLocalArtifactDrivers(unittest.TestCase):
 
             self.assertTrue(Path(downloaded_file).is_symlink())
             self.assertEqual("6d615241ff583a4b67e14a4448aa08b6", md5(downloaded_file))
+
+        assert False
 
     # def test_non_existing_file_download(self):
     #     path = "/wrong/path"
