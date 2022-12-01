@@ -39,7 +39,7 @@ class TestLocalArtifactDrivers(unittest.TestCase):
     def setUp(self):
         self.test_sources_dir = Path(str(tempfile.mktemp()))
         self.test_dir = Path(str(tempfile.mktemp()))
-        test_source_data = Path(__file__).parents[5] / "data" / "local_artifact_drivers_data"
+        test_source_data = Path(__file__).parents[6] / "data" / "local_artifact_drivers_data"
         test_data = self.test_dir / "data"
 
         # copy source data to temp dir (to prevent e.g. inter-fs symlinks)
