@@ -29,7 +29,7 @@ repos:
         additional_dependencies: [pyproject-flake8]
 exclude: |
   (?x)(
-     ^tests/data/|
+     ^tests/unit/data/|
      ^src/neptune/license_header\.txt
   )
 default_language_version:
