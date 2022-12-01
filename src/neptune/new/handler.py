@@ -65,7 +65,6 @@ from neptune.new.types.type_casting import (
     cast_value,
     cast_value_for_extend,
 )
-from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer
@@ -171,14 +170,11 @@ class Handler:
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
             if not attr:
+                self._container.define(self._path, value)
+            else:
+                # TODO: we should clean some rules regarding type casting in assignment
                 neptune_value = cast_value(value)
-                attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
-                self._container.set_attribute(self._path, attr)
-                value = neptune_value  # TODO: we should clean some rules regarding type casting in assignment
-
-            if isinstance(value, Handler):
-                value = ValueCopy(value)
-            attr.process_assignment(value, wait)
+                attr.process_assignment(neptune_value, wait)
 
     @check_protected_paths
     def upload(self, value, wait: bool = False) -> None:
@@ -631,8 +627,7 @@ class Handler:
             attr = self._container.get_attribute(self._path)
             if not attr:
                 attr = Artifact(self._container, parse_path(self._path))
-
-            self._container.set_attribute(self._path, attr)
+                self._container.set_attribute(self._path, attr)
 
             attr.track_files(path=path, destination=destination, wait=wait)
 
