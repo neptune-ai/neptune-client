@@ -25,7 +25,7 @@ def md5(fname):
 
     with open(fname, "rb") as f:
         for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
-            print("chunk =", chunk.decode("utf-8"))
+            print(f"{fname} chunk = '{chunk.decode('utf-8')}'")
             hash_md5.update(chunk)
 
     return hash_md5.hexdigest()

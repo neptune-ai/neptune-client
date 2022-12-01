@@ -49,8 +49,12 @@ class TestLocalArtifactDrivers(unittest.TestCase):
         # copy source data to temp dir (to prevent e.g. inter-fs symlinks)
         shutil.copytree(test_source_data, self.test_sources_dir)
 
+        print("test_sources_dir files =", os.listdir(self.test_sources_dir))
+
         # create files to track
         shutil.copytree(self.test_sources_dir / "files_to_track", test_data)
+
+        print("test_data files =", os.listdir(test_data))
 
         # symbolic and hard link files
         # `link_to` is new in python 3.8
