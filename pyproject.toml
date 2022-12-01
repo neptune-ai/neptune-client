@@ -63,7 +63,7 @@ vega_datasets = { version = "*", optional = true }
 # e2e
 Faker = { version = "*", optional = true }
 optuna = { version = "*", optional = true }
-sklearn = { version = "*", optional = true }
+scikit-learn = { version = "*", optional = true }
 torchvision = { version = "*", optional = true }
 
 # Additional integrations
@@ -116,7 +116,7 @@ e2e = [
     # Integrations
     "optuna",
     "pytorch-lightning",
-    "sklearn",
+    "scikit-learn",
     "torchvision",
     "transformers",
 ]
