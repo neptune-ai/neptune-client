@@ -10,16 +10,16 @@ jobs:
   test:
     name: ZZZZZ
     timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        os: [ubuntu-latest]
-#        python-version: ["3.7"]
-#        module:
-#          - "legacy"
-##          - "management"
-##          - "new"
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.7"]
+        module:
+          - "legacy"
+#          - "management"
+#          - "new"
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -29,6 +29,6 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/test-unit
         with:
-          python-version: "3.7"
-          os: ubuntu-latest
-          module: "legacy"
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          module: ${{ matrix.module }}
