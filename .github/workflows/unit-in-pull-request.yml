@@ -45,4 +45,5 @@ jobs:
         with:
           report_paths: './test-results/test-unit-*.xml'
           update_check: true
+          include_passed: true
 #          token: ${{ secrets.NEPTUNE_BOT_TOKEN }}
