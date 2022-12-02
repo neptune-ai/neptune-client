@@ -40,3 +40,4 @@ runs:
       with:
         report_paths: './test-results/test-unit-*.xml'
         update_check: true
+        token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}

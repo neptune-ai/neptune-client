@@ -14,8 +14,8 @@ jobs:
         python-version: ["3.7"]
         module:
           - "legacy"
-          - "management"
-          - "new"
+#          - "management"
+#          - "new"
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -23,7 +23,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}, ${{ matrix.os }})
+      - name: Run tests
         uses: ./.github/actions/test-unit
         with:
           python-version: ${{ matrix.python-version }}
