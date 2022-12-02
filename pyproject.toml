@@ -61,9 +61,9 @@ vega_datasets = { version = "*", optional = true }
 Faker = { version = "*", optional = true }
 
 # e2e
-#optuna = { version = "*", optional = true }
-#scikit-learn = { version = "*", optional = true }
-#torchvision = { version = "*", optional = true }
+optuna = { version = "*", optional = true }
+scikit-learn = { version = "*", optional = true }
+torchvision = { version = "*", optional = true }
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
@@ -110,14 +110,14 @@ dev = [
     "vega_datasets",
     "Faker"
 ]
-#e2e = [
-#    # Integrations
-##    "optuna",
-##    "pytorch-lightning",
-##    "scikit-learn",
-##    "torchvision",
-##    "transformers",
-#]
+e2e = [
+    # Integrations
+    "optuna",
+    "pytorch-lightning",
+    "scikit-learn",
+    "torchvision",
+    "transformers",
+]
 
 [tool.poetry]
 authors = ["neptune.ai <contact@neptune.ai>"]
