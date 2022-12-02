@@ -39,3 +39,4 @@ runs:
       if: always()
       with:
         report_paths: './test-results/test-unit-*.xml'
+        update_check: true
