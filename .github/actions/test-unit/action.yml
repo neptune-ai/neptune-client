@@ -28,6 +28,14 @@ runs:
         --junitxml="./test-results/test-unit-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
+    - name: Test report
+      uses: mikepenz/action-junit-report@v2
+      if: always()
+      with:
+        report_paths: './test-results/test-unit-*.xml'
+        update_check: true
+        include_passed: true
+
     - uses: actions/upload-artifact@v2
       if: always()
       with:
