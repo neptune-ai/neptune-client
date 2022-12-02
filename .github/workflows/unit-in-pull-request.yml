@@ -31,11 +31,3 @@ jobs:
           python-version: "3.7"
           os: ubuntu-latest
           module: "legacy"
-
-      - name: Report
-        uses: mikepenz/action-junit-report@v2
-        if: always()
-        with:
-          report_paths: './test-results/test-unit-*.xml'
-          update_check: true
-          include_passed: true
