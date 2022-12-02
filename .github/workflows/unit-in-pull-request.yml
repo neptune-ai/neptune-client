@@ -31,3 +31,11 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
+
+      - name: Report
+        uses: mikepenz/action-junit-report@v2
+        if: always()
+        with:
+          report_paths: './test-results/test-unit-*.xml'
+          update_check: true
+          include_passed: true
