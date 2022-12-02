@@ -11,9 +11,6 @@ inputs:
   os:
     description: "Operating system"
     required: true
-  token:
-    description: "Github token on whom to update check"
-    required: true
 
 runs:
   using: "composite"

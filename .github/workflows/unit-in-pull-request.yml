@@ -9,16 +9,16 @@ on:
 jobs:
   test:
     timeout-minutes: 75
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.7"]
-        module:
-          - "legacy"
-#          - "management"
-#          - "new"
-    runs-on: ${{ matrix.os }}
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        os: [ubuntu-latest]
+#        python-version: ["3.7"]
+#        module:
+#          - "legacy"
+##          - "management"
+##          - "new"
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -28,10 +28,9 @@ jobs:
       - name: Run tests
         uses: ./.github/actions/test-unit
         with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: ${{ matrix.module }}
-          token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+          python-version: 3.7
+          os: ubuntu-latest
+          module: legacy
 
       - name: Download artifacts
         uses: actions/download-artifact@v3
@@ -40,10 +39,10 @@ jobs:
           name: test-artifacts
           path: ./test-results
 
-      - name: Junit report
+      - name: Report
         uses: mikepenz/action-junit-report@v2
         if: always()
         with:
           report_paths: './test-results/test-unit-*.xml'
           update_check: true
-          token: ${{ secrets.NEPTUNE_BOT_TOKEN }}
+#          token: ${{ secrets.NEPTUNE_BOT_TOKEN }}
