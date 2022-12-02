@@ -8,9 +8,10 @@ jobs:
   test:
     timeout-minutes: 75
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        python-version: ["3.7", "3.10"] # minimum, maximum
+        python-version: ["3.7"]
         module:
           - "legacy"
           - "management"

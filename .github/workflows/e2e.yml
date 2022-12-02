@@ -22,6 +22,7 @@ jobs:
   e2e:
     timeout-minutes: 75
     strategy:
+      fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
@@ -46,6 +47,7 @@ jobs:
   e2e_management:
     timeout-minutes: 75
     strategy:
+      fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
@@ -69,6 +71,7 @@ jobs:
   e2e_s3_gcs:
     timeout-minutes: 75
     strategy:
+      fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
@@ -95,6 +98,7 @@ jobs:
   e2e_s3:
     timeout-minutes: 75
     strategy:
+      fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
