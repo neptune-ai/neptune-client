@@ -18,7 +18,7 @@ jobs:
 #          - "legacy"
 ##          - "management"
 ##          - "new"
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
