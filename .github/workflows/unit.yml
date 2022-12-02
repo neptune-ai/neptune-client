@@ -42,3 +42,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
+          token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}

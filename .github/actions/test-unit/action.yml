@@ -11,6 +11,9 @@ inputs:
   os:
     description: "Operating system"
     required: true
+  token:
+    description: "Github token on whom to update check"
+    required: true
 
 runs:
   using: "composite"
@@ -40,4 +43,4 @@ runs:
       with:
         report_paths: './test-results/test-unit-*.xml'
         update_check: true
-        token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+        token: ${{ inputs.token }}
