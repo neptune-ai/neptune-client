@@ -36,11 +36,3 @@ runs:
       with:
         name: test-artifacts
         path: ./test-results
-
-    - name: Junit report
-      uses: mikepenz/action-junit-report@v2
-      if: always()
-      with:
-        report_paths: './test-results/test-unit-*.xml'
-        update_check: true
-        token: ${{ inputs.token }}
