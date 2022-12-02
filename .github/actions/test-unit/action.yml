@@ -15,29 +15,32 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install package
-      uses: ./.github/actions/install-package
-      with:
-        python-version: ${{ inputs.python-version }}
-        os: ${{ inputs.os }}
-
-    - name: Unit - ${{ inputs.module }}
-      run: |
-        pytest -v ./tests/unit/neptune/${{ inputs.module }} \
-        --timeout=120 --timeout_method=thread \
-        --junitxml="./test-results/test-unit-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
+    - name: Print context
+      run: echo ${{ github.job }}
       shell: bash
-
-    - name: Report
-      uses: mikepenz/action-junit-report@v2
-      if: always()
-      with:
-        report_paths: './test-results/test-unit-*.xml'
-        update_check: true
-        include_passed: true
-
-    - uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: test-artifacts
-        path: ./test-results
+#    - name: Install package
+#      uses: ./.github/actions/install-package
+#      with:
+#        python-version: ${{ inputs.python-version }}
+#        os: ${{ inputs.os }}
+#
+#    - name: Unit - ${{ inputs.module }}
+#      run: |
+#        pytest -v ./tests/unit/neptune/${{ inputs.module }} \
+#        --timeout=120 --timeout_method=thread \
+#        --junitxml="./test-results/test-unit-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
+#      shell: bash
+#
+#    - name: Report
+#      uses: mikepenz/action-junit-report@v2
+#      if: always()
+#      with:
+#        report_paths: './test-results/test-unit-*.xml'
+#        update_check: true
+#        include_passed: true
+#
+#    - uses: actions/upload-artifact@v2
+#      if: always()
+#      with:
+#        name: test-artifacts
+#        path: ./test-results
