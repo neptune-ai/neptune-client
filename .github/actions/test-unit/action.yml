@@ -16,7 +16,7 @@ runs:
   using: "composite"
   steps:
     - name: Print context
-      run: echo ${{ github.job }}
+      run: echo ${{ github.jobs.test.name }}
       shell: bash
 #    - name: Install package
 #      uses: ./.github/actions/install-package
