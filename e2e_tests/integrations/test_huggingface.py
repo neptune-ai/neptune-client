@@ -92,6 +92,7 @@ class RegressionDataset:
         return result
 
 
+@pytest.mark.huggingface
 @pytest.mark.integrations
 class TestHuggingFace(BaseE2ETest):
     @property

@@ -5,6 +5,9 @@ inputs:
   python-version:
     description: "Python version"
     required: true
+  os:
+    description: "Operating system"
+    required: true
 
 runs:
     using: "composite"

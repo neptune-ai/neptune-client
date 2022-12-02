@@ -1,0 +1,27 @@
+---
+name: Test integration from remote repository
+description: Check client integration against production API
+inputs:
+  python-version:
+    description: "Python version"
+    required: true
+  os:
+    description: "Operating system"
+    required: true
+  repository-name:
+    description: "Name of repository inside of neptune-ai organization"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install package
+      uses: ./.github/actions/install-package
+      with:
+        python-version: ${{ inputs.python-version }}
+        os: ${{ inputs.os }}
+
+    - name: Test integration
+      uses: neptune-ai/${{ inputs.repository-name }}/.github/actions/e2e@master
+      with:
+        working_directory: ${{ inputs.repository-name }}
