@@ -7,7 +7,7 @@ jobs:
     timeout-minutes: 75
     strategy:
       matrix:
-        os: [ubuntu-20.04]  # Set back to ubuntu-latest after fixing it
+        os: [ubuntu-latest]
         python-version: ["3.7", "3.10"] # minimum, maximum
     steps:
       - name: Checkout repository
@@ -18,7 +18,7 @@ jobs:
 
   publish-tests:
     needs: [test]
-    runs-on: ubuntu-20.04  # Set back to ubuntu-latest after fixing it
+    runs-on: ubuntu-latest
     if: always()
     permissions:
       checks: write
