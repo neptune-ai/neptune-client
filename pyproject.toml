@@ -58,12 +58,12 @@ pytest-xdist = { version = "*", optional = true }
 tensorflow = { version = "*", optional = true }
 torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
+Faker = { version = "*", optional = true }
 
 # e2e
-Faker = { version = "*", optional = true }
-optuna = { version = "*", optional = true }
-scikit-learn = { version = "*", optional = true }
-torchvision = { version = "*", optional = true }
+#optuna = { version = "*", optional = true }
+#scikit-learn = { version = "*", optional = true }
+#torchvision = { version = "*", optional = true }
 
 # Additional integrations
 kedro-neptune = { version = "*", optional = true, python = "<3.11" }
@@ -108,16 +108,16 @@ dev = [
     "tensorflow",
     "torch",
     "vega_datasets",
+    "Faker"
 ]
-e2e = [
-    "Faker",
-    # Integrations
-    "optuna",
-    "pytorch-lightning",
-    "scikit-learn",
-    "torchvision",
-    "transformers",
-]
+#e2e = [
+#    # Integrations
+##    "optuna",
+##    "pytorch-lightning",
+##    "scikit-learn",
+##    "torchvision",
+##    "transformers",
+#]
 
 [tool.poetry]
 authors = ["neptune.ai <contact@neptune.ai>"]
