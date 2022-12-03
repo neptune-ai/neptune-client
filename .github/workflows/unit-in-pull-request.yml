@@ -14,11 +14,7 @@ jobs:
       matrix:
         os: [ubuntu-latest]
         python-version: ["3.7"]
-        module:
-          - "legacy"
-          - "management"
-          - "new"
-    name: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'
+    name: '(${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -32,4 +28,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
-          report_job: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'
+          report_job: '(${{ matrix.os }} - py${{ matrix.python-version }})'
