@@ -18,7 +18,7 @@ jobs:
           - "legacy"
 #          - "management"
 #          - "new"
-    name: ${{ matrix.module }} on (${{ matrix.os }} - py${{ matrix.python-version }})
+    name: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -40,4 +40,4 @@ jobs:
           report_paths: './test-results/test-unit-*.xml'
           update_check: true
           include_passed: true
-          job_name: zzz
+          job_name: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'
