@@ -32,7 +32,7 @@ runs:
       shell: bash
 
     - name: Report
-      uses: Raalsky/action-junit-report
+      uses: Raalsky/action-junit-report@main
       if: always()
       with:
         report_paths: './test-results/test-unit-*.xml'
