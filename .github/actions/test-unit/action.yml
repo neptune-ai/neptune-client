@@ -11,9 +11,6 @@ inputs:
   os:
     description: "Operating system"
     required: true
-  report_job:
-    description: "Job name to update with JUnit report"
-    required: true
 
 runs:
   using: "composite"
@@ -30,15 +27,6 @@ runs:
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
-
-    - name: Report
-      uses: Raalsky/action-junit-report@main
-      if: always()
-      with:
-        report_paths: './test-results/test-unit-*.xml'
-        update_check: true
-        include_passed: true
-        job_name: ${{ inputs.report_job }}
 
     - uses: actions/upload-artifact@v2
       if: always()

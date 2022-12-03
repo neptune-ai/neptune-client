@@ -18,7 +18,7 @@ jobs:
           - "legacy"
 #          - "management"
 #          - "new"
-    name: test ${{ matrix.os }} - ${{ matrix.python-version }} - ${{ matrix.module }}
+    name: ${{ matrix.module }} on (${{ matrix.os }} - py${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -32,4 +32,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
-          report_job: test ${{ matrix.os }} - ${{ matrix.python-version }} - ${{ matrix.module }}
+
+      - name: Report
+        uses: Raalsky/action-junit-report@main
+        if: always()
+        with:
+          report_paths: './test-results/test-unit-*.xml'
+          update_check: true
+          include_passed: true
+          job_name: zzz
