@@ -9,16 +9,12 @@ on:
       - master
 
 env:
-  BUCKET_NAME: ""
-  USER_USERNAME: ""
-  ADMIN_USERNAME: ""
-  ADMIN_NEPTUNE_API_TOKEN: ""
-  SERVICE_ACCOUNT_NAME: ""
   WORKSPACE_NAME: e2e-tests
-  NEPTUNE_PROJECT: e2e-tests/integrations
 
 jobs:
   fastai:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -33,14 +29,20 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Test
-      uses: ./.github/actions/test-remote-integration
+    - name: Install package
+      uses: ./.github/actions/install-package
       with:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
-        repository-name: neptune-fastai
+
+    - name: Test integration
+      uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
+      with:
+        working_directory: neptune-fastai
 
   kedro:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -55,14 +57,20 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Test
-      uses: ./.github/actions/test-remote-integration
+    - name: Install package
+      uses: ./.github/actions/install-package
       with:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
-        repository-name: kedro-neptune
+
+    - name: Test integration
+      uses: neptune-ai/kedro-neptune/.github/actions/e2e@master
+      with:
+        working_directory: kedro-neptune
 
   prophet:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -77,14 +85,20 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Test
-      uses: ./.github/actions/test-remote-integration
+    - name: Install package
+      uses: ./.github/actions/install-package
       with:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
-        repository-name: neptune-prophet
+
+    - name: Test integration
+      uses: neptune-ai/neptune-prophet/.github/actions/e2e@master
+      with:
+        working_directory: neptune-prophet
 
   keras:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -99,14 +113,24 @@ jobs:
       with:
         fetch-depth: 0
 
-    - name: Tests
-      uses: ./.github/actions/test-remote-integration
+    - name: Install package
+      uses: ./.github/actions/install-package
       with:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
-        repository-name: neptune-tensorflow-keras
+
+    - name: Test integration
+      uses: neptune-ai/neptune-tensorflow-keras/.github/actions/e2e@master
+      with:
+        working_directory: neptune-tensorflow-keras
 
   lightning:
+    env:
+      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -132,6 +156,12 @@ jobs:
           report_job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   huggingface:
+    env:
+      BUCKET_NAME: ${{ secrets.E2E_BUCKET_NAME }}
+      USER_USERNAME: ${{ secrets.E2E_USER_USERNAME }}
+      ADMIN_USERNAME: ${{ secrets.E2E_ADMIN_USERNAME }}
+      ADMIN_NEPTUNE_API_TOKEN: ${{ secrets.E2E_ADMIN_NEPTUNE_API_TOKEN }}
+      SERVICE_ACCOUNT_NAME: ${{ secrets.E2E_SERVICE_ACCOUNT_NAME }}
     timeout-minutes: 75
     strategy:
       fail-fast: false
