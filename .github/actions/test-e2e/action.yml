@@ -15,6 +15,9 @@ inputs:
     description: "Name"
     required: false
     default: ""
+  report_job:
+    description: "Job name to update by JUnit report"
+    required: true
 
 runs:
   using: "composite"
@@ -32,14 +35,18 @@ runs:
         --junitxml="./test-results/test-e2e-${{ inputs.name }}-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
+    - name: Report
+      uses: Raalsky/action-junit-report@main
+      if: always()
+      with:
+        report_paths: './test-results/test-e2e-*.xml'
+        update_check: true
+        include_passed: true
+        annotate_notice: true
+        job_name: ${{ inputs.report_job }}
+
     - uses: actions/upload-artifact@v2
       if: always()
       with:
         name: test-artifacts
         path: ./test-results
-
-    - name: Junit report
-      uses: mikepenz/action-junit-report@v2
-      if: always()
-      with:
-        report_paths: './test-results/test-e2e-*.xml'

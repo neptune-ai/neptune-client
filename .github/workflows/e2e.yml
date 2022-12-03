@@ -2,10 +2,10 @@ name: e2e
 
 on:
   push:
-    branches:
+    branches-ignore:
       - master
-    tags:
-      - "*"
+#    tags:
+#      - "*"
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
@@ -26,23 +26,23 @@ jobs:
       matrix:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        module:
-          - "not s3 and not integrations"
-          - "integrations"
     runs-on: ${{ matrix.os }}
+    name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}, ${{ matrix.os }})
+
+      - name: Test
         uses: ./.github/actions/test-e2e
         env:
           NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: ${{ matrix.module }}
+          module: "not s3 and not integrations"
+          report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   e2e_management:
     timeout-minutes: 75
@@ -51,22 +51,23 @@ jobs:
       matrix:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
-        module:
-          - "management"
     runs-on: ${{ matrix.os }}
+    name: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}, ${{ matrix.os }})
+
+      - name: Test
         uses: ./.github/actions/test-e2e
         env:
           NEPTUNE_API_TOKEN: ${{secrets.E2E_NEPTUNE_API_TOKEN}}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: ${{ matrix.module }}
+          module: management
+          report_job: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   e2e_s3_gcs:
     timeout-minutes: 75
@@ -76,13 +77,14 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
-
+    name: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Tests S3(GCS) (${{ matrix.python-version }}, ${{ matrix.os }})
+
+      - name: Test
         uses: ./.github/actions/test-e2e
         env:
           NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
@@ -94,6 +96,7 @@ jobs:
           os: ${{ matrix.os }}
           module: s3
           name: s3-gcs
+          report_job: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   e2e_s3:
     timeout-minutes: 75
@@ -103,12 +106,14 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
+    name: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Tests S3 (${{ matrix.python-version }}, ${{ matrix.os }})
+
+      - name: Test
         uses: ./.github/actions/test-e2e
         env:
           NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
@@ -118,3 +123,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: s3
+          report_job: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
