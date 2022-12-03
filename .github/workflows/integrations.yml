@@ -10,7 +10,7 @@ on:
 
 env:
   WORKSPACE_NAME: e2e-tests
-  NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
+  NEPTUNE_API_TOKEN: ${{ secrets.E2E_NEPTUNE_API_TOKEN }}
 
 jobs:
   fastai:
