@@ -40,4 +40,5 @@ jobs:
           report_paths: './test-results/test-unit-*.xml'
           update_check: true
           include_passed: true
+          annotate_notice: true
           job_name: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'
