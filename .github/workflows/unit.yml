@@ -30,6 +30,7 @@ jobs:
           - "management"
           - "new"
     runs-on: ${{ matrix.os }}
+    name: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
@@ -42,4 +43,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
-          token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+          report_job: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'

@@ -16,8 +16,8 @@ jobs:
         python-version: ["3.7"]
         module:
           - "legacy"
-#          - "management"
-#          - "new"
+          - "management"
+          - "new"
     name: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}
     steps:
