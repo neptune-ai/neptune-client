@@ -2,9 +2,9 @@ name: unit
 
 on:
   workflow_dispatch:
-  push:
-    branches-ignore:
-      - master
+#  push:
+#    branches-ignore:
+#      - master
 
 jobs:
   test:

@@ -6,7 +6,8 @@ on:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
     branches:
-      - master
+#      - master
+      - "*"
     tags:
       - "*"
 
@@ -25,19 +26,20 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
+          - "3.11"
         module:
           - "legacy"
           - "management"
           - "new"
-    runs-on: ${{ matrix.os }}
     name: '${{ matrix.module }} (${{ matrix.os }} - py${{ matrix.python-version }})'
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}, ${{ matrix.os }})
+      - name: Run tests
         uses: ./.github/actions/test-unit
         with:
           python-version: ${{ matrix.python-version }}
