@@ -34,4 +34,4 @@ jobs:
 #          module: ${{ matrix.module }}
       - name: Debug
         run: |
-          echo ${{ github.context.job }}
+          echo ${{ github.job }}
