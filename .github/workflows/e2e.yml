@@ -2,10 +2,10 @@ name: e2e
 
 on:
   push:
-    branches-ignore:
+    branches:
       - master
-#    tags:
-#      - "*"
+    tags:
+      - "*"
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)

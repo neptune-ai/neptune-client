@@ -4,6 +4,9 @@ on:
   workflow_dispatch:
   schedule:
     - cron: "0 6 * * *" # Run every day at arbitrary time (6:00 AM UTC)
+  push:
+    branches-ignore:
+      - master
 
 env:
   BUCKET_NAME: ""
@@ -23,14 +26,15 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
+    name: 'fastai (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    - name: Tests Fast.ai (${{ matrix.python-version }}, ${{ matrix.os }})
-      uses: ./.github/actions/test-integration-remote
+    - name: Test
+      uses: ./.github/actions/test-remote-integration
       with:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
@@ -44,14 +48,15 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
+    name: 'kedro (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    - name: Tests Kedro (${{ matrix.python-version }}, ${{ matrix.os }})
-      uses: ./.github/actions/test-integration-remote
+    - name: Test
+      uses: ./.github/actions/test-remote-integration
       with:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
@@ -65,14 +70,15 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
+    name: 'prophet (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    - name: Tests Prophet (${{ matrix.python-version }}, ${{ matrix.os }})
-      uses: ./.github/actions/test-integration-remote
+    - name: Test
+      uses: ./.github/actions/test-remote-integration
       with:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
@@ -86,14 +92,15 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
+    name: 'keras (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
 
-    - name: Tests Keras (${{ matrix.python-version }}, ${{ matrix.os }})
-      uses: ./.github/actions/test-integration-remote
+    - name: Tests
+      uses: ./.github/actions/test-remote-integration
       with:
         python-version: ${{ matrix.python-version }}
         os: ${{ matrix.os }}
@@ -107,19 +114,22 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
+    name: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Tests ${{ matrix.module }} (${{ matrix.python-version }}, ${{ matrix.os }})
+
+      - name: Test
         uses: ./.github/actions/test-e2e
         env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: lightning
+          report_job: 'lightning (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   huggingface:
     timeout-minutes: 75
@@ -129,16 +139,19 @@ jobs:
         python-version: [ "3.7", "3.10" ]
         os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
+    name: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - name: Tests HuggingFace (${{ matrix.python-version }}, ${{ matrix.os }})
+
+      - name: Test
         uses: ./.github/actions/test-e2e
         env:
-          NEPTUNE_API_TOKEN: ${{secrets.E2E_SERVICE_ACCOUNT_API_TOKEN}}
+          NEPTUNE_API_TOKEN: ${{ secrets.E2E_SERVICE_ACCOUNT_API_TOKEN }}
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: huggingface
+          report_job: 'huggingface (${{ matrix.os }} - py${{ matrix.python-version }})'
