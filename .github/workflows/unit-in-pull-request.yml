@@ -26,9 +26,12 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run tests
-        uses: ./.github/actions/test-unit
-        with:
-          python-version: ${{ matrix.python-version }}
-          os: ${{ matrix.os }}
-          module: ${{ matrix.module }}
+#      - name: Run tests
+#        uses: ./.github/actions/test-unit
+#        with:
+#          python-version: ${{ matrix.python-version }}
+#          os: ${{ matrix.os }}
+#          module: ${{ matrix.module }}
+      - name: Debug
+        run: |
+          echo ${{ github.context.job }}
