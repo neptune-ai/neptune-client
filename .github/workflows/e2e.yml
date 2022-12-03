@@ -1,14 +1,14 @@
 name: e2e
 
 on:
-  push:
-    branches:
-      - master
-    tags:
-      - "*"
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+  push:
+    branches-ignore:
+      - master
+    tags:
+      - "*"
 
 env:
   WORKSPACE_NAME: e2e-tests

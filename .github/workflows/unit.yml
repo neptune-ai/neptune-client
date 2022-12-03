@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
-    branches:
+    branches-ignore:
       - master
     tags:
       - "*"
