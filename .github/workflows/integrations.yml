@@ -40,7 +40,7 @@ jobs:
       with:
         working_directory: neptune-fastai
 
-    - fastai-notify:
+    - name: Notify
       if: always() && github.ref != 'refs/heads/master'
       uses: 8398a7/action-slack@v3
       with:
