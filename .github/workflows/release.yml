@@ -18,14 +18,14 @@ jobs:
           ref: ${{ github.ref }}
           running-workflow-name: 'publish'
           repo-token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
-          wait-interval: 10
+          wait-interval: 60
 
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
 
-      - name: Install Python ${{ matrix.python-version }}
+      - name: Install Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.10"

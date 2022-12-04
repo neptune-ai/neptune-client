@@ -7,14 +7,14 @@ on:
 #      - master
 
 jobs:
-  unit:
+  test:
     timeout-minutes: 75
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
         python-version: ["3.7"]
-    name: '${{ matrix.os }} - py${{ matrix.python-version }}'
+    name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -28,4 +28,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
-          report_job: '${{ matrix.os }} - py${{ matrix.python-version }}'
+          report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'

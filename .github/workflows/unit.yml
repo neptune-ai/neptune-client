@@ -11,7 +11,7 @@ on:
       - "*"
 
 jobs:
-  unit:
+  test:
     timeout-minutes: 75
     strategy:
       fail-fast: false
@@ -25,7 +25,7 @@ jobs:
           - "3.8"
           - "3.9"
           - "3.10"
-    name: '${{ matrix.os }} - py${{ matrix.python-version }}'
+    name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}
     steps:
       - name: Checkout repository
@@ -39,4 +39,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
           module: ${{ matrix.module }}
-          report_job: '${{ matrix.os }} - py${{ matrix.python-version }}'
+          report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
