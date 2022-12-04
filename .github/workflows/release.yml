@@ -1,4 +1,4 @@
-name: Release
+name: release
 
 on:
   push:
@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Wait for tests to finish
-        uses: lewagon/wait-on-check-action@v1.0.0
+        uses: lewagon/wait-on-check-action@v1.2.0
         with:
           ref: ${{ github.ref }}
           running-workflow-name: 'publish'
