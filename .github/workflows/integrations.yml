@@ -36,6 +36,7 @@ jobs:
         os: ${{ matrix.os }}
 
     - name: Test integration
+      id: test
       uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
       with:
         working_directory: neptune-fastai
@@ -44,7 +45,7 @@ jobs:
       if: always() && github.ref != 'refs/heads/master'
       uses: 8398a7/action-slack@v3
       with:
-        status: ${{ step2.result }}
+        status: ${{ test.result }}
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
 #
 #  kedro:
