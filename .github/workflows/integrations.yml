@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest ]
+        os: [ ubuntu-latest ] #, macos-latest ]
     runs-on: ${{ matrix.os }}
     name: 'fastai (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -45,49 +45,58 @@ jobs:
     runs-on: ubuntu-latest
     if: always() # github.ref == 'refs/heads/master'
     steps:
-      - uses: technote-space/workflow-conclusion-action@v3
-
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
+          fetch-depth: 0
 
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
+      - name: Notify
+        uses: ./.github/actions/notify
         with:
-          status: success
-          fields: repo,message,author,job,eventName,took
-#
-#  kedro:
-#    env:
-#      NEPTUNE_PROJECT: e2e-tests/integrations
-#    timeout-minutes: 75
-#    strategy:
-#      fail-fast: false
-#      matrix:
-#        python-version: [ "3.8", "3.10" ]
-#        os: [ ubuntu-latest, macos-latest ]
-#    runs-on: ${{ matrix.os }}
-#    name: 'kedro (${{ matrix.os }} - py${{ matrix.python-version }})'
-#    steps:
-#    - name: Checkout repository
-#      uses: actions/checkout@v3
-#      with:
-#        fetch-depth: 0
-#
-#    - name: Install package
-#      uses: ./.github/actions/install-package
-#      with:
-#        python-version: ${{ matrix.python-version }}
-#        os: ${{ matrix.os }}
-#
-#    - name: Test integration
-#      uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
-#      with:
-#        working_directory: kedro-neptune
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
+
+  kedro:
+    env:
+      NEPTUNE_PROJECT: e2e-tests/integrations
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.8", "3.10" ]
+        os: [ ubuntu-latest ] #, macos-latest ]
+    runs-on: ${{ matrix.os }}
+    name: 'kedro (${{ matrix.os }} - py${{ matrix.python-version }})'
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Install package
+      uses: ./.github/actions/install-package
+      with:
+        python-version: ${{ matrix.python-version }}
+        os: ${{ matrix.os }}
+
+    - name: Test integration
+      uses: neptune-ai/kedro-neptune/.github/actions/e2e@main
+      with:
+        working_directory: kedro-neptune
+
+  kedro-notify:
+    needs: [kedro]
+    runs-on: ubuntu-latest
+    if: always() # github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Notify
+        uses: ./.github/actions/notify
+        with:
+          slack-webhook: ${{ secrets.E2E_INTEGRATIONS_SLACK_WEBHOOK }}
 #
 #  prophet:
 #    env:
