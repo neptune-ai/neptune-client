@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
-    branches:
+    branches-ignore:
       - master
     tags:
       - "*"
@@ -24,8 +24,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ "3.7" ] #, "3.10" ]
+        os: [ ubuntu-latest ] #, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -49,8 +49,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ "3.7" ] #, "3.10" ]
+        os: [ ubuntu-latest ] #, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     name: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -74,8 +74,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ "3.7" ] #, "3.10" ]
+        os: [ ubuntu-latest ] #, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     name: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -103,8 +103,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7", "3.10" ]
-        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        python-version: [ "3.7" ] #, "3.10" ]
+        os: [ ubuntu-latest ] #, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     name: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -129,21 +129,13 @@ jobs:
     needs: [ e2e, e2e_management, e2e_s3_gcs, e2e_s3 ]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
-    env:
-      SLACK_WEBHOOK_URL: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
     steps:
-      - uses: technote-space/workflow-conclusion-action@v3
-
-      - name: Notify about failure
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION != 'success'
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          status: failure
-          fields: repo,message,author,job,eventName,took
+          fetch-depth: 0
 
-      - name: Notify about success
-        uses: 8398a7/action-slack@v3
-        if: env.WORKFLOW_CONCLUSION == 'success'
+      - name: Notify
+        uses: ./.github/actions/notify
         with:
-          status: success
-          fields: repo,message,author,job,eventName,took
+          slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
