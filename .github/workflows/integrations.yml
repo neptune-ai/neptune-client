@@ -45,7 +45,7 @@ jobs:
       if: always() && github.ref != 'refs/heads/master'
       uses: 8398a7/action-slack@v3
       with:
-        status: ${{ test.result }}
+        status: ${{ jobs.test.result }}
         fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
 #
 #  kedro:
