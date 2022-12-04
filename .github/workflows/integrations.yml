@@ -36,17 +36,30 @@ jobs:
         os: ${{ matrix.os }}
 
     - name: Test integration
-      id: test
       uses: neptune-ai/neptune-fastai/.github/actions/e2e@master
       with:
         working_directory: neptune-fastai
 
-    - name: Notify
-      if: always() && github.ref != 'refs/heads/master'
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ jobs.test.result }}
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+  fastai-notify:
+    needs: [fastai]
+    runs-on: ubuntu-latest
+    if: always() # github.ref == 'refs/heads/master'
+    steps:
+      - uses: technote-space/workflow-conclusion-action@v3
+
+      - name: Notify about failure
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION != 'success'
+        with:
+          status: failure
+          fields: repo,message,author,job,eventName,took
+
+      - name: Notify about success
+        uses: 8398a7/action-slack@v3
+        if: env.WORKFLOW_CONCLUSION == 'success'
+        with:
+          status: success
+          fields: repo,message,author,job,eventName,took
 #
 #  kedro:
 #    env:
