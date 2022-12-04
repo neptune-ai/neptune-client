@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
-    branches-ignore:
+    branches:
       - master
     tags:
       - "*"
@@ -44,7 +44,7 @@ jobs:
   unit-tests-notify:
     needs: [ test ]
     runs-on: ubuntu-latest
-#    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/master'
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
     steps:
