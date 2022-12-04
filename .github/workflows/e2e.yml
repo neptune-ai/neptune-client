@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
-    branches-ignore:
+    branches:
       - master
     tags:
       - "*"
@@ -24,8 +24,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7" ] #, "3.10" ]
-        os: [ ubuntu-latest ] #, macos-latest, windows-latest ]
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     name: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -49,8 +49,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7" ] #, "3.10" ]
-        os: [ ubuntu-latest ] #, macos-latest, windows-latest ]
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     name: 'management (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -74,8 +74,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7" ] #, "3.10" ]
-        os: [ ubuntu-latest ] #, macos-latest, windows-latest ]
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     name: 's3-gcs (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:
@@ -103,8 +103,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ "3.7" ] #, "3.10" ]
-        os: [ ubuntu-latest ] #, macos-latest, windows-latest ]
+        python-version: [ "3.7", "3.10" ]
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
     runs-on: ${{ matrix.os }}
     name: 's3 (${{ matrix.os }} - py${{ matrix.python-version }})'
     steps:

@@ -5,7 +5,7 @@ on:
   schedule:
     - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
   push:
-    branches-ignore:
+    branches:
       - master
     tags:
       - "*"
@@ -18,13 +18,13 @@ jobs:
       matrix:
         os:
           - "ubuntu-latest"
-#          - "macos-latest"
-#          - "windows-latest"
+          - "macos-latest"
+          - "windows-latest"
         python-version:
           - "3.7"
-#          - "3.8"
-#          - "3.9"
-#          - "3.10"
+          - "3.8"
+          - "3.9"
+          - "3.10"
     name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
     runs-on: ${{ matrix.os }}
     steps:
