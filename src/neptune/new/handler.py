@@ -172,7 +172,6 @@ class Handler:
             if not attr:
                 self._container.define(self._path, value)
             else:
-                # TODO: we should clean some rules regarding type casting in assignment
                 neptune_value = cast_value(value)
                 attr.process_assignment(neptune_value, wait)
 

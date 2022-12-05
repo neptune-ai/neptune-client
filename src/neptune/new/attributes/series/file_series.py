@@ -68,11 +68,6 @@ class FileSeries(Series[Val, Data, LogOperation]):
     def _is_value_type(self, value) -> bool:
         return isinstance(value, FileSeriesVal)
 
-    @classmethod
-    def _map_log_value(cls, value):
-        # TODO: maybe should be moved to operations
-        return cls._get_base64_image_content(value)
-
     @staticmethod
     def _get_base64_image_content(file: File) -> str:
         if file.file_type is FileType.LOCAL_FILE:
