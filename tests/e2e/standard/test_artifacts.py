@@ -45,7 +45,7 @@ class TestArtifacts(BaseE2ETest):
             with open(filename, "w", encoding="utf-8") as handler:
                 handler.write(fake.paragraph(nb_sentences=5))
 
-            container[first].track_files("")
+            container[first].track_files(".")
             container[second].track_files(f"file://{tmp}")
 
             container.sync()
@@ -210,7 +210,7 @@ class TestArtifacts(BaseE2ETest):
                 handler.write(fake.paragraph(nb_sentences=5))
 
             # Track all files - "a" and "b" to first artifact
-            container[first].track_files("")
+            container[first].track_files(".")
 
             # Track only the "a" file to second artifact
             container[second].track_files(f"file://{Path(tmp)}/{filename}")
@@ -236,12 +236,12 @@ class TestArtifacts(BaseE2ETest):
 
             # track it
             start = time.time()
-            container[key].track_files("", wait=True)
+            container[key].track_files(".", wait=True)
             initial_duration = time.time() - start
 
             # and track it again
             start = time.time()
-            container[key].track_files("", wait=True)
+            container[key].track_files(".", wait=True)
             retry_duration = time.time() - start
 
             assert retry_duration * 2 < initial_duration, "Tracking again should be significantly faster"
@@ -252,7 +252,7 @@ class TestArtifacts(BaseE2ETest):
 
             # and track updated file
             start = time.time()
-            container[key].track_files("", wait=True)
+            container[key].track_files(".", wait=True)
             updated_duration = time.time() - start
 
             assert retry_duration * 2 < updated_duration, "Tracking updated file should take more time - no cache"
