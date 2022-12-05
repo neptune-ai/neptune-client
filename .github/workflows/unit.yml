@@ -1,0 +1,56 @@
+name: unit
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+
+jobs:
+  test:
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - "ubuntu-latest"
+          - "macos-latest"
+          - "windows-latest"
+        python-version:
+          - "3.7"
+          - "3.8"
+          - "3.9"
+          - "3.10"
+    name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Run tests
+        uses: ./.github/actions/test-unit
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
+
+  unit-tests-notify:
+    needs: [ test ]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Notify
+        uses: ./.github/actions/notify
+        with:
+          slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}

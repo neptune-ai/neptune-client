@@ -58,9 +58,9 @@ pytest-xdist = { version = "*", optional = true }
 tensorflow = { version = "*", optional = true }
 torch = { version = "*", optional = true }
 vega_datasets = { version = "*", optional = true }
+Faker = { version = "*", optional = true }
 
 # e2e
-Faker = { version = "*", optional = true }
 optuna = { version = "*", optional = true }
 scikit-learn = { version = "*", optional = true }
 torchvision = { version = "*", optional = true }
@@ -108,9 +108,9 @@ dev = [
     "tensorflow",
     "torch",
     "vega_datasets",
+    "Faker"
 ]
 e2e = [
-    "Faker",
     # Integrations
     "optuna",
     "pytorch-lightning",

@@ -15,21 +15,35 @@ inputs:
     description: "Name"
     required: false
     default: ""
+  report_job:
+    description: "Job name to update by JUnit report"
+    required: true
 
 runs:
   using: "composite"
   steps:
     - name: Install package
-      uses: ./.github/actions/package
+      uses: ./.github/actions/install-package
       with:
         python-version: ${{ inputs.python-version }}
+        os: ${{ inputs.os }}
 
     - name: E2E - ${{ inputs.module }}
       run: |
         pytest -v ./e2e_tests -m "${{ inputs.module }}" \
         --timeout=600 --timeout_method=thread \
-        --junitxml="./test-results/test-e2e-${{ inputs.name }}${{ inputs.module }}-${{ inputs.os }}-${{ matrix.python-version }}.xml"
+        --junitxml="./test-results/test-e2e-${{ inputs.name }}-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
+
+    - name: Report
+      uses: Raalsky/action-junit-report@main
+      if: always()
+      with:
+        report_paths: './test-results/test-e2e-*.xml'
+        update_check: true
+        include_passed: true
+        annotate_notice: true
+        job_name: ${{ inputs.report_job }}
 
     - uses: actions/upload-artifact@v2
       if: always()

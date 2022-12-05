@@ -1,0 +1,30 @@
+name: unit
+
+on:
+  workflow_dispatch:
+  push:
+    branches-ignore:
+      - master
+
+jobs:
+  test:
+    timeout-minutes: 75
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ["3.7"]
+    name: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Run tests
+        uses: ./.github/actions/test-unit
+        with:
+          python-version: ${{ matrix.python-version }}
+          os: ${{ matrix.os }}
+          report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
