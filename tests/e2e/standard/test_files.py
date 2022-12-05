@@ -24,24 +24,6 @@ from zipfile import ZipFile
 
 import pytest
 
-from e2e_tests.base import (
-    AVAILABLE_CONTAINERS,
-    BaseE2ETest,
-    fake,
-)
-from e2e_tests.plot_utils import (
-    generate_altair_chart,
-    generate_brokeh_figure,
-    generate_matplotlib_figure,
-    generate_pil_image,
-    generate_plotly_figure,
-)
-from e2e_tests.utils import (
-    SIZE_1KB,
-    SIZE_1MB,
-    initialize_container,
-    tmp_context,
-)
 from neptune.new.internal.backends import hosted_file_operations
 from neptune.new.internal.backends.api_model import (
     MultipartConfig,
@@ -53,6 +35,24 @@ from neptune.new.metadata_containers import MetadataContainer
 from neptune.new.types import (
     File,
     FileSet,
+)
+from tests.e2e.base import (
+    AVAILABLE_CONTAINERS,
+    BaseE2ETest,
+    fake,
+)
+from tests.e2e.plot_utils import (
+    generate_altair_chart,
+    generate_brokeh_figure,
+    generate_matplotlib_figure,
+    generate_pil_image,
+    generate_plotly_figure,
+)
+from tests.e2e.utils import (
+    SIZE_1KB,
+    SIZE_1MB,
+    initialize_container,
+    tmp_context,
 )
 
 

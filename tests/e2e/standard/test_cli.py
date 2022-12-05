@@ -22,20 +22,20 @@ import pytest
 from click.testing import CliRunner
 
 import neptune.new as neptune
-from e2e_tests.base import (
+from neptune.common.exceptions import NeptuneException
+from neptune.new.cli import sync
+from src.neptune.new.cli.commands import clear
+from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
     fake,
 )
-from e2e_tests.utils import (
+from tests.e2e.utils import (
     DISABLE_SYSLOG_KWARGS,
     initialize_container,
     reinitialize_container,
     tmp_context,
 )
-from neptune.common.exceptions import NeptuneException
-from neptune.new.cli import sync
-from src.neptune.new.cli.commands import clear
 
 runner = CliRunner()
 

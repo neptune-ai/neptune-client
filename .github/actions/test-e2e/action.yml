@@ -30,7 +30,7 @@ runs:
 
     - name: E2E - ${{ inputs.module }}
       run: |
-        pytest -v ./e2e_tests -m "${{ inputs.module }}" \
+        pytest -v ./tests/e2e/ -m "${{ inputs.module }}" \
         --timeout=600 --timeout_method=thread \
         --junitxml="./test-results/test-e2e-${{ inputs.name }}-${{ inputs.module }}-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash

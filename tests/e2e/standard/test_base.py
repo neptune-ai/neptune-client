@@ -21,12 +21,12 @@ from datetime import (
 
 import pytest
 
-from e2e_tests.base import (
+from neptune.new.metadata_containers import MetadataContainer
+from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
     fake,
 )
-from neptune.new.metadata_containers import MetadataContainer
 
 
 class TestAtoms(BaseE2ETest):

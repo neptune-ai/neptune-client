@@ -16,19 +16,19 @@
 import pytest
 
 import neptune.new as neptune
-from e2e_tests.base import (
+from neptune.new.exceptions import NeptuneModelKeyAlreadyExistsError
+from neptune.new.metadata_containers import Model
+from neptune.new.project import Project
+from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
     fake,
 )
-from e2e_tests.utils import (
+from tests.e2e.utils import (
     initialize_container,
     reinitialize_container,
     with_check_if_file_appears,
 )
-from neptune.new.exceptions import NeptuneModelKeyAlreadyExistsError
-from neptune.new.metadata_containers import Model
-from neptune.new.project import Project
 
 
 class TestInitRun(BaseE2ETest):

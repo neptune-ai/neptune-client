@@ -15,9 +15,9 @@
 #
 import pytest
 
-from e2e_tests.base import BaseE2ETest
 from neptune.new.exceptions import NeptuneCannotChangeStageManually
 from neptune.new.metadata_containers import ModelVersion
+from tests.e2e.base import BaseE2ETest
 
 
 class TestStageTransitions(BaseE2ETest):

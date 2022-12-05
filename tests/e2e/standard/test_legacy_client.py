@@ -3,9 +3,9 @@ from datetime import datetime
 import numpy
 from PIL import Image
 
-from e2e_tests.base import fake
-from e2e_tests.utils import tmp_context
 from neptune import Session
+from tests.e2e.base import fake
+from tests.e2e.utils import tmp_context
 
 
 class TestLegacyClient:
