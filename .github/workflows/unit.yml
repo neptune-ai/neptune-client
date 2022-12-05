@@ -38,7 +38,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: ${{ matrix.module }}
           report_job: 'test (${{ matrix.os }} - py${{ matrix.python-version }})'
 
   unit-tests-notify:
