@@ -18,18 +18,18 @@ import random
 import pytest
 from PIL import Image
 
-from e2e_tests.base import (
+from neptune.new.metadata_containers import MetadataContainer
+from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
     fake,
 )
-from e2e_tests.utils import (
+from tests.e2e.utils import (
     SIZE_1KB,
     generate_image,
     image_to_png,
     tmp_context,
 )
-from neptune.new.metadata_containers import MetadataContainer
 
 
 class TestSeries(BaseE2ETest):

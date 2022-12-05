@@ -19,11 +19,11 @@ import random
 import pytest
 
 import neptune.new as neptune
-from e2e_tests.base import (
+from tests.e2e.base import (
     BaseE2ETest,
     fake,
 )
-from e2e_tests.utils import reinitialize_container
+from tests.e2e.utils import reinitialize_container
 
 
 def store_in_container(sys_id: str, project: str, container_type: str, destination: str):

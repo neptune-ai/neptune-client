@@ -24,7 +24,6 @@ from unittest.mock import PropertyMock
 
 from mock import MagicMock
 
-from e2e_tests.utils import tmp_context
 from neptune.common.utils import IS_WINDOWS
 from neptune.new.attributes.atoms.file import (
     File,
@@ -39,6 +38,7 @@ from neptune.new.internal.operation import (
     UploadFileSet,
 )
 from neptune.new.internal.types.file_types import FileType
+from tests.e2e.utils import tmp_context
 from tests.unit.neptune.new.attributes.test_attribute_base import TestAttributeBase
 
 

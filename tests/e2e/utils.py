@@ -43,8 +43,8 @@ from PIL import Image
 from PIL.PngImagePlugin import PngImageFile
 
 import neptune.new as neptune
-from e2e_tests.exceptions import MissingEnvironmentVariable
 from neptune.new.internal.container_type import ContainerType
+from tests.e2e.exceptions import MissingEnvironmentVariable
 
 
 def _remove_file_if_exists(filepath):

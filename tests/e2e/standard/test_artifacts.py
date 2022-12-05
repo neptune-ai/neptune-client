@@ -23,16 +23,16 @@ from pathlib import (
 
 import pytest
 
-from e2e_tests.base import (
+from neptune.new.metadata_containers import MetadataContainer
+from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
     fake,
 )
-from e2e_tests.utils import (
+from tests.e2e.utils import (
     tmp_context,
     with_check_if_file_appears,
 )
-from neptune.new.metadata_containers import MetadataContainer
 
 
 class TestArtifacts(BaseE2ETest):

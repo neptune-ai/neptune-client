@@ -20,12 +20,12 @@ import uuid
 import pytest
 
 import neptune.new as neptune
-from e2e_tests.base import (
+from neptune.new.metadata_containers import Model
+from tests.e2e.base import (
     BaseE2ETest,
     fake,
 )
-from e2e_tests.utils import a_key
-from neptune.new.metadata_containers import Model
+from tests.e2e.utils import a_key
 
 
 class TestFetchTable(BaseE2ETest):

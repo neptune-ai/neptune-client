@@ -33,13 +33,13 @@ from transformers.integrations import (
 )
 from transformers.utils import logging
 
-from e2e_tests.base import BaseE2ETest
-from e2e_tests.utils import (
+from neptune.new import init_run
+from tests.e2e.base import BaseE2ETest
+from tests.e2e.utils import (
     catch_time,
     modified_environ,
     tmp_context,
 )
-from neptune.new import init_run
 
 MAX_OVERWHELMING_FACTOR = 1.2
 SECONDS_TO_WAIT_FOR_UPDATE = 15

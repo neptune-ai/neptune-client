@@ -18,15 +18,6 @@ from typing import Dict
 
 import pytest
 
-from e2e_tests.base import (
-    BaseE2ETest,
-    fake,
-)
-from e2e_tests.utils import (
-    Environment,
-    a_project_name,
-    initialize_container,
-)
 from neptune.management import (
     add_project_member,
     add_project_service_account,
@@ -45,6 +36,15 @@ from neptune.management.exceptions import UserNotExistsOrWithoutAccess
 from neptune.management.internal.utils import normalize_project_name
 from neptune.new import init_model_version
 from neptune.new.internal.container_type import ContainerType
+from tests.e2e.base import (
+    BaseE2ETest,
+    fake,
+)
+from tests.e2e.utils import (
+    Environment,
+    a_project_name,
+    initialize_container,
+)
 
 
 @pytest.mark.management

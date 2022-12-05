@@ -31,7 +31,7 @@ from torch.utils.data import (
 )
 
 import neptune.new as neptune
-from e2e_tests.base import BaseE2ETest
+from tests.e2e.base import BaseE2ETest
 
 LIGHTNING_ECOSYSTEM_ENV_PROJECT = "NEPTUNE_LIGHTNING_ECOSYSTEM_CI_PROJECT"
 
