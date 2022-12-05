@@ -1,0 +1,37 @@
+name: run-all-test
+
+on:
+  repository_dispatch:
+    types: [run-all-test-command]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Add reaction
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+        comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+        reaction-type: hooray
+
+    - name: Create URL to the run output
+      id: vars
+      run: echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+    - name: Create comment
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+        issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
+        body: |
+          Hey hey @${{ github.event.client_payload.github.actor }}! I'm glad to see that you're looking for something much more demanding :wink: I've triggered for you all possible tests on every supported Operating System and Python version. [Check current status here :rocket:](${{ steps.vars.outputs.run-url }})
+
+  invoke-unit:
+    uses: ./.github/workflows/unit.yml
+
+  invoke-e2e:
+    uses: ./.github/workflows/e2e.yml
+
+  invoke-integrations:
+    uses: ./.github/workflows/integrations.yml

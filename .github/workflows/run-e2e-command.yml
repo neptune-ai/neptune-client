@@ -1,0 +1,31 @@
+name: run-e2e
+
+on:
+  repository_dispatch:
+    types: [run-e2e-command]
+
+jobs:
+  comment:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Add reaction
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+        comment-id: ${{ github.event.client_payload.github.payload.comment.id }}
+        reaction-type: hooray
+
+    - name: Create URL to the run output
+      id: vars
+      run: echo "run-url=https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" >> $GITHUB_OUTPUT
+
+    - name: Create comment
+      uses: peter-evans/create-or-update-comment@v2
+      with:
+        token: ${{ secrets.NEPTUNE_BOT_ACCESS_TOKEN }}
+        issue-number: ${{ github.event.client_payload.github.payload.issue.number }}
+        body: |
+          Hey hey @${{ github.event.client_payload.github.actor }}! I'm glad to see that you're looking for something much more demanding :wink: I've triggered for you our E2E tests on every supported Operating System and Python version. [Check current status here :rocket:](${{ steps.vars.outputs.run-url }})
+
+  invoke:
+    uses: ./.github/workflows/e2e.yml
