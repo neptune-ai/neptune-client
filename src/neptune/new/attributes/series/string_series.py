@@ -43,7 +43,7 @@ LogOperation = LogStrings
 
 
 class StringSeries(
-    Series[Val, Data, LogOperation], FetchableSeries[StringSeriesValues], max_batch_size=100, operation_cls=LogOperation
+    Series[Val, Data, LogOperation], FetchableSeries[StringSeriesValues], max_batch_size=10, operation_cls=LogOperation
 ):
     def __init__(self, container: "MetadataContainer", path: List[str]):
         super().__init__(container, path)
