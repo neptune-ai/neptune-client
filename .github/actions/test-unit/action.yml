@@ -21,15 +21,10 @@ runs:
         python-version: ${{ inputs.python-version }}
         os: ${{ inputs.os }}
 
-    - name: Coverage - Debug
-      run: |
-        coverage debug config
-      shell: bash
-
     - name: Unit - New
       run: |
         coverage run --source='neptune.new' --data-file=coverage.new -p -m \
-        pytest -v ./tests/unit/neptune/new
+        pytest -v ./tests/unit/neptune/new \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
@@ -59,7 +54,7 @@ runs:
     - name: Unit - Legacy
       run: |
         coverage run --source='neptune.legacy' --data-file=coverage.legacy -p -m \
-        pytest -v ./tests/unit/neptune/legacy
+        pytest -v ./tests/unit/neptune/legacy \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-legacy-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
