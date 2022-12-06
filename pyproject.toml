@@ -43,6 +43,7 @@ pandas = "*"
 # dev
 altair = { version = "*", optional = true }
 bokeh = { version = "*", optional = true }
+coverage = { version = "*", extras = [ "toml" ], optional = true }
 freezegun = { version = "*", optional = true }
 matplotlib = { version = "*", optional = true }
 mock = { version = "*", optional = true }
@@ -189,3 +190,7 @@ force_grid_wrap = 2
 [tool.flake8]
 max-line-length = 120
 extend-ignore = "E203"
+
+[tool.coverage.run]
+branch = true
+relative_files = true

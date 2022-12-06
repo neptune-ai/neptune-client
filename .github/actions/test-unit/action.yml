@@ -24,7 +24,7 @@ runs:
     - name: Unit - New
       run: |
         echo "<<<<<<<< Running 'new' unittests >>>>>>>>" && \
-        coverage run --source=src/neptune/new --data-file=coverage.new -p -m \
+        coverage run --source='src/neptune/new/' --data-file=coverage.new -p -m \
         pytest -v ./tests/unit/neptune/new \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
@@ -40,7 +40,7 @@ runs:
     - name: Unit - Management
       run: |
         echo "<<<<<<<< Running 'management' unittests >>>>>>>>" && \
-        coverage run --source=src/neptune/management --data-file=coverage.management -p -m \
+        coverage run --source='src/neptune/management' --data-file=coverage.management -p -m \
         pytest -v ./tests/unit/neptune/management \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-management-${{ inputs.os }}-${{ inputs.python-version }}.xml"
@@ -56,7 +56,7 @@ runs:
     - name: Unit - Legacy
       run: |
         echo "<<<<<<<< Running 'legacy' unittests >>>>>>>>" && \
-        coverage run --source=src/neptune/legacy --data-file=coverage.legacy -p -m \
+        coverage run --source='src/neptune/legacy' --data-file=coverage.legacy -p -m \
         pytest -v ./tests/unit/neptune/legacy \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-legacy-${{ inputs.os }}-${{ inputs.python-version }}.xml"
