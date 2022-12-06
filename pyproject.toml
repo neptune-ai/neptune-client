@@ -52,7 +52,6 @@ munch = { version = "*", optional = true }
 plotly = { version = "*", optional = true }
 pre-commit = { version = "*", optional = true }
 pytest = { version = "*", optional = true }
-pytest-cov = { version = "*", optional = true }
 pytest-mock = { version = "*", optional = true }
 pytest-timeout = { version = "*", optional = true }
 pytest-xdist = { version = "*", optional = true }
@@ -104,7 +103,6 @@ dev = [
     "plotly",
     "pre-commit",
     "pytest",
-    "pytest-cov",
     "pytest-mock",
     "pytest-timeout",
     "pytest-xdist",
