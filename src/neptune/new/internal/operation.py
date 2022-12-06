@@ -49,7 +49,7 @@ def all_subclasses(cls):
 
 
 @dataclass
-class Operation:
+class Operation(abc.ABC):
 
     path: List[str]
 
@@ -276,6 +276,10 @@ class UploadFileSet(Operation):
         return UploadFileSet(data["path"], data["file_globs"], data["reset"] != str(False))
 
 
+class LogOperation(Operation, abc.ABC):
+    pass
+
+
 @dataclass
 class LogSeriesValue(Generic[T]):
 
@@ -292,7 +296,7 @@ class LogSeriesValue(Generic[T]):
 
 
 @dataclass
-class LogFloats(Operation):
+class LogFloats(LogOperation):
 
     ValueType = LogSeriesValue[float]
 
@@ -315,7 +319,7 @@ class LogFloats(Operation):
 
 
 @dataclass
-class LogStrings(Operation):
+class LogStrings(LogOperation):
 
     ValueType = LogSeriesValue[str]
 
@@ -360,7 +364,7 @@ class ImageValue:
 
 
 @dataclass
-class LogImages(Operation):
+class LogImages(LogOperation):
 
     ValueType = LogSeriesValue[ImageValue]
 

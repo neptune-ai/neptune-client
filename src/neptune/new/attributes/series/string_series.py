@@ -15,9 +15,10 @@
 #
 from typing import (
     TYPE_CHECKING,
+    Collection,
     Iterable,
     List,
-    Optional,
+    Union,
 )
 
 from neptune.new.attributes.series.fetchable_series import FetchableSeries
@@ -28,9 +29,9 @@ from neptune.new.internal.operation import (
     LogStrings,
     Operation,
 )
-from neptune.new.internal.utils.iteration import get_batches
 from neptune.new.internal.utils.logger import logger
 from neptune.new.internal.utils.paths import path_to_str
+from neptune.new.types.series.string_series import MAX_STRING_SERIES_VALUE_LENGTH
 from neptune.new.types.series.string_series import StringSeries as StringSeriesVal
 
 if TYPE_CHECKING:
@@ -38,18 +39,20 @@ if TYPE_CHECKING:
 
 Val = StringSeriesVal
 Data = str
+LogOperation = LogStrings
 
-MAX_STRING_SERIES_VALUE_LENGTH = 1000
 
-
-class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
+class StringSeries(
+    Series[Val, Data, LogOperation], FetchableSeries[StringSeriesValues], max_batch_size=10, operation_cls=LogOperation
+):
     def __init__(self, container: "MetadataContainer", path: List[str]):
         super().__init__(container, path)
         self._value_truncation_occurred = False
 
-    def _get_log_operations_from_value(self, value: Val, step: Optional[float], timestamp: float) -> List[Operation]:
-        values = [v[:MAX_STRING_SERIES_VALUE_LENGTH] for v in value.values]
-        if not self._value_truncation_occurred and any([len(v) > MAX_STRING_SERIES_VALUE_LENGTH for v in value.values]):
+    def _get_log_operations_from_value(
+        self, value: Val, *, steps: Union[None, Collection[float]], timestamps: Union[None, Collection[float]]
+    ) -> List[LogOperation]:
+        if not self._value_truncation_occurred and value.truncated:
             # the first truncation
             self._value_truncation_occurred = True
             logger.warning(
@@ -60,8 +63,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
                 MAX_STRING_SERIES_VALUE_LENGTH,
             )
 
-        values = [LogStrings.ValueType(val, step=step, ts=timestamp) for val in values]
-        return [LogStrings(self._path, chunk) for chunk in get_batches(values, batch_size=10)]
+        return super()._get_log_operations_from_value(value, steps=steps, timestamps=timestamps)
 
     def _get_clear_operation(self) -> Operation:
         return ClearStringLog(self._path)
@@ -69,6 +71,7 @@ class StringSeries(Series[Val, Data], FetchableSeries[StringSeriesValues]):
     def _data_to_value(self, values: Iterable, **kwargs) -> Val:
         if kwargs:
             logger.warning("Warning: unexpected arguments (%s) in StringSeries", kwargs)
+
         return StringSeriesVal(values)
 
     def _is_value_type(self, value) -> bool:

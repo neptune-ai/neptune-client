@@ -161,7 +161,6 @@ from neptune.new.attributes.series.series import (
     Attribute,
     Generic,
     Iterable,
-    Operation,
     Series,
     SeriesVal,
     TypeVar,

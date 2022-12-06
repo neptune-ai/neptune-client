@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import argparse
 from collections.abc import MutableMapping
 from typing import (
     TYPE_CHECKING,
     Any,
+    Collection,
     Dict,
+    Iterable,
     Iterator,
     List,
     Mapping,
+    Optional,
     Union,
 )
 
@@ -63,6 +67,19 @@ class Namespace(Attribute, MutableMapping):
     def __iter__(self) -> Iterator[str]:
         yield from self._attributes.__iter__()
 
+    def extend(
+        self,
+        value: Union[Any, Iterable[Any]],
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
+        wait: bool = False,
+        **kwargs,
+    ) -> None:
+        if not isinstance(value, NamespaceVal):
+            value = NamespaceVal(value)
+        for k, v in value.value.items():
+            self._container[f"{self._str_path}/{k}"].extend(v, steps, timestamps, wait, **kwargs)
+
     def to_dict(self) -> Dict[str, Any]:
         result = {}
         for key, value in self._attributes.items():
@@ -73,7 +90,9 @@ class Namespace(Attribute, MutableMapping):
         return result
 
     def assign(self, value: Union[NamespaceVal, dict, Mapping], wait: bool = False):
-        if not isinstance(value, NamespaceVal):
+        if isinstance(value, argparse.Namespace):
+            value = NamespaceVal(vars(value))
+        elif not isinstance(value, NamespaceVal):
             value = NamespaceVal(value)
 
         for k, v in value.value.items():

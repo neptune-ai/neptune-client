@@ -237,16 +237,15 @@ class MetadataContainer(AbstractContextManager):
         value: Any,
         wait: bool = False,
     ) -> Attribute:
-        value = cast_value(value)
-        parsed_path = parse_path(path)
-
         with self._lock:
-            old_attr = self._structure.get(parsed_path)
-            if old_attr:
+            old_attr = self.get_attribute(path)
+            if old_attr is not None:
                 raise MetadataInconsistency("Attribute or namespace {} is already defined".format(path))
-            attr = ValueToAttributeVisitor(self, parsed_path).visit(value)
-            self._structure.set(parsed_path, attr)
-            attr.process_assignment(value, wait)
+
+            neptune_value = cast_value(value)
+            attr = ValueToAttributeVisitor(self, parse_path(path)).visit(neptune_value)
+            self.set_attribute(path, attr)
+            attr.process_assignment(neptune_value, wait)
             return attr
 
     def get_attribute(self, path: str) -> Optional[Attribute]:

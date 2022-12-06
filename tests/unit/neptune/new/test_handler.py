@@ -15,6 +15,7 @@
 #
 import argparse
 import os
+import time
 import unittest
 from dataclasses import dataclass
 from datetime import (
@@ -46,7 +47,10 @@ from neptune.new.envs import (
     API_TOKEN_ENV_NAME,
     PROJECT_ENV_NAME,
 )
-from neptune.new.exceptions import FileNotFound
+from neptune.new.exceptions import (
+    FileNotFound,
+    NeptuneUserApiInputException,
+)
 from neptune.new.types import File as FileVal
 from neptune.new.types.atoms.artifact import Artifact
 from neptune.new.types.atoms.datetime import Datetime as DatetimeVal
@@ -212,6 +216,54 @@ class TestSeries(unittest.TestCase):
         self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "some text")
         self.assertIsInstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
+    def test_log_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        dict_value = {"key-a": "value-a", "key-b": "value-b"}
+        exp["some/num/val"].log(dict_value)
+        self.assertEqual(exp["some"]["num"]["val"].fetch_last(), str(dict_value))
+
+    def test_log_complex_input(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["train/listOfDicts"].log([{"1a": 1, "1b": 1}, {"1a": 2, "1b": 2}])
+        exp["train/listOfListsOfDicts"].log(
+            [[{"2a": 11, "2b": 11}, {"2a": 12, "2b": 12}], [{"2a": 21, "2b": 21}, {"2a": 22, "2b": 22}]]
+        )
+
+        self.assertEqual(exp["train"]["listOfDicts"].fetch_last(), "{'1a': 2, '1b': 2}")
+        self.assertEqual(
+            exp["train"]["listOfListsOfDicts"].fetch_last(), "[{'2a': 21, '2b': 21}, {'2a': 22, '2b': 22}]"
+        )
+
+    def test_append(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["some/num/val"].append(5)
+        exp["some/str/val"].append("some text")
+        exp["some/img/val"].append(FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")))
+        exp["some/img/val"].append(PIL.Image.new("RGB", (60, 30), color="red"))
+        self.assertEqual(exp["some"]["num"]["val"].fetch_last(), 5)
+        self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "some text")
+        self.assertIsInstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
+
+    def test_append_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        dict_value = {"key-a": "value-a", "key-b": "value-b"}
+        exp["some/num/val"].append(dict_value)
+        self.assertEqual(exp["some"]["num"]["val"]["key-a"].fetch_last(), "value-a")
+        self.assertEqual(exp["some"]["num"]["val"]["key-b"].fetch_last(), "value-b")
+
+    def test_append_complex_input(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["train/dictOfDicts"].append(
+            {
+                "key-a": {"aa": 11, "ab": 22},
+                "key-b": {"ba": 33, "bb": 44},
+            }
+        )
+        self.assertEqual(exp["train"]["dictOfDicts"]["key-a"]["aa"].fetch_last(), 11)
+        self.assertEqual(exp["train"]["dictOfDicts"]["key-a"]["ab"].fetch_last(), 22)
+        self.assertEqual(exp["train"]["dictOfDicts"]["key-b"]["ba"].fetch_last(), 33)
+        self.assertEqual(exp["train"]["dictOfDicts"]["key-b"]["bb"].fetch_last(), 44)
+
     def test_log_many_values(self):
         exp = init(mode="debug", flush_period=0.5)
         exp["some/num/val"].log([5, 10, 15])
@@ -225,6 +277,111 @@ class TestSeries(unittest.TestCase):
         self.assertEqual(exp["some"]["num"]["val"].fetch_last(), 15)
         self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "other")
         self.assertIsInstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
+
+    def test_append_many_values_cause_error(self):
+        exp = init(mode="debug", flush_period=0.5)
+        with self.assertRaises(NeptuneUserApiInputException):
+            exp["some/num/val"].append([])
+        with self.assertRaises(NeptuneUserApiInputException):
+            exp["some/num/val"].append([5, 10, 15])
+        with self.assertRaises(NeptuneUserApiInputException):
+            exp["some/str/val"].append(["some text", "other"])
+        with self.assertRaises(NeptuneUserApiInputException):
+            exp["some/num/val"].append({"key-a": [1, 2]})
+        with self.assertRaises(NeptuneUserApiInputException):
+            exp["some/img/val"].append(
+                [
+                    FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")),
+                    FileVal.as_image(PIL.Image.new("RGB", (20, 90), color="red")),
+                ]
+            )
+
+    def test_extend(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["some/num/val"].extend([5, 7])
+        exp["some/str/val"].extend(["some", "text"])
+        exp["some/img/val"].extend(
+            [
+                FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red")),
+                FileVal.as_image(PIL.Image.new("RGB", (20, 90), color="blue")),
+            ]
+        )
+        self.assertEqual(exp["some"]["num"]["val"].fetch_last(), 7)
+        self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "text")
+        self.assertIsInstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
+
+    def test_extend_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        dict_value = {"key-a": ["value-a", "value-aa"], "key-b": ["value-b", "value-bb"], "key-c": ["ccc"]}
+        exp["some/num/val"].extend(dict_value)
+        self.assertEqual(exp["some"]["num"]["val"]["key-a"].fetch_last(), "value-aa")
+        self.assertEqual(exp["some"]["num"]["val"]["key-b"].fetch_last(), "value-bb")
+        self.assertEqual(exp["some"]["num"]["val"]["key-c"].fetch_last(), "ccc")
+
+    def test_extend_dict_in_list(self):
+        """We expect that everything which is inside Collection is mapped to atoms"""
+        exp = init(mode="debug", flush_period=0.5)
+        exp["train/listOfDicts"].extend([{"1a": 1, "1b": 1}, {"1a": 2, "1b": 2}])  # inside list -> mapped to str
+        exp["train/listOfDictOfDicts"].extend(
+            [
+                {"key-a": {"a1": 11, "a2": 22}},  # inside list -> mapped to str
+                {"key-b": {"b1": 33, "b2": 44}},
+                {"key-a": {"xx": 11, "yy": 22}},
+            ]
+        )
+        exp["train/listOfListsOfDicts"].extend(
+            [
+                [{"2a": 11, "2b": 11}, {"2a": 12, "2b": 12}],  # inside list -> mapped to str
+                [{"2a": 21, "2b": 21}, {"2a": 22, "2b": 22}],
+            ]
+        )
+        self.assertEqual(exp["train"]["listOfDicts"].fetch_last(), "{'1a': 2, '1b': 2}")
+        self.assertEqual(exp["train"]["listOfDictOfDicts"].fetch_last(), "{'key-a': {'xx': 11, 'yy': 22}}")
+        self.assertEqual(
+            exp["train"]["listOfListsOfDicts"].fetch_last(), "[{'2a': 21, '2b': 21}, {'2a': 22, '2b': 22}]"
+        )
+
+    def test_extend_nested(self):
+        """We expect that we are able to log arbitrary tre structure"""
+        exp = init(mode="debug", flush_period=0.5)
+
+        exp["train/simple_dict"].extend({"list1": [1, 2, 3], "list2": [10, 20, 30]})
+        exp["train/simple_dict"].extend(
+            {
+                "list1": [4, 5, 6],
+            }
+        )
+        self.assertEqual(exp["train"]["simple_dict"]["list1"].fetch_last(), 6)
+        self.assertEqual(list(exp["train"]["simple_dict"]["list1"].fetch_values().value), [1, 2, 3, 4, 5, 6])
+        self.assertEqual(exp["train"]["simple_dict"]["list2"].fetch_last(), 30)
+        self.assertEqual(list(exp["train"]["simple_dict"]["list2"].fetch_values().value), [10, 20, 30])
+
+        exp["train/different-depths"].extend(
+            {"lvl1": {"lvl1.1": [1, 2, 3], "lvl1.2": {"lvl1.2.1": [1]}}, "lvl2": [10, 20]}
+        )
+        exp["train/different-depths/lvl1"].extend({"lvl1.2": {"lvl1.2.1": [2, 3]}})
+        self.assertEqual(exp["train"]["different-depths"]["lvl1"]["lvl1.1"].fetch_last(), 3)
+        self.assertEqual(list(exp["train"]["different-depths"]["lvl1"]["lvl1.1"].fetch_values().value), [1, 2, 3])
+        self.assertEqual(exp["train"]["different-depths"]["lvl1"]["lvl1.2"]["lvl1.2.1"].fetch_last(), 3)
+        self.assertEqual(
+            list(exp["train"]["different-depths"]["lvl1"]["lvl1.2"]["lvl1.2.1"].fetch_values().value), [1, 2, 3]
+        )
+        self.assertEqual(exp["train"]["different-depths"]["lvl2"].fetch_last(), 20)
+        self.assertEqual(list(exp["train"]["different-depths"]["lvl2"].fetch_values().value), [10, 20])
+
+    def test_extend_nested_with_wrong_parameters(self):
+        """We expect that we are able to log arbitrary tre structure"""
+        exp = init(mode="debug", flush_period=0.5)
+
+        with self.assertRaises(NeptuneUserApiInputException):
+            # wrong number of steps
+            exp["train/simple_dict"].extend(values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, steps=[0, 1])
+
+        with self.assertRaises(NeptuneUserApiInputException):
+            # wrong number of timestamps
+            exp["train/simple_dict"].extend(
+                values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, timestamps=[time.time()] * 2
+            )
 
     def test_log_value_errors(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -264,6 +421,34 @@ class TestSet(unittest.TestCase):
     def setUpClass(cls) -> None:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS
+
+    def test_append_errors(self):
+        exp = init(mode="debug", flush_period=0.5)
+        img = FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red"))
+
+        exp["some/num/val"].append(5, step=1)
+        with self.assertRaises(ValueError):
+            exp["some/num/val"].append("str")
+        with self.assertRaises(TypeError):
+            exp["some/num/val"].append(img)
+
+        exp["some/str/val"].append("str", step=1)
+        exp["some/img/val"].append(img, step=1)
+        with self.assertRaises(TypeError):
+            exp["some/img/val"].append(5)
+        with self.assertRaises(FileNotFound):
+            exp["some/img/val"].append("path")
+
+        self.assertEqual(exp["some"]["num"]["val"].fetch_last(), 5)
+        self.assertEqual(exp["some"]["str"]["val"].fetch_last(), "str")
+        self.assertIsInstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
+
+    def test_extend_value_errors(self):
+        exp = init(mode="debug", flush_period=0.5)
+        with self.assertRaises(NeptuneUserApiInputException):
+            exp["x"].extend(10, step=10)
+        with self.assertRaises(ValueError):
+            exp["x"].extend([5, "str"])
 
     def test_assign_set(self):
         exp = init(mode="debug", flush_period=0.5)
@@ -485,6 +670,28 @@ class TestOtherBehaviour(unittest.TestCase):
         with self.assertRaises(ValueError):
             exp["attr3"].log([4, "234a"])
 
+    def test_append_float_like_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["attr"].append(self.FloatLike(34))
+        self.assertEqual(exp["attr"].fetch_last(), 34)
+        exp["attr"].append("345")
+        exp["attr"].append(self.FloatLike(34))
+        exp["attr"].append(4)
+        exp["attr"].append(13.0)
+        self.assertEqual(exp["attr"].fetch_last(), 13)
+        with self.assertRaises(ValueError):
+            exp["attr"].append(4)
+            exp["attr"].append("234a")
+
+    def test_extend_float_like_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["attr"].extend([self.FloatLike(34)])
+        self.assertEqual(exp["attr"].fetch_last(), 34)
+        exp["attr"].extend(["345", self.FloatLike(34), 4, 13.0])
+        self.assertEqual(exp["attr"].fetch_last(), 13)
+        with self.assertRaises(ValueError):
+            exp["attr"].extend([4, "234a"])
+
     def test_string_like_types(self):
         exp = init(mode="debug", flush_period=0.5)
 
@@ -495,6 +702,47 @@ class TestOtherBehaviour(unittest.TestCase):
         exp["attr2"].log("xxx")
         exp["attr2"].log(["345", self.FloatLike(34), 4, 13.0])
         self.assertEqual(exp["attr2"].fetch_last(), "13.0")
+
+    def test_append_string_like_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+
+        exp["attr1"] = "234"
+        exp["attr1"] = self.FloatLike(12356)
+        self.assertEqual(exp["attr1"].fetch(), "TestOtherBehaviour.FloatLike(value=12356)")
+        exp["attr2"].append("xxx")
+        exp["attr2"].append("345")
+        exp["attr2"].append(self.FloatLike(34))
+        exp["attr2"].append(4)
+        exp["attr2"].append(13.0)
+        self.assertEqual(exp["attr2"].fetch_last(), "13.0")
+
+    def test_extend_string_like_types(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["attr"].extend(["kebab"])
+        exp["attr"].extend(["345", self.FloatLike(34), 4, 13.0])
+        self.assertEqual(exp["attr"].fetch_last(), "13.0")
+
+    def test_assign_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["params"] = {
+            "x": 5,
+            "metadata": {"name": "Trol", "age": 376},
+            "toys": StringSeriesVal(["cudgel", "hat"]),
+            "nested": {"nested": {"deep_secret": FloatSeriesVal([13, 15])}},
+        }
+        self.assertEqual(exp["params/x"].fetch(), 5)
+        self.assertEqual(exp["params/metadata/name"].fetch(), "Trol")
+        self.assertEqual(exp["params/metadata/age"].fetch(), 376)
+        self.assertEqual(exp["params/toys"].fetch_last(), "hat")
+        self.assertEqual(exp["params/nested/nested/deep_secret"].fetch_last(), 15)
+
+    def test_convertable_to_dict(self):
+        exp = init(mode="debug", flush_period=0.5)
+        exp["params"] = argparse.Namespace(foo="bar", baz=42, nested=argparse.Namespace(nested_attr=[1, 2, 3], num=55))
+        self.assertEqual(exp["params/foo"].fetch(), "bar")
+        self.assertEqual(exp["params/baz"].fetch(), 42)
+        self.assertEqual(exp["params/nested/nested_attr"].fetch(), "[1, 2, 3]")
+        self.assertEqual(exp["params/nested/num"].fetch(), 55)
 
     def test_object(self):
         class Dog:
@@ -538,7 +786,6 @@ class TestOtherBehaviour(unittest.TestCase):
 
     @dataclass
     class FloatLike:
-
         value: float
 
         def __float__(self):

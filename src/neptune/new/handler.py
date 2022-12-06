@@ -16,7 +16,11 @@
 from functools import wraps
 from typing import (
     TYPE_CHECKING,
+    Any,
+    Collection,
+    Dict,
     Iterable,
+    Iterator,
     List,
     Optional,
     Union,
@@ -38,10 +42,12 @@ from neptune.new.attributes.sets.string_set import StringSet
 from neptune.new.exceptions import (
     MissingFieldException,
     NeptuneCannotChangeStageManually,
+    NeptuneUserApiInputException,
 )
 from neptune.new.internal.artifacts.types import ArtifactFileData
 from neptune.new.internal.utils import (
     is_collection,
+    is_dict_like,
     is_float,
     is_float_like,
     is_string,
@@ -53,7 +59,9 @@ from neptune.new.internal.utils.paths import (
     join_paths,
     parse_path,
 )
+from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types.atoms.file import File as FileVal
+from neptune.new.types.type_casting import cast_value_for_extend
 from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
@@ -73,6 +81,9 @@ def check_protected_paths(fun):
         return fun(self, *args, **kwargs)
 
     return inner_fun
+
+
+ExtendDictT = Union[Collection[Any], Dict[str, "ExtendDictT"]]
 
 
 class Handler:
@@ -156,12 +167,12 @@ class Handler:
         """
         with self._container.lock():
             attr = self._container.get_attribute(self._path)
-            if attr:
+            if not attr:
+                self._container.define(self._path, value)
+            else:
                 if isinstance(value, Handler):
                     value = ValueCopy(value)
                 attr.process_assignment(value, wait)
-            else:
-                self._container.define(self._path, value, wait)
 
     @check_protected_paths
     def upload(self, value, wait: bool = False) -> None:
@@ -286,6 +297,102 @@ class Handler:
 
                 self._container.set_attribute(self._path, attr)
             attr.log(value, step=step, timestamp=timestamp, wait=wait, **kwargs)
+
+    def append(
+        self,
+        value: Union[dict, Any],
+        step: Optional[float] = None,
+        timestamp: Optional[float] = None,
+        wait: bool = False,
+        **kwargs,
+    ) -> None:
+        """Logs a series of values, such as a metric, by appending the provided value to the end of the series.
+
+        Available for following series field types:
+
+            * `FloatSeries` - series of float values
+            * `StringSeries` - series of strings
+            * `FileSeries` - series of files
+
+        When you log the first value, the type of the value determines what type of field is created.
+        For more, see the field types documentation: https://docs.neptune.ai/api/field_types
+
+        Args:
+            value: Value to be added to the series field.
+            step: Optional index of the entry being appended. Must be strictly increasing.
+            timestamp: Optional time index of the log entry being appended, in Unix time format.
+                If None, the current time (obtained with `time.time()`) is used.
+            wait: If True, the client sends all tracked metadata to the server before executing the call.
+                For details, see https://docs.neptune.ai/api/universal/#wait
+
+        Examples:
+            >>> import neptune.new as neptune
+            >>> run = neptune.init_run()
+            >>> for epoch in range(n_epochs):
+            ...     ... # Your training loop
+            ...     run["train/epoch/loss"].append(loss)  # FloatSeries
+            ...     token = str(...)
+            ...     run["train/tokens"].append(token)  # StringSeries
+            ...     run["train/distribution"].append(plt_histogram, step=epoch)  # FileSeries
+        """
+        verify_type("step", step, (int, float, type(None)))
+        verify_type("timestamp", timestamp, (int, float, type(None)))
+        if step is not None:
+            step = [step]
+        if timestamp is not None:
+            timestamp = [timestamp]
+
+        value = ExtendUtils.validate_and_transform_to_extend_format(value)
+        self.extend(value, step, timestamp, wait, **kwargs)
+
+    def extend(
+        self,
+        values: ExtendDictT,
+        steps: Optional[Collection[float]] = None,
+        timestamps: Optional[Collection[float]] = None,
+        wait: bool = False,
+        **kwargs,
+    ) -> None:
+        """Logs a series of values by appending the provided collection of values to the end of the series.
+
+        Available for following series field types:
+
+            * `FloatSeries` - series of float values
+            * `StringSeries` - series of strings
+            * `FileSeries` - series of files
+
+        When you log the first value, the type of the value determines what type of field is created.
+        For more, see the field types documentation: https://docs.neptune.ai/api/field_types
+
+        Args:
+            values: Values to be added to the series field, as a dictionary or collection.
+            steps: Optional collection of indeces for the entries being appended. Must be strictly increasing.
+            timestamps: Optional collection of time indeces for the entries being appended, in Unix time format.
+                If None, the current time (obtained with `time.time()`) is used.
+            wait: If True, the client sends all tracked metadata to the server before executing the call.
+                For details, see https://docs.neptune.ai/api/universal/#wait
+
+        Example:
+            The following example reads a CSV file into a pandas DataFrame and extracts the values
+            to create a Neptune series.
+            >>> import neptune.new as neptune
+            >>> run = neptune.init_run()
+            >>> for epoch in range(n_epochs):
+            ...     df = pandas.read_csv("time_series.csv")
+            ...     ys = df["value"]
+            ...     ts = df["timestamp"]
+            ...     run["data/example_series"].extend(ys, timestamps=ts)
+        """
+        ExtendUtils.validate_values_for_extend(values, steps, timestamps)
+
+        with self._container.lock():
+            attr = self._container.get_attribute(self._path)
+            if not attr:
+                neptune_value = cast_value_for_extend(values)
+                attr = ValueToAttributeVisitor(self._container, parse_path(self._path)).visit(neptune_value)
+                self._container.set_attribute(self._path, attr)
+
+            attr.extend(values, steps=steps, timestamps=timestamps, wait=wait, **kwargs)
 
     @check_protected_paths
     def add(self, values: Union[str, Iterable[str]], wait: bool = False) -> None:
@@ -518,10 +625,53 @@ class Handler:
             attr = self._container.get_attribute(self._path)
             if not attr:
                 attr = Artifact(self._container, parse_path(self._path))
-
-            self._container.set_attribute(self._path, attr)
+                self._container.set_attribute(self._path, attr)
 
             attr.track_files(path=path, destination=destination, wait=wait)
 
     def __delitem__(self, path) -> None:
         self.pop(path)
+
+
+class ExtendUtils:
+    @staticmethod
+    def validate_and_transform_to_extend_format(value):
+        """Preserve nested structure created by `Namespaces` and `dict_like` objects,
+        but replace all other values with single-element lists,
+        so work can be delegated to `extend` method."""
+        if isinstance(value, Namespace) or is_dict_like(value):
+            return {k: ExtendUtils.validate_and_transform_to_extend_format(v) for k, v in value.items()}
+        elif is_collection(value):
+            raise NeptuneUserApiInputException(
+                "Value cannot be a collection, if you want to `append` multiple values at once use `extend` method."
+            )
+        else:
+            return [value]
+
+    @staticmethod
+    def validate_values_for_extend(values, steps, timestamps):
+        """Validates if input data is a collection or Namespace with collections leafs.
+        If steps or timestamps are passed, check if its length is equal to all given values."""
+        collections_lengths = set(ExtendUtils.generate_leaf_collection_lengths(values))
+
+        if len(collections_lengths) > 1:
+            if steps is not None:
+                raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
+            if timestamps is not None:
+                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
+        else:
+            common_collections_length = next(iter(collections_lengths))
+            if steps is not None and common_collections_length != len(steps):
+                raise NeptuneUserApiInputException("Number of steps must be equal to number of values")
+            if timestamps is not None and common_collections_length != len(timestamps):
+                raise NeptuneUserApiInputException("Number of timestamps must be equal to number of values")
+
+    @staticmethod
+    def generate_leaf_collection_lengths(values) -> Iterator[int]:
+        if isinstance(values, Namespace) or is_dict_like(values):
+            for val in values.values():
+                yield from ExtendUtils.generate_leaf_collection_lengths(val)
+        elif is_collection(values):
+            yield len(values)
+        else:
+            raise NeptuneUserApiInputException("Values must be a collection or Namespace leafs must be collections")
