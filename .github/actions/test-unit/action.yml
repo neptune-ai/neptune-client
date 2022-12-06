@@ -28,8 +28,8 @@ runs:
 
     - name: Unit - New
       run: |
-        coverage run --source='src/neptune/new/' --data-file='coverage.new' -p -m \
-        pytest -v ./tests/unit/neptune/new
+        coverage run --source='src/neptune/new/' -p -m \
+        pytest -v -s ./tests/unit/neptune/new
 #        --timeout=120 --timeout_method=thread \
 #        --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
@@ -39,7 +39,12 @@ runs:
       if: always()
       with:
         name: unit-coverage-new
-        path: coverage.new.*
+        path: ./.coverage # coverage.new.*
+
+    - name: Coverage - Debug
+      run: |
+        coverage debug data
+      shell: bash
 
 #    - name: Unit - Management
 #      run: |
