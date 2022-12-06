@@ -1,6 +1,9 @@
 import hashlib
 
-from pytest import fixture
+from pytest import (
+    fixture,
+    mark,
+)
 from sklearn.datasets import load_digits
 from sklearn.model_selection import train_test_split
 from sklearn.svm import SVC
@@ -9,10 +12,9 @@ from zenml.enums import StackComponentType
 from zenml.exceptions import (
     InitializationException,
     StackComponentExistsError,
+    StackExistsError,
 )
 from zenml.integrations.neptune.experiment_trackers.run_state import get_neptune_run
-from zenml.models.component_model import ComponentModel
-from zenml.models.stack_models import StackModel
 from zenml.pipelines import pipeline
 from zenml.steps import step
 
@@ -23,64 +25,58 @@ NEPTUNE_EXPERIMENT_TRACKER_NAME = "neptune_tracker"
 NEPTUNE_STACK_NAME = "neptune_stack"
 
 
-@fixture
+@fixture(scope="session")
 def zenml_client() -> Client:
     return Client()
 
 
-@fixture
+@fixture(scope="session")
 def experiment_tracker_comp(zenml_client):
-    return ComponentModel(
-        name=NEPTUNE_EXPERIMENT_TRACKER_NAME,
-        type=StackComponentType.EXPERIMENT_TRACKER,
-        flavor="neptune",
-        user=zenml_client.active_user.id,
-        project=zenml_client.active_project.id,
-        configuration={},
-    )
+    try:
+        return zenml_client.create_stack_component(
+            name=NEPTUNE_EXPERIMENT_TRACKER_NAME,
+            component_type=StackComponentType.EXPERIMENT_TRACKER,
+            flavor="neptune",
+            configuration={},
+        )
+    except StackComponentExistsError:
+        return zenml_client.get_stack_component(
+            component_type=StackComponentType.EXPERIMENT_TRACKER, name_id_or_prefix=NEPTUNE_EXPERIMENT_TRACKER_NAME
+        )
 
 
-@fixture
+@fixture(scope="session")
 def stack_with_neptune(zenml_client, experiment_tracker_comp):
     a_id = zenml_client.active_stack.artifact_store.id
     o_id = zenml_client.active_stack.orchestrator.id
     e_id = experiment_tracker_comp.id
 
-    return StackModel(
-        name=NEPTUNE_STACK_NAME,
-        components={
-            StackComponentType.ARTIFACT_STORE: [a_id],
-            StackComponentType.ORCHESTRATOR: [o_id],
-            StackComponentType.EXPERIMENT_TRACKER: [e_id],
-        },
-        user=zenml_client.active_user.id,
-        project=zenml_client.active_project.id,
-    )
+    try:
+        return zenml_client.create_stack(
+            name=NEPTUNE_STACK_NAME,
+            components={
+                StackComponentType.ARTIFACT_STORE: a_id,
+                StackComponentType.ORCHESTRATOR: o_id,
+                StackComponentType.EXPERIMENT_TRACKER: e_id,
+            },
+        )
+    except StackExistsError:
+        return zenml_client.get_stack(name_id_or_prefix=NEPTUNE_STACK_NAME)
 
 
-@fixture
+@fixture(scope="session")
 def registered_stack(zenml_client, experiment_tracker_comp, stack_with_neptune):
     try:
         zenml_client.initialize()
     except InitializationException:
         pass
 
-    if zenml_client.active_stack.name != NEPTUNE_STACK_NAME:
-        try:
-            zenml_client.register_stack_component(experiment_tracker_comp)
-            zenml_client.register_stack(stack_with_neptune)
-        except StackComponentExistsError:
-            stacks = zenml_client.stacks
-            for stack in stacks:
-                if stack.name == NEPTUNE_STACK_NAME:
-                    stack_with_neptune = stack
-        zenml_client.activate_stack(stack_with_neptune)
+    zenml_client.activate_stack(NEPTUNE_STACK_NAME)
 
 
 @step
 def example_step() -> None:
     """A very minimalistic pipeline step.
-
     Loads a sample dataset, trains a simple classifier and logs
     a couple of metrics.
     """
@@ -107,6 +103,8 @@ def neptune_example_pipeline(ex_step):
     ex_step()
 
 
+@mark.integrations
+@mark.zenml
 class TestZenML(BaseE2ETest):
     def _test_setup_creates_stack_with_neptune_experiment_tracker(self, zenml_client):
         assert zenml_client.active_stack.experiment_tracker.name == NEPTUNE_EXPERIMENT_TRACKER_NAME
