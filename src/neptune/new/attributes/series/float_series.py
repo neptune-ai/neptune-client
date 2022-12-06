@@ -37,10 +37,9 @@ Data = Union[float, int]
 LogOperation = LogFloats
 
 
-class FloatSeries(Series[Val, Data, LogOperation], FetchableSeries[FloatSeriesValues]):
-    MAX_BATCH_SIZE = 100
-    operation_cls = LogOperation
-
+class FloatSeries(
+    Series[Val, Data, LogOperation], FetchableSeries[FloatSeriesValues], max_batch_size=100, operation_cls=LogOperation
+):
     def configure(
         self,
         min: Optional[Union[float, int]] = None,

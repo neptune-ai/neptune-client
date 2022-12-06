@@ -42,16 +42,9 @@ LogOperationTV = TypeVar("LogOperationTV", bound=LogOperation)
 
 
 class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
-    MAX_BATCH_SIZE = None
-    operation_cls: type(LogOperationTV) = None
-
-    def __init_subclass__(cls):
-        required_attributes = ("MAX_BATCH_SIZE", "operation_cls")
-        for required_attribute in required_attributes:
-            if not any(required_attribute in base.__dict__ for base in cls.__mro__ if base is not Series):
-                raise NotImplementedError(
-                    f"Attribute '{required_attribute}' has not been overwritten in class '{cls.__name__}'"
-                )
+    def __init_subclass__(cls, max_batch_size: int, operation_cls: type(LogOperationTV)):
+        cls.max_batch_size = max_batch_size
+        cls.operation_cls = operation_cls
 
     def clear(self, wait: bool = False) -> None:
         self._clear_impl(wait)
@@ -72,7 +65,7 @@ class Series(Attribute, Generic[ValTV, DataTV, LogOperationTV]):
         values_with_step_and_ts = zip(mapped_values, steps, timestamps)
         log_values = [self.operation_cls.ValueType(val, step=step, ts=ts) for val, step, ts in values_with_step_and_ts]
         return [
-            self.operation_cls(self._path, chunk) for chunk in get_batches(log_values, batch_size=self.MAX_BATCH_SIZE)
+            self.operation_cls(self._path, chunk) for chunk in get_batches(log_values, batch_size=self.max_batch_size)
         ]
 
     @classmethod

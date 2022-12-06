@@ -44,10 +44,7 @@ Data = File
 LogOperation = LogImages
 
 
-class FileSeries(Series[Val, Data, LogOperation]):
-    MAX_BATCH_SIZE = 1
-    operation_cls = LogOperation
-
+class FileSeries(Series[Val, Data, LogOperation], max_batch_size=100, operation_cls=LogOperation):
     @classmethod
     def _map_series_val(cls, value: Val) -> List[ImageValue]:
         return [

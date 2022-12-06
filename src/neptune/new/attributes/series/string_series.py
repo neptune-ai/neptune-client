@@ -42,10 +42,9 @@ Data = str
 LogOperation = LogStrings
 
 
-class StringSeries(Series[Val, Data, LogOperation], FetchableSeries[StringSeriesValues]):
-    MAX_BATCH_SIZE = 10
-    operation_cls = LogOperation
-
+class StringSeries(
+    Series[Val, Data, LogOperation], FetchableSeries[StringSeriesValues], max_batch_size=100, operation_cls=LogOperation
+):
     def __init__(self, container: "MetadataContainer", path: List[str]):
         super().__init__(container, path)
         self._value_truncation_occurred = False
