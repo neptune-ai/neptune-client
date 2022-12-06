@@ -148,7 +148,7 @@ class TestFileSeries(TestAttributeBase):
             )
 
             # then
-            def generate_expected_call(wait, step, values_no=1):
+            def generate_expected_call(wait, step):
                 log_operation = LogImages(
                     path=path,
                     values=[
@@ -157,8 +157,7 @@ class TestFileSeries(TestAttributeBase):
                             step=step,
                             ts=self._now(),
                         )
-                    ]
-                    * values_no,
+                    ],
                 )
                 return call(
                     log_operation,
@@ -168,7 +167,8 @@ class TestFileSeries(TestAttributeBase):
             op_processor.enqueue_operation.assert_has_calls(
                 [
                     generate_expected_call(wait, step=3),
-                    generate_expected_call(wait, step=None, values_no=2),
+                    generate_expected_call(wait, step=None),
+                    generate_expected_call(wait, step=None),
                 ]
             )
 
