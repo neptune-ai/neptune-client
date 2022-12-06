@@ -24,26 +24,50 @@ runs:
     - name: Unit - New
       run: |
         echo "<<<<<<<< Running 'new' unittests >>>>>>>>" && \
+        coverage run --source=src/neptune/new --data-file=coverage.new -p -m \
         pytest -v ./tests/unit/neptune/new \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
+    - name: Upload new client test coverage
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-coverage-new
+        path: coverage.new.*
+
     - name: Unit - Management
       run: |
         echo "<<<<<<<< Running 'management' unittests >>>>>>>>" && \
+        coverage run --source=src/neptune/management --data-file=coverage.management -p -m \
         pytest -v ./tests/unit/neptune/management \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-management-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
+    - name: Upload management test coverage
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-coverage-management
+        path: coverage.management.*
+
     - name: Unit - Legacy
       run: |
         echo "<<<<<<<< Running 'legacy' unittests >>>>>>>>" && \
+        coverage run --source=src/neptune/legacy --data-file=coverage.legacy -p -m \
         pytest -v ./tests/unit/neptune/legacy \
         --timeout=120 --timeout_method=thread \
         --junitxml="./test-results/test-unit-legacy-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
+
+    - name: Upload legacy client test coverage
+      uses: actions/upload-artifact@v2
+      if: always()
+      with:
+        name: test-coverage-legacy
+        path: coverage.legacy.*
 
     - name: Report
       uses: Raalsky/action-junit-report@main
@@ -55,7 +79,8 @@ runs:
         annotate_notice: true
         job_name: ${{ inputs.report_job }}
 
-    - uses: actions/upload-artifact@v2
+    - name: Upload test reports
+      uses: actions/upload-artifact@v2
       if: always()
       with:
         name: test-artifacts

@@ -93,6 +93,8 @@ xgboost = ["neptune-xgboost"]
 dev = [
     "altair",
     "bokeh",
+    "coverage",
+    "Faker",
     "freezegun",
     "matplotlib",
     "mock",
@@ -108,7 +110,6 @@ dev = [
     "tensorflow",
     "torch",
     "vega_datasets",
-    "Faker"
 ]
 e2e = [
     # Integrations
