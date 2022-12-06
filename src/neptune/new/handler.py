@@ -171,8 +171,8 @@ class Handler:
                 self._container.define(self._path, value)
             else:
                 if isinstance(value, Handler):
-                    cast_value = ValueCopy(value)
-                attr.process_assignment(cast_value, wait)
+                    value = ValueCopy(value)
+                attr.process_assignment(value, wait)
 
     @check_protected_paths
     def upload(self, value, wait: bool = False) -> None:
