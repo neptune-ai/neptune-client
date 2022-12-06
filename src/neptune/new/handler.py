@@ -61,10 +61,8 @@ from neptune.new.internal.utils.paths import (
 )
 from neptune.new.internal.value_to_attribute_visitor import ValueToAttributeVisitor
 from neptune.new.types.atoms.file import File as FileVal
-from neptune.new.types.type_casting import (
-    cast_value,
-    cast_value_for_extend,
-)
+from neptune.new.types.type_casting import cast_value_for_extend
+from neptune.new.types.value_copy import ValueCopy
 
 if TYPE_CHECKING:
     from neptune.new.metadata_containers import MetadataContainer
@@ -172,8 +170,9 @@ class Handler:
             if not attr:
                 self._container.define(self._path, value)
             else:
-                neptune_value = cast_value(value)
-                attr.process_assignment(neptune_value, wait)
+                if isinstance(value, Handler):
+                    value = ValueCopy(value)
+                attr.process_assignment(value, wait)
 
     @check_protected_paths
     def upload(self, value, wait: bool = False) -> None:
