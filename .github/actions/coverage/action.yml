@@ -1,0 +1,50 @@
+---
+name: Coverage
+inputs:
+  token:
+     description: "Codecov token"
+     required: true
+  module:
+     description: "Client submodule (new/management/legacy)"
+     required: true
+  kind:
+     description: "Test kind (e2e or unit)"
+     required: true
+description: Gather and report coverage to Codecov
+runs:
+    using: "composite"
+    steps:
+      - name: Install Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.10"
+
+      - name: Install coverage
+        run: pip install coverage
+        shell: bash
+
+      - name: Download coverages
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.kind }}-coverage-${{ inputs.module }}
+          path: ./
+
+      - name: Combine coverages
+        run: coverage combine --data-file=coverage.${{ inputs.module }}
+        shell: bash
+
+      - name: Coverage report
+        run: coverage report -m --data-file=coverage.${{ inputs.module }}
+        shell: bash
+#
+#      - name: Prepare coverage report
+#        run: coverage xml --data-file=coverage.${{ inputs.module }}
+#        shell: bash
+#
+#      - name: Upload coverage report do Codecov
+#        uses: codecov/codecov-action@v3
+#        with:
+#          token: ${{ inputs.token }}
+#          files: ./coverage.xml
+#          flags: ${{ inputs.kind }},${{ inputs.module }}
+#          fail_ci_if_error: false

@@ -34,7 +34,7 @@ runs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: test-coverage-new
+        name: unit-coverage-new
         path: coverage.new.*
 
     - name: Unit - Management
@@ -50,7 +50,7 @@ runs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: test-coverage-management
+        name: unit-coverage-management
         path: coverage.management.*
 
     - name: Unit - Legacy
@@ -66,7 +66,7 @@ runs:
       uses: actions/upload-artifact@v2
       if: always()
       with:
-        name: test-coverage-legacy
+        name: unit-coverage-legacy
         path: coverage.legacy.*
 
     - name: Report
