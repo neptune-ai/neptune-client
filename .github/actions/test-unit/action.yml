@@ -28,18 +28,18 @@ runs:
 
     - name: Unit - New
       run: |
-        coverage run --source='src/neptune/new/' -p -m \
+        coverage run --source='neptune.new' -p -m \
         pytest -v -s ./tests/unit/neptune/new
 #        --timeout=120 --timeout_method=thread \
 #        --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
 
-    - name: Upload new client test coverage
-      uses: actions/upload-artifact@v2
-      if: always()
-      with:
-        name: unit-coverage-new
-        path: ./.coverage # coverage.new.*
+#    - name: Upload new client test coverage
+#      uses: actions/upload-artifact@v2
+#      if: always()
+#      with:
+#        name: unit-coverage-new
+#        path: ./.coverage # coverage.new.*
 
     - name: Coverage - Debug
       run: |
