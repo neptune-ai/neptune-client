@@ -36,15 +36,15 @@ runs:
       - name: Coverage report
         run: coverage report -m --data-file=coverage.${{ inputs.module }}
         shell: bash
-#
-#      - name: Prepare coverage report
-#        run: coverage xml --data-file=coverage.${{ inputs.module }}
-#        shell: bash
-#
-#      - name: Upload coverage report do Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          token: ${{ inputs.token }}
-#          files: ./coverage.xml
-#          flags: ${{ inputs.kind }},${{ inputs.module }}
-#          fail_ci_if_error: false
+
+      - name: Prepare coverage report
+        run: coverage xml --data-file=coverage.${{ inputs.module }}
+        shell: bash
+
+      - name: Upload coverage report do Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ inputs.token }}
+          files: ./coverage.xml
+          flags: ${{ inputs.kind }},${{ inputs.module }}
+          fail_ci_if_error: false
