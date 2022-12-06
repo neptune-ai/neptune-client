@@ -1,0 +1,7 @@
+steps:
+  ex_step:
+    enable_cache: False
+    experiment_tracker: neptune_tracker
+    settings:
+      experiment_tracker.neptune:
+        tags: ['sklearn', 'digits']

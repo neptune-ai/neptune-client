@@ -77,6 +77,7 @@ neptune-sklearn = { version = "*", optional = true }
 neptune-tensorflow-keras = { version = "*", optional = true }
 neptune-xgboost = { version = "*", optional = true }
 transformers = { version = "*", optional = true }
+zenml = { version = "*", optional = true, python = "<3.10" }
 
 [tool.poetry.extras]
 fastai = ["neptune-fastai"]
@@ -90,6 +91,7 @@ sklearn = ["neptune-sklearn"]
 tensorflow-keras = ["neptune-tensorflow-keras"]
 transformers = ["transformers"]
 xgboost = ["neptune-xgboost"]
+zenml = ["zenml"]
 dev = [
     "altair",
     "bokeh",
@@ -117,6 +119,7 @@ e2e = [
     "scikit-learn",
     "torchvision",
     "transformers",
+    "zenml",
 ]
 
 [tool.poetry]
