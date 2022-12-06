@@ -1,3 +1,8 @@
+## neptune-client 0.16.14
+
+### Features
+- Add append and extend ([#1050](https://github.com/neptune-ai/neptune-client/pull/1050))
+
 ## neptune-client 0.16.13
 
 ### Changes
