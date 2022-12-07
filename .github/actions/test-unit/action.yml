@@ -33,7 +33,7 @@ runs:
       if: always()
       with:
         name: unit-coverage
-        path: ./.coverage
+        path: ./.coverage*
 
     - name: Upload test reports
       uses: actions/upload-artifact@v2
