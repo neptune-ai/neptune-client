@@ -23,8 +23,8 @@ runs:
 
     - name: Unit - New
       run: |
-        coverage run --source='src/neptune/new' -p -m \
-        pytest -v ./tests/unit/neptune/new
+        coverage run --source='src/' -p -m \
+        pytest -v ./tests/unit/
 #        --timeout=120 --timeout_method=thread \
 #        --junitxml="./test-results/test-unit-new-${{ inputs.os }}-${{ inputs.python-version }}.xml"
       shell: bash
