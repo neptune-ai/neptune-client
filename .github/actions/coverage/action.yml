@@ -31,18 +31,14 @@ runs:
         run: coverage combine
         shell: bash
 
-      - name: Coverage report
-        run: coverage report -m
+      - name: Prepare coverage report
+        run: coverage xml
         shell: bash
-#
-#      - name: Prepare coverage report
-#        run: coverage xml
-#        shell: bash
-#
-#      - name: Upload coverage report do Codecov
-#        uses: codecov/codecov-action@v3
-#        with:
-#          token: ${{ inputs.token }}
-#          files: ./coverage.xml
-#          flags: ${{ inputs.kind }},${{ inputs.module }}
-#          fail_ci_if_error: false
+
+      - name: Upload coverage report do Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ inputs.token }}
+          files: ./coverage.xml
+          flags: ${{ inputs.kind }}
+          fail_ci_if_error: false
